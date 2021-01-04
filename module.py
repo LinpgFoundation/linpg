@@ -480,7 +480,7 @@ class SingleLineInputBox(InputBoxInterface):
             self.holderIndex += len(char)
             self._reset_inputbox_width()
         else:
-            print('ZeroEngine-Warning: The value of event.unicode is empty!')
+            print('LinpgEngine-Warning: The value of event.unicode is empty!')
     def _remove_char(self,action):
         if action == "ahead":
             if self.holderIndex > 0:
@@ -490,7 +490,7 @@ class SingleLineInputBox(InputBoxInterface):
             if self.holderIndex < len(self._text):
                 self._text = self._text[:self.holderIndex]+self._text[self.holderIndex+1:]
         else:
-            raise Exception('ZeroEngine-Error: Action has to be either "ahead" or "behind"!')
+            raise Exception('LinpgEngine-Error: Action has to be either "ahead" or "behind"!')
         self._reset_inputbox_width()
     def _reset_holderIndex(self,mouse_x):
         last_width = 0
@@ -579,7 +579,7 @@ class MultipleLinesInputBox(InputBoxInterface):
             self._text = new_txt
             self._reset_inputbox_size()
         else:
-            raise Exception('ZeroEngine-Error: new_txt for MultipleLinesInputBox.set_text() must be a list!')
+            raise Exception('LinpgEngine-Error: new_txt for MultipleLinesInputBox.set_text() must be a list!')
     def set_fontsize(self,font_size):
         super().set_fontsize(font_size)
         self._reset_inputbox_size()
@@ -618,7 +618,7 @@ class MultipleLinesInputBox(InputBoxInterface):
                 self._text[self.lineId] += theStringAfterHolderIndex
                 self._reset_inputbox_size()
         else:
-            print('ZeroEngine-Warning: The value of event.unicode is empty!')
+            print('LinpgEngine-Warning: The value of event.unicode is empty!')
     #删除对应字符
     def _remove_char(self,action):
         if action == "ahead":
@@ -645,7 +645,7 @@ class MultipleLinesInputBox(InputBoxInterface):
                     self._text[self.lineId] += self._text[self.lineId+1]
                 self._text.pop(self.lineId+1)
         else:
-            raise Exception('ZeroEngine-Error: Action has to be either "ahead" or "behind"!')
+            raise Exception('LinpgEngine-Error: Action has to be either "ahead" or "behind"!')
         self._reset_inputbox_size()
     def _reset_holderIndex(self,mouse_x,mouse_y):
         self.lineId = round((mouse_y-self.y)/self.FONTSIZE)-1
@@ -788,7 +788,7 @@ class Console(SingleLineInputBox):
                 self.set_text()
                 self.backwordID = 1
             else:
-                print('ZeroEngine-Warning: The input box is empty!')
+                print('LinpgEngine-Warning: The input box is empty!')
             return True
         #ESC，关闭
         elif event.key == pygame.K_ESCAPE:

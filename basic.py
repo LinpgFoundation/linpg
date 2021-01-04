@@ -16,7 +16,7 @@ def loadImg(path,width=None,height=None,setAlpha=None,ifConvertAlpha=True):
     elif width >= 0 and height >= 0:
         img = pygame.transform.scale(img, (int(width), int(height)))
     elif width < 0 or height < 0:
-        raise Exception('ZeroEngine-Error: Both width and height must be positive interger!')
+        raise Exception('LinpgEngine-Error: Both width and height must be positive interger!')
     return img
 
 #图片blit模块：接受图片，位置（列表格式），屏幕，如果不是UI层需要local_x和local_y
@@ -32,7 +32,7 @@ def resizeImg(img,imgSize=(None,None)):
     elif imgSize[0] >= 0 and imgSize[1] >= 0:
         img = pygame.transform.scale(img, (round(imgSize[0]), round(imgSize[1])))
     elif imgSize[0] < 0 or imgSize[1] < 0:
-        raise Exception('ZeroEngine-Error: Both width and height must be positive interger!')
+        raise Exception('LinpgEngine-Error: Both width and height must be positive interger!')
     return img
 
 #高级图片加载模块：接收图片路径（或者已经载入的图片）,位置:[x,y],长,高,返回对应的图片class
@@ -77,16 +77,16 @@ def imgLoadFunction(path,ifConvertAlpha):
             try:
                 return pygame.image.load(os.path.join(path))
             except BaseException:
-                raise Exception('ZeroEngine-Error: Cannot load image! Path:',path)
+                raise Exception('LinpgEngine-Error: Cannot load image! Path:',path)
         else:
             try:
                 return pygame.image.load(os.path.join(path)).convert_alpha()
             except BaseException:
-                raise Exception('ZeroEngine-Error: Cannot load image! Path:',path)
+                raise Exception('LinpgEngine-Error: Cannot load image! Path:',path)
     elif isinstance(path,pygame.Surface):
         return path
     else:
-        raise Exception('ZeroEngine-Error: The path has to be a string or pygame.Surface (even though this is not recommended)! Path:',path)
+        raise Exception('LinpgEngine-Error: The path has to be a string or pygame.Surface (even though this is not recommended)! Path:',path)
 
 #中心展示模块1：接受两个item和item2的x和y，将item1展示在item2的中心位置,但不展示item2：
 def displayInCenter(item1,item2,x,y,screen,local_x=0,local_y=0):
@@ -149,10 +149,10 @@ def ifHover(imgObject,objectPos=(0,0),local_x=0,local_y=0):
             return True
         else:
             return False
-    #如果是zero引擎的Image类
+    #如果是Linpg引擎的Image类
     elif isinstance(imgObject,ImageSurface):
         return imgObject.ifHover(mouse_x-local_x,mouse_y-local_y)
-    #如果是zero引擎的Button类
+    #如果是Linpg引擎的Button类
     elif isinstance(imgObject,Button):
         if imgObject.x<=mouse_x-local_x<=imgObject.x+imgObject.img.get_width() and imgObject.y<=mouse_y-local_y<=imgObject.y+imgObject.img.get_height():
             imgObject.hoverEventOn()
@@ -160,11 +160,11 @@ def ifHover(imgObject,objectPos=(0,0),local_x=0,local_y=0):
         else:
             imgObject.hoverEventOff()
             return False
-    #如果是zero引擎的TextSurface类
+    #如果是Linpg引擎的TextSurface类
     elif isinstance(imgObject,TextSurface):
         return imgObject.ifHover()
     else:
-        raise Exception('ZeroEngine-Error: Unable to check current object:',imgObject)
+        raise Exception('LinpgEngine-Error: Unable to check current object:',imgObject)
 
 #关闭背景音乐
 def unloadBackgroundMusic():

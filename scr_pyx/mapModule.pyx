@@ -27,7 +27,7 @@ class EnvImagesManagement:
                 self.__ENV_IMAGE_DICT_ORIGINAL[fileName] = loadImg("Assets/image/environment/block/"+fileName+".png")
                 self.__ENV_IMAGE_DICT[fileName] = resizeImg(self.__ENV_IMAGE_DICT_ORIGINAL[fileName],(self.__BLOCK_WIDTH,None))
             except BaseException:
-                raise Exception('ZeroEngine-Error: An map-block called '+fileName+' cannot find its image in the folder.')
+                raise Exception('LinpgEngine-Error: An map-block called '+fileName+' cannot find its image in the folder.')
         #加载场地设施的图片
         for decoration in decorationData:
             #--篝火--
@@ -75,7 +75,7 @@ class EnvImagesManagement:
             else:
                 return self.__ENV_IMAGE_DICT[key]
         except BaseException:
-            print('ZeroEngine-Warning: Cannot find block image "{}", we will try to load it for you right now, but please by aware.'.format(key))
+            print('LinpgEngine-Warning: Cannot find block image "{}", we will try to load it for you right now, but please by aware.'.format(key))
             imgTmp = loadImg("Assets/image/environment/block/"+key+".png")
             self.__ENV_IMAGE_DICT_ORIGINAL[key] = imgTmp
             self.__ENV_IMAGE_DICT[key] = resizeImg(imgTmp,(self.__BLOCK_WIDTH,None))
@@ -91,7 +91,7 @@ class EnvImagesManagement:
                 return self.__DECORATION_IMAGE_DICT[decorationType][key]
         #如果图片没找到
         except BaseException:
-            print('ZeroEngine-Warning: Cannot find decoration image "{0}" in type "{1}", we will try to load it for you right now, but please by aware.'.format(key,decorationType))
+            print('LinpgEngine-Warning: Cannot find decoration image "{0}" in type "{1}", we will try to load it for you right now, but please by aware.'.format(key,decorationType))
             imgTmp = loadImg("Assets/image/environment/decoration/"+key+".png")
             self.__DECORATION_IMAGE_DICT[decorationType][key] = imgTmp
             if self.__DECORATION_IMAGE_DICT_DARK != None:

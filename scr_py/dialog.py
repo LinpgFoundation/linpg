@@ -60,7 +60,7 @@ class DialogSystem(DialogSystemInterface):
         self.auto_save = False
     #保存数据
     def save_process(self):
-        raise Exception('ZeroEngine-Error: "You have to overwrite save_process() before continue!"')
+        raise Exception('LinpgEngine-Error: "You have to overwrite save_process() before continue!"')
     #读取章节
     def load(self,save_path):
         saveData = loadConfig(save_path)
@@ -69,7 +69,7 @@ class DialogSystem(DialogSystemInterface):
             self._initialize(saveData["chapterType"],saveData["chapterId"],saveData["type"],saveData["collection_name"],saveData["id"],saveData["dialog_options"])
             self.__process_data()
         else:
-            raise Exception('ZeroEngine-Error: Cannot load the data from the "save.yaml" file because the file type does not match')
+            raise Exception('LinpgEngine-Error: Cannot load the data from the "save.yaml" file because the file type does not match')
     #新建章节
     def new(self,chapterType,chapterId,part,collection_name=None):
         """章节信息"""
@@ -92,11 +92,11 @@ class DialogSystem(DialogSystemInterface):
         else:
             self.dialogContent = dialogData[self.part]
             if len(self.dialogContent)==0:
-                raise Exception('ZeroEngine-Error: The dialog has no content!')
+                raise Exception('LinpgEngine-Error: The dialog has no content!')
         self.npc_img_dic.process(self.dialogContent[self.dialogId]["characters_img"])
         #如果dialog Id 不存在
         if self.dialogId not in self.dialogContent:
-            raise Exception('ZeroEngine-Error: The dialog id {} does not exist!'.format(self.dialogId))
+            raise Exception('LinpgEngine-Error: The dialog id {} does not exist!'.format(self.dialogId))
         else:
             self.dialogTxtSystem.update(self.dialogContent[self.dialogId]["content"],self.dialogContent[self.dialogId]["narrator"])
         #更新背景音乐
@@ -116,7 +116,7 @@ class DialogSystem(DialogSystemInterface):
     def display(self,screen):
         #检测章节是否初始化
         if self.chapterId == None:
-            raise Exception('ZeroEngine-Error: The dialog has not been initialized!')
+            raise Exception('LinpgEngine-Error: The dialog has not been initialized!')
         self.window_x,self.window_y = screen.get_size()
         #背景
         self.backgroundContent.display(screen)
@@ -520,7 +520,7 @@ class DialogSystemDev(DialogSystemInterface):
                                     break
                         else:
                             #如果当前next_dialog_id的类型不支持的话，报错
-                            Exception('ZeroEngine-Error: Cannot recognize next_dialog_id type: {}, please fix it'.format(self.dialogData[self.part][lastId]["next_dialog_id"]["type"]))
+                            Exception('LinpgEngine-Error: Cannot recognize next_dialog_id type: {}, please fix it'.format(self.dialogData[self.part][lastId]["next_dialog_id"]["type"]))
                         #修改下一个对白配置文件中的"last_dialog_id"的参数
                         if "last_dialog_id" in self.dialogData[self.part][nextId] and self.dialogData[self.part][nextId]["last_dialog_id"] != None:
                             self.dialogData[self.part][nextId]["last_dialog_id"] = lastId
@@ -934,9 +934,9 @@ class DialogBackground:
                     try:
                         self.backgroundImgSurface = VedioFrame("Assets/movie/"+self.backgroundImgName,display.get_width(),display.get_height(),True)
                     except BaseException:
-                        raise Exception('ZeroEngine-Error: Cannot run movie module')
+                        raise Exception('LinpgEngine-Error: Cannot run movie module')
                 else:
-                    raise Exception('ZeroEngine-Error: Cannot find background image or video file.')
+                    raise Exception('LinpgEngine-Error: Cannot find background image or video file.')
             else:
                 self.backgroundImgSurface = None
         #如果需要更新背景音乐
@@ -946,7 +946,7 @@ class DialogBackground:
                 if os.path.exists("Assets/music/{}".format(self.backgroundMusicName)):
                     pygame.mixer.music.load("Assets/music/{}".format(self.backgroundMusicName))
                 else:
-                    raise Exception('ZeroEngine-Error: Cannot find background music file.')
+                    raise Exception('LinpgEngine-Error: Cannot find background music file.')
                 pygame.mixer.music.play(-1)
             else:
                 pygame.mixer.music.unload()

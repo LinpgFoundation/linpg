@@ -14,10 +14,10 @@ produce_html_files = False
 if os.path.exists("scr_pyd"):
     shutil.rmtree('scr_pyd')
 
-#生成Zero引擎的c和pyd文件
+#生成Linpg引擎的c和pyd文件
 for path in glob.glob(r'scr_pyx/*.pyx'):
     setup(ext_modules=cythonize(path,show_all_warnings=True,annotate=produce_html_files))
-    #删除Zero引擎的c文件
+    #删除Linpg引擎的c文件
     if not debug_c:
         os.remove(path.replace(".pyx",".c"))
 

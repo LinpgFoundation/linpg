@@ -6,5 +6,5 @@ from .scr_py.mapCreator import *
 from .scr_py.experimental import *
 import platform
 
-print("Zero Engine 3 (pygame {}, python {})".format(pygame.version.ver,platform.python_version()))
-print("Hello from the zero engine community. http://tjygf.com/forum.php")
+print("linpg 3.0alpha (pygame {}, python {})".format(pygame.version.ver,platform.python_version()))
+print("Hello from the linpg community. http://tjygf.com/forum.php")

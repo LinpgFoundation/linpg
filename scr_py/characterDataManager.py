@@ -143,7 +143,7 @@ class Doll(GameObject):
             self.__movingPath = path
             self.set_action("move")
         else:
-            raise Exception('ZeroEngine-Error: Character cannot move to a invalid path!')
+            raise Exception('LinpgEngine-Error: Character cannot move to a invalid path!')
     #查看是否需要重新渲染地图
     def needUpdateMap(self):
         if self.__reProcessMap == True:
@@ -204,7 +204,7 @@ class Doll(GameObject):
                     #没有足够的行动值来减去
                     return False
             else:
-                raise Exception('ZeroEngine-Error: While you reduce the action points, the module cannot reduce a non-int value!')
+                raise Exception('LinpgEngine-Error: While you reduce the action points, the module cannot reduce a non-int value!')
         else:
             #作弊模式开启时不扣行动力
             return True
@@ -309,7 +309,7 @@ class Doll(GameObject):
             elif self.__ifActionLoop == False:
                 self.set_action()
             else:
-                raise Exception('ZeroEngine-Error: self.__ifActionLoop data error: '+self.__ifActionLoop)
+                raise Exception('LinpgEngine-Error: self.__ifActionLoop data error: '+self.__ifActionLoop)
         else:
             if self.__imgId_dict[self.__currentAction]["imgId"] > 0:
                 self.__imgId_dict[self.__currentAction]["imgId"] -= 1
@@ -649,7 +649,7 @@ def character_gif_dic(character_name,faction,mode):
     elif mode == "dev":
         imgId_dict = {"wait":character_creator(character_name,"wait",faction)}
     else:
-        raise Exception('ZeroEngine-Error: Mode is not supported.')
+        raise Exception('LinpgEngine-Error: Mode is not supported.')
     return imgId_dict
 
 #为角色创建用于储存音效的文件夹
@@ -687,7 +687,7 @@ def loadCharacterData():
             "skill_effective_range": None,
             }
             ifAnythingChange = True
-            print("ZeroEngine-Notice:A new character call {} has been updated to the data file.".format(name))
+            print("LinpgEngine-Notice:A new character call {} has been updated to the data file.".format(name))
     for path in glob.glob(r'Assets/image/sangvisFerri/*'):
         name = path.replace("Assets/image/sangvisFerri\\","")
         if name not in loadData:
@@ -706,7 +706,7 @@ def loadCharacterData():
             "min_damage": 1,
             }
             ifAnythingChange = True
-            print("ZeroEngine-Notice:A new character call {} has been updated to the data file.".format(name))
+            print("LinpgEngine-Notice:A new character call {} has been updated to the data file.".format(name))
     if ifAnythingChange == True:
         saveConfig("Data/character_data.yaml",loadData)
     autoMkdirForCharacterSounds()

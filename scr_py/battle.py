@@ -1,7 +1,6 @@
 # cython: language_level=3
 from .characterDataManager import *
 from ..scr_pyd.map import MapObject
-from .entity_ai import *
 
 #战斗系统接口，请勿实例化
 class BattleSystemInterface:
@@ -62,6 +61,8 @@ class BattleSystemInterface:
             self.__pressKeyToMove["left"]=True
         if event.key == pygame.K_d:
             self.__pressKeyToMove["right"]=True
+        if event.key == pygame.K_p:
+            self.MAP.dev_mode()
     def _check_key_up(self,event):
         if event.key == pygame.K_w:
             self.__pressKeyToMove["up"]=False

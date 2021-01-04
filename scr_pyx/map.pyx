@@ -2,6 +2,7 @@
 import numpy
 from .mapModule import *
 from ..basic import randomInt, loadConfig
+from ..scr_py.experimental import RenderedWindow
 
 _MAP_ENV_IMAGE = None
 #方块数据
@@ -31,6 +32,7 @@ class MapObject:
         self.__local_y = mapDataDic["local_y"]
         self.__needUpdateMapSurface = True
         self.__block_on_surface = None
+        self.__debug_win = None
     @property
     def block_width(self):
         return _MAP_ENV_IMAGE.get_block_width()
@@ -40,6 +42,36 @@ class MapObject:
     @property
     def decorations(self):
         return self.__decorations.copy().tolist()
+    #加载环境图片，一般被视为初始化的一部分
+    def load_env_img(self,block_size):
+        global _MAP_ENV_IMAGE
+        _MAP_ENV_IMAGE = EnvImagesManagement(self.__MapData,self.__decorations,self.backgroundImageName,block_size,self.__darkMode)
+    #开发者模式
+    def dev_mode(self):
+        if self.__debug_win == None:
+            unit = 10
+            self.__debug_win = RenderedWindow("debug window",(self.row*unit+unit/4*(self.row+1),self.column*unit+unit/4*(self.row+1)),True)
+            self.__debug_win.unit = unit
+        else:
+            self.__debug_win = None
+    #显示开发面板
+    def __display_dev_panel(self):
+        self.__debug_win.clear()
+        self.__debug_win.fill("black")
+        cdef int y
+        cdef int x
+        cpdef int unit = self.__debug_win.unit
+        cpdef float start_x
+        cpdef float start_y
+        for y in range(len(self.__block_on_surface)):
+            for x in range(len(self.__block_on_surface[y])):
+                start_x = x*unit*1.25+unit/4
+                start_y = y*unit*1.25+unit/4
+                if self.__block_on_surface[y][x] == 0:
+                    self.__debug_win.draw_rect((start_x,start_y,unit,unit),"white")
+                else:
+                    self.__debug_win.fill_rect((start_x,start_y,unit,unit),"white")
+        self.__debug_win.present()
     #加载装饰物
     def load_decorations(self,decorationData):
         self.__decorations = []
@@ -56,9 +88,6 @@ class MapObject:
                 else:
                     self.__decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,itemData["image"]))
         self.__decorations = numpy.sort(numpy.asarray(self.__decorations))
-    def load_env_img(self,block_size):
-        global _MAP_ENV_IMAGE
-        _MAP_ENV_IMAGE = EnvImagesManagement(self.__MapData,self.__decorations,self.backgroundImageName,block_size,self.__darkMode)
     #根据index寻找装饰物
     def find_decoration_with_id(self,unsigned int index):
         return self.__decorations[index]
@@ -135,6 +164,9 @@ class MapObject:
         if self.__needUpdateMapSurface:
             self.__needUpdateMapSurface = False
             self.__update_map_surface(screen.get_size())
+        #显示调试窗口
+        if self.__debug_win != None and isinstance(self.__block_on_surface, numpy.ndarray):
+            self.__display_dev_panel()
         _MAP_ENV_IMAGE.display_background_surface(screen,self.getPos())
         return (screen_to_move_x,screen_to_move_y)
     #重新绘制地图

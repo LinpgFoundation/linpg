@@ -7,13 +7,9 @@ class mapCreator(BattleSystemInterface):
         self.fileLocation = "Data/{0}/chapter{1}_map.yaml".format(self.chapterType,self.chapterId) if self.chapterType == "main_chapter" else "Data/{0}/{1}/chapter{2}_map.yaml".format(self.chapterType,self.collection_name,self.chapterId)
         display.set_caption("Girls frontline-Last Wish: MapCreator")
         unloadBackgroundMusic()
-    def initialize(self,screen):
-        #屏幕尺寸
-        self.window_x,self.window_y = screen.get_size()
-        self.decorations_setting = loadConfig("Data/decorations.yaml","decorations")
-        #载入地图数据
-        mapFileData = loadConfig(self.fileLocation)
-        #初始化角色信息
+    #加载角色的数据
+    def __load_characters_data(self,mapFileData):
+        #生成进程
         characterDataThread = initializeCharacterDataThread(mapFileData["character"],mapFileData["sangvisFerri"],"dev")
         #加载角色信息
         characterDataThread.start()
@@ -21,6 +17,14 @@ class mapCreator(BattleSystemInterface):
         self.characters_data,self.sangvisFerris_data = characterDataThread.getResult()
         #加载所有角色的数据
         self.DATABASE = characterDataThread.DATABASE
+    def initialize(self,screen):
+        #屏幕尺寸
+        self.window_x,self.window_y = screen.get_size()
+        self.decorations_setting = loadConfig("Data/decorations.yaml","decorations")
+        #载入地图数据
+        mapFileData = loadConfig(self.fileLocation)
+        #初始化角色信息
+        self.__load_characters_data(mapFileData)
         #初始化地图
         self.MAP = mapFileData["map"]
         if self.MAP == None or len(self.MAP) == 0:
@@ -156,12 +160,7 @@ class mapCreator(BattleSystemInterface):
                     #读取地图数据
                     mapFileData = loadConfig(self.fileLocation)
                     #初始化角色信息
-                    self.characters_data = {}
-                    for each_character in mapFileData["character"]:
-                        self.characters_data[each_character] = CharacterDataManager(mapFileData["character"][each_character],self.DATABASE[mapFileData["character"][each_character]["type"]],self.window_y,"dev")
-                    self.sangvisFerris_data = {}
-                    for each_character in mapFileData["sangvisFerri"]:
-                        self.sangvisFerris_data[each_character] = SangvisFerriDataManager(mapFileData["sangvisFerri"][each_character],self.DATABASE[mapFileData["sangvisFerri"][each_character]["type"]],"dev")
+                    self.__load_characters_data(mapFileData)
                     #加载地图
                     self._create_map(mapFileData,False)
                     del mapFileData
@@ -213,7 +212,7 @@ class mapCreator(BattleSystemInterface):
                                         "x": block_get_click["x"],
                                         "y": block_get_click["y"]
                                     }
-                                    self.characters_data[nameTemp] = CharacterDataManager(self.originalData["character"][nameTemp],self.DATABASE[self.originalData["character"][nameTemp]["type"]],self.window_y,"dev")
+                                    self.characters_data[nameTemp] = FriendlyCharacter(self.originalData["character"][nameTemp],self.DATABASE[self.originalData["character"][nameTemp]["type"]],"dev")
                                 elif self.object_to_put_down["type"] == "sangvisFerri":
                                     while self.object_to_put_down["id"]+"_"+str(the_id) in self.sangvisFerris_data:
                                         the_id+=1
@@ -223,7 +222,7 @@ class mapCreator(BattleSystemInterface):
                                         "x": block_get_click["x"],
                                         "y": block_get_click["y"]
                                     }
-                                    self.sangvisFerris_data[nameTemp] = SangvisFerriDataManager(self.originalData["sangvisFerri"][nameTemp],self.DATABASE[self.originalData["sangvisFerri"][nameTemp]["type"]],"dev")
+                                    self.sangvisFerris_data[nameTemp] = HostileCharacter(self.originalData["sangvisFerri"][nameTemp],self.DATABASE[self.originalData["sangvisFerri"][nameTemp]["type"]],"dev")
         #其他移动的检查
         self._check_right_click_move(mouse_x,mouse_y)
         self._check_jostick_events()

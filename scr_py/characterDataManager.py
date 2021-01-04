@@ -1,6 +1,7 @@
 # cython: language_level=3
 import threading
 from ..basic import *
+from .entity_ai import AI
 
 #储存角色图片的常量
 __CHARACTERS_IMAGE_DICT = {}
@@ -50,11 +51,11 @@ def _get_CHARACTERS_GET_HURT_IMAGE(self_type):
 def _add_CHARACTERS_GET_HURT_IMAGE(self_type):
     if self_type not in __CHARACTERS_GET_HURT_IMAGE_DICT:
         __CHARACTERS_GET_HURT_IMAGE_DICT[self_type] = pygame.image.load(os.path.join("Assets/image/npc/{}_hurt.png".format(self_type))).convert_alpha()
+
 #角色受伤立绘图形模块
-class CHARACTERS_GET_HURT_IMAGE:
+class CHARACTERS_GET_HURT_IMAGE(GameObject):
     def __init__(self,self_type,y,width):
-        self.x = None
-        self.y = y
+        GameObject.__init__(self,None,y)
         self.yToGo = None
         self.width = int(width)
         self.alpha = 255
@@ -66,8 +67,9 @@ class CHARACTERS_GET_HURT_IMAGE:
         screen.blit(GetHurtImage,(self.x,self.y))
 
 #人形模块
-class Doll:
+class Doll(GameObject):
     def __init__(self,DATA,faction,mode):
+        GameObject.__init__(self,DATA["x"],DATA["y"])
         #当前行动值
         self.__current_action_point = DATA["action_point"]
         #最大行动值
@@ -108,10 +110,6 @@ class Doll:
         self.min_damage = DATA["min_damage"]
         #是否图片镜像
         self.ifFlip = False
-        #x坐标
-        self.x = DATA["x"]
-        #y坐标
-        self.y = DATA["y"]
         #受伤的立绘
         self.ImageGetHurt = None
         #当前动作
@@ -126,16 +124,15 @@ class Doll:
         self.__movingPath = None
         #是否需要重新渲染地图
         self.__reProcessMap = False
-    def __lt__(self,other):
-        return self.y+self.x < other.y+other.x
     #设置动作
     def set_action(self,action="wait",ifLoop=True):
         self.reset_imgId(self.__currentAction)
         self.__currentAction = action
         self.__ifActionLoop = ifLoop
         self.__ifActionPlayedOnce = False
-    #获取当前动作
-    def get_action(self):
+    #当前动作
+    @property
+    def action(self):
         return self.__currentAction
     #是否闲置
     def is_idle(self):
@@ -155,7 +152,7 @@ class Doll:
         else:
             return False
     #根据路径移动
-    def __move_based_on_path(self,theMapClass):
+    def __move_based_on_path(self,MapClass):
         if len(self.__movingPath) > 0:
             if self.x < self.__movingPath[0][0]:
                 self.x+=0.05
@@ -163,7 +160,7 @@ class Doll:
                 if self.x >= self.__movingPath[0][0]:
                     self.x = self.__movingPath[0][0]
                     self.__movingPath.pop(0)
-                    if theMapClass.isAtNight():
+                    if MapClass.isAtNight():
                         self.__reProcessMap = True
             elif self.x > self.__movingPath[0][0]:
                 self.x-=0.05
@@ -171,7 +168,7 @@ class Doll:
                 if self.x <= self.__movingPath[0][0]:
                     self.x = self.__movingPath[0][0]
                     self.__movingPath.pop(0)
-                    if theMapClass.isAtNight():
+                    if MapClass.isAtNight():
                         self.__reProcessMap = True
             elif self.y < self.__movingPath[0][1]:
                 self.y+=0.05
@@ -179,7 +176,7 @@ class Doll:
                 if self.y >= self.__movingPath[0][1]:
                     self.y = self.__movingPath[0][1]
                     self.__movingPath.pop(0)
-                    if theMapClass.isAtNight():
+                    if MapClass.isAtNight():
                         self.__reProcessMap = True
             elif self.y > self.__movingPath[0][1]:
                 self.y-=0.05
@@ -187,7 +184,7 @@ class Doll:
                 if self.y <= self.__movingPath[0][1]:
                     self.y = self.__movingPath[0][1]
                     self.__movingPath.pop(0)
-                    if theMapClass.isAtNight():
+                    if MapClass.isAtNight():
                         self.__reProcessMap = True
         else:
             self.__movingPath = None
@@ -212,7 +209,8 @@ class Doll:
             #作弊模式开启时不扣行动力
             return True
     #获取行动值
-    def get_action_point(self):
+    @property
+    def current_action_point(self):
         return self.__current_action_point
     def have_enough_action_point(self,value):
         return self.__current_action_point >= value
@@ -231,8 +229,6 @@ class Doll:
                 return False
         else:
             return False
-    def get_pos(self):
-        return self.x,self.y
     #检测是否在对应位置上
     def on_pos(self,pos):
         if isinstance(pos,dict):
@@ -282,9 +278,9 @@ class Doll:
     def setFlip(self,theBool):
         if self.ifFlip != theBool:
             self.ifFlip = theBool
-    def draw(self,screen,theMapClass):
+    def draw(self,screen,MapClass):
         #调整小人图片的尺寸
-        img_of_char = getDollImg(self.type,self.__currentAction,self.__imgId_dict[self.__currentAction]["imgId"],round(theMapClass.block_width*1.6))
+        img_of_char = getDollImg(self.type,self.__currentAction,self.__imgId_dict[self.__currentAction]["imgId"],round(MapClass.block_width*1.6))
         #调整alpha值
         imgAlpha = self.get_imgAlpaha(self.__currentAction)
         if imgAlpha != 255:
@@ -294,10 +290,10 @@ class Doll:
             img_of_char = pygame.transform.flip(img_of_char,True,False)
         #如果当前动作是移动
         if self.__currentAction == "move" and self.__movingPath != None:
-            self.__move_based_on_path(theMapClass)
+            self.__move_based_on_path(MapClass)
         #把角色图片画到屏幕上
-        xTemp,yTemp = theMapClass.calPosInMap(self.x,self.y)
-        screen.blit(img_of_char,(xTemp-theMapClass.block_width*0.3,yTemp-theMapClass.block_width*0.85))
+        xTemp,yTemp = MapClass.calPosInMap(self.x,self.y)
+        screen.blit(img_of_char,(xTemp-MapClass.block_width*0.3,yTemp-MapClass.block_width*0.85))
         #如果角色图片还没播放完
         if not self._ifActionPlayReverse:
             if self.__imgId_dict[self.__currentAction]["imgId"] < getDollImgNum(self.type,self.__currentAction)-1:
@@ -320,15 +316,15 @@ class Doll:
             else:
                 self._ifActionPlayReverse = False
                 self.set_action()
-    def draw_custom(self,action,pos,screen,theMapClass,alpha=155,isContinue=True):
+    def draw_custom(self,action,pos,screen,MapClass,alpha=155,isContinue=True):
         #调整小人图片的尺寸
-        img_of_char = getDollImg(self.type,action,self.__imgId_dict[action]["imgId"],round(theMapClass.block_width*1.6))
+        img_of_char = getDollImg(self.type,action,self.__imgId_dict[action]["imgId"],round(MapClass.block_width*1.6))
         #反转图片
         if self.ifFlip == True:
             img_of_char = pygame.transform.flip(img_of_char,True,False)
         img_of_char.set_alpha(alpha)
         #把角色图片画到屏幕上
-        screen.blit(img_of_char,(pos[0]-theMapClass.block_width*0.3,pos[1]-theMapClass.block_width*0.85))
+        screen.blit(img_of_char,(pos[0]-MapClass.block_width*0.3,pos[1]-MapClass.block_width*0.85))
         #调整id，并返回对应的bool状态
         if self.__imgId_dict[action]["imgId"] < getDollImgNum(self.type,action)-1:
             self.__imgId_dict[action]["imgId"] += 1
@@ -339,7 +335,7 @@ class Doll:
                 return True
             else:
                 return False
-    def drawUI(self,screen,original_UI_img,theMapClass):
+    def drawUI(self,screen,original_UI_img,MapClass):
         hp_img = None
         if self.dying == False:
             if original_UI_img != None:
@@ -352,18 +348,18 @@ class Doll:
             current_hp_to_display = DOLL_UI_FONT.render("{}/3".format(self.dying),get_fontMode(),(0,0,0))
             percent_of_hp = self.dying/3
         #把角色图片画到屏幕上
-        xTemp,yTemp = theMapClass.calPosInMap(self.x,self.y)
-        xTemp += theMapClass.block_width*0.25
-        yTemp -= theMapClass.block_width*0.2
+        xTemp,yTemp = MapClass.calPosInMap(self.x,self.y)
+        xTemp += MapClass.block_width*0.25
+        yTemp -= MapClass.block_width*0.2
         if self.faction == "character" and self.detection != None:
-            eyeImgWidth = round(theMapClass.block_width/6*self.eyeImgSize)
-            eyeImgHeight = round(theMapClass.block_width/10*self.eyeImgSize)
-            numberX = (eyeImgWidth - theMapClass.block_width/6)/2
-            numberY = (eyeImgHeight - theMapClass.block_width/10)/2
+            eyeImgWidth = round(MapClass.block_width/6*self.eyeImgSize)
+            eyeImgHeight = round(MapClass.block_width/10*self.eyeImgSize)
+            numberX = (eyeImgWidth - MapClass.block_width/6)/2
+            numberY = (eyeImgHeight - MapClass.block_width/10)/2
             if self.detection == True:
-                screen.blit(resizeImg(original_UI_img["eye_red"], (eyeImgWidth,eyeImgHeight)),(xTemp+theMapClass.block_width*0.51-numberX,yTemp-numberY))
+                screen.blit(resizeImg(original_UI_img["eye_red"], (eyeImgWidth,eyeImgHeight)),(xTemp+MapClass.block_width*0.51-numberX,yTemp-numberY))
             elif self.detection == False:
-                screen.blit(resizeImg(original_UI_img["eye_orange"], (eyeImgWidth,eyeImgHeight)),(xTemp+theMapClass.block_width*0.51-numberX,yTemp-numberY))
+                screen.blit(resizeImg(original_UI_img["eye_orange"], (eyeImgWidth,eyeImgHeight)),(xTemp+MapClass.block_width*0.51-numberX,yTemp-numberY))
             if self.eyeImgSize > 1:
                 self.eyeImgSize-=1
             if self.ImageGetHurt != None and self.ImageGetHurt.x != None:
@@ -378,9 +374,9 @@ class Doll:
                             self.ImageGetHurt.alpha -= 2
                         else:
                             self.ImageGetHurt.x = None
-        hpEmptyScale = pygame.transform.scale(original_UI_img["hp_empty"], (round(theMapClass.block_width/2), round(theMapClass.block_width/10)))
+        hpEmptyScale = pygame.transform.scale(original_UI_img["hp_empty"], (round(MapClass.block_width/2), round(MapClass.block_width/10)))
         screen.blit(hpEmptyScale,(xTemp,yTemp))
-        screen.blit(pygame.transform.scale(hp_img,(round(theMapClass.block_width*percent_of_hp/2),round(theMapClass.block_width/10))),(xTemp,yTemp))
+        screen.blit(pygame.transform.scale(hp_img,(round(MapClass.block_width*percent_of_hp/2),round(MapClass.block_width/10))),(xTemp,yTemp))
         displayInCenter(current_hp_to_display,hpEmptyScale,xTemp,yTemp,screen)
     #获取角色特定动作的图片播放ID
     def get_imgId(self,action):
@@ -420,19 +416,19 @@ class Doll:
             self.eyeImgSize = 10
             self.detection = True
     #判断是否在攻击范围内
-    def isInAttackRange(self,other,theMap):
-        attackRange = self.getAttackRange(theMap)
+    def isInAttackRange(self,other,Map):
+        attackRange = self.getAttackRange(Map)
         for key in attackRange:
             if (other.x,other.y) in attackRange[key]:
                 return True
         return False
     #获取角色的攻击范围
-    def getAttackRange(self,theMap):
+    def getAttackRange(self,Map):
         attacking_range = {"near":[],"middle":[],"far":[]}
         for y in range(self.y-self.max_effective_range,self.y+self.max_effective_range+1):
             if y < self.y:
                 for x in range(self.x-self.max_effective_range-(y-self.y),self.x+self.max_effective_range+(y-self.y)+1):
-                    if theMap.row>y>=0 and theMap.column>x>=0:
+                    if Map.row>y>=0 and Map.column>x>=0:
                         if "far" in self.effective_range and self.effective_range["far"] != None and self.effective_range["far"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["far"][1]:
                             attacking_range["far"].append((x,y))
                         elif "middle" in self.effective_range and self.effective_range["middle"] != None and self.effective_range["middle"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["middle"][1]:
@@ -443,7 +439,7 @@ class Doll:
                 for x in range(self.x-self.max_effective_range+(y-self.y),self.x+self.max_effective_range-(y-self.y)+1):
                     if x == self.x and y == self.y:
                         pass
-                    elif theMap.row>y>=0 and theMap.column>x>=0:
+                    elif Map.row>y>=0 and Map.column>x>=0:
                         if "far" in self.effective_range and self.effective_range["far"] != None and self.effective_range["far"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["far"][1]:
                             attacking_range["far"].append((x,y))
                         elif "middle" in self.effective_range and self.effective_range["middle"] != None and self.effective_range["middle"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["middle"][1]:
@@ -455,8 +451,8 @@ class Doll:
     def playSound(self,kind_of_sound):
         _play_CHARACTERS_SOUND(self.type,kind_of_sound)
 
-#格里芬角色类
-class CharacterDataManager(Doll):
+#友方角色类
+class FriendlyCharacter(Doll):
     def __init__(self,theCharacterDataDic,defaultData,mode=None):
         for key in theCharacterDataDic:
             defaultData[key] = theCharacterDataDic[key]
@@ -517,8 +513,8 @@ class CharacterDataManager(Doll):
         else:
             self.setFlip(False)
 
-#铁血角色类
-class SangvisFerriDataManager(Doll):
+#敌对角色类
+class HostileCharacter(Doll):
     def __init__(self,theSangvisFerrisDataDic,defaultData,mode=None):
         for key in theSangvisFerrisDataDic:
             defaultData[key] = theSangvisFerrisDataDic[key]
@@ -545,6 +541,8 @@ class SangvisFerriDataManager(Doll):
                 self.setFlip(True)
         else:
             self.setFlip(False)
+    def make_decision(self,enemy_in_control,Map,characters_data,sangvisFerris_data,the_characters_detected_last_round):
+        return AI(enemy_in_control,Map,characters_data,sangvisFerris_data,the_characters_detected_last_round)
 
 #初始化角色信息
 class initializeCharacterDataThread(threading.Thread):
@@ -560,10 +558,10 @@ class initializeCharacterDataThread(threading.Thread):
         self.mode = mode
     def run(self):
         for each_character in self.characters:
-            self.characters_data[each_character] = CharacterDataManager(self.characters[each_character],self.DATABASE[self.characters[each_character]["type"]],self.mode)
+            self.characters_data[each_character] = FriendlyCharacter(self.characters[each_character],self.DATABASE[self.characters[each_character]["type"]],self.mode)
             self.currentID+=1
         for each_character in self.sangvisFerris:
-            self.sangvisFerris_data[each_character] = SangvisFerriDataManager(self.sangvisFerris[each_character],self.DATABASE[self.sangvisFerris[each_character]["type"]],self.mode)
+            self.sangvisFerris_data[each_character] = HostileCharacter(self.sangvisFerris[each_character],self.DATABASE[self.sangvisFerris[each_character]["type"]],self.mode)
             self.currentID+=1
     def getResult(self):
         return self.characters_data,self.sangvisFerris_data

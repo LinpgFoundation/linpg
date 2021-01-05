@@ -56,8 +56,15 @@ class BattleSystemInterface:
     @property
     def characters_total(self):
         return self.__characterDataLoaderThread.totalNum
+    #背景音乐
     def set_bgm(self,name):
         self.__background_music = name
+    def play_bgm(self):
+        #加载并播放音乐
+        if self.__background_music != None and not pygame.mixer.music.get_busy():
+            pygame.mixer.music.load("Assets/music/"+self.__background_music)
+            pygame.mixer.music.play()
+            pygame.mixer.music.set_volume(get_setting("Sound","background_music")/100.0)
     #检测手柄事件
     def _check_jostick_events(self):
         if controller.joystick.get_init() == True:
@@ -167,16 +174,11 @@ class BattleSystemInterface:
     def _display_weather(self,screen):
         if self.weatherController != None:
             self.weatherController.display(screen,self.MAP.block_width)
+    #输入事件
     def _get_event(self):
         return self.__events
+    def _update_event(self):
+        self.__events = pygame.event.get()
     #计算光亮区域 并初始化地图
     def _calculate_darkness(self):
         self.MAP.calculate_darkness(self.alliances_data)
-    def display(self):
-        #加载并播放音乐
-        if self.__background_music != None and not pygame.mixer.music.get_busy():
-            pygame.mixer.music.load("Assets/music/"+self.__background_music)
-            pygame.mixer.music.play()
-            pygame.mixer.music.set_volume(get_setting("Sound","background_music")/100.0)
-        #更新游戏事件
-        self.__events = pygame.event.get()

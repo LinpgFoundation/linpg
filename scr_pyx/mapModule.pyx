@@ -1,5 +1,5 @@
 # cython: language_level=3
-from ..basic import addDarkness, loadImg, resizeImg, GameObject
+from ..basic import addDarkness, loadImg, resizeImg, GameObject, convert_pos, is_same_pos
 import pygame
 
 #地图场景模块
@@ -140,16 +140,7 @@ class DecorationObject(GameObject):
         self.alpha = None
         self.triggered = True
     def is_on_pos(self,pos):
-        if isinstance(pos,dict):
-            if self.x == pos["x"] and self.y == pos["y"]:
-                return True
-            else:
-                return False
-        else:
-            if self.x == pos[0] and self.y == pos[1]:
-                return True
-            else:
-                return False
+        return is_same_pos(self.get_pos(),pos)
     def switch(self):
         self.triggered = not self.triggered
 

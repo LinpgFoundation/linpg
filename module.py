@@ -360,7 +360,7 @@ class DialogBox(DialogInterface,GameObject):
         self.narrator_x = fontSize*3
         self.narrator_y = fontSize/2
         self.updated = False
-        self.drew = False
+        self.__drew = False
         self.__flipped = False
     def get_width(self):
         return self.dialoguebox.get_width()
@@ -370,7 +370,7 @@ class DialogBox(DialogInterface,GameObject):
         self.dialoguebox = pygame.transform.scale(self.dialoguebox,(int(width),int(height)))
     def display(self,screen,characterInfoBoardUI=None):
         #如果对话框需要继续更新
-        if self.drew == False:
+        if self.__drew == False:
             self.__surface = self.dialoguebox.copy()
             if self.__flipped == True:
                 #讲述人名称
@@ -399,20 +399,27 @@ class DialogBox(DialogInterface,GameObject):
                     self.__surface.blit(self.FONT.render(self.content[i],get_fontMode(),(255,255,255)),(x,y))
                     y += self.FONTSIZE*1.2
                 #正在播放的行
-                content = self.FONT.render(self.content[self.displayedLine][:self.textIndex],get_fontMode(),(255,255,255))
-                self.__surface.blit(content,(x,y))
+                self.__surface.blit(self.FONT.render(self.content[self.displayedLine][:self.textIndex],get_fontMode(),(255,255,255)),(x,y))
                 if self.textIndex < len(self.content[self.displayedLine]):
                     self.textIndex += 1
                 elif self.displayedLine < len(self.content)-1:
                     self.displayedLine += 1
                     self.textIndex = 0
                 elif self.textIndex >= len(self.content[self.displayedLine]):
-                    self.drew = True
+                    self.__drew = True
         screen.blit(self.__surface,(self.x,self.y))
+    #是否所有内容均已展出
+    def play_all(self):
+        return self.__drew
+    #展出所有内容
+    def set_play_all(self):
+        if not self.__drew and len(self.content) > 0:
+            self.displayedLine = len(self.content)-1
+            self.textIndex = len(self.content[self.displayedLine])-1
     def update(self,txt,narrator,narrator_icon=None):
         super().update(txt,narrator)
         self.updated = True
-        self.drew = False
+        self.__drew = False
         self.narrator_icon = narrator_icon
     def reset(self):
         self.x = self.deafult_x

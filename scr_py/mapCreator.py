@@ -94,7 +94,7 @@ class mapCreator(BattleSystemInterface):
         #读取地图原始文件
         self.originalData = loadConfig(self.fileLocation)
     def display(self,screen):
-        super().display()
+        self._update_event()
         mouse_x,mouse_y = controller.get_pos()
         block_get_click = self.MAP.calBlockInMap(mouse_x,mouse_y)
         for event in self._get_event():

@@ -230,10 +230,7 @@ class Doll(GameObject):
             return False
     #检测是否在对应位置上
     def on_pos(self,pos):
-        if isinstance(pos,dict):
-            return self.x == pos["x"] and self.y == pos["y"]
-        else:
-            return self.x == pos[0] and self.y == pos[1]
+        return is_same_pos(self.get_pos(),pos)
     def loadImg(self):
         for theAction in self.__imgId_dict:
             character_creator(self.type,theAction,self.faction)
@@ -491,16 +488,8 @@ class FriendlyCharacter(Doll):
             self._ifActionPlayReverse = True
     #根据坐标反转角色
     def setFlipBasedPos(self,pos):
-        #检测坐标
-        if isinstance(pos,(list,tuple)):
-            x = pos[0]
-            y = pos[1]
-        elif isinstance(pos,dict):
-            x = pos["x"]
-            y = pos["y"]
-        else:
-            x = pos.x
-            y = pos.y
+        #转换坐标
+        x,y = convert_pos(pos)
         #检测坐标
         if self.x > x:
             self.setFlip(True)
@@ -520,16 +509,8 @@ class HostileCharacter(Doll):
         Doll.__init__(self,defaultData,"sangvisFerri",mode)
         self.patrol_path = defaultData["patrol_path"] if "patrol_path" in defaultData else []
     def setFlipBasedPos(self,pos):
-        #检测坐标
-        if isinstance(pos,(list,tuple)):
-            x = pos[0]
-            y = pos[1]
-        elif isinstance(pos,dict):
-            x = pos["x"]
-            y = pos["y"]
-        else:
-            x = pos.x
-            y = pos.y
+        #转换坐标
+        x,y = convert_pos(pos)
         #检测坐标
         if self.x < x:
             self.setFlip(True)
@@ -540,28 +521,28 @@ class HostileCharacter(Doll):
                 self.setFlip(True)
         else:
             self.setFlip(False)
-    def make_decision(self,Map,characters_data,sangvisFerris_data,the_characters_detected_last_round):
+    def make_decision(self,Map,friendlyCharacterData,hostileCharacterData,the_characters_detected_last_round):
         character_with_min_hp = None
         characters_can_be_detect = []
         #检测是否有可以立马攻击的敌人
-        for character in characters_data:
-            if characters_data[character].detection == True and characters_data[character].current_hp>0:
+        for character in friendlyCharacterData:
+            if friendlyCharacterData[character].detection == True and friendlyCharacterData[character].current_hp>0:
                 #如果现在还没有可以直接攻击的角色或者当前历遍到角色的血量比最小值要高
-                if character_with_min_hp == None or characters_data[character].current_hp <= characters_data[character_with_min_hp[0]].current_hp:
-                    temp_distance = abs(characters_data[character].x-self.x)+abs(characters_data[character].y-self.y)
+                if character_with_min_hp == None or friendlyCharacterData[character].current_hp <= friendlyCharacterData[character_with_min_hp[0]].current_hp:
+                    temp_distance = abs(friendlyCharacterData[character].x-self.x)+abs(friendlyCharacterData[character].y-self.y)
                     if "far" in self.effective_range and self.effective_range["far"][0] <= temp_distance <= self.effective_range["far"][1]:
                         character_with_min_hp = (character,"far")
                     elif "middle" in self.effective_range and self.effective_range["middle"][0] <= temp_distance <= self.effective_range["middle"][1]:
                         character_with_min_hp = (character,"middle")
                     elif "near" in self.effective_range and self.effective_range["near"][0] <= temp_distance <= self.effective_range["near"][1]:
-                        if character_with_min_hp == None or characters_data[character].current_hp <= characters_data[character_with_min_hp[0]].current_hp:
+                        if character_with_min_hp == None or friendlyCharacterData[character].current_hp <= friendlyCharacterData[character_with_min_hp[0]].current_hp:
                             character_with_min_hp = (character,"near")
                 #按顺序按血量从小到大排列可以检测到的角色
                 if len(characters_can_be_detect) == 0:
                     characters_can_be_detect = [character]
                 else:
                     for i in range(len(characters_can_be_detect)):
-                        if characters_data[character].current_hp < characters_data[characters_can_be_detect[i]].current_hp:
+                        if friendlyCharacterData[character].current_hp < friendlyCharacterData[characters_can_be_detect[i]].current_hp:
                             characters_can_be_detect.insert(i,character)
         if character_with_min_hp != None:
             #[行动, 需要攻击的目标, 所在范围]
@@ -577,13 +558,13 @@ class HostileCharacter(Doll):
             max_moving_routes_for_attacking = int((self.max_action_point - ap_need_to_attack)/2)
             characters_can_be_attacked = {}
             #再次历遍所有characters_data以获取所有当前角色可以在移动后攻击到的敌对阵营角色
-            for character in characters_data:
-                if characters_data[character].detection == True and characters_data[character].current_hp>0:
+            for character in friendlyCharacterData:
+                if friendlyCharacterData[character].detection == True and friendlyCharacterData[character].current_hp>0:
                     #检测当前角色移动后足以攻击到这个敌对阵营的角色
-                    the_route = Map.findPath(self.get_pos(),characters_data[character].get_pos(),sangvisFerris_data,characters_data,max_moving_routes_for_attacking,[character])
+                    the_route = Map.findPath(self.get_pos(),friendlyCharacterData[character].get_pos(),hostileCharacterData,friendlyCharacterData,max_moving_routes_for_attacking,[character])
                     if len(the_route)>0:
                         temp_area = None
-                        temp_distance = abs(characters_data[character].x-the_route[-1][0])+abs(characters_data[character].y-the_route[-1][1])
+                        temp_distance = abs(friendlyCharacterData[character].x-the_route[-1][0])+abs(friendlyCharacterData[character].y-the_route[-1][1])
                         if "far" in self.effective_range and self.effective_range["far"][0] <= temp_distance <= self.effective_range["far"][1]:
                             temp_area = "far"
                         elif "middle" in self.effective_range and self.effective_range["middle"][0] <= temp_distance <= self.effective_range["middle"][1]:
@@ -591,14 +572,14 @@ class HostileCharacter(Doll):
                         elif "near" in self.effective_range and self.effective_range["near"][0] <= temp_distance <= self.effective_range["near"][1]:
                             temp_area = "near"
                         if temp_area != None:
-                            if (characters_data[character].x,characters_data[character].y) in the_route:
-                                the_route.remove((characters_data[character].x,characters_data[character].y))
+                            if (friendlyCharacterData[character].x,friendlyCharacterData[character].y) in the_route:
+                                the_route.remove((friendlyCharacterData[character].x,friendlyCharacterData[character].y))
                             characters_can_be_attacked[character] = {"route":the_route,"area":temp_area}
             #如果存在可以在移动后攻击到的敌人
             if len(characters_can_be_attacked) >= 1:
                 character_with_min_hp = None
                 for key in characters_can_be_attacked:
-                    if character_with_min_hp == None or characters_data[key].current_hp < characters_data[character_with_min_hp].current_hp:
+                    if character_with_min_hp == None or friendlyCharacterData[key].current_hp < friendlyCharacterData[character_with_min_hp].current_hp:
                         character_with_min_hp = key
                 return {
                     "action":"move&attack",
@@ -617,7 +598,7 @@ class HostileCharacter(Doll):
                             return {"action": "stay"}
                         #如果敌人有巡逻路线
                         else:
-                            the_route = Map.findPath(self.get_pos(),self.patrol_path[0],sangvisFerris_data,characters_data,max_moving_routes_for_attacking)
+                            the_route = Map.findPath(self.get_pos(),self.patrol_path[0],hostileCharacterData,friendlyCharacterData,max_moving_routes_for_attacking)
                             if len(the_route) > 0:
                                 return {"action": "move","route":the_route}
                             else:
@@ -629,10 +610,10 @@ class HostileCharacter(Doll):
                             if that_character== None:
                                 that_character = each_chara
                             else:
-                                if sangvisFerris_data[that_character].current_hp < sangvisFerris_data[that_character].current_hp:
+                                if hostileCharacterData[that_character].current_hp < hostileCharacterData[that_character].current_hp:
                                     that_character = that_character
                         targetPosTemp = (the_characters_detected_last_round[that_character][0],the_characters_detected_last_round[that_character][1])
-                        the_route = Map.findPath(self.get_pos(),targetPosTemp,sangvisFerris_data,characters_data,max_moving_routes_for_attacking,[that_character])
+                        the_route = Map.findPath(self.get_pos(),targetPosTemp,hostileCharacterData,friendlyCharacterData,max_moving_routes_for_attacking,[that_character])
                         if len(the_route) > 0:
                             if (targetPosTemp) in the_route:
                                 the_route.remove(targetPosTemp)
@@ -642,8 +623,8 @@ class HostileCharacter(Doll):
                         
                 #如果这一回合有敌人暴露
                 else:
-                    targetPosTemp = (characters_data[characters_can_be_detect[0]].x,characters_data[characters_can_be_detect[0]].y)
-                    the_route = Map.findPath(self.get_pos(),targetPosTemp,sangvisFerris_data,characters_data,max_moving_routes_for_attacking,[characters_can_be_detect[0]])
+                    targetPosTemp = (friendlyCharacterData[characters_can_be_detect[0]].x,friendlyCharacterData[characters_can_be_detect[0]].y)
+                    the_route = Map.findPath(self.get_pos(),targetPosTemp,hostileCharacterData,friendlyCharacterData,max_moving_routes_for_attacking,[characters_can_be_detect[0]])
                     if len(the_route) > 0:
                         if (targetPosTemp) in the_route:
                             the_route.remove(targetPosTemp)

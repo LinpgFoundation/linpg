@@ -1,6 +1,7 @@
 # cython: language_level=3
 from .module import *
 from PIL import Image
+import numpy
 
 #图片加载模块：接收图片路径,长,高,返回对应图片
 def loadImg(path,width=None,height=None,setAlpha=None,ifConvertAlpha=True):
@@ -189,3 +190,20 @@ def randomInt(start,end):
 #获取pygame的输入事件
 def get_pygame_events():
     return pygame.event.get()
+
+#转换路径
+def convert_pos(pos):
+    #检测坐标
+    if isinstance(pos,(list,tuple,numpy.ndarray)):
+        x = pos[0]
+        y = pos[1]
+    elif isinstance(pos,dict):
+        x = pos["x"]
+        y = pos["y"]
+    else:
+        x = pos.x
+        y = pos.y
+    return x,y
+
+def is_same_pos(pos1,pos2):
+    return convert_pos(pos1) == convert_pos(pos2)

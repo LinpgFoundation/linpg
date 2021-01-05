@@ -1,7 +1,6 @@
 # cython: language_level=3
-import numpy
 from .mapModule import *
-from ..basic import randomInt, loadConfig
+from ..basic import randomInt, loadConfig, numpy
 from ..scr_py.experimental import RenderedWindow
 
 _MAP_ENV_IMAGE = None
@@ -58,15 +57,15 @@ class MapObject:
     def __display_dev_panel(self):
         self.__debug_win.clear()
         self.__debug_win.fill("black")
-        cdef int y
-        cdef int x
-        cpdef int unit = self.__debug_win.unit
-        cpdef float start_x
-        cpdef float start_y
+        cdef unsigned int y
+        cdef unsigned int x
+        cpdef unsigned int unit = self.__debug_win.unit
+        cpdef unsigned int start_x
+        cpdef unsigned int start_y
         for y in range(len(self.__block_on_surface)):
             for x in range(len(self.__block_on_surface[y])):
-                start_x = x*unit*1.25+unit/4
-                start_y = y*unit*1.25+unit/4
+                start_x = int(x*unit*1.25+unit/4)
+                start_y = int(y*unit*1.25+unit/4)
                 if self.__block_on_surface[y][x] == 0:
                     self.__debug_win.draw_rect((start_x,start_y,unit,unit),"white")
                 else:
@@ -94,7 +93,7 @@ class MapObject:
     #根据坐标寻找装饰物
     def find_decoration_on(self,pos):
         for decoration in self.__decorations:
-            if decoration.x == pos[0] and decoration.y == pos[1]:
+            if is_same_pos(decoration.get_pos(),pos):
                 return decoration
         return None
     def interact_decoration_with_id(self,unsigned int index):
@@ -366,27 +365,10 @@ class MapObject:
             return numpy.any(numpy.equal(self.__LightArea,[x,y]).all(1))
     #以下是A星寻路功能
     def findPath(self,startPosition,endPosition,friend_data_dict,enemies_data_dict,routeLen=None,ignoreEnemyCharacters=[]):
-        cdef unsigned int startX,startY,endX,endY
         #检测起点
-        if isinstance(startPosition,(list,tuple)):
-            startX = startPosition[0]
-            startY = startPosition[1]
-        elif isinstance(startPosition,dict):
-            startX = startPosition["x"]
-            startY = startPosition["y"]
-        else:
-            startX = startPosition.x
-            startY = startPosition.y
+        cdef (int,int) start_pos = convert_pos(startPosition)
         #检测终点
-        if isinstance(endPosition,(list,tuple)):
-            endX = endPosition[0]
-            endY = endPosition[1]
-        elif isinstance(endPosition,dict):
-            endX = endPosition["x"]
-            endY = endPosition["y"]
-        else:
-            endX = endPosition.x
-            endY = endPosition.y
+        cdef (int,int) end_pos = convert_pos(endPosition)
         #建立寻路地图
         self.map2d = numpy.zeros((self.column,self.row), dtype=numpy.int8)
         # 可行走标记
@@ -404,22 +386,22 @@ class MapObject:
                 self.map2d[item.x][item.y] = 1
         #如果终点有我方角色，则不允许
         for key,value in friend_data_dict.items():
-            if value.x == endX and value.y == endY:
+            if value.x == end_pos[0] and value.y == end_pos[1]:
                 return []
         #历遍所有角色，将角色的坐标点设置为障碍方块
         for key,value in enemies_data_dict.items():
             if key != ignoreEnemyCharacters:
                 self.map2d[value.x][value.y] = 1
         #如果终点是障碍物
-        if self.map2d[endX][endY] != self.passTag:
+        if self.map2d[end_pos[0]][end_pos[1]] != self.passTag:
             return []
         # 开启表
         self.openList = []
         # 关闭表
         self.closeList = []
         # 起点终点
-        self.startPoint = Point(startX,startY)
-        self.endPoint = Point(endX,endY)
+        self.startPoint = Point(start_pos[0],start_pos[1])
+        self.endPoint = Point(end_pos[0],end_pos[1])
         #开始寻路
         cdef list pathList = self.__startFindingPath()
         #遍历路径点,讲指定数量的点放到路径列表中

@@ -3,17 +3,23 @@
         "Ferri",
         "KEYUP",
         "LCTRL",
+        "MOUSEBUTTONDOWN",
         "RGBA",
         "SRCALPHA",
         "chara",
         "cpdef",
+        "cutscene",
         "dtype",
         "elif",
         "isinstance",
         "linpg",
+        "makedirs",
+        "maxsize",
         "ndarray",
         "numpy",
         "sangvis",
+        "surfarray",
+        "swapaxes",
         "yudonglin"
     ]
 }

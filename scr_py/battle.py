@@ -1,6 +1,6 @@
 # cython: language_level=3
-from .characterDataManager import *
 from ..scr_pyd.map import MapObject
+from .characterModule import *
 
 #战斗系统接口，请勿实例化
 class BattleSystemInterface:
@@ -19,20 +19,45 @@ class BattleSystemInterface:
         #战斗系统进行时的输入事件
         self.__events = None
         #角色数据
-        self.characters_data = None
-        self.sangvisFerris_data = None
+        self.alliances_data = None
+        self.enemies_data = None
         #地图数据
         self.MAP = None
         #对话数据
         self.dialogData = None
-        #是否从存档中加载的数据-默认否
-        self.loadFromSave = False
         #章节名和种类
         self.chapterId = chapterId
         self.chapterType = chapterType
         self.collection_name = collection_name
+        #背景音乐
+        self.__background_music = None
     def _create_map(self,MapData,darkMode=None):
         self.MAP = MapObject(MapData,round(self.window_x/10),round(self.window_y/10),darkMode)
+    #初始化角色加载器
+    def _initial_characters_loader(self,alliancesData,enemiesData,mode=None):
+        self.__characterDataLoaderThread = CharacterDataLoader(alliancesData,enemiesData,mode)
+    #启动角色加载器
+    def _start_characters_loader(self):
+        self.__characterDataLoaderThread.start()
+    #是否角色加载器还在运行
+    def _is_characters_loader_alive(self):
+        if self.__characterDataLoaderThread.isAlive():
+            return True
+        else:
+            self.alliances_data,self.enemies_data = self.__characterDataLoaderThread.getResult()
+            if self.__characterDataLoaderThread.mode == "dev":
+                #如果是开放模式，生成所有角色的数据
+                self.DATABASE = self.__characterDataLoaderThread.DATABASE
+            del self.__characterDataLoaderThread
+            return False
+    @property
+    def characters_loaded(self):
+        return self.__characterDataLoaderThread.currentID
+    @property
+    def characters_total(self):
+        return self.__characterDataLoaderThread.totalNum
+    def set_bgm(self,name):
+        self.__background_music = name
     #检测手柄事件
     def _check_jostick_events(self):
         if controller.joystick.get_init() == True:
@@ -135,11 +160,23 @@ class BattleSystemInterface:
         self.__check_if_move_screen()
         self._move_screen()
         self.screen_to_move_x,self.screen_to_move_y = self.MAP.display_map(screen,self.screen_to_move_x,self.screen_to_move_y)
+    #展示场景装饰物
+    def _display_decoration(self,screen):
+        self.MAP.display_decoration(screen,self.alliances_data,self.enemies_data)
+    #展示天气
     def _display_weather(self,screen):
         if self.weatherController != None:
             self.weatherController.display(screen,self.MAP.block_width)
     def _get_event(self):
         return self.__events
-    def _update_event(self):
+    #计算光亮区域 并初始化地图
+    def _calculate_darkness(self):
+        self.MAP.calculate_darkness(self.alliances_data)
+    def display(self):
+        #加载并播放音乐
+        if self.__background_music != None and not pygame.mixer.music.get_busy():
+            pygame.mixer.music.load("Assets/music/"+self.__background_music)
+            pygame.mixer.music.play()
+            pygame.mixer.music.set_volume(get_setting("Sound","background_music")/100.0)
         #更新游戏事件
         self.__events = pygame.event.get()

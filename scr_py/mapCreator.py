@@ -10,13 +10,11 @@ class mapCreator(BattleSystemInterface):
     #加载角色的数据
     def __load_characters_data(self,mapFileData):
         #生成进程
-        characterDataThread = initializeCharacterDataThread(mapFileData["character"],mapFileData["sangvisFerri"],"dev")
+        self._initial_characters_loader(mapFileData["character"],mapFileData["sangvisFerri"],"dev")
         #加载角色信息
-        characterDataThread.start()
-        characterDataThread.join()
-        self.characters_data,self.sangvisFerris_data = characterDataThread.getResult()
-        #加载所有角色的数据
-        self.DATABASE = characterDataThread.DATABASE
+        self._start_characters_loader()
+        while self._is_characters_loader_alive():
+            pass
     def initialize(self,screen):
         #屏幕尺寸
         self.window_x,self.window_y = screen.get_size()
@@ -96,8 +94,7 @@ class mapCreator(BattleSystemInterface):
         #读取地图原始文件
         self.originalData = loadConfig(self.fileLocation)
     def display(self,screen):
-        #更新输入事件
-        self._update_event()
+        super().display()
         mouse_x,mouse_y = controller.get_pos()
         block_get_click = self.MAP.calBlockInMap(mouse_x,mouse_y)
         for event in self._get_event():
@@ -135,16 +132,16 @@ class mapCreator(BattleSystemInterface):
                         self.MAP.remove_decoration(decoration)
                     else:
                         any_chara_replace = None
-                        for key,value in dicMerge(self.characters_data,self.sangvisFerris_data).items():
+                        for key,value in dicMerge(self.alliances_data,self.enemies_data).items():
                             if value.x == block_get_click["x"] and value.y == block_get_click["y"]:
                                 any_chara_replace = key
                                 break
                         if any_chara_replace != None:
-                            if any_chara_replace in self.characters_data:
-                                self.characters_data.pop(any_chara_replace)
+                            if any_chara_replace in self.alliances_data:
+                                self.alliances_data.pop(any_chara_replace)
                                 self.originalData["character"].pop(any_chara_replace)
-                            elif any_chara_replace in self.sangvisFerris_data:
-                                self.sangvisFerris_data.pop(any_chara_replace)
+                            elif any_chara_replace in self.enemies_data:
+                                self.enemies_data.pop(any_chara_replace)
                                 self.originalData["sangvisFerri"].pop(any_chara_replace)
                 elif ifHover(self.UIButton["save"]) and self.object_to_put_down == None and self.deleteMode == False:
                     saveConfig(self.fileLocation,self.originalData)
@@ -190,20 +187,20 @@ class mapCreator(BattleSystemInterface):
                                 self.MAP.load_decorations(self.originalData["decoration"])
                             elif self.object_to_put_down["type"] == "character" or self.object_to_put_down["type"] == "sangvisFerri":
                                 any_chara_replace = None
-                                for key,value in dicMerge(self.characters_data,self.sangvisFerris_data).items():
+                                for key,value in dicMerge(self.alliances_data,self.enemies_data).items():
                                     if value.x == block_get_click["x"] and value.y == block_get_click["y"]:
                                         any_chara_replace = key
                                         break
                                 if any_chara_replace != None:
-                                    if any_chara_replace in self.characters_data:
-                                        self.characters_data.pop(any_chara_replace)
+                                    if any_chara_replace in self.alliances_data:
+                                        self.alliances_data.pop(any_chara_replace)
                                         self.originalData["character"].pop(any_chara_replace)
-                                    elif any_chara_replace in self.sangvisFerris_data:
-                                        self.sangvisFerris_data.pop(any_chara_replace)
+                                    elif any_chara_replace in self.enemies_data:
+                                        self.enemies_data.pop(any_chara_replace)
                                         self.originalData["sangvisFerri"].pop(any_chara_replace)
                                 the_id = 0
                                 if self.object_to_put_down["type"] == "character":
-                                    while self.object_to_put_down["id"]+"_"+str(the_id) in self.characters_data:
+                                    while self.object_to_put_down["id"]+"_"+str(the_id) in self.alliances_data:
                                         the_id+=1
                                     nameTemp = self.object_to_put_down["id"]+"_"+str(the_id)
                                     self.originalData["character"][nameTemp] = {
@@ -212,9 +209,9 @@ class mapCreator(BattleSystemInterface):
                                         "x": block_get_click["x"],
                                         "y": block_get_click["y"]
                                     }
-                                    self.characters_data[nameTemp] = FriendlyCharacter(self.originalData["character"][nameTemp],self.DATABASE[self.originalData["character"][nameTemp]["type"]],"dev")
+                                    self.alliances_data[nameTemp] = FriendlyCharacter(self.originalData["character"][nameTemp],self.DATABASE[self.originalData["character"][nameTemp]["type"]],"dev")
                                 elif self.object_to_put_down["type"] == "sangvisFerri":
-                                    while self.object_to_put_down["id"]+"_"+str(the_id) in self.sangvisFerris_data:
+                                    while self.object_to_put_down["id"]+"_"+str(the_id) in self.enemies_data:
                                         the_id+=1
                                     nameTemp = self.object_to_put_down["id"]+"_"+str(the_id)
                                     self.originalData["sangvisFerri"][nameTemp] = {
@@ -222,7 +219,7 @@ class mapCreator(BattleSystemInterface):
                                         "x": block_get_click["x"],
                                         "y": block_get_click["y"]
                                     }
-                                    self.sangvisFerris_data[nameTemp] = HostileCharacter(self.originalData["sangvisFerri"][nameTemp],self.DATABASE[self.originalData["sangvisFerri"][nameTemp]["type"]],"dev")
+                                    self.enemies_data[nameTemp] = HostileCharacter(self.originalData["sangvisFerri"][nameTemp],self.DATABASE[self.originalData["sangvisFerri"][nameTemp]["type"]],"dev")
         #其他移动的检查
         self._check_right_click_move(mouse_x,mouse_y)
         self._check_jostick_events()
@@ -239,17 +236,17 @@ class mapCreator(BattleSystemInterface):
                 drawImg(self.greenBlock,(xTemp+self.MAP.block_width*0.1,yTemp),screen)
 
         #角色动画
-        for key in self.characters_data:
-            self.characters_data[key].draw(screen,self.MAP)
-            if self.object_to_put_down == None and pygame.mouse.get_pressed()[0] and self.characters_data[key].x == int(mouse_x/self.greenBlock.get_width()) and self.characters_data[key].y == int(mouse_y/self.greenBlock.get_height()):
-                self.data_to_edit = self.characters_data[key]
-        for key in self.sangvisFerris_data:
-            self.sangvisFerris_data[key].draw(screen,self.MAP)
-            if self.object_to_put_down == None and pygame.mouse.get_pressed()[0] and self.sangvisFerris_data[key].x == int(mouse_x/self.greenBlock.get_width()) and self.sangvisFerris_data[key].y == int(mouse_y/self.greenBlock.get_height()):
-                self.data_to_edit = self.sangvisFerris_data[key]
+        for key in self.alliances_data:
+            self.alliances_data[key].draw(screen,self.MAP)
+            if self.object_to_put_down == None and pygame.mouse.get_pressed()[0] and self.alliances_data[key].x == int(mouse_x/self.greenBlock.get_width()) and self.alliances_data[key].y == int(mouse_y/self.greenBlock.get_height()):
+                self.data_to_edit = self.alliances_data[key]
+        for key in self.enemies_data:
+            self.enemies_data[key].draw(screen,self.MAP)
+            if self.object_to_put_down == None and pygame.mouse.get_pressed()[0] and self.enemies_data[key].x == int(mouse_x/self.greenBlock.get_width()) and self.enemies_data[key].y == int(mouse_y/self.greenBlock.get_height()):
+                self.data_to_edit = self.enemies_data[key]
 
         #展示设施
-        self.MAP.display_decoration(screen,self.characters_data,self.sangvisFerris_data)
+        self._display_decoration(screen)
 
         #画出UI
         self.UIContainerButton.display(screen,0,self.UIContainer.y)

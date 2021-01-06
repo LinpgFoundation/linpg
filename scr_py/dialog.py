@@ -3,8 +3,9 @@ from ..basic import *
 from ..scr_pyd.movie import cutscene,VedioFrame,VedioPlayer
 
 #视觉小说系统接口
-class DialogSystemInterface:
+class DialogSystemInterface(SystemObject):
     def __init__(self):
+        SystemObject.__init__(self)
         #加载对话的背景图片模块
         self.backgroundContent = DialogBackground()
         #获取屏幕的尺寸
@@ -15,8 +16,6 @@ class DialogSystemInterface:
         self.black_bg = get_SingleColorSurface("black")
         #选项栏
         self.optionBox = pygame.image.load(os.path.join("Assets/image/UI/option.png")).convert_alpha()
-        #输入事件
-        self.__events = None
     #初始化关键参数
     def _initialize(self,chapterType,chapterId,part,collection_name,dialogId="head",dialog_options={}):
         #类型
@@ -31,13 +30,6 @@ class DialogSystemInterface:
         self.dialog_options = dialog_options
         #合集名称-用于dlc和创意工坊
         self.collection_name = collection_name
-    #更新输入事件
-    def _update_event(self):
-        self.__events = pygame.event.get()
-    #获取输入事件
-    @property
-    def events(self):
-        return self.__events
 
 #视觉小说系统模块
 class DialogSystem(DialogSystemInterface):
@@ -49,6 +41,9 @@ class DialogSystem(DialogSystemInterface):
         self.ButtonsMananger = DialogButtons()
         #加载对话框系统
         self.dialogTxtSystem = DialogContent(self.window_x*0.015)
+        #更新音效
+        self.__update_sound_volume()
+        #是否要显示历史对白页面
         self.showHistory = False
         self.historySurface = None
         self.historySurface_local_y = 0
@@ -58,6 +53,8 @@ class DialogSystem(DialogSystemInterface):
         self.history_back.setHoverImg(buttonTemp)
         #是否开启自动保存
         self.auto_save = False
+        #暂停菜单
+        self.pause_menu = PauseMenu()
     #保存数据
     def save_process(self):
         raise Exception('LinpgEngine-Error: "You have to overwrite save_process() before continue!"')
@@ -113,6 +110,10 @@ class DialogSystem(DialogSystemInterface):
         #是否保存
         if self.auto_save:
             self.save_process()
+    #更新音量
+    def __update_sound_volume(self):
+        self.backgroundContent.set_sound_volume(get_setting("Sound","background_music"))
+        self.dialogTxtSystem.set_sound_volume(get_setting("Sound","sound_effects"))
     def display(self,screen):
         #检测章节是否初始化
         if self.chapterId == None:
@@ -149,7 +150,7 @@ class DialogSystem(DialogSystemInterface):
                         self.historySurface = None
                     #如果所有行都没有播出，则播出所有行
                     elif not dialogPlayResult:
-                        self.dialogTxtSystem.playAll()
+                        self.dialogTxtSystem.play_all()
                     else:
                         leftClick = True
                 elif event.button == 4 and self.historySurface_local_y<0:
@@ -166,14 +167,26 @@ class DialogSystem(DialogSystemInterface):
                     else:
                         pass
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                pause_menu.display(screen)
-                if pause_menu.ifSave:
-                    pause_menu.ifSave = False
-                    self.save_process()
-                #淡出
-                if pause_menu.ifBackToMainMenu:
-                    self.fadeOut(screen)
-                    return True
+                while True:
+                    self._update_event()
+                    result = self.pause_menu.display(screen,self.events)
+                    if result == "Break":
+                        setting.isDisplaying = False
+                        break
+                    elif result == "Save":
+                        self.save_process()
+                        print("游戏已经保存")
+                    elif result == "Setting":
+                        setting.isDisplaying = True
+                    elif result == "BackToMainMenu":
+                        setting.isDisplaying = False
+                        self.fadeOut(screen)
+                        return True
+                    #如果播放玩菜单后发现有东西需要更新
+                    if setting.display(screen,self.events):
+                        self.__update_sound_volume()
+                    display.flip()
+                self.pause_menu.screenshot = None
         #显示选项
         if dialogPlayResult and self.dialogContent[self.dialogId]["next_dialog_id"] != None and self.dialogContent[self.dialogId]["next_dialog_id"]["type"] == "option":
             optionBox_y_base = (self.window_y*3/4-(len(self.dialogContent[self.dialogId]["next_dialog_id"]["target"]))*2*self.window_x*0.03)/4
@@ -298,7 +311,7 @@ class DialogSystemDev(DialogSystemInterface):
         #将npc立绘系统设置为开发者模式
         self.npc_img_dic.devMode()
         #将背景的音量调至0
-        self.backgroundContent.setBgmVolume(0)
+        self.backgroundContent.set_sound_volume(0)
         #从配置文件中加载数据
         self.__loadDialogData()
         #背景选择界面
@@ -823,7 +836,6 @@ class DialogContent(DialogInterface):
     def __init__(self,fontSize):
         DialogInterface.__init__(self,pygame.image.load(os.path.join("Assets/image/UI/dialoguebox.png")).convert_alpha(),fontSize)
         self.textPlayingSound = pygame.mixer.Sound("Assets/sound/ui/dialog_words_playing.ogg")
-        self.textPlayingSound.set_volume(get_setting("Sound","sound_effects")/100.0)
         self.READINGSPEED = get_setting("ReadingSpeed")
         self.dialoguebox_y = None
         self.dialoguebox_height = 0
@@ -850,11 +862,10 @@ class DialogContent(DialogInterface):
     def resetDialogueboxData(self):
         self.dialoguebox_height = 0
         self.dialoguebox_y = None
-    def setSoundVolume(self,num):
+    def get_sound_volume(self):
+        self.textPlayingSound.get_volume()
+    def set_sound_volume(self,num):
         self.textPlayingSound.set_volume(num/100.0)
-    def playAll(self):
-        self.displayedLine = len(self.content)-1
-        self.textIndex = len(self.content[self.displayedLine])-1
     def fontRender(self,txt,color):
         return self.FONT.render(txt,get_fontMode(),color)
     def display(self,screen):
@@ -917,10 +928,10 @@ class DialogBackground:
         self.backgroundImgSurface = None
         self.nullSurface = get_SingleColorSurface("black")
         self.backgroundMusicName = None
-        self.setBgmVolume(get_setting("Sound","background_music"))
-    def setBgmVolume(self,backgroundMusicVolume):
-        self.backgroundMusicVolume = backgroundMusicVolume/100.0
-        pygame.mixer.music.set_volume(self.backgroundMusicVolume)
+    def get_sound_volume(self):
+        return pygame.mixer.music.get_volume()
+    def set_sound_volume(self,volume):
+        pygame.mixer.music.set_volume(volume/100.0)
     def update(self,backgroundImgName,backgroundMusicName):
         #如果需要更新背景图片
         if self.backgroundImgName != backgroundImgName:

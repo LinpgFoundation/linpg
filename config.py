@@ -117,3 +117,25 @@ def get_lang(key,key2=None):
 #初始化屏幕
 def screen_init(flags):
     return pygame.display.set_mode((__LINPG_DATA["Screen_size_x"], __LINPG_DATA["Screen_size_y"]),flags)
+
+#全局数据
+__LINPG_GLOBAL_DATA = {}
+
+#设置特定的全局数据
+def set_glob_value(key,value):
+    global __LINPG_GLOBAL_DATA
+    __LINPG_GLOBAL_DATA[key] = value
+#获取特定的全局数据
+def get_glob_value(key):
+    return deepcopy(__LINPG_GLOBAL_DATA[key])
+def if_get_set_value(key,valueToGet,valueToSet):
+    global __LINPG_GLOBAL_DATA
+    if __LINPG_GLOBAL_DATA[key] == valueToGet:
+        __LINPG_GLOBAL_DATA[key] = valueToSet
+        return True
+    else:
+        return False
+#删除特定的全局数据
+def remove_glob_value(key):
+    global __LINPG_GLOBAL_DATA
+    del __LINPG_GLOBAL_DATA[key]

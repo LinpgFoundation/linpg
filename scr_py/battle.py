@@ -3,8 +3,9 @@ from ..scr_pyd.map import MapObject
 from .characterModule import *
 
 #战斗系统接口，请勿实例化
-class BattleSystemInterface:
+class BattleSystemInterface(SystemObject):
     def __init__(self,chapterType,chapterId,collection_name):
+        SystemObject.__init__(self)
         #用于判断是否移动屏幕的参数
         self.__mouse_move_temp_x = -1
         self.__mouse_move_temp_y = -1
@@ -16,8 +17,6 @@ class BattleSystemInterface:
         self.__pressKeyToMove = {"up":False,"down":False,"left":False,"right":False}
         #战斗系统主循环判定参数
         self.isPlaying = True
-        #战斗系统进行时的输入事件
-        self.__events = None
         #角色数据
         self.alliances_data = None
         self.enemies_data = None
@@ -59,12 +58,14 @@ class BattleSystemInterface:
     #背景音乐
     def set_bgm(self,name):
         self.__background_music = name
+    #更新背景音乐音量
+    def set_bgm_volume(self,volume):
+        pygame.mixer.music.set_volume(volume)
     def play_bgm(self):
         #加载并播放音乐
         if self.__background_music != None and not pygame.mixer.music.get_busy():
             pygame.mixer.music.load("Assets/music/"+self.__background_music)
             pygame.mixer.music.play()
-            pygame.mixer.music.set_volume(get_setting("Sound","background_music")/100.0)
     #检测手柄事件
     def _check_jostick_events(self):
         if controller.joystick.get_init() == True:
@@ -174,11 +175,6 @@ class BattleSystemInterface:
     def _display_weather(self,screen):
         if self.weatherController != None:
             self.weatherController.display(screen,self.MAP.block_width)
-    #输入事件
-    def _get_event(self):
-        return self.__events
-    def _update_event(self):
-        self.__events = pygame.event.get()
     #计算光亮区域 并初始化地图
     def _calculate_darkness(self):
         self.MAP.calculate_darkness(self.alliances_data)

@@ -142,7 +142,7 @@ def cropImg(img,pos=(0,0),size=(0,0)):
     return cropped
 
 #检测图片是否被点击
-def ifHover(imgObject,objectPos=(0,0),local_x=0,local_y=0):
+def isHover(imgObject,objectPos=(0,0),local_x=0,local_y=0):
     mouse_x,mouse_y = pygame.mouse.get_pos()
     #如果是pygame的面
     if isinstance(imgObject,pygame.Surface):
@@ -152,7 +152,7 @@ def ifHover(imgObject,objectPos=(0,0),local_x=0,local_y=0):
             return False
     #如果是Linpg引擎的Image类
     elif isinstance(imgObject,ImageSurface):
-        return imgObject.ifHover(mouse_x-local_x,mouse_y-local_y)
+        return imgObject.isHover(mouse_x-local_x,mouse_y-local_y)
     #如果是Linpg引擎的Button类
     elif isinstance(imgObject,Button):
         if imgObject.x<=mouse_x-local_x<=imgObject.x+imgObject.img.get_width() and imgObject.y<=mouse_y-local_y<=imgObject.y+imgObject.img.get_height():
@@ -163,7 +163,7 @@ def ifHover(imgObject,objectPos=(0,0),local_x=0,local_y=0):
             return False
     #如果是Linpg引擎的TextSurface类
     elif isinstance(imgObject,TextSurface):
-        return imgObject.ifHover()
+        return imgObject.isHover()
     else:
         raise Exception('LinpgEngine-Error: Unable to check current object:',imgObject)
 

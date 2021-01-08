@@ -5,9 +5,8 @@ import threading
 #储存角色图片的常量
 __CHARACTERS_IMAGE_DICT = {}
 #获取特定的角色图片
-def getDollImg(self_type,action,imgId,width):
-    img = __CHARACTERS_IMAGE_DICT[self_type][action]["img"][imgId]
-    return pygame.transform.scale(img,(width,width))
+def getDollImg(self_type,action,imgId):
+    return __CHARACTERS_IMAGE_DICT[self_type][action]["img"][imgId]
 #获取角色对应图片的ID
 def getDollImgNum(self_type,action):
     return __CHARACTERS_IMAGE_DICT[self_type][action]["imgNum"]
@@ -274,22 +273,30 @@ class Doll(GameObject):
     def setFlip(self,theBool):
         if self.ifFlip != theBool:
             self.ifFlip = theBool
-    def draw(self,screen,MapClass):
+    def __blit_doll_img(self,screen,MapClass,action=None,pos=None,alpha=155):
         #调整小人图片的尺寸
-        img_of_char = getDollImg(self.type,self.__currentAction,self.__imgId_dict[self.__currentAction]["imgId"],round(MapClass.block_width*1.6))
+        if action == None:
+            action =self.__currentAction
+        img_of_char = getDollImg(self.type,action,self.__imgId_dict[action]["imgId"])
+        img_width = round(MapClass.block_width*1.6)
+        img_of_char.set_size(img_width,img_width)
         #调整alpha值
-        imgAlpha = self.get_imgAlpaha(self.__currentAction)
-        if imgAlpha != 255:
-            img_of_char.set_alpha(imgAlpha)
+        img_of_char.set_alpha(alpha)
         #反转图片
-        if self.ifFlip == True:
-            img_of_char = pygame.transform.flip(img_of_char,True,False)
+        if self.ifFlip:
+            img_of_char.flip_if_not()
+        else:
+            img_of_char.flip_back_to_normal()
+        #把角色图片画到屏幕上
+        if pos == None:
+            pos = MapClass.calPosInMap(self.x,self.y)
+        img_of_char.set_pos(pos[0]-MapClass.block_width*0.3,pos[1]-MapClass.block_width*0.85)
+        img_of_char.draw(screen,console.get_events("dev"))
+    def draw(self,screen,MapClass):
+        self.__blit_doll_img(screen,MapClass,alpha=self.get_imgAlpaha(self.__currentAction))
         #如果当前动作是移动
         if self.__currentAction == "move" and self.__movingPath != None:
             self.__move_based_on_path(MapClass)
-        #把角色图片画到屏幕上
-        xTemp,yTemp = MapClass.calPosInMap(self.x,self.y)
-        screen.blit(img_of_char,(xTemp-MapClass.block_width*0.3,yTemp-MapClass.block_width*0.85))
         #如果角色图片还没播放完
         if not self._ifActionPlayReverse:
             if self.__imgId_dict[self.__currentAction]["imgId"] < getDollImgNum(self.type,self.__currentAction)-1:
@@ -312,15 +319,8 @@ class Doll(GameObject):
             else:
                 self._ifActionPlayReverse = False
                 self.set_action()
-    def draw_custom(self,action,pos,screen,MapClass,alpha=155,isContinue=True):
-        #调整小人图片的尺寸
-        img_of_char = getDollImg(self.type,action,self.__imgId_dict[action]["imgId"],round(MapClass.block_width*1.6))
-        #反转图片
-        if self.ifFlip == True:
-            img_of_char = pygame.transform.flip(img_of_char,True,False)
-        img_of_char.set_alpha(alpha)
-        #把角色图片画到屏幕上
-        screen.blit(img_of_char,(pos[0]-MapClass.block_width*0.3,pos[1]-MapClass.block_width*0.85))
+    def draw_custom(self,action,pos,screen,MapClass,isContinue=True):
+        self.__blit_doll_img(screen,MapClass,action,pos)
         #调整id，并返回对应的bool状态
         if self.__imgId_dict[action]["imgId"] < getDollImgNum(self.type,action)-1:
             self.__imgId_dict[action]["imgId"] += 1
@@ -687,8 +687,9 @@ def character_creator(character_name,action,faction):
     if os.path.exists("Assets/image/{0}/{1}/{2}".format(faction,character_name,action)):
         files_amount = len(glob.glob("Assets/image/{0}/{1}/{2}/*.png".format(faction,character_name,action)))
         if files_amount > 0:
-            images_list = [pygame.image.load(os.path.join("Assets/image/{0}/{1}/{2}/{3}_{4}_{5}.png".format(faction,character_name,action,character_name,action,i))).convert_alpha() for i in range(files_amount)]
-            __CHARACTERS_IMAGE_DICT[character_name][action] = {"img":images_list,"imgNum":files_amount}
+            __CHARACTERS_IMAGE_DICT[character_name][action] = {"img":numpy.asarray([SrcalphaSurface(\
+                "Assets/image/{0}/{1}/{2}/{3}_{4}_{5}.png".format(faction,character_name,action,character_name,action,i)\
+                    ,0,0) for i in range(files_amount)]),"imgNum":files_amount}
             return {"imgId":0,"alpha":255}
         else:
             return None

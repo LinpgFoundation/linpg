@@ -14,6 +14,9 @@ class GameObject:
         return self.y+self.x < other.y+other.x
     def get_pos(self):
         return self.x,self.y
+    def set_pos(self,x,y):
+        self.x = round(x)
+        self.y = round(y)
 
 #系统模块接口
 class SystemObject:
@@ -33,16 +36,83 @@ class ImageInterface(GameObject):
     def __init__(self,img,x,y,width,height):
         GameObject.__init__(self,x,y)
         self.img = img
-        self.width = width
-        self.height = height
-    def set_alpha(self,value):
-        self.img.set_alpha(value)
+        self._width = width
+        self._height = height
     def get_alpha(self):
         return self.img.get_alpha()
+    def set_alpha(self,value):
+        self.img.set_alpha(value)
     def get_width(self):
-        return self.width
+        return self._width
+    def set_width(self,value):
+        self._width = round(value)
     def get_height(self):
-        return self.height
+        return self._height
+    def set_height(self,value):
+        self._height = round(value)
+
+class SrcalphaSurface(ImageInterface):
+    def __init__(self,path,x,y,width=None,height=None):
+        ImageInterface.__init__(self,None,x,y,width,height)
+        self._alpha = 255
+        self.img_original = pygame.image.load(os.path.join(path)).convert_alpha()
+        self.__local_x = 0
+        self.__local_y = 0
+        self.__isFlipped = False
+        self.__needUpdate = True if self._width != None and self._height != None else False
+    def get_alpha(self):
+        return self._alpha
+    def set_alpha(self,value):
+        if value < 0:
+            self._alpha = 0
+        elif value > 255:
+            self._alpha = 255
+        else:
+            self._alpha = round(value)
+        if self.img != None and self.img.get_alpha() != self._alpha:
+            self.img.set_alpha(self._alpha)
+    def set_width(self,value):
+        if self._width != round(value):
+            super().set_width(value)
+            self.__needUpdate = True
+    def set_height(self,value):
+        if self._height != round(value):
+            super().set_height(value)
+            self.__needUpdate = True
+    def set_size(self,width,height):
+        if self._width != round(width) or self._height != round(height):
+            super().set_width(width)
+            super().set_height(height)
+            self.__needUpdate = True
+    def _update_img(self):
+        imgTmp = pygame.transform.scale(self.img_original,(self._width,self._height))
+        rect = imgTmp.get_bounding_rect()
+        self.img = pygame.Surface((rect.width, rect.height),flags=pygame.SRCALPHA).convert_alpha()
+        self.__local_x = rect.x
+        self.__local_y = rect.y
+        self.img.blit(imgTmp,(-self.__local_x,-self.__local_y))
+        if self._alpha != 255:
+            self.img.set_alpha(self._alpha)
+    def flip(self):
+        self.__isFlipped = not self.__isFlipped
+        self.img_original = pygame.transform.flip(self.img_original,True,False)
+        self.__needUpdate = True
+    def flip_if_not(self):
+        if not self.__isFlipped:
+            self.flip()
+    def flip_back_to_normal(self):
+        if self.__isFlipped:
+            self.flip()
+    def draw(self,screen,debug=False):
+        if self.__needUpdate:
+            self._update_img()
+        screen.blit(self.img,(self.x+self.__local_x,self.y+self.__local_y))
+        if debug:
+            pygame.draw.rect(screen,findColorRGBA("red"),pygame.Rect(self.x+self.__local_x,self.y+self.__local_y,self.img.get_width(),self.img.get_height()),2)
+    def isHover(self,mouse_x,mouse_y):
+        return 0<mouse_x-self.x-self.__local_x<self.img.get_width() and 0<mouse_y-self.y-self.__local_y<self.img.get_height()
+    def get_local_pos(self):
+        return self.x+self.__local_x,self.y+self.__local_y
 
 #高级图形类
 class ImageSurface(ImageInterface):
@@ -52,22 +122,22 @@ class ImageSurface(ImageInterface):
         self.yTogo = y
         self.items = []
         self.description = description
-        if self.width == None and self.height == None:
-            self.width,self.height = self.img.get_size()
-        elif self.width == None and self.height != None:
-            self.width = self.height/self.img.get_height()*self.img.get_width()
-        elif self.width != None and self.height == None:
-            self.height = self.width/self.img.get_width()*self.img.get_height()
+        if self._width == None and self._height == None:
+            self._width,self._height = self.img.get_size()
+        elif self._width == None and self._height != None:
+            self._width = self._height/self.img.get_height()*self.img.get_width()
+        elif self._width != None and self._height == None:
+            self._height = self._width/self.img.get_width()*self.img.get_height()
     def draw(self,screen):
-        screen.blit(pygame.transform.scale(self.img,(round(self.width),round(self.height))),(self.x,self.y))
+        self.display(screen)
     def display(self,screen,local_x=0,local_y=0):
-        screen.blit(pygame.transform.scale(self.img, (round(self.width),round(self.height))),(self.x+local_x,self.y+local_y))
+        screen.blit(pygame.transform.scale(self.img, (round(self._width),round(self._height))),(self.x+local_x,self.y+local_y))
     def rotate(self,angle):
         self.img = pygame.transform.rotate(self.img,angle)
     def flip(self,vertical=False,horizontal=False):
         self.img = pygame.transform.flip(self.img,vertical,horizontal)
-    def ifHover(self,mouse_x,mouse_y):
-        if 0<mouse_x-self.x<self.width and 0<mouse_y-self.y<self.height:
+    def isHover(self,mouse_x,mouse_y):
+        if 0<mouse_x-self.x<self._width and 0<mouse_y-self.y<self._height:
             return True
         else:
             return False
@@ -117,7 +187,7 @@ class ProgressBar(ImageInterface):
         self.percentage = 0
         self.color = findColorRGBA(color)
     def draw(self,screen):
-        pygame.draw.rect(screen,self.color,(self.x,self.y,self.width*self.percentage,self.height))
+        pygame.draw.rect(screen,self.color,(self.x,self.y,self._width*self.percentage,self._height))
 
 #环境系统
 class WeatherSystem:
@@ -194,13 +264,13 @@ class PauseMenu:
                 return "Break"
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 #判定按钮
-                if self.button_resume.ifHover():
+                if self.button_resume.isHover():
                     return "Break"
-                elif self.button_save.ifHover():
+                elif self.button_save.isHover():
                     return "Save"
-                elif self.button_setting.ifHover():
+                elif self.button_setting.isHover():
                     return "Setting"
-                elif self.button_back.ifHover():
+                elif self.button_back.isHover():
                     set_glob_value("BackToMainMenu",True)
                     return "BackToMainMenu"
         return False
@@ -529,8 +599,7 @@ class InputBoxInterface(GameObject):
         self.FONTSIZE = font_size
         self.FONT = createFont(self.FONTSIZE)
     def set_pos(self,x,y):
-        self.x = x
-        self.y = y
+        super().set_pos(x,y)
         self.input_box = pygame.Rect(x, y, self.default_width, self.FONTSIZE*1.5)
 
 #单行输入框
@@ -940,9 +1009,6 @@ class GifObject(GameObject):
                 self.imgId = 0
         else:
             self.countDown += 1
-    def set_pos(self,x=None,y=None):
-        self.x = x if x != None else self.x
-        self.y = y if y != None else self.y
     def draw(self,screen):
         self.display(screen)
     def set_alpha(self,alpha):

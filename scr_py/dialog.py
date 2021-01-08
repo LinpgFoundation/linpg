@@ -145,7 +145,7 @@ class DialogSystem(DialogSystemInterface):
                         self.dialogTxtSystem.autoMode = self.ButtonsMananger.autoMode
                     elif buttonEvent == "history" and not self.showHistory:
                         self.showHistory = True
-                    elif ifHover(self.history_back) and self.showHistory:
+                    elif isHover(self.history_back) and self.showHistory:
                         self.showHistory = False
                         self.historySurface = None
                     #如果所有行都没有播出，则播出所有行
@@ -244,7 +244,7 @@ class DialogSystem(DialogSystemInterface):
                         dialogIdTemp = None
             screen.blit(self.historySurface,(0,0))
             self.history_back.display(screen)
-            ifHover(self.history_back)
+            isHover(self.history_back)
         elif self.dialogTxtSystem.forceUpdate() or leftClick:
             if self.dialogContent[self.dialogId]["next_dialog_id"] == None or self.dialogContent[self.dialogId]["next_dialog_id"]["target"] == None:
                 self.fadeOut(screen)
@@ -463,7 +463,7 @@ class DialogSystemDev(DialogSystemInterface):
                             optionBox_scaled = pygame.transform.scale(self.optionBox,(int(option_txt.get_width()+self.window_x*0.05),int(self.window_x*0.05)))
                             optionBox_x = (self.window_x-optionBox_scaled.get_width())/2
                             optionBox_y = (i+1)*2*self.window_x*0.03+optionBox_y_base
-                            if ifHover(optionBox_scaled,(optionBox_x,optionBox_y)) and leftClick:
+                            if isHover(optionBox_scaled,(optionBox_x,optionBox_y)) and leftClick:
                                 return theNext["target"][i]["id"]
                         display.flip()
                 else:
@@ -496,11 +496,11 @@ class DialogSystemDev(DialogSystemInterface):
         #展示按钮
         for button in self.buttonsUI:
             if button == "next" and theNextDialogId == None or button == "next" and len(theNextDialogId)<2:
-                if ifHover(self.buttonsUI["add"]):
+                if isHover(self.buttonsUI["add"]):
                     buttonHovered = "add"
                 self.buttonsUI["add"].display(screen)
             elif button != "add":
-                if ifHover(self.buttonsUI[button]):
+                if isHover(self.buttonsUI[button]):
                     buttonHovered = button
                 self.buttonsUI[button].display(screen)
         if buttonHovered != None:
@@ -508,7 +508,7 @@ class DialogSystemDev(DialogSystemInterface):
         leftClick = False
         for event in self.events:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 or event.type == pygame.JOYBUTTONDOWN and controller.joystick.get_button(0) == 1:
-                if ifHover(self.UIContainerRightButton,None,self.UIContainerRight.x):
+                if isHover(self.UIContainerRightButton,None,self.UIContainerRight.x):
                     self.UIContainerRight.switch()
                     self.UIContainerRightButton.flip(True,False)
                 #退出
@@ -599,9 +599,9 @@ class DialogSystemDev(DialogSystemInterface):
         self.UIContainerRight.draw(screen)
         if self.UIContainerRight.x<self.window_x:
             #检测按钮
-            if ifHover(self.button_select_background,None,self.UIContainerRight.x) and leftClick:
+            if isHover(self.button_select_background,None,self.UIContainerRight.x) and leftClick:
                 self.UIContainerRight_kind = "background"
-            if ifHover(self.button_select_npc,None,self.UIContainerRight.x) and leftClick:
+            if isHover(self.button_select_npc,None,self.UIContainerRight.x) and leftClick:
                 self.UIContainerRight_kind = "npc"
             #画出按钮
             self.button_select_background.display(screen,self.UIContainerRight.x)
@@ -610,11 +610,11 @@ class DialogSystemDev(DialogSystemInterface):
             if self.UIContainerRight_kind == "background":
                 imgName = self.dialogData[self.part][self.dialogId]["background_img"]
                 if imgName != None:
-                    imgTmp = resizeImg(self.all_background_image[imgName],(self.UIContainerRight.width*0.8,None))
-                    pos = (self.UIContainerRight.x+self.UIContainerRight.width*0.1,self.background_image_local_y)
+                    imgTmp = resizeImg(self.all_background_image[imgName],(self.UIContainerRight.get_width()*0.8,None))
+                    pos = (self.UIContainerRight.x+self.UIContainerRight.get_width()*0.1,self.background_image_local_y)
                     screen.blit(imgTmp,pos)
                     screen.blit(resizeImg(self.background_deselect,imgTmp.get_size()),pos)
-                    if leftClick and ifHover(imgTmp,pos):
+                    if leftClick and isHover(imgTmp,pos):
                         self.dialogData[self.part][self.dialogId]["background_img"] = None
                         self.backgroundContent.update(None,None)
                         leftClick = False
@@ -625,11 +625,11 @@ class DialogSystemDev(DialogSystemInterface):
                     i = 0
                 for imgName in self.all_background_image:
                     if imgName != self.dialogData[self.part][self.dialogId]["background_img"]:
-                        imgTmp = resizeImg(self.all_background_image[imgName],(self.UIContainerRight.width*0.8,None))
-                        pos = (self.UIContainerRight.x+self.UIContainerRight.width*0.1,self.background_image_local_y+imgTmp.get_height()*1.5*i)
+                        imgTmp = resizeImg(self.all_background_image[imgName],(self.UIContainerRight.get_width()*0.8,None))
+                        pos = (self.UIContainerRight.x+self.UIContainerRight.get_width()*0.1,self.background_image_local_y+imgTmp.get_height()*1.5*i)
                         screen.blit(imgTmp,pos)
                         i+=1
-                        if leftClick and ifHover(imgTmp,pos):
+                        if leftClick and isHover(imgTmp,pos):
                             self.dialogData[self.part][self.dialogId]["background_img"] = imgName
                             self.backgroundContent.update(imgName,None)
                             leftClick = False
@@ -639,10 +639,10 @@ class DialogSystemDev(DialogSystemInterface):
                     if npc_local_y_temp >= self.window_y:
                         break
                     else:
-                        imgTemp = resizeImg(npcImage["normal"],(self.UIContainerRight.width*0.8,None))
+                        imgTemp = resizeImg(npcImage["normal"],(self.UIContainerRight.get_width()*0.8,None))
                         if npc_local_y_temp > -imgTemp.get_height():
                             screen.blit(imgTemp,(self.UIContainerRight.x,npc_local_y_temp))
-                            if ifHover(imgTemp,(self.UIContainerRight.x,npc_local_y_temp)) and leftClick:
+                            if isHover(imgTemp,(self.UIContainerRight.x,npc_local_y_temp)) and leftClick:
                                 if self.dialogData[self.part][self.dialogId]["characters_img"] == None:
                                     self.dialogData[self.part][self.dialogId]["characters_img"] = []
                                 if len(self.dialogData[self.part][self.dialogId]["characters_img"]) < 2:
@@ -709,7 +709,7 @@ class NpcImageSystem:
             screen.blit(img,(x,y))
         else:
             self.npc_get_click = None
-            if ifHover(img,(x,y)):
+            if isHover(img,(x,y)):
                 img.fill((60, 60, 60), special_flags=pygame.BLEND_RGB_ADD)
                 self.npc_get_click = name
             screen.blit(img,(x,y))
@@ -1029,17 +1029,17 @@ class DialogButtons:
     def display(self,screen,isHidden):
         if isHidden:
             self.showButton.display(screen)
-            return "hide" if ifHover(self.showButton) else ""
+            return "hide" if isHover(self.showButton) else ""
         elif isHidden == False:
             self.hideButton.display(screen)
             self.historyButton.display(screen)
             action = ""
-            if ifHover(self.skipButton):
+            if isHover(self.skipButton):
                 self.skipButtonHovered.draw(screen)
                 action = "skip"
             else:
                 self.skipButton.draw(screen)
-            if ifHover(self.autoButton):
+            if isHover(self.autoButton):
                 self.autoButtonHovered.draw(screen)
                 if self.autoMode:
                     rotatedIcon = pygame.transform.rotate(self.autoIconHovered,self.autoIconDegree)
@@ -1065,9 +1065,9 @@ class DialogButtons:
                 else:
                     self.autoButton.draw(screen)
                     screen.blit(self.autoIcon,(self.autoButton.description,self.autoButton.y+self.icon_y))
-            if ifHover(self.hideButton):
+            if isHover(self.hideButton):
                 action = "hide"
-            elif ifHover(self.historyButton):
+            elif isHover(self.historyButton):
                 action = "history"
             return action
     def autoModeSwitch(self):

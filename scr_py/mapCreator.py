@@ -47,12 +47,16 @@ class mapCreator(BattleSystemInterface):
         self.charactersImgDict={}
         for imgPath in glob.glob(r'Assets/image/character/*'):
             img_name = imgPath.replace(".","").replace("Assets","").replace("image","").replace("character","").replace("\\","").replace("/","")
-            self.charactersImgDict[img_name] = loadImg(imgPath+"/wait/"+img_name+"_wait_0.png",self.MAP.block_width)
+            img = loadImg(imgPath+"/wait/"+img_name+"_wait_0.png",self.MAP.block_width*1.5)
+            pos = img.get_bounding_rect()
+            self.charactersImgDict[img_name] = cropImg(img,(pos.left,pos.top),(pos.right,pos.top))
         #加载所有敌对角色的图片文件
         self.sangvisFerrisImgDict={}
         for imgPath in glob.glob(r'Assets/image/sangvisFerri/*'):
             img_name = imgPath.replace(".","").replace("Assets","").replace("image","").replace("sangvisFerri","").replace("\\","").replace("/","")
-            self.sangvisFerrisImgDict[img_name] = loadImg(imgPath+"/wait/"+img_name+"_wait_0.png",self.MAP.block_width)
+            img = loadImg(imgPath+"/wait/"+img_name+"_wait_0.png",self.MAP.block_width*1.5)
+            pos = img.get_bounding_rect()
+            self.sangvisFerrisImgDict[img_name] = cropImg(img,(pos.left,pos.top),(pos.right,pos.top))
         #加载所有的装饰品
         self.decorationsImgDict = {}
         for imgPath in glob.glob(r'Assets/image/environment/decoration/*'):
@@ -97,7 +101,7 @@ class mapCreator(BattleSystemInterface):
         self._update_event()
         mouse_x,mouse_y = controller.get_pos()
         block_get_click = self.MAP.calBlockInMap(mouse_x,mouse_y)
-        for event in self.events():
+        for event in self.events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.object_to_put_down = None
@@ -108,17 +112,17 @@ class mapCreator(BattleSystemInterface):
                 self._check_key_up(event)
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 #上下滚轮-放大和缩小地图
-                if ifHover(self.UIContainerRight) and event.button == 4 and self.UI_local_y<0:
+                if isHover(self.UIContainerRight) and event.button == 4 and self.UI_local_y<0:
                     self.UI_local_y += self.window_y*0.1
-                elif ifHover(self.UIContainerRight) and event.button == 5:
+                elif isHover(self.UIContainerRight) and event.button == 5:
                     self.UI_local_y -= self.window_y*0.1
-                elif ifHover(self.UIContainerRightButton,None,self.UIContainerRight.x):
+                elif isHover(self.UIContainerRightButton,None,self.UIContainerRight.x):
                     self.UIContainerRight.switch()
                     self.UIContainerRightButton.flip(True,False)
-                elif ifHover(self.UIContainerButton,None,0,self.UIContainer.y):
+                elif isHover(self.UIContainerButton,None,0,self.UIContainer.y):
                     self.UIContainer.switch()
                     self.UIContainerButton.flip(False,True)
-                elif ifHover(self.UIContainer):
+                elif isHover(self.UIContainer):
                     #上下滚轮-放大和缩小地图
                     if event.button == 4 and self.UI_local_x<0:
                         self.UI_local_x += self.window_x*0.05
@@ -143,16 +147,16 @@ class mapCreator(BattleSystemInterface):
                             elif any_chara_replace in self.enemies_data:
                                 self.enemies_data.pop(any_chara_replace)
                                 self.originalData["sangvisFerri"].pop(any_chara_replace)
-                elif ifHover(self.UIButton["save"]) and self.object_to_put_down == None and self.deleteMode == False:
+                elif isHover(self.UIButton["save"]) and self.object_to_put_down == None and self.deleteMode == False:
                     saveConfig(self.fileLocation,self.originalData)
-                elif ifHover(self.UIButton["back"]) and self.object_to_put_down == None and self.deleteMode == False:
+                elif isHover(self.UIButton["back"]) and self.object_to_put_down == None and self.deleteMode == False:
                     self.isPlaying = False
                     break
-                elif ifHover(self.UIButton["delete"]) and self.object_to_put_down == None and self.deleteMode == False:
+                elif isHover(self.UIButton["delete"]) and self.object_to_put_down == None and self.deleteMode == False:
                     self.object_to_put_down = None
                     self.data_to_edit = None
                     self.deleteMode = True
-                elif ifHover(self.UIButton["reload"]) and self.object_to_put_down == None and self.deleteMode == False:
+                elif isHover(self.UIButton["reload"]) and self.object_to_put_down == None and self.deleteMode == False:
                     tempLocal_x,tempLocal_y = self.MAP.getPos()
                     #读取地图数据
                     mapFileData = loadConfig(self.fileLocation)
@@ -227,7 +231,7 @@ class mapCreator(BattleSystemInterface):
         #画出地图
         self._display_map(screen)
 
-        if block_get_click != None and ifHover(self.UIContainerRight)==False and ifHover(self.UIContainer)==False:
+        if block_get_click != None and isHover(self.UIContainerRight)==False and isHover(self.UIContainer)==False:
             if self.deleteMode == True:
                 xTemp,yTemp = self.MAP.calPosInMap(block_get_click["x"],block_get_click["y"])
                 drawImg(self.redBlock,(xTemp+self.MAP.block_width*0.1,yTemp),screen)
@@ -254,31 +258,31 @@ class mapCreator(BattleSystemInterface):
         self.UIContainerRightButton.display(screen,self.UIContainerRight.x)
         self.UIContainerRight.draw(screen)
         for Image in self.UIButton:
-            ifHover(self.UIButton[Image])
+            isHover(self.UIButton[Image])
             self.UIButton[Image].display(screen)
 
         #显示所有可放置的友方角色
         i=0
+        tempY = self.UIContainer.y+self.MAP.block_width*0.2
         for key in self.charactersImgDict:
             tempX = self.UIContainer.x+self.MAP.block_width*i*0.6+self.UI_local_x
-            if 0 <= tempX <= self.UIContainer.width*0.9:
-                tempY = self.UIContainer.y-self.MAP.block_width*0.25
+            if 0 <= tempX <= self.UIContainer.get_width()*0.9:
                 drawImg(self.charactersImgDict[key],(tempX,tempY),screen)
-                if pygame.mouse.get_pressed()[0] and ifHover(self.charactersImgDict[key],(tempX,tempY)):
+                if pygame.mouse.get_pressed()[0] and isHover(self.charactersImgDict[key],(tempX,tempY)):
                     self.object_to_put_down = {"type":"character","id":key}
-            elif tempX > self.UIContainer.width*0.9:
+            elif tempX > self.UIContainer.get_width()*0.9:
                 break
             i+=1
         i=0
+        tempY += self.MAP.block_width*0.4
         #显示所有可放置的敌方角色
         for key in self.sangvisFerrisImgDict:
             tempX = self.UIContainer.x+self.MAP.block_width*i*0.6+self.UI_local_x
-            if 0 <= tempX <= self.UIContainer.width*0.9:
-                tempY = self.UIContainer.y+self.MAP.block_width*0.25
+            if 0 <= tempX <= self.UIContainer.get_width()*0.9:
                 drawImg(self.sangvisFerrisImgDict[key],(tempX,tempY),screen)
-                if pygame.mouse.get_pressed()[0] and ifHover(self.sangvisFerrisImgDict[key],(tempX,tempY)):
+                if pygame.mouse.get_pressed()[0] and isHover(self.sangvisFerrisImgDict[key],(tempX,tempY)):
                     self.object_to_put_down = {"type":"sangvisFerri","id":key}
-            elif tempX > self.UIContainer.width*0.9:
+            elif tempX > self.UIContainer.get_width()*0.9:
                 break
             i+=1
         
@@ -289,7 +293,7 @@ class mapCreator(BattleSystemInterface):
             if self.window_y*0.05<posY<self.window_y*0.9:
                 posX = self.UIContainerRight.x+self.MAP.block_width/6+self.MAP.block_width/2.3*(i%4)
                 drawImg(self.envImgDict[img_name],(posX,posY),screen)
-                if pygame.mouse.get_pressed()[0] and ifHover(self.envImgDict[img_name],(posX,posY)):
+                if pygame.mouse.get_pressed()[0] and isHover(self.envImgDict[img_name],(posX,posY)):
                     self.object_to_put_down = {"type":"block","id":img_name}
             i+=1
         for img_name in self.decorationsImgDict:
@@ -297,7 +301,7 @@ class mapCreator(BattleSystemInterface):
             if self.window_y*0.05<posY<self.window_y*0.9:
                 posX = self.UIContainerRight.x+self.MAP.block_width/6+self.MAP.block_width/2.3*(i%4)
                 drawImg(self.decorationsImgDict[img_name],(posX,posY),screen)
-                if pygame.mouse.get_pressed()[0] and ifHover(self.decorationsImgDict[img_name],(posX,posY)):
+                if pygame.mouse.get_pressed()[0] and isHover(self.decorationsImgDict[img_name],(posX,posY)):
                     self.object_to_put_down = {"type":"decoration","id":img_name}
             i+=1
         
@@ -308,9 +312,9 @@ class mapCreator(BattleSystemInterface):
             elif self.object_to_put_down["type"] == "decoration":
                 drawImg(self.decorationsImgDict[self.object_to_put_down["id"]],(mouse_x,mouse_y),screen)
             elif self.object_to_put_down["type"] == "character":
-                drawImg(self.charactersImgDict[self.object_to_put_down["id"]],(mouse_x-self.MAP.block_width/2,mouse_y-self.MAP.block_width/2.1),screen)
+                drawImg(self.charactersImgDict[self.object_to_put_down["id"]],(mouse_x,mouse_y),screen)
             elif self.object_to_put_down["type"] == "sangvisFerri":
-                drawImg(self.sangvisFerrisImgDict[self.object_to_put_down["id"]],(mouse_x-self.MAP.block_width/2,mouse_y-self.MAP.block_width/2.1),screen)
+                drawImg(self.sangvisFerrisImgDict[self.object_to_put_down["id"]],(mouse_x,mouse_y),screen)
         
         #显示即将被编辑的数据
         if self.data_to_edit != None:

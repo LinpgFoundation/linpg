@@ -172,20 +172,20 @@ class TextSurface:
         self.n_y = y
         self.b_x = x - (self.b.get_width()-self.n.get_width())/2
         self.b_y = y - (self.b.get_height()-self.n.get_height())/2
-        self.__ifHover = False
+        self.__isHover = False
     def display(self,screen):
         mouse_x,mouse_y = pygame.mouse.get_pos()
         if self.n_x<=mouse_x<=self.n_x+self.n.get_width() and self.n_y<=mouse_y<=self.n_y+self.n.get_height():
             screen.blit(self.b,(self.b_x,self.b_y))
-            self.__ifHover = True
+            self.__isHover = True
         else:
             screen.blit(self.n,(self.n_x,self.n_y))
-            self.__ifHover = False
-        return self.__ifHover
+            self.__isHover = False
+        return self.__isHover
     def draw(self,screen):
         self.display(screen)
-    def ifHover(self):
-        return self.__ifHover
+    def isHover(self):
+        return self.__isHover
     def get_pos(self):
         return self.n_x,self.n_y
 

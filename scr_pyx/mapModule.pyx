@@ -16,6 +16,7 @@ class EnvImagesManagement:
         self.__MAP_SURFACE = None
         self.__BLOCK_WIDTH = round(blockSize[0])
         self.__BLOCK_HEIGHT =  round(blockSize[1])
+        cdef unsigned int x,y
         cdef list all_images_needed = []
         for y in range(len(theMap)):
             for x in range(len(theMap[y])):
@@ -104,7 +105,10 @@ class EnvImagesManagement:
             self.__BACKGROUND_SURFACE = resizeImg(self.__BACKGROUND_IMAGE,screen_size)
         else:
             self.__BACKGROUND_SURFACE = pygame.Surface(screen_size).convert()
-        self.__MAP_SURFACE = pygame.Surface(map_size,flags=pygame.SRCALPHA).convert_alpha()
+        if self.__MAP_SURFACE == None:
+            self.__MAP_SURFACE = pygame.Surface(map_size,flags=pygame.SRCALPHA).convert_alpha()
+        else:
+            self.__MAP_SURFACE.fill((0,0,0,0))
     def get_surface(self):
         return self.__MAP_SURFACE
     def display_background_surface(self,screen,pos):

@@ -57,11 +57,9 @@ class MapObject:
     def __display_dev_panel(self):
         self.__debug_win.clear()
         self.__debug_win.fill("black")
-        cdef unsigned int y
-        cdef unsigned int x
+        cdef unsigned int x,y
+        cpdef unsigned int start_x,start_y
         cpdef unsigned int unit = self.__debug_win.unit
-        cpdef unsigned int start_x
-        cpdef unsigned int start_y
         for y in range(len(self.__block_on_surface)):
             for x in range(len(self.__block_on_surface[y])):
                 start_x = int(x*unit*1.25+unit/4)
@@ -171,13 +169,11 @@ class MapObject:
     #重新绘制地图
     def __update_map_surface(self,window_size):
         cdef (int, int) posTupleTemp
-        cdef unsigned int y
+        cdef unsigned int x,y
         cdef unsigned int yRange = self.row
-        cdef unsigned int x
         cdef unsigned int xRange = self.column
         cdef int screen_min = -self.block_width
-        cdef int window_x = window_size[0]
-        cdef int window_y = window_size[1]
+        cdef (int,int) screen_size = window_size
         if not isinstance(self.__block_on_surface, numpy.ndarray):
             mapSurface = _MAP_ENV_IMAGE.new_surface(window_size,(self.surface_width,self.surface_height))
             self.__block_on_surface = numpy.zeros((self.row,self.column), dtype=numpy.int8)
@@ -189,7 +185,7 @@ class MapObject:
         for y in range(yRange):
             for x in range(xRange):
                 posTupleTemp = self.calPosInMap(x,y)
-                if screen_min<=posTupleTemp[0]<window_x and screen_min<=posTupleTemp[1]<window_y:
+                if screen_min<=posTupleTemp[0]<screen_size[0] and screen_min<=posTupleTemp[1]<screen_size[1]:
                     if self.__block_on_surface[y][x] == 0:
                         if not self.isPosInLightArea(x,y):
                             mapSurface.blit(_MAP_ENV_IMAGE.get_env_image(self.__MapData[y][x].name,True),(posTupleTemp[0]-self.__local_x,posTupleTemp[1]-self.__local_y))
@@ -204,16 +200,10 @@ class MapObject:
                         #    self.__first_block_on_surface[y] = x 
                     else:
                         pass
-                elif posTupleTemp[0] >= window_x or posTupleTemp[1] >= window_y:
+                elif posTupleTemp[0] >= screen_size[0] or posTupleTemp[1] >= screen_size[1]:
                     break
-            if self.calPosInMap(0,y+1)[1] >= window_y:
+            if self.calPosInMap(0,y+1)[1] >= screen_size[1]:
                 break
-        """
-        if mapSurfaceNewNeedBlit == 1:
-            print("hit")
-            mapSurfaceNew.blit(mapSurface,(0,0))
-            mapSurface = mapSurfaceNew
-        """
     #把装饰物画到屏幕上
     def display_decoration(self,screen,characters_data,sangvisFerris_data):
         cdef (int,int) thePosInMap
@@ -292,8 +282,7 @@ class MapObject:
     def calBlockInMap(self,int mouse_x,int mouse_y):
         cdef int guess_x = int(((mouse_x-self.__local_x-self.row*self.block_width*0.43)/0.43+(mouse_y-self.__local_y-self.block_width*0.4)/0.22)/2/self.block_width)
         cdef int guess_y = int((mouse_y-self.__local_y-self.block_width*0.4)/self.block_width/0.22) - guess_x
-        cdef int x
-        cdef int y
+        cdef int x,y
         cdef (int, int) posTupleTemp
         cdef float lenUnitW = self.block_width/5
         cdef float lenUnitH = self.block_width*0.8/393*214
@@ -317,8 +306,7 @@ class MapObject:
     #计算光亮区域
     def calculate_darkness(self,characters_data):
         cpdef list lightArea = []
-        cdef int x
-        cdef int y
+        cdef int x,y
         for each_chara in characters_data:
             the_character_effective_range = 2
             if characters_data[each_chara].current_hp > 0 :
@@ -395,10 +383,6 @@ class MapObject:
         #如果终点是障碍物
         if self.map2d[end_pos[0]][end_pos[1]] != self.passTag:
             return []
-        # 开启表
-        self.openList = []
-        # 关闭表
-        self.closeList = []
         # 起点终点
         self.startPoint = Point(start_pos[0],start_pos[1])
         self.endPoint = Point(end_pos[0],end_pos[1])
@@ -477,6 +461,10 @@ class MapObject:
         开始寻路
         :return: None或Point列表（路径）
         """
+        # 开启表
+        self.openList = []
+        # 关闭表
+        self.closeList = []
         # 判断寻路终点是否是障碍
         mapRow,mapCol = self.map2d.shape
         if self.endPoint.y < 0 or self.endPoint.y >= mapRow or self.endPoint.x < 0 or self.endPoint.x >= mapCol or self.map2d[self.endPoint.x][self.endPoint.y] != self.passTag:

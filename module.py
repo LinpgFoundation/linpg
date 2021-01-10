@@ -4,6 +4,7 @@ import random
 from .controller import *
 import time
 from tkinter import Tk
+import threading
 
 #游戏对象接口
 class GameObject:
@@ -52,10 +53,10 @@ class ImageInterface(GameObject):
         self._height = round(value)
 
 class SrcalphaSurface(ImageInterface):
-    def __init__(self,path,x,y,width=None,height=None):
+    def __init__(self,path_or_surface,x,y,width=None,height=None):
         ImageInterface.__init__(self,None,x,y,width,height)
         self._alpha = 255
-        self.img_original = pygame.image.load(os.path.join(path)).convert_alpha()
+        self.img_original = pygame.image.load(os.path.join(path_or_surface)).convert_alpha() if not isinstance(path_or_surface,pygame.Surface) else path_or_surface
         self.__local_x = 0
         self.__local_y = 0
         self.__isFlipped = False
@@ -72,11 +73,21 @@ class SrcalphaSurface(ImageInterface):
         if self.img != None and self.img.get_alpha() != self._alpha:
             self.img.set_alpha(self._alpha)
     def set_width(self,value):
-        if self._width != round(value):
+        value = round(value)
+        if self._width != value:
             super().set_width(value)
             self.__needUpdate = True
+    def set_width_with_size_locked(self,width):
+        height = round(width/self.img_original.get_width()*self.img_original.get_height())
+        width = round(width)
+        self.set_size(width,height)
+    def set_height_with_size_locked(self,height):
+        width = round(height/self.img_original.get_height()*self.img_original.get_width())
+        height = round(height)
+        self.set_size(width,height)
     def set_height(self,value):
-        if self._height != round(value):
+        value = round(value)
+        if self._height != value:
             super().set_height(value)
             self.__needUpdate = True
     def set_size(self,width,height):
@@ -114,6 +125,8 @@ class SrcalphaSurface(ImageInterface):
         return 0<mouse_x-self.x-self.__local_x<self.img.get_width() and 0<mouse_y-self.y-self.__local_y<self.img.get_height()
     def get_local_pos(self):
         return self.x+self.__local_x,self.y+self.__local_y
+    def copy(self):
+        return SrcalphaSurface(self.img_original,self.x,self.y,self._width,self._height)
 
 #高级图形类
 class ImageSurface(ImageInterface):
@@ -131,6 +144,8 @@ class ImageSurface(ImageInterface):
             self._height = self._width/self.img.get_width()*self.img.get_height()
     def draw(self,screen):
         self.display(screen)
+    def drawOnTheCenterOf(self,surface):
+        surface.blit(pygame.transform.scale(self.img, (round(self._width),round(self._height))),((surface.get_width()-self._width)/2,(surface.get_height()-self._height)/2))
     def display(self,screen,local_x=0,local_y=0):
         screen.blit(pygame.transform.scale(self.img, (round(self._width),round(self._height))),(self.x+local_x,self.y+local_y))
     def rotate(self,angle):
@@ -142,6 +157,10 @@ class ImageSurface(ImageInterface):
             return True
         else:
             return False
+    def fade_out(self,speed):
+        alphaTmp = self.get_alpha()
+        if alphaTmp > 0:
+            self.set_alpha(alphaTmp-speed)
 
 #需要移动的动态图片
 class DynamicImageSurface(ImageSurface):
@@ -1035,3 +1054,13 @@ class SoundManagement:
     def set_volume(self,volume):
         for i in range(len(self.__sounds_list)):
             self.__sounds_list[i].set_volume(volume)
+
+#使用多线程保存数据
+class SaveDataThread(threading.Thread):
+    def __init__(self,config_file_path,data):
+        threading.Thread.__init__(self)
+        self.config_file_path = config_file_path
+        self.data = data
+    def run(self):
+        saveConfig(self.config_file_path,self.data)
+        del self.data,self.config_file_path

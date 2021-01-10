@@ -1,6 +1,5 @@
 # cython: language_level=3
 from ..basic import *
-import threading
 
 #储存角色图片的常量
 __CHARACTERS_IMAGE_DICT = {}

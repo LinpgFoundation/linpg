@@ -188,9 +188,11 @@ class MapObject:
                 if screen_min<=posTupleTemp[0]<screen_size[0] and screen_min<=posTupleTemp[1]<screen_size[1]:
                     if self.__block_on_surface[y][x] == 0:
                         if not self.isPosInLightArea(x,y):
-                            mapSurface.blit(_MAP_ENV_IMAGE.get_env_image(self.__MapData[y][x].name,True),(posTupleTemp[0]-self.__local_x,posTupleTemp[1]-self.__local_y))
+                            evn_img = _MAP_ENV_IMAGE.get_env_image(self.__MapData[y][x].name,True)
                         else:
-                            mapSurface.blit(_MAP_ENV_IMAGE.get_env_image(self.__MapData[y][x].name,False),(posTupleTemp[0]-self.__local_x,posTupleTemp[1]-self.__local_y))
+                            evn_img = _MAP_ENV_IMAGE.get_env_image(self.__MapData[y][x].name,False)
+                        evn_img.set_pos(posTupleTemp[0]-self.__local_x,posTupleTemp[1]-self.__local_y)
+                        evn_img.draw(mapSurface)
                         self.__block_on_surface[y][x] = 1
                         if y < yRange-1:
                             self.__block_on_surface[y+1][x] = 0

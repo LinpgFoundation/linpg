@@ -2,9 +2,9 @@
 import pygame
 import av
 import os
-import threading, queue
+import queue
 from math import ceil
-from ..module import get_setting,ProgressBar,ImageSurface
+from ..module import get_setting,ProgressBar,ImageSurface,threading
 
 def getAudioFromVideo(moviePath,audioType="mp3"):
     #如果没有Cache文件夹，则创建一个

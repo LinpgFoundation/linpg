@@ -1,21 +1,20 @@
 # cython: language_level=3
-from ..basic import addDarkness, loadImg, resizeImg, GameObject, convert_pos, is_same_pos
+from ..basic import addDarkness, loadImg, SrcalphaSurface, resizeImg, GameObject, convert_pos, is_same_pos
 import pygame
 
 #地图场景模块
 class EnvImagesManagement:
     def __init__(self,theMap,decorationData,bgImgName,blockSize,darkMode,darkness=150):
-        self.__ENV_IMAGE_DICT_ORIGINAL = {}
-        self.__ENV_IMAGE_DICT_ORIGINAL_DARK = None
         self.__ENV_IMAGE_DICT = {}
-        self.__ENV_IMAGE_DICT_DARK = None
+        self.__ENV_IMAGE_DICT_DARK = None if not darkMode else {}
         self.__DECORATION_IMAGE_DICT = {}
-        self.__DECORATION_IMAGE_DICT_DARK = None
+        self.__DECORATION_IMAGE_DICT_DARK = None if not darkMode else {}
         self.__BACKGROUND_IMAGE = loadImg("Assets/image/dialog_background/{}".format(bgImgName),ifConvertAlpha=False).convert() if bgImgName != None else None
         self.__BACKGROUND_SURFACE = None
         self.__MAP_SURFACE = None
         self.__BLOCK_WIDTH = round(blockSize[0])
         self.__BLOCK_HEIGHT =  round(blockSize[1])
+        self.__DARKNESS = darkness
         cdef unsigned int x,y
         cdef list all_images_needed = []
         for y in range(len(theMap)):
@@ -25,8 +24,7 @@ class EnvImagesManagement:
         #加载背景图片
         for fileName in all_images_needed:
             try:
-                self.__ENV_IMAGE_DICT_ORIGINAL[fileName] = loadImg("Assets/image/environment/block/"+fileName+".png")
-                self.__ENV_IMAGE_DICT[fileName] = resizeImg(self.__ENV_IMAGE_DICT_ORIGINAL[fileName],(self.__BLOCK_WIDTH,None))
+                self.__add_evn_image(fileName)
             except BaseException:
                 raise Exception('LinpgEngine-Error: An map-block called '+fileName+' cannot find its image in the folder.')
         #加载场地设施的图片
@@ -41,22 +39,22 @@ class EnvImagesManagement:
             elif decoration.image not in self.__DECORATION_IMAGE_DICT[decoration.type]:
                 self.__DECORATION_IMAGE_DICT[decoration.type][decoration.image] = loadImg("Assets/image/environment/decoration/"+decoration.image+".png")
         #如果是夜战模式
-        if darkMode:
-            self.__ENV_IMAGE_DICT_ORIGINAL_DARK = {}
-            for img,value in self.__ENV_IMAGE_DICT_ORIGINAL.items():
-                self.__ENV_IMAGE_DICT_ORIGINAL_DARK[img] = addDarkness(value,darkness)
-            self.__ENV_IMAGE_DICT_DARK = {}
-            for img,value in self.__ENV_IMAGE_DICT.items():
-                self.__ENV_IMAGE_DICT_DARK[img] = addDarkness(value,darkness)
-            self.__DECORATION_IMAGE_DICT_DARK = {}
+        if self.__DECORATION_IMAGE_DICT_DARK != None:
             for key,value in self.__DECORATION_IMAGE_DICT.items():
                 if key != "campfire":
                     self.__DECORATION_IMAGE_DICT_DARK[key] = {}
                     for key2,value2 in value.items():
-                        self.__DECORATION_IMAGE_DICT_DARK[key][key2] = addDarkness(value2,darkness)
+                        self.__DECORATION_IMAGE_DICT_DARK[key][key2] = addDarkness(value2, self.__DARKNESS)
                 elif "campfire" not in self.__DECORATION_IMAGE_DICT_DARK:
                     self.__DECORATION_IMAGE_DICT_DARK["campfire"] = {}
-                    self.__DECORATION_IMAGE_DICT_DARK["campfire"]["campfire"] = (addDarkness(self.__DECORATION_IMAGE_DICT["campfire"][-1],darkness))
+                    self.__DECORATION_IMAGE_DICT_DARK["campfire"]["campfire"] = (addDarkness(self.__DECORATION_IMAGE_DICT["campfire"][-1],self.__DARKNESS))
+    #加载环境图片
+    def __add_evn_image(self,fileName):
+        self.__ENV_IMAGE_DICT[fileName] = SrcalphaSurface("Assets/image/environment/block/"+fileName+".png",0,0)
+        self.__ENV_IMAGE_DICT[fileName].set_width_with_size_locked(self.__BLOCK_WIDTH)
+        if self.__ENV_IMAGE_DICT_DARK != None:
+            self.__ENV_IMAGE_DICT_DARK[fileName] = self.__ENV_IMAGE_DICT[fileName].copy()
+            self.__ENV_IMAGE_DICT_DARK[fileName].img_original = addDarkness(self.__ENV_IMAGE_DICT_DARK[fileName].img_original,self.__DARKNESS)
     def get_block_width(self):
         return self.__BLOCK_WIDTH
     def get_block_height(self):
@@ -65,10 +63,10 @@ class EnvImagesManagement:
         self.__BLOCK_WIDTH = round(newWidth)
         self.__BLOCK_HEIGHT = round(newHeight)
         for key in self.__ENV_IMAGE_DICT:
-            self.__ENV_IMAGE_DICT[key] = resizeImg(self.__ENV_IMAGE_DICT_ORIGINAL[key],(self.__BLOCK_WIDTH, None))
-        if self.__ENV_IMAGE_DICT_ORIGINAL_DARK != None:
+            self.__ENV_IMAGE_DICT[key].set_width_with_size_locked(self.__BLOCK_WIDTH)
+        if self.__ENV_IMAGE_DICT_DARK != None:
             for key in self.__ENV_IMAGE_DICT_DARK:
-                self.__ENV_IMAGE_DICT_DARK[key] = resizeImg(self.__ENV_IMAGE_DICT_ORIGINAL_DARK[key],(self.__BLOCK_WIDTH,None))
+                self.__ENV_IMAGE_DICT_DARK[key].set_width_with_size_locked(self.__BLOCK_WIDTH)
     def get_env_image(self,key,darkMode):
         try:
             if darkMode:
@@ -77,14 +75,8 @@ class EnvImagesManagement:
                 return self.__ENV_IMAGE_DICT[key]
         except BaseException:
             print('LinpgEngine-Warning: Cannot find block image "{}", we will try to load it for you right now, but please by aware.'.format(key))
-            imgTmp = loadImg("Assets/image/environment/block/"+key+".png")
-            self.__ENV_IMAGE_DICT_ORIGINAL[key] = imgTmp
-            self.__ENV_IMAGE_DICT[key] = resizeImg(imgTmp,(self.__BLOCK_WIDTH,None))
-            if self.__ENV_IMAGE_DICT_ORIGINAL_DARK != None:
-                imgTmp = addDarkness(imgTmp,150)
-                self.__ENV_IMAGE_DICT_ORIGINAL_DARK[key] = imgTmp
-                self.__ENV_IMAGE_DICT_DARK[key] = resizeImg(imgTmp,(self.__BLOCK_WIDTH,None))
-    def get_decoration_image(self,decorationType,key,darkMode,darkness=150):
+            self.__add_evn_image(key)
+    def get_decoration_image(self,decorationType,key,darkMode):
         try:
             if darkMode:
                 return self.__DECORATION_IMAGE_DICT_DARK[decorationType][key]
@@ -96,7 +88,7 @@ class EnvImagesManagement:
             imgTmp = loadImg("Assets/image/environment/decoration/"+key+".png")
             self.__DECORATION_IMAGE_DICT[decorationType][key] = imgTmp
             if self.__DECORATION_IMAGE_DICT_DARK != None:
-                self.__DECORATION_IMAGE_DICT_DARK[decorationType][key] = addDarkness(imgTmp,darkness)
+                self.__DECORATION_IMAGE_DICT_DARK[decorationType][key] = addDarkness(imgTmp,self.__DARKNESS)
     #获取当前装饰物种类的数量
     def get_decoration_num(self,decorationType):
         return len(self.__DECORATION_IMAGE_DICT[decorationType])

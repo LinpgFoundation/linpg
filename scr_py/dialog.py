@@ -167,6 +167,7 @@ class DialogSystem(DialogSystemInterface):
                     else:
                         pass
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                process_saved_text = None
                 while True:
                     self._update_event()
                     result = self.pause_menu.display(screen,self.events)
@@ -175,7 +176,7 @@ class DialogSystem(DialogSystemInterface):
                         break
                     elif result == "Save":
                         self.save_process()
-                        print("游戏已经保存")
+                        process_saved_text = self.dialogTxtSystem.FONT.render(get_lang("ProcessSaved"),get_fontMode(),(255, 255, 255))
                     elif result == "Setting":
                         setting.isDisplaying = True
                     elif result == "BackToMainMenu":
@@ -185,6 +186,13 @@ class DialogSystem(DialogSystemInterface):
                     #如果播放玩菜单后发现有东西需要更新
                     if setting.display(screen,self.events):
                         self.__update_sound_volume()
+                    if process_saved_text != None:
+                        screen.blit(process_saved_text,((screen.get_width()-process_saved_text.get_width())/2,(screen.get_height()-process_saved_text.get_height())/2))
+                        alphaTmp = process_saved_text.get_alpha()
+                        if alphaTmp > 10:
+                            process_saved_text.set_alpha(alphaTmp-5)
+                        else:
+                            process_saved_text = None
                     display.flip()
                 self.pause_menu.screenshot = None
         #显示选项

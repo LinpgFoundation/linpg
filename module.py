@@ -93,6 +93,7 @@ class SrcalphaSurface(ImageInterface):
         self.img.blit(imgTmp,(-self.__local_x,-self.__local_y))
         if self._alpha != 255:
             self.img.set_alpha(self._alpha)
+        self.__needUpdate = False
     def flip(self):
         self.__isFlipped = not self.__isFlipped
         self.img_original = pygame.transform.flip(self.img_original,True,False)

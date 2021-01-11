@@ -1,5 +1,5 @@
 # cython: language_level=3
-from ..basic import addDarkness, loadImg, SrcalphaSurface, resizeImg, GameObject, convert_pos, is_same_pos
+from ..basic import SrcalphaSurface, GameObject, convert_pos, is_same_pos
 import pygame
 
 #地图场景模块
@@ -9,52 +9,50 @@ class EnvImagesManagement:
         self.__ENV_IMAGE_DICT_DARK = None if not darkMode else {}
         self.__DECORATION_IMAGE_DICT = {}
         self.__DECORATION_IMAGE_DICT_DARK = None if not darkMode else {}
-        self.__BACKGROUND_IMAGE = loadImg("Assets/image/dialog_background/{}".format(bgImgName),ifConvertAlpha=False).convert() if bgImgName != None else None
+        self.__BACKGROUND_IMAGE = pygame.image.load("Assets/image/dialog_background/{}".format(bgImgName)).convert() if bgImgName != None else None
         self.__BACKGROUND_SURFACE = None
         self.__MAP_SURFACE = None
         self.__BLOCK_WIDTH = round(blockSize[0])
         self.__BLOCK_HEIGHT =  round(blockSize[1])
-        self.__DARKNESS = darkness
+        self.__DARKNESS = darkness if darkMode else None
         cdef unsigned int x,y
         cdef list all_images_needed = []
         for y in range(len(theMap)):
             for x in range(len(theMap[y])):
                 if theMap[y][x].name not in all_images_needed:
                     all_images_needed.append(theMap[y][x].name)
-        #加载背景图片
+        #加载图片
         for fileName in all_images_needed:
-            try:
-                self.__add_evn_image(fileName)
-            except BaseException:
-                raise Exception('LinpgEngine-Error: An map-block called '+fileName+' cannot find its image in the folder.')
-        #加载场地设施的图片
+            self.__add_evn_image(fileName)
         for decoration in decorationData:
-            #--篝火--
-            if decoration.type == "campfire":
-                if "campfire" not in self.__DECORATION_IMAGE_DICT:
-                    self.__DECORATION_IMAGE_DICT["campfire"] = [loadImg("Assets/image/environment/campfire/{}.png".format(i)) for i in range(1,12)]
-            elif decoration.type not in self.__DECORATION_IMAGE_DICT:
-                self.__DECORATION_IMAGE_DICT[decoration.type] = {}
-                self.__DECORATION_IMAGE_DICT[decoration.type][decoration.image] = loadImg("Assets/image/environment/decoration/"+decoration.image+".png")
-            elif decoration.image not in self.__DECORATION_IMAGE_DICT[decoration.type]:
-                self.__DECORATION_IMAGE_DICT[decoration.type][decoration.image] = loadImg("Assets/image/environment/decoration/"+decoration.image+".png")
-        #如果是夜战模式
-        if self.__DECORATION_IMAGE_DICT_DARK != None:
-            for key,value in self.__DECORATION_IMAGE_DICT.items():
-                if key != "campfire":
-                    self.__DECORATION_IMAGE_DICT_DARK[key] = {}
-                    for key2,value2 in value.items():
-                        self.__DECORATION_IMAGE_DICT_DARK[key][key2] = addDarkness(value2, self.__DARKNESS)
-                elif "campfire" not in self.__DECORATION_IMAGE_DICT_DARK:
-                    self.__DECORATION_IMAGE_DICT_DARK["campfire"] = {}
-                    self.__DECORATION_IMAGE_DICT_DARK["campfire"]["campfire"] = (addDarkness(self.__DECORATION_IMAGE_DICT["campfire"][-1],self.__DARKNESS))
+            self.__add_decoration_image(decoration.type,decoration.image)
     #加载环境图片
     def __add_evn_image(self,fileName):
         self.__ENV_IMAGE_DICT[fileName] = SrcalphaSurface("Assets/image/environment/block/"+fileName+".png",0,0)
         self.__ENV_IMAGE_DICT[fileName].set_width_with_size_locked(self.__BLOCK_WIDTH)
+        #如果是夜战模式
         if self.__ENV_IMAGE_DICT_DARK != None:
             self.__ENV_IMAGE_DICT_DARK[fileName] = self.__ENV_IMAGE_DICT[fileName].copy()
-            self.__ENV_IMAGE_DICT_DARK[fileName].img_original = addDarkness(self.__ENV_IMAGE_DICT_DARK[fileName].img_original,self.__DARKNESS)
+            self.__ENV_IMAGE_DICT_DARK[fileName].addDarkness(self.__DARKNESS)
+    #加载场景装饰物图片
+    def __add_decoration_image(self,decorationType,fileName):
+        if decorationType != "campfire":
+            if decorationType not in self.__DECORATION_IMAGE_DICT:
+                self.__DECORATION_IMAGE_DICT[decorationType] = {}
+            self.__DECORATION_IMAGE_DICT[decorationType][fileName] = SrcalphaSurface("Assets/image/environment/decoration/"+fileName+".png",0,0)
+            #如果是夜战模式
+            if self.__DECORATION_IMAGE_DICT_DARK != None:
+                if decorationType not in self.__DECORATION_IMAGE_DICT_DARK:
+                    self.__DECORATION_IMAGE_DICT_DARK[decorationType] = {}
+                self.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName] = self.__DECORATION_IMAGE_DICT[decorationType][fileName].copy()
+                self.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName].addDarkness(self.__DARKNESS)
+        #--篝火--
+        elif "campfire" not in self.__DECORATION_IMAGE_DICT:
+            self.__DECORATION_IMAGE_DICT["campfire"] = [SrcalphaSurface("Assets/image/environment/campfire/{}.png".format(i),0,0) for i in range(1,12)]
+            if self.__DECORATION_IMAGE_DICT_DARK != None:
+                self.__DECORATION_IMAGE_DICT_DARK["campfire"] = {}
+                self.__DECORATION_IMAGE_DICT_DARK["campfire"]["campfire"] = self.__DECORATION_IMAGE_DICT["campfire"][-1].copy()
+                self.__DECORATION_IMAGE_DICT_DARK["campfire"]["campfire"].addDarkness(self.__DARKNESS)
     def get_block_width(self):
         return self.__BLOCK_WIDTH
     def get_block_height(self):
@@ -85,22 +83,19 @@ class EnvImagesManagement:
         #如果图片没找到
         except BaseException:
             print('LinpgEngine-Warning: Cannot find decoration image "{0}" in type "{1}", we will try to load it for you right now, but please by aware.'.format(key,decorationType))
-            imgTmp = loadImg("Assets/image/environment/decoration/"+key+".png")
-            self.__DECORATION_IMAGE_DICT[decorationType][key] = imgTmp
-            if self.__DECORATION_IMAGE_DICT_DARK != None:
-                self.__DECORATION_IMAGE_DICT_DARK[decorationType][key] = addDarkness(imgTmp,self.__DARKNESS)
+            self.__add_decoration_image(decorationType,key)
     #获取当前装饰物种类的数量
     def get_decoration_num(self,decorationType):
         return len(self.__DECORATION_IMAGE_DICT[decorationType])
     def new_surface(self,screen_size,map_size):
         if self.__BACKGROUND_IMAGE != None:
-            self.__BACKGROUND_SURFACE = resizeImg(self.__BACKGROUND_IMAGE,screen_size)
+            self.__BACKGROUND_SURFACE = pygame.transform.scale(self.__BACKGROUND_IMAGE,screen_size)
         else:
             self.__BACKGROUND_SURFACE = pygame.Surface(screen_size).convert()
-        if self.__MAP_SURFACE == None:
-            self.__MAP_SURFACE = pygame.Surface(map_size,flags=pygame.SRCALPHA).convert_alpha()
-        else:
+        if self.__MAP_SURFACE != None:
             self.__MAP_SURFACE.fill((0,0,0,0))
+        else:
+            self.__MAP_SURFACE = pygame.Surface(map_size,flags=pygame.SRCALPHA).convert_alpha()
     def get_surface(self):
         return self.__MAP_SURFACE
     def display_background_surface(self,screen,pos):

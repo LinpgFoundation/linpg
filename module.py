@@ -8,24 +8,24 @@ import threading
 
 #游戏对象接口
 class GameObject:
-    def __init__(self,x,y):
+    def __init__(self, x:float, y:float) -> None:
         self.x = x
         self.y = y
-    def __lt__(self,other):
+    def __lt__(self,other) -> bool:
         return self.y+self.x < other.y+other.x
-    def get_pos(self):
+    def get_pos(self) -> tuple:
         return self.x,self.y
-    def set_pos(self,x,y):
+    def set_pos(self, x:float, y:float) -> None:
         self.x = round(x)
         self.y = round(y)
 
 #系统模块接口
 class SystemObject:
-    def __init__(self):
+    def __init__(self) -> None:
         #输入事件
         self.__events = None
     #更新输入事件
-    def _update_event(self):
+    def _update_event(self) -> None:
         self.__events = pygame.event.get()
     #获取输入事件
     @property
@@ -126,7 +126,10 @@ class SrcalphaSurface(ImageInterface):
     def get_local_pos(self):
         return self.x+self.__local_x,self.y+self.__local_y
     def copy(self):
-        return SrcalphaSurface(self.img_original,self.x,self.y,self._width,self._height)
+        return SrcalphaSurface(self.img_original.copy(),self.x,self.y,self._width,self._height)
+    def addDarkness(self,value):
+        self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_SUB)
+        self.__needUpdate = True
 
 #高级图形类
 class ImageSurface(ImageInterface):

@@ -24,3 +24,5 @@ for path in glob.glob(r'scr_pyx/*.pyx'):
 os.makedirs("scr_pyd")
 for path in glob.glob(r'*.pyd'):
     shutil.move(path,"scr_pyd")
+
+shutil.rmtree('build')

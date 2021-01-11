@@ -228,7 +228,7 @@ class MapObject:
             imgToBlit = None
             thePosInMap = self.calPosInMap(item.x,item.y)
             if screen_min<=thePosInMap[0]<screen_width and screen_min<=thePosInMap[1]<screen_height:
-                if self.__darkMode == True and not self.inLightArea(item):
+                if not self.inLightArea(item):
                     keyWordTemp = True
                 else:
                     keyWordTemp = False
@@ -241,38 +241,49 @@ class MapObject:
                         item.alpha -= 15
                     #根据alpha值生成对应的图片
                     if item.alpha >= 255:
-                        imgToBlit = pygame.transform.scale(_MAP_ENV_IMAGE.get_decoration_image("campfire",int(item.imgId),False), (round(self.block_width/2),round(self.block_width/2)))
+                        imgToBlit = _MAP_ENV_IMAGE.get_decoration_image("campfire",int(item.imgId),False)
+                        imgToBlit.set_alpha(255)
                         if item.imgId >= _MAP_ENV_IMAGE.get_decoration_num("campfire")-2:
                             item.imgId = 0
                         else:
                             item.imgId += 0.1
                     elif item.alpha <= 0:
-                        if keyWordTemp == False:
-                            imgToBlit = pygame.transform.scale(_MAP_ENV_IMAGE.get_decoration_image("campfire",-1,False), (round(self.block_width/2),round(self.block_width/2)))
+                        if not keyWordTemp:
+                            imgToBlit = _MAP_ENV_IMAGE.get_decoration_image("campfire",-1,False)
+                            imgToBlit.set_alpha(255)
                         else:
-                            imgToBlit = pygame.transform.scale(_MAP_ENV_IMAGE.get_decoration_image("campfire","campfire",True), (round(self.block_width/2),round(self.block_width/2)))
+                            imgToBlit = _MAP_ENV_IMAGE.get_decoration_image("campfire","campfire",True)
+                            imgToBlit.set_alpha(255)
                     else:
-                        imgToBlit = pygame.transform.scale(_MAP_ENV_IMAGE.get_decoration_image("campfire",-1,False), (round(self.block_width/2),round(self.block_width/2)))
-                        screen.blit(imgToBlit,(thePosInMap[0]+offSetX,thePosInMap[1]-offSetY))
-                        imgToBlit = pygame.transform.scale(_MAP_ENV_IMAGE.get_decoration_image("campfire",int(item.imgId),False), (round(self.block_width/2),round(self.block_width/2)))
+                        imgToBlit = _MAP_ENV_IMAGE.get_decoration_image("campfire",-1,False)
+                        imgToBlit.set_alpha(255)
+                        imgToBlit.set_size(self.block_width/2,self.block_width/2)
+                        imgToBlit.set_pos(thePosInMap[0]+offSetX,thePosInMap[1]-offSetY)
+                        imgToBlit.draw(screen)
+                        imgToBlit = _MAP_ENV_IMAGE.get_decoration_image("campfire",int(item.imgId),False)
                         imgToBlit.set_alpha(item.alpha)
                         if item.imgId >= _MAP_ENV_IMAGE.get_decoration_num("campfire")-2:
                             item.imgId = 0
                         else:
                             item.imgId += 0.1
+                    imgToBlit.set_size(self.block_width/2,self.block_width/2)
                 #树
                 elif item.type == "tree":
-                    imgToBlit = pygame.transform.scale(_MAP_ENV_IMAGE.get_decoration_image("tree",item.image,keyWordTemp),(round(self.block_width*0.75),round(self.block_width*0.75)))
+                    imgToBlit = _MAP_ENV_IMAGE.get_decoration_image("tree",item.image,keyWordTemp)
+                    imgToBlit.set_size(self.block_width*0.75,self.block_width*0.75)
                     thePosInMap = (thePosInMap[0]-offSetX_tree,thePosInMap[1]-offSetY_tree)
-                    if item.get_pos() in charactersPos:
-                        if self.__darkMode == False or self.inLightArea(item):
-                            imgToBlit.set_alpha(100)
+                    if item.get_pos() in charactersPos and self.inLightArea(item):
+                        imgToBlit.set_alpha(100)
+                    else:
+                        imgToBlit.set_alpha(255)
                 #其他装饰物
                 elif item.type == "decoration" or item.type == "obstacle" or item.type == "chest":
-                    imgToBlit = pygame.transform.scale(_MAP_ENV_IMAGE.get_decoration_image(item.type,item.image,keyWordTemp),(round(self.block_width/2),round(self.block_width/2)))
+                    imgToBlit = _MAP_ENV_IMAGE.get_decoration_image(item.type,item.image,keyWordTemp)
+                    imgToBlit.set_size(self.block_width/2,self.block_width/2)
                 #画上装饰物
                 if imgToBlit != None:
-                    screen.blit(imgToBlit,(thePosInMap[0]+offSetX,thePosInMap[1]-offSetY))
+                    imgToBlit.set_pos(thePosInMap[0]+offSetX,thePosInMap[1]-offSetY)
+                    imgToBlit.draw(screen)
     #更新方块
     def update_block(self,pos,name):
         self.__MapData[pos["y"]][pos["x"]].update(name,_BLOCKS_DATABASE[name]["canPassThrough"])
@@ -349,7 +360,7 @@ class MapObject:
     def inLightArea(self,doll):
         return self.isPosInLightArea(doll.x,doll.y)
     def isPosInLightArea(self,int x,int y):
-        if self.__darkMode == False:
+        if not self.__darkMode:
             return True
         else:
             return numpy.any(numpy.equal(self.__LightArea,[x,y]).all(1))

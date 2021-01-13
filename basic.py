@@ -22,8 +22,7 @@ def loadImg(path,width=None,height=None,setAlpha=None,ifConvertAlpha=True) -> py
     return img
 
 #图片blit模块：接受图片，位置（列表格式），屏幕，如果不是UI层需要local_x和local_y
-def drawImg(img,position,screen,local_x=0,local_y=0) -> None:
-    screen.blit(img,(position[0]+local_x,position[1]+local_y))
+def drawImg(img,position,screen,local_x=0,local_y=0) -> None: screen.blit(img,(position[0]+local_x,position[1]+local_y))
 
 #重新编辑尺寸
 def resizeImg(img,imgSize=(None,None)) -> pygame.Surface:
@@ -46,8 +45,7 @@ def loadDynamicImage(path,position,target_position,moveSpeed=(0,0),width=None,he
     return DynamicImageSurface(imgLoadFunction(path,ifConvertAlpha),position[0],position[1],target_position[0],target_position[1],moveSpeed[0],moveSpeed[1],width,height,description)
 
 #加载GIF格式图片
-def loadGif(imgList,position,size,updateGap=1) -> GifObject:
-    return GifObject(imgList,position[0],position[1],size[0],size[1],updateGap)
+def loadGif(imgList,position,size,updateGap=1) -> GifObject: return GifObject(imgList,position[0],position[1],size[0],size[1],updateGap)
 
 def loadRealGif(path,position,size,updateGap=1) -> GifObject:
     gif_img = Image.open(path)
@@ -104,31 +102,29 @@ def displayWithInCenter(item1,item2,x,y,screen,local_x=0,local_y=0) -> None:
     screen.blit(item1,(x+added_x+local_x,y+added_y+local_y))
 
 #字典合并
-def dicMerge(dict1, dict2) -> dict: 
-    res = {**dict1, **dict2} 
-    return res
+def dicMerge(dict1:dict, dict2:dict) -> dict: return {**dict1, **dict2}
 
 #加载路径下的所有图片，储存到一个list当中，然后返回
-def loadAllImgInFile(pathRule,width=None,height=None) -> List[pygame.Surface]:
+def loadAllImgInFile(pathRule:str, width=None,height=None) -> List[pygame.Surface]:
     allImg = glob.glob(pathRule)
     for i in range(len(allImg)):
         allImg[i] = loadImg(allImg[i],width,height)
     return allImg
 
 #增加图片暗度
-def addDarkness(img,value) -> pygame.Surface:
+def addDarkness(img:pygame.Surface, value:int) -> pygame.Surface:
     newImg = img.copy()
     newImg.fill((value, value, value),special_flags=pygame.BLEND_RGB_SUB) 
     return newImg
 
 #减少图片暗度
-def removeDarkness(img,value) -> pygame.Surface:
+def removeDarkness(img:pygame.Surface, value:int) -> pygame.Surface:
     newImg = img.copy()
     newImg.fill((value, value, value), special_flags=pygame.BLEND_RGB_ADD)
     return newImg
 
 #调整图片亮度
-def changeDarkness(surface,value) -> pygame.Surface:
+def changeDarkness(surface:pygame.Surface, value:int) -> pygame.Surface:
     if value == 0:
         return surface
     if value > 0:
@@ -137,7 +133,7 @@ def changeDarkness(surface,value) -> pygame.Surface:
         return removeDarkness(surface,abs(value))
 
 #按照给定的位置对图片进行剪裁
-def cropImg(img,pos=(0,0),size=(0,0)) -> pygame.Surface:
+def cropImg(img:pygame.Surface, pos=(0,0),size=(0,0)) -> pygame.Surface:
     cropped = pygame.Surface((round(size[0]), round(size[1])),flags=pygame.SRCALPHA).convert_alpha()
     cropped.blit(img,(-pos[0],-pos[1]))
     return cropped
@@ -174,7 +170,7 @@ def unloadBackgroundMusic() -> None:
     pygame.mixer.stop()
 
 #获取特定颜色的表面
-def get_SingleColorSurface(color,size=None) -> ImageSurface:
+def get_SingleColorSurface(color, size=None) -> ImageSurface:
     if size == None:
         width,height = display.get_size()
     else:
@@ -185,8 +181,7 @@ def get_SingleColorSurface(color,size=None) -> ImageSurface:
     return ImageSurface(surfaceTmp,0,0,width,height)
 
 #随机数
-def randomInt(start,end) -> int:
-    return random.randint(start,end)
+def randomInt(start:int, end:int) -> int: return random.randint(start,end)
 
 #转换路径
 def convert_pos(pos) -> List[int]:
@@ -202,5 +197,5 @@ def convert_pos(pos) -> List[int]:
         y = pos.y
     return x,y
 
-def is_same_pos(pos1,pos2) -> bool:
-    return convert_pos(pos1) == convert_pos(pos2)
+#判断2个坐标是否相同
+def is_same_pos(pos1,pos2) -> bool: return convert_pos(pos1) == convert_pos(pos2)

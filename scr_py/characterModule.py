@@ -1,67 +1,63 @@
 # cython: language_level=3
 from ..basic import *
 
+#角色UI的文字数据
+_DOLL_UI_FONT = createFont(get_setting("Screen_size_x")/192)
+
 #储存角色图片的常量
-__CHARACTERS_IMAGE_DICT = {}
+_CHARACTERS_IMAGE_DICT = {}
 #获取特定的角色图片
 def getDollImg(self_type,action,imgId):
-    return __CHARACTERS_IMAGE_DICT[self_type][action]["img"][imgId]
+    return _CHARACTERS_IMAGE_DICT[self_type][action]["img"][imgId]
 #获取角色对应图片的ID
 def getDollImgNum(self_type,action):
-    return __CHARACTERS_IMAGE_DICT[self_type][action]["imgNum"]
+    return _CHARACTERS_IMAGE_DICT[self_type][action]["imgNum"]
 
-#储存角色音效的常量
-__CHARACTERS_SOUND_DICT = {}
-__CHARACTERS_SOUND_CHANNEL = 5
-#加载角色音效
-def _load_sound_to_CHARACTERS_SOUND_DICT(self_type):
-    if self_type not in __CHARACTERS_SOUND_DICT and os.path.exists("Assets/sound/character/"+self_type):
-        sound_files = os.listdir("Assets/sound/character/{}/".format(self_type))
-        if len(sound_files) > 0:
-            volume = get_setting("Sound","sound_effects")
-            __CHARACTERS_SOUND_DICT[self_type] = {}
-            for kindOfSound in sound_files:
-                __CHARACTERS_SOUND_DICT[self_type][kindOfSound] = []
-                allSoundOfThatKind = glob.glob("Assets/sound/character/{}/{}/*".format(self_type,kindOfSound))
-                if len(allSoundOfThatKind) > 0:
-                    for soundPath in allSoundOfThatKind:
-                        sound = pygame.mixer.Sound(soundPath)
-                        sound.set_volume(volume/100.0)
-                        __CHARACTERS_SOUND_DICT[self_type][kindOfSound].append(sound)
-#播放角色音效
-def _play_CHARACTERS_SOUND(self_type,kind_of_sound):
-    if self_type in __CHARACTERS_SOUND_DICT:
-        sound_list = __CHARACTERS_SOUND_DICT[self_type]
-        if kind_of_sound in sound_list:
-            sound_list = sound_list[kind_of_sound]
-            if len(sound_list) == 1:
-                pygame.mixer.Channel(__CHARACTERS_SOUND_CHANNEL).play(sound_list[0])
-            elif len(sound_list) > 1:
-                pygame.mixer.Channel(__CHARACTERS_SOUND_CHANNEL).play(sound_list[random.randint(0,len(sound_list)-1)])
-
-#角色UI的文字
-DOLL_UI_FONT = createFont(get_setting("Screen_size_x")/192)
-#角色受伤立绘
-__CHARACTERS_GET_HURT_IMAGE_DICT = {}
-def _get_CHARACTERS_GET_HURT_IMAGE(self_type):
-    return __CHARACTERS_GET_HURT_IMAGE_DICT[self_type]
-def _add_CHARACTERS_GET_HURT_IMAGE(self_type):
-    if self_type not in __CHARACTERS_GET_HURT_IMAGE_DICT:
-        __CHARACTERS_GET_HURT_IMAGE_DICT[self_type] = pygame.image.load(os.path.join("Assets/image/npc/{}_hurt.png".format(self_type))).convert_alpha()
-
+#存储角色受伤立绘的常量
+_CHARACTERS_GET_HURT_IMAGE_DICT = {}
 #角色受伤立绘图形模块
-class CHARACTERS_GET_HURT_IMAGE(GameObject):
+class CharacterGetHurtImageManagement(GameObject):
     def __init__(self,self_type,y,width):
         GameObject.__init__(self,None,y)
         self.yToGo = None
         self.width = int(width)
         self.alpha = 255
-        _add_CHARACTERS_GET_HURT_IMAGE(self_type)
-    def draw(self,screen,self_type):
-        GetHurtImage = pygame.transform.scale(_get_CHARACTERS_GET_HURT_IMAGE(self_type),(self.width,self.width))
+        self.add(self_type)
+    def draw(self,screen,characterType:str) -> None:
+        GetHurtImage = pygame.transform.scale(_CHARACTERS_GET_HURT_IMAGE_DICT[characterType],(self.width,self.width))
         if self.alpha != 255:
             GetHurtImage.set_alpha(self.alpha)
         screen.blit(GetHurtImage,(self.x,self.y))
+    def add(self,characterType:str) -> None:
+        global _CHARACTERS_GET_HURT_IMAGE_DICT
+        if characterType not in _CHARACTERS_GET_HURT_IMAGE_DICT:
+            _CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = pygame.image.load(os.path.join("Assets/image/npc/{}_hurt.png".format(characterType))).convert_alpha()
+
+#角色音效管理系统
+class CharacterSoundManagement:
+    def __init__(self,channel_id):
+        self.channel_id = channel_id
+        self.__sounds_dict = {}
+    #加载音效
+    def add(self,characterType:str) -> None:
+        if characterType not in self.__sounds_dict and os.path.exists("Assets/sound/character/"+characterType):
+            self.__sounds_dict[characterType] = {}
+            for soundType in os.listdir("Assets/sound/character/{}/".format(characterType)):
+                self.__sounds_dict[characterType][soundType] = []
+                for soundPath in glob.glob("Assets/sound/character/{}/{}/*".format(characterType,soundType)):
+                    self.__sounds_dict[characterType][soundType].append(pygame.mixer.Sound(soundPath))
+    #播放角色音效
+    def play(self,characterType:str,soundType:str) -> None:
+        if characterType in self.__sounds_dict and soundType in self.__sounds_dict[characterType]:
+            sound_list = self.__sounds_dict[characterType][soundType]
+            if len(sound_list) > 1:
+                sound = sound_list[randomInt(0,len(sound_list)-1)]
+            else:
+                sound = sound_list[0]
+            sound.set_volume(get_setting("Sound","sound_effects")/100.0)
+            pygame.mixer.Channel(self.channel_id).play(sound)
+#储存角色音效的常量
+_CHARACTERS_SOUND_SYSTEM = CharacterSoundManagement(5)
 
 #人形模块
 class Doll(GameObject):
@@ -232,11 +228,9 @@ class Doll(GameObject):
     def loadImg(self):
         for theAction in self.__imgId_dict:
             character_creator(self.type,theAction,self.faction)
-        _load_sound_to_CHARACTERS_SOUND_DICT(self.type)
-        if self.faction == "character":
-            _add_CHARACTERS_GET_HURT_IMAGE(self.type)
+        _CHARACTERS_SOUND_SYSTEM.add(self.type)
     def attackBy(self,attacker):
-        damage = random.randint(attacker.min_damage,attacker.max_damage)
+        damage = randomInt(attacker.min_damage,attacker.max_damage)
         self.decreaseHp(damage)
         return damage
     def decreaseHp(self,damage):
@@ -245,19 +239,19 @@ class Doll(GameObject):
         if self.current_recoverable_armor > 0:
             #如果伤害大于护甲值,则以护甲值为最大护甲将承受的伤害
             if damage > self.current_recoverable_armor:
-                damage_take_by_armor = random.randint(0,self.current_recoverable_armor)
+                damage_take_by_armor = randomInt(0,self.current_recoverable_armor)
             #如果伤害小于护甲值,则以伤害为最大护甲将承受的伤害
             else:
-                damage_take_by_armor = random.randint(0,damage)
+                damage_take_by_armor = randomInt(0,damage)
             self.current_recoverable_armor -= damage_take_by_armor
             damage -= damage_take_by_armor
         #如果有不可再生的护甲
         if self.irrecoverable_armor > 0 and damage > 0:
             if damage > self.irrecoverable_armor:
-                damage_take_by_armor = random.randint(0,self.irrecoverable_armor)
+                damage_take_by_armor = randomInt(0,self.irrecoverable_armor)
             #如果伤害小于护甲值,则以伤害为最大护甲将承受的伤害
             else:
-                damage_take_by_armor = random.randint(0,damage)
+                damage_take_by_armor = randomInt(0,damage)
             self.irrecoverable_armor -= damage_take_by_armor
             damage -= damage_take_by_armor
         #如果还有伤害,则扣除血量
@@ -335,12 +329,12 @@ class Doll(GameObject):
         if self.dying == False:
             if original_UI_img != None:
                 hp_img = original_UI_img["hp_green"]
-            current_hp_to_display = DOLL_UI_FONT.render("{}/{}".format(self.current_hp,self.max_hp),get_fontMode(),(0,0,0))
+            current_hp_to_display = _DOLL_UI_FONT.render("{}/{}".format(self.current_hp,self.max_hp),get_fontMode(),(0,0,0))
             percent_of_hp = self.current_hp/self.max_hp
         else:
             if original_UI_img != None:
                 hp_img = original_UI_img["hp_red"]
-            current_hp_to_display = DOLL_UI_FONT.render("{}/3".format(self.dying),get_fontMode(),(0,0,0))
+            current_hp_to_display = _DOLL_UI_FONT.render("{}/3".format(self.dying),get_fontMode(),(0,0,0))
             percent_of_hp = self.dying/3
         #把角色图片画到屏幕上
         xTemp,yTemp = MapClass.calPosInMap(self.x,self.y)
@@ -444,7 +438,7 @@ class Doll(GameObject):
         return attacking_range
     #播放角色声音
     def playSound(self,kind_of_sound):
-        _play_CHARACTERS_SOUND(self.type,kind_of_sound)
+        _CHARACTERS_SOUND_SYSTEM.play(self.type,kind_of_sound)
 
 #友方角色类
 class FriendlyCharacter(Doll):
@@ -460,13 +454,16 @@ class FriendlyCharacter(Doll):
         self.eyeImgSize = 0
         if self.kind != "HOC":
             try:
-                self.ImageGetHurt = CHARACTERS_GET_HURT_IMAGE(self.type,get_setting("Screen_size_y")/4,get_setting("Screen_size_y")/2)
+                self.ImageGetHurt = CharacterGetHurtImageManagement(self.type,get_setting("Screen_size_y")/4,get_setting("Screen_size_y")/2)
             except BaseException:
                 print('警告：角色 {} 没有对应的破衣动画'.format(defaultData["type"]))
                 if not os.path.exists("Assets/image/npc_icon/{}.png".format(defaultData["type"])):
                     print("而且你也忘了加入对应的头像")
+    def loadImg(self):
+        super().loadImg()
+        self.ImageGetHurt.add(self.type)
     def attackBy(self,attacker,result_of_round):
-        damage = random.randint(attacker.min_damage,attacker.max_damage)
+        damage = randomInt(attacker.min_damage,attacker.max_damage)
         self.decreaseHp(damage,result_of_round)
         return damage
     def decreaseHp(self,damage,result_of_round):
@@ -674,19 +671,19 @@ def calculate_range(effective_range_dic):
 #动图制作模块：接受一个友方角色名和动作,当前的方块标准长和高，返回对应角色动作list或者因为没图片而返回None
 #810*810 possition:405/567
 def character_creator(character_name,action,faction):
-    global __CHARACTERS_IMAGE_DICT
-    if character_name in __CHARACTERS_IMAGE_DICT:
-        if action in __CHARACTERS_IMAGE_DICT[character_name]:
+    global _CHARACTERS_IMAGE_DICT
+    if character_name in _CHARACTERS_IMAGE_DICT:
+        if action in _CHARACTERS_IMAGE_DICT[character_name]:
             return {"imgId":0,"alpha":255}
         else:
-            __CHARACTERS_IMAGE_DICT[character_name][action] = {}
+            _CHARACTERS_IMAGE_DICT[character_name][action] = {}
     else:
-        __CHARACTERS_IMAGE_DICT[character_name] = {}
-        #__CHARACTERS_IMAGE_DICT[character_name][action] = {}
+        _CHARACTERS_IMAGE_DICT[character_name] = {}
+        #_CHARACTERS_IMAGE_DICT[character_name][action] = {}
     if os.path.exists("Assets/image/{0}/{1}/{2}".format(faction,character_name,action)):
         files_amount = len(glob.glob("Assets/image/{0}/{1}/{2}/*.png".format(faction,character_name,action)))
         if files_amount > 0:
-            __CHARACTERS_IMAGE_DICT[character_name][action] = {"img":numpy.asarray([SrcalphaSurface(\
+            _CHARACTERS_IMAGE_DICT[character_name][action] = {"img":numpy.asarray([SrcalphaSurface(\
                 "Assets/image/{0}/{1}/{2}/{3}_{4}_{5}.png".format(faction,character_name,action,character_name,action,i)\
                     ,0,0) for i in range(files_amount)]),"imgNum":files_amount}
             return {"imgId":0,"alpha":255}
@@ -717,12 +714,12 @@ def character_gif_dic(character_name,faction,mode):
             imgId_dict["die"] = character_creator(character_name,"die",faction)
         else:
             temp_list = ["","2","3"]
-            imgId_dict["die"] = character_creator(character_name,"die"+temp_list[random.randint(0,2)],faction)
+            imgId_dict["die"] = character_creator(character_name,"die"+temp_list[randomInt(0,2)],faction)
             if imgId_dict["die"]==None:
                 imgId_dict["die"] = character_creator(character_name,"die",faction)
         """
         #加载角色的音效
-        _load_sound_to_CHARACTERS_SOUND_DICT(character_name)
+        _CHARACTERS_SOUND_SYSTEM.add(character_name)
     elif mode == "dev":
         imgId_dict = {"wait":character_creator(character_name,"wait",faction)}
     else:
@@ -730,7 +727,7 @@ def character_gif_dic(character_name,faction,mode):
     return imgId_dict
 
 #为角色创建用于储存音效的文件夹
-def autoMkdirForCharacterSounds():
+def makeFolderForCharacterSounds():
     for each_character in os.listdir("Assets/image/character/"):
         path = os.path.join("Assets/sound/character",each_character)
         if not os.path.exists(path):
@@ -786,7 +783,7 @@ def loadCharacterData():
             print("LinpgEngine-Notice:A new character call {} has been updated to the data file.".format(name))
     if ifAnythingChange == True:
         saveConfig("Data/character_data.yaml",loadData)
-    autoMkdirForCharacterSounds()
+    makeFolderForCharacterSounds()
     return loadData
 
 #射击音效 -- 频道2
@@ -814,4 +811,4 @@ class AttackingSoundManager:
         self.__channel = channel
     def play(self,kind):
         if kind in self.__soundsData:
-            pygame.mixer.Channel(self.__channel).play(self.__soundsData[kind][random.randint(0,len(self.__soundsData[kind])-1)])
+            pygame.mixer.Channel(self.__channel).play(self.__soundsData[kind][randomInt(0,len(self.__soundsData[kind])-1)])

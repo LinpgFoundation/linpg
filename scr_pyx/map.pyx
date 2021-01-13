@@ -5,13 +5,13 @@ from ..scr_py.experimental import RenderedWindow
 
 _MAP_ENV_IMAGE = None
 #方块数据
-_BLOCKS_DATABASE = loadConfig("Data/blocks.yaml","blocks")
+cdef dict _BLOCKS_DATABASE = loadConfig("Data/blocks.yaml","blocks")
 
 #地图模块
 class MapObject:
     def  __init__(self,mapDataDic,int perBlockWidth,int perBlockHeight,darkMode=None):
         #加载地图设置
-        self.__darkMode = mapDataDic["darkMode"] if darkMode==None else darkMode
+        self.__darkMode = mapDataDic["darkMode"] if darkMode == None else darkMode
         #初始化地图数据
         self.__MapData = mapDataDic["map"]
         self.backgroundImageName = mapDataDic["backgroundImage"]
@@ -177,9 +177,6 @@ class MapObject:
         if not isinstance(self.__block_on_surface, numpy.ndarray):
             mapSurface = _MAP_ENV_IMAGE.new_surface(window_size,(self.surface_width,self.surface_height))
             self.__block_on_surface = numpy.zeros((self.row,self.column), dtype=numpy.int8)
-            #self.__first_block_on_surface = numpy.zeros((self.row,), dtype=numpy.int8)
-        #mapSurfaceNew = pygame.Surface((self.surface_width,self.surface_height),flags=pygame.SRCALPHA).convert_alpha()
-        #cdef unsigned int mapSurfaceNewNeedBlit = 0
         mapSurface = _MAP_ENV_IMAGE.get_surface()
         #画出地图
         for y in range(yRange):
@@ -198,8 +195,6 @@ class MapObject:
                             self.__block_on_surface[y+1][x] = 0
                         if x < xRange-1:
                             self.__block_on_surface[y][x+1] = 0
-                        #if self.__first_block_on_surface[y] == 0:
-                        #    self.__first_block_on_surface[y] = x 
                     else:
                         pass
                 elif posTupleTemp[0] >= screen_size[0] or posTupleTemp[1] >= screen_size[1]:
@@ -221,13 +216,12 @@ class MapObject:
         cdef int offSetY_tree = round(self.block_width*0.25)
         #计算需要画出的范围
         cdef int screen_min = -self.block_width
-        cdef int screen_width = screen.get_width()
-        cdef int screen_height = screen.get_height()
+        cdef (int,int) screen_size = screen.get_size()
         #历遍装饰物列表里的物品
         for item in self.__decorations:
             imgToBlit = None
             thePosInMap = self.calPosInMap(item.x,item.y)
-            if screen_min<=thePosInMap[0]<screen_width and screen_min<=thePosInMap[1]<screen_height:
+            if screen_min<=thePosInMap[0]<screen_size[0] and screen_min<=thePosInMap[1]<screen_size[1]:
                 if not self.inLightArea(item):
                     keyWordTemp = True
                 else:

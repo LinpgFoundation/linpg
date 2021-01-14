@@ -1,6 +1,6 @@
 # cython: language_level=3
 from ..scr_pyd.map import MapObject
-from .characterModule import *
+from .character import *
 
 #战斗系统接口，请勿实例化
 class BattleSystemInterface(SystemObject):
@@ -30,6 +30,8 @@ class BattleSystemInterface(SystemObject):
         self.collection_name = collection_name
         #背景音乐
         self.__background_music = None
+        #屏幕尺寸
+        self.window_x,self.window_y = display.get_size()
     def _create_map(self,MapData,darkMode=None):
         self.MAP = MapObject(MapData,round(self.window_x/10),round(self.window_y/10),darkMode)
     #初始化角色加载器

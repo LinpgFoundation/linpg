@@ -2,7 +2,6 @@
 #加载Zero引擎的必要组件
 from .scr_py.dialog import *
 from .scr_py.battle import *
-from .scr_py.mapCreator import *
 from .scr_py.experimental import *
 import platform
 

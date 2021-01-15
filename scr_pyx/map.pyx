@@ -1,7 +1,6 @@
 # cython: language_level=3
 from .mapModule import *
-from ..basic import randomInt, loadConfig, numpy
-from ..scr_py.experimental import RenderedWindow
+from ..scr_core.experimental import RenderedWindow
 
 _MAP_ENV_IMAGE = None
 #方块数据
@@ -57,9 +56,9 @@ class MapObject:
     def __display_dev_panel(self):
         self.__debug_win.clear()
         self.__debug_win.fill("black")
-        cdef unsigned int x,y
-        cpdef unsigned int start_x,start_y
-        cpdef unsigned int unit = self.__debug_win.unit
+        cdef int x,y
+        cpdef int start_x,start_y
+        cpdef int unit = self.__debug_win.unit
         for y in range(len(self.__block_on_surface)):
             for x in range(len(self.__block_on_surface[y])):
                 start_x = int(x*unit*1.25+unit/4)
@@ -86,7 +85,7 @@ class MapObject:
                     self.__decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,itemData["image"]))
         self.__decorations = numpy.sort(numpy.asarray(self.__decorations))
     #根据index寻找装饰物
-    def find_decoration_with_id(self,unsigned int index):
+    def find_decoration_with_id(self,int index):
         return self.__decorations[index]
     #根据坐标寻找装饰物
     def find_decoration_on(self,pos):
@@ -94,7 +93,7 @@ class MapObject:
             if is_same_pos(decoration.get_pos(),pos):
                 return decoration
         return None
-    def interact_decoration_with_id(self,unsigned int index):
+    def interact_decoration_with_id(self,int index):
         self.__decorations[index].switch()
     #移除装饰物
     def remove_decoration(self,decoration):
@@ -169,9 +168,9 @@ class MapObject:
     #重新绘制地图
     def __update_map_surface(self,window_size):
         cdef (int, int) posTupleTemp
-        cdef unsigned int x,y
-        cdef unsigned int yRange = self.row
-        cdef unsigned int xRange = self.column
+        cdef int x,y
+        cdef int yRange = self.row
+        cdef int xRange = self.column
         cdef int screen_min = -self.block_width
         cdef (int,int) screen_size = window_size
         if not isinstance(self.__block_on_surface, numpy.ndarray):

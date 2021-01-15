@@ -1,4 +1,5 @@
 # cython: language_level=3
+from pygame.draw import rect
 import pygame.freetype
 from pygame.colordict import THECOLORS
 from .config import *
@@ -8,9 +9,15 @@ class FontGenerator:
     def __init__(self):
         self.__SIZE = None
         self.__FONT = None
-    def update(self,size):
+    @property
+    def bold(self):
+        return self.__FONT.bold
+    @property
+    def italic(self):
+        return self.__FONT.italic
+    def update(self,size:int,ifBold:bool=False,ifItalic:bool=False) -> None:
         self.__SIZE = size
-        self.__FONT = createFont(size)
+        self.__FONT = createFont(size,ifBold,ifItalic)
     def render(self,txt,color):
         if self.__SIZE != None:
             if isinstance(color,str):
@@ -19,7 +26,7 @@ class FontGenerator:
                 return self.__FONT.render(txt, LINPG_MODE, color)
         else:
             raise Exception('LinpgEngine-Error: Standard font is not initialized!')
-    def get_size(self):
+    def get_size(self) -> int:
         if self.__SIZE != None:
             return self.__SIZE
         else:
@@ -29,12 +36,8 @@ class FontGenerator:
             return self.__FONT
         else:
             raise Exception('LinpgEngine-Error: Standard font is not initialized!')
-    def check_for_update(self,size,ifBold,ifItalic):
-        if self.__SIZE == size and self.__FONT != None and self.__FONT.bold == ifBold and self.__FONT.italic == ifItalic:
-            pass
-        else:
-            self.__SIZE = size
-            self.__FONT = createFont(size,ifBold,ifItalic)
+    def check_for_update(self,size:int,ifBold:bool=False,ifItalic:bool=False) -> None:
+        if self.__FONT == None or self.__SIZE != size or self.bold != ifBold or self.italic != ifItalic: self.update(size)
 
 #初始化字体的配置文件
 LINPG_FONT = get_setting("Font")
@@ -146,7 +149,7 @@ def createFreeTypeFont(size,ifBold=False,ifItalic=False):
         raise Exception('LinpgEngine-Error: FontType option in setting file is incorrect!')
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
-def fontRender(txt,color,size,ifBold=False,ifItalic=False):
+def fontRender(txt,color,size:int,ifBold:bool=False,ifItalic:bool=False) -> pygame.Surface:
     LINPG_LAST_FONT.check_for_update(size,ifBold,ifItalic)
     if isinstance(color,str):
         text_out = LINPG_LAST_FONT.render(txt, findColorRGBA(color))
@@ -155,7 +158,7 @@ def fontRender(txt,color,size,ifBold=False,ifItalic=False):
     return text_out
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
-def freeTypeRender(txt,color,size,ifBold=False,ifItalic=False):
+def freeTypeRender(txt,color,size:int,ifBold:bool=False,ifItalic:bool=False) -> pygame.Surface:
     normal_font = createFreeTypeFont(size,ifBold,ifItalic)
     if isinstance(color,str):
         text_out = normal_font.render(txt, LINPG_MODE, findColorRGBA(color))

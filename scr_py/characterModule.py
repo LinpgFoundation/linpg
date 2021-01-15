@@ -1,5 +1,5 @@
 # cython: language_level=3
-from ..basic import *
+from ..scr_core.function import *
 
 #存储角色受伤立绘的常量
 _CHARACTERS_GET_HURT_IMAGE_DICT = {}
@@ -13,14 +13,14 @@ class CharacterGetHurtImageManagement(GameObject):
         self.alpha = 255
         self.add(self_type)
     def draw(self,screen,characterType:str) -> None:
-        GetHurtImage = pygame.transform.scale(_CHARACTERS_GET_HURT_IMAGE_DICT[characterType],(self.width,self.width))
+        GetHurtImage = resizeImg(_CHARACTERS_GET_HURT_IMAGE_DICT[characterType],(self.width,self.width))
         if self.alpha != 255:
             GetHurtImage.set_alpha(self.alpha)
         screen.blit(GetHurtImage,(self.x,self.y))
     def add(self,characterType:str) -> None:
         global _CHARACTERS_GET_HURT_IMAGE_DICT
         if characterType not in _CHARACTERS_GET_HURT_IMAGE_DICT:
-            _CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = pygame.image.load(os.path.join("Assets/image/npc/{}_hurt.png".format(characterType))).convert_alpha()
+            _CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = loadImg("Assets/image/npc/{}_hurt.png".format(characterType))
 
 #角色音效管理系统
 class CharacterSoundManagement:

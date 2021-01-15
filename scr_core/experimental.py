@@ -1,5 +1,5 @@
 from pygame._sdl2 import messagebox,Window,Renderer
-from ..font import findColorRGBA
+from .font import findColorRGBA
 from pygame import Rect
 
 #提示窗口

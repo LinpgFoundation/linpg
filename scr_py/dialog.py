@@ -1,5 +1,5 @@
 # cython: language_level=3
-from ..basic import *
+from ..scr_core.function import *
 from ..scr_pyd.movie import cutscene,VedioFrame,VedioPlayer
 
 #视觉小说系统接口
@@ -15,7 +15,7 @@ class DialogSystemInterface(SystemObject):
         #黑色Void帘幕
         self.black_bg = get_SingleColorSurface("black")
         #选项栏
-        self.optionBox = pygame.image.load(os.path.join("Assets/image/UI/option.png")).convert_alpha()
+        self.optionBox = loadImg("Assets/image/UI/option.png")
     #初始化关键参数
     def _initialize(self,chapterType,chapterId,part,collection_name,dialogId="head",dialog_options={}):
         #类型
@@ -36,7 +36,7 @@ class DialogSystem(DialogSystemInterface):
     def __init__(self):
         DialogSystemInterface.__init__(self)
         #选项栏-选中
-        self.optionBoxSelected = pygame.image.load(os.path.join("Assets/image/UI/option_selected.png")).convert_alpha()
+        self.optionBoxSelected = loadImg("Assets/image/UI/option_selected.png")
         #UI按钮
         self.ButtonsMananger = DialogButtons()
         #加载对话框系统
@@ -48,7 +48,7 @@ class DialogSystem(DialogSystemInterface):
         self.historySurface = None
         self.historySurface_local_y = 0
         #展示历史界面-返回按钮
-        buttonTemp = pygame.transform.scale(pygame.image.load(os.path.join("Assets/image/UI/back.png")).convert_alpha(),(int(self.window_x*0.03),int(self.window_y*0.04)))
+        buttonTemp = loadImg("Assets/image/UI/back.png",(self.window_x*0.03,self.window_y*0.04))
         self.history_back = Button(addDarkness(buttonTemp,100),self.window_x*0.04,self.window_y*0.04)
         self.history_back.setHoverImg(buttonTemp)
         #是否开启自动保存
@@ -205,12 +205,12 @@ class DialogSystem(DialogSystemInterface):
                 optionBox_y = (i+1)*2*self.window_x*0.03+optionBox_y_base
                 mouse_x,mouse_y = pygame.mouse.get_pos()
                 if optionBox_x<mouse_x<optionBox_x+optionBox_width and optionBox_y<mouse_y<optionBox_y+optionBox_height:
-                    optionBox_scaled = pygame.transform.scale(self.optionBoxSelected,(optionBox_width,optionBox_height))
+                    optionBox_scaled = resizeImg(self.optionBoxSelected,(optionBox_width,optionBox_height))
                     if leftClick and not self.showHistory:
                         #保存选取的选项
                         nextDialogId = self.dialogContent[self.dialogId]["next_dialog_id"]["target"][i]["id"]
                 else:
-                    optionBox_scaled = pygame.transform.scale(self.optionBox,(optionBox_width,optionBox_height))
+                    optionBox_scaled = resizeImg(self.optionBox,(optionBox_width,optionBox_height))
                 displayWithInCenter(option_txt,optionBox_scaled,optionBox_x,optionBox_y,screen)
             if nextDialogId != None:
                 self.dialog_options[self.dialogId] = {"id":i,"target":nextDialogId}
@@ -453,7 +453,7 @@ class DialogSystemDev(DialogSystemInterface):
                     optionBox_y_base = (self.window_y*3/4-(len(theNext["target"]))*2*self.window_x*0.03)/4
                     for i in range(len(theNext["target"])):
                         option_txt = self.FONT.render(theNext["target"][i]["txt"],get_fontMode(),(255, 255, 255))
-                        optionBox_scaled = pygame.transform.scale(self.optionBox,(int(option_txt.get_width()+self.window_x*0.05),int(self.window_x*0.05)))
+                        optionBox_scaled = resizeImg(self.optionBox,(option_txt.get_width()+self.window_x*0.05,self.window_x*0.05))
                         optionBox_x = (self.window_x-optionBox_scaled.get_width())/2
                         optionBox_y = (i+1)*2*self.window_x*0.03+optionBox_y_base
                         displayWithInCenter(option_txt,optionBox_scaled,optionBox_x,optionBox_y,screen)
@@ -465,7 +465,7 @@ class DialogSystemDev(DialogSystemInterface):
                                 break
                         for i in range(len(theNext["target"])):
                             option_txt = self.FONT.render(theNext["target"][i]["txt"],get_fontMode(),(255, 255, 255))
-                            optionBox_scaled = pygame.transform.scale(self.optionBox,(int(option_txt.get_width()+self.window_x*0.05),int(self.window_x*0.05)))
+                            optionBox_scaled = resizeImg(self.optionBox,(option_txt.get_width()+self.window_x*0.05,self.window_x*0.05))
                             optionBox_x = (self.window_x-optionBox_scaled.get_width())/2
                             optionBox_y = (i+1)*2*self.window_x*0.03+optionBox_y_base
                             if isHover(optionBox_scaled,(optionBox_x,optionBox_y)) and leftClick:
@@ -665,7 +665,7 @@ class NpcImageSystem:
         self.npcLastRoundImgAlpha = 255
         self.npcThisRound = []
         self.npcThisRoundImgAlpha = 0
-        self.communication = pygame.image.load(os.path.join("Assets/image/UI/communication.png")).convert_alpha()
+        self.communication = loadImg("Assets/image/UI/communication.png")
         self.__NPC_IMAGE_DATABASE = NpcImageDatabase()
         self.img_width = int(get_setting("Screen_size_x")/2)
         self.move_x = 0
@@ -677,7 +677,7 @@ class NpcImageSystem:
             self.dev_mode = True
     def __loadNpcImg(self,path,width):
         name = os.path.basename(path)
-        self.imgDic[name] = {"normal":pygame.transform.scale(pygame.image.load(os.path.join(path)).convert_alpha(),(width,width))}
+        self.imgDic[name] = {"normal":loadImg(path,(width,width))}
         #生成深色图片
         self.imgDic[name]["dark"] = self.imgDic[name]["normal"].copy()
         self.imgDic[name]["dark"].fill((50, 50, 50), special_flags=pygame.BLEND_RGB_SUB)
@@ -693,7 +693,7 @@ class NpcImageSystem:
                 #生成通讯图片
                 self.imgDic[nameTemp]["communication"] = pygame.Surface((int(self.img_width/1.9), int(self.img_width/1.8)), flags=pygame.SRCALPHA)
                 self.imgDic[nameTemp]["communication"].blit(self.imgDic[nameTemp]["normal"],(-int(self.img_width/4),0))
-                self.imgDic[nameTemp]["communication"].blit(pygame.transform.scale(self.communication,(int(self.img_width/1.9), int(self.img_width/1.7))),(0,0))
+                self.imgDic[nameTemp]["communication"].blit(resizeImg(self.communication,(self.img_width/1.9,self.img_width/1.7)),(0,0))
                 #生成深色的通讯图片
                 self.imgDic[nameTemp]["communication_dark"] = self.imgDic[nameTemp]["communication"].copy()
                 dark = pygame.Surface((int(self.img_width/1.9), int(self.img_width/1.8)), flags=pygame.SRCALPHA).convert_alpha()
@@ -839,15 +839,16 @@ class NpcImageSystem:
 #对话框和对话框内容
 class DialogContent(DialogInterface):
     def __init__(self,fontSize):
-        DialogInterface.__init__(self,pygame.image.load(os.path.join("Assets/image/UI/dialoguebox.png")).convert_alpha(),fontSize)
+        DialogInterface.__init__(self,loadImg("Assets/image/UI/dialoguebox.png"),fontSize)
         self.textPlayingSound = pygame.mixer.Sound("Assets/sound/ui/dialog_words_playing.ogg")
         self.READINGSPEED = get_setting("ReadingSpeed")
         self.dialoguebox_y = None
         self.dialoguebox_height = 0
         self.dialoguebox_max_height = None
         #鼠标图标
-        self.mouseImg = loadGif((pygame.image.load(os.path.join("Assets/image/UI/mouse_none.png")).convert_alpha(),\
-            pygame.image.load(os.path.join("Assets/image/UI/mouse.png")).convert_alpha()),(display.get_width()*0.82,display.get_height()*0.83),(self.FONTSIZE,self.FONTSIZE),50)
+        self.mouseImg = loadGif((loadImg("Assets/image/UI/mouse_none.png"),\
+            loadImg("Assets/image/UI/mouse.png")),\
+                (display.get_width()*0.82,display.get_height()*0.83),(self.FONTSIZE,self.FONTSIZE),50)
         self.isHidden = False
         self.readTime = 0
         self.totalLetters = 0
@@ -882,7 +883,7 @@ class DialogContent(DialogInterface):
             if self.dialoguebox_y == None:
                 self.dialoguebox_y = screen.get_height()*0.65+self.dialoguebox_max_height/2
             #画出对话框图片
-            screen.blit(pygame.transform.scale(self.dialoguebox,(int(screen.get_width()*0.74),int(self.dialoguebox_height))),(screen.get_width()*0.13,self.dialoguebox_y))
+            screen.blit(resizeImg(self.dialoguebox,(screen.get_width()*0.74,self.dialoguebox_height)),(screen.get_width()*0.13,self.dialoguebox_y))
             #如果对话框图片还在放大阶段
             if self.dialoguebox_height < self.dialoguebox_max_height:
                 self.dialoguebox_height += self.dialoguebox_max_height/12
@@ -982,7 +983,7 @@ class DialogButtons:
         #从语言文件中读取按钮文字
         dialog_txt = get_lang("Dialog")
         #生成跳过按钮
-        tempButtonIcon = pygame.transform.scale(pygame.image.load(os.path.join("Assets/image/UI/dialog_skip.png")).convert_alpha(),(self.FONTSIZE,self.FONTSIZE))
+        tempButtonIcon = loadImg("Assets/image/UI/dialog_skip.png",(self.FONTSIZE,self.FONTSIZE))
         tempButtonTxt = self.FONT.render(dialog_txt["skip"],get_fontMode(),(255, 255, 255))
         temp_w = tempButtonTxt.get_width()+self.FONTSIZE*1.5
         self.choiceTxt = dialog_txt["choice"]
@@ -998,7 +999,7 @@ class DialogButtons:
         self.skipButton = ImageSurface(self.skipButton,window_x*0.9,window_y*0.05)
         self.skipButtonHovered = ImageSurface(self.skipButtonHovered,window_x*0.9,window_y*0.05)
         #生成自动播放按钮
-        self.autoIconHovered = pygame.transform.scale(pygame.image.load(os.path.join("Assets/image/UI/dialog_auto.png")).convert_alpha(),(self.FONTSIZE,self.FONTSIZE))
+        self.autoIconHovered = loadImg("Assets/image/UI/dialog_auto.png",(self.FONTSIZE,self.FONTSIZE))
         self.autoIcon = self.autoIconHovered.copy()
         self.autoIcon.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
         self.autoIconDegree = 0
@@ -1015,18 +1016,18 @@ class DialogButtons:
         self.autoButtonHovered = ImageSurface(self.autoButtonHovered,window_x*0.8,window_y*0.05)
         self.autoButtonHovered.description = int(self.autoButtonHovered.x+self.autoButtonHovered.img.get_width()-self.FONTSIZE)
         #隐藏按钮
-        hideUI_img = pygame.transform.scale(pygame.image.load(os.path.join("Assets/image/UI/dialog_hide.png")).convert_alpha(),(self.FONTSIZE,self.FONTSIZE))
+        hideUI_img = loadImg("Assets/image/UI/dialog_hide.png",(self.FONTSIZE,self.FONTSIZE))
         hideUI_imgTemp = hideUI_img.copy()
         hideUI_imgTemp.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
         self.hideButton = Button(hideUI_imgTemp,window_x*0.05,window_y*0.05)
         self.hideButton.setHoverImg(hideUI_img)
-        showUI_img = pygame.transform.scale(pygame.image.load(os.path.join("Assets/image/UI/dialog_show.png")).convert_alpha(),(self.FONTSIZE,self.FONTSIZE))
+        showUI_img = loadImg("Assets/image/UI/dialog_show.png",(self.FONTSIZE,self.FONTSIZE))
         showUI_imgTemp = showUI_img.copy()
         showUI_imgTemp.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
         self.showButton = Button(showUI_imgTemp,window_x*0.05,window_y*0.05)
         self.showButton.setHoverImg(showUI_img)
         #历史回溯按钮
-        history_img = pygame.transform.scale(pygame.image.load(os.path.join("Assets/image/UI/dialog_history.png")).convert_alpha(),(self.FONTSIZE,self.FONTSIZE))
+        history_img = loadImg("Assets/image/UI/dialog_history.png",(self.FONTSIZE,self.FONTSIZE))
         history_imgTemp = history_img.copy()
         history_imgTemp.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
         self.historyButton = Button(history_imgTemp,window_x*0.1,window_y*0.05)

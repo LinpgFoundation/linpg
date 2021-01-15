@@ -4,7 +4,7 @@ import av
 import os
 import queue
 from math import ceil
-from ..module import get_setting,ProgressBar,ImageSurface,threading
+from ..scr_core.module import get_setting,ProgressBar,ImageSurface,threading
 
 def getAudioFromVideo(moviePath,audioType="mp3"):
     #如果没有Cache文件夹，则创建一个
@@ -54,7 +54,7 @@ def loadAudioAsMusic(moviePath):
 
 #视频模块接口，不能实例化
 class VedioInterface(threading.Thread):
-    def __init__(self,path,unsigned int width,unsigned int height):
+    def __init__(self,path,int width,int height):
         threading.Thread.__init__(self)
         self._path = path
         self._video_container = av.open(self._path,mode='r')
@@ -97,7 +97,7 @@ class VedioInterface(threading.Thread):
 
 #视频片段展示模块--灵活，但不能保证帧数和音乐同步
 class VedioFrame(VedioInterface):
-    def __init__(self,path,unsigned int width,unsigned int height,loop=True,with_music=False,play_range=None,volume=1):
+    def __init__(self,path,int width,int height,loop=True,with_music=False,play_range=None,volume=1):
         VedioInterface.__init__(self,path,width,height)
         self.loop = loop
         self.looped_times = 0
@@ -140,7 +140,7 @@ class VedioFrame(VedioInterface):
 
 #视频播放系统模块--强制帧数和音乐同步，但不灵活
 class VedioPlayer(VedioInterface):
-    def __init__(self,path,unsigned int width,unsigned int height):
+    def __init__(self,path,int width,int height):
         VedioInterface.__init__(self,path,width,height)
         self.__allowFrameDelay = 10
         loadAudioAsMusic(path)
@@ -157,11 +157,11 @@ class VedioPlayer(VedioInterface):
 #过场动画
 def cutscene(screen,videoPath):
     #初始化部分参数
-    cdef (unsigned int, unsigned int) screen_size = screen.get_size()
-    cdef unsigned int is_skip = 0
-    cdef unsigned int is_playing = 0
-    cdef unsigned int temp_alpha
-    cdef (unsigned int, unsigned int) mouse_pos
+    cdef (int, int) screen_size = screen.get_size()
+    cdef int is_skip = 0
+    cdef int is_playing = 0
+    cdef int temp_alpha
+    cdef (int, int) mouse_pos
     #初始化跳过按钮的参数
     skip_button = ImageSurface(pygame.image.load("Assets/image/UI/dialog_skip.png").convert_alpha(),int(screen.get_width()*0.92),int(screen.get_height()*0.05),int(screen.get_width()*0.055),int(screen.get_height()*0.06))
     #生成黑色帘幕
@@ -169,7 +169,7 @@ def cutscene(screen,videoPath):
     pygame.draw.rect(black_bg,(0,0,0),(0,0,screen_size[0],screen_size[1]))
     black_bg.set_alpha(0)
     #进度条
-    cdef unsigned int bar_height = 10
+    cdef int bar_height = 10
     white_progress_bar = ProgressBar(bar_height,screen_size[1]-bar_height*2,screen_size[0]-bar_height*2,bar_height,"white")
     #创建视频文件
     VIDEO = VedioPlayer(videoPath,screen_size[0],screen_size[1])

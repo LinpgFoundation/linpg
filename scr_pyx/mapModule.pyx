@@ -1,6 +1,5 @@
 # cython: language_level=3
-from ..basic import SrcalphaSurface, GameObject, convert_pos, is_same_pos
-import pygame
+from ..scr_core.function import *
 
 #地图场景模块
 class EnvImagesManagement:
@@ -15,7 +14,7 @@ class EnvImagesManagement:
         self.__BLOCK_WIDTH = round(blockSize[0])
         self.__BLOCK_HEIGHT =  round(blockSize[1])
         self.__DARKNESS = darkness if darkMode else None
-        cdef unsigned int x,y
+        cdef int x,y
         cdef list all_images_needed = []
         for y in range(len(theMap)):
             for x in range(len(theMap[y])):
@@ -89,7 +88,7 @@ class EnvImagesManagement:
         return len(self.__DECORATION_IMAGE_DICT[decorationType])
     def new_surface(self,screen_size,map_size):
         if self.__BACKGROUND_IMAGE != None:
-            self.__BACKGROUND_SURFACE = pygame.transform.scale(self.__BACKGROUND_IMAGE,screen_size)
+            self.__BACKGROUND_SURFACE = resizeImg(self.__BACKGROUND_IMAGE,screen_size)
         else:
             self.__BACKGROUND_SURFACE = pygame.Surface(screen_size).convert()
         if self.__MAP_SURFACE != None:

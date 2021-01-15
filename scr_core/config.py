@@ -3,12 +3,11 @@ from __future__ import annotations
 #python本体库
 import os
 from copy import deepcopy
-from typing import Any
+from typing import Any,List
 #额外库
 import pygame
-import yaml
 from pygame.locals import *
-
+import yaml
 #初始化pygame
 pygame.init()
 

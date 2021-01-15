@@ -1,10 +1,8 @@
 # cython: language_level=3
-import glob
-import random
-from .controller import *
 import time
 from tkinter import Tk
 import threading
+from .basic import *
 
 #游戏对象接口
 class GameObject:
@@ -56,7 +54,7 @@ class SrcalphaSurface(ImageInterface):
     def __init__(self,path_or_surface,x,y,width=None,height=None):
         ImageInterface.__init__(self,None,x,y,width,height)
         self._alpha = 255
-        self.img_original = pygame.image.load(os.path.join(path_or_surface)).convert_alpha() if not isinstance(path_or_surface,pygame.Surface) else path_or_surface
+        self.img_original = loadImg(path_or_surface)
         self.__local_x = 0
         self.__local_y = 0
         self.__isFlipped = False
@@ -96,7 +94,7 @@ class SrcalphaSurface(ImageInterface):
             super().set_height(height)
             self.__needUpdate = True
     def _update_img(self):
-        imgTmp = pygame.transform.scale(self.img_original,(self._width,self._height))
+        imgTmp = resizeImg(self.img_original,(self._width,self._height))
         rect = imgTmp.get_bounding_rect()
         self.img = pygame.Surface((rect.width, rect.height),flags=pygame.SRCALPHA).convert_alpha()
         self.__local_x = rect.x
@@ -148,9 +146,9 @@ class ImageSurface(ImageInterface):
     def draw(self,screen):
         self.display(screen)
     def drawOnTheCenterOf(self,surface):
-        surface.blit(pygame.transform.scale(self.img, (round(self._width),round(self._height))),((surface.get_width()-self._width)/2,(surface.get_height()-self._height)/2))
+        surface.blit(resizeImg(self.img, (self._width,self._height)),((surface.get_width()-self._width)/2,(surface.get_height()-self._height)/2))
     def display(self,screen,local_x=0,local_y=0):
-        screen.blit(pygame.transform.scale(self.img, (round(self._width),round(self._height))),(self.x+local_x,self.y+local_y))
+        screen.blit(resizeImg(self.img, (self._width,self._height)),(self.x+local_x,self.y+local_y))
     def rotate(self,angle):
         self.img = pygame.transform.rotate(self.img,angle)
     def flip(self,vertical=False,horizontal=False):
@@ -216,25 +214,25 @@ class ProgressBar(ImageInterface):
 class WeatherSystem:
     def  __init__(self,weather,window_x,window_y,entityNum=50):
         self.name = 0
-        self.img_list = [pygame.image.load(os.path.join(imgPath)).convert_alpha() for imgPath in glob.glob("Assets/image/environment/"+weather+"/*.png")]
+        self.img_list = [loadImg(imgPath) for imgPath in glob.glob("Assets/image/environment/"+weather+"/*.png")]
         self.ImgObject = []
         for i in range(entityNum):
-            imgId = random.randint(0,len(self.img_list)-1)
-            img_size = random.randint(5,10)
-            img_speed = random.randint(1,4)
-            img_x = random.randint(1,window_x*1.5)
-            img_y = random.randint(1,window_y)
+            imgId = randomInt(0,len(self.img_list)-1)
+            img_size = randomInt(5,10)
+            img_speed = randomInt(1,4)
+            img_x = randomInt(1,window_x*1.5)
+            img_y = randomInt(1,window_y)
             self.ImgObject.append(Snow(imgId,img_size,img_speed,img_x,img_y))
     def display(self,screen,perBlockWidth):
         speed_unit = perBlockWidth/15
         for i in range(len(self.ImgObject)):
             if 0 <= self.ImgObject[i].x <= screen.get_width() and 0 <= self.ImgObject[i].y <= screen.get_height():
-                imgTemp = pygame.transform.scale(self.img_list[self.ImgObject[i].imgId], (round(perBlockWidth/self.ImgObject[i].size), round(perBlockWidth/self.ImgObject[i].size)))
+                imgTemp = resizeImg(self.img_list[self.ImgObject[i].imgId],(perBlockWidth/self.ImgObject[i].size,perBlockWidth/self.ImgObject[i].size))
                 screen.blit(imgTemp,(self.ImgObject[i].x,self.ImgObject[i].y))
             self.ImgObject[i].move(speed_unit)
             if self.ImgObject[i].x <= 0 or self.ImgObject[i].y >= screen.get_height():
-                self.ImgObject[i].y = random.randint(-50,0)
-                self.ImgObject[i].x = random.randint(0,screen.get_width()*2)
+                self.ImgObject[i].y = randomInt(-50,0)
+                self.ImgObject[i].x = randomInt(0,screen.get_width()*2)
 
 #雪花片
 class Snow:
@@ -305,15 +303,15 @@ class SettingContoller:
     def init(self,size):
         self.baseImgWidth = round(size[0]/3)
         self.baseImgHeight = round(size[0]/3)
-        self.baseImg = pygame.transform.scale(pygame.image.load(os.path.join("Assets/image/UI/setting_baseImg.png")).convert_alpha(),(self.baseImgWidth,self.baseImgHeight))
+        self.baseImg = loadImg("Assets/image/UI/setting_baseImg.png",(self.baseImgWidth,self.baseImgHeight))
         self.baseImg.set_alpha(200)
         self.baseImgX = int((size[0]-self.baseImgWidth)/2)
         self.baseImgY = int((size[1]-self.baseImgHeight)/2)
         self.bar_height = round(size[0]/60)
         self.bar_width = round(size[0]/5)
-        self.button = pygame.transform.scale(pygame.image.load(os.path.join("Assets/image/UI/setting_bar_circle.png")).convert_alpha(),(self.bar_height,self.bar_height*2))
-        self.bar_empty = pygame.transform.scale(pygame.image.load(os.path.join("Assets/image/UI/setting_bar_empty.png")).convert_alpha(),(self.bar_width,self.bar_height))
-        self.bar_full = pygame.transform.scale(pygame.image.load(os.path.join("Assets/image/UI/setting_bar_full.png")).convert_alpha(),(self.bar_width,self.bar_height))
+        self.button = loadImg("Assets/image/UI/setting_bar_circle.png",(self.bar_height,self.bar_height*2))
+        self.bar_empty = loadImg("Assets/image/UI/setting_bar_empty.png",(self.bar_width,self.bar_height))
+        self.bar_full = loadImg("Assets/image/UI/setting_bar_full.png",(self.bar_width,self.bar_height))
         self.bar_x = int(self.baseImgX+(self.baseImgWidth-self.bar_empty.get_width())/2)
         self.bar_y0 = self.baseImgY + self.baseImgHeight*0.2
         self.bar_y1 = self.baseImgY + self.baseImgHeight*0.4
@@ -361,19 +359,19 @@ class SettingContoller:
             screen.blit(self.normalFont.render(self.backgroundMusicTxt+": "+str(self.soundVolume_background_music),True,(255, 255, 255)),(self.bar_x,self.bar_y1-self.FONTSIZE*1.4))
             screen.blit(self.bar_empty,(self.bar_x,self.bar_y1))
             barImgWidth = round(self.bar_full.get_width()*self.soundVolume_background_music/100)
-            screen.blit(pygame.transform.scale(self.bar_full,(barImgWidth,self.bar_height)),(self.bar_x,self.bar_y1))
+            screen.blit(resizeImg(self.bar_full,(barImgWidth,self.bar_height)),(self.bar_x,self.bar_y1))
             screen.blit(self.button,(self.bar_x+barImgWidth-self.button.get_width()/2,self.bar_y1-self.bar_height/2))
             #音效
             screen.blit(self.normalFont.render(self.soundEffectsTxt+": "+str(self.soundVolume_sound_effects),True,(255, 255, 255)),(self.bar_x,self.bar_y2-self.FONTSIZE*1.4))
             screen.blit(self.bar_empty,(self.bar_x,self.bar_y2))
             barImgWidth = round(self.bar_full.get_width()*self.soundVolume_sound_effects/100)
-            screen.blit(pygame.transform.scale(self.bar_full,(barImgWidth,self.bar_height)),(self.bar_x,self.bar_y2))
+            screen.blit(resizeImg(self.bar_full,(barImgWidth,self.bar_height)),(self.bar_x,self.bar_y2))
             screen.blit(self.button,(self.bar_x+barImgWidth-self.button.get_width()/2,self.bar_y2-self.bar_height/2))
             #环境声
             screen.blit(self.normalFont.render(self.soundEnvironmentTxt+": "+str(self.soundVolume_sound_environment),True,(255, 255, 255)),(self.bar_x,self.bar_y3-self.FONTSIZE*1.4))
             screen.blit(self.bar_empty,(self.bar_x,self.bar_y3))
             barImgWidth = round(self.bar_full.get_width()*self.soundVolume_sound_environment/100)
-            screen.blit(pygame.transform.scale(self.bar_full,(barImgWidth,self.bar_height)),(self.bar_x,self.bar_y3))
+            screen.blit(resizeImg(self.bar_full,(barImgWidth,self.bar_height)),(self.bar_x,self.bar_y3))
             screen.blit(self.button,(self.bar_x+barImgWidth-self.button.get_width()/2,self.bar_y3-self.bar_height/2))
             #获取鼠标坐标
             mouse_x,mouse_y=pygame.mouse.get_pos()
@@ -434,7 +432,7 @@ class ApSystem:
 class Button(GameObject):
     def __init__(self,path,x,y):
         GameObject.__init__(self,x,y)
-        self.img = pygame.image.load(os.path.join(path)).convert_alpha() if isinstance(path,str) else path
+        self.img = loadImg(path)
         self.img2 = None
         self.hoverEventTriggered = False
     def setHoverImg(self,img):
@@ -467,7 +465,7 @@ class ButtonWithDes(Button):
         Button.__init__(self,path,x,y)
         width = int(width)
         height = int(height)
-        self.img = pygame.transform.scale(self.img,(width,height))
+        self.img = resizeImg(self.img,(width,height))
         self.img2 = self.img.copy()
         self.img.set_alpha(150)
         self.width = width
@@ -484,9 +482,9 @@ class ButtonWithDes(Button):
 class ButtonWithFadeInOut(Button):
     def __init__(self,buttonImgPath,txt,txt_color,alphaWhenNotHovered,x,y,height):
         Button.__init__(self,buttonImgPath,x,y)
-        txtSurface = fontRender(txt,txt_color,height*0.6)
-        self.img = pygame.transform.scale(self.img,(int(txtSurface.get_width()+height),int(height)))
-        self.img.blit(txtSurface,(height*0.5,height*0.15))
+        txtSurface = fontRenderWithoutBound(txt,txt_color,height*0.6)
+        self.img = resizeImg(self.img,(txtSurface.get_width()+height,height))
+        self.img.blit(txtSurface,(height*0.5,(height-txtSurface.get_height())/2))
         self.img2 = self.img.copy()
         self.img.set_alpha(alphaWhenNotHovered)
 
@@ -521,7 +519,7 @@ class DialogInterface:
 #对话框和对话框内容
 class DialogBox(DialogInterface,GameObject):
     def __init__(self,imgPath,width,height,x,y,fontSize):
-        DialogInterface.__init__(self,pygame.transform.scale(pygame.image.load(os.path.join(imgPath)).convert_alpha(),(int(width),int(height))),fontSize)
+        DialogInterface.__init__(self,loadImg(imgPath,(width,height)),fontSize)
         GameObject.__init__(self,x,y)
         self.__surface = None
         self.deafult_x = x
@@ -539,7 +537,7 @@ class DialogBox(DialogInterface,GameObject):
     def get_height(self):
         return self.dialoguebox.get_height()
     def set_size(self,width,height):
-        self.dialoguebox = pygame.transform.scale(self.dialoguebox,(int(width),int(height)))
+        self.dialoguebox = resizeImg(self.dialoguebox,(width,height))
     def display(self,screen,characterInfoBoardUI=None):
         #如果对话框需要继续更新
         if self.__drew == False:
@@ -1021,7 +1019,7 @@ class GifObject(GameObject):
         self.countDown = 0
         self.alpha = 255
     def display(self,screen):
-        img = pygame.transform.scale(self.imgList[self.imgId],(self.width,self.height))
+        img = resizeImg(self.imgList[self.imgId],(self.width,self.height))
         if self.alpha != 255:
             img.set_alpha(self.alpha)
         screen.blit(img,(self.x,self.y))
@@ -1048,7 +1046,7 @@ class SoundManagement:
     def play(self,sound_id=None):
         if len(self.__sounds_list)>0 and not pygame.mixer.Channel(self.channel_id).get_busy():
             if sound_id == None:
-                self.sound_id = random.randint(0,len(self.__sounds_list)-1)
+                self.sound_id = randomInt(0,len(self.__sounds_list)-1)
             else:
                 self.sound_id = sound_id
             pygame.mixer.Channel(self.channel_id).play(self.__sounds_list[self.sound_id])

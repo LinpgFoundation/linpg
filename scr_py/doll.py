@@ -315,9 +315,9 @@ class Doll(GameObject):
                             self.ImageGetHurt.alpha -= 2
                         else:
                             self.ImageGetHurt.x = None
-        hpEmptyScale = pygame.transform.scale(original_UI_img["hp_empty"], (round(MapClass.block_width/2), round(MapClass.block_width/10)))
+        hpEmptyScale = resizeImg(original_UI_img["hp_empty"],(MapClass.block_width/2, MapClass.block_width/10))
         screen.blit(hpEmptyScale,(xTemp,yTemp))
-        screen.blit(pygame.transform.scale(hp_img,(round(MapClass.block_width*percent_of_hp/2),round(MapClass.block_width/10))),(xTemp,yTemp))
+        screen.blit(resizeImg(hp_img,(MapClass.block_width*percent_of_hp/2,MapClass.block_width/10)),(xTemp,yTemp))
         displayInCenter(current_hp_to_display,hpEmptyScale,xTemp,yTemp,screen)
     #获取角色特定动作的图片播放ID
     def get_imgId(self,action):

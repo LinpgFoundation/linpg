@@ -1,6 +1,7 @@
-from pygame._sdl2 import messagebox,Window,Renderer
-from .font import findColorRGBA
+# cython: language_level=3
 from pygame import Rect
+from pygame._sdl2 import Renderer, Window, messagebox
+from .font import findColorRGBA
 
 #提示窗口
 class Message:

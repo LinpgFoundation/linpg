@@ -1,8 +1,8 @@
 # cython: language_level=3
-from pygame.draw import rect
 import pygame.freetype
 from pygame.colordict import THECOLORS
-from .config import *
+from .lang import *
+
 
 #文字渲染器管理模块
 class FontGenerator:
@@ -156,6 +156,10 @@ def fontRender(txt,color,size:int,ifBold:bool=False,ifItalic:bool=False) -> pyga
     else:
         text_out = LINPG_LAST_FONT.render(txt, color)
     return text_out
+
+#文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
+def fontRenderWithoutBound(txt,color,size,ifBold=False,ifItalic=False) -> pygame.Surface:
+    return copeBounding(fontRender(txt,color,size,ifBold,ifItalic))
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
 def freeTypeRender(txt,color,size:int,ifBold:bool=False,ifItalic:bool=False) -> pygame.Surface:

@@ -3,12 +3,14 @@ from PIL import Image
 from .module import *
 
 #高级图片加载模块：接收图片路径（或者已经载入的图片）,位置:[x,y],长,高,返回对应的图片class
-def loadImage(path,position,width=None,height=None,description="Default",ifConvertAlpha=True) -> ImageSurface:
+def loadImage(path,position,width=None,height=None,description="Default",ifConvertAlpha:bool=True) -> ImageSurface:
     return ImageSurface(imgLoadFunction(path,ifConvertAlpha),position[0],position[1],width,height,description)
 
 #高级动态图片加载模块：接收图片路径（或者已经载入的图片）,位置:[x,y],长,高,返回对应的图片class
-def loadDynamicImage(path,position,target_position,moveSpeed=(0,0),width=None,height=None,description="Default",ifConvertAlpha=True) -> DynamicImageSurface:
-    return DynamicImageSurface(imgLoadFunction(path,ifConvertAlpha),position[0],position[1],target_position[0],target_position[1],moveSpeed[0],moveSpeed[1],width,height,description)
+def loadDynamicImage(path,position,target_position,moveSpeed=(0,0),
+    width=None,height=None,description="Default",ifConvertAlpha:bool=True) -> DynamicImageSurface:
+    return DynamicImageSurface(imgLoadFunction(path,ifConvertAlpha),position[0],position[1],target_position[0],target_position[1],\
+        moveSpeed[0],moveSpeed[1],width,height,description)
 
 #加载GIF格式图片
 def loadGif(img_list_or_path,position,size,updateGap=1) -> GifObject:
@@ -32,7 +34,7 @@ def loadGif(img_list_or_path,position,size,updateGap=1) -> GifObject:
     return GifObject(imgList,position[0],position[1],size[0],size[1],updateGap)
 
 #获取特定颜色的表面
-def get_SingleColorSurface(color, size=None) -> ImageSurface:
+def get_SingleColorSurface(color,size=None) -> ImageSurface:
     if size == None:
         width,height = display.get_size()
     else:
@@ -47,7 +49,7 @@ def isHover(imgObject,objectPos=(0,0),local_x=0,local_y=0) -> bool:
     mouse_x,mouse_y = pygame.mouse.get_pos()
     #如果是pygame的面
     if isinstance(imgObject,pygame.Surface):
-        if objectPos[0]<mouse_x-local_x<objectPos[0]+imgObject.get_width() and objectPos[1]<mouse_y-local_y<objectPos[1]+imgObject.get_height():
+        if 0<mouse_x-local_x-objectPos[0]<imgObject.get_width() and 0<mouse_y-local_y-objectPos[1]<imgObject.get_height():
             return True
         else:
             return False
@@ -56,7 +58,7 @@ def isHover(imgObject,objectPos=(0,0),local_x=0,local_y=0) -> bool:
         return imgObject.isHover(mouse_x-local_x,mouse_y-local_y)
     #如果是Linpg引擎的Button类
     elif isinstance(imgObject,Button):
-        if imgObject.x<=mouse_x-local_x<=imgObject.x+imgObject.img.get_width() and imgObject.y<=mouse_y-local_y<=imgObject.y+imgObject.img.get_height():
+        if 0<=mouse_x-local_x-imgObject.x<=imgObject.img.get_width() and 0<=mouse_y-local_y-imgObject.y<=imgObject.img.get_height():
             imgObject.hoverEventOn()
             return True
         else:

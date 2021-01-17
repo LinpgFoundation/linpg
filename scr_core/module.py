@@ -1,8 +1,8 @@
 # cython: language_level=3
+import threading
 import time
 from tkinter import Tk
-import threading
-from .basic import *
+from .controller import *
 
 #游戏对象接口
 class GameObject:
@@ -235,14 +235,13 @@ class WeatherSystem:
                 self.ImgObject[i].x = randomInt(0,screen.get_width()*2)
 
 #雪花片
-class Snow:
-    def  __init__(self,imgId,size,speed,x,y):
+class Snow(GameObject):
+    def  __init__(self,imgId,size,speed,x,y) -> None:
+        GameObject.__init__(self,x,y)
         self.imgId = imgId
         self.size = size
         self.speed = speed
-        self.x = x
-        self.y = y
-    def move(self,speed_unit):
+    def move(self,speed_unit) -> None:
         self.x -= self.speed*speed_unit
         self.y += self.speed*speed_unit
 
@@ -471,10 +470,10 @@ class ButtonWithDes(Button):
         self.width = width
         self.height = height
         self.des = des
-        self.des_font_surface = fontRender(des,"black",self.height*0.4)
+        self.des_font_surface = fontRenderWithoutBound(des,"black",self.height*0.4)
         self.des_surface = pygame.Surface((self.des_font_surface.get_width()*1.2,self.height*0.6),flags=pygame.SRCALPHA).convert_alpha()
         pygame.draw.rect(self.des_surface,(255,255,255),(0,0, self.des_surface.get_width(),self.des_surface.get_height()))
-        self.des_surface.blit(self.des_font_surface,(self.des_font_surface.get_width()*0.1,0))
+        self.des_surface.blit(self.des_font_surface,(self.des_font_surface.get_width()*0.1,self.height*0.1))
     def displayDes(self,screen):
         if self.hoverEventTriggered == True:
             screen.blit(self.des_surface,pygame.mouse.get_pos())

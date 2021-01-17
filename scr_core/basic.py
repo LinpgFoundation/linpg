@@ -1,12 +1,20 @@
 # cython: language_level=3
+from __future__ import annotations
+#python本体库
 import glob
+import os
 import random
+#额外库
 import numpy
-from .controller import *
+import pygame
+from pygame.locals import *
+
+#初始化pygame
+pygame.init()
 
 """加载"""
 #识别图片模块，用于引擎内加载图片，十分不建议在本文件外调用
-def imgLoadFunction(path,ifConvertAlpha) -> pygame.Surface:
+def imgLoadFunction(path,ifConvertAlpha:bool) -> pygame.Surface:
     if isinstance(path,str):
         if ifConvertAlpha == False:
             try:
@@ -21,7 +29,7 @@ def imgLoadFunction(path,ifConvertAlpha) -> pygame.Surface:
     elif isinstance(path,pygame.Surface):
         return path
     else:
-        raise Exception('LinpgEngine-Error: The path has to be a string or pygame.Surface (even though this is not recommended)! Path:',path)
+        raise Exception('LinpgEngine-Error: The path has to be a string or pygame.Surface! Path:',path)
 
 #图片加载模块：接收图片路径,长,高,返回对应图片
 def loadImg(path,size=None,setAlpha=None,ifConvertAlpha=True) -> pygame.Surface:
@@ -37,21 +45,18 @@ def loadImg(path,size=None,setAlpha=None,ifConvertAlpha=True) -> pygame.Surface:
         return resizeImg(img,size)
 
 #加载音效
-def loadSound(path:str,volume) -> pygame.mixer.Sound:
+def loadSound(path:str,volume:float) -> pygame.mixer.Sound:
     soundTmp = pygame.mixer.Sound(path)
     soundTmp.set_volume(volume)
     return soundTmp
 
 #加载路径下的所有图片，储存到一个list当中，然后返回
-def loadAllImgInFile(pathRule:str, width=None,height=None) -> List[pygame.Surface]:
-    allImg = glob.glob(pathRule)
-    for i in range(len(allImg)):
-        allImg[i] = loadImg(allImg[i],(width,height))
-    return allImg
+def loadAllImgInFile(pathRule:str,width=None,height=None) -> list[pygame.Surface]:
+    return [loadImg(imgPath,(width,height)) for imgPath in glob.glob(pathRule)]
 
 """处理"""
 #重新编辑尺寸
-def resizeImg(img,size=(None,None)) -> pygame.Surface:
+def resizeImg(img:pygame.Surface,size=(None,None)) -> pygame.Surface:
     #转换尺寸
     if isinstance(size,(list,tuple,numpy.ndarray)):
         if len(size) == 1:
@@ -60,6 +65,9 @@ def resizeImg(img,size=(None,None)) -> pygame.Surface:
         else:
             width = size[0]
             height = size[1]
+    elif isinstance(size,(int,float)):
+        width = size
+        height = None
     else:
         raise Exception('LinpgEngine-Error: size "{}" is not acceptable'.format(size))
     #编辑图片
@@ -107,21 +115,18 @@ def cropImg(img:pygame.Surface, pos=(0,0),size=(0,0)) -> pygame.Surface:
 #移除掉图片周围的透明像素
 def copeBounding(img:pygame.Surface) -> pygame.Surface: return cropImg(img,img.get_bounding_rect())
 
-#文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
-def fontRenderWithoutBound(txt,color,size,ifBold=False,ifItalic=False) -> pygame.Surface: return copeBounding(fontRender(txt,color,size,ifBold,ifItalic))
-
 """展示"""
 #图片blit模块：接受图片，位置（列表格式），屏幕，如果不是UI层需要local_x和local_y
 def drawImg(img,position,screen,local_x=0,local_y=0) -> None: screen.blit(img,(position[0]+local_x,position[1]+local_y))
 
 #中心展示模块1：接受两个item和item2的x和y，将item1展示在item2的中心位置,但不展示item2：
-def displayInCenter(item1,item2,x,y,screen,local_x=0,local_y=0) -> None:
+def displayInCenter(item1:pygame.Surface,item2:pygame.Surface,x,y,screen,local_x=0,local_y=0) -> None:
     added_x = (item2.get_width()-item1.get_width())/2
     added_y = (item2.get_height()-item1.get_height())/2
     screen.blit(item1,(x+added_x+local_x,y+added_y+local_y))
 
 #中心展示模块2：接受两个item和item2的x和y，展示item2后，将item1展示在item2的中心位置：
-def displayWithInCenter(item1,item2,x,y,screen,local_x=0,local_y=0) -> None:
+def displayWithInCenter(item1:pygame.Surface,item2:pygame.Surface,x,y,screen,local_x=0,local_y=0) -> None:
     added_x = (item2.get_width()-item1.get_width())/2
     added_y = (item2.get_height()-item1.get_height())/2
     screen.blit(item2,(x+local_x,y+local_y))
@@ -140,7 +145,7 @@ def unloadBackgroundMusic() -> None:
 def randomInt(start:int, end:int) -> int: return random.randint(start,end)
 
 #转换坐标
-def convert_pos(pos) -> List[int]:
+def convert_pos(pos:any) -> tuple:
     #检测坐标
     if isinstance(pos,(list,tuple,numpy.ndarray)):
         x = pos[0]

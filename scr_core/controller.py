@@ -1,6 +1,5 @@
 # cython: language_level=3
 from .font import *
-from sys import exit
 
 #手柄控制组件
 class SingleJoystick:
@@ -103,6 +102,7 @@ class DisplayController:
     def get_size(self):
         return self.get_width(),self.get_height()
     def quit(self):
+        from sys import exit
         #退出游戏
         exit()
 

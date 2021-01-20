@@ -207,6 +207,24 @@ class AttackingSoundManager:
 
 #用于存放角色做出的决定
 class DecisionHolder:
-    def __init__(self,action,data) -> None:
+    def __init__(self,action:str,data:any) -> None:
         self.action = action
         self.data = data
+    @property
+    def route(self):
+        if self.action == "move":
+            return self.data
+        else:
+            raise Exception("LinpgEngine-Error: The character does not decide to move!")
+    @property
+    def target(self):
+        if self.action == "attack":
+            return self.data[0]
+        else:
+            raise Exception("LinpgEngine-Error: The character does not decide to attack!")
+    @property
+    def target_area(self):
+        if self.action == "attack":
+            return self.data[1]
+        else:
+            raise Exception("LinpgEngine-Error: The character does not decide to attack!")

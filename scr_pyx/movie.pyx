@@ -1,10 +1,8 @@
 # cython: language_level=3
-import pygame
-import av
-import os
-import queue
+import os, queue, threading
 from math import ceil
-from ..scr_core.module import get_setting,ProgressBar,ImageSurface,threading
+import av, pygame
+from ..scr_core.surface import ProgressBar,ImageSurface,get_setting
 
 def getAudioFromVideo(moviePath,audioType="mp3"):
     #如果没有Cache文件夹，则创建一个

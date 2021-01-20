@@ -1,6 +1,6 @@
 # cython: language_level=3
 from PIL import Image
-from .module import *
+from .inputbox import *
 
 #高级图片加载模块：接收图片路径（或者已经载入的图片）,位置:[x,y],长,高,返回对应的图片class
 def loadImage(path,position,width=None,height=None,description="Default",ifConvertAlpha:bool=True) -> ImageSurface:

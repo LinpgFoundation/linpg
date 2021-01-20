@@ -1,12 +1,9 @@
 # cython: language_level=3
 from __future__ import annotations
 #python本体库
-import glob
-import os
-import random
+import glob, os, random
 #额外库
-import numpy
-import pygame
+import numpy, pygame
 from pygame.locals import *
 
 #初始化pygame

@@ -1,21 +1,30 @@
 # cython: language_level=3
 from copy import deepcopy
-import yaml
+try:
+    import yaml
+    _CONFIG_TYPE = "YAML"
+except:
+    print("LinpgEngine-Warning: Cannot import yaml, we will try json instead.\n"
+    "However, some function may be limited, we suggest you install yaml ASAP!")
+    import json
+    _CONFIG_TYPE = "JSON"
 from .basic import *
-
 
 #配置文件加载
 def loadConfig(path:str,key:str=None) -> any:
-    try:
+    if _CONFIG_TYPE == "YAML":
+        try:
+            with open(path, "r", encoding='utf-8') as f:
+                Data = yaml.load(f.read(),Loader=yaml.FullLoader)
+        except yaml.constructor.ConstructorError:
+            print("LinpgEngine-Warning: Encounter a fatal error while loading the yaml file in path:\n'{}'\n"
+            "One possible reason is that at least one numpy array exists inside the yaml file.\n"
+            "The program will try to load the data using yaml.UnsafeLoader.".format(path))
+            with open(path, "r", encoding='utf-8') as f:
+                Data = yaml.load(f.read(), Loader=yaml.UnsafeLoader)
+    else:
         with open(path, "r", encoding='utf-8') as f:
-            Data = yaml.load(f.read(),Loader=yaml.FullLoader)
-    except yaml.constructor.ConstructorError:
-        print("LinpgEngine-Warning: Encounter a fatal error while loading the yaml file in path:")
-        print("'{}'".format(path))
-        print("One possible reason is that at least one numpy array exists inside the yaml file.")
-        print("The program will try to load the data using yaml.UnsafeLoader.")
-        with open(path, "r", encoding='utf-8') as f:
-            Data = yaml.load(f.read(), Loader=yaml.UnsafeLoader)
+            Data = json.load(f)
     if key == None:
         return Data
     else:
@@ -24,7 +33,10 @@ def loadConfig(path:str,key:str=None) -> any:
 #配置文件保存
 def saveConfig(path:str,data:any) -> None:
     with open(path, "w", encoding='utf-8') as f:
-        yaml.dump(data, f, allow_unicode=True)
+        if _CONFIG_TYPE == "YAML":
+            yaml.dump(data, f, allow_unicode=True)
+        else:
+            json.dump(data, f)
 
 #初始化储存设置配置文件的变量
 __LINPG_DATA = None

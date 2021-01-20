@@ -1,12 +1,12 @@
 # cython: language_level=3
-from .doll import *
+from .entity import *
 
 #友方角色类
-class FriendlyCharacter(Doll):
+class FriendlyCharacter(Entity):
     def __init__(self,theCharacterDataDic,defaultData,mode=None):
         for key in theCharacterDataDic:
             defaultData[key] = theCharacterDataDic[key]
-        Doll.__init__(self,defaultData,"character",mode)
+        Entity.__init__(self,defaultData,"character",mode)
         self.bullets_carried = defaultData["bullets_carried"]
         self.skill_effective_range = defaultData["skill_effective_range"]
         self.max_skill_range = calculate_range(defaultData["skill_effective_range"])
@@ -59,11 +59,11 @@ class FriendlyCharacter(Doll):
             self.setFlip(False)
 
 #敌对角色类
-class HostileCharacter(Doll):
+class HostileCharacter(Entity):
     def __init__(self,theSangvisFerrisDataDic,defaultData,mode=None):
         for key in theSangvisFerrisDataDic:
             defaultData[key] = theSangvisFerrisDataDic[key]
-        Doll.__init__(self,defaultData,"sangvisFerri",mode)
+        Entity.__init__(self,defaultData,"sangvisFerri",mode)
         self.patrol_path = defaultData["patrol_path"] if "patrol_path" in defaultData else []
     def setFlipBasedPos(self,pos):
         #转换坐标

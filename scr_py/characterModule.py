@@ -204,3 +204,9 @@ class AttackingSoundManager:
     def play(self,kind):
         if kind in self.__soundsData:
             pygame.mixer.Channel(self.__channel).play(self.__soundsData[kind][randomInt(0,len(self.__soundsData[kind])-1)])
+
+#用于存放角色做出的决定
+class DecisionHolder:
+    def __init__(self,action,data) -> None:
+        self.action = action
+        self.data = data

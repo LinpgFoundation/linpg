@@ -9,13 +9,15 @@ class GameObject:
     def __init__(self, x:float, y:float) -> None:
         self.x = x
         self.y = y
-    def __lt__(self,other) -> bool:
-        return self.y+self.x < other.y+other.x
-    def get_pos(self) -> tuple:
-        return self.x,self.y
+    def __lt__(self,other) -> bool: return self.y+self.x < other.y+other.x
+    #获取坐标
+    def get_pos(self) -> tuple: return self.x,self.y
+    #设置坐标
     def set_pos(self, x:float, y:float) -> None:
         self.x = round(x)
         self.y = round(y)
+    #检测是否在给定的位置上
+    def on_pos(self,pos) -> bool: return is_same_pos(self.get_pos(),pos)
 
 #系统模块接口
 class SystemObject:

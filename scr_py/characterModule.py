@@ -84,16 +84,16 @@ class CharacterImageManagement:
                 "wait":self.loadImageCollection(characterType,"wait",faction),
                 "wait2":self.loadImageCollection(characterType,"wait2",faction),
             }
-            imgId_dict["die"] = self.loadImageCollection(characterType,"die",faction)
-            """
-            if faction == "character":
+            if faction != "sangvisFerri":
                 imgId_dict["die"] = self.loadImageCollection(characterType,"die",faction)
             else:
+                imgId_dict["die"] = self.loadImageCollection(characterType,"die",faction)
+                """
                 temp_list = ["","2","3"]
                 imgId_dict["die"] = self.loadImageCollection(characterType,"die"+temp_list[randomInt(0,2)],faction)
                 if imgId_dict["die"]==None:
                     imgId_dict["die"] = self.loadImageCollection(characterType,"die",faction)
-            """
+                """
         elif mode == "dev":
             imgId_dict = {"wait":self.loadImageCollection(characterType,"wait",faction)}
         else:
@@ -112,6 +112,9 @@ class CharacterImageManagement:
                 self.__CHARACTERS_IMAGE_DICT[characterType][action] = {"img":numpy.asarray([SrcalphaSurface(\
                     "Assets/image/{0}/{1}/{2}/{3}_{4}_{5}.png".format(faction,characterType,action,characterType,action,i)\
                         ,0,0) for i in range(files_amount)]),"imgNum":files_amount}
+                if faction == "sangvisFerri":
+                    for img in self.__CHARACTERS_IMAGE_DICT[characterType][action]["img"]:
+                        img.flip_original()
                 return {"imgId":0,"alpha":255}
             else:
                 return None

@@ -42,9 +42,9 @@ class SrcalphaSurface(ImageInterface):
         self.__local_y = 0
         self.__isFlipped = False
         self.__needUpdate = True if self._width != None and self._height != None else False
-    def get_alpha(self):
-        return self._alpha
-    def set_alpha(self,value):
+    #透明度
+    def get_alpha(self) -> int: return self._alpha
+    def set_alpha(self,value) -> None:
         if value < 0:
             self._alpha = 0
         elif value > 255:
@@ -53,29 +53,33 @@ class SrcalphaSurface(ImageInterface):
             self._alpha = round(value)
         if self.img != None and self.img.get_alpha() != self._alpha:
             self.img.set_alpha(self._alpha)
-    def set_width(self,value):
+    #宽度
+    def set_width(self,value) -> None:
         value = round(value)
         if self._width != value:
             super().set_width(value)
             self.__needUpdate = True
-    def set_width_with_size_locked(self,width):
+    def set_width_with_size_locked(self,width) -> None:
         height = round(width/self.img_original.get_width()*self.img_original.get_height())
         width = round(width)
         self.set_size(width,height)
-    def set_height(self,value):
+    #高度
+    def set_height(self,value) -> None:
         value = round(value)
         if self._height != value:
             super().set_height(value)
             self.__needUpdate = True
-    def set_height_with_size_locked(self,height):
+    def set_height_with_size_locked(self,height) -> None:
         width = round(height/self.img_original.get_height()*self.img_original.get_width())
         height = round(height)
         self.set_size(width,height)
-    def set_size(self,width,height):
+    #尺寸
+    def set_size(self,width,height) -> None:
         if self._width != round(width) or self._height != round(height):
             super().set_width(width)
             super().set_height(height)
             self.__needUpdate = True
+    #更新图片
     def _update_img(self):
         imgTmp = resizeImg(self.img_original,(self._width,self._height))
         rect = imgTmp.get_bounding_rect()
@@ -86,30 +90,38 @@ class SrcalphaSurface(ImageInterface):
         if self._alpha != 255:
             self.img.set_alpha(self._alpha)
         self.__needUpdate = False
+    #反转原图，并打上已反转的标记
     def flip(self):
         self.__isFlipped = not self.__isFlipped
+        self.flip_original()
+    #反转原图
+    def flip_original(self):
         self.img_original = pygame.transform.flip(self.img_original,True,False)
         self.__needUpdate = True
-    def flip_if_not(self):
-        if not self.__isFlipped:
-            self.flip()
-    def flip_back_to_normal(self):
-        if self.__isFlipped:
-            self.flip()
-    def draw(self,screen,debug=False):
-        self.display(screen,debug)
+    #如果不处于反转状态，则反转
+    def flip_if_not(self) -> None:
+        if not self.__isFlipped: self.flip()
+    #反转回正常状态
+    def flip_back_to_normal(self) -> None:
+        if self.__isFlipped: self.flip()
+    #展示
+    def draw(self,screen,debug=False) -> None: self.display(screen,debug)
+    def display(self,screen,debug=False,offSet=(0,0)) -> None:
         if self.__needUpdate:
             self._update_img()
-        screen.blit(self.img,(self.x+self.__local_x,self.y+self.__local_y))
-        if debug:
-            pygame.draw.rect(screen,findColorRGBA("red"),pygame.Rect(self.x+self.__local_x,self.y+self.__local_y,self.img.get_width(),self.img.get_height()),2)
-    def isHover(self,mouse_x,mouse_y):
+        pos = (self.x+self.__local_x+offSet[0], self.y+self.__local_y+offSet[1])
+        screen.blit(self.img, pos)
+        #如果是debug模式
+        if debug: pygame.draw.rect(screen,findColorRGBA("red"),pygame.Rect(pos,self.img.get_size()),2)
+    #是否被鼠标触碰
+    def isHover(self,mouse_x:int,mouse_y:int) -> bool:
         return 0 < mouse_x-self.x-self.__local_x < self.img.get_width() and 0 < mouse_y-self.y-self.__local_y < self.img.get_height()
-    def get_local_pos(self):
-        return self.x+self.__local_x,self.y+self.__local_y
-    def copy(self):
-        return SrcalphaSurface(self.img_original.copy(),self.x,self.y,self._width,self._height)
-    def addDarkness(self,value):
+    #返回local坐标
+    def get_local_pos(self) -> tuple: return self.x+self.__local_x,self.y+self.__local_y
+    #返回一个复制品
+    def copy(self): return SrcalphaSurface(self.img_original.copy(),self.x,self.y,self._width,self._height)
+    #加暗度
+    def addDarkness(self,value:int) -> None:
         self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_SUB)
         self.__needUpdate = True
 
@@ -131,19 +143,20 @@ class ImageSurface(ImageInterface):
         surface.blit(resizeImg(self.img, (self._width,self._height)),((surface.get_width()-self._width)/2,(surface.get_height()-self._height)/2))
     def display(self,screen,local_x=0,local_y=0):
         screen.blit(resizeImg(self.img, (self._width,self._height)),(self.x+local_x,self.y+local_y))
-    def rotate(self,angle):
-        self.img = pygame.transform.rotate(self.img,angle)
-    def flip(self,vertical=False,horizontal=False):
-        self.img = pygame.transform.flip(self.img,vertical,horizontal)
+    #旋转
+    def rotate(self,angle) -> None: self.img = pygame.transform.rotate(self.img,angle)
+    #反转
+    def flip(self,vertical=False,horizontal=False) -> None: self.img = pygame.transform.flip(self.img,vertical,horizontal)
+    #是否被鼠标触碰
     def isHover(self,mouse_x:int,mouse_y:int) -> bool: return 0 < mouse_x-self.x < self._width and 0 < mouse_y-self.y < self._height 
+    #淡出
     def fade_out(self,speed):
         alphaTmp = self.get_alpha()
-        if alphaTmp > 0:
-            self.set_alpha(alphaTmp-speed)
+        if alphaTmp > 0: self.set_alpha(alphaTmp-speed)
 
 #需要移动的动态图片
 class DynamicImageSurface(ImageSurface):
-    def __init__(self,img,x,y,target_x,target_y,moveSpeed_x,moveSpeed_y,width=None,height=None,description="Default"):
+    def __init__(self,img,x,y,target_x,target_y,moveSpeed_x,moveSpeed_y,width=None,height=None,description="Default") -> None:
         ImageSurface.__init__(self,img,x,y,width,height,description)
         self.default_x = x
         self.default_y = y
@@ -152,7 +165,7 @@ class DynamicImageSurface(ImageSurface):
         self.moveSpeed_x = moveSpeed_x
         self.moveSpeed_y = moveSpeed_y
         self.__towardTargetPos = False
-    def display(self,screen,local_x=0,local_y=0):
+    def display(self,screen,local_x=0,local_y=0) -> None:
         super().display(screen,local_x,local_y)
         if self.__towardTargetPos == True:
             if self.default_x < self.target_x and self.x < self.target_x:
@@ -172,10 +185,8 @@ class DynamicImageSurface(ImageSurface):
                 self.y -= self.moveSpeed_y
             elif self.default_y > self.target_y and self.y < self.default_y:
                 self.y += self.moveSpeed_y
-    def switch(self):
-        self.__towardTargetPos = not self.__towardTargetPos
-    def ifToward(self):
-        return self.__towardTargetPos
+    def switch(self) -> None: self.__towardTargetPos = not self.__towardTargetPos
+    def ifToward(self) -> bool: return self.__towardTargetPos
 
 #进度条
 class ProgressBar(ImageInterface):

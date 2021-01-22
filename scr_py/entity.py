@@ -171,7 +171,7 @@ class Entity(GameObject):
         return damage
     """其他"""
     #设置反转
-    def setFlip(self,theBool:bool) -> None:self.ifFlip = theBool
+    def setFlip(self,theBool:bool) -> None: self.ifFlip = theBool
     #播放角色声音
     def playSound(self,kind_of_sound:str) -> None: _CHARACTERS_SOUND_SYSTEM.play(self.type,kind_of_sound)
     #设置需要移动的路径
@@ -268,7 +268,7 @@ class Entity(GameObject):
                 return True
         return False
     #获取角色的攻击范围
-    def getAttackRange(self,Map) -> dict:
+    def getAttackRange(self,Map,mode="full") -> dict:
         attacking_range = {"near":[],"middle":[],"far":[]}
         for y in range(self.y-self.max_effective_range,self.y+self.max_effective_range+1):
             if y < self.y:
@@ -280,9 +280,9 @@ class Entity(GameObject):
                             attacking_range["middle"].append((x,y))
                         elif "near" in self.effective_range and self.effective_range["near"] != None and self.effective_range["near"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["near"][1]:
                             attacking_range["near"].append((x,y))
-            else:
-                for x in range(self.x-self.max_effective_range+(y-self.y),self.x+self.max_effective_range-(y-self.y)+1):
-                    if x == self.x and y == self.y:
+            elif y == self.y:
+                for x in range(self.x-self.max_effective_range,self.x+self.max_effective_range):
+                    if x == self.x:
                         pass
                     elif Map.row>y>=0 and Map.column>x>=0:
                         if "far" in self.effective_range and self.effective_range["far"] != None and self.effective_range["far"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["far"][1]:
@@ -291,7 +291,30 @@ class Entity(GameObject):
                             attacking_range["middle"].append((x,y))
                         elif "near" in self.effective_range and self.effective_range["near"] != None and self.effective_range["near"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["near"][1]:
                             attacking_range["near"].append((x,y))
+            elif mode != "half":
+                for x in range(self.x-self.max_effective_range+(y-self.y),self.x+self.max_effective_range-(y-self.y)+1):
+                    if Map.row>y>=0 and Map.column>x>=0:
+                        if "far" in self.effective_range and self.effective_range["far"] != None and self.effective_range["far"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["far"][1]:
+                            attacking_range["far"].append((x,y))
+                        elif "middle" in self.effective_range and self.effective_range["middle"] != None and self.effective_range["middle"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["middle"][1]:
+                            attacking_range["middle"].append((x,y))
+                        elif "near" in self.effective_range and self.effective_range["near"] != None and self.effective_range["near"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["near"][1]:
+                            attacking_range["near"].append((x,y))
         return attacking_range
+    #根据坐标反转角色
+    def setFlipBasedPos(self,pos):
+        #转换坐标
+        x,y = convert_pos(pos)
+        #检测坐标
+        if self.x > x:
+            self.setFlip(True)
+        elif self.x == x:
+            if self.y > y:
+                self.setFlip(False)
+            else:
+                self.setFlip(True)
+        else:
+            self.setFlip(False)
     """画出角色"""
     #把角色画到screen上
     def __blit_entity_img(self,screen,MapClass,action=None,pos=None,alpha=155) -> None:

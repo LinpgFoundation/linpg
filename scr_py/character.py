@@ -43,20 +43,6 @@ class FriendlyCharacter(Entity):
         if self.dying != False:
             self.dying = False
             self._ifActionPlayReverse = True
-    #根据坐标反转角色
-    def setFlipBasedPos(self,pos):
-        #转换坐标
-        x,y = convert_pos(pos)
-        #检测坐标
-        if self.x > x:
-            self.setFlip(True)
-        elif self.x == x:
-            if self.y > y:
-                self.setFlip(False)
-            else:
-                self.setFlip(True)
-        else:
-            self.setFlip(False)
 
 #敌对角色类
 class HostileCharacter(Entity):
@@ -65,19 +51,6 @@ class HostileCharacter(Entity):
             defaultData[key] = theSangvisFerrisDataDic[key]
         Entity.__init__(self,defaultData,"sangvisFerri",mode)
         self.patrol_path = defaultData["patrol_path"] if "patrol_path" in defaultData else []
-    def setFlipBasedPos(self,pos):
-        #转换坐标
-        x,y = convert_pos(pos)
-        #检测坐标
-        if self.x < x:
-            self.setFlip(True)
-        elif self.x == x:
-            if self.y < y:
-                self.setFlip(False)
-            else:
-                self.setFlip(True)
-        else:
-            self.setFlip(False)
     def make_decision(self,Map,friendlyCharacterData,hostileCharacterData,the_characters_detected_last_round):
         character_with_min_hp = None
         characters_can_be_detect = []

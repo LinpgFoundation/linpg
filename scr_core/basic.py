@@ -11,9 +11,9 @@ pygame.init()
 
 """加载"""
 #识别图片模块，用于引擎内加载图片，十分不建议在本文件外调用
-def imgLoadFunction(path,ifConvertAlpha:bool) -> pygame.Surface:
+def imgLoadFunction(path:str, ifConvertAlpha:bool) -> pygame.Surface:
     if isinstance(path,str):
-        if ifConvertAlpha == False:
+        if not ifConvertAlpha:
             try:
                 return pygame.image.load(os.path.join(path))
             except BaseException:
@@ -29,7 +29,7 @@ def imgLoadFunction(path,ifConvertAlpha:bool) -> pygame.Surface:
         raise Exception('LinpgEngine-Error: The path has to be a string or pygame.Surface! Path:',path)
 
 #图片加载模块：接收图片路径,长,高,返回对应图片
-def loadImg(path,size=None,setAlpha=None,ifConvertAlpha=True) -> pygame.Surface:
+def loadImg(path:str, size:str=None, setAlpha:int=None, ifConvertAlpha:bool=True) -> pygame.Surface:
     #加载图片
     img = imgLoadFunction(path,ifConvertAlpha)
     #根据参数编辑图片
@@ -42,18 +42,18 @@ def loadImg(path,size=None,setAlpha=None,ifConvertAlpha=True) -> pygame.Surface:
         return resizeImg(img,size)
 
 #加载音效
-def loadSound(path:str,volume:float) -> pygame.mixer.Sound:
+def loadSound(path:str, volume:float) -> pygame.mixer.Sound:
     soundTmp = pygame.mixer.Sound(path)
     soundTmp.set_volume(volume)
     return soundTmp
 
 #加载路径下的所有图片，储存到一个list当中，然后返回
-def loadAllImgInFile(pathRule:str,width=None,height=None) -> list[pygame.Surface]:
+def loadAllImgInFile(pathRule:str, width=None, height=None) -> list[pygame.Surface]:
     return [loadImg(imgPath,(width,height)) for imgPath in glob.glob(pathRule)]
 
 """处理"""
 #重新编辑尺寸
-def resizeImg(img:pygame.Surface,size=(None,None)) -> pygame.Surface:
+def resizeImg(img:pygame.Surface, size=(None,None)) -> pygame.Surface:
     #转换尺寸
     if isinstance(size,(list,tuple,numpy.ndarray)):
         if len(size) == 1:
@@ -114,7 +114,8 @@ def copeBounding(img:pygame.Surface) -> pygame.Surface: return cropImg(img,img.g
 
 """展示"""
 #图片blit模块：接受图片，位置（列表格式），屏幕，如果不是UI层需要local_x和local_y
-def drawImg(img,position,screen,local_x=0,local_y=0) -> None: screen.blit(img,(position[0]+local_x,position[1]+local_y))
+def drawImg(img:pygame.Surface, position:tuple, screen:pygame.Surface, local_x:int=0, local_y:int=0) -> None:
+    screen.blit(img,(position[0]+local_x,position[1]+local_y))
 
 #中心展示模块1：接受两个item和item2的x和y，将item1展示在item2的中心位置,但不展示item2：
 def displayInCenter(item1:pygame.Surface,item2:pygame.Surface,x,y,screen,local_x=0,local_y=0) -> None:

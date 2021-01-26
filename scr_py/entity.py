@@ -268,11 +268,23 @@ class Entity(GameObject):
                 return True
         return False
     #获取角色的攻击范围
-    def getAttackRange(self,Map,mode="full") -> dict:
+    def getAttackRange(self,Map,ifHalfMode:bool=False) -> dict:
         attacking_range = {"near":[],"middle":[],"far":[]}
-        for y in range(self.y-self.max_effective_range,self.y+self.max_effective_range+1):
-            if y < self.y:
+        if ifHalfMode:
+            start_point = self.y-self.max_effective_range
+            end_point = self.y+self.max_effective_range+1
+        elif not self.ifFlip:
+            start_point = self.y-self.max_effective_range
+            end_point = self.y+1
+        else:
+            start_point = self.y
+            end_point = self.y+self.max_effective_range+1
+
+        for y in range(start_point,end_point):
+            if y <= self.y:
                 for x in range(self.x-self.max_effective_range-(y-self.y),self.x+self.max_effective_range+(y-self.y)+1):
+                    if x == self.x and y == self.y:
+                        pass
                     if Map.row>y>=0 and Map.column>x>=0:
                         if "far" in self.effective_range and self.effective_range["far"] != None and self.effective_range["far"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["far"][1]:
                             attacking_range["far"].append((x,y))
@@ -280,18 +292,7 @@ class Entity(GameObject):
                             attacking_range["middle"].append((x,y))
                         elif "near" in self.effective_range and self.effective_range["near"] != None and self.effective_range["near"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["near"][1]:
                             attacking_range["near"].append((x,y))
-            elif y == self.y:
-                for x in range(self.x-self.max_effective_range,self.x+self.max_effective_range):
-                    if x == self.x:
-                        pass
-                    elif Map.row>y>=0 and Map.column>x>=0:
-                        if "far" in self.effective_range and self.effective_range["far"] != None and self.effective_range["far"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["far"][1]:
-                            attacking_range["far"].append((x,y))
-                        elif "middle" in self.effective_range and self.effective_range["middle"] != None and self.effective_range["middle"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["middle"][1]:
-                            attacking_range["middle"].append((x,y))
-                        elif "near" in self.effective_range and self.effective_range["near"] != None and self.effective_range["near"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["near"][1]:
-                            attacking_range["near"].append((x,y))
-            elif mode != "half":
+            else:
                 for x in range(self.x-self.max_effective_range+(y-self.y),self.x+self.max_effective_range-(y-self.y)+1):
                     if Map.row>y>=0 and Map.column>x>=0:
                         if "far" in self.effective_range and self.effective_range["far"] != None and self.effective_range["far"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["far"][1]:

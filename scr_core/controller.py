@@ -101,6 +101,9 @@ class DisplayController:
         return get_setting("Screen_size_y")
     def get_size(self):
         return self.get_width(),self.get_height()
+    #初始化屏幕
+    def init_screen(self,flags:any) -> any:
+        return pygame.display.set_mode(self.get_size(),flags)
     def quit(self):
         from sys import exit
         #退出游戏

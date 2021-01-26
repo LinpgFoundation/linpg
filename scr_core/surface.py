@@ -200,67 +200,41 @@ class ProgressBar(ImageInterface):
 #进度条Surface
 class ProgressBarSurface(ImageInterface):
     def __init__(self,imgOnTop,imgOnBottom,x,y,max_width,height,mode="width"):
-        ImageInterface.__init__(self,imgLoadFunction(imgOnTop),x,y,max_width,height)
-        self.img2 = imgLoadFunction(imgOnBottom)
-        self.percentage = 0
-        self.mode = mode
-    def display(self, screen, offSet:tuple=(0,0)) -> None:
-        screen.blit(resizeImg(self.img2,self.get_size()),(self.x+offSet[0],self.y+offSet[1]))
-        if self.mode == "width":
-            imgOnTop = resizeImg(self.img,(self._width*self.percentage,self._height))
+        ImageInterface.__init__(self,imgLoadFunction(imgOnTop,True),x,y,max_width,height)
+        self.img2 = imgLoadFunction(imgOnBottom,True)
+        self.__percentage = 0
+        self.__mode = True if mode == "width" else False
+    #百分比
+    @property
+    def percentage(self) -> float: return self.__percentage
+    def get_percentage(self) -> float: return self.__percentage
+    def set_percentage(self,value:float) -> None:
+        if value <= 1:
+            self.__percentage = value
         else:
-            imgOnTop = resizeImg(self.img,(self._width,self._height*self.percentage))
-        screen.blit(imgOnTop,(self.x+offSet[0],self.y+offSet[1]))
-
-#暂停菜单
-class PauseMenu:
-    def __init__(self):
-        self.white_bg = None
-        self.button_resume = None
-        self.button_save = None
-        self.button_setting = None
-        self.button_back = None
-        self.screenshot = None
-    def __initial(self,screen):
-        width,height = display.get_size()
-        surfaceTmp = pygame.Surface((width,height),flags=pygame.SRCALPHA).convert_alpha()
-        pygame.draw.rect(surfaceTmp,(0,0,0),(0,0,width,height))
-        self.white_bg = ImageSurface(surfaceTmp,0,0,width,height)
-        self.white_bg.set_alpha(50)
-        self.button_resume = fontRenderPro(get_lang("MainMenu","menu_main")["0_continue"],"white",(screen.get_width()*0.1,screen.get_height()*0.4,screen.get_width()/38))
-        self.button_save = fontRenderPro(get_lang("SaveGame"),"white",(screen.get_width()*0.1,screen.get_height()*0.5,screen.get_width()/38))
-        self.button_setting = fontRenderPro(get_lang("MainMenu","menu_main")["5_setting"],"white",(screen.get_width()*0.1,screen.get_height()*0.6,screen.get_width()/38))
-        self.button_back = fontRenderPro(get_lang("DialogCreator","back"),"white",(screen.get_width()*0.1,screen.get_height()*0.7,screen.get_width()/38))
-    def display(self,screen,pygame_events=pygame.event.get()):
-        #展示原先的背景
-        if self.screenshot == None:
-            self.screenshot = screen.copy()
-        screen.blit(self.screenshot,(0,0))
-        #展示暂停菜单的背景层
-        if self.white_bg == None:
-            self.__initial(screen)
-        self.white_bg.draw(screen)
-        #展示按钮
-        self.button_resume.draw(screen)
-        self.button_save.draw(screen)
-        self.button_setting.draw(screen)
-        self.button_back.draw(screen)
-        #判定按键
-        for event in pygame_events:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                return "Break"
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                #判定按钮
-                if self.button_resume.isHover():
-                    return "Break"
-                elif self.button_save.isHover():
-                    return "Save"
-                elif self.button_setting.isHover():
-                    return "Setting"
-                elif self.button_back.isHover():
-                    set_glob_value("BackToMainMenu",True)
-                    return "BackToMainMenu"
-        return False
+            raise Exception('LinpgEngine-Error: The percentage must be smaller or equal to 1!')
+    #模式
+    @property
+    def mode(self) -> str: return self.get_mode()
+    def get_mode(self) -> str:
+        if self.__mode: return "width"
+        else: return "height"
+    def set_mode(self,mode:str):
+        if mode == "width":
+            self.__mode = True
+        elif mode == "height":
+            self.__mode = False
+        else:
+            raise Exception('LinpgEngine-Error: Mode {} is not supported!'.format(mode))
+    #展示
+    def display(self, screen, offSet:tuple=(0,0)) -> None:
+        pos = (self.x+offSet[0],self.y+offSet[1])
+        screen.blit(resizeImg(self.img2,self.get_size()),pos)
+        imgOnTop = resizeImg(self.img,(self._width,self._height))
+        if self.__mode:
+            screen.blit(imgOnTop.subsurface((0,0,self._width*self.percentage,self._height)),pos)
+        else:
+            screen.blit(imgOnTop.subsurface((0,0,self._width,self._height*self.percentage)),pos)
 
 #按钮
 class Button(GameObject):

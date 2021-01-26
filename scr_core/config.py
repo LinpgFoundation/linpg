@@ -102,10 +102,6 @@ def reload_DATA() -> None:
 #加载设置配置文件
 reload_DATA()
 
-#初始化屏幕
-def screen_init(flags:any) -> any:
-    return pygame.display.set_mode((__LINPG_DATA["Screen_size_x"], __LINPG_DATA["Screen_size_y"]),flags)
-
 #全局数据
 __LINPG_GLOBAL_DATA = {}
 

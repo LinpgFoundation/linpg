@@ -202,9 +202,8 @@ class AttackingSoundManager:
             for i in range(len(self.__soundsData[key])):
                 self.__soundsData[key][i] = pygame.mixer.Sound(self.__soundsData[key][i])
                 self.__soundsData[key][i].set_volume(volume/100.0)
-    def set_channel(self,channel):
-        self.__channel = channel
-    def play(self,kind):
+    def set_channel(self,channel:int) -> None: self.__channel = channel
+    def play(self,kind:str):
         if kind in self.__soundsData:
             pygame.mixer.Channel(self.__channel).play(self.__soundsData[kind][randomInt(0,len(self.__soundsData[kind])-1)])
 

@@ -24,25 +24,23 @@ def loadGif(img_list_or_path,position,size,updateGap=1) -> GifObject:
                 gif_img.seek(i)
                 pathTmp = theFilePath+'/gifTempFileForLoading__'+str(i)+'.png'
                 gif_img.save(pathTmp)
-                imgList.append(pygame.image.load(os.path.join(pathTmp)).convert_alpha())
+                imgList.append(loadImg(pathTmp))
                 os.remove(pathTmp)
                 i += 1
         except:
             pass
     else:
         imgList = img_list_or_path
-    return GifObject(imgList,position[0],position[1],size[0],size[1],updateGap)
+    return GifObject(numpy.asarray(imgList),position[0],position[1],size[0],size[1],updateGap)
 
 #获取特定颜色的表面
 def get_SingleColorSurface(color,size=None) -> ImageSurface:
-    if size == None:
-        width,height = display.get_size()
-    else:
-        width = size[0]
-        height = size[1]
-    surfaceTmp = pygame.Surface((width,height),flags=pygame.SRCALPHA).convert()
+    #如果size是none，则使用屏幕的尺寸
+    if size == None: size = display.get_size()
+    #获取surface
+    surfaceTmp = getSurface(size).convert()
     surfaceTmp.fill(color)
-    return ImageSurface(surfaceTmp,0,0,width,height)
+    return ImageSurface(surfaceTmp,0,0,size[0],size[1])
 
 #检测图片是否被点击
 def isHover(imgObject,objectPos=(0,0),local_x=0,local_y=0) -> bool:

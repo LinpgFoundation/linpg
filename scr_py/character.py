@@ -1,9 +1,11 @@
 # cython: language_level=3
 from .entity import *
 
+__eyeImg = ProgressBarSurface("Assets/image/UI/eye_red.png","Assets/image/UI/eye_orange.png",0,0)
+
 #友方角色类
 class FriendlyCharacter(Entity):
-    def __init__(self,theCharacterDataDic,defaultData,mode=None):
+    def __init__(self,theCharacterDataDic:dict,defaultData:dict,mode=None) -> None:
         for key in theCharacterDataDic:
             defaultData[key] = theCharacterDataDic[key]
         Entity.__init__(self,defaultData,"character",mode)
@@ -11,7 +13,7 @@ class FriendlyCharacter(Entity):
         self.skill_effective_range = defaultData["skill_effective_range"]
         self.max_skill_range = calculate_range(defaultData["skill_effective_range"])
         self.skill_cover_range = defaultData["skill_cover_range"]
-        self.detection = defaultData["detection"] if "detection" in defaultData else None
+        self.detection = defaultData["detection"] if "detection" in defaultData else 0
         self.eyeImgSize = 0
         if self.kind != "HOC":
             try:
@@ -20,6 +22,18 @@ class FriendlyCharacter(Entity):
                 print('警告：角色 {} 没有对应的破衣动画'.format(defaultData["type"]))
                 if not os.path.exists("Assets/image/npc_icon/{}.png".format(defaultData["type"])):
                     print("而且你也忘了加入对应的头像")
+    #调整角色的隐蔽度
+    def noticed(self,force:bool=False) -> None:
+        if force == False:
+            if self.detection == None:
+                self.eyeImgSize = 10
+                self.detection = False
+            elif self.detection == False:
+                self.eyeImgSize = 10
+                self.detection = True
+        elif force == True:
+            self.eyeImgSize = 10
+            self.detection = True
     def loadImg(self):
         super().loadImg()
         self.ImageGetHurt.add(self.type)
@@ -43,6 +57,36 @@ class FriendlyCharacter(Entity):
         if self.dying != False:
             self.dying = False
             self._ifActionPlayReverse = True
+    def drawUI(self,screen,original_UI_img,MapClass) -> None:
+        blit_pos = super().drawUI(screen,original_UI_img,MapClass)
+        if self.detection > 0:
+            eyeImgWidth = round(MapClass.block_width/6*self.eyeImgSize)
+            eyeImgHeight = round(MapClass.block_width/10*self.eyeImgSize)
+            numberX = (eyeImgWidth - MapClass.block_width/6)/2
+            numberY = (eyeImgHeight - MapClass.block_width/10)/2
+            """
+            if self.detection == True:
+                screen.blit(resizeImg(original_UI_img["eye_red"], (eyeImgWidth,eyeImgHeight)),(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY))
+            elif self.detection == False:
+                screen.blit(resizeImg(original_UI_img["eye_orange"], (eyeImgWidth,eyeImgHeight)),(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY))
+            """
+            __eyeImg.set_size(eyeImgWidth,eyeImgHeight)
+            __eyeImg.set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
+            __eyeImg.draw(screen)
+            if self.eyeImgSize > 1:
+                self.eyeImgSize-=1
+            if self.ImageGetHurt != None and self.ImageGetHurt.x != None:
+                self.ImageGetHurt.draw(screen,self.type)
+                if self.ImageGetHurt.x < self.ImageGetHurt.width/4:
+                    self.ImageGetHurt.x += self.ImageGetHurt.width/25
+                else:
+                    if self.ImageGetHurt.yToGo > 0:
+                        self.ImageGetHurt.yToGo -= 5
+                    else:
+                        if self.ImageGetHurt.alpha > 0:
+                            self.ImageGetHurt.alpha -= 2
+                        else:
+                            self.ImageGetHurt.x = None
 
 #敌对角色类
 class HostileCharacter(Entity):
@@ -51,6 +95,17 @@ class HostileCharacter(Entity):
             defaultData[key] = theSangvisFerrisDataDic[key]
         Entity.__init__(self,defaultData,"sangvisFerri",mode)
         self.patrol_path = defaultData["patrol_path"] if "patrol_path" in defaultData else []
+        self._vigilance = 0
+    def alert(self,value:int=10) -> None:
+        self._vigilance += value
+        if self._vigilance > 100:
+            self._vigilance = 100
+        elif self._vigilance < 0:
+            self._vigilance = 0
+    @property
+    def vigilance(self) -> int: return self._vigilance
+    @property
+    def is_alert(self) -> bool: return True if self._vigilance >= 100 else False
     def make_decision(self,Map,friendlyCharacterData,hostileCharacterData,the_characters_detected_last_round):
         character_with_min_hp = None
         characters_can_be_detect = []

@@ -234,18 +234,6 @@ class Entity(GameObject):
         for theAction in self.__imgId_dict:
             _CHARACTERS_IMAGE_SYS.loadImageCollection(self.type,theAction,self.faction)
         _CHARACTERS_SOUND_SYSTEM.add(self.type)
-    #调整角色的隐蔽度
-    def noticed(self,force:bool=False) -> None:
-        if force == False:
-            if self.detection == None:
-                self.eyeImgSize = 10
-                self.detection = False
-            elif self.detection == False:
-                self.eyeImgSize = 10
-                self.detection = True
-        elif force == True:
-            self.eyeImgSize = 10
-            self.detection = True
     #查看是否一个Entity在该角色的附近
     def near(self,otherEntity) -> bool:
         if self.x == otherEntity.x:
@@ -376,7 +364,7 @@ class Entity(GameObject):
                 return True
             else:
                 return False
-    def drawUI(self,screen,original_UI_img,MapClass) -> None:
+    def drawUI(self,screen,original_UI_img,MapClass) -> tuple:
         hp_img = None
         if self.dying == False:
             if original_UI_img != None:
@@ -392,30 +380,8 @@ class Entity(GameObject):
         xTemp,yTemp = MapClass.calPosInMap(self.x,self.y)
         xTemp += MapClass.block_width*0.25
         yTemp -= MapClass.block_width*0.2
-        if self.faction == "character" and self.detection != None:
-            eyeImgWidth = round(MapClass.block_width/6*self.eyeImgSize)
-            eyeImgHeight = round(MapClass.block_width/10*self.eyeImgSize)
-            numberX = (eyeImgWidth - MapClass.block_width/6)/2
-            numberY = (eyeImgHeight - MapClass.block_width/10)/2
-            if self.detection == True:
-                screen.blit(resizeImg(original_UI_img["eye_red"], (eyeImgWidth,eyeImgHeight)),(xTemp+MapClass.block_width*0.51-numberX,yTemp-numberY))
-            elif self.detection == False:
-                screen.blit(resizeImg(original_UI_img["eye_orange"], (eyeImgWidth,eyeImgHeight)),(xTemp+MapClass.block_width*0.51-numberX,yTemp-numberY))
-            if self.eyeImgSize > 1:
-                self.eyeImgSize-=1
-            if self.ImageGetHurt != None and self.ImageGetHurt.x != None:
-                self.ImageGetHurt.draw(screen,self.type)
-                if self.ImageGetHurt.x < self.ImageGetHurt.width/4:
-                    self.ImageGetHurt.x += self.ImageGetHurt.width/25
-                else:
-                    if self.ImageGetHurt.yToGo > 0:
-                        self.ImageGetHurt.yToGo -= 5
-                    else:
-                        if self.ImageGetHurt.alpha > 0:
-                            self.ImageGetHurt.alpha -= 2
-                        else:
-                            self.ImageGetHurt.x = None
         hpEmptyScale = resizeImg(original_UI_img["hp_empty"],(MapClass.block_width/2, MapClass.block_width/10))
         screen.blit(hpEmptyScale,(xTemp,yTemp))
         screen.blit(resizeImg(hp_img,(MapClass.block_width*percent_of_hp/2,MapClass.block_width/10)),(xTemp,yTemp))
         displayInCenter(current_hp_to_display,hpEmptyScale,xTemp,yTemp,screen)
+        return xTemp,yTemp

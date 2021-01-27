@@ -9,6 +9,8 @@ class GameObject:
         self.y = y
     def __lt__(self,other) -> bool: return self.y+self.x < other.y+other.x
     #获取坐标
+    @property
+    def pos(self) -> tuple: return self.get_pos()
     def get_pos(self) -> tuple: return self.x,self.y
     #设置坐标
     def set_pos(self, x:float, y:float) -> None:

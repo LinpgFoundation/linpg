@@ -33,8 +33,7 @@ def loadImg(path:str, size:str=None, setAlpha:int=None, ifConvertAlpha:bool=True
     #加载图片
     img = imgLoadFunction(path,ifConvertAlpha)
     #根据参数编辑图片
-    if setAlpha != None:
-        img.set_alpha(setAlpha)
+    if setAlpha != None: img.set_alpha(setAlpha)
     #如果没有给size,则直接返回Surface
     if size == None or len(size) == 0:
         return img
@@ -50,6 +49,13 @@ def loadSound(path:str, volume:float) -> pygame.mixer.Sound:
 #加载路径下的所有图片，储存到一个list当中，然后返回
 def loadAllImgInFile(pathRule:str, width=None, height=None) -> list[pygame.Surface]:
     return [loadImg(imgPath,(width,height)) for imgPath in glob.glob(pathRule)]
+
+#获取Surface
+def getSurface(size:tuple,surface_flags=None) -> pygame.Surface:
+    if surface_flags != None:
+        return pygame.Surface(size,flags=surface_flags)
+    else:
+        return pygame.Surface(size)
 
 """处理"""
 #重新编辑尺寸
@@ -102,10 +108,10 @@ def changeDarkness(surface:pygame.Surface, value:int) -> pygame.Surface:
 #按照给定的位置对图片进行剪裁
 def cropImg(img:pygame.Surface, pos=(0,0),size=(0,0)) -> pygame.Surface:
     if isinstance(pos,pygame.Rect):
-        cropped = pygame.Surface((pos.width,pos.height),flags=pygame.SRCALPHA).convert_alpha()
+        cropped = getSurface(pos.size,pygame.SRCALPHA).convert_alpha()
         cropped.blit(img,(-pos.x,-pos.y))
     else:
-        cropped = pygame.Surface((round(size[0]), round(size[1])),flags=pygame.SRCALPHA).convert_alpha()
+        cropped = getSurface((round(size[0]),round(size[1])),pygame.SRCALPHA).convert_alpha()
         cropped.blit(img,(-pos[0],-pos[1]))
     return cropped
 

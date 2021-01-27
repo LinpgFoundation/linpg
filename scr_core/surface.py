@@ -23,6 +23,8 @@ class ImageInterface(GameObject):
     def get_height(self) -> int: return self._height
     def set_height(self,value) -> None: self._height = round(value)
     #尺寸
+    @property
+    def size(self) -> tuple: return self.get_size()
     def get_size(self) -> tuple: return self.get_width(),self.get_height()
     def set_size(self,width:int,height:int) -> None:
         self.set_width(width)
@@ -30,7 +32,7 @@ class ImageInterface(GameObject):
     #将图片直接画到screen上
     def draw(self,screen) -> None: self.display(screen)
     #根据offSet将图片展示到screen的对应位置上 - 子类必须实现
-    def display(self,screen,offSet) -> None: raise Exception("LinpgEngine-Error: This child class doesn't implement display() function!")
+    def display(self,screen,offSet:tuple=(0,0)) -> None: raise Exception("LinpgEngine-Error: This child class doesn't implement display() function!")
 
 #用于处理有大面积透明像素的图片surface
 class SrcalphaSurface(ImageInterface):
@@ -83,7 +85,7 @@ class SrcalphaSurface(ImageInterface):
     def _update_img(self):
         imgTmp = resizeImg(self.img_original,(self._width,self._height))
         rect = imgTmp.get_bounding_rect()
-        self.img = pygame.Surface((rect.width, rect.height),flags=pygame.SRCALPHA).convert_alpha()
+        self.img = getSurface(rect.size,pygame.SRCALPHA).convert_alpha()
         self.__local_x = rect.x
         self.__local_y = rect.y
         self.img.blit(imgTmp,(-self.__local_x,-self.__local_y))
@@ -264,7 +266,7 @@ class Button(GameObject):
     def get_size(self) -> int: return self.img.get_size()
 
 class ButtonWithDes(Button):
-    def __init__(self,path,x,y,width,height,des):
+    def __init__(self,path,x,y,width,height,des) -> None:
         Button.__init__(self,path,x,y)
         width = int(width)
         height = int(height)
@@ -278,12 +280,11 @@ class ButtonWithDes(Button):
         self.des_surface = pygame.Surface((self.des_font_surface.get_width()*1.2,self.height*0.6),flags=pygame.SRCALPHA).convert_alpha()
         pygame.draw.rect(self.des_surface,(255,255,255),(0,0, self.des_surface.get_width(),self.des_surface.get_height()))
         self.des_surface.blit(self.des_font_surface,(self.des_font_surface.get_width()*0.1,self.height*0.1))
-    def displayDes(self,screen):
-        if self.hoverEventTriggered == True:
-            screen.blit(self.des_surface,pygame.mouse.get_pos())
+    def displayDes(self,screen) -> None:
+        if self.hoverEventTriggered: screen.blit(self.des_surface,pygame.mouse.get_pos())
 
 class ButtonWithFadeInOut(Button):
-    def __init__(self,buttonImgPath,txt,txt_color,alphaWhenNotHovered,x,y,height):
+    def __init__(self,buttonImgPath,txt,txt_color,alphaWhenNotHovered,x,y,height) -> None:
         Button.__init__(self,buttonImgPath,x,y)
         txtSurface = fontRenderWithoutBound(txt,txt_color,height*0.6)
         self.img = resizeImg(self.img,(txtSurface.get_width()+height,height))
@@ -292,32 +293,33 @@ class ButtonWithFadeInOut(Button):
         self.img.set_alpha(alphaWhenNotHovered)
 
 #gif图片管理
-class GifObject(GameObject):
-    def __init__(self,imgList,x,y,width,height,updateGap):
-        GameObject.__init__(self,x,y)
-        self.imgList = imgList
+class GifObject(ImageInterface):
+    def __init__(self,imgList:tuple,x,y,width,height,updateGap) -> None:
+        ImageInterface.__init__(self,imgList,x,y,width,height)
         self.imgId = 0
-        self.width = int(width)
-        self.height = int(height)
         self.updateGap = updateGap
         self.countDown = 0
-        self.alpha = 255
-    def display(self,screen):
-        img = resizeImg(self.imgList[self.imgId],(self.width,self.height))
-        if self.alpha != 255:
-            img.set_alpha(self.alpha)
-        screen.blit(img,(self.x,self.y))
+        self._alpha = 255
+    #透明度
+    def get_alpha(self) -> int: return self._alpha
+    def set_alpha(self,value) -> None:
+        if value < 0:
+            self._alpha = 0
+        elif value > 255:
+            self._alpha = 255
+        else:
+            self._alpha = round(value)
+    def display(self,screen,offSet:tuple=(0,0)):
+        img = resizeImg(self.img[self.imgId],self.size)
+        #设置透明度
+        if self._alpha != 255: img.set_alpha(self._alpha)
+        screen.blit(img,(self.x+offSet[0],self.y+offSet[1]))
         if self.countDown >= self.updateGap:
             self.countDown = 0
             self.imgId += 1
-            if self.imgId == len(self.imgList):
-                self.imgId = 0
+            if self.imgId >= len(self.img): self.imgId = 0
         else:
             self.countDown += 1
-    def draw(self,screen):
-        self.display(screen)
-    def set_alpha(self,alpha):
-        self.alpha = alpha
 
 #对话框基础模块
 class DialogInterface:

@@ -17,12 +17,12 @@ def imgLoadFunction(path:str, ifConvertAlpha:bool) -> pygame.Surface:
             try:
                 return pygame.image.load(os.path.join(path))
             except BaseException:
-                raise Exception('LinpgEngine-Error: Cannot load image! Path:',path)
+                raise Exception('LinpgEngine-Error: Cannot load image! Path: {}'.format(path))
         else:
             try:
                 return pygame.image.load(os.path.join(path)).convert_alpha()
             except BaseException:
-                raise Exception('LinpgEngine-Error: Cannot load image! Path:',path)
+                raise Exception('LinpgEngine-Error: Cannot load image! Path: {}'.format(path))
     elif isinstance(path,pygame.Surface):
         return path
     else:

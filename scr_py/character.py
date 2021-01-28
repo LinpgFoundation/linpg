@@ -1,8 +1,6 @@
 # cython: language_level=3
 from .entity import *
 
-__eyeImg = ProgressBarSurface("Assets/image/UI/eye_red.png","Assets/image/UI/eye_orange.png",0,0)
-
 #友方角色类
 class FriendlyCharacter(Entity):
     def __init__(self,theCharacterDataDic:dict,defaultData:dict,mode=None) -> None:
@@ -13,8 +11,7 @@ class FriendlyCharacter(Entity):
         self.skill_effective_range = defaultData["skill_effective_range"]
         self.max_skill_range = calculate_range(defaultData["skill_effective_range"])
         self.skill_cover_range = defaultData["skill_cover_range"]
-        self.detection = defaultData["detection"] if "detection" in defaultData else 0
-        self.eyeImgSize = 0
+        self._detection = defaultData["detection"] if "detection" in defaultData and defaultData["detection"] != None else 0
         if self.kind != "HOC":
             try:
                 self.ImageGetHurt = CharacterGetHurtImageManagement(self.type,get_setting("Screen_size_y")/4,get_setting("Screen_size_y")/2)
@@ -22,19 +19,21 @@ class FriendlyCharacter(Entity):
                 print('警告：角色 {} 没有对应的破衣动画'.format(defaultData["type"]))
                 if not os.path.exists("Assets/image/npc_icon/{}.png".format(defaultData["type"])):
                     print("而且你也忘了加入对应的头像")
+    @property
+    def detection(self) -> int: return self._detection
     #调整角色的隐蔽度
-    def noticed(self,force:bool=False) -> None:
-        if force == False:
-            if self.detection == None:
-                self.eyeImgSize = 10
-                self.detection = False
-            elif self.detection == False:
-                self.eyeImgSize = 10
-                self.detection = True
-        elif force == True:
-            self.eyeImgSize = 10
-            self.detection = True
-    def loadImg(self):
+    def noticed(self,value:int=10,force:bool=False) -> None:
+        if not force:
+            self._detection += value
+            if self._detection > 100:
+                self._detection = 100
+            elif self._detection < 0:
+                self._detection = 0
+        elif force:
+            self._detection = 100
+        else:
+            raise Exception("LinpgEngine-Error: The force has to be a bool not {}".format(force))
+    def loadImg(self) -> None:
         super().loadImg()
         self.ImageGetHurt.add(self.type)
     def attackBy(self,attacker,result_of_round):
@@ -59,34 +58,31 @@ class FriendlyCharacter(Entity):
             self._ifActionPlayReverse = True
     def drawUI(self,screen,original_UI_img,MapClass) -> None:
         blit_pos = super().drawUI(screen,original_UI_img,MapClass)
-        if self.detection > 0:
-            eyeImgWidth = round(MapClass.block_width/6*self.eyeImgSize)
-            eyeImgHeight = round(MapClass.block_width/10*self.eyeImgSize)
+        #展示被察觉的程度
+        if self._detection > 0:
+            #参数
+            eyeImgWidth = round(MapClass.block_width/6)
+            eyeImgHeight = round(MapClass.block_width/10)
             numberX = (eyeImgWidth - MapClass.block_width/6)/2
             numberY = (eyeImgHeight - MapClass.block_width/10)/2
-            """
-            if self.detection == True:
-                screen.blit(resizeImg(original_UI_img["eye_red"], (eyeImgWidth,eyeImgHeight)),(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY))
-            elif self.detection == False:
-                screen.blit(resizeImg(original_UI_img["eye_orange"], (eyeImgWidth,eyeImgHeight)),(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY))
-            """
-            __eyeImg.set_size(eyeImgWidth,eyeImgHeight)
-            __eyeImg.set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
-            __eyeImg.draw(screen)
-            if self.eyeImgSize > 1:
-                self.eyeImgSize-=1
-            if self.ImageGetHurt != None and self.ImageGetHurt.x != None:
-                self.ImageGetHurt.draw(screen,self.type)
-                if self.ImageGetHurt.x < self.ImageGetHurt.width/4:
-                    self.ImageGetHurt.x += self.ImageGetHurt.width/25
+            #根据参数调整图片
+            original_UI_img["eyeImg"].set_size(eyeImgWidth,eyeImgHeight)
+            original_UI_img["eyeImg"].set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
+            original_UI_img["eyeImg"].set_percentage(self._detection/100)
+            original_UI_img["eyeImg"].draw(screen)
+        #重创立绘
+        if self.ImageGetHurt != None and self.ImageGetHurt.x != None:
+            self.ImageGetHurt.draw(screen,self.type)
+            if self.ImageGetHurt.x < self.ImageGetHurt.width/4:
+                self.ImageGetHurt.x += self.ImageGetHurt.width/25
+            else:
+                if self.ImageGetHurt.yToGo > 0:
+                    self.ImageGetHurt.yToGo -= 5
                 else:
-                    if self.ImageGetHurt.yToGo > 0:
-                        self.ImageGetHurt.yToGo -= 5
+                    if self.ImageGetHurt.alpha > 0:
+                        self.ImageGetHurt.alpha -= 2
                     else:
-                        if self.ImageGetHurt.alpha > 0:
-                            self.ImageGetHurt.alpha -= 2
-                        else:
-                            self.ImageGetHurt.x = None
+                        self.ImageGetHurt.x = None
 
 #敌对角色类
 class HostileCharacter(Entity):
@@ -106,6 +102,20 @@ class HostileCharacter(Entity):
     def vigilance(self) -> int: return self._vigilance
     @property
     def is_alert(self) -> bool: return True if self._vigilance >= 100 else False
+    def drawUI(self,screen,original_UI_img,MapClass) -> None:
+        blit_pos = super().drawUI(screen,original_UI_img,MapClass)
+        #展示警觉的程度
+        if self._vigilance > 0:
+            #参数
+            eyeImgWidth = round(MapClass.block_width/6)
+            eyeImgHeight = round(MapClass.block_width/6)
+            numberX = (eyeImgWidth - MapClass.block_width/6)/2
+            numberY = (eyeImgHeight - MapClass.block_width/10)/2
+            #根据参数调整图片
+            original_UI_img["vigilanceImg"].set_size(eyeImgWidth,eyeImgHeight)
+            original_UI_img["vigilanceImg"].set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
+            original_UI_img["vigilanceImg"].set_percentage(self._vigilance/100)
+            original_UI_img["vigilanceImg"].draw(screen)
     def make_decision(self,Map,friendlyCharacterData,hostileCharacterData,the_characters_detected_last_round):
         character_with_min_hp = None
         characters_can_be_detect = []
@@ -234,11 +244,13 @@ class CharacterDataLoader(threading.Thread):
             else:
                 self.alliances[key] = FriendlyCharacter(value,self.DATABASE[value["type"]],self.mode)
             self.currentID+=1
+            if console.get_events("dev"): print("total: {0}, current: {1}".format(self.totalNum,self.currentID))
         for key,value in self.enemies.items():
             if isinstance(value,HostileCharacter):
                 value.loadImg()
             else:
                 self.enemies[key] = HostileCharacter(value,self.DATABASE[value["type"]],self.mode)
             self.currentID+=1
+            if console.get_events("dev"): print("total: {0}, current: {1}".format(self.totalNum,self.currentID))
     def getResult(self):
         return self.alliances,self.enemies

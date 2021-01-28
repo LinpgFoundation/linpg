@@ -42,7 +42,7 @@ class BattleSystemInterface(SystemObject):
         self.__characterDataLoaderThread.start()
     #是否角色加载器还在运行
     def _is_characters_loader_alive(self):
-        if self.__characterDataLoaderThread.isAlive():
+        if self.__characterDataLoaderThread.is_alive():
             return True
         else:
             self.alliances_data,self.enemies_data = self.__characterDataLoaderThread.getResult()

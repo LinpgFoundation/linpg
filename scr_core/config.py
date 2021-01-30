@@ -82,8 +82,7 @@ def reload_DATA() -> None:
             "MouseIconWidth": 18,
             "MouseMoveSpeed": 30,
             "ReadingSpeed": 0.5,
-            "Screen_size_x": 1920,
-            "Screen_size_y": 1080,
+            "Screen_size": 120,
             "Sound":{
                 "background_music": 100,
                 "sound_effects": 100,

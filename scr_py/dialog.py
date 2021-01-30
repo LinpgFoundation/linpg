@@ -667,7 +667,7 @@ class NpcImageSystem:
         self.npcThisRoundImgAlpha = 0
         self.communication = loadImg("Assets/image/UI/communication.png")
         self.__NPC_IMAGE_DATABASE = NpcImageDatabase()
-        self.img_width = int(get_setting("Screen_size_x")/2)
+        self.img_width = int(display.get_width()/2)
         self.move_x = 0
         self.dev_mode = False
         self.npc_get_click = None

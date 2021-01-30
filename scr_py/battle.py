@@ -4,7 +4,7 @@ from .character import *
 
 #战斗系统接口，请勿实例化
 class BattleSystemInterface(SystemObject):
-    def __init__(self,chapterType,chapterId,collection_name):
+    def __init__(self,chapterType:str,chapterId:int,collection_name:str) -> None:
         SystemObject.__init__(self)
         #用于判断是否移动屏幕的参数
         self.__mouse_move_temp_x = -1
@@ -32,16 +32,16 @@ class BattleSystemInterface(SystemObject):
         self.__background_music = None
         #屏幕尺寸
         self.window_x,self.window_y = display.get_size()
-    def _create_map(self,MapData,darkMode=None):
+    #初始化地图
+    def _create_map(self,MapData,darkMode=None) -> None:
         self.MAP = MapObject(MapData,round(self.window_x/10),round(self.window_y/10),darkMode)
     #初始化角色加载器
-    def _initial_characters_loader(self,alliancesData,enemiesData,mode=None):
+    def _initial_characters_loader(self,alliancesData,enemiesData,mode=None) -> None:
         self.__characterDataLoaderThread = CharacterDataLoader(alliancesData,enemiesData,mode)
     #启动角色加载器
-    def _start_characters_loader(self):
-        self.__characterDataLoaderThread.start()
+    def _start_characters_loader(self) -> None: self.__characterDataLoaderThread.start()
     #是否角色加载器还在运行
-    def _is_characters_loader_alive(self):
+    def _is_characters_loader_alive(self) -> bool:
         if self.__characterDataLoaderThread.is_alive():
             return True
         else:
@@ -52,63 +52,38 @@ class BattleSystemInterface(SystemObject):
             del self.__characterDataLoaderThread
             return False
     @property
-    def characters_loaded(self):
-        return self.__characterDataLoaderThread.currentID
+    def characters_loaded(self) -> int: return self.__characterDataLoaderThread.currentID
     @property
-    def characters_total(self):
-        return self.__characterDataLoaderThread.totalNum
+    def characters_total(self) -> int: return self.__characterDataLoaderThread.totalNum
     #背景音乐
-    def set_bgm(self,name):
-        self.__background_music = name
+    def set_bgm(self,name:str) -> None: self.__background_music = name
     #更新背景音乐音量
-    def set_bgm_volume(self,volume):
-        pygame.mixer.music.set_volume(volume)
-    def play_bgm(self):
-        #加载并播放音乐
+    def set_bgm_volume(self,volume:int) -> None: pygame.mixer.music.set_volume(volume)
+    #加载并播放音乐
+    def play_bgm(self) -> None:
         if self.__background_music != None and not pygame.mixer.music.get_busy():
             pygame.mixer.music.load("Assets/music/"+self.__background_music)
             pygame.mixer.music.play()
     #检测手柄事件
-    def _check_jostick_events(self):
-        if controller.joystick.get_init() == True:
-            if round(controller.joystick.get_axis(4)) == -1:
-                self.__pressKeyToMove["up"]=True
-            else:
-                self.__pressKeyToMove["up"]=False
-            if round(controller.joystick.get_axis(4)) == 1:
-                self.__pressKeyToMove["down"]=True
-            else:
-                self.__pressKeyToMove["down"]=False
-            if round(controller.joystick.get_axis(3)) == 1:
-                self.__pressKeyToMove["right"]=True
-            else:
-                self.__pressKeyToMove["right"]=False
-            if round(controller.joystick.get_axis(3)) == -1:
-                self.__pressKeyToMove["left"]=True
-            else:
-                self.__pressKeyToMove["left"]=False
-    def _check_key_down(self,event):
-        if event.key == pygame.K_w:
-            self.__pressKeyToMove["up"]=True
-        if event.key == pygame.K_s:
-            self.__pressKeyToMove["down"]=True
-        if event.key == pygame.K_a:
-            self.__pressKeyToMove["left"]=True
-        if event.key == pygame.K_d:
-            self.__pressKeyToMove["right"]=True
-        if event.key == pygame.K_p:
-            self.MAP.dev_mode()
-    def _check_key_up(self,event):
-        if event.key == pygame.K_w:
-            self.__pressKeyToMove["up"]=False
-        if event.key == pygame.K_s:
-            self.__pressKeyToMove["down"]=False
-        if event.key == pygame.K_a:
-            self.__pressKeyToMove["left"]=False
-        if event.key == pygame.K_d:
-            self.__pressKeyToMove["right"]=False
-    def _check_right_click_move(self,mouse_x,mouse_y):
-        #移动屏幕
+    def _check_jostick_events(self) -> None:
+        if controller.joystick.get_init():
+            self.__pressKeyToMove["up"] = True if round(controller.joystick.get_axis(4)) == -1 else False
+            self.__pressKeyToMove["down"] = True if round(controller.joystick.get_axis(4)) == 1 else False
+            self.__pressKeyToMove["right"] = True if round(controller.joystick.get_axis(3)) == 1 else False
+            self.__pressKeyToMove["left"] = True if round(controller.joystick.get_axis(3)) == -1 else False
+    def _check_key_down(self,event:object) -> None:
+        if event.key == pygame.K_UP: self.__pressKeyToMove["up"] = True
+        if event.key == pygame.K_DOWN: self.__pressKeyToMove["down"] = True
+        if event.key == pygame.K_LEFT: self.__pressKeyToMove["left"] = True
+        if event.key == pygame.K_RIGHT: self.__pressKeyToMove["right"] = True
+        if event.key == pygame.K_p: self.MAP.dev_mode()
+    def _check_key_up(self,event:object) -> None:
+        if event.key == pygame.K_UP: self.__pressKeyToMove["up"] = False
+        if event.key == pygame.K_DOWN: self.__pressKeyToMove["down"] = False
+        if event.key == pygame.K_LEFT: self.__pressKeyToMove["left"] = False
+        if event.key == pygame.K_RIGHT: self.__pressKeyToMove["right"] = False
+    #根据薯片移动屏幕
+    def _check_right_click_move(self,mouse_x:int,mouse_y:int) -> None:
         if pygame.mouse.get_pressed()[2]:
             if self.__mouse_move_temp_x == -1 and self.__mouse_move_temp_y == -1:
                 self.__mouse_move_temp_x = mouse_x
@@ -124,37 +99,36 @@ class BattleSystemInterface(SystemObject):
         else:
             self.__mouse_move_temp_x = -1
             self.__mouse_move_temp_y = -1
-    def __check_if_move_screen(self):
+    def __check_if_move_screen(self) -> None:
         #根据按键情况设定要移动的数值
-        if self.__pressKeyToMove["up"] == True:
+        if self.__pressKeyToMove["up"]:
             if self.screen_to_move_y == None:
                 self.screen_to_move_y = self.MAP.block_height/4
             else:
                 self.screen_to_move_y += self.MAP.block_height/4
-        if self.__pressKeyToMove["down"] == True:
+        if self.__pressKeyToMove["down"]:
             if self.screen_to_move_y == None:
                 self.screen_to_move_y = -self.MAP.block_height/4
             else:
                 self.screen_to_move_y -= self.MAP.block_height/4
-        if self.__pressKeyToMove["left"] == True:
+        if self.__pressKeyToMove["left"]:
             if self.screen_to_move_x == None:
                 self.screen_to_move_x = self.MAP.block_width/4
             else:
                 self.screen_to_move_x += self.MAP.block_width/4
-        if self.__pressKeyToMove["right"] == True:
+        if self.__pressKeyToMove["right"]:
             if self.screen_to_move_x == None:
                 self.screen_to_move_x = -self.MAP.block_width/4
             else:
                 self.screen_to_move_x -= self.MAP.block_width/4
-    def _move_screen(self):
+    def _move_screen(self) -> None:
         #如果需要移动屏幕
         if self.screen_to_move_x != None and self.screen_to_move_x != 0:
             temp_value = int(self.MAP.getPos_x() + self.screen_to_move_x*0.2)
             if self.window_x-self.MAP.surface_width<=temp_value<=0:
                 self.MAP.setPos_x(temp_value)
                 self.screen_to_move_x*=0.8
-                if int(self.screen_to_move_x) == 0:
-                    self.screen_to_move_x = 0
+                if int(self.screen_to_move_x) == 0: self.screen_to_move_x = 0
             else:
                 self.screen_to_move_x = 0
         if self.screen_to_move_y != None and self.screen_to_move_y !=0:
@@ -162,21 +136,18 @@ class BattleSystemInterface(SystemObject):
             if self.window_y-self.MAP.surface_height<=temp_value<=0:
                 self.MAP.setPos_y(temp_value)
                 self.screen_to_move_y*=0.8
-                if int(self.screen_to_move_y) == 0:
-                    self.screen_to_move_y = 0
+                if int(self.screen_to_move_y) == 0: self.screen_to_move_y = 0
             else:
                 self.screen_to_move_y = 0
-    def _display_map(self,screen):
+    def _display_map(self,screen:pygame.Surface) -> None:
         self.__check_if_move_screen()
         self._move_screen()
         self.screen_to_move_x,self.screen_to_move_y = self.MAP.display_map(screen,self.screen_to_move_x,self.screen_to_move_y)
     #展示场景装饰物
-    def _display_decoration(self,screen):
+    def _display_decoration(self,screen:pygame.Surface) -> None:
         self.MAP.display_decoration(screen,self.alliances_data,self.enemies_data)
     #展示天气
-    def _display_weather(self,screen):
-        if self.weatherController != None:
-            self.weatherController.display(screen,self.MAP.block_width)
+    def _display_weather(self,screen:pygame.Surface) -> None:
+        if self.weatherController != None: self.weatherController.display(screen,self.MAP.block_width)
     #计算光亮区域 并初始化地图
-    def _calculate_darkness(self):
-        self.MAP.calculate_darkness(self.alliances_data)
+    def _calculate_darkness(self) -> None: self.MAP.calculate_darkness(self.alliances_data)

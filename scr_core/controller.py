@@ -95,10 +95,8 @@ class DisplayController:
         pygame.display.set_caption(title)
     def set_icon(self,path):
         pygame.display.set_icon(pygame.image.load(os.path.join(path)))
-    def get_width(self):
-        return get_setting("Screen_size_x")
-    def get_height(self):
-        return get_setting("Screen_size_y")
+    def get_width(self) -> int: return get_setting("Screen_size")*16
+    def get_height(self) -> int: return get_setting("Screen_size")*9
     def get_size(self):
         return self.get_width(),self.get_height()
     #初始化屏幕

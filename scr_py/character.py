@@ -12,13 +12,13 @@ class FriendlyCharacter(Entity):
         self.max_skill_range = calculate_range(defaultData["skill_effective_range"])
         self.skill_cover_range = defaultData["skill_cover_range"]
         self._detection = defaultData["detection"] if "detection" in defaultData and defaultData["detection"] != None else 0
-        if self.kind != "HOC":
-            try:
-                self.ImageGetHurt = CharacterGetHurtImageManagement(self.type,get_setting("Screen_size_y")/4,get_setting("Screen_size_y")/2)
-            except BaseException:
-                print('警告：角色 {} 没有对应的破衣动画'.format(defaultData["type"]))
-                if not os.path.exists("Assets/image/npc_icon/{}.png".format(defaultData["type"])):
-                    print("而且你也忘了加入对应的头像")
+        try:
+            self.ImageGetHurt = CharacterGetHurtImageManagement(self.type,display.get_height()/4,display.get_height()/2)
+        except BaseException:
+            print('警告：角色 {} 没有对应的破衣动画'.format(defaultData["type"]))
+            self.ImageGetHurt = None
+            if not os.path.exists("Assets/image/npc_icon/{}.png".format(defaultData["type"])):
+                print("而且你也忘了加入对应的头像")
     @property
     def detection(self) -> int: return self._detection
     #调整角色的隐蔽度

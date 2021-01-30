@@ -6,7 +6,7 @@ _CHARACTERS_IMAGE_SYS = CharacterImageManagement()
 #储存角色音效的常量
 _CHARACTERS_SOUND_SYSTEM = CharacterSoundManagement(5)
 #角色UI的文字数据
-_ENTITY_UI_FONT = createFont(get_setting("Screen_size_x")/192)
+_ENTITY_UI_FONT = createFont(display.get_width()/192)
 
 #人形模块
 class Entity(GameObject):

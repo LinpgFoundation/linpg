@@ -19,6 +19,25 @@ class GameObject:
     #检测是否在给定的位置上
     def on_pos(self, pos) -> bool: return is_same_pos(self.get_pos(),pos)
 
+#2d游戏对象接口
+class GameObject2d(GameObject):
+    def __init__(self, x:float, y:float) -> None:
+        GameObject.__init__(self,x,y)
+    #宽
+    @property
+    def width(self) -> int: return self.get_width()
+    #高
+    @property
+    def height(self) -> int: return self.get_height()
+    #尺寸
+    @property
+    def size(self) -> tuple: return self.get_width(),self.get_height()
+    def get_size(self) -> tuple: return self.get_width(),self.get_height()
+    #将图片直接画到screen上
+    def draw(self,screen) -> None: self.display(screen)
+    #根据offSet将图片展示到screen的对应位置上 - 子类必须实现
+    def display(self,screen,offSet:tuple=(0,0)) -> None: raise Exception("LinpgEngine-Error: This child class doesn't implement display() function!")
+
 #3d游戏对象接口
 class GameObject3d(GameObject):
     def __init__(self, x:float, y:float, z:float) -> None:

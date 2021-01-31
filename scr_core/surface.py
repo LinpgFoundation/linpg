@@ -3,9 +3,9 @@ from tkinter import Tk
 from .module import *
 
 #图形接口
-class ImageInterface(GameObject):
+class ImageInterface(GameObject2d):
     def __init__(self,img,x,y,width,height) -> None:
-        GameObject.__init__(self,x,y)
+        GameObject2d.__init__(self,x,y)
         self.img = img
         self._width = width
         self._height = height
@@ -13,27 +13,16 @@ class ImageInterface(GameObject):
     def get_alpha(self) -> int: return self.img.get_alpha()
     def set_alpha(self,value) -> None: self.img.set_alpha(value)
     #宽度
-    @property
-    def width(self) -> int: return self.get_width()
     def get_width(self) -> int: return self._width
     def set_width(self,value:int) -> None: self._width = round(value)
     #高度
-    @property
-    def height(self) -> int: return self.get_height()
     def get_height(self) -> int: return self._height
     def set_height(self,value) -> None: self._height = round(value)
     #尺寸
-    @property
-    def size(self) -> tuple: return self.get_size()
-    def get_size(self) -> tuple: return self.get_width(),self.get_height()
     def set_size(self,width:int,height:int) -> None:
         self.set_width(width)
         self.set_height(height)
-    #将图片直接画到screen上
-    def draw(self,screen) -> None: self.display(screen)
-    #根据offSet将图片展示到screen的对应位置上 - 子类必须实现
-    def display(self,screen,offSet:tuple=(0,0)) -> None: raise Exception("LinpgEngine-Error: This child class doesn't implement display() function!")
-
+    
 #用于处理有大面积透明像素的图片surface
 class SrcalphaSurface(ImageInterface):
     def __init__(self,path_or_surface,x,y,width=None,height=None):
@@ -239,9 +228,9 @@ class ProgressBarSurface(ImageInterface):
             screen.blit(imgOnTop.subsurface((0,0,self._width,self._height*self.percentage)),pos)
 
 #按钮
-class Button(GameObject):
+class Button(GameObject2d):
     def __init__(self,path,x,y):
-        GameObject.__init__(self,x,y)
+        GameObject2d.__init__(self,x,y)
         self.img = loadImg(path)
         self.img2 = None
         self.hoverEventTriggered = False
@@ -263,7 +252,6 @@ class Button(GameObject):
             self.hoverEventTriggered = False
     def get_width(self) -> int: return self.img.get_width()
     def get_height(self) -> int: return self.img.get_height()
-    def get_size(self) -> int: return self.img.get_size()
 
 class ButtonWithDes(Button):
     def __init__(self,path,x,y,width,height,des) -> None:
@@ -350,10 +338,10 @@ class DialogInterface:
             self.textIndex = len(self.content[self.displayedLine])-1
 
 #对话框和对话框内容
-class DialogBox(DialogInterface,GameObject):
+class DialogBox(DialogInterface,GameObject2d):
     def __init__(self,imgPath,width,height,x,y,fontSize):
         DialogInterface.__init__(self,loadImg(imgPath,(width,height)),fontSize)
-        GameObject.__init__(self,x,y)
+        GameObject2d.__init__(self,x,y)
         self.__surface = None
         self.deafult_x = x
         self.deafult_y = y
@@ -365,12 +353,9 @@ class DialogBox(DialogInterface,GameObject):
         self.updated = False
         self.__drew = False
         self.__flipped = False
-    def get_width(self):
-        return self.dialoguebox.get_width()
-    def get_height(self):
-        return self.dialoguebox.get_height()
-    def set_size(self,width,height):
-        self.dialoguebox = resizeImg(self.dialoguebox,(width,height))
+    def get_width(self) -> int: return self.dialoguebox.get_width()
+    def get_height(self)-> int:  return self.dialoguebox.get_height()
+    def set_size(self,width,height) -> tuple: self.dialoguebox = resizeImg(self.dialoguebox,(width,height))
     def display(self,screen,characterInfoBoardUI=None):
         #如果对话框需要继续更新
         if self.__drew == False:

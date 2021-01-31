@@ -97,8 +97,7 @@ class DisplayController:
         pygame.display.set_icon(pygame.image.load(os.path.join(path)))
     def get_width(self) -> int: return get_setting("Screen_size")*16
     def get_height(self) -> int: return get_setting("Screen_size")*9
-    def get_size(self):
-        return self.get_width(),self.get_height()
+    def get_size(self) -> tuple: return self.get_width(),self.get_height()
     #初始化屏幕
     def init_screen(self,flags:any) -> any:
         return pygame.display.set_mode(self.get_size(),flags)

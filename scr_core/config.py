@@ -89,13 +89,10 @@ def reload_DATA() -> None:
                 "sound_environment": 100,
             }
         }
-        if __LINPG_DATA["Language"][0] == "zh_CN":
-            __LINPG_DATA["Language"] = "SimplifiedChinese"
-        else:
-            __LINPG_DATA["Language"] = "English"
+        __LINPG_DATA["Language"] = "SimplifiedChinese" if __LINPG_DATA["Language"][0] == "zh_CN" else "English"
         #别忘了看看Save文件夹是不是都不存在
-        if not os.path.exists("Save"):
-            os.makedirs("Save")
+        if not os.path.exists("Save"): os.makedirs("Save")
+        #保存设置
         save_setting()
 
 #加载设置配置文件

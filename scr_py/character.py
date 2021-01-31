@@ -86,7 +86,7 @@ class FriendlyCharacter(Entity):
 
 #敌对角色类
 class HostileCharacter(Entity):
-    def __init__(self,theSangvisFerrisDataDic,defaultData,mode=None):
+    def __init__(self,theSangvisFerrisDataDic:dict,defaultData:dict,mode=None):
         for key in theSangvisFerrisDataDic:
             defaultData[key] = theSangvisFerrisDataDic[key]
         Entity.__init__(self,defaultData,"sangvisFerri",mode)
@@ -102,6 +102,7 @@ class HostileCharacter(Entity):
     def vigilance(self) -> int: return self._vigilance
     @property
     def is_alert(self) -> bool: return True if self._vigilance >= 100 else False
+    #画UI - 列如血条
     def drawUI(self,screen,original_UI_img,MapClass) -> None:
         blit_pos = super().drawUI(screen,original_UI_img,MapClass)
         #展示警觉的程度
@@ -121,7 +122,7 @@ class HostileCharacter(Entity):
         characters_can_be_detect = []
         #检测是否有可以立马攻击的敌人
         for character in friendlyCharacterData:
-            if friendlyCharacterData[character].detection == True and friendlyCharacterData[character].current_hp>0:
+            if friendlyCharacterData[character].detection > 0 and friendlyCharacterData[character].current_hp > 0:
                 #如果现在还没有可以直接攻击的角色或者当前历遍到角色的血量比最小值要高
                 if character_with_min_hp == None or friendlyCharacterData[character].current_hp <= friendlyCharacterData[character_with_min_hp[0]].current_hp:
                     temp_distance = abs(friendlyCharacterData[character].x-self.x)+abs(friendlyCharacterData[character].y-self.y)
@@ -202,7 +203,7 @@ class HostileCharacter(Entity):
                     else:
                         that_character = None
                         for each_chara in the_characters_detected_last_round:
-                            if that_character== None:
+                            if that_character == None:
                                 that_character = each_chara
                             else:
                                 if hostileCharacterData[that_character].current_hp < hostileCharacterData[that_character].current_hp:
@@ -229,7 +230,7 @@ class HostileCharacter(Entity):
 
 #初始化角色信息
 class CharacterDataLoader(threading.Thread):
-    def __init__(self,alliances,enemies,mode):
+    def __init__(self,alliances:dict,enemies:dict,mode:str) -> None:
         threading.Thread.__init__(self)
         self.DATABASE = loadCharacterData()
         self.alliances = alliances
@@ -237,7 +238,7 @@ class CharacterDataLoader(threading.Thread):
         self.totalNum = len(alliances)+len(enemies)
         self.currentID = 0
         self.mode = mode
-    def run(self):
+    def run(self) -> None:
         for key,value in self.alliances.items():
             if isinstance(value,FriendlyCharacter):
                 value.loadImg()
@@ -252,5 +253,4 @@ class CharacterDataLoader(threading.Thread):
                 self.enemies[key] = HostileCharacter(value,self.DATABASE[value["type"]],self.mode)
             self.currentID+=1
             if console.get_events("dev"): print("total: {0}, current: {1}".format(self.totalNum,self.currentID))
-    def getResult(self):
-        return self.alliances,self.enemies
+    def getResult(self) -> tuple: return self.alliances,self.enemies

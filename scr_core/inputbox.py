@@ -3,9 +3,9 @@ import time
 from .ui import *
 
 #输入框Interface，请勿实体化
-class InputBoxInterface(GameObject):
+class InputBoxInterface(GameObject2d):
     def __init__(self,x,y,font_size,txt_color,default_width) -> None:
-        GameObject.__init__(self,x,y)
+        GameObject2d.__init__(self,x,y)
         self.FONTSIZE = font_size
         self.FONT = createFont(self.FONTSIZE)
         self.default_width = default_width

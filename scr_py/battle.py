@@ -30,11 +30,22 @@ class BattleSystemInterface(SystemObject):
         self.collection_name = collection_name
         #背景音乐
         self.__background_music = None
-        #屏幕尺寸
-        self.window_x,self.window_y = display.get_size()
     #初始化地图
     def _create_map(self,MapData,darkMode=None) -> None:
-        self.MAP = MapObject(MapData,round(self.window_x/10),round(self.window_y/10),darkMode)
+        self.MAP = MapObject(MapData,round(display.get_width()/10),round(display.get_height()/10),darkMode)
+    #计算光亮区域 并初始化地图
+    def _calculate_darkness(self) -> None: self.MAP.calculate_darkness(self.alliances_data)
+    #展示地图
+    def _display_map(self,screen:pygame.Surface) -> None:
+        self._check_if_move_screen()
+        self._move_screen()
+        self.screen_to_move_x,self.screen_to_move_y = self.MAP.display_map(screen,self.screen_to_move_x,self.screen_to_move_y)
+    #展示场景装饰物
+    def _display_decoration(self,screen:pygame.Surface) -> None:
+        self.MAP.display_decoration(screen,self.alliances_data,self.enemies_data)
+    #展示天气
+    def _display_weather(self,screen:pygame.Surface) -> None:
+        if self.weatherController != None: self.weatherController.display(screen,self.MAP.block_width)
     #初始化角色加载器
     def _initial_characters_loader(self,alliancesData,enemiesData,mode=None) -> None:
         self.__characterDataLoaderThread = CharacterDataLoader(alliancesData,enemiesData,mode)
@@ -82,7 +93,7 @@ class BattleSystemInterface(SystemObject):
         if event.key == pygame.K_DOWN: self.__pressKeyToMove["down"] = False
         if event.key == pygame.K_LEFT: self.__pressKeyToMove["left"] = False
         if event.key == pygame.K_RIGHT: self.__pressKeyToMove["right"] = False
-    #根据薯片移动屏幕
+    #根据鼠标移动屏幕
     def _check_right_click_move(self,mouse_x:int,mouse_y:int) -> None:
         if pygame.mouse.get_pressed()[2]:
             if self.__mouse_move_temp_x == -1 and self.__mouse_move_temp_y == -1:
@@ -99,7 +110,7 @@ class BattleSystemInterface(SystemObject):
         else:
             self.__mouse_move_temp_x = -1
             self.__mouse_move_temp_y = -1
-    def __check_if_move_screen(self) -> None:
+    def _check_if_move_screen(self) -> None:
         #根据按键情况设定要移动的数值
         if self.__pressKeyToMove["up"]:
             if self.screen_to_move_y == None:
@@ -125,7 +136,7 @@ class BattleSystemInterface(SystemObject):
         #如果需要移动屏幕
         if self.screen_to_move_x != None and self.screen_to_move_x != 0:
             temp_value = int(self.MAP.getPos_x() + self.screen_to_move_x*0.2)
-            if self.window_x-self.MAP.surface_width<=temp_value<=0:
+            if display.get_width()-self.MAP.surface_width<=temp_value<=0:
                 self.MAP.setPos_x(temp_value)
                 self.screen_to_move_x*=0.8
                 if int(self.screen_to_move_x) == 0: self.screen_to_move_x = 0
@@ -133,21 +144,9 @@ class BattleSystemInterface(SystemObject):
                 self.screen_to_move_x = 0
         if self.screen_to_move_y != None and self.screen_to_move_y !=0:
             temp_value = int(self.MAP.getPos_y() + self.screen_to_move_y*0.2)
-            if self.window_y-self.MAP.surface_height<=temp_value<=0:
+            if display.get_height()-self.MAP.surface_height<=temp_value<=0:
                 self.MAP.setPos_y(temp_value)
                 self.screen_to_move_y*=0.8
                 if int(self.screen_to_move_y) == 0: self.screen_to_move_y = 0
             else:
                 self.screen_to_move_y = 0
-    def _display_map(self,screen:pygame.Surface) -> None:
-        self.__check_if_move_screen()
-        self._move_screen()
-        self.screen_to_move_x,self.screen_to_move_y = self.MAP.display_map(screen,self.screen_to_move_x,self.screen_to_move_y)
-    #展示场景装饰物
-    def _display_decoration(self,screen:pygame.Surface) -> None:
-        self.MAP.display_decoration(screen,self.alliances_data,self.enemies_data)
-    #展示天气
-    def _display_weather(self,screen:pygame.Surface) -> None:
-        if self.weatherController != None: self.weatherController.display(screen,self.MAP.block_width)
-    #计算光亮区域 并初始化地图
-    def _calculate_darkness(self) -> None: self.MAP.calculate_darkness(self.alliances_data)

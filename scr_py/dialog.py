@@ -8,8 +8,6 @@ class DialogSystemInterface(SystemObject):
         SystemObject.__init__(self)
         #加载对话的背景图片模块
         self.backgroundContent = DialogBackground()
-        #获取屏幕的尺寸
-        self.window_x,self.window_y = display.get_size()
         #加载npc立绘系统并初始化
         self.npc_img_dic = NpcImageSystem()
         #黑色Void帘幕
@@ -40,7 +38,7 @@ class DialogSystem(DialogSystemInterface):
         #UI按钮
         self.ButtonsMananger = DialogButtons()
         #加载对话框系统
-        self.dialogTxtSystem = DialogContent(self.window_x*0.015)
+        self.dialogTxtSystem = DialogContent(display.get_width()*0.015)
         #更新音效
         self.__update_sound_volume()
         #是否要显示历史对白页面
@@ -48,8 +46,8 @@ class DialogSystem(DialogSystemInterface):
         self.historySurface = None
         self.historySurface_local_y = 0
         #展示历史界面-返回按钮
-        buttonTemp = loadImg("Assets/image/UI/back.png",(self.window_x*0.03,self.window_y*0.04))
-        self.history_back = Button(addDarkness(buttonTemp,100),self.window_x*0.04,self.window_y*0.04)
+        buttonTemp = loadImg("Assets/image/UI/back.png",(display.get_width()*0.03,display.get_height()*0.04))
+        self.history_back = Button(addDarkness(buttonTemp,100),display.get_width()*0.04,display.get_height()*0.04)
         self.history_back.setHoverImg(buttonTemp)
         #是否开启自动保存
         self.auto_save = False
@@ -118,7 +116,6 @@ class DialogSystem(DialogSystemInterface):
         #检测章节是否初始化
         if self.chapterId == None:
             raise Exception('LinpgEngine-Error: The dialog has not been initialized!')
-        self.window_x,self.window_y = screen.get_size()
         #背景
         self.backgroundContent.display(screen)
         self.npc_img_dic.display(screen)
@@ -155,10 +152,10 @@ class DialogSystem(DialogSystemInterface):
                         leftClick = True
                 elif event.button == 4 and self.historySurface_local_y<0:
                     self.historySurface = None
-                    self.historySurface_local_y += self.window_y*0.1
+                    self.historySurface_local_y += display.get_height()*0.1
                 elif event.button == 5:
                     self.historySurface = None
-                    self.historySurface_local_y -= self.window_y*0.1
+                    self.historySurface_local_y -= display.get_height()*0.1
                 #返回上一个对话场景（在被允许的情况下）
                 elif event.button == 3 or controller.joystick.get_button(1) == 1:
                     if self.dialogContent[self.dialogId]["last_dialog_id"] != None:
@@ -194,15 +191,15 @@ class DialogSystem(DialogSystemInterface):
                 self.pause_menu.screenshot = None
         #显示选项
         if dialogPlayResult and self.dialogContent[self.dialogId]["next_dialog_id"] != None and self.dialogContent[self.dialogId]["next_dialog_id"]["type"] == "option":
-            optionBox_y_base = (self.window_y*3/4-(len(self.dialogContent[self.dialogId]["next_dialog_id"]["target"]))*2*self.window_x*0.03)/4
-            optionBox_height = int(self.window_x*0.05)
+            optionBox_y_base = (display.get_height()*3/4-(len(self.dialogContent[self.dialogId]["next_dialog_id"]["target"]))*2*display.get_width()*0.03)/4
+            optionBox_height = int(display.get_width()*0.05)
             nextDialogId = None
             i=0
             for i in range(len(self.dialogContent[self.dialogId]["next_dialog_id"]["target"])):
                 option_txt = self.dialogTxtSystem.fontRender(self.dialogContent[self.dialogId]["next_dialog_id"]["target"][i]["txt"],(255, 255, 255))
-                optionBox_width = int(option_txt.get_width()+self.window_x*0.05) 
-                optionBox_x = (self.window_x-optionBox_width)/2
-                optionBox_y = (i+1)*2*self.window_x*0.03+optionBox_y_base
+                optionBox_width = int(option_txt.get_width()+display.get_width()*0.05) 
+                optionBox_x = (display.get_width()-optionBox_width)/2
+                optionBox_y = (i+1)*2*display.get_width()*0.03+optionBox_y_base
                 mouse_x,mouse_y = pygame.mouse.get_pos()
                 if optionBox_x<mouse_x<optionBox_x+optionBox_width and optionBox_y<mouse_y<optionBox_y+optionBox_height:
                     optionBox_scaled = resizeImg(self.optionBoxSelected,(optionBox_width,optionBox_height))
@@ -220,27 +217,27 @@ class DialogSystem(DialogSystemInterface):
         #展示历史
         if self.showHistory:
             if self.historySurface == None:
-                self.historySurface = pygame.Surface((self.window_x,self.window_y),flags=pygame.SRCALPHA).convert_alpha()
-                pygame.draw.rect(self.historySurface,(0,0,0),(0,0,self.window_x,self.window_y))
+                self.historySurface = pygame.Surface(display.get_size(),flags=pygame.SRCALPHA).convert_alpha()
+                pygame.draw.rect(self.historySurface,(0,0,0),((0,0),display.get_size()))
                 self.historySurface.set_alpha(150)
                 dialogIdTemp = "head"
                 local_y = self.historySurface_local_y
                 while dialogIdTemp != None:
                     if self.dialogContent[dialogIdTemp]["narrator"] != None:
                         narratorTemp = self.dialogTxtSystem.fontRender(self.dialogContent[dialogIdTemp]["narrator"]+': ["',(255, 255, 255))
-                        self.historySurface.blit(narratorTemp,(self.window_x*0.15-narratorTemp.get_width(),self.window_y*0.1+local_y))
+                        self.historySurface.blit(narratorTemp,(display.get_width()*0.15-narratorTemp.get_width(),display.get_height()*0.1+local_y))
                     for i in range(len(self.dialogContent[dialogIdTemp]["content"])):
                         txt = self.dialogContent[dialogIdTemp]["content"][i]
                         txt += '"]' if i == len(self.dialogContent[dialogIdTemp]["content"])-1 and self.dialogContent[dialogIdTemp]["narrator"] != None else ""
-                        self.historySurface.blit(self.dialogTxtSystem.fontRender(txt,(255, 255, 255)),(self.window_x*0.15,self.window_y*0.1+local_y))
+                        self.historySurface.blit(self.dialogTxtSystem.fontRender(txt,(255, 255, 255)),(display.get_width()*0.15,display.get_height()*0.1+local_y))
                         local_y+=self.dialogTxtSystem.FONTSIZE*1.5
                     if dialogIdTemp != self.dialogId:
                         if self.dialogContent[dialogIdTemp]["next_dialog_id"]["type"] == "default" or self.dialogContent[dialogIdTemp]["next_dialog_id"]["type"] == "changeScene":
                             dialogIdTemp = self.dialogContent[dialogIdTemp]["next_dialog_id"]["target"]
                         elif self.dialogContent[dialogIdTemp]["next_dialog_id"]["type"] == "option":
                             narratorTemp = self.dialogTxtSystem.fontRender(self.ButtonsMananger.choiceTxt+" - ",(0,191,255))
-                            self.historySurface.blit(narratorTemp,(self.window_x*0.15-narratorTemp.get_width(),self.window_y*0.1+local_y))
-                            self.historySurface.blit(self.dialogTxtSystem.fontRender(str(self.dialog_options[dialogIdTemp]["target"]),(0,191,255)),(self.window_x*0.15,self.window_y*0.1+local_y))
+                            self.historySurface.blit(narratorTemp,(display.get_width()*0.15-narratorTemp.get_width(),display.get_height()*0.1+local_y))
+                            self.historySurface.blit(self.dialogTxtSystem.fontRender(str(self.dialog_options[dialogIdTemp]["target"]),(0,191,255)),(display.get_width()*0.15,display.get_height()*0.1+local_y))
                             local_y+=self.dialogTxtSystem.FONTSIZE*1.5
                             dialogIdTemp = self.dialog_options[dialogIdTemp]["target"]
                         else:
@@ -307,12 +304,12 @@ class DialogSystemDev(DialogSystemInterface):
         self.fileLocation = "Data/{0}/chapter{1}_dialogs_{2}.yaml".format(self.chapterType,self.chapterId,self.lang) if self.chapterType == "main_chapter"\
             else "Data/{0}/{1}/chapter{2}_dialogs_{3}.yaml".format(self.chapterType,self.collection_name,self.chapterId,self.lang)
         #文字
-        self.FONTSIZE = self.window_x*0.015
+        self.FONTSIZE = display.get_width()*0.015
         self.FONT = createFont(self.FONTSIZE)
         #对话框
-        self.dialoguebox = loadImage("Assets/image/UI/dialoguebox.png",(self.window_x*0.13,self.window_y*0.65),self.window_x*0.74,self.window_y/4)
-        self.narrator = SingleLineInputBox(self.window_x*0.2,self.dialoguebox.y+self.FONTSIZE,self.FONTSIZE,"white")
-        self.content = MultipleLinesInputBox(self.window_x*0.2,self.window_y*0.73,self.FONTSIZE,"white")
+        self.dialoguebox = loadImage("Assets/image/UI/dialoguebox.png",(display.get_width()*0.13,display.get_height()*0.65),display.get_width()*0.74,display.get_height()/4)
+        self.narrator = SingleLineInputBox(display.get_width()*0.2,self.dialoguebox.y+self.FONTSIZE,self.FONTSIZE,"white")
+        self.content = MultipleLinesInputBox(display.get_width()*0.2,display.get_height()*0.73,self.FONTSIZE,"white")
         #将npc立绘系统设置为开发者模式
         self.npc_img_dic.devMode()
         #将背景的音量调至0
@@ -320,17 +317,17 @@ class DialogSystemDev(DialogSystemInterface):
         #从配置文件中加载数据
         self.__loadDialogData()
         #背景选择界面
-        widthTmp = int(self.window_x*0.2)
-        self.UIContainerRight = loadDynamicImage("Assets/image/UI/container.png",(self.window_x*0.8+widthTmp,0),(self.window_x*0.8,0),(widthTmp/10,0),widthTmp,self.window_y)
-        self.UIContainerRightButton = loadImage("Assets/image/UI/container_button.png",(-self.window_x*0.03,self.window_y*0.4),int(self.window_x*0.04),int(self.window_y*0.2))
+        widthTmp = int(display.get_width()*0.2)
+        self.UIContainerRight = loadDynamicImage("Assets/image/UI/container.png",(display.get_width()*0.8+widthTmp,0),(display.get_width()*0.8,0),(widthTmp/10,0),widthTmp,display.get_height())
+        self.UIContainerRightButton = loadImage("Assets/image/UI/container_button.png",(-display.get_width()*0.03,display.get_height()*0.4),int(display.get_width()*0.04),int(display.get_height()*0.2))
         self.UIContainerRight.rotate(90)
         self.UIContainerRightButton.rotate(90)
         self.background_deselect = loadImg("Assets/image/UI/deselect.png")
         self.UIContainerRight_kind = "background"
         #UI按钮
         CONFIG = get_lang("DialogCreator")
-        button_width = self.window_x*0.05
-        button_y = self.window_y*0.03
+        button_width = display.get_width()*0.05
+        button_y = display.get_height()*0.03
         self.button_select_background = ButtonWithFadeInOut("Assets/image/UI/menu.png",CONFIG["background"],"black",100,button_width/3,button_width/3,button_width/3)
         self.button_select_npc = ButtonWithFadeInOut("Assets/image/UI/menu.png",CONFIG["npc"],"black",100,button_width/2+self.button_select_background.get_width(),button_width/3,button_width/3)
         self.npc_local_y = 0
@@ -354,7 +351,7 @@ class DialogSystemDev(DialogSystemInterface):
         self.all_background_image = {}
         for imgPath in glob.glob("Assets/image/dialog_background/*"):
             self.all_background_image[os.path.basename(imgPath)] = loadImg(imgPath)
-        self.background_image_local_y = self.window_y*0.1
+        self.background_image_local_y = display.get_height()*0.1
     #保存数据
     def __save(self):
         self.dialogData[self.part][self.dialogId]["narrator"] = self.narrator.get_text()
@@ -450,12 +447,12 @@ class DialogSystemDev(DialogSystemInterface):
                 if theNext["type"] == "default" or theNext["type"] == "changeScene":
                     return theNext["target"]
                 elif theNext["type"] == "option":
-                    optionBox_y_base = (self.window_y*3/4-(len(theNext["target"]))*2*self.window_x*0.03)/4
+                    optionBox_y_base = (display.get_height()*3/4-(len(theNext["target"]))*2*display.get_width()*0.03)/4
                     for i in range(len(theNext["target"])):
                         option_txt = self.FONT.render(theNext["target"][i]["txt"],get_fontMode(),(255, 255, 255))
-                        optionBox_scaled = resizeImg(self.optionBox,(option_txt.get_width()+self.window_x*0.05,self.window_x*0.05))
-                        optionBox_x = (self.window_x-optionBox_scaled.get_width())/2
-                        optionBox_y = (i+1)*2*self.window_x*0.03+optionBox_y_base
+                        optionBox_scaled = resizeImg(self.optionBox,(option_txt.get_width()+display.get_width()*0.05,display.get_width()*0.05))
+                        optionBox_x = (display.get_width()-optionBox_scaled.get_width())/2
+                        optionBox_y = (i+1)*2*display.get_width()*0.03+optionBox_y_base
                         displayWithInCenter(option_txt,optionBox_scaled,optionBox_x,optionBox_y,screen)
                     while True:
                         leftClick = False
@@ -465,9 +462,9 @@ class DialogSystemDev(DialogSystemInterface):
                                 break
                         for i in range(len(theNext["target"])):
                             option_txt = self.FONT.render(theNext["target"][i]["txt"],get_fontMode(),(255, 255, 255))
-                            optionBox_scaled = resizeImg(self.optionBox,(option_txt.get_width()+self.window_x*0.05,self.window_x*0.05))
-                            optionBox_x = (self.window_x-optionBox_scaled.get_width())/2
-                            optionBox_y = (i+1)*2*self.window_x*0.03+optionBox_y_base
+                            optionBox_scaled = resizeImg(self.optionBox,(option_txt.get_width()+display.get_width()*0.05,display.get_width()*0.05))
+                            optionBox_x = (display.get_width()-optionBox_scaled.get_width())/2
+                            optionBox_y = (i+1)*2*display.get_width()*0.03+optionBox_y_base
                             if isHover(optionBox_scaled,(optionBox_x,optionBox_y)) and leftClick:
                                 return theNext["target"][i]["id"]
                         display.flip()
@@ -602,7 +599,7 @@ class DialogSystemDev(DialogSystemInterface):
         #画上右侧的菜单选项
         self.UIContainerRightButton.display(screen,self.UIContainerRight.x)
         self.UIContainerRight.draw(screen)
-        if self.UIContainerRight.x<self.window_x:
+        if self.UIContainerRight.x<display.get_width():
             #检测按钮
             if isHover(self.button_select_background,None,self.UIContainerRight.x) and leftClick:
                 self.UIContainerRight_kind = "background"
@@ -641,7 +638,7 @@ class DialogSystemDev(DialogSystemInterface):
             elif self.UIContainerRight_kind == "npc":
                 npc_local_y_temp = self.npc_local_y
                 for key,npcImage in self.npc_img_dic.imgDic.items():
-                    if npc_local_y_temp >= self.window_y:
+                    if npc_local_y_temp >= display.get_height():
                         break
                     else:
                         imgTemp = resizeImg(npcImage["normal"],(self.UIContainerRight.get_width()*0.8,None))

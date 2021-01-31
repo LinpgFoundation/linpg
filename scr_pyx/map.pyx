@@ -104,16 +104,16 @@ class MapObject:
                 self.__decorations = numpy.delete(self.__decorations,i)
                 break
     #控制地图放大缩小
-    def changePerBlockSize(self,newPerBlockWidth,newPerBlockHeight,window_x,window_y):
+    def changePerBlockSize(self,newPerBlockWidth,newPerBlockHeight):
         self.addPos_x((self.block_width-newPerBlockWidth)*self.column/2)
         self.addPos_y((self.block_height-newPerBlockHeight)*self.row/2)
         self.surface_width = int(newPerBlockWidth*0.9*((self.row+self.column+1)/2))
         self.surface_height = int(newPerBlockWidth*0.45*((self.row+self.column+1)/2)+newPerBlockWidth)
         _MAP_ENV_IMAGE.resize(newPerBlockWidth,newPerBlockHeight)
-        if self.surface_width < window_x:
-            self.surface_width = window_x
-        if self.surface_height < window_y:
-            self.surface_height = window_y
+        if self.surface_width < display.get_width():
+            self.surface_width = display.get_width()
+        if self.surface_height < display.get_height():
+            self.surface_height = display.get_height()
         self.__needUpdateMapSurface = True
         self.__block_on_surface = None
     #获取local坐标
@@ -201,11 +201,11 @@ class MapObject:
             if self.calPosInMap(0,y+1)[1] >= screen_size[1]:
                 break
     #把装饰物画到屏幕上
-    def display_decoration(self,screen,characters_data,sangvisFerris_data):
+    def display_decoration(self,screen,alliances_data={},enemies_data={}):
         cdef (int,int) thePosInMap
         #检测角色所占据的装饰物（即需要透明化，方便玩家看到角色）
         cdef list charactersPos = []
-        for name,dataDic in {**characters_data, **sangvisFerris_data}.items():
+        for name,dataDic in {**alliances_data, **enemies_data}.items():
             charactersPos.append((int(dataDic.x),int(dataDic.y)))
             charactersPos.append((int(dataDic.x)+1,int(dataDic.y)+1))
         #计算offSet
@@ -310,25 +310,25 @@ class MapObject:
         "yEnd": yStart + self.block_width*0.5
         }
     #计算光亮区域
-    def calculate_darkness(self,characters_data):
+    def calculate_darkness(self,alliances_data):
         cpdef list lightArea = []
         cdef int x,y
-        for each_chara in characters_data:
+        for each_chara in alliances_data:
             the_character_effective_range = 2
-            if characters_data[each_chara].current_hp > 0 :
-                if characters_data[each_chara].effective_range["far"] != None:
-                    the_character_effective_range = characters_data[each_chara].effective_range["far"][1]+1
-                elif characters_data[each_chara].effective_range["middle"] != None:
-                    the_character_effective_range = characters_data[each_chara].effective_range["middle"][1]+1
-                elif characters_data[each_chara].effective_range["near"] != None:
-                    the_character_effective_range = characters_data[each_chara].effective_range["near"][1]+1
-            for y in range(int(characters_data[each_chara].y-the_character_effective_range),int(characters_data[each_chara].y+the_character_effective_range)):
-                if y < characters_data[each_chara].y:
-                    for x in range(int(characters_data[each_chara].x-the_character_effective_range-(y-characters_data[each_chara].y)+1),int(characters_data[each_chara].x+the_character_effective_range+(y-characters_data[each_chara].y))):
+            if alliances_data[each_chara].current_hp > 0 :
+                if alliances_data[each_chara].effective_range["far"] != None:
+                    the_character_effective_range = alliances_data[each_chara].effective_range["far"][1]+1
+                elif alliances_data[each_chara].effective_range["middle"] != None:
+                    the_character_effective_range = alliances_data[each_chara].effective_range["middle"][1]+1
+                elif alliances_data[each_chara].effective_range["near"] != None:
+                    the_character_effective_range = alliances_data[each_chara].effective_range["near"][1]+1
+            for y in range(int(alliances_data[each_chara].y-the_character_effective_range),int(alliances_data[each_chara].y+the_character_effective_range)):
+                if y < alliances_data[each_chara].y:
+                    for x in range(int(alliances_data[each_chara].x-the_character_effective_range-(y-alliances_data[each_chara].y)+1),int(alliances_data[each_chara].x+the_character_effective_range+(y-alliances_data[each_chara].y))):
                         if [x,y] not in lightArea:
                             lightArea.append([x,y])
                 else:
-                    for x in range(int(characters_data[each_chara].x-the_character_effective_range+(y-characters_data[each_chara].y)+1),int(characters_data[each_chara].x+the_character_effective_range-(y-characters_data[each_chara].y))):
+                    for x in range(int(alliances_data[each_chara].x-the_character_effective_range+(y-alliances_data[each_chara].y)+1),int(alliances_data[each_chara].x+the_character_effective_range-(y-alliances_data[each_chara].y))):
                         if [x,y] not in lightArea:
                             lightArea.append([x,y])
         for item in self.__decorations:

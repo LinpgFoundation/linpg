@@ -56,6 +56,8 @@ class SystemObject:
     def __init__(self) -> None:
         #输入事件
         self.__events = None
+        #判定用于判定是否还在播放的参数
+        self.isPlaying = True
     #更新输入事件
     def _update_event(self) -> None: self.__events = pygame.event.get()
     #获取输入事件

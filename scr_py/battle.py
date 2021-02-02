@@ -15,8 +15,6 @@ class BattleSystemInterface(SystemObject):
         self.the_dead_one = {}
         #用于检测是否有方向键被按到的字典
         self.__pressKeyToMove = {"up":False,"down":False,"left":False,"right":False}
-        #战斗系统主循环判定参数
-        self.isPlaying = True
         #角色数据
         self.alliances_data = None
         self.enemies_data = None

@@ -4,20 +4,17 @@ from math import ceil
 import av, pygame
 from ..scr_core.surface import ProgressBar,ImageSurface,get_setting
 
-def getAudioFromVideo(moviePath,audioType="mp3"):
+cdef getAudioFromVideo(moviePath:str,audioType:str="mp3"):
     #如果没有Cache文件夹，则创建一个
-    if not os.path.exists("Cache"):
-        os.makedirs("Cache")
+    if not os.path.exists("Cache"): os.makedirs("Cache")
     #获取路径
-    filePath,fileName = os.path.split(moviePath)
-    fileName.replace(".","")
-    outPutPath = "Cache/{0}.{1}".format(fileName.replace(".",""),audioType)
-    if os.path.exists(outPutPath):
-        return outPutPath
+    outPutPath = "Cache/{0}.{1}".format(os.path.basename(moviePath).replace(".","_"),audioType)
+    #如果路径已经存在，则直接返回路径
+    if os.path.exists(outPutPath): return outPutPath
     #把视频载入到流容器中
     input_container = av.open(moviePath)
-    input_container.streams.video[0].thread_type = 'AUTO'
-    input_stream = input_container.streams.get(audio=0)[0]
+    input_stream = input_container.streams.audio[0]
+    input_stream.thread_type = 'AUTO'
     #创建输出的容器
     output_container = av.open(outPutPath, 'w')
     output_stream = output_container.add_stream(audioType)
@@ -36,23 +33,21 @@ def getAudioFromVideo(moviePath,audioType="mp3"):
     #读取完成，返回音乐文件的对应目录
     return outPutPath
 
-def loadAudioAsSound(moviePath):
+def loadAudioAsSound(moviePath:str):
     path = getAudioFromVideo(moviePath)
     PygameAudio = pygame.mixer.Sound(path)
-    if not get_setting("KeepVedioCache"):
-        os.remove(path)
+    if not get_setting("KeepVedioCache"): os.remove(path)
     return PygameAudio
 
-def loadAudioAsMusic(moviePath):
+def loadAudioAsMusic(moviePath:str):
     pygame.mixer.music.unload()
     path = getAudioFromVideo(moviePath)
     pygame.mixer.music.load(path)
-    if not get_setting("KeepVedioCache"):
-        os.remove(path)
+    if not get_setting("KeepVedioCache"): os.remove(path)
 
 #视频模块接口，不能实例化
 class VedioInterface(threading.Thread):
-    def __init__(self,path,int width,int height):
+    def __init__(self,path:str,width:int,height:int):
         threading.Thread.__init__(self)
         self._path = path
         self._video_container = av.open(self._path,mode='r')
@@ -68,18 +63,12 @@ class VedioInterface(threading.Thread):
         self._height = height
         self._pts = 0
         self._threadLock = threading.Lock()
-    def get_frameNum(self):
-        return self._video_stream.frames
-    def get_frameRate(self):
-        return self._frameRate
-    def get_pos(self):
-        return self._pts*self._video_stream.time_base
-    def get_frameIndex(self):
-        return round(self._pts*self._video_stream.time_base*self._frameRate)
-    def get_percentagePlayed(self):
-        return self._pts/self._video_stream.duration
-    def stop(self):
-        self._stopped = True
+    def get_frameNum(self) -> int: return self._video_stream.frames
+    def get_frameRate(self) -> int: return self._frameRate
+    def get_pos(self) -> float: return self._pts*self._video_stream.time_base
+    def get_frameIndex(self) -> int: return round(self._pts*self._video_stream.time_base*self._frameRate)
+    def get_percentagePlayed(self) -> float: return self._pts/self._video_stream.duration
+    def stop(self): self._stopped = True
     def _processFrame(self,frame):
         while self._frameQueue.full():
             pass
@@ -90,12 +79,11 @@ class VedioInterface(threading.Thread):
         array = frame.to_ndarray(width=self._width,height=self._height,format='rgb24')
         array = array.swapaxes(0,1)
         self._frameQueue.put(array)
-    def display(self,screen):
-        pygame.surfarray.blit_array(screen, self._frameQueue.get())
+    def display(self,screen): pygame.surfarray.blit_array(screen, self._frameQueue.get())
 
 #视频片段展示模块--灵活，但不能保证帧数和音乐同步
 class VedioFrame(VedioInterface):
-    def __init__(self,path,int width,int height,loop=True,with_music=False,play_range=None,volume=1):
+    def __init__(self,path:str,width:int,height:int,loop:bool=True,with_music:bool=False,play_range:tuple=None,volume:float=1):
         VedioInterface.__init__(self,path,width,height)
         self.loop = loop
         self.looped_times = 0
@@ -106,7 +94,7 @@ class VedioFrame(VedioInterface):
         self.bgm_channel = pygame.mixer.find_channel() if with_music else None
         self.start_point = play_range[0] if play_range != None else None
         self.end_point = play_range[1] if play_range != None else None
-    def set_pos(self,offset):
+    def set_pos(self,float offset):
         self._video_container.seek(int(offset/self._video_stream.time_base),any_frame=True,stream=self._video_stream)
         self._frameQueue.queue.clear()
     def run(self):
@@ -126,10 +114,7 @@ class VedioFrame(VedioInterface):
         if self.bgm != None and not self.bgm_channel.get_busy() and self.loop == True:
             self.bgm_channel.play(self.bgm)
     def clone(self):
-        if self.bgm != None:
-            with_music = True
-        else:
-            with_music = False
+        with_music = True if self.bgm != None else False
         return VedioFrame(self._path,self._width,self._height,self.loop,with_music,(self.start_point,self.end_point),self.volume)
     def set_volume(self,float value):
         if self.bgm != None:
@@ -138,7 +123,7 @@ class VedioFrame(VedioInterface):
 
 #视频播放系统模块--强制帧数和音乐同步，但不灵活
 class VedioPlayer(VedioInterface):
-    def __init__(self,path,int width,int height):
+    def __init__(self,path:str,width:int,height:int):
         VedioInterface.__init__(self,path,width,height)
         self.__allowFrameDelay = 10
         loadAudioAsMusic(path)
@@ -161,7 +146,13 @@ def cutscene(screen,videoPath):
     cdef int temp_alpha
     cdef (int, int) mouse_pos
     #初始化跳过按钮的参数
-    skip_button = ImageSurface(pygame.image.load("Assets/image/UI/dialog_skip.png").convert_alpha(),int(screen.get_width()*0.92),int(screen.get_height()*0.05),int(screen.get_width()*0.055),int(screen.get_height()*0.06))
+    skip_button = ImageSurface(
+        pygame.image.load("Assets/image/UI/dialog_skip.png").convert_alpha(),
+        int(screen.get_width()*0.92),
+        int(screen.get_height()*0.05),
+        int(screen.get_width()*0.055),
+        int(screen.get_height()*0.06)
+        )
     #生成黑色帘幕
     black_bg = pygame.Surface((screen_size[0],screen_size[1]),flags=pygame.SRCALPHA).convert_alpha()
     pygame.draw.rect(black_bg,(0,0,0),(0,0,screen_size[0],screen_size[1]))

@@ -258,7 +258,7 @@ class Entity(GameObject):
     #获取角色的攻击范围
     def getAttackRange(self,Map,ifHalfMode:bool=False) -> dict:
         attacking_range = {"near":[],"middle":[],"far":[]}
-        if ifHalfMode:
+        if not ifHalfMode:
             start_point = self.y-self.max_effective_range
             end_point = self.y+self.max_effective_range+1
         elif not self.ifFlip:

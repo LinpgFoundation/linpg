@@ -4,20 +4,20 @@ from .module import *
 
 #图形接口
 class ImageInterface(GameObject2d):
-    def __init__(self,img,x,y,width,height) -> None:
+    def __init__(self,img:pygame.Surface,x:float,y:float,width:int,height:int) -> None:
         GameObject2d.__init__(self,x,y)
         self.img = img
         self._width = width
         self._height = height
     #透明度
     def get_alpha(self) -> int: return self.img.get_alpha()
-    def set_alpha(self,value) -> None: self.img.set_alpha(value)
+    def set_alpha(self,value:int) -> None: self.img.set_alpha(value)
     #宽度
     def get_width(self) -> int: return self._width
-    def set_width(self,value:int) -> None: self._width = round(value)
+    def set_width(self,value:float) -> None: self._width = round(value)
     #高度
     def get_height(self) -> int: return self._height
-    def set_height(self,value) -> None: self._height = round(value)
+    def set_height(self,value:float) -> None: self._height = round(value)
     #尺寸
     def set_size(self,width:int,height:int) -> None:
         self.set_width(width)
@@ -35,41 +35,34 @@ class SrcalphaSurface(ImageInterface):
         self.__needUpdate = True if self._width != None and self._height != None else False
     #透明度
     def get_alpha(self) -> int: return self._alpha
-    def set_alpha(self,value) -> None:
+    def set_alpha(self,value:int) -> None:
         if value < 0:
             self._alpha = 0
         elif value > 255:
             self._alpha = 255
         else:
             self._alpha = round(value)
-        if self.img != None and self.img.get_alpha() != self._alpha:
-            self.img.set_alpha(self._alpha)
+        if self.img != None and self.img.get_alpha() != self._alpha: super().set_alpha(self._alpha)
     #宽度
-    def set_width(self,value) -> None:
+    def set_width(self,value:float) -> None:
         value = round(value)
         if self._width != value:
             super().set_width(value)
             self.__needUpdate = True
-    def set_width_with_size_locked(self,width) -> None:
+    def set_width_with_size_locked(self,width:float) -> None:
         height = round(width/self.img_original.get_width()*self.img_original.get_height())
         width = round(width)
         self.set_size(width,height)
     #高度
-    def set_height(self,value) -> None:
+    def set_height(self,value:float) -> None:
         value = round(value)
         if self._height != value:
             super().set_height(value)
             self.__needUpdate = True
-    def set_height_with_size_locked(self,height) -> None:
+    def set_height_with_size_locked(self,height:float) -> None:
         width = round(height/self.img_original.get_height()*self.img_original.get_width())
         height = round(height)
         self.set_size(width,height)
-    #尺寸
-    def set_size(self,width,height) -> None:
-        if self._width != round(width) or self._height != round(height):
-            super().set_width(width)
-            super().set_height(height)
-            self.__needUpdate = True
     #更新图片
     def _update_img(self):
         imgTmp = resizeImg(self.img_original,(self._width,self._height))
@@ -96,8 +89,8 @@ class SrcalphaSurface(ImageInterface):
     def flip_back_to_normal(self) -> None:
         if self.__isFlipped: self.flip()
     #展示
-    def draw(self,screen,debug=False) -> None: self.display(screen,debug)
-    def display(self,screen,debug=False,offSet=(0,0)) -> None:
+    def draw(self,screen,debug:bool=False) -> None: self.display(screen,debug)
+    def display(self,screen,debug:bool=False,offSet:tuple=(0,0)) -> None:
         if self.__needUpdate:
             self._update_img()
         pos = (self.x+self.__local_x+offSet[0], self.y+self.__local_y+offSet[1])
@@ -207,9 +200,7 @@ class ProgressBarSurface(ImageInterface):
     #模式
     @property
     def mode(self) -> str: return self.get_mode()
-    def get_mode(self) -> str:
-        if self.__mode: return "width"
-        else: return "height"
+    def get_mode(self) -> str: return "height" if self.__mode else "width"
     def set_mode(self,mode:str):
         if mode == "width":
             self.__mode = True
@@ -220,12 +211,12 @@ class ProgressBarSurface(ImageInterface):
     #展示
     def display(self, screen, offSet:tuple=(0,0)) -> None:
         pos = (self.x+offSet[0],self.y+offSet[1])
-        screen.blit(resizeImg(self.img2,self.get_size()),pos)
-        imgOnTop = resizeImg(self.img,(self._width,self._height))
+        screen.blit(resizeImg(self.img2,self.size),pos)
+        imgOnTop = resizeImg(self.img,self.size)
         if self.__mode:
-            screen.blit(imgOnTop.subsurface((0,0,self._width*self.percentage,self._height)),pos)
+            screen.blit(imgOnTop.subsurface((0,0,int(self._width*self.__percentage),self._height)),pos)
         else:
-            screen.blit(imgOnTop.subsurface((0,0,self._width,self._height*self.percentage)),pos)
+            screen.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self.__percentage))),pos)
 
 #按钮
 class Button(GameObject2d):
@@ -234,10 +225,8 @@ class Button(GameObject2d):
         self.img = loadImg(path)
         self.img2 = None
         self.hoverEventTriggered = False
-    def setHoverImg(self,img):
-        self.img2 = img
-    def display(self,screen,local_x=0,local_y=0):
-        screen.blit(self.img,(self.x+local_x,self.y+local_y))
+    def setHoverImg(self,img): self.img2 = img
+    def display(self,screen,local_x=0,local_y=0): screen.blit(self.img,(self.x+local_x,self.y+local_y))
     def hoverEventOn(self):
         if self.img2 != None and self.hoverEventTriggered == False:
             tempSurface = self.img

@@ -94,10 +94,13 @@ class HostileCharacter(Entity):
         self._vigilance = 0
     def alert(self,value:int=10) -> None:
         self._vigilance += value
+        #防止警觉度数值超过阈值
         if self._vigilance > 100:
             self._vigilance = 100
         elif self._vigilance < 0:
             self._vigilance = 0
+        else:
+            pass
     @property
     def vigilance(self) -> int: return self._vigilance
     @property

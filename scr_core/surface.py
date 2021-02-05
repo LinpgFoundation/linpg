@@ -316,12 +316,12 @@ class DialogInterface:
         self.content = txt
         self.narrator = narrator
     #是否所有内容均已展出
-    def is_all_played(self):
-        if len(self.content) > 0:
-            return self.displayedLine == len(self.content)-1 and self.textIndex == len(self.content[self.displayedLine])-1
+    def is_all_played(self) -> bool:
         #如果self.content是空的，也就是说没有任何内容，那么应当视为所有内容都被播放了
+        if len(self.content) == 0:
+            return True
         else:
-            True
+            return self.displayedLine >= len(self.content)-1 and self.textIndex >= len(self.content[self.displayedLine])-1
     #立刻播出所有内容
     def play_all(self):
         if not self.is_all_played():

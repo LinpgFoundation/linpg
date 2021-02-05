@@ -31,12 +31,19 @@ class GameObject2d(GameObject):
     def height(self) -> int: return self.get_height()
     #尺寸
     @property
-    def size(self) -> tuple: return self.get_width(),self.get_height()
+    def size(self) -> tuple: return self.get_size()
     def get_size(self) -> tuple: return self.get_width(),self.get_height()
-    #将图片直接画到screen上
-    def draw(self,screen) -> None: self.display(screen)
-    #根据offSet将图片展示到screen的对应位置上 - 子类必须实现
-    def display(self,screen,offSet:tuple=(0,0)) -> None: raise Exception("LinpgEngine-Error: This child class doesn't implement display() function!")
+    #将图片直接画到surface上
+    def draw(self,surface) -> None: self.display(surface)
+    #根据offSet将图片展示到surface的对应位置上 - 子类必须实现
+    def display(self,surface,offSet:tuple=(0,0)) -> None:
+        raise Exception("LinpgEngine-Error: This child class doesn't implement display() function!")
+    #忽略现有坐标，将图片画到surface的指定位置上，不推荐使用
+    def blit(self,surface,pos:tuple) -> None: 
+        old_pos = self.get_pos()
+        self.set_pos(pos)
+        self.display(surface)
+        self.set_pos(old_pos)
 
 #3d游戏对象接口
 class GameObject3d(GameObject):
@@ -70,8 +77,8 @@ class ApSystem:
         self.point = 0
         self.coolDown = 0
         self.FONT = createFont(fontSize)
-    def display(self,screen,x,y):
-        screen.blit(self.FONT.render(self.point,self.MODE,(255, 255, 255)),(x,y))
+    def display(self,surface,x,y):
+        surface.blit(self.FONT.render(self.point,self.MODE,(255, 255, 255)),(x,y))
         if self.coolDown == 100:
             self.point += 1
             self.coolDown = 0
@@ -84,8 +91,7 @@ class SoundManagement:
         self.channel_id = channel_id
         self.sound_id = 0
         self.__sounds_list = []
-    def add(self,path):
-        self.__sounds_list.append(pygame.mixer.Sound(path))
+    def add(self,path:str) -> None: self.__sounds_list.append(pygame.mixer.Sound(path))
     def play(self,sound_id=None):
         if len(self.__sounds_list)>0 and not pygame.mixer.Channel(self.channel_id).get_busy():
             if sound_id == None:
@@ -93,8 +99,11 @@ class SoundManagement:
             else:
                 self.sound_id = sound_id
             pygame.mixer.Channel(self.channel_id).play(self.__sounds_list[self.sound_id])
-    def stop(self):
-        pygame.mixer.Channel(self.channel_id).stop()
+    #停止音乐
+    def stop(self): pygame.mixer.Channel(self.channel_id).stop()
+    #获取音量
+    def get_volume(self) -> float: return self.__sounds_list[0].get_volume()
+    #设置音量
     def set_volume(self,volume):
         for i in range(len(self.__sounds_list)):
             self.__sounds_list[i].set_volume(volume)

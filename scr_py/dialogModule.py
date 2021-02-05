@@ -218,8 +218,6 @@ class DialogContent(DialogInterface):
         DialogInterface.__init__(self,loadImg("Assets/image/UI/dialoguebox.png"),fontSize)
         self.textPlayingSound = pygame.mixer.Sound("Assets/sound/ui/dialog_words_playing.ogg")
         self.READINGSPEED = get_setting("ReadingSpeed")
-        self.dialoguebox_y = None
-        self.dialoguebox_height = 0
         self.dialoguebox_max_height = None
         #鼠标图标
         self.mouseImg = loadGif((loadImg("Assets/image/UI/mouse_none.png"),\
@@ -229,6 +227,8 @@ class DialogContent(DialogInterface):
         self.readTime = 0
         self.totalLetters = 0
         self.autoMode = False
+        self.__fade_out_stage = False
+        self.resetDialogueboxData()
     def hideSwitch(self):
         self.isHidden = not self.isHidden
     def update(self,txt,narrator,forceNotResizeDialoguebox=False):
@@ -237,73 +237,106 @@ class DialogContent(DialogInterface):
         for i in range(len(self.content)):
             self.totalLetters += len(self.content[i])
         if self.narrator != narrator and not forceNotResizeDialoguebox:
-            self.resetDialogueboxData()
+            self.__fade_out_stage = True
         super().update(txt,narrator)
-        if pygame.mixer.get_busy():
-            self.textPlayingSound.stop()
+        self.stop_playing_text_sound()
     def resetDialogueboxData(self):
         self.dialoguebox_height = 0
         self.dialoguebox_y = None
-    def get_sound_volume(self):
-        self.textPlayingSound.get_volume()
-    def set_sound_volume(self,num):
-        self.textPlayingSound.set_volume(num/100.0)
-    def fontRender(self,txt,color):
-        return self.FONT.render(txt,get_fontMode(),color)
-    def display(self,screen):
+        self.__txt_alpha = 255
+    #获取文字播放时的音效的音量
+    def get_sound_volume(self) -> float: self.textPlayingSound.get_volume()
+    #修改文字播放时的音效的音量
+    def set_sound_volume(self,num:float): self.textPlayingSound.set_volume(num/100.0)
+    #是否需要更新
+    def needUpdate(self) -> bool:
+        return True if self.autoMode and self.readTime >= self.totalLetters else False
+    #渲染文字
+    def fontRender(self,txt:str,color:tuple) -> pygame.Surface: return self.FONT.render(txt,get_fontMode(),color)
+    def __render_font(self,txt:str,color:tuple) ->pygame.Surface:
+        return self.FONT.render(txt,get_fontMode(),color) 
+        """
+        font_surface = self.fontRender(txt,color)
+        if self.__txt_alpha != 255: font_surface.set_alpha(self.__txt_alpha)
+        return font_surface
+        """
+    #如果音效还在播放则停止播放文字音效
+    def stop_playing_text_sound(self) -> None:
+        if pygame.mixer.get_busy(): self.textPlayingSound.stop()
+    def display(self,screen) -> None:
         if not self.isHidden:
-            #如果对话框图片的最高高度没有被设置，则根据屏幕大小设置一个
-            if self.dialoguebox_max_height == None:
-                self.dialoguebox_max_height = screen.get_height()/4
-            #如果当前对话框图片的y坐标不存在（一般出现在对话系统例行初始化后），则根据屏幕大小设置一个
-            if self.dialoguebox_y == None:
-                self.dialoguebox_y = screen.get_height()*0.65+self.dialoguebox_max_height/2
-            #画出对话框图片
-            screen.blit(resizeImg(self.dialoguebox,(screen.get_width()*0.74,self.dialoguebox_height)),
-            (screen.get_width()*0.13,self.dialoguebox_y))
-            #如果对话框图片还在放大阶段
-            if self.dialoguebox_height < self.dialoguebox_max_height:
-                self.dialoguebox_height += self.dialoguebox_max_height/12
-                self.dialoguebox_y -= self.dialoguebox_max_height/24
-            #如果已经放大好了
+            if not self.__fade_out_stage:
+                self.__fadeIn(screen)
             else:
-                x = int(screen.get_width()*0.2)
-                y = int(screen.get_height()*0.73)
-                #写上当前讲话人的名字
-                if self.narrator != None:
-                    screen.blit(self.FONT.render(self.narrator,get_fontMode(),(255, 255, 255)),(x,self.dialoguebox_y+self.FONTSIZE))
-                #画出鼠标gif
-                self.mouseImg.display(screen)
-                #对话框已播放的内容
-                for i in range(self.displayedLine):
-                    screen.blit(self.FONT.render(self.content[i],get_fontMode(),(255, 255, 255)),(x,y+self.FONTSIZE*1.5*i))
-                #对话框正在播放的内容
-                screen.blit(self.FONT.render(self.content[self.displayedLine][:self.textIndex],get_fontMode(),(255, 255, 255)),
-                (x,y+self.FONTSIZE*1.5*self.displayedLine))
-                #如果当前行的字符还没有完全播出
-                if self.textIndex < len(self.content[self.displayedLine]):
-                    if not pygame.mixer.get_busy():
-                        self.textPlayingSound.play()
-                    self.textIndex +=1
-                #当前行的所有字都播出后，播出下一行
-                elif self.displayedLine < len(self.content)-1:
-                    if not pygame.mixer.get_busy():
-                        self.textPlayingSound.play()
-                    self.textIndex = 1
-                    self.displayedLine += 1
-                #当所有行都播出后
-                else:
-                    if pygame.mixer.get_busy():
-                        self.textPlayingSound.stop()
-                    if self.autoMode and self.readTime < self.totalLetters:
-                        self.readTime += self.READINGSPEED
-                    return True
-        return False
-    def forceUpdate(self):
-        if self.autoMode and self.readTime >= self.totalLetters:
-            return True
+                self.__fadeOut(screen)
+    #渐入
+    def __fadeIn(self,screen) -> None:
+        #如果对话框图片的最高高度没有被设置，则根据屏幕大小设置一个
+        if self.dialoguebox_max_height == None:
+            self.dialoguebox_max_height = screen.get_height()/4
+        #如果当前对话框图片的y坐标不存在（一般出现在对话系统例行初始化后），则根据屏幕大小设置一个
+        if self.dialoguebox_y == None:
+            self.dialoguebox_y = screen.get_height()*0.65+self.dialoguebox_max_height/2
+        #画出对话框图片
+        screen.blit(resizeImg(self.dialoguebox,(screen.get_width()*0.74,self.dialoguebox_height)),
+        (screen.get_width()*0.13,self.dialoguebox_y))
+        #如果对话框图片还在放大阶段
+        if self.dialoguebox_height < self.dialoguebox_max_height:
+            self.dialoguebox_height += self.dialoguebox_max_height/10
+            self.dialoguebox_y -= self.dialoguebox_max_height/20
+        #如果已经放大好了
         else:
-            return False
+            self.__blit_txt(screen)
+    #淡出
+    def __fadeOut(self,screen) -> None:
+        #画出对话框图片
+        screen.blit(resizeImg(self.dialoguebox,(screen.get_width()*0.74,self.dialoguebox_height)),
+        (screen.get_width()*0.13,self.dialoguebox_y))
+        """
+        if self.__txt_alpha > 0:
+            self.__txt_alpha -= 17
+            self.__blit_txt(screen)
+        else:
+        """
+        if self.dialoguebox_height > 0:
+            self.dialoguebox_height -= self.dialoguebox_max_height/10
+            self.dialoguebox_y += self.dialoguebox_max_height/20
+        else:
+            self.__fade_out_stage = False
+            self.resetDialogueboxData()
+    #将文字画到屏幕上
+    def __blit_txt(self,screen) -> None:
+        x = int(screen.get_width()*0.2)
+        y = int(screen.get_height()*0.73)
+        #写上当前讲话人的名字
+        if self.narrator != None:
+            screen.blit(self.__render_font(self.narrator,(255, 255, 255)),(x,self.dialoguebox_y+self.FONTSIZE))
+        #画出鼠标gif
+        self.mouseImg.display(screen)
+        #对话框已播放的内容
+        for i in range(self.displayedLine):
+            screen.blit(self.__render_font(self.content[i],(255, 255, 255)),(x,y+self.FONTSIZE*1.5*i))
+        #对话框正在播放的内容
+        screen.blit(
+            self.__render_font(self.content[self.displayedLine][:self.textIndex],(255, 255, 255)),
+            (x,y+self.FONTSIZE*1.5*self.displayedLine)
+            )
+        #如果当前行的字符还没有完全播出
+        if self.textIndex < len(self.content[self.displayedLine]):
+            if not pygame.mixer.get_busy():
+                self.textPlayingSound.play()
+            self.textIndex +=1
+        #当前行的所有字都播出后，播出下一行
+        elif self.displayedLine < len(self.content)-1:
+            if not pygame.mixer.get_busy():
+                self.textPlayingSound.play()
+            self.textIndex = 1
+            self.displayedLine += 1
+        #当所有行都播出后
+        else:
+            self.stop_playing_text_sound()
+            if self.autoMode and self.readTime < self.totalLetters:
+                self.readTime += self.READINGSPEED
 
 #背景音乐和图片管理
 class DialogBackground:

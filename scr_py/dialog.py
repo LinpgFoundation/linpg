@@ -128,7 +128,8 @@ class DialogSystem(DialogSystemInterface):
         #按钮
         buttonEvent = self.ButtonsMananger.display(screen,self.dialogTxtSystem.isHidden)
         #显示对话框和对应文字
-        dialogPlayResult = self.dialogTxtSystem.display(screen)
+        self.dialogTxtSystem.display(screen)
+        dialogPlayResult = self.dialogTxtSystem.is_all_played()
         #更新event
         self._update_event()
         #按键判定
@@ -187,6 +188,7 @@ class DialogSystem(DialogSystemInterface):
                         setting.isDisplaying = False
                         self.fadeOut(screen)
                         self.isPlaying = False
+                        break
                     #如果播放玩菜单后发现有东西需要更新
                     if setting.display(screen,self.events):
                         self.__update_sound_volume()
@@ -253,7 +255,7 @@ class DialogSystem(DialogSystemInterface):
             screen.blit(self.historySurface,(0,0))
             self.history_back.display(screen)
             isHover(self.history_back)
-        elif self.dialogTxtSystem.forceUpdate() or leftClick:
+        elif self.dialogTxtSystem.needUpdate() or leftClick:
             if self.dialogContent[self.dialogId]["next_dialog_id"] == None or self.dialogContent[self.dialogId]["next_dialog_id"]["target"] == None:
                 self.fadeOut(screen)
                 self.isPlaying = False

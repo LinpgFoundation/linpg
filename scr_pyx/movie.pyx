@@ -18,6 +18,7 @@ cdef getAudioFromVideo(moviePath:str,audioType:str="mp3"):
     #创建输出的容器
     output_container = av.open(outPutPath, 'w')
     output_stream = output_container.add_stream(audioType)
+    cdef object frame,packet
     #把input容器中的音乐片段载入到输出容器中
     for frame in input_container.decode(input_stream):
         frame.pts = None
@@ -83,7 +84,7 @@ class VedioInterface(threading.Thread):
 
 #视频片段展示模块--灵活，但不能保证帧数和音乐同步
 class VedioFrame(VedioInterface):
-    def __init__(self,path:str,width:int,height:int,loop:bool=True,with_music:bool=False,play_range:tuple=None,volume:float=1):
+    def __init__(self,path:str,width:int,height:int,loop:int=True,with_music:int=False,play_range:tuple=None,volume:float=1):
         VedioInterface.__init__(self,path,width,height)
         self.loop = loop
         self.looped_times = 0

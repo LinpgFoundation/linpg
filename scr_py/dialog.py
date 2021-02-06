@@ -143,7 +143,7 @@ class DialogSystem(DialogSystemInterface):
                     elif buttonEvent == "skip" and not self.showHistory:
                         #淡出
                         self.fadeOut(screen)
-                        self.isPlaying = False
+                        self._isPlaying = False
                     elif buttonEvent == "auto" and not self.showHistory:
                         self.ButtonsMananger.autoModeSwitch()
                         self.dialogTxtSystem.autoMode = self.ButtonsMananger.autoMode
@@ -187,7 +187,7 @@ class DialogSystem(DialogSystemInterface):
                     elif result == "BackToMainMenu":
                         setting.isDisplaying = False
                         self.fadeOut(screen)
-                        self.isPlaying = False
+                        self._isPlaying = False
                         break
                     #如果播放玩菜单后发现有东西需要更新
                     if setting.display(screen,self.events):
@@ -258,14 +258,14 @@ class DialogSystem(DialogSystemInterface):
         elif self.dialogTxtSystem.needUpdate() or leftClick:
             if self.dialogContent[self.dialogId]["next_dialog_id"] == None or self.dialogContent[self.dialogId]["next_dialog_id"]["target"] == None:
                 self.fadeOut(screen)
-                self.isPlaying = False
+                self._isPlaying = False
             elif self.dialogContent[self.dialogId]["next_dialog_id"]["type"] == "default":
                 self.__update_scene(self.dialogContent[self.dialogId]["next_dialog_id"]["target"])
             #如果是需要播放过程动画
             elif self.dialogContent[self.dialogId]["next_dialog_id"]["type"] == "cutscene":
                 self.fadeOut(screen)
                 cutscene(screen,"Assets\movie\{}".format(self.dialogContent[self.dialogId]["next_dialog_id"]["target"]))
-                self.isPlaying = False
+                self._isPlaying = False
             #如果是切换场景
             elif self.dialogContent[self.dialogId]["next_dialog_id"]["type"] == "changeScene":
                 self.fadeOut(screen)
@@ -325,7 +325,7 @@ class DialogSystemDev(DialogSystemInterface):
             "next": ButtonWithDes("Assets/image/UI/dialog_skip.png",button_width*4.75,button_y,button_width,button_width,CONFIG["next"]),
             "add": ButtonWithDes("Assets/image/UI/add.png",button_width*4.75,button_y,button_width,button_width,CONFIG["add"]),
             "reload": ButtonWithDes("Assets/image/UI/reload.png",button_width*6,button_y,button_width,button_width,CONFIG["reload"]),
-            "save": ButtonWithDes("Assets/image/UI/save.png",button_width*7.25,button_y,button_width,button_width,CONFIG["save"])
+            "save": ButtonWithDes("Assets/image/UI/save.png",button_width*7.25,button_y,button_width,button_width,get_lang("General,save"))
         }
         self.please_enter_content = CONFIG["please_enter_content"]
         self.please_enter_name = CONFIG["please_enter_name"]
@@ -506,7 +506,7 @@ class DialogSystemDev(DialogSystemInterface):
                     self.UIContainerRightButton.flip(True,False)
                 #退出
                 elif buttonHovered == "back":
-                    self.isPlaying = False
+                    self._isPlaying = False
                 elif buttonHovered == "previous":
                     lastId = self.__get_last_id()
                     if lastId != None:

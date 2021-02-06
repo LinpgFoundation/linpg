@@ -12,7 +12,9 @@ pygame.init()
 """加载"""
 #识别图片模块，用于引擎内加载图片，十分不建议在本文件外调用
 def imgLoadFunction(path:str, ifConvertAlpha:bool) -> pygame.Surface:
-    if isinstance(path,str):
+    if isinstance(path,pygame.Surface):
+        return path
+    elif isinstance(path,str):
         if not ifConvertAlpha:
             try:
                 return pygame.image.load(os.path.join(path))
@@ -23,8 +25,6 @@ def imgLoadFunction(path:str, ifConvertAlpha:bool) -> pygame.Surface:
                 return pygame.image.load(os.path.join(path)).convert_alpha()
             except BaseException:
                 raise Exception('LinpgEngine-Error: Cannot load image! Path: {}'.format(path))
-    elif isinstance(path,pygame.Surface):
-        return path
     else:
         raise Exception('LinpgEngine-Error: The path has to be a string or pygame.Surface! Path:',path)
 

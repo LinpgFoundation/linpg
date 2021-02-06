@@ -64,7 +64,9 @@ class SystemObject:
         #输入事件
         self.__events = None
         #判定用于判定是否还在播放的参数
-        self.isPlaying = True
+        self._isPlaying = True
+    #是否正在播放
+    def is_playing(self) -> bool:  return self._isPlaying
     #更新输入事件
     def _update_event(self) -> None: self.__events = pygame.event.get()
     #获取输入事件

@@ -186,17 +186,24 @@ class ProgressBarSurface(ImageInterface):
     def __init__(self,imgOnTop,imgOnBottom,x,y,max_width,height,mode="width"):
         ImageInterface.__init__(self,imgLoadFunction(imgOnTop,True),x,y,max_width,height)
         self.img2 = imgLoadFunction(imgOnBottom,True)
-        self.__percentage = 0
+        self.__current_percentage = 0
+        self.__percentage_to_be = 0
+        self.__perecent_update_each_time = 0
+        self.__total_update_intervals = 10
         self.__mode = True if mode == "width" else False
+    #数据准确度
+    @property
+    def accuracy(self) -> int: return self.__total_update_intervals*100
     #百分比
     @property
-    def percentage(self) -> float: return self.__percentage
-    def get_percentage(self) -> float: return self.__percentage
+    def percentage(self) -> float: return self.__percentage_to_be/self.accuracy
+    def get_percentage(self) -> float: return self.__percentage_to_be/self.accuracy
     def set_percentage(self,value:float) -> None:
-        if value <= 1:
-            self.__percentage = value
+        if 0 <= value <= 1:
+            self.__percentage_to_be = value*self.accuracy
+            self.__perecent_update_each_time = (self.__percentage_to_be-self.__current_percentage)/self.__total_update_intervals
         else:
-            raise Exception('LinpgEngine-Error: The percentage must be smaller or equal to 1!')
+            raise Exception('LinpgEngine-Error: The percentage must be <= 1 and >= 0!')
     #模式
     @property
     def mode(self) -> str: return self.get_mode()
@@ -212,11 +219,15 @@ class ProgressBarSurface(ImageInterface):
     def display(self, screen, offSet:tuple=(0,0)) -> None:
         pos = (self.x+offSet[0],self.y+offSet[1])
         screen.blit(resizeImg(self.img2,self.size),pos)
-        imgOnTop = resizeImg(self.img,self.size)
-        if self.__mode:
-            screen.blit(imgOnTop.subsurface((0,0,int(self._width*self.__percentage),self._height)),pos)
-        else:
-            screen.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self.__percentage))),pos)
+        if self.__current_percentage < self.__percentage_to_be and self.__perecent_update_each_time > 0 or\
+            self.__current_percentage > self.__percentage_to_be and self.__perecent_update_each_time < 0:
+            self.__current_percentage += self.__perecent_update_each_time
+        if self.__current_percentage > 0:
+            imgOnTop = resizeImg(self.img,self.size)
+            if self.__mode:
+                screen.blit(imgOnTop.subsurface((0,0,int(self._width*self.__current_percentage/self.accuracy),self._height)),pos)
+            else:
+                screen.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self.__current_percentage/self.accuracy))),pos)
 
 #按钮
 class Button(GameObject2d):

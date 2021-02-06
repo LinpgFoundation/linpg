@@ -1,6 +1,11 @@
 # cython: language_level=3
 from .entity import *
 
+eye_red_img = None
+eye_orange_img = None
+vigilance_red_img = None
+vigilance_orange_img = None
+
 #友方角色类
 class FriendlyCharacter(Entity):
     def __init__(self,theCharacterDataDic:dict,defaultData:dict,mode=None) -> None:
@@ -12,11 +17,17 @@ class FriendlyCharacter(Entity):
         self.max_skill_range = calculate_range(defaultData["skill_effective_range"])
         self.skill_cover_range = defaultData["skill_cover_range"]
         self._detection = defaultData["detection"] if "detection" in defaultData and defaultData["detection"] != None else 0
+        global eye_red_img,eye_orange_img
+        if eye_red_img == None:
+            eye_red_img = imgLoadFunction("Assets/image/UI/eye_red.png",True)
+            eye_orange_img = imgLoadFunction("Assets/image/UI/eye_orange.png",True)
+        self.__isNoticedImage = ProgressBarSurface(eye_red_img,eye_orange_img,0,0,0,0)
+        self.__isNoticedImage.set_percentage(self._detection/100)
         try:
-            self.ImageGetHurt = CharacterGetHurtImageManagement(self.type,display.get_height()/4,display.get_height()/2)
+            self._getHurtImage = CharacterGetHurtImageManagement(self.type,display.get_height()/4,display.get_height()/2)
         except BaseException:
             print('警告：角色 {} 没有对应的破衣动画'.format(defaultData["type"]))
-            self.ImageGetHurt = None
+            self._getHurtImage = None
             if not os.path.exists("Assets/image/npc_icon/{}.png".format(defaultData["type"])):
                 print("而且你也忘了加入对应的头像")
     @property
@@ -33,9 +44,10 @@ class FriendlyCharacter(Entity):
             self._detection = 100
         else:
             raise Exception("LinpgEngine-Error: The force has to be a bool not {}".format(force))
+        self.__isNoticedImage.set_percentage(self._detection/100)
     def loadImg(self) -> None:
         super().loadImg()
-        self.ImageGetHurt.add(self.type)
+        self._getHurtImage.add(self.type)
     def attackBy(self,attacker,result_of_round):
         damage = randomInt(attacker.min_damage,attacker.max_damage)
         self.decreaseHp(damage,result_of_round)
@@ -45,10 +57,10 @@ class FriendlyCharacter(Entity):
         if self.current_hp <= 0 and self.dying == False:
             if self.kind != "HOC":
                 self.dying = 3
-                if self.ImageGetHurt != None:
-                    self.ImageGetHurt.x = -self.ImageGetHurt.width
-                    self.ImageGetHurt.alpha = 255
-                    self.ImageGetHurt.yToGo = 255
+                if self._getHurtImage != None:
+                    self._getHurtImage.x = -self._getHurtImage.width
+                    self._getHurtImage.alpha = 255
+                    self._getHurtImage.yToGo = 255
                     self.playSound("injured")
             result_of_round["times_characters_down"] += 1
     def heal(self,hpHealed):
@@ -66,23 +78,22 @@ class FriendlyCharacter(Entity):
             numberX = (eyeImgWidth - MapClass.block_width/6)/2
             numberY = (eyeImgHeight - MapClass.block_width/10)/2
             #根据参数调整图片
-            original_UI_img["eyeImg"].set_size(eyeImgWidth,eyeImgHeight)
-            original_UI_img["eyeImg"].set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
-            original_UI_img["eyeImg"].set_percentage(self._detection/100)
-            original_UI_img["eyeImg"].draw(screen)
+            self.__isNoticedImage.set_size(eyeImgWidth,eyeImgHeight)
+            self.__isNoticedImage.set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
+            self.__isNoticedImage.draw(screen)
         #重创立绘
-        if self.ImageGetHurt != None and self.ImageGetHurt.x != None:
-            self.ImageGetHurt.draw(screen,self.type)
-            if self.ImageGetHurt.x < self.ImageGetHurt.width/4:
-                self.ImageGetHurt.x += self.ImageGetHurt.width/25
+        if self._getHurtImage != None and self._getHurtImage.x != None:
+            self._getHurtImage.draw(screen,self.type)
+            if self._getHurtImage.x < self._getHurtImage.width/4:
+                self._getHurtImage.x += self._getHurtImage.width/25
             else:
-                if self.ImageGetHurt.yToGo > 0:
-                    self.ImageGetHurt.yToGo -= 5
+                if self._getHurtImage.yToGo > 0:
+                    self._getHurtImage.yToGo -= 5
                 else:
-                    if self.ImageGetHurt.alpha > 0:
-                        self.ImageGetHurt.alpha -= 2
+                    if self._getHurtImage.alpha > 0:
+                        self._getHurtImage.alpha -= 2
                     else:
-                        self.ImageGetHurt.x = None
+                        self._getHurtImage.x = None
 
 #敌对角色类
 class HostileCharacter(Entity):
@@ -92,6 +103,12 @@ class HostileCharacter(Entity):
         Entity.__init__(self,defaultData,"sangvisFerri",mode)
         self.patrol_path = defaultData["patrol_path"] if "patrol_path" in defaultData else []
         self._vigilance = 0
+        global vigilance_red_img,vigilance_orange_img
+        if vigilance_red_img == None:
+            vigilance_red_img = imgLoadFunction("Assets/image/UI/vigilance_red.png",True)
+            vigilance_orange_img = imgLoadFunction("Assets/image/UI/vigilance_orange.png",True)
+        self.__vigilanceImage = ProgressBarSurface(vigilance_red_img,vigilance_orange_img,0,0,0,0,"height")
+        self.__vigilanceImage.set_percentage(self._vigilance/100)
     def alert(self,value:int=10) -> None:
         self._vigilance += value
         #防止警觉度数值超过阈值
@@ -101,6 +118,7 @@ class HostileCharacter(Entity):
             self._vigilance = 0
         else:
             pass
+        self.__vigilanceImage.set_percentage(self._vigilance/100)
     @property
     def vigilance(self) -> int: return self._vigilance
     @property
@@ -116,10 +134,9 @@ class HostileCharacter(Entity):
             numberX = (eyeImgWidth - MapClass.block_width/6)/2
             numberY = (eyeImgHeight - MapClass.block_width/10)/2
             #根据参数调整图片
-            original_UI_img["vigilanceImg"].set_size(eyeImgWidth,eyeImgHeight)
-            original_UI_img["vigilanceImg"].set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
-            original_UI_img["vigilanceImg"].set_percentage(self._vigilance/100)
-            original_UI_img["vigilanceImg"].draw(screen)
+            self.__vigilanceImage.set_size(eyeImgWidth,eyeImgHeight)
+            self.__vigilanceImage.set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
+            self.__vigilanceImage.draw(screen)
     def make_decision(self,Map,friendlyCharacterData,hostileCharacterData,the_characters_detected_last_round):
         character_with_min_hp = None
         characters_can_be_detect = []

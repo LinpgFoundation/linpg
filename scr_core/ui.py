@@ -123,8 +123,10 @@ class SettingContoller:
         self.bar_height = round(size[0]/60)
         self.bar_width = round(size[0]/5)
         self.button = loadImg("Assets/image/UI/setting_bar_circle.png",(self.bar_height,self.bar_height*2))
-        self.bar_img = ProgressBarSurface("Assets/image/UI/setting_bar_full.png"
+        self.bar_img1 = ProgressBarSurface("Assets/image/UI/setting_bar_full.png"
         ,"Assets/image/UI/setting_bar_empty.png",0,0,self.bar_width,self.bar_height)
+        self.bar_img2 = self.bar_img1.light_copy()
+        self.bar_img3 = self.bar_img2.light_copy()
         self.bar_x = int(self.baseImgX+(self.baseImgWidth-self.bar_width)/2)
         self.bar_y0 = self.baseImgY + self.baseImgHeight*0.2
         self.bar_y1 = self.baseImgY + self.baseImgHeight*0.4
@@ -173,11 +175,11 @@ class SettingContoller:
                 self.backgroundMusicTxt+": "+str(self.soundVolume_background_music),True,(255, 255, 255)),
                 (self.bar_x,self.bar_y1-self.FONTSIZE*1.4)
             )
-            self.bar_img.set_pos(self.bar_x,self.bar_y1)
-            self.bar_img.set_percentage(self.soundVolume_background_music/100)
-            self.bar_img.draw(screen)
+            self.bar_img1.set_pos(self.bar_x,self.bar_y1)
+            self.bar_img1.set_percentage(self.soundVolume_background_music/100)
+            self.bar_img1.draw(screen)
             screen.blit(self.button,(
-                self.bar_x+self.bar_img.percentage*self.bar_img.width-self.button.get_width()/2,
+                self.bar_x+self.bar_img1.percentage*self.bar_img1.width-self.button.get_width()/2,
                 self.bar_y1-self.bar_height/2
                 )
             )
@@ -186,11 +188,11 @@ class SettingContoller:
                 self.soundEffectsTxt+": "+str(self.soundVolume_sound_effects),True,(255, 255, 255)),
                 (self.bar_x,self.bar_y2-self.FONTSIZE*1.4)
             )
-            self.bar_img.set_pos(self.bar_x,self.bar_y2)
-            self.bar_img.set_percentage(self.soundVolume_sound_effects/100)
-            self.bar_img.draw(screen)
+            self.bar_img2.set_pos(self.bar_x,self.bar_y2)
+            self.bar_img2.set_percentage(self.soundVolume_sound_effects/100)
+            self.bar_img2.draw(screen)
             screen.blit(self.button,(
-                self.bar_x+self.bar_img.percentage*self.bar_img.width-self.button.get_width()/2,
+                self.bar_x+self.bar_img2.percentage*self.bar_img2.width-self.button.get_width()/2,
                 self.bar_y2-self.bar_height/2
                 )
             )
@@ -199,11 +201,11 @@ class SettingContoller:
                 self.soundEnvironmentTxt+": "+str(self.soundVolume_sound_environment),True,(255, 255, 255)),
                 (self.bar_x,self.bar_y3-self.FONTSIZE*1.4)
             )
-            self.bar_img.set_pos(self.bar_x,self.bar_y3)
-            self.bar_img.set_percentage(self.soundVolume_sound_environment/100)
-            self.bar_img.draw(screen)
+            self.bar_img3.set_pos(self.bar_x,self.bar_y3)
+            self.bar_img3.set_percentage(self.soundVolume_sound_environment/100)
+            self.bar_img3.draw(screen)
             screen.blit(self.button,(
-                self.bar_x+self.bar_img.percentage*self.bar_img.width-self.button.get_width()/2,
+                self.bar_x+self.bar_img3.percentage*self.bar_img3.width-self.button.get_width()/2,
                 self.bar_y3-self.bar_height/2
                 )
             )

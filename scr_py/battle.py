@@ -137,7 +137,7 @@ class BattleSystemInterface(SystemObject):
             if display.get_width()-self.MAP.surface_width<=temp_value<=0:
                 self.MAP.setPos_x(temp_value)
                 self.screen_to_move_x*=0.8
-                if int(self.screen_to_move_x) == 0: self.screen_to_move_x = 0
+                if round(self.screen_to_move_x) == 0: self.screen_to_move_x = 0
             else:
                 self.screen_to_move_x = 0
         if self.screen_to_move_y != None and self.screen_to_move_y !=0:
@@ -145,6 +145,6 @@ class BattleSystemInterface(SystemObject):
             if display.get_height()-self.MAP.surface_height<=temp_value<=0:
                 self.MAP.setPos_y(temp_value)
                 self.screen_to_move_y*=0.8
-                if int(self.screen_to_move_y) == 0: self.screen_to_move_y = 0
+                if round(self.screen_to_move_y) == 0: self.screen_to_move_y = 0
             else:
                 self.screen_to_move_y = 0

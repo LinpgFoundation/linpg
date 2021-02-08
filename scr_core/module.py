@@ -119,3 +119,25 @@ class SaveDataThread(threading.Thread):
     def run(self):
         saveConfig(self.config_file_path,self.data)
         del self.data,self.config_file_path
+
+class ItemNeedBlit:
+    def __init__(self,image,weight,pos,offSet):
+        self.image = image
+        self.weight = weight
+        self.pos = pos
+        self.offSet = offSet
+    def __lt__(self,o) -> bool: return self.weight < o.weight
+    def blit(self,screen):
+        if isinstance(self.image,pygame.Surface):
+            if self.offSet == None:
+                screen.blit(self.image,self.pos)
+            else:
+                screen.blit(self.image,(self.pos[0]+self.offSet[0],self.pos[1]+self.offSet[1]))
+        else:
+            if self.offSet != None:
+                self.image.display(screen,self.offSet)
+            else:
+                try:
+                    self.image.draw(screen)
+                except:
+                    self.image.display(screen)

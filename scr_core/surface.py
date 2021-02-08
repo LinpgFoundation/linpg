@@ -104,9 +104,14 @@ class SrcalphaSurface(ImageInterface):
     def get_local_pos(self) -> tuple: return self.x+self.__local_x,self.y+self.__local_y
     #返回一个复制品
     def copy(self): return SrcalphaSurface(self.img_original.copy(),self.x,self.y,self._width,self._height)
+    #返回一个浅复制品
+    def light_copy(self): return SrcalphaSurface(self.img_original,self.x,self.y,self._width,self._height)
     #加暗度
     def addDarkness(self,value:int) -> None:
         self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_SUB)
+        self.__needUpdate = True
+    def addBrightness(self,value:int) -> None:
+        self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_ADD)
         self.__needUpdate = True
 
 #高级图形类
@@ -207,7 +212,7 @@ class ProgressBarSurface(ImageInterface):
     #模式
     @property
     def mode(self) -> str: return self.get_mode()
-    def get_mode(self) -> str: return "height" if self.__mode else "width"
+    def get_mode(self) -> str: return "width" if self.__mode else "height"
     def set_mode(self,mode:str):
         if mode == "width":
             self.__mode = True
@@ -215,6 +220,8 @@ class ProgressBarSurface(ImageInterface):
             self.__mode = False
         else:
             raise Exception('LinpgEngine-Error: Mode {} is not supported!'.format(mode))
+    def copy(self): return ProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
+    def light_copy(self): return ProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #展示
     def display(self, screen, offSet:tuple=(0,0)) -> None:
         pos = (self.x+offSet[0],self.y+offSet[1])

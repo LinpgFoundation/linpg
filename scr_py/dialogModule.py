@@ -46,53 +46,50 @@ class NpcImageSystem:
         self.npc_get_click = None
     def devMode(self):
         for imgPath in glob.glob("Assets/image/npc/*"):
-            self.__loadNpcImg(imgPath,self.img_width)
+            self.__loadNpc(imgPath)
             self.dev_mode = True
-    def __loadNpcImg(self,path,width):
+    #确保角色存在
+    def __ensure_the_existence_of(self,name:str) -> None:
+        if name not in self.imgDic: self.__loadNpc(os.path.join("Assets/image/npc",name))
+    #加载角色
+    def __loadNpc(self,path):
         name = os.path.basename(path)
-        self.imgDic[name] = {"normal":loadImg(path,(width,width))}
+        self.imgDic[name] = {}
+        self.imgDic[name]["normal"] = SrcalphaSurface(path,0,0,self.img_width,self.img_width)
         #生成深色图片
         self.imgDic[name]["dark"] = self.imgDic[name]["normal"].copy()
-        self.imgDic[name]["dark"].fill((50, 50, 50), special_flags=pygame.BLEND_RGB_SUB)
-    def displayTheNpc(self,name,x,y,alpha,screen):
-        if alpha <= 0:
-            return False
-        nameTemp = name.replace("&communication","").replace("&dark","")
-        #加载npc的基础立绘
-        if nameTemp not in self.imgDic:
-            self.__loadNpcImg(os.path.join("Assets/image/npc",nameTemp),self.img_width)
-        if "&communication" in name:
-            if "communication" not in self.imgDic[nameTemp]:
-                #生成通讯图片
-                self.imgDic[nameTemp]["communication"] = pygame.Surface(
-                    (int(self.img_width/1.9), int(self.img_width/1.8)),
-                    flags=pygame.SRCALPHA)
-                self.imgDic[nameTemp]["communication"].blit(self.imgDic[nameTemp]["normal"],(-int(self.img_width/4),0))
-                self.imgDic[nameTemp]["communication"].blit(resizeImg(self.communication,(self.img_width/1.9,self.img_width/1.7)),(0,0))
-                #生成深色的通讯图片
-                self.imgDic[nameTemp]["communication_dark"] = self.imgDic[nameTemp]["communication"].copy()
-                dark = pygame.Surface((int(self.img_width/1.9), int(self.img_width/1.8)), flags=pygame.SRCALPHA).convert_alpha()
-                dark.fill((50,50,50))
-                self.imgDic[nameTemp]["communication_dark"].blit(dark, (0, 0), special_flags=pygame.BLEND_RGB_SUB)
-            x+=int(self.img_width/4)
-            if "&dark" in name:
-                img = self.imgDic[nameTemp]["communication_dark"].copy()
-            else:
-                img = self.imgDic[nameTemp]["communication"].copy()
-        elif "&dark" in name:
-            img = self.imgDic[nameTemp]["dark"].copy()
-        else:
-            img = self.imgDic[nameTemp]["normal"].copy()
-        if alpha != 255:
+        self.imgDic[name]["dark"].addDarkness(50)
+    #画出角色
+    def __displayNpc(self,name,x,y,alpha,screen) -> None:
+        if alpha > 0:
+            nameTemp = name.replace("&communication","").replace("&dark","")
+            self.__ensure_the_existence_of(nameTemp)
+            #加载npc的基础立绘
+            img = self.imgDic[nameTemp]["dark"] if "&dark" in name else self.imgDic[nameTemp]["normal"]
             img.set_alpha(alpha)
-        if not self.dev_mode:
-            screen.blit(img,(x,y))
-        else:
-            self.npc_get_click = None
-            if isHover(img,(x,y)):
-                img.fill((60, 60, 60), special_flags=pygame.BLEND_RGB_ADD)
-                self.npc_get_click = name
-            screen.blit(img,(x,y))
+            """
+            if "&communication" in name:
+                if "communication" not in self.imgDic[nameTemp]:
+                    #生成通讯图片
+                    self.imgDic[nameTemp]["communication"] = getSurface((int(self.img_width/1.9), int(self.img_width/1.8)),pygame.SRCALPHA)
+                    self.imgDic[nameTemp]["communication"].blit(self.imgDic[nameTemp]["normal"],(-int(self.img_width/4),0))
+                    self.imgDic[nameTemp]["communication"].blit(resizeImg(self.communication,(self.img_width/1.9,self.img_width/1.7)),(0,0))
+                    #生成深色的通讯图片
+                    self.imgDic[nameTemp]["communication_dark"] = self.imgDic[nameTemp]["communication"].copy()
+                    dark = pygame.Surface((int(self.img_width/1.9), int(self.img_width/1.8)), flags=pygame.SRCALPHA).convert_alpha()
+                    dark.fill((50,50,50))
+                    self.imgDic[nameTemp]["communication_dark"].blit(dark, (0, 0), special_flags=pygame.BLEND_RGB_SUB)
+                    x+=int(self.img_width/4)
+            """
+            img.set_pos(x,y)
+            #如果不是开发模式
+            if self.dev_mode:
+                self.npc_get_click = None
+                if isHover(img,(x,y)):
+                    img = img.copy()
+                    img.addBrightness(60)
+                    self.npc_get_click = name
+            img.draw(screen)
     def display(self,screen):
         window_x = screen.get_width()
         window_y = screen.get_height()
@@ -115,93 +112,93 @@ class NpcImageSystem:
                 pass
             #新增中间那个立绘
             elif len(self.npcThisRound) == 1:
-                self.displayTheNpc(self.npcThisRound[0],window_x/4+x_moved_forNpcThisRound,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                self.__displayNpc(self.npcThisRound[0],window_x/4+x_moved_forNpcThisRound,npcImg_y,self.npcThisRoundImgAlpha,screen)
             #同时新增左右两边的立绘
             elif len(self.npcThisRound) == 2:
-                self.displayTheNpc(self.npcThisRound[0],x_moved_forNpcThisRound,npcImg_y,self.npcThisRoundImgAlpha,screen)
-                self.displayTheNpc(self.npcThisRound[1],window_x/2+x_moved_forNpcThisRound,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                self.__displayNpc(self.npcThisRound[0],x_moved_forNpcThisRound,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                self.__displayNpc(self.npcThisRound[1],window_x/2+x_moved_forNpcThisRound,npcImg_y,self.npcThisRoundImgAlpha,screen)
         elif len(self.npcLastRound) == 1:
             #很快不再需要显示原来中间的立绘
             if len(self.npcThisRound) == 0:
-                self.displayTheNpc(self.npcLastRound[0],window_x/4+x_moved_forNpcLastRound,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                self.__displayNpc(self.npcLastRound[0],window_x/4+x_moved_forNpcLastRound,npcImg_y,self.npcLastRoundImgAlpha,screen)
             #更换中间的立绘
             elif len(self.npcThisRound) == 1:
-                self.displayTheNpc(self.npcLastRound[0],window_x/4,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                self.displayTheNpc(self.npcThisRound[0],window_x/4,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                self.__displayNpc(self.npcLastRound[0],window_x/4,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                self.__displayNpc(self.npcThisRound[0],window_x/4,npcImg_y,self.npcThisRoundImgAlpha,screen)
             elif len(self.npcThisRound) == 2:
                 #如果之前的中间变成了现在的左边，则立绘应该先向左移动
                 if self.__NPC_IMAGE_DATABASE.ifSameKind(self.npcLastRound[0],self.npcThisRound[0]):
                     if self.move_x+window_x/4 > 0:
                         self.move_x -= window_x/40
                     #显示左边立绘
-                    self.displayTheNpc(self.npcLastRound[0],self.move_x+window_x/4,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                    self.displayTheNpc(self.npcThisRound[0],self.move_x+window_x/4,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[0],self.move_x+window_x/4,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcThisRound[0],self.move_x+window_x/4,npcImg_y,self.npcThisRoundImgAlpha,screen)
                     #显示右边立绘
-                    self.displayTheNpc(self.npcThisRound[1],window_x/2,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcThisRound[1],window_x/2,npcImg_y,self.npcThisRoundImgAlpha,screen)
                 #如果之前的中间变成了现在的右边，则立绘应该先向右移动 - checked
                 elif self.__NPC_IMAGE_DATABASE.ifSameKind(self.npcLastRound[0],self.npcThisRound[1]):
                     if self.move_x+window_x/4 < window_x/2:
                         self.move_x += window_x/40
                     #显示左边立绘
-                    self.displayTheNpc(self.npcThisRound[0],0,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcThisRound[0],0,npcImg_y,self.npcThisRoundImgAlpha,screen)
                     #显示右边立绘
-                    self.displayTheNpc(self.npcLastRound[0],self.move_x+window_x/4,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                    self.displayTheNpc(self.npcThisRound[1],self.move_x+window_x/4,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[0],self.move_x+window_x/4,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcThisRound[1],self.move_x+window_x/4,npcImg_y,self.npcThisRoundImgAlpha,screen)
                 #之前的中间和现在两边无任何关系，先隐藏之前的立绘，然后显示现在的立绘 - checked
                 else:
                     if self.npcLastRoundImgAlpha > 0:
                         self.npcThisRoundImgAlpha -= 25
-                        self.displayTheNpc(self.npcLastRound[0],window_x/4,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                        self.__displayNpc(self.npcLastRound[0],window_x/4,npcImg_y,self.npcLastRoundImgAlpha,screen)
                     else:
-                        self.displayTheNpc(self.npcThisRound[0],0,npcImg_y,self.npcThisRoundImgAlpha,screen)
-                        self.displayTheNpc(self.npcThisRound[1],window_x/2,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                        self.__displayNpc(self.npcThisRound[0],0,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                        self.__displayNpc(self.npcThisRound[1],window_x/2,npcImg_y,self.npcThisRoundImgAlpha,screen)
         elif len(self.npcLastRound)==2:
             #隐藏之前的左右两边立绘
             if len(self.npcThisRound) == 0:
-                self.displayTheNpc(self.npcLastRound[0],x_moved_forNpcLastRound,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                self.displayTheNpc(self.npcLastRound[1],window_x/2+x_moved_forNpcLastRound,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                self.__displayNpc(self.npcLastRound[0],x_moved_forNpcLastRound,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                self.__displayNpc(self.npcLastRound[1],window_x/2+x_moved_forNpcLastRound,npcImg_y,self.npcLastRoundImgAlpha,screen)
             elif len(self.npcThisRound) == 1:
                 #如果之前的左边变成了现在的中间，则立绘应该先向右边移动
                 if self.__NPC_IMAGE_DATABASE.ifSameKind(self.npcLastRound[0],self.npcThisRound[0]):
                     if self.move_x < window_x/4:
                         self.move_x += window_x/40
                     #左边立绘向右移动
-                    self.displayTheNpc(self.npcLastRound[0],self.move_x,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                    self.displayTheNpc(self.npcThisRound[0],self.move_x,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[0],self.move_x,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcThisRound[0],self.move_x,npcImg_y,self.npcThisRoundImgAlpha,screen)
                     #右边立绘消失
-                    self.displayTheNpc(self.npcLastRound[1],window_x/2,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[1],window_x/2,npcImg_y,self.npcLastRoundImgAlpha,screen)
                 #如果之前的右边变成了现在的中间，则立绘应该先向左边移动
                 elif self.__NPC_IMAGE_DATABASE.ifSameKind(self.npcLastRound[1],self.npcThisRound[0]):
                     if self.move_x+window_x/2 > window_x/4:
                         self.move_x -= window_x/40
                     #左边立绘消失
-                    self.displayTheNpc(self.npcLastRound[0],0,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[0],0,npcImg_y,self.npcLastRoundImgAlpha,screen)
                     #右边立绘向左移动
-                    self.displayTheNpc(self.npcLastRound[1],self.move_x+window_x/2,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                    self.displayTheNpc(self.npcThisRound[0],self.move_x+window_x/2,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[1],self.move_x+window_x/2,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcThisRound[0],self.move_x+window_x/2,npcImg_y,self.npcThisRoundImgAlpha,screen)
                 else:
                     if self.npcLastRoundImgAlpha > 0:
                         self.npcThisRoundImgAlpha -= 25
-                        self.displayTheNpc(self.npcLastRound[0],0,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                        self.displayTheNpc(self.npcLastRound[1],window_x/2,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                        self.__displayNpc(self.npcLastRound[0],0,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                        self.__displayNpc(self.npcLastRound[1],window_x/2,npcImg_y,self.npcLastRoundImgAlpha,screen)
                     else:
-                        self.displayTheNpc(self.npcThisRound[0],window_x/4,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                        self.__displayNpc(self.npcThisRound[0],window_x/4,npcImg_y,self.npcThisRoundImgAlpha,screen)
             elif len(self.npcThisRound) == 2:
                 if self.__NPC_IMAGE_DATABASE.ifSameKind(self.npcLastRound[0],self.npcThisRound[1]) and\
                     self.__NPC_IMAGE_DATABASE.ifSameKind(self.npcLastRound[1],self.npcThisRound[0]):
                     if self.move_x+window_x/2 > 0:
                         self.move_x -= window_x/30
                     #左边到右边去
-                    self.displayTheNpc(self.npcLastRound[0],-self.move_x,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                    self.displayTheNpc(self.npcThisRound[1],-self.move_x,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[0],-self.move_x,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcThisRound[1],-self.move_x,npcImg_y,self.npcThisRoundImgAlpha,screen)
                     #右边到左边去
-                    self.displayTheNpc(self.npcLastRound[1],window_x/2+self.move_x,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                    self.displayTheNpc(self.npcThisRound[0],window_x/2+self.move_x,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[1],window_x/2+self.move_x,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcThisRound[0],window_x/2+self.move_x,npcImg_y,self.npcThisRoundImgAlpha,screen)
                 else:
-                    self.displayTheNpc(self.npcLastRound[0],0,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                    self.displayTheNpc(self.npcLastRound[1],window_x/2,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                    self.displayTheNpc(self.npcThisRound[0],0,npcImg_y,self.npcThisRoundImgAlpha,screen)
-                    self.displayTheNpc(self.npcThisRound[1],window_x/2,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[0],0,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[1],window_x/2,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcThisRound[0],0,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcThisRound[1],window_x/2,npcImg_y,self.npcThisRoundImgAlpha,screen)
     def process(self,thisRoundCharacterNameList):
         self.npcLastRound = self.npcThisRound
         if isinstance(thisRoundCharacterNameList,(list,tuple)):
@@ -220,9 +217,9 @@ class DialogContent(DialogInterface):
         self.READINGSPEED = get_setting("ReadingSpeed")
         self.dialoguebox_max_height = None
         #鼠标图标
-        self.mouseImg = loadGif((loadImg("Assets/image/UI/mouse_none.png"),\
-            loadImg("Assets/image/UI/mouse.png")),\
-                (display.get_width()*0.82,display.get_height()*0.83),(self.FONTSIZE,self.FONTSIZE),50)
+        self.mouseImg = loadGif(
+            (loadImg("Assets/image/UI/mouse_none.png"),loadImg("Assets/image/UI/mouse.png")),
+            (display.get_width()*0.82,display.get_height()*0.83),(self.FONTSIZE,self.FONTSIZE),50)
         self.isHidden = False
         self.readTime = 0
         self.totalLetters = 0

@@ -117,14 +117,10 @@ class MapObject:
         self.__needUpdateMapSurface = True
         self.__block_on_surface = None
     #获取local坐标
-    def getPos(self):
-        return self.__local_x,self.__local_y
-    def getPos_x(self):
-        return self.__local_x
-    def getPos_y(self):
-        return self.__local_y
-    def isAtNight(self):
-        return self.__darkMode
+    def getPos(self) -> tuple: return self.__local_x,self.__local_y
+    def getPos_x(self) -> float: return self.__local_x
+    def getPos_y(self) -> float: return self.__local_y
+    def isAtNight(self) -> int: return self.__darkMode
     #设置local坐标
     def setPos(self,int x, int y):
         self.setPos_x(x)
@@ -349,6 +345,9 @@ class MapObject:
     def calPosInMap(self,float x,float y):
         cdef float widthTmp = self.block_width*0.43
         return round((x-y)*widthTmp+self.__local_x+self.row*widthTmp),round((y+x)*self.block_width*0.22+self.__local_y+self.block_width*0.4)
+    def calAbsPosInMap(self,float x,float y):
+        cdef float widthTmp = self.block_width*0.43
+        return round((x-y)*widthTmp+self.row*widthTmp),round((y+x)*self.block_width*0.22+self.block_width*0.4)
     #查看角色是否在光亮范围内
     def inLightArea(self,doll):
         return self.isPosInLightArea(doll.x,doll.y)

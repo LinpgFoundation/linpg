@@ -314,6 +314,7 @@ class Console(SingleLineInputBox):
         self.textHistory = []
         self.backwordID = 1
         self.events = {}
+        if try_get_setting("DeveloperMode"): self.events["dev"] = True
         self.txtOutput = []
     def get_events(self,key=None):
         if key == None:

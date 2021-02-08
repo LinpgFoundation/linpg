@@ -32,18 +32,15 @@ class FriendlyCharacter(Entity):
                 print("而且你也忘了加入对应的头像")
     @property
     def detection(self) -> int: return self._detection
+    @property
+    def is_detected(self) -> bool: return self._detection >= 100
     #调整角色的隐蔽度
-    def noticed(self,value:int=10,force:bool=False) -> None:
-        if not force:
-            self._detection += value
-            if self._detection > 100:
-                self._detection = 100
-            elif self._detection < 0:
-                self._detection = 0
-        elif force:
+    def notice(self,value:int=10) -> None:
+        self._detection += value
+        if self._detection > 100:
             self._detection = 100
-        else:
-            raise Exception("LinpgEngine-Error: The force has to be a bool not {}".format(force))
+        elif self._detection < 0:
+            self._detection = 0
         self.__isNoticedImage.set_percentage(self._detection/100)
     def loadImg(self) -> None:
         super().loadImg()
@@ -67,7 +64,7 @@ class FriendlyCharacter(Entity):
         super().heal(hpHealed)
         if self.dying != False:
             self.dying = False
-            self._ifActionPlayReverse = True
+            self._if_play_action_in_reversing = True
     def drawUI(self,screen,original_UI_img,MapClass) -> None:
         blit_pos = super().drawUI(screen,original_UI_img,MapClass)
         #展示被察觉的程度
@@ -122,7 +119,7 @@ class HostileCharacter(Entity):
     @property
     def vigilance(self) -> int: return self._vigilance
     @property
-    def is_alert(self) -> bool: return True if self._vigilance >= 100 else False
+    def is_alert(self) -> bool: return self._vigilance >= 100
     #画UI - 列如血条
     def drawUI(self,screen,original_UI_img,MapClass) -> None:
         blit_pos = super().drawUI(screen,original_UI_img,MapClass)

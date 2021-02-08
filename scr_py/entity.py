@@ -54,37 +54,39 @@ class Entity(GameObject):
         #最小攻击力
         self.min_damage = DATA["min_damage"]
         #是否图片镜像
-        self.ifFlip = False
+        self.if_flip = False
         #受伤的立绘
         self.ImageGetHurt = None
         #idle动作
         self.idle_action = "wait"
         #当前动作
-        self.__currentAction = self.idle_action
+        self.__current_action = self.idle_action
         #动作是否重复
-        self.__ifActionLoop = True
+        self.__if_action_loop = True
         #动作是正序列播放还是反序播放
-        self._ifActionPlayReverse = False
+        self._if_play_action_in_reversing = False
         #是否动作已经播放一遍
-        self.__ifActionPlayedOnce = False
+        self.__if_action_has_played_once = False
         #需要移动的路径
-        self.__movingPath = None
+        self.__moving_path = None
         #是否需要重新渲染地图
-        self.__reProcessMap = False
+        self.__if_map_need_update = False
+        #攻击范围
+        self.__attack_range = {"near":[],"middle":[],"far":[]}
     """角色动作参数管理"""
     #当前动作
     @property
-    def action(self): return self.__currentAction
+    def action(self): return self.__current_action
     #获取当前动作，建议使用self.action
-    def get_action(self) -> str: return self.__currentAction
+    def get_action(self) -> str: return self.__current_action
     #设置动作
     def set_action(self,action:str="wait",ifLoop:bool=True) -> None:
-        self.reset_imgId(self.__currentAction)
-        self.__currentAction = action
-        self.__ifActionLoop = ifLoop
-        self.__ifActionPlayedOnce = False
+        self.reset_imgId(self.__current_action)
+        self.__current_action = action
+        self.__if_action_loop = ifLoop
+        self.__if_action_has_played_once = False
     #是否闲置
-    def is_idle(self) -> bool: return self.__currentAction == self.idle_action
+    def is_idle(self) -> bool: return self.__current_action == self.idle_action
     #获取角色特定动作的图片播放ID
     def get_imgId(self,action:str):
         action = self.__imgId_dict[action]
@@ -171,61 +173,61 @@ class Entity(GameObject):
         return damage
     """其他"""
     #设置反转
-    def setFlip(self,theBool:bool) -> None: self.ifFlip = theBool
+    def setFlip(self,theBool:bool) -> None: self.if_flip = theBool
     #播放角色声音
     def playSound(self,kind_of_sound:str) -> None: _CHARACTERS_SOUND_SYSTEM.play(self.type,kind_of_sound)
     #设置需要移动的路径
     def move_follow(self,path) -> None:
         if isinstance(path,(list,tuple)) and len(path)>0:
-            self.__movingPath = path
+            self.__moving_path = path
             self.set_action("move")
         else:
             raise Exception('LinpgEngine-Error: Character cannot move to a invalid path!')
     #根据路径移动
     def __move_based_on_path(self,MapClass) -> None:
-        if len(self.__movingPath) > 0:
-            if self.x < self.__movingPath[0][0]:
+        if len(self.__moving_path) > 0:
+            if self.x < self.__moving_path[0][0]:
                 self.x+=0.05
                 self.setFlip(False)
-                if self.x >= self.__movingPath[0][0]:
-                    self.x = self.__movingPath[0][0]
-                    self.__movingPath.pop(0)
+                if self.x >= self.__moving_path[0][0]:
+                    self.x = self.__moving_path[0][0]
+                    self.__moving_path.pop(0)
                     if MapClass.isAtNight():
-                        self.__reProcessMap = True
-            elif self.x > self.__movingPath[0][0]:
+                        self.__if_map_need_update = True
+            elif self.x > self.__moving_path[0][0]:
                 self.x-=0.05
                 self.setFlip(True)
-                if self.x <= self.__movingPath[0][0]:
-                    self.x = self.__movingPath[0][0]
-                    self.__movingPath.pop(0)
+                if self.x <= self.__moving_path[0][0]:
+                    self.x = self.__moving_path[0][0]
+                    self.__moving_path.pop(0)
                     if MapClass.isAtNight():
-                        self.__reProcessMap = True
-            elif self.y < self.__movingPath[0][1]:
+                        self.__if_map_need_update = True
+            elif self.y < self.__moving_path[0][1]:
                 self.y+=0.05
                 self.setFlip(True)
-                if self.y >= self.__movingPath[0][1]:
-                    self.y = self.__movingPath[0][1]
-                    self.__movingPath.pop(0)
+                if self.y >= self.__moving_path[0][1]:
+                    self.y = self.__moving_path[0][1]
+                    self.__moving_path.pop(0)
                     if MapClass.isAtNight():
-                        self.__reProcessMap = True
-            elif self.y > self.__movingPath[0][1]:
+                        self.__if_map_need_update = True
+            elif self.y > self.__moving_path[0][1]:
                 self.y-=0.05
                 self.setFlip(False)
-                if self.y <= self.__movingPath[0][1]:
-                    self.y = self.__movingPath[0][1]
-                    self.__movingPath.pop(0)
+                if self.y <= self.__moving_path[0][1]:
+                    self.y = self.__moving_path[0][1]
+                    self.__moving_path.pop(0)
                     if MapClass.isAtNight():
-                        self.__reProcessMap = True
+                        self.__if_map_need_update = True
         else:
-            self.__movingPath = None
+            self.__moving_path = None
             if self.get_imgId("set") != None:
                 self.set_action("set",False)
             else:
                 self.set_action()
     #查看是否需要重新渲染地图
     def needUpdateMap(self) -> bool:
-        if self.__reProcessMap:
-            self.__reProcessMap = False
+        if self.__if_map_need_update:
+            self.__if_map_need_update = False
             return True
         else:
             return False
@@ -249,7 +251,7 @@ class Entity(GameObject):
         else:
             return False
     #判断是否在攻击范围内
-    def isInAttackRange(self,otherEntity,Map) -> bool:
+    def can_attack(self,otherEntity,Map) -> bool:
         attackRange = self.getAttackRange(Map)
         for key in attackRange:
             if (otherEntity.x,otherEntity.y) in attackRange[key]:
@@ -257,17 +259,19 @@ class Entity(GameObject):
         return False
     #获取角色的攻击范围
     def getAttackRange(self,Map,ifHalfMode:bool=False) -> dict:
-        attacking_range = {"near":[],"middle":[],"far":[]}
+        for key in self.__attack_range:
+            self.__attack_range[key].clear()
+        #确定范围
         if not ifHalfMode:
             start_point = self.y-self.max_effective_range
             end_point = self.y+self.max_effective_range+1
-        elif not self.ifFlip:
+        elif not self.if_flip:
             start_point = self.y-self.max_effective_range
             end_point = self.y+1
         else:
             start_point = self.y
             end_point = self.y+self.max_effective_range+1
-
+        #append坐标
         for y in range(start_point,end_point):
             if y <= self.y:
                 for x in range(self.x-self.max_effective_range-(y-self.y),self.x+self.max_effective_range+(y-self.y)+1):
@@ -275,21 +279,21 @@ class Entity(GameObject):
                         pass
                     if Map.row>y>=0 and Map.column>x>=0:
                         if "far" in self.effective_range and self.effective_range["far"] != None and self.effective_range["far"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["far"][1]:
-                            attacking_range["far"].append((x,y))
+                            self.__attack_range["far"].append((x,y))
                         elif "middle" in self.effective_range and self.effective_range["middle"] != None and self.effective_range["middle"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["middle"][1]:
-                            attacking_range["middle"].append((x,y))
+                            self.__attack_range["middle"].append((x,y))
                         elif "near" in self.effective_range and self.effective_range["near"] != None and self.effective_range["near"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["near"][1]:
-                            attacking_range["near"].append((x,y))
+                            self.__attack_range["near"].append((x,y))
             else:
                 for x in range(self.x-self.max_effective_range+(y-self.y),self.x+self.max_effective_range-(y-self.y)+1):
                     if Map.row>y>=0 and Map.column>x>=0:
                         if "far" in self.effective_range and self.effective_range["far"] != None and self.effective_range["far"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["far"][1]:
-                            attacking_range["far"].append((x,y))
+                            self.__attack_range["far"].append((x,y))
                         elif "middle" in self.effective_range and self.effective_range["middle"] != None and self.effective_range["middle"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["middle"][1]:
-                            attacking_range["middle"].append((x,y))
+                            self.__attack_range["middle"].append((x,y))
                         elif "near" in self.effective_range and self.effective_range["near"] != None and self.effective_range["near"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["near"][1]:
-                            attacking_range["near"].append((x,y))
-        return attacking_range
+                            self.__attack_range["near"].append((x,y))
+        return self.__attack_range
     #根据坐标反转角色
     def setFlipBasedPos(self,pos):
         #转换坐标
@@ -309,14 +313,14 @@ class Entity(GameObject):
     def __blit_entity_img(self,screen,MapClass,action=None,pos=None,alpha=155) -> None:
         #调整小人图片的尺寸
         if action == None:
-            action = self.__currentAction
+            action = self.__current_action
         img_of_char = _CHARACTERS_IMAGE_SYS.get_img(self.type,action,self.__imgId_dict[action]["imgId"])
         img_width = round(MapClass.block_width*1.6)
         img_of_char.set_size(img_width,img_width)
         #调整alpha值
         img_of_char.set_alpha(alpha)
         #反转图片
-        if self.ifFlip:
+        if self.if_flip:
             img_of_char.flip_if_not()
         else:
             img_of_char.flip_back_to_normal()
@@ -326,31 +330,31 @@ class Entity(GameObject):
         img_of_char.set_pos(pos[0]-MapClass.block_width*0.3,pos[1]-MapClass.block_width*0.85)
         img_of_char.draw(screen,console.get_events("dev"))
     def draw(self,screen,MapClass) -> None:
-        self.__blit_entity_img(screen,MapClass,alpha=self.get_imgAlpaha(self.__currentAction))
+        self.__blit_entity_img(screen,MapClass,alpha=self.get_imgAlpaha(self.__current_action))
         #如果当前动作是移动
-        if self.__currentAction == "move" and self.__movingPath != None:
+        if self.__current_action == "move" and self.__moving_path != None:
             self.__move_based_on_path(MapClass)
         #如果角色图片还没播放完
-        if not self._ifActionPlayReverse:
-            if self.__imgId_dict[self.__currentAction]["imgId"] < self.get_imgNum(self.__currentAction)-1:
-                self.__imgId_dict[self.__currentAction]["imgId"] += 1
+        if not self._if_play_action_in_reversing:
+            if self.__imgId_dict[self.__current_action]["imgId"] < self.get_imgNum(self.__current_action)-1:
+                self.__imgId_dict[self.__current_action]["imgId"] += 1
             #如果角色图片播放完需要重新播
-            elif self.__ifActionLoop == True:
-                self.__ifActionPlayedOnce = True
-                self.__imgId_dict[self.__currentAction]["imgId"] = 0
+            elif self.__if_action_loop == True:
+                self.__if_action_has_played_once = True
+                self.__imgId_dict[self.__current_action]["imgId"] = 0
             #如果角色图片播放完但不打算重新播
-            elif self.__ifActionLoop == None:
-                self.__ifActionPlayedOnce = True
+            elif self.__if_action_loop == None:
+                self.__if_action_has_played_once = True
             #如果角色图片播放完需要回到待机状态
-            elif self.__ifActionLoop == False:
+            elif self.__if_action_loop == False:
                 self.set_action()
             else:
-                raise Exception('LinpgEngine-Error: self.__ifActionLoop data error: '+self.__ifActionLoop)
+                raise Exception('LinpgEngine-Error: self.__if_action_loop data error: '+self.__if_action_loop)
         else:
-            if self.__imgId_dict[self.__currentAction]["imgId"] > 0:
-                self.__imgId_dict[self.__currentAction]["imgId"] -= 1
+            if self.__imgId_dict[self.__current_action]["imgId"] > 0:
+                self.__imgId_dict[self.__current_action]["imgId"] -= 1
             else:
-                self._ifActionPlayReverse = False
+                self._if_play_action_in_reversing = False
                 self.set_action()
     def draw_custom(self,action,pos,screen,MapClass,isContinue=True) -> None:
         self.__blit_entity_img(screen,MapClass,action,pos)

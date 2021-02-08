@@ -41,6 +41,15 @@ def saveConfig(path:str,data:any) -> None:
 #初始化储存设置配置文件的变量
 __LINPG_DATA = None
 
+#在不确定的情况下尝试获取设置配置文件
+def try_get_setting(key:str,key2:str=None) -> any:
+    if key in __LINPG_DATA:
+        if key2 == None:
+            return deepcopy(__LINPG_DATA[key])
+        elif key2 in __LINPG_DATA[key]:
+            return deepcopy(__LINPG_DATA[key][key2])
+    return None
+
 #获取设置配置文件
 def get_setting(key:str=None,key2:str=None) -> any:
     if key == None:

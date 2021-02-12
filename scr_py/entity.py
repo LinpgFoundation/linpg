@@ -130,7 +130,7 @@ class Entity(GameObject):
                     #没有足够的行动值来减去
                     return False
             else:
-                raise Exception('LinpgEngine-Error: While you reduce the action points, the module cannot reduce a non-int value!')
+                throwException("error","While you reduce the action points, the module cannot reduce a non-int value!")
         else:
             #作弊模式开启时不扣行动力
             return True
@@ -182,7 +182,7 @@ class Entity(GameObject):
             self.__moving_path = path
             self.set_action("move")
         else:
-            raise Exception('LinpgEngine-Error: Character cannot move to a invalid path!')
+            throwException("error","Character cannot move to a invalid path!")
     #根据路径移动
     def __move_based_on_path(self,MapClass) -> None:
         if len(self.__moving_path) > 0:
@@ -349,7 +349,7 @@ class Entity(GameObject):
             elif self.__if_action_loop == False:
                 self.set_action()
             else:
-                raise Exception('LinpgEngine-Error: self.__if_action_loop data error: '+self.__if_action_loop)
+                throwException("error","The self.__if_action_loop data error: {}".format(self.__if_action_loop))
         else:
             if self.__imgId_dict[self.__current_action]["imgId"] > 0:
                 self.__imgId_dict[self.__current_action]["imgId"] -= 1

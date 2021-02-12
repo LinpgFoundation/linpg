@@ -208,7 +208,7 @@ class ProgressBarSurface(ImageInterface):
             self.__percentage_to_be = value*self.accuracy
             self.__perecent_update_each_time = (self.__percentage_to_be-self.__current_percentage)/self.__total_update_intervals
         else:
-            raise Exception('LinpgEngine-Error: The percentage must be <= 1 and >= 0!')
+            throwException("error","The percentage must be <= 1 and >= 0!")
     #模式
     @property
     def mode(self) -> str: return self.get_mode()
@@ -219,7 +219,7 @@ class ProgressBarSurface(ImageInterface):
         elif mode == "height":
             self.__mode = False
         else:
-            raise Exception('LinpgEngine-Error: Mode {} is not supported!'.format(mode))
+            throwException("error","Mode '{}' is not supported!".format(mode))
     def copy(self): return ProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return ProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #展示

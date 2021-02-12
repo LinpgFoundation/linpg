@@ -71,7 +71,7 @@ class EnvImagesManagement:
             else:
                 return self.__ENV_IMAGE_DICT[key]
         except BaseException:
-            print('LinpgEngine-Warning: Cannot find block image "{}", we will try to load it for you right now, but please by aware.'.format(key))
+            throwException("warning","Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(key))
             self.__add_evn_image(key)
     def get_decoration_image(self,decorationType,key,darkMode):
         try:
@@ -81,7 +81,7 @@ class EnvImagesManagement:
                 return self.__DECORATION_IMAGE_DICT[decorationType][key]
         #如果图片没找到
         except BaseException:
-            print('LinpgEngine-Warning: Cannot find decoration image "{0}" in type "{1}", we will try to load it for you right now, but please by aware.'.format(key,decorationType))
+            throwException("warning","Cannot find decoration image '{0}' in type '{1}', we will try to load it for you right now, but please by aware.".format(key,decorationType))
             self.__add_decoration_image(decorationType,key)
     #获取当前装饰物种类的数量
     def get_decoration_num(self,decorationType):

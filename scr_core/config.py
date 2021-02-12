@@ -4,8 +4,8 @@ try:
     import yaml
     _CONFIG_TYPE = "YAML"
 except:
-    print("LinpgEngine-Warning: Cannot import yaml, we will try json instead.\n"
-    "However, some function may be limited, we suggest you install yaml ASAP!")
+    throwException("warning","Cannot import yaml, we will try json instead.\n\
+        However, some function may be limited, we suggest you install yaml ASAP!")
     import json
     _CONFIG_TYPE = "JSON"
 from .basic import *
@@ -17,9 +17,9 @@ def loadConfig(path:str,key:str=None) -> any:
             with open(path, "r", encoding='utf-8') as f:
                 Data = yaml.load(f.read(),Loader=yaml.FullLoader)
         except yaml.constructor.ConstructorError:
-            print("LinpgEngine-Warning: Encounter a fatal error while loading the yaml file in path:\n'{}'\n"
-            "One possible reason is that at least one numpy array exists inside the yaml file.\n"
-            "The program will try to load the data using yaml.UnsafeLoader.".format(path))
+            throwException("warning","Encounter a fatal error while loading the yaml file in path:\n\
+                '{}'\nOne possible reason is that at least one numpy array exists inside the yaml file.\n\
+                The program will try to load the data using yaml.UnsafeLoader.".format(path))
             with open(path, "r", encoding='utf-8') as f:
                 Data = yaml.load(f.read(), Loader=yaml.UnsafeLoader)
     else:

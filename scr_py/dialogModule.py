@@ -3,9 +3,9 @@ from ..scr_core.function import *
 from ..scr_pyd.movie import cutscene,VedioFrame,VedioPlayer
 
 #视觉小说系统接口
-class DialogSystemInterface(SystemObject):
+class DialogSystemInterface(SystemWithBackgroundMusic):
     def __init__(self) -> None:
-        SystemObject.__init__(self)
+        SystemWithBackgroundMusic.__init__(self)
         #加载对话的背景图片模块
         self.backgroundContent = DialogBackground()
         #加载npc立绘系统并初始化
@@ -38,7 +38,10 @@ class NpcImageSystem:
         self.npcLastRoundImgAlpha = 255
         self.npcThisRound = []
         self.npcThisRoundImgAlpha = 0
-        self.communication = loadImg("Assets/image/UI/communication.png")
+        try:
+            self.communication = loadImg("Assets/image/UI/communication.png")
+        except:
+            self.communication = None
         self.__NPC_IMAGE_DATABASE = NpcImageDatabase()
         self.img_width = int(display.get_width()/2)
         self.move_x = 0
@@ -224,7 +227,6 @@ class DialogContent(DialogInterface):
         self.readTime = 0
         self.totalLetters = 0
         self.autoMode = False
-        self.__fade_out_stage = False
         self.resetDialogueboxData()
     def hideSwitch(self):
         self.isHidden = not self.isHidden
@@ -238,6 +240,7 @@ class DialogContent(DialogInterface):
         super().update(txt,narrator)
         self.stop_playing_text_sound()
     def resetDialogueboxData(self):
+        self.__fade_out_stage = False
         self.dialoguebox_height = 0
         self.dialoguebox_y = None
         self.__txt_alpha = 255
@@ -299,7 +302,6 @@ class DialogContent(DialogInterface):
             self.dialoguebox_height -= self.dialoguebox_max_height/10
             self.dialoguebox_y += self.dialoguebox_max_height/20
         else:
-            self.__fade_out_stage = False
             self.resetDialogueboxData()
     #将文字画到屏幕上
     def __blit_txt(self,screen) -> None:
@@ -341,12 +343,7 @@ class DialogBackground:
         self.backgroundImgName = None
         self.backgroundImgSurface = None
         self.nullSurface = get_SingleColorSurface("black")
-        self.backgroundMusicName = None
-    def get_sound_volume(self):
-        return pygame.mixer.music.get_volume()
-    def set_sound_volume(self,volume):
-        pygame.mixer.music.set_volume(volume/100.0)
-    def update(self,backgroundImgName,backgroundMusicName):
+    def update(self,backgroundImgName):
         #如果需要更新背景图片
         if self.backgroundImgName != backgroundImgName:
             self.backgroundImgName = backgroundImgName
@@ -361,22 +358,11 @@ class DialogBackground:
                         self.backgroundImgSurface = VedioFrame("Assets/movie/"+self.backgroundImgName,display.get_width()
                         ,display.get_height(),True)
                     except BaseException:
-                        raise Exception('LinpgEngine-Error: Cannot run movie module')
+                        throwException("error","Cannot run movie module.")
                 else:
-                    raise Exception('LinpgEngine-Error: Cannot find background image or video file.')
+                    throwException("error","Cannot find background image or video file.")
             else:
                 self.backgroundImgSurface = None
-        #如果需要更新背景音乐
-        if self.backgroundMusicName != backgroundMusicName:
-            self.backgroundMusicName = backgroundMusicName
-            if self.backgroundMusicName != None:
-                if os.path.exists("Assets/music/{}".format(self.backgroundMusicName)):
-                    pygame.mixer.music.load("Assets/music/{}".format(self.backgroundMusicName))
-                else:
-                    raise Exception('LinpgEngine-Error: Cannot find background music file.')
-                pygame.mixer.music.play(-1)
-            else:
-                pygame.mixer.music.unload()
     def display(self,screen):
         if self.backgroundImgName != None:
             self.backgroundImgSurface.display(screen)

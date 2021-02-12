@@ -18,15 +18,15 @@ def imgLoadFunction(path:str, ifConvertAlpha:bool) -> pygame.Surface:
         if not ifConvertAlpha:
             try:
                 return pygame.image.load(os.path.join(path))
-            except BaseException:
-                raise Exception('LinpgEngine-Error: Cannot load image! Path: {}'.format(path))
+            except:
+                throwException("error",'Cannot load image from path: {}'.format(path))
         else:
             try:
                 return pygame.image.load(os.path.join(path)).convert_alpha()
-            except BaseException:
-                raise Exception('LinpgEngine-Error: Cannot load image! Path: {}'.format(path))
+            except:
+                throwException("error",'Cannot load image from path: {}'.format(path))
     else:
-        raise Exception('LinpgEngine-Error: The path has to be a string or pygame.Surface! Path:',path)
+        throwException("error","The path '{}' has to be a string or at least a pygame.Surface!".format(path))
 
 #图片加载模块：接收图片路径,长,高,返回对应图片
 def loadImg(path:str, size:str=None, setAlpha:int=None, ifConvertAlpha:bool=True) -> pygame.Surface:
@@ -72,7 +72,7 @@ def resizeImg(img:pygame.Surface, size=(None,None)) -> pygame.Surface:
         width = size
         height = None
     else:
-        raise Exception('LinpgEngine-Error: size "{}" is not acceptable'.format(size))
+        throwException("error","The size '{}' is not acceptable.".format(size))
     #编辑图片
     if height!= None and height >= 0 and width == None:
         img = pygame.transform.scale(img,(round(height/img.get_height()*img.get_width()), round(height)))
@@ -81,7 +81,7 @@ def resizeImg(img:pygame.Surface, size=(None,None)) -> pygame.Surface:
     elif width >= 0 and height >= 0:
         img = pygame.transform.scale(img, (round(width), round(height)))
     elif width < 0 or height < 0:
-        raise Exception('LinpgEngine-Error: Both width and height must be positive interger!')
+        throwException("error","Both width and height must be positive interger!")
     return img
 
 #增加图片暗度
@@ -164,3 +164,14 @@ def convert_pos(pos:any) -> tuple:
 
 #判断2个坐标是否相同
 def is_same_pos(pos1,pos2) -> bool: return convert_pos(pos1) == convert_pos(pos2)
+
+#抛出引擎内的异常
+def throwException(exception_type,info):
+    if exception_type == "error":
+        raise Exception('LinpgEngine-Error: {}'.format(info))
+    elif exception_type == "warning":
+        print("LinpgEngine-Warning: {}".format(info))
+    elif exception_type == "info":
+        print('LinpgEngine-Info: {}'.format(info))
+    else:
+        throwException("error","Hey, the exception_type '{}' is not acceptable!".format(exception_type))

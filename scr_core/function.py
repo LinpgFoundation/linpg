@@ -66,5 +66,5 @@ def isHover(imgObject,objectPos=(0,0),local_x=0,local_y=0) -> bool:
     elif isinstance(imgObject,TextSurface):
         return imgObject.isHover()
     else:
-        raise Exception('LinpgEngine-Error: Unable to check current object:',imgObject)
+        throwException("error","Unable to check current object: {}".format(imgObject))
 

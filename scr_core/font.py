@@ -25,17 +25,17 @@ class FontGenerator:
             else:
                 return self.__FONT.render(txt, LINPG_MODE, color)
         else:
-            raise Exception('LinpgEngine-Error: Standard font is not initialized!')
+            throwException("error","Standard font is not initialized!")
     def get_size(self) -> int:
         if self.__SIZE != None:
             return self.__SIZE
         else:
-            raise Exception('LinpgEngine-Error: Standard font is not initialized!')
+            throwException("error","Standard font is not initialized!")
     def get_font(self):
         if self.__FONT != None:
             return self.__FONT
         else:
-            raise Exception('LinpgEngine-Error: Standard font is not initialized!')
+            throwException("error","Standard font is not initialized!")
     def check_for_update(self,size:int,ifBold:bool=False,ifItalic:bool=False) -> None:
         if self.__FONT == None or self.__SIZE != size or self.bold != ifBold or self.italic != ifItalic: self.update(size)
 
@@ -60,7 +60,7 @@ def get_fontMode():
 def get_fontDetails():
     return LINPG_FONT,LINPG_FONTTYPE,LINPG_MODE
 #设置和获取标准文字大小
-def set_standard_font_size(size,fonType="medium"):
+def set_standard_font_size(size:int,fonType:str="medium"):
     if isinstance (size,int) and size > 0:
         if fonType == "medium":
             LINPG_STANDARD_MEDIUM_FONT.update(size)
@@ -69,10 +69,10 @@ def set_standard_font_size(size,fonType="medium"):
         elif fonType == "big":
             LINPG_STANDARD_BIG_FONT.update(size)
         else:
-            raise Exception('LinpgEngine-Error: Standard font type must be "small","medium", or "big"!')
+            throwException("error", "Standard font type must be 'small', 'medium', or 'big'!")
     else:
-        raise Exception('LinpgEngine-Error: Standard font size must be positive interger not {}!'.format(size))
-def get_standard_font_size(fonType):
+        throwException("error","Standard font size must be positive interger not {}!".format(size))
+def get_standard_font_size(fonType:str):
     if fonType == "medium":
         return LINPG_STANDARD_MEDIUM_FONT.get_size()
     elif fonType == "small":
@@ -80,9 +80,9 @@ def get_standard_font_size(fonType):
     elif fonType == "big":
         return LINPG_STANDARD_BIG_FONT.get_size()
     else:
-        raise Exception('LinpgEngine-Error: Standard font type must be "small","medium", or "big"!')
+        throwException("error","Standard font type must be 'small', 'medium', or 'big'!")
 #标准文字快速渲染
-def standard_font_render(fonType,txt,color):
+def standard_font_render(fonType:str,txt:str,color:str):
     if fonType == "medium":
         return LINPG_STANDARD_MEDIUM_FONT.render(txt,color)
     elif fonType == "small":
@@ -90,10 +90,10 @@ def standard_font_render(fonType,txt,color):
     elif fonType == "big":
         return LINPG_STANDARD_BIG_FONT.render(txt,color)
     else:
-        raise Exception('LinpgEngine-Error: Standard font type must be "small","medium", or "big"!')
+        throwException("error","Standard font type must be 'small', 'medium', or 'big'!")
 
 #重新获取设置信息
-def reload_setting():
+def reload_setting() -> None:
     reload_DATA()
     global LINPG_FONT
     global LINPG_FONTTYPE
@@ -123,7 +123,7 @@ def createFont(size,ifBold=False,ifItalic=False):
             normal_font.set_italic(ifItalic)
         return normal_font
     else:
-        raise Exception('LinpgEngine-Error: FontType option in setting file is incorrect!')
+        throwException("error","FontType option in setting file is incorrect!")
 
 #创建FreeType字体
 def createFreeTypeFont(size,ifBold=False,ifItalic=False):
@@ -146,7 +146,7 @@ def createFreeTypeFont(size,ifBold=False,ifItalic=False):
             normal_font.set_italic(ifItalic)
         return normal_font
     else:
-        raise Exception('LinpgEngine-Error: FontType option in setting file is incorrect!')
+        throwException("error","FontType option in setting file is incorrect!")
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
 def fontRender(txt,color,size:int,ifBold:bool=False,ifItalic:bool=False) -> pygame.Surface:
@@ -197,11 +197,11 @@ class TextSurface:
         return self.n_x,self.n_y
 
 #高级文字制作模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
-def fontRenderPro(txt,color,pos,size=50,ifBold=False,ifItalic=False):
+def fontRenderPro(txt,color,pos,size=50,ifBold=False,ifItalic=False) -> TextSurface:
     return TextSurface(fontRender(txt,color,size,ifBold,ifItalic),fontRender(txt,color,size*1.5,ifBold,ifItalic),pos[0],pos[1])
 
 #给定一个颜色的名字，返回对应的RGB列表
-def findColorRGBA(color):
+def findColorRGBA(color) -> tuple:
     if isinstance(color,(tuple,list)):
         return color
     elif isinstance(color,(str)):
@@ -213,6 +213,6 @@ def findColorRGBA(color):
             try:
                 return THECOLORS[color]
             except BaseException:
-                raise Exception('LinpgEngine-Error: This color is currently not available!')
+                throwException("error","This color is currently not available!")
     else:
-        raise Exception('LinpgEngine-Error: The color has to be a string, tuple or list!')
+        throwException("error","The color has to be a string, tuple or list!")

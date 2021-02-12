@@ -26,7 +26,7 @@ class DialogSystem(DialogSystemInterface):
         #暂停菜单
         self.pause_menu = PauseMenu()
     #保存数据-子类必须实现
-    def save_process(self): raise Exception('LinpgEngine-Error: "You have to overwrite save_process() before continue!"')
+    def save_process(self): throwException("error","You have to overwrite save_process() before continue!")
     #读取章节
     def load(self,save_path:str) -> None:
         saveData = loadConfig(save_path)
@@ -42,7 +42,7 @@ class DialogSystem(DialogSystemInterface):
                 )
             self.__process_data()
         else:
-            raise Exception('LinpgEngine-Error: Cannot load the data from the "save.yaml" file because the file type does not match')
+            throwException("error","Cannot load the data from the 'save.yaml' file because the file type does not match")
     #新建章节
     def new(self,chapterType:str,chapterId:int,part:str,collection_name:str=None) -> None:
         """章节信息"""
@@ -69,39 +69,34 @@ class DialogSystem(DialogSystemInterface):
         else:
             self.dialogContent = dialogData[self.part]
             if len(self.dialogContent)==0:
-                raise Exception('LinpgEngine-Error: The dialog has no content!')
-        self.npc_img_dic.process(self.dialogContent[self.dialogId]["characters_img"])
-        #如果dialog Id 不存在
-        if self.dialogId not in self.dialogContent:
-            raise Exception('LinpgEngine-Error: The dialog id {} does not exist!'.format(self.dialogId))
-        else:
-            self.dialogTxtSystem.update(self.dialogContent[self.dialogId]["content"],self.dialogContent[self.dialogId]["narrator"])
-        #更新背景音乐
-        self.backgroundContent.update(self.dialogContent[self.dialogId]["background_img"],None)
+                throwException("error","The dialog has no content!")
+        self.__update_scene(self.dialogId)
+        self.dialogTxtSystem.resetDialogueboxData()
     #更新场景
     def __update_scene(self,theNextDialogId:str) -> None:
-        #更新背景
-        self.backgroundContent.update(
-            self.dialogContent[theNextDialogId]["background_img"],
-            self.dialogContent[theNextDialogId]["background_music"]
-            )
-        #重设立绘系统
-        self.npc_img_dic.process(self.dialogContent[theNextDialogId]["characters_img"])
-        #切换dialogId
-        self.dialogId = theNextDialogId
-        self.dialogTxtSystem.update(self.dialogContent[self.dialogId]["content"],self.dialogContent[self.dialogId]["narrator"])
-        #是否保存
-        if self.auto_save:
-            self.save_process()
+        #如果dialog Id 不存在
+        if theNextDialogId in self.dialogContent:
+            #更新背景
+            self.backgroundContent.update(self.dialogContent[theNextDialogId]["background_img"])
+            #更新背景音乐
+            if self.dialogContent[theNextDialogId]["background_music"] != None:
+                self.set_bgm("Assets/music/{}".format(self.dialogContent[theNextDialogId]["background_music"]))
+            else:
+                self.set_bgm(None)
+            #重设立绘系统
+            self.npc_img_dic.process(self.dialogContent[theNextDialogId]["characters_img"])
+            #更新对话框文字
+            self.dialogTxtSystem.update(self.dialogContent[theNextDialogId]["content"],self.dialogContent[theNextDialogId]["narrator"])
+            #切换dialogId
+            self.dialogId = theNextDialogId
+            #自动保存
+            if self.auto_save: self.save_process()
+        else:
+            throwException("error","The dialog id {} does not exist!".format(theNextDialogId))
     #更新音量
     def __update_sound_volume(self) -> None:
-        self.backgroundContent.set_sound_volume(get_setting("Sound","background_music"))
+        self.set_bgm_volume(get_setting("Sound","background_music")/100)
         self.dialogTxtSystem.set_sound_volume(get_setting("Sound","sound_effects"))
-    def ready(self) -> None:
-        self.backgroundContent.update(
-            self.dialogContent[self.dialogId]["background_img"],
-            self.dialogContent[self.dialogId]["background_music"]
-            )
     #淡入
     def fadeIn(self,screen) -> None:
         for i in range(255,0,-5):
@@ -121,9 +116,12 @@ class DialogSystem(DialogSystemInterface):
             pygame.display.flip()
     def display(self,screen) -> None:
         #检测章节是否初始化
-        if self.chapterId == None: raise Exception('LinpgEngine-Error: The dialog has not been initialized!')
-        #背景
+        if self.chapterId == None: raise throwException("error","The dialog has not been initialized!")
+        #背景图片
         self.backgroundContent.display(screen)
+        #背景音乐
+        self.play_bgm(-1)
+        #展示npc立绘
         self.npc_img_dic.display(screen)
         #按钮
         buttonEvent = self.ButtonsMananger.display(screen,self.dialogTxtSystem.isHidden)
@@ -270,16 +268,11 @@ class DialogSystem(DialogSystemInterface):
             elif self.dialogContent[self.dialogId]["next_dialog_id"]["type"] == "changeScene":
                 self.fadeOut(screen)
                 pygame.time.wait(2000)
-                #重设立绘系统
-                theNextDialogId = self.dialogContent[self.dialogId]["next_dialog_id"]["target"]
-                self.npc_img_dic.process(self.dialogContent[theNextDialogId]["characters_img"])
-                self.dialogId = theNextDialogId
+                #更新场景
+                self.__update_scene(self.dialogContent[self.dialogId]["next_dialog_id"]["target"])
                 self.dialogTxtSystem.resetDialogueboxData()
-                self.dialogTxtSystem.update(self.dialogContent[self.dialogId]["content"],self.dialogContent[self.dialogId]["narrator"])
-                self.backgroundContent.update(self.dialogContent[self.dialogId]["background_img"],None)
                 self.fadeIn(screen)
-                #更新背景（音乐）
-                self.ready()
+        #刷新控制器，并展示自定义鼠标（如果存在）
         controller.display(screen)
 
 #对话制作器
@@ -299,8 +292,6 @@ class DialogSystemDev(DialogSystemInterface):
         self.content = MultipleLinesInputBox(display.get_width()*0.2,display.get_height()*0.73,self.FONTSIZE,"white")
         #将npc立绘系统设置为开发者模式
         self.npc_img_dic.devMode()
-        #将背景的音量调至0
-        self.backgroundContent.set_sound_volume(0)
         #从配置文件中加载数据
         self.__loadDialogData()
         #背景选择界面
@@ -401,7 +392,7 @@ class DialogSystemDev(DialogSystemInterface):
     def __update_scene(self,theNextDialogId):
         #重设立绘系统
         self.npc_img_dic.process(self.dialogData[self.part][theNextDialogId]["characters_img"])
-        self.backgroundContent.update(self.dialogData[self.part][theNextDialogId]["background_img"],None)
+        self.backgroundContent.update(self.dialogData[self.part][theNextDialogId]["background_img"])
         self.dialogId = theNextDialogId
         self.__update_dialogbox()
     #更新对话框
@@ -526,7 +517,7 @@ class DialogSystemDev(DialogSystemInterface):
                                     break
                         else:
                             #如果当前next_dialog_id的类型不支持的话，报错
-                            Exception('LinpgEngine-Error: Cannot recognize next_dialog_id type: {}, please fix it'.format(self.dialogData[self.part][lastId]["next_dialog_id"]["type"]))
+                            throwException("error","Cannot recognize next_dialog_id type: {}, please fix it".format(self.dialogData[self.part][lastId]["next_dialog_id"]["type"]))
                         #修改下一个对白配置文件中的"last_dialog_id"的参数
                         if "last_dialog_id" in self.dialogData[self.part][nextId] and self.dialogData[self.part][nextId]["last_dialog_id"] != None:
                             self.dialogData[self.part][nextId]["last_dialog_id"] = lastId
@@ -609,7 +600,7 @@ class DialogSystemDev(DialogSystemInterface):
                     screen.blit(resizeImg(self.background_deselect,imgTmp.get_size()),pos)
                     if leftClick and isHover(imgTmp,pos):
                         self.dialogData[self.part][self.dialogId]["background_img"] = None
-                        self.backgroundContent.update(None,None)
+                        self.backgroundContent.update(None)
                         leftClick = False
                         i = 0
                     else:
@@ -627,7 +618,7 @@ class DialogSystemDev(DialogSystemInterface):
                         i+=1
                         if leftClick and isHover(imgTmp,pos):
                             self.dialogData[self.part][self.dialogId]["background_img"] = imgName
-                            self.backgroundContent.update(imgName,None)
+                            self.backgroundContent.update(imgName)
                             leftClick = False
             elif self.UIContainerRight_kind == "npc":
                 npc_local_y_temp = self.npc_local_y

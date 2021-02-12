@@ -215,7 +215,7 @@ class HostileCharacter(Entity):
                             if len(the_route) > 0:
                                 return {"action": "move","route":the_route}
                             else:
-                                raise Exception('A sangvisFerri cannot find it path!')
+                                throwException("error","A hostile character cannot find a valid path!")
                     #如果上一个回合有敌人暴露
                     else:
                         that_character = None

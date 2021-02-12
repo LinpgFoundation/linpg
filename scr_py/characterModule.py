@@ -97,7 +97,7 @@ class CharacterImageManagement:
         elif mode == "dev":
             imgId_dict = {"wait":self.loadImageCollection(characterType,"wait",faction)}
         else:
-            raise Exception('LinpgEngine-Error: Mode is not supported.')
+            throwException("error","Mode is not supported")
         return imgId_dict
     #动图制作模块：接受一个友方角色名和动作,当前的方块标准长和高，返回对应角色动作list或者因为没图片而返回None
     #810*810 position:405/567
@@ -156,7 +156,7 @@ def loadCharacterData():
             "skill_effective_range": None,
             }
             ifAnythingChange = True
-            print("LinpgEngine-Notice:A new character call {} has been updated to the data file.".format(name))
+            throwException("info","A new character call {} has been updated to the data file.".format(name))
     for path in glob.glob(r'Assets/image/sangvisFerri/*'):
         name = path.replace("Assets/image/sangvisFerri\\","")
         if name not in loadData:
@@ -175,7 +175,7 @@ def loadCharacterData():
             "min_damage": 1,
             }
             ifAnythingChange = True
-            print("LinpgEngine-Notice:A new character call {} has been updated to the data file.".format(name))
+            throwException("info","A new character call {} has been updated to the data file.".format(name))
     if ifAnythingChange == True:
         saveConfig("Data/character_data.yaml",loadData)
     makeFolderForCharacterSounds()
@@ -217,16 +217,16 @@ class DecisionHolder:
         if self.action == "move":
             return self.data
         else:
-            raise Exception("LinpgEngine-Error: The character does not decide to move!")
+            throwException("error","The character does not decide to move!")
     @property
     def target(self):
         if self.action == "attack":
             return self.data[0]
         else:
-            raise Exception("LinpgEngine-Error: The character does not decide to attack!")
+            throwException("error","The character does not decide to attack!")
     @property
     def target_area(self):
         if self.action == "attack":
             return self.data[1]
         else:
-            raise Exception("LinpgEngine-Error: The character does not decide to attack!")
+            throwException("error","The character does not decide to attack!")

@@ -2,16 +2,21 @@
 import threading
 from .controller import *
 
-#游戏对象接口
-class GameObject:
+#坐标类
+class Coordinate:
     def __init__(self, x:float, y:float) -> None:
         self.x = x
         self.y = y
-    def __lt__(self,other) -> bool: return self.y+self.x < other.y+other.x
     #获取坐标
     @property
-    def pos(self) -> tuple: return self.get_pos()
+    def pos(self) -> tuple: return self.x,self.y
     def get_pos(self) -> tuple: return self.x,self.y
+
+#游戏对象接口
+class GameObject(Coordinate):
+    def __init__(self, x:float, y:float) -> None:
+        Coordinate.__init__(self,x,y)
+    def __lt__(self,other) -> bool: return self.y+self.x < other.y+other.x
     #设置坐标
     def set_pos(self, x:float, y:float) -> None:
         self.x = round(x)
@@ -36,8 +41,7 @@ class GameObject2d(GameObject):
     #将图片直接画到surface上
     def draw(self,surface) -> None: self.display(surface)
     #根据offSet将图片展示到surface的对应位置上 - 子类必须实现
-    def display(self,surface,offSet:tuple=(0,0)) -> None:
-        raise Exception("LinpgEngine-Error: This child class doesn't implement display() function!")
+    def display(self,surface,offSet:tuple=(0,0)) -> None: throwException("error","The child class has to implement display() function!")
     #忽略现有坐标，将图片画到surface的指定位置上，不推荐使用
     def blit(self,surface,pos:tuple) -> None: 
         old_pos = self.get_pos()
@@ -67,11 +71,69 @@ class SystemObject:
         self._isPlaying = True
     #是否正在播放
     def is_playing(self) -> bool:  return self._isPlaying
-    #更新输入事件
-    def _update_event(self) -> None: self.__events = pygame.event.get()
     #获取输入事件
     @property
     def events(self): return self.__events
+    def get_events(self): return self.__events
+    #更新输入事件
+    def _update_event(self) -> None: self.__events = pygame.event.get()
+
+#拥有背景音乐的系统模块接口
+class SystemWithBackgroundMusic(SystemObject):
+    def __init__(self) -> None:
+        SystemObject.__init__(self)
+        self.__bgm_path = None
+        self.__bgm_volume = 1
+        self.__if_stop_playing_bgm = False
+    #获取bgm名称（非路径）
+    @property
+    def bgm(self) -> str: return os.path.basename(self.__bgm_path)
+    def get_bgm(self) -> str: return os.path.basename(self.__bgm_path)
+    #设置bgm路径
+    def set_bgm(self,path,forced=False) -> None:
+        if path == None:
+            self.__bgm_path = None
+            pygame.mixer.music.unload()
+        #如果路径存在
+        elif os.path.exists(path):
+            #只有在音乐路径不一致或者强制更新的情况下才会更新路径（同时卸载现有音乐）
+            if self.__bgm_path != path or forced:
+                self.__bgm_path = path
+                pygame.mixer.music.unload()
+            else:
+                #同一首曲子，不更新任何内容
+                pass
+        else:
+            throwException("error","Path '{}' does not exist!".format(path))
+    #获取bgm音量
+    @property
+    def bgm_volume(self) -> float: return self.__bgm_volume
+    def get_bgm_volume(self) -> float: return self.__bgm_volume
+    #设置bgm音量
+    def set_bgm_volume(self,volume) -> None:
+        if 1 >= volume >= 0:
+            if self.__bgm_path != None and pygame.mixer.music.get_busy():
+                pygame.mixer.music.set_volume(volume)
+            self.__bgm_volume = volume
+        else:
+            throwException("error","Volume '{}' is out of the range! (must between 0 and 1)".format(volume))
+    #播放bgm
+    def play_bgm(self,times=1) -> None:
+        if not self.__if_stop_playing_bgm and self.__bgm_path != None and not pygame.mixer.music.get_busy():
+            pygame.mixer.music.load(self.__bgm_path)
+            pygame.mixer.music.set_volume(self.__bgm_volume)
+            pygame.mixer.music.play(times)
+    #停止播放bgm
+    def stop_playing_bgm(self) -> None:
+        self.__if_stop_playing_bgm = True
+        pygame.mixer.music.stop()
+    #继续播放bgm
+    def continue_playing_bgm(self) -> None:
+        self.__if_stop_playing_bgm = False
+    #卸载bgm，释放内存
+    def unload_bgm(self) -> None:
+        self.__bgm_path = None
+        pygame.mixer.music.unload()
 
 #行动点数管理器（塔防模式）
 class ApSystem:

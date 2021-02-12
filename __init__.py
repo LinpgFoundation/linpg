@@ -1,7 +1,10 @@
 # cython: language_level=3
 #加载Zero引擎的必要组件
 from .scr_py.dialog import *
-from .scr_py.battle import *
+try:
+    from .scr_py.battle import *
+except FileNotFoundError:
+    print("Battle system is disabled because some files are missing.")
 from .scr_core.experimental import *
 import platform
 

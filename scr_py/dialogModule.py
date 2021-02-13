@@ -7,9 +7,7 @@ class DialogSystemInterface(SystemWithBackgroundMusic):
     def __init__(self) -> None:
         SystemWithBackgroundMusic.__init__(self)
         #加载对话的背景图片模块
-        self.backgroundContent = DialogBackground()
-        #加载npc立绘系统并初始化
-        self.npc_img_dic = NpcImageSystem()
+        self.npc_and_background_image_content = NpcAndBackgroundImageManager()
         #黑色Void帘幕
         self.black_bg = get_SingleColorSurface("black")
         #选项栏
@@ -30,9 +28,10 @@ class DialogSystemInterface(SystemWithBackgroundMusic):
         self.collection_name = collection_name
 
 #npc立绘系统
-class NpcImageSystem:
+class NpcAndBackgroundImageManager:
     def __init__(self):
-        self.imgDic = {}
+        #用于存放立绘的字典
+        self.npcImageDict = {}
         #如果是开发模式，则在初始化时加载所有图片
         self.npcLastRound = []
         self.npcLastRoundImgAlpha = 255
@@ -46,56 +45,64 @@ class NpcImageSystem:
         self.img_width = int(display.get_width()/2)
         self.move_x = 0
         self.dev_mode = False
-        self.npc_get_click = None
+        self.npcGetClick = None
+        #背景图片
+        self.__backgroundImageName = None
+        self.__backgroundImageName = get_SingleColorSurface("black")
     def devMode(self):
         for imgPath in glob.glob("Assets/image/npc/*"):
             self.__loadNpc(imgPath)
             self.dev_mode = True
     #确保角色存在
     def __ensure_the_existence_of(self,name:str) -> None:
-        if name not in self.imgDic: self.__loadNpc(os.path.join("Assets/image/npc",name))
+        if name not in self.npcImageDict: self.__loadNpc(os.path.join("Assets/image/npc",name))
     #加载角色
     def __loadNpc(self,path):
         name = os.path.basename(path)
-        self.imgDic[name] = {}
-        self.imgDic[name]["normal"] = SrcalphaSurface(path,0,0,self.img_width,self.img_width)
+        self.npcImageDict[name] = {}
+        self.npcImageDict[name]["normal"] = SrcalphaSurface(path,0,0,self.img_width,self.img_width)
         #生成深色图片
-        self.imgDic[name]["dark"] = self.imgDic[name]["normal"].copy()
-        self.imgDic[name]["dark"].addDarkness(50)
+        self.npcImageDict[name]["dark"] = self.npcImageDict[name]["normal"].copy()
+        self.npcImageDict[name]["dark"].addDarkness(50)
     #画出角色
     def __displayNpc(self,name,x,y,alpha,screen) -> None:
         if alpha > 0:
             nameTemp = name.replace("&communication","").replace("&dark","")
             self.__ensure_the_existence_of(nameTemp)
             #加载npc的基础立绘
-            img = self.imgDic[nameTemp]["dark"] if "&dark" in name else self.imgDic[nameTemp]["normal"]
+            img = self.npcImageDict[nameTemp]["dark"] if "&dark" in name else self.npcImageDict[nameTemp]["normal"]
             img.set_alpha(alpha)
             """
             if "&communication" in name:
-                if "communication" not in self.imgDic[nameTemp]:
+                if "communication" not in self.npcImageDict[nameTemp]:
                     #生成通讯图片
-                    self.imgDic[nameTemp]["communication"] = getSurface((int(self.img_width/1.9), int(self.img_width/1.8)),pygame.SRCALPHA)
-                    self.imgDic[nameTemp]["communication"].blit(self.imgDic[nameTemp]["normal"],(-int(self.img_width/4),0))
-                    self.imgDic[nameTemp]["communication"].blit(resizeImg(self.communication,(self.img_width/1.9,self.img_width/1.7)),(0,0))
+                    self.npcImageDict[nameTemp]["communication"] = getSurface((int(self.img_width/1.9), int(self.img_width/1.8)),pygame.SRCALPHA)
+                    self.npcImageDict[nameTemp]["communication"].blit(self.npcImageDict[nameTemp]["normal"],(-int(self.img_width/4),0))
+                    self.npcImageDict[nameTemp]["communication"].blit(resizeImg(self.communication,(self.img_width/1.9,self.img_width/1.7)),(0,0))
                     #生成深色的通讯图片
-                    self.imgDic[nameTemp]["communication_dark"] = self.imgDic[nameTemp]["communication"].copy()
+                    self.npcImageDict[nameTemp]["communication_dark"] = self.npcImageDict[nameTemp]["communication"].copy()
                     dark = pygame.Surface((int(self.img_width/1.9), int(self.img_width/1.8)), flags=pygame.SRCALPHA).convert_alpha()
                     dark.fill((50,50,50))
-                    self.imgDic[nameTemp]["communication_dark"].blit(dark, (0, 0), special_flags=pygame.BLEND_RGB_SUB)
+                    self.npcImageDict[nameTemp]["communication_dark"].blit(dark, (0, 0), special_flags=pygame.BLEND_RGB_SUB)
                     x+=int(self.img_width/4)
             """
             img.set_pos(x,y)
             #如果不是开发模式
             if self.dev_mode:
-                self.npc_get_click = None
+                self.npcGetClick = None
                 if isHover(img,(x,y)):
                     img = img.copy()
                     img.addBrightness(60)
-                    self.npc_get_click = name
+                    self.npcGetClick = name
             img.draw(screen)
+    def display_bg_img(self,screen):
+        if isinstance(self.__backgroundImageName,ImageSurface):
+            self.__backgroundImageName.set_size(screen.get_width(),screen.get_height())
+        self.__backgroundImageName.display(screen)
     def display(self,screen):
         window_x = screen.get_width()
         window_y = screen.get_height()
+        self.display_bg_img(screen)
         npcImg_y = window_y-window_x/2
         #调整alpha值
         if self.npcLastRoundImgAlpha > 0:
@@ -202,15 +209,38 @@ class NpcImageSystem:
                     self.__displayNpc(self.npcLastRound[1],window_x/2,npcImg_y,self.npcLastRoundImgAlpha,screen)
                     self.__displayNpc(self.npcThisRound[0],0,npcImg_y,self.npcThisRoundImgAlpha,screen)
                     self.__displayNpc(self.npcThisRound[1],window_x/2,npcImg_y,self.npcThisRoundImgAlpha,screen)
-    def process(self,thisRoundCharacterNameList):
+    #只更新立绘
+    def update_npc_data(self,characterNameList):
         self.npcLastRound = self.npcThisRound
-        if isinstance(thisRoundCharacterNameList,(list,tuple)):
-            self.npcThisRound = thisRoundCharacterNameList
+        if isinstance(characterNameList,(list,tuple)):
+            self.npcThisRound = characterNameList
         else:
             self.npcThisRound = []
         self.npcLastRoundImgAlpha = 255
         self.npcThisRoundImgAlpha = 5
         self.move_x = 0
+    #只更新背景图片
+    def update_background_image(self,image_name):
+        if self.__backgroundImageName != image_name:
+            self.__backgroundImageName = image_name
+            if self.__backgroundImageName != None:
+                #尝试背景加载图片
+                if os.path.exists("Assets/image/dialog_background/{}".format(self.__backgroundImageName)):
+                    self.__backgroundImageName = loadImage("Assets/image/dialog_background/{}".format(self.__backgroundImageName),(0,0))
+                #如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
+                elif os.path.exists("Assets/movie/"+self.__backgroundImageName):
+                    try:
+                        self.__backgroundImageName = VedioFrame("Assets/movie/"+self.__backgroundImageName,display.get_width(),display.get_height())
+                    except BaseException:
+                        throwException("error","Cannot run movie module.")
+                else:
+                    throwException("error","Cannot find a background image or video file called '{}'.".format(self.__backgroundImageName))
+            else:
+                self.__backgroundImageName = get_SingleColorSurface("black")
+    #更新立绘和背景图片
+    def update(self,characterNameList,image_name):
+        self.update_npc_data(characterNameList)
+        self.update_background_image(image_name)
 
 #对话框和对话框内容
 class DialogContent(DialogInterface):
@@ -336,38 +366,6 @@ class DialogContent(DialogInterface):
             self.stop_playing_text_sound()
             if self.autoMode and self.readTime < self.totalLetters:
                 self.readTime += self.READINGSPEED
-
-#背景音乐和图片管理
-class DialogBackground:
-    def __init__(self):
-        self.backgroundImgName = None
-        self.backgroundImgSurface = None
-        self.nullSurface = get_SingleColorSurface("black")
-    def update(self,backgroundImgName):
-        #如果需要更新背景图片
-        if self.backgroundImgName != backgroundImgName:
-            self.backgroundImgName = backgroundImgName
-            if self.backgroundImgName != None:
-                #尝试背景加载图片
-                if os.path.exists("Assets/image/dialog_background/{}".format(self.backgroundImgName)):
-                    self.backgroundImgSurface = loadImage(os.path.join("Assets/image/dialog_background",self.backgroundImgName),
-                    (0,0),display.get_width(),display.get_height())
-                #如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
-                elif os.path.exists("Assets/movie/"+self.backgroundImgName):
-                    try:
-                        self.backgroundImgSurface = VedioFrame("Assets/movie/"+self.backgroundImgName,display.get_width()
-                        ,display.get_height(),True)
-                    except BaseException:
-                        throwException("error","Cannot run movie module.")
-                else:
-                    throwException("error","Cannot find background image or video file.")
-            else:
-                self.backgroundImgSurface = None
-    def display(self,screen):
-        if self.backgroundImgName != None:
-            self.backgroundImgSurface.display(screen)
-        else:
-            self.nullSurface.draw(screen)
 
 #对话系统按钮UI模块
 class DialogButtons:

@@ -110,6 +110,7 @@ class VedioFrame(VedioInterface):
                 else:
                     self.set_pos(self.start_point)
             self._clock.tick(self._frameRate)
+    def draw(self,screen): self.display(screen)
     def display(self,screen):
         super().display(screen)
         if self.bgm != None and not self.bgm_channel.get_busy() and self.loop == True:

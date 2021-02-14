@@ -119,7 +119,7 @@ class SystemWithBackgroundMusic(SystemObject):
             throwException("error","Volume '{}' is out of the range! (must between 0 and 1)".format(volume))
     #播放bgm
     def play_bgm(self,times=1) -> None:
-        if not self.__if_stop_playing_bgm and self.__bgm_path != None and not pygame.mixer.music.get_busy():
+        if self.__bgm_path != None and not pygame.mixer.music.get_busy() and not self.__if_stop_playing_bgm:
             pygame.mixer.music.load(self.__bgm_path)
             pygame.mixer.music.set_volume(self.__bgm_volume)
             pygame.mixer.music.play(times)
@@ -134,20 +134,6 @@ class SystemWithBackgroundMusic(SystemObject):
     def unload_bgm(self) -> None:
         self.__bgm_path = None
         pygame.mixer.music.unload()
-
-#行动点数管理器（塔防模式）
-class ApSystem:
-    def __init__(self,fontSize):
-        self.point = 0
-        self.coolDown = 0
-        self.FONT = createFont(fontSize)
-    def display(self,surface,x,y):
-        surface.blit(self.FONT.render(self.point,self.MODE,(255, 255, 255)),(x,y))
-        if self.coolDown == 100:
-            self.point += 1
-            self.coolDown = 0
-        else:
-            self.coolDown += 1
 
 #音效管理模块
 class SoundManagement:
@@ -182,6 +168,7 @@ class SaveDataThread(threading.Thread):
         saveConfig(self.config_file_path,self.data)
         del self.data,self.config_file_path
 
+#需要被打印的物品
 class ItemNeedBlit:
     def __init__(self,image,weight,pos,offSet):
         self.image = image

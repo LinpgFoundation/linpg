@@ -6,7 +6,11 @@ class DialogSystem(DialogSystemInterface):
     def __init__(self) -> None:
         DialogSystemInterface.__init__(self)
         #选项栏-选中
-        self.optionBoxSelected = loadImg("Assets/image/UI/option_selected.png")
+        try:
+            self.optionBoxSelected = loadImg("Assets/image/UI/option_selected.png")
+        except:
+            throwException("warning","Cannot find 'option_selected.png' in 'UI' file, 'option.png' will be loaded instead.")
+            self.optionBoxSelected = loadImg("Assets/image/UI/option.png")
         #UI按钮
         self.ButtonsMananger = DialogButtons()
         #加载对话框系统

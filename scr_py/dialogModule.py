@@ -246,7 +246,12 @@ class NpcAndBackgroundImageManager:
 class DialogContent(DialogInterface):
     def __init__(self,fontSize):
         DialogInterface.__init__(self,loadImg("Assets/image/UI/dialoguebox.png"),fontSize)
-        self.textPlayingSound = pygame.mixer.Sound("Assets/sound/ui/dialog_words_playing.ogg")
+        try:
+            self.__textPlayingSound = pygame.mixer.Sound("Assets/sound/ui/dialog_words_playing.ogg")
+        except FileNotFoundError:
+            self.__textPlayingSound = None
+            throwException("warning","Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!")
+            print("As a result, the text playing sound will be disabled.")
         self.READINGSPEED = get_setting("ReadingSpeed")
         self.dialoguebox_max_height = None
         #鼠标图标
@@ -275,9 +280,14 @@ class DialogContent(DialogInterface):
         self.dialoguebox_y = None
         self.__txt_alpha = 255
     #获取文字播放时的音效的音量
-    def get_sound_volume(self) -> float: self.textPlayingSound.get_volume()
+    def get_sound_volume(self) -> float: 
+        if self.__textPlayingSound != None:
+            return self.__textPlayingSound.get_volume()
+        else:
+            return 0.0
     #修改文字播放时的音效的音量
-    def set_sound_volume(self,num:float): self.textPlayingSound.set_volume(num/100.0)
+    def set_sound_volume(self,num:float) -> None:
+        if self.__textPlayingSound != None: self.__textPlayingSound.set_volume(num/100.0)
     #是否需要更新
     def needUpdate(self) -> bool:
         return True if self.autoMode and self.readTime >= self.totalLetters else False
@@ -292,7 +302,7 @@ class DialogContent(DialogInterface):
         """
     #如果音效还在播放则停止播放文字音效
     def stop_playing_text_sound(self) -> None:
-        if pygame.mixer.get_busy(): self.textPlayingSound.stop()
+        if pygame.mixer.get_busy() and self.__textPlayingSound != None: self.__textPlayingSound.stop()
     def display(self,screen) -> None:
         if not self.isHidden:
             if not self.__fade_out_stage:
@@ -352,13 +362,13 @@ class DialogContent(DialogInterface):
             )
         #如果当前行的字符还没有完全播出
         if self.textIndex < len(self.content[self.displayedLine]):
-            if not pygame.mixer.get_busy():
-                self.textPlayingSound.play()
+            if not pygame.mixer.get_busy() and self.__textPlayingSound != None:
+                self.__textPlayingSound.play()
             self.textIndex +=1
         #当前行的所有字都播出后，播出下一行
         elif self.displayedLine < len(self.content)-1:
-            if not pygame.mixer.get_busy():
-                self.textPlayingSound.play()
+            if not pygame.mixer.get_busy() and self.__textPlayingSound != None:
+                self.__textPlayingSound.play()
             self.textIndex = 1
             self.displayedLine += 1
         #当所有行都播出后
@@ -483,7 +493,13 @@ class DialogButtons:
 
 #立绘配置信息数据库
 class NpcImageDatabase:
-    def __init__(self) -> None: self.__DATA = loadConfig("Data/npcImageDatabase.yaml","Data")
+    def __init__(self) -> None:
+        try:
+            self.__DATA = loadConfig("Data/npcImageDatabase.yaml")
+        except FileNotFoundError:
+            self.__DATA = {}
+            saveConfig("Data/npcImageDatabase.yaml",self.__DATA)
+            throwException("warning","Cannot find 'npcImageDatabase.yaml' in 'Data' file, a new one is created.")
     def get_kind(self,fileName:str) -> str:
         for key in self.__DATA:
             if fileName in self.__DATA[key]: return key

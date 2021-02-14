@@ -3,9 +3,9 @@ from ..scr_pyd.map import MapObject
 from .character import *
 
 #战斗系统接口，请勿实例化
-class BattleSystemInterface(SystemObject):
+class BattleSystemInterface(SystemWithBackgroundMusic):
     def __init__(self,chapterType:str,chapterId:int,collection_name:str) -> None:
-        SystemObject.__init__(self)
+        SystemWithBackgroundMusic.__init__(self)
         #用于判断是否移动屏幕的参数
         self.__mouse_move_temp_x = -1
         self.__mouse_move_temp_y = -1
@@ -26,8 +26,6 @@ class BattleSystemInterface(SystemObject):
         self.chapterId = chapterId
         self.chapterType = chapterType
         self.collection_name = collection_name
-        #背景音乐
-        self.__background_music = None
     #初始化地图
     def _create_map(self,MapData,darkMode=None) -> None:
         self.MAP = MapObject(MapData,round(display.get_width()/10),round(display.get_height()/10),darkMode)
@@ -64,15 +62,6 @@ class BattleSystemInterface(SystemObject):
     def characters_loaded(self) -> int: return self.__characterDataLoaderThread.currentID
     @property
     def characters_total(self) -> int: return self.__characterDataLoaderThread.totalNum
-    #背景音乐
-    def set_bgm(self,name:str) -> None: self.__background_music = name
-    #更新背景音乐音量
-    def set_bgm_volume(self,volume:int) -> None: pygame.mixer.music.set_volume(volume)
-    #加载并播放音乐
-    def play_bgm(self) -> None:
-        if self.__background_music != None and not pygame.mixer.music.get_busy():
-            pygame.mixer.music.load("Assets/music/"+self.__background_music)
-            pygame.mixer.music.play()
     #检测手柄事件
     def _check_jostick_events(self) -> None:
         if controller.joystick.get_init():

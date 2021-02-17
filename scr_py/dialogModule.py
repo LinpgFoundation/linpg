@@ -12,14 +12,14 @@ class DialogSystemInterface(SystemWithBackgroundMusic):
         self.black_bg = get_SingleColorSurface("black")
         #选项栏
         self.optionBox = loadImg("Assets/image/UI/option.png")
+        #是否开启自动保存
+        self.auto_save = False
     #初始化关键参数
-    def _initialize(self,chapterType:str,chapterId:int,part:str,collection_name:str,dialogId:str="head",dialog_options:dict={}) -> None:
+    def _initialize(self,chapterType:str,chapterId:int,collection_name:str,dialogId:str="head",dialog_options:dict={}) -> None:
         #类型
         self.chapterType = chapterType
         #章节id
         self.chapterId = chapterId
-        #部分
-        self.part = part
         #对白id
         self.dialogId = dialogId
         #玩家做出的选项
@@ -71,6 +71,7 @@ class NpcAndBackgroundImageManager:
             self.__ensure_the_existence_of(nameTemp)
             #加载npc的基础立绘
             img = self.npcImageDict[nameTemp]["dark"] if "&dark" in name else self.npcImageDict[nameTemp]["normal"]
+            img.set_size(self.img_width,self.img_width)
             img.set_alpha(alpha)
             """
             if "&communication" in name:

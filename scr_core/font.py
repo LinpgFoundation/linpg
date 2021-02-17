@@ -107,14 +107,14 @@ def createFont(size,ifBold=False,ifItalic=False):
     if LINPG_FONTTYPE == "default":
         try:
             return pygame.font.SysFont(LINPG_FONT,int(size),ifBold,ifItalic)
-        except BaseException:
+        except:
             pygame.font.init()
             normal_font = pygame.font.SysFont(LINPG_FONT,int(size),ifBold,ifItalic)
     elif LINPG_FONTTYPE == "custom":
         try:
             normal_font = pygame.font.Font("Assets/font/{}.ttf".format(LINPG_FONT),int(size))
         #如果文字没有初始化
-        except BaseException:
+        except:
             pygame.font.init()
             normal_font = pygame.font.Font("Assets/font/{}.ttf".format(LINPG_FONT),int(size))
         if ifBold:

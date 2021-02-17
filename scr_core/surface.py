@@ -1,5 +1,6 @@
 # cython: language_level=3
 from tkinter import Tk
+from tkinter.constants import E
 from .module import *
 
 #图形接口
@@ -22,6 +23,8 @@ class ImageInterface(GameObject2d):
     def set_size(self,width:int,height:int) -> None:
         self.set_width(width)
         self.set_height(height)
+    #是否被鼠标触碰
+    def isHover(self,mouse_x:int,mouse_y:int) -> bool: return 0 < mouse_x-self.x < self._width and 0 < mouse_y-self.y < self._height 
     
 #用于处理有大面积透明像素的图片surface
 class SrcalphaSurface(ImageInterface):
@@ -99,7 +102,10 @@ class SrcalphaSurface(ImageInterface):
         if debug: pygame.draw.rect(screen,findColorRGBA("red"),pygame.Rect(pos,self.img.get_size()),2)
     #是否被鼠标触碰
     def isHover(self,mouse_x:int,mouse_y:int) -> bool:
-        return 0 < mouse_x-self.x-self.__local_x < self.img.get_width() and 0 < mouse_y-self.y-self.__local_y < self.img.get_height()
+        if self.img != None:
+            return 0 < mouse_x-self.x-self.__local_x < self.img.get_width() and 0 < mouse_y-self.y-self.__local_y < self.img.get_height()
+        else:
+            return False
     #返回local坐标
     def get_local_pos(self) -> tuple: return self.x+self.__local_x,self.y+self.__local_y
     #返回一个复制品
@@ -116,7 +122,7 @@ class SrcalphaSurface(ImageInterface):
 
 #高级图形类
 class ImageSurface(ImageInterface):
-    def __init__(self,img,x,y,width=None,height=None,description="Default"):
+    def __init__(self,img,x,y,width=None,height=None,description="Default") -> None:
         ImageInterface.__init__(self,img,x,y,width,height)
         self.xTogo = x
         self.yTogo = y
@@ -128,18 +134,15 @@ class ImageSurface(ImageInterface):
             self._width = self._height/self.img.get_height()*self.img.get_width()
         elif self._width != None and self._height == None:
             self._height = self._width/self.img.get_width()*self.img.get_height()
-    def drawOnTheCenterOf(self,surface):
-        surface.blit(resizeImg(self.img, (self._width,self._height)),((surface.get_width()-self._width)/2,(surface.get_height()-self._height)/2))
-    def display(self,screen,local_x=0,local_y=0):
-        screen.blit(resizeImg(self.img, (self._width,self._height)),(self.x+local_x,self.y+local_y))
+    def drawOnTheCenterOf(self,surface:pygame.Surface) -> None:
+        surface.blit(resizeImg(self.img,self.size),((surface.get_width()-self._width)/2,(surface.get_height()-self._height)/2))
+    def display(self,screen,local_x:int=0,local_y:int=0) -> None: screen.blit(resizeImg(self.img,self.size),(self.x+local_x,self.y+local_y))
     #旋转
-    def rotate(self,angle) -> None: self.img = pygame.transform.rotate(self.img,angle)
+    def rotate(self,angle:int) -> None: self.img = pygame.transform.rotate(self.img,angle)
     #反转
-    def flip(self,vertical=False,horizontal=False) -> None: self.img = pygame.transform.flip(self.img,vertical,horizontal)
-    #是否被鼠标触碰
-    def isHover(self,mouse_x:int,mouse_y:int) -> bool: return 0 < mouse_x-self.x < self._width and 0 < mouse_y-self.y < self._height 
+    def flip(self,vertical:bool=False,horizontal:bool=False) -> None: self.img = pygame.transform.flip(self.img,vertical,horizontal)
     #淡出
-    def fade_out(self,speed):
+    def fade_out(self,speed:int) -> None:
         alphaTmp = self.get_alpha()
         if alphaTmp > 0: self.set_alpha(alphaTmp-speed)
 

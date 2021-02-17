@@ -36,7 +36,7 @@ class GameObject2d(GameObject):
     def height(self) -> int: return self.get_height()
     #尺寸
     @property
-    def size(self) -> tuple: return self.get_size()
+    def size(self) -> tuple: return self.get_width(),self.get_height()
     def get_size(self) -> tuple: return self.get_width(),self.get_height()
     #将图片直接画到surface上
     def draw(self,surface) -> None: self.display(surface)
@@ -49,18 +49,30 @@ class GameObject2d(GameObject):
         self.display(surface)
         self.set_pos(old_pos)
 
-#3d游戏对象接口
-class GameObject3d(GameObject):
+#2.5d游戏对象接口 - 使用z轴判断图案的图层
+class GameObject2point5d(GameObject):
     def __init__(self, x:float, y:float, z:float) -> None:
         GameObject.__init__(self,x,y)
         self.z = z
-    def __lt__(self,other) -> bool: return self.y+self.x+self.z < other.y+other.x+other.z
+    def __lt__(self,other) -> bool:
+        if self.z != other.z:
+            return self.z < other.z
+        else:
+            return self.y+self.x < other.y+other.x
     #获取坐标
+    @property
+    def pos(self) -> tuple: return self.x,self.y,self.z
     def get_pos(self) -> tuple: return self.x,self.y,self.z
     #设置坐标
     def set_pos(self, x:float, y:float, z:float) -> None:
         super().set_pos(x,y)
         self.z = round(z)
+
+#3d游戏对象接口
+class GameObject3d(GameObject2point5d):
+    def __init__(self, x:float, y:float, z:float) -> None:
+        GameObject2point5d.__init__(self,x,y,z)
+    def __lt__(self,other) -> bool: return self.y+self.x+self.z < other.y+other.x+other.z
 
 #系统模块接口
 class SystemObject:

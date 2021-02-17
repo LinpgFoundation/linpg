@@ -52,7 +52,7 @@ def isHover(imgObject,objectPos=(0,0),local_x=0,local_y=0) -> bool:
         else:
             return False
     #如果是Linpg引擎的Image类
-    elif isinstance(imgObject,ImageSurface):
+    elif isinstance(imgObject,ImageInterface):
         return imgObject.isHover(mouse_x-local_x,mouse_y-local_y)
     #如果是Linpg引擎的Button类
     elif isinstance(imgObject,Button):

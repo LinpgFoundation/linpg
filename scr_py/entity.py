@@ -8,6 +8,11 @@ _CHARACTERS_SOUND_SYSTEM = CharacterSoundManagement(5)
 #角色UI的文字数据
 _ENTITY_UI_FONT = createFont(display.get_width()/192)
 
+#用于储存的血条图片
+HP_GREEN = None
+HP_RED = None
+HP_EMPTY = None
+
 #人形模块
 class Entity(GameObject):
     def __init__(self,DATA:dict,faction:str,mode:str) -> None:
@@ -73,6 +78,14 @@ class Entity(GameObject):
         self.__if_map_need_update = False
         #攻击范围
         self.__attack_range = {"near":[],"middle":[],"far":[]}
+        #血条图片
+        global HP_GREEN,HP_RED,HP_EMPTY
+        if HP_GREEN == None or HP_RED == None or HP_EMPTY == None:
+            HP_GREEN = imgLoadFunction("Assets/image/UI/hp_green.png",True)
+            HP_RED = imgLoadFunction("Assets/image/UI/hp_red.png",True)
+            HP_EMPTY = imgLoadFunction("Assets/image/UI/hp_empty.png",True)
+        self.__hp_bar_green = DynamicProgressBarSurface(HP_GREEN,HP_EMPTY,0,0,0,0)
+        self.__hp_bar_red = DynamicProgressBarSurface(HP_RED,HP_EMPTY,0,0,0,0)
     """角色动作参数管理"""
     #当前动作
     @property
@@ -368,24 +381,21 @@ class Entity(GameObject):
                 return True
             else:
                 return False
-    def drawUI(self,screen,original_UI_img,MapClass) -> tuple:
-        hp_img = None
-        if self.dying == False:
-            if original_UI_img != None:
-                hp_img = original_UI_img["hp_green"]
-            current_hp_to_display = _ENTITY_UI_FONT.render("{}/{}".format(self.current_hp,self.max_hp),get_fontMode(),(0,0,0))
-            percent_of_hp = self.current_hp/self.max_hp
-        else:
-            if original_UI_img != None:
-                hp_img = original_UI_img["hp_red"]
-            current_hp_to_display = _ENTITY_UI_FONT.render("{}/3".format(self.dying),get_fontMode(),(0,0,0))
-            percent_of_hp = self.dying/3
+    def drawUI(self,screen,MapClass) -> tuple:
         #把角色图片画到屏幕上
         xTemp,yTemp = MapClass.calPosInMap(self.x,self.y)
         xTemp += MapClass.block_width*0.25
         yTemp -= MapClass.block_width*0.2
-        hpEmptyScale = resizeImg(original_UI_img["hp_empty"],(MapClass.block_width/2, MapClass.block_width/10))
-        screen.blit(hpEmptyScale,(xTemp,yTemp))
-        screen.blit(resizeImg(hp_img,(MapClass.block_width*percent_of_hp/2,MapClass.block_width/10)),(xTemp,yTemp))
-        displayInCenter(current_hp_to_display,hpEmptyScale,xTemp,yTemp,screen)
+        if not self.dying:
+            self.__hp_bar_green.set_size(MapClass.block_width/2, MapClass.block_width/10)
+            self.__hp_bar_green.set_pos(xTemp,yTemp)
+            self.__hp_bar_green.set_percentage(self.current_hp/self.max_hp)
+            self.__hp_bar_green.draw(screen)
+            displayInCenter(_ENTITY_UI_FONT.render("{}/{}".format(self.current_hp,self.max_hp),get_fontMode(),(0,0,0)),self.__hp_bar_green,xTemp,yTemp,screen)
+        else:
+            self.__hp_bar_red.set_size(MapClass.block_width/2, MapClass.block_width/10)
+            self.__hp_bar_red.set_pos(xTemp,yTemp)
+            self.__hp_bar_red.set_percentage(self.dying/3)
+            self.__hp_bar_red.draw(screen)
+            displayInCenter(_ENTITY_UI_FONT.render("{}/3".format(self.dying),get_fontMode(),(0,0,0)),self.__hp_bar_red,xTemp,yTemp,screen)
         return xTemp,yTemp

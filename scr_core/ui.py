@@ -123,7 +123,7 @@ class SettingContoller:
         self.bar_height = round(size[0]/60)
         self.bar_width = round(size[0]/5)
         self.button = loadImg("Assets/image/UI/setting_bar_circle.png",(self.bar_height,self.bar_height*2))
-        self.bar_img1 = ProgressBarSurface("Assets/image/UI/setting_bar_full.png"
+        self.bar_img1 = DynamicProgressBarSurface("Assets/image/UI/setting_bar_full.png"
         ,"Assets/image/UI/setting_bar_empty.png",0,0,self.bar_width,self.bar_height)
         self.bar_img2 = self.bar_img1.light_copy()
         self.bar_img3 = self.bar_img2.light_copy()

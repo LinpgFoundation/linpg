@@ -194,22 +194,15 @@ class ProgressBarSurface(ImageInterface):
     def __init__(self,imgOnTop,imgOnBottom,x,y,max_width,height,mode="width"):
         ImageInterface.__init__(self,imgLoadFunction(imgOnTop,True),x,y,max_width,height)
         self.img2 = imgLoadFunction(imgOnBottom,True)
-        self.__current_percentage = 0
-        self.__percentage_to_be = 0
-        self.__perecent_update_each_time = 0
-        self.__total_update_intervals = 10
+        self._current_percentage = 0
         self.__mode = True if mode == "width" else False
-    #数据准确度
-    @property
-    def accuracy(self) -> int: return self.__total_update_intervals*100
     #百分比
     @property
-    def percentage(self) -> float: return self.__percentage_to_be/self.accuracy
-    def get_percentage(self) -> float: return self.__percentage_to_be/self.accuracy
+    def percentage(self) -> float: return self._current_percentage
+    def get_percentage(self) -> float: return self._current_percentage
     def set_percentage(self,value:float) -> None:
         if 0 <= value <= 1:
-            self.__percentage_to_be = value*self.accuracy
-            self.__perecent_update_each_time = (self.__percentage_to_be-self.__current_percentage)/self.__total_update_intervals
+            self._current_percentage = value
         else:
             throwException("error","The percentage must be <= 1 and >= 0!")
     #模式
@@ -226,18 +219,59 @@ class ProgressBarSurface(ImageInterface):
     def copy(self): return ProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return ProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #展示
-    def display(self, screen, offSet:tuple=(0,0)) -> None:
+    def display(self,screen,offSet:tuple=(0,0)) -> None:
         pos = (self.x+offSet[0],self.y+offSet[1])
         screen.blit(resizeImg(self.img2,self.size),pos)
-        if self.__current_percentage < self.__percentage_to_be and self.__perecent_update_each_time > 0 or\
-            self.__current_percentage > self.__percentage_to_be and self.__perecent_update_each_time < 0:
-            self.__current_percentage += self.__perecent_update_each_time
-        if self.__current_percentage > 0:
+        if self._current_percentage > 0:
             imgOnTop = resizeImg(self.img,self.size)
             if self.__mode:
-                screen.blit(imgOnTop.subsurface((0,0,int(self._width*self.__current_percentage/self.accuracy),self._height)),pos)
+                screen.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage),self._height)),pos)
             else:
-                screen.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self.__current_percentage/self.accuracy))),pos)
+                screen.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage))),pos)
+
+#动态进度条Surface
+class DynamicProgressBarSurface(ProgressBarSurface):
+    def __init__(self,imgOnTop,imgOnBottom,x,y,max_width,height,mode="width"):
+        ProgressBarSurface.__init__(self,imgOnTop,imgOnBottom,x,y,max_width,height,mode)
+        self.__percentage_to_be = 0
+        self.__perecent_update_each_time = 0
+        self.__total_update_intervals = 10
+    #数据准确度
+    @property
+    def accuracy(self) -> int: return self.__total_update_intervals*100
+    #百分比
+    @property
+    def percentage(self) -> float: return self.__percentage_to_be/self.accuracy
+    def get_percentage(self) -> float: return self.__percentage_to_be/self.accuracy
+    def set_percentage(self,value:float) -> None:
+        if 0 <= value <= 1:
+            self.__percentage_to_be = value*self.accuracy
+            self.__perecent_update_each_time = (self.__percentage_to_be-self._current_percentage)/self.__total_update_intervals
+        else:
+            throwException("error","The percentage must be <= 1 and >= 0!")
+    def copy(self): return DynamicProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
+    def light_copy(self): return DynamicProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
+    #展示
+    def display(self,screen,offSet:tuple=(0,0)) -> None:
+        pos = (self.x+offSet[0],self.y+offSet[1])
+        screen.blit(resizeImg(self.img2,self.size),pos)
+        if self._current_percentage < self.__percentage_to_be and self.__perecent_update_each_time > 0 or\
+            self._current_percentage > self.__percentage_to_be and self.__perecent_update_each_time < 0:
+            self._current_percentage += self.__perecent_update_each_time
+        if self._current_percentage > 0:
+            imgOnTop = resizeImg(self.img,self.size)
+            if self.get_mode():
+                if self._current_percentage != self.__percentage_to_be:
+                    img2 = cropImg(imgOnTop,size=(int(self._width*self.__percentage_to_be/self.accuracy),self._height))
+                    img2.set_alpha(100)
+                    screen.blit(img2,pos)
+                screen.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),pos)
+            else:
+                if self._current_percentage != self.__percentage_to_be:
+                    img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self.__percentage_to_be/self.accuracy)))
+                    img2.set_alpha(100)
+                    screen.blit(img2,pos)
+                screen.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),pos)
 
 #按钮
 class Button(GameObject2d):

@@ -21,7 +21,7 @@ class FriendlyCharacter(Entity):
         if eye_red_img == None:
             eye_red_img = imgLoadFunction("Assets/image/UI/eye_red.png",True)
             eye_orange_img = imgLoadFunction("Assets/image/UI/eye_orange.png",True)
-        self.__isNoticedImage = ProgressBarSurface(eye_red_img,eye_orange_img,0,0,0,0)
+        self.__isNoticedImage = DynamicProgressBarSurface(eye_red_img,eye_orange_img,0,0,0,0)
         self.__isNoticedImage.set_percentage(self._detection/100)
         try:
             self._getHurtImage = CharacterGetHurtImageManagement(self.type,display.get_height()/4,display.get_height()/2)
@@ -65,8 +65,8 @@ class FriendlyCharacter(Entity):
         if self.dying != False:
             self.dying = False
             self._if_play_action_in_reversing = True
-    def drawUI(self,screen,original_UI_img,MapClass) -> None:
-        blit_pos = super().drawUI(screen,original_UI_img,MapClass)
+    def drawUI(self,screen,MapClass) -> None:
+        blit_pos = super().drawUI(screen,MapClass)
         #展示被察觉的程度
         if self._detection > 0:
             #参数
@@ -104,7 +104,7 @@ class HostileCharacter(Entity):
         if vigilance_red_img == None:
             vigilance_red_img = imgLoadFunction("Assets/image/UI/vigilance_red.png",True)
             vigilance_orange_img = imgLoadFunction("Assets/image/UI/vigilance_orange.png",True)
-        self.__vigilanceImage = ProgressBarSurface(vigilance_red_img,vigilance_orange_img,0,0,0,0,"height")
+        self.__vigilanceImage = DynamicProgressBarSurface(vigilance_red_img,vigilance_orange_img,0,0,0,0,"height")
         self.__vigilanceImage.set_percentage(self._vigilance/100)
     def alert(self,value:int=10) -> None:
         self._vigilance += value
@@ -121,8 +121,8 @@ class HostileCharacter(Entity):
     @property
     def is_alert(self) -> bool: return self._vigilance >= 100
     #画UI - 列如血条
-    def drawUI(self,screen,original_UI_img,MapClass) -> None:
-        blit_pos = super().drawUI(screen,original_UI_img,MapClass)
+    def drawUI(self,screen,MapClass) -> None:
+        blit_pos = super().drawUI(screen,MapClass)
         #展示警觉的程度
         if self._vigilance > 0:
             #参数

@@ -26,9 +26,15 @@ class BattleSystemInterface(SystemWithBackgroundMusic):
         self.chapterId = chapterId
         self.chapterType = chapterType
         self.collection_name = collection_name
+        #方格标准尺寸
+        self.standard_block_width = round(display.get_width()/10)
+        self.standard_block_height = round(display.get_height()/10)
+        #缩进
+        self.zoomIn = 100
+        self.zoomIntoBe = 100
     #初始化地图
     def _create_map(self,MapData,darkMode=None) -> None:
-        self.MAP = MapObject(MapData,round(display.get_width()/10),round(display.get_height()/10),darkMode)
+        self.MAP = MapObject(MapData,self.standard_block_width,self.standard_block_height,darkMode)
     #计算光亮区域 并初始化地图
     def _calculate_darkness(self) -> None: self.MAP.calculate_darkness(self.alliances_data)
     #展示地图
@@ -54,7 +60,7 @@ class BattleSystemInterface(SystemWithBackgroundMusic):
         else:
             self.alliances_data,self.enemies_data = self.__characterDataLoaderThread.getResult()
             if self.__characterDataLoaderThread.mode == "dev":
-                #如果是开放模式，生成所有角色的数据
+                #如果是开发模式，则保存数据库
                 self.DATABASE = self.__characterDataLoaderThread.DATABASE
             del self.__characterDataLoaderThread
             return False

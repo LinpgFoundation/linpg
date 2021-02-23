@@ -104,7 +104,7 @@ class MapObject:
                 self.__decorations = numpy.delete(self.__decorations,i)
                 break
     #控制地图放大缩小
-    def changePerBlockSize(self,newPerBlockWidth,newPerBlockHeight):
+    def changePerBlockSize(self,float newPerBlockWidth,float newPerBlockHeight):
         self.addPos_x((self.block_width-newPerBlockWidth)*self.column/2)
         self.addPos_y((self.block_height-newPerBlockHeight)*self.row/2)
         self.surface_width = int(newPerBlockWidth*0.9*((self.row+self.column+1)/2))

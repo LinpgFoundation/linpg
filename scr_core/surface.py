@@ -191,11 +191,11 @@ class ProgressBar(ImageInterface):
 
 #进度条Surface
 class ProgressBarSurface(ImageInterface):
-    def __init__(self,imgOnTop,imgOnBottom,x,y,max_width,height,mode="width"):
+    def __init__(self,imgOnTop,imgOnBottom,x,y,max_width,height,mode="horizontal"):
         ImageInterface.__init__(self,imgLoadFunction(imgOnTop,True),x,y,max_width,height)
         self.img2 = imgLoadFunction(imgOnBottom,True)
         self._current_percentage = 0
-        self.__mode = True if mode == "width" else False
+        self._mode = True if mode == "horizontal" else False
     #百分比
     @property
     def percentage(self) -> float: return self._current_percentage
@@ -208,12 +208,12 @@ class ProgressBarSurface(ImageInterface):
     #模式
     @property
     def mode(self) -> str: return self.get_mode()
-    def get_mode(self) -> str: return "width" if self.__mode else "height"
+    def get_mode(self) -> str: return "horizontal" if self._mode else "vertical"
     def set_mode(self,mode:str):
-        if mode == "width":
-            self.__mode = True
-        elif mode == "height":
-            self.__mode = False
+        if mode == "horizontal":
+            self._mode = True
+        elif mode == "vertical":
+            self._mode = False
         else:
             throwException("error","Mode '{}' is not supported!".format(mode))
     def copy(self): return ProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
@@ -224,14 +224,14 @@ class ProgressBarSurface(ImageInterface):
         screen.blit(resizeImg(self.img2,self.size),pos)
         if self._current_percentage > 0:
             imgOnTop = resizeImg(self.img,self.size)
-            if self.__mode:
+            if self._mode:
                 screen.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage),self._height)),pos)
             else:
                 screen.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage))),pos)
 
 #动态进度条Surface
 class DynamicProgressBarSurface(ProgressBarSurface):
-    def __init__(self,imgOnTop,imgOnBottom,x,y,max_width,height,mode="width"):
+    def __init__(self,imgOnTop,imgOnBottom,x,y,max_width,height,mode="horizontal"):
         ProgressBarSurface.__init__(self,imgOnTop,imgOnBottom,x,y,max_width,height,mode)
         self.__percentage_to_be = 0
         self.__perecent_update_each_time = 0
@@ -260,18 +260,30 @@ class DynamicProgressBarSurface(ProgressBarSurface):
             self._current_percentage += self.__perecent_update_each_time
         if self._current_percentage > 0:
             imgOnTop = resizeImg(self.img,self.size)
-            if self.get_mode():
-                if self._current_percentage != self.__percentage_to_be:
+            if self._mode:
+                if self._current_percentage < self.__percentage_to_be:
                     img2 = cropImg(imgOnTop,size=(int(self._width*self.__percentage_to_be/self.accuracy),self._height))
                     img2.set_alpha(100)
                     screen.blit(img2,pos)
-                screen.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),pos)
+                    screen.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),pos)
+                else:
+                    if self._current_percentage > self.__percentage_to_be:
+                        img2 = cropImg(imgOnTop,size=(int(self._width*self._current_percentage/self.accuracy),self._height))
+                        img2.set_alpha(100)
+                        screen.blit(img2,pos)
+                    screen.blit(imgOnTop.subsurface((0,0,int(self._width*self.__percentage_to_be/self.accuracy),self._height)),pos)
             else:
-                if self._current_percentage != self.__percentage_to_be:
+                if self._current_percentage < self.__percentage_to_be:
                     img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self.__percentage_to_be/self.accuracy)))
                     img2.set_alpha(100)
                     screen.blit(img2,pos)
-                screen.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),pos)
+                    screen.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),pos)
+                else:
+                    if self._current_percentage > self.__percentage_to_be:
+                        img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._current_percentage/self.accuracy)))
+                        img2.set_alpha(100)
+                        screen.blit(img2,pos)
+                    screen.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self.__percentage_to_be/self.accuracy))),pos)
 
 #按钮
 class Button(GameObject2d):

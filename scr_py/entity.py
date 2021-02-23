@@ -8,10 +8,13 @@ _CHARACTERS_SOUND_SYSTEM = CharacterSoundManagement(5)
 #角色UI的文字数据
 _ENTITY_UI_FONT = createFont(display.get_width()/192)
 
-#用于储存的血条图片
-HP_GREEN = None
-HP_RED = None
-HP_EMPTY = None
+#指向储存血条图片的指针（不初始化直到Entity或其子类被调用）
+HP_GREEN_IMG:pygame.Surface = None
+HP_RED_IMG:pygame.Surface = None
+HP_EMPTY_IMG:pygame.Surface = None
+
+#濒死回合限制
+DYING_ROUND_LIMIT:int = 3
 
 #人形模块
 class Entity(GameObject):
@@ -24,7 +27,7 @@ class Entity(GameObject):
         #攻击范围
         self.attack_range = DATA["attack_range"]
         #当然弹夹的子弹数
-        self.current_bullets = DATA["current_bullets"] if "current_hp" in DATA else DATA["magazine_capacity"]
+        self.current_bullets = DATA["current_bullets"] if "current_bullets" in DATA else DATA["magazine_capacity"]
         #当前血量
         self.current_hp = DATA["current_hp"] if "current_hp" in DATA else DATA["max_hp"]
         #不可再生的护甲值
@@ -34,7 +37,7 @@ class Entity(GameObject):
         #最大可再生的护甲值
         self.max_recoverable_armor = DATA["recoverable_armor"] if "recoverable_armor" in DATA else 0
         #是否濒死
-        self.dying = False if self.current_hp > 0 else 3
+        self.dying = False if self.current_hp > 0 else DYING_ROUND_LIMIT
         #攻击距离
         self.effective_range = DATA["effective_range"]
         #最大攻击距离
@@ -79,13 +82,13 @@ class Entity(GameObject):
         #攻击范围
         self.__attack_range = {"near":[],"middle":[],"far":[]}
         #血条图片
-        global HP_GREEN,HP_RED,HP_EMPTY
-        if HP_GREEN == None or HP_RED == None or HP_EMPTY == None:
-            HP_GREEN = imgLoadFunction("Assets/image/UI/hp_green.png",True)
-            HP_RED = imgLoadFunction("Assets/image/UI/hp_red.png",True)
-            HP_EMPTY = imgLoadFunction("Assets/image/UI/hp_empty.png",True)
-        self.__hp_bar_green = DynamicProgressBarSurface(HP_GREEN,HP_EMPTY,0,0,0,0)
-        self.__hp_bar_red = DynamicProgressBarSurface(HP_RED,HP_EMPTY,0,0,0,0)
+        global HP_GREEN_IMG,HP_RED_IMG,HP_EMPTY_IMG
+        if HP_GREEN_IMG == None or HP_RED_IMG == None or HP_EMPTY_IMG == None:
+            HP_GREEN_IMG = imgLoadFunction("Assets/image/UI/hp_green.png",True)
+            HP_RED_IMG = imgLoadFunction("Assets/image/UI/hp_red.png",True)
+            HP_EMPTY_IMG = imgLoadFunction("Assets/image/UI/hp_empty.png",True)
+        self.__hp_bar_green = DynamicProgressBarSurface(HP_GREEN_IMG,HP_EMPTY_IMG,0,0,0,0)
+        self.__hp_bar_red = DynamicProgressBarSurface(HP_RED_IMG,HP_EMPTY_IMG,0,0,0,0)
     """角色动作参数管理"""
     #当前动作
     @property
@@ -149,36 +152,46 @@ class Entity(GameObject):
             return True
     """角色血量参数管理"""
     #治愈
-    def heal(self,hpHealed:int) -> None: self.current_hp += hpHealed
+    def heal(self,hpHealed:int) -> None:
+        if hpHealed > 0:
+            self.current_hp += hpHealed
+        elif hpHealed == 0:
+            pass
+        else:
+            throwException("error","You cannot heal a negative value")
     #降低血量
     def decreaseHp(self,damage:int):
-        damage = abs(damage)
-        #如果有可再生的护甲
-        if self.current_recoverable_armor > 0:
-            #如果伤害大于护甲值,则以护甲值为最大护甲将承受的伤害
-            if damage > self.current_recoverable_armor:
-                damage_take_by_armor = randomInt(0,self.current_recoverable_armor)
-            #如果伤害小于护甲值,则以伤害为最大护甲将承受的伤害
-            else:
-                damage_take_by_armor = randomInt(0,damage)
-            self.current_recoverable_armor -= damage_take_by_armor
-            damage -= damage_take_by_armor
-        #如果有不可再生的护甲
-        if self.irrecoverable_armor > 0 and damage > 0:
-            if damage > self.irrecoverable_armor:
-                damage_take_by_armor = randomInt(0,self.irrecoverable_armor)
-            #如果伤害小于护甲值,则以伤害为最大护甲将承受的伤害
-            else:
-                damage_take_by_armor = randomInt(0,damage)
-            self.irrecoverable_armor -= damage_take_by_armor
-            damage -= damage_take_by_armor
-        #如果还有伤害,则扣除血量
         if damage > 0:
-            self.current_hp -= damage
-        #如果角色血量小等于0，进入死亡状态
-        if self.current_hp <= 0:
-            self.current_hp = 0
-            self.set_action("die",None)
+            #如果有可再生的护甲
+            if self.current_recoverable_armor > 0:
+                #如果伤害大于护甲值,则以护甲值为最大护甲将承受的伤害
+                if damage > self.current_recoverable_armor:
+                    damage_take_by_armor = randomInt(0,self.current_recoverable_armor)
+                #如果伤害小于护甲值,则以伤害为最大护甲将承受的伤害
+                else:
+                    damage_take_by_armor = randomInt(0,damage)
+                self.current_recoverable_armor -= damage_take_by_armor
+                damage -= damage_take_by_armor
+            #如果有不可再生的护甲
+            if self.irrecoverable_armor > 0 and damage > 0:
+                if damage > self.irrecoverable_armor:
+                    damage_take_by_armor = randomInt(0,self.irrecoverable_armor)
+                #如果伤害小于护甲值,则以伤害为最大护甲将承受的伤害
+                else:
+                    damage_take_by_armor = randomInt(0,damage)
+                self.irrecoverable_armor -= damage_take_by_armor
+                damage -= damage_take_by_armor
+            #如果还有伤害,则扣除血量
+            if damage > 0:
+                self.current_hp -= damage
+            #如果角色血量小等于0，进入死亡状态
+            if self.current_hp <= 0:
+                self.current_hp = 0
+                self.set_action("die",None)
+        elif damage == 0:
+            pass
+        else:
+            throwException("error","You cannot do a negative damage")
     #被一个Entity攻击
     def attackBy(self,attacker):
         damage = randomInt(attacker.min_damage,attacker.max_damage)
@@ -395,7 +408,7 @@ class Entity(GameObject):
         else:
             self.__hp_bar_red.set_size(MapClass.block_width/2, MapClass.block_width/10)
             self.__hp_bar_red.set_pos(xTemp,yTemp)
-            self.__hp_bar_red.set_percentage(self.dying/3)
+            self.__hp_bar_red.set_percentage(self.dying/DYING_ROUND_LIMIT)
             self.__hp_bar_red.draw(screen)
-            displayInCenter(_ENTITY_UI_FONT.render("{}/3".format(self.dying),get_fontMode(),(0,0,0)),self.__hp_bar_red,xTemp,yTemp,screen)
+            displayInCenter(_ENTITY_UI_FONT.render("{0}/{1}".format(self.dying,DYING_ROUND_LIMIT),get_fontMode(),(0,0,0)),self.__hp_bar_red,xTemp,yTemp,screen)
         return xTemp,yTemp

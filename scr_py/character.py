@@ -1,10 +1,12 @@
 # cython: language_level=3
+from tkinter.constants import NONE
 from .entity import *
 
-eye_red_img = None
-eye_orange_img = None
-vigilance_red_img = None
-vigilance_orange_img = None
+#指向储存警觉图标的指针（不初始化直到Entity或其子类被调用）
+BEING_NOTICED_IMG:pygame.Surface = None
+FULLY_EXPOSED_IMG:pygame.Surface = None
+ORANGE_VIGILANCE_IMG:pygame.Surface = None
+RED_VIGILANCE_IMG:pygame.Surface = None
 
 #友方角色类
 class FriendlyCharacter(Entity):
@@ -17,11 +19,12 @@ class FriendlyCharacter(Entity):
         self.max_skill_range = calculate_range(defaultData["skill_effective_range"])
         self.skill_cover_range = defaultData["skill_cover_range"]
         self._detection = defaultData["detection"] if "detection" in defaultData and defaultData["detection"] != None else 0
-        global eye_red_img,eye_orange_img
-        if eye_red_img == None:
-            eye_red_img = imgLoadFunction("Assets/image/UI/eye_red.png",True)
-            eye_orange_img = imgLoadFunction("Assets/image/UI/eye_orange.png",True)
-        self.__isNoticedImage = DynamicProgressBarSurface(eye_red_img,eye_orange_img,0,0,0,0)
+        #生成被察觉的图标
+        global BEING_NOTICED_IMG,FULLY_EXPOSED_IMG
+        if BEING_NOTICED_IMG == None or FULLY_EXPOSED_IMG == None:
+            BEING_NOTICED_IMG = imgLoadFunction("Assets/image/UI/eye_orange.png",True)
+            FULLY_EXPOSED_IMG = imgLoadFunction("Assets/image/UI/eye_red.png",True)
+        self.__isNoticedImage = DynamicProgressBarSurface(FULLY_EXPOSED_IMG,BEING_NOTICED_IMG,0,0,0,0)
         self.__isNoticedImage.set_percentage(self._detection/100)
         try:
             self._getHurtImage = CharacterGetHurtImageManagement(self.type,display.get_height()/4,display.get_height()/2)
@@ -45,22 +48,16 @@ class FriendlyCharacter(Entity):
     def loadImg(self) -> None:
         super().loadImg()
         self._getHurtImage.add(self.type)
-    def attackBy(self,attacker,result_of_round):
-        damage = randomInt(attacker.min_damage,attacker.max_damage)
-        self.decreaseHp(damage,result_of_round)
-        return damage
-    def decreaseHp(self,damage,result_of_round):
+    def decreaseHp(self,damage:int) -> None:
         super().decreaseHp(damage)
-        if self.current_hp <= 0 and self.dying == False:
-            if self.kind != "HOC":
-                self.dying = 3
-                if self._getHurtImage != None:
-                    self._getHurtImage.x = -self._getHurtImage.width
-                    self._getHurtImage.alpha = 255
-                    self._getHurtImage.yToGo = 255
-                    self.playSound("injured")
-            result_of_round["times_characters_down"] += 1
-    def heal(self,hpHealed):
+        if self.current_hp <= 0 and not self.dying and self.kind != "HOC":
+            self.dying = DYING_ROUND_LIMIT
+            if self._getHurtImage != None:
+                self._getHurtImage.x = -self._getHurtImage.width
+                self._getHurtImage.alpha = 255
+                self._getHurtImage.yToGo = 255
+                self.playSound("injured")
+    def heal(self,hpHealed:int) -> None:
         super().heal(hpHealed)
         if self.dying != False:
             self.dying = False
@@ -100,11 +97,11 @@ class HostileCharacter(Entity):
         Entity.__init__(self,defaultData,"sangvisFerri",mode)
         self.patrol_path = defaultData["patrol_path"] if "patrol_path" in defaultData else []
         self._vigilance = 0
-        global vigilance_red_img,vigilance_orange_img
-        if vigilance_red_img == None:
-            vigilance_red_img = imgLoadFunction("Assets/image/UI/vigilance_red.png",True)
-            vigilance_orange_img = imgLoadFunction("Assets/image/UI/vigilance_orange.png",True)
-        self.__vigilanceImage = DynamicProgressBarSurface(vigilance_red_img,vigilance_orange_img,0,0,0,0,"height")
+        global ORANGE_VIGILANCE_IMG,RED_VIGILANCE_IMG
+        if ORANGE_VIGILANCE_IMG == None or RED_VIGILANCE_IMG == None:
+            ORANGE_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_orange.png",True)
+            RED_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_red.png",True)
+        self.__vigilanceImage = DynamicProgressBarSurface(RED_VIGILANCE_IMG,ORANGE_VIGILANCE_IMG,0,0,0,0,"vertical")
         self.__vigilanceImage.set_percentage(self._vigilance/100)
     def alert(self,value:int=10) -> None:
         self._vigilance += value
@@ -268,6 +265,6 @@ class CharacterDataLoader(threading.Thread):
                 value.loadImg()
             else:
                 self.enemies[key] = HostileCharacter(value,self.DATABASE[value["type"]],self.mode)
-            self.currentID+=1
+            self.currentID += 1
             if console.get_events("dev"): print("total: {0}, current: {1}".format(self.totalNum,self.currentID))
     def getResult(self) -> tuple: return self.alliances,self.enemies

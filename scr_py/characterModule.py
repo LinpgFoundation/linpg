@@ -122,7 +122,7 @@ class CharacterImageManagement:
             return None
 
 #为角色创建用于储存音效的文件夹
-def makeFolderForCharacterSounds():
+def makeFolderForCharacterSounds() -> None:
     for each_character in os.listdir("Assets/image/character/"):
         path = os.path.join("Assets/sound/character",each_character)
         if not os.path.exists(path):
@@ -133,7 +133,7 @@ def makeFolderForCharacterSounds():
             os.mkdir(path+"/skill")
 
 #加载并更新更新位于Data中的角色数据配置文件-character_data.yaml
-def loadCharacterData():
+def loadCharacterData() -> None:
     loadData = loadConfig("Data/character_data.yaml")
     ifAnythingChange = False
     for path in glob.glob(r'Assets/image/character/*'):

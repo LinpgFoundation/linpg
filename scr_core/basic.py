@@ -166,7 +166,7 @@ def convert_pos(pos:any) -> tuple:
 def is_same_pos(pos1,pos2) -> bool: return convert_pos(pos1) == convert_pos(pos2)
 
 #抛出引擎内的异常
-def throwException(exception_type,info):
+def throwException(exception_type:str,info:str) -> None:
     if exception_type == "error":
         raise Exception('LinpgEngine-Error: {}'.format(info))
     elif exception_type == "warning":

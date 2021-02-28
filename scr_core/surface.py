@@ -24,8 +24,11 @@ class ImageInterface(GameObject2d):
         self.set_width(width)
         self.set_height(height)
     #是否被鼠标触碰
-    def isHover(self,mouse_x:int,mouse_y:int) -> bool: return 0 < mouse_x-self.x < self._width and 0 < mouse_y-self.y < self._height 
-    
+    def isHover(self,mouse_x:int,mouse_y:int) -> bool: return 0 < mouse_x-self.x < self._width and 0 < mouse_y-self.y < self._height
+    #画出轮廓
+    def draw_outline(self,surface:pygame.Surface,offSet:tuple=(0,0),color:str="red",line_width:int=2) -> None:
+        pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect((self.x+offSet[0],self.y+offSet[1]),self.size),line_width)
+
 #用于处理有大面积透明像素的图片surface
 class SrcalphaSurface(ImageInterface):
     def __init__(self,path_or_surface,x,y,width=None,height=None):
@@ -92,14 +95,16 @@ class SrcalphaSurface(ImageInterface):
     def flip_back_to_normal(self) -> None:
         if self.__isFlipped: self.flip()
     #展示
-    def draw(self,screen,debug:bool=False) -> None: self.display(screen,debug)
-    def display(self,screen,debug:bool=False,offSet:tuple=(0,0)) -> None:
-        if self.__needUpdate:
-            self._update_img()
-        pos = (self.x+self.__local_x+offSet[0], self.y+self.__local_y+offSet[1])
-        screen.blit(self.img, pos)
-        #如果是debug模式
-        if debug: pygame.draw.rect(screen,findColorRGBA("red"),pygame.Rect(pos,self.img.get_size()),2)
+    def display(self,surface:pygame.Surface,offSet:tuple=(0,0)) -> None:
+        #如果图片需要更新，则先更新
+        if self.__needUpdate: self._update_img()
+        #将已经处理好的图片画在给定的图层上
+        surface.blit(self.img,(self.x+self.__local_x+offSet[0], self.y+self.__local_y+offSet[1]))
+    #画出轮廓
+    def draw_outline(self,surface:pygame.Surface,offSet:tuple=(0,0),color:str="red",line_width:int=2) -> None:
+        pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect(
+            (self.x+self.__local_x+offSet[0],self.y+self.__local_y+offSet[1]),self.img.get_size()
+            ),line_width)
     #是否被鼠标触碰
     def isHover(self,mouse_x:int,mouse_y:int) -> bool:
         if self.img != None:
@@ -134,9 +139,20 @@ class ImageSurface(ImageInterface):
             self._width = self._height/self.img.get_height()*self.img.get_width()
         elif self._width != None and self._height == None:
             self._height = self._width/self.img.get_width()*self.img.get_height()
+    #返回一个复制
+    def copy(self):
+        replica = ImageSurface(self.img.copy(),self.x,self.y,self._width,self._height,self.description)
+        self.img.set_alpha(255)
+        replica.xTogo = self.xTogo
+        replica.yTogo = self.yTogo
+        replica.items = self.items.copy()
+        return replica
+    #更新图片
+    def update(self,img_path,ifConvertAlpha=True) -> None:
+        self.img = imgLoadFunction(img_path,ifConvertAlpha)
     def drawOnTheCenterOf(self,surface:pygame.Surface) -> None:
         surface.blit(resizeImg(self.img,self.size),((surface.get_width()-self._width)/2,(surface.get_height()-self._height)/2))
-    def display(self,screen,local_x:int=0,local_y:int=0) -> None: screen.blit(resizeImg(self.img,self.size),(self.x+local_x,self.y+local_y))
+    def display(self,surface,local_x:int=0,local_y:int=0) -> None: surface.blit(resizeImg(self.img,self.size),(self.x+local_x,self.y+local_y))
     #旋转
     def rotate(self,angle:int) -> None: self.img = pygame.transform.rotate(self.img,angle)
     #反转
@@ -157,8 +173,8 @@ class DynamicImageSurface(ImageSurface):
         self.moveSpeed_x = moveSpeed_x
         self.moveSpeed_y = moveSpeed_y
         self.__towardTargetPos = False
-    def display(self,screen,local_x=0,local_y=0) -> None:
-        super().display(screen,local_x,local_y)
+    def display(self,surface,local_x=0,local_y=0) -> None:
+        super().display(surface,local_x,local_y)
         if self.__towardTargetPos == True:
             if self.default_x < self.target_x and self.x < self.target_x:
                 self.x += self.moveSpeed_x
@@ -186,8 +202,8 @@ class ProgressBar(ImageInterface):
         ImageInterface.__init__(self,None,x,y,max_width,height)
         self.percentage = 0
         self.color = findColorRGBA(color)
-    def display(self,screen,offSet:tuple=(0,0)) -> None:
-        pygame.draw.rect(screen,self.color,(self.x+offSet[0],self.y+offSet[1],self._width*self.percentage,self._height))
+    def display(self,surface,offSet:tuple=(0,0)) -> None:
+        pygame.draw.rect(surface,self.color,(self.x+offSet[0],self.y+offSet[1],self._width*self.percentage,self._height))
 
 #进度条Surface
 class ProgressBarSurface(ImageInterface):
@@ -219,15 +235,15 @@ class ProgressBarSurface(ImageInterface):
     def copy(self): return ProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return ProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #展示
-    def display(self,screen,offSet:tuple=(0,0)) -> None:
+    def display(self,surface,offSet:tuple=(0,0)) -> None:
         pos = (self.x+offSet[0],self.y+offSet[1])
-        screen.blit(resizeImg(self.img2,self.size),pos)
+        surface.blit(resizeImg(self.img2,self.size),pos)
         if self._current_percentage > 0:
             imgOnTop = resizeImg(self.img,self.size)
             if self._mode:
-                screen.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage),self._height)),pos)
+                surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage),self._height)),pos)
             else:
-                screen.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage))),pos)
+                surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage))),pos)
 
 #动态进度条Surface
 class DynamicProgressBarSurface(ProgressBarSurface):
@@ -252,9 +268,9 @@ class DynamicProgressBarSurface(ProgressBarSurface):
     def copy(self): return DynamicProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return DynamicProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #展示
-    def display(self,screen,offSet:tuple=(0,0)) -> None:
+    def display(self,surface,offSet:tuple=(0,0)) -> None:
         pos = (self.x+offSet[0],self.y+offSet[1])
-        screen.blit(resizeImg(self.img2,self.size),pos)
+        surface.blit(resizeImg(self.img2,self.size),pos)
         if self._current_percentage < self.__percentage_to_be and self.__perecent_update_each_time > 0 or\
             self._current_percentage > self.__percentage_to_be and self.__perecent_update_each_time < 0:
             self._current_percentage += self.__perecent_update_each_time
@@ -264,26 +280,26 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                 if self._current_percentage < self.__percentage_to_be:
                     img2 = cropImg(imgOnTop,size=(int(self._width*self.__percentage_to_be/self.accuracy),self._height))
                     img2.set_alpha(100)
-                    screen.blit(img2,pos)
-                    screen.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),pos)
+                    surface.blit(img2,pos)
+                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),pos)
                 else:
                     if self._current_percentage > self.__percentage_to_be:
                         img2 = cropImg(imgOnTop,size=(int(self._width*self._current_percentage/self.accuracy),self._height))
                         img2.set_alpha(100)
-                        screen.blit(img2,pos)
-                    screen.blit(imgOnTop.subsurface((0,0,int(self._width*self.__percentage_to_be/self.accuracy),self._height)),pos)
+                        surface.blit(img2,pos)
+                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self.__percentage_to_be/self.accuracy),self._height)),pos)
             else:
                 if self._current_percentage < self.__percentage_to_be:
                     img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self.__percentage_to_be/self.accuracy)))
                     img2.set_alpha(100)
-                    screen.blit(img2,pos)
-                    screen.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),pos)
+                    surface.blit(img2,pos)
+                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),pos)
                 else:
                     if self._current_percentage > self.__percentage_to_be:
                         img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._current_percentage/self.accuracy)))
                         img2.set_alpha(100)
-                        screen.blit(img2,pos)
-                    screen.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self.__percentage_to_be/self.accuracy))),pos)
+                        surface.blit(img2,pos)
+                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self.__percentage_to_be/self.accuracy))),pos)
 
 #按钮
 class Button(GameObject2d):
@@ -293,7 +309,7 @@ class Button(GameObject2d):
         self.img2 = None
         self.hoverEventTriggered = False
     def setHoverImg(self,img): self.img2 = img
-    def display(self,screen,local_x=0,local_y=0): screen.blit(self.img,(self.x+local_x,self.y+local_y))
+    def display(self,surface,local_x=0,local_y=0): surface.blit(self.img,(self.x+local_x,self.y+local_y))
     def hoverEventOn(self):
         if self.img2 != None and self.hoverEventTriggered == False:
             tempSurface = self.img
@@ -326,8 +342,8 @@ class ButtonWithDes(Button):
         self.des_surface.blit(self.des_font_surface,(self.des_font_surface.get_width()*0.1,self._height*0.1))
     def get_width(self) -> int: return self._width
     def get_height(self) -> int: return self._height
-    def displayDes(self,screen) -> None:
-        if self.hoverEventTriggered: screen.blit(self.des_surface,pygame.mouse.get_pos())
+    def displayDes(self,surface) -> None:
+        if self.hoverEventTriggered: surface.blit(self.des_surface,pygame.mouse.get_pos())
 
 class ButtonWithFadeInOut(Button):
     def __init__(self,buttonImgPath,txt,txt_color,alphaWhenNotHovered,x,y,height) -> None:
@@ -355,11 +371,11 @@ class GifObject(ImageInterface):
             self._alpha = 255
         else:
             self._alpha = round(value)
-    def display(self,screen,offSet:tuple=(0,0)):
+    def display(self,surface,offSet:tuple=(0,0)):
         img = resizeImg(self.img[self.imgId],self.size)
         #设置透明度
         if self._alpha != 255: img.set_alpha(self._alpha)
-        screen.blit(img,(self.x+offSet[0],self.y+offSet[1]))
+        surface.blit(img,(self.x+offSet[0],self.y+offSet[1]))
         if self.countDown >= self.updateGap:
             self.countDown = 0
             self.imgId += 1
@@ -414,7 +430,7 @@ class DialogBox(DialogInterface,GameObject2d):
     def get_width(self) -> int: return self.dialoguebox.get_width()
     def get_height(self)-> int:  return self.dialoguebox.get_height()
     def set_size(self,width,height) -> tuple: self.dialoguebox = resizeImg(self.dialoguebox,(width,height))
-    def display(self,screen,characterInfoBoardUI=None):
+    def display(self,surface,characterInfoBoardUI=None):
         #如果对话框需要继续更新
         if self.__drew == False:
             self.__surface = self.dialoguebox.copy()
@@ -453,7 +469,7 @@ class DialogBox(DialogInterface,GameObject2d):
                     self.textIndex = 0
                 elif self.textIndex >= len(self.content[self.displayedLine]):
                     self.__drew = True
-        screen.blit(self.__surface,(self.x,self.y))
+        surface.blit(self.__surface,(self.x,self.y))
     def update(self,txt,narrator,narrator_icon=None):
         super().update(txt,narrator)
         self.updated = True

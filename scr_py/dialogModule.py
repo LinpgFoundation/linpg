@@ -7,13 +7,18 @@ class DialogSystemInterface(SystemWithBackgroundMusic):
     def __init__(self) -> None:
         SystemWithBackgroundMusic.__init__(self)
         #加载对话的背景图片模块
-        self.npc_and_background_image_content = NpcAndBackgroundImageManager()
+        self._npcManager = NpcImageManager()
         #黑色Void帘幕
-        self.black_bg = get_SingleColorSurface("black")
+        self._black_bg = get_SingleColorSurface("black")
         #选项栏
-        self.optionBox = loadImg("Assets/image/UI/option.png")
+        self._optionBox = loadImg("Assets/image/UI/option.png")
         #是否开启自动保存
         self.auto_save = False
+        #背景图片
+        self.__backgroundImageFilePath = "Assets/image/dialog_background"
+        self.__dynamicBackgroundFilePath = "Assets/movie"
+        self.__backgroundImageName = None
+        self.__backgroundImageSurface = self._black_bg.copy()
     #初始化关键参数
     def _initialize(self,chapterType:str,chapterId:int,collection_name:str,dialogId:str="head",dialog_options:dict={}) -> None:
         #类型
@@ -26,9 +31,35 @@ class DialogSystemInterface(SystemWithBackgroundMusic):
         self.dialog_options = dialog_options
         #合集名称-用于dlc和创意工坊
         self.collection_name = collection_name
+    #更新背景图片
+    def _update_background_image(self,image_name) -> None:
+        if self.__backgroundImageName != image_name:
+            #更新背景的名称
+            self.__backgroundImageName = image_name
+            #更新背景的图片数据
+            if self.__backgroundImageName != None:
+                #尝试加载图片式的背景
+                img_path = os.path.join(self.__backgroundImageFilePath,self.__backgroundImageName)
+                if os.path.exists(img_path):
+                    self.__backgroundImageSurface = loadImage(img_path,(0,0))
+                #如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
+                elif os.path.exists(os.path.join(self.__dynamicBackgroundFilePath,self.__backgroundImageName)):
+                    try:
+                        self.__backgroundImageSurface = VedioFrame(os.path.join(self.__dynamicBackgroundFilePath,self.__backgroundImageName),display.get_width(),display.get_height())
+                    except BaseException:
+                        throwException("error","Cannot run movie module.")
+                else:
+                    throwException("error","Cannot find a background image or video file called '{}'.".format(self.__backgroundImageName))
+            else:
+                self.__backgroundImageSurface = self._black_bg.copy()
+    #将背景图片画到screen上
+    def display_background_image(self,screen) -> None:
+        if isinstance(self.__backgroundImageSurface,ImageSurface):
+            self.__backgroundImageSurface.set_size(screen.get_width(),screen.get_height())
+        self.__backgroundImageSurface.display(screen)
 
 #npc立绘系统
-class NpcAndBackgroundImageManager:
+class NpcImageManager:
     def __init__(self):
         #用于存放立绘的字典
         self.npcImageDict = {}
@@ -46,9 +77,6 @@ class NpcAndBackgroundImageManager:
         self.move_x = 0
         self.dev_mode = False
         self.npcGetClick = None
-        #背景图片
-        self.__backgroundImageName = None
-        self.__backgroundImageName = get_SingleColorSurface("black")
     def devMode(self):
         for imgPath in glob.glob("Assets/image/npc/*"):
             self.__loadNpc(imgPath)
@@ -88,22 +116,16 @@ class NpcAndBackgroundImageManager:
                     x+=int(self.img_width/4)
             """
             img.set_pos(x,y)
-            #如果不是开发模式
+            img.draw(screen)
+            #如果是开发模式
             if self.dev_mode:
                 self.npcGetClick = None
                 if isHover(img,(x,y)):
-                    img = img.copy()
-                    img.addBrightness(60)
+                    img.draw_outline(screen)
                     self.npcGetClick = name
-            img.draw(screen)
-    def display_bg_img(self,screen):
-        if isinstance(self.__backgroundImageName,ImageSurface):
-            self.__backgroundImageName.set_size(screen.get_width(),screen.get_height())
-        self.__backgroundImageName.display(screen)
     def display(self,screen):
         window_x = screen.get_width()
         window_y = screen.get_height()
-        self.display_bg_img(screen)
         npcImg_y = window_y-window_x/2
         #调整alpha值
         if self.npcLastRoundImgAlpha > 0:
@@ -210,8 +232,8 @@ class NpcAndBackgroundImageManager:
                     self.__displayNpc(self.npcLastRound[1],window_x/2,npcImg_y,self.npcLastRoundImgAlpha,screen)
                     self.__displayNpc(self.npcThisRound[0],0,npcImg_y,self.npcThisRoundImgAlpha,screen)
                     self.__displayNpc(self.npcThisRound[1],window_x/2,npcImg_y,self.npcThisRoundImgAlpha,screen)
-    #只更新立绘
-    def update_npc_data(self,characterNameList):
+    #更新立绘
+    def update(self,characterNameList):
         self.npcLastRound = self.npcThisRound
         if isinstance(characterNameList,(list,tuple)):
             self.npcThisRound = characterNameList
@@ -220,28 +242,6 @@ class NpcAndBackgroundImageManager:
         self.npcLastRoundImgAlpha = 255
         self.npcThisRoundImgAlpha = 5
         self.move_x = 0
-    #只更新背景图片
-    def update_background_image(self,image_name):
-        if self.__backgroundImageName != image_name:
-            self.__backgroundImageName = image_name
-            if self.__backgroundImageName != None:
-                #尝试背景加载图片
-                if os.path.exists("Assets/image/dialog_background/{}".format(self.__backgroundImageName)):
-                    self.__backgroundImageName = loadImage("Assets/image/dialog_background/{}".format(self.__backgroundImageName),(0,0))
-                #如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
-                elif os.path.exists("Assets/movie/"+self.__backgroundImageName):
-                    try:
-                        self.__backgroundImageName = VedioFrame("Assets/movie/"+self.__backgroundImageName,display.get_width(),display.get_height())
-                    except BaseException:
-                        throwException("error","Cannot run movie module.")
-                else:
-                    throwException("error","Cannot find a background image or video file called '{}'.".format(self.__backgroundImageName))
-            else:
-                self.__backgroundImageName = get_SingleColorSurface("black")
-    #更新立绘和背景图片
-    def update(self,characterNameList,image_name):
-        self.update_npc_data(characterNameList)
-        self.update_background_image(image_name)
 
 #对话框和对话框内容
 class DialogContent(DialogInterface):

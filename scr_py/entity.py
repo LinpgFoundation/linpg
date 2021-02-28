@@ -354,7 +354,9 @@ class Entity(GameObject):
         if pos == None:
             pos = MapClass.calPosInMap(self.x,self.y)
         img_of_char.set_pos(pos[0]-MapClass.block_width*0.3,pos[1]-MapClass.block_width*0.85)
-        img_of_char.draw(screen,console.get_events("dev"))
+        img_of_char.draw(screen)
+        #如果是开发者模式，则开启轮廓
+        if console.get_events("dev"): img_of_char.draw_outline(screen)
     def draw(self,screen,MapClass) -> None:
         self.__blit_entity_img(screen,MapClass,alpha=self.get_imgAlpaha(self.__current_action))
         #如果当前动作是移动

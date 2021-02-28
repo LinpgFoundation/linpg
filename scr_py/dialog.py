@@ -85,10 +85,8 @@ class DialogSystem(DialogSystemInterface):
             else:
                 self.set_bgm(None)
             #更新背景和立绘
-            self.npc_and_background_image_content.update(
-                self.dialogContent[theNextDialogId]["characters_img"],
-                self.dialogContent[theNextDialogId]["background_img"]
-            )
+            self._npcManager.update(self.dialogContent[theNextDialogId]["characters_img"])
+            self._update_background_image(self.dialogContent[theNextDialogId]["background_img"])
             #更新对话框文字
             self.dialogTxtSystem.update(self.dialogContent[theNextDialogId]["content"],self.dialogContent[theNextDialogId]["narrator"])
             #切换dialogId
@@ -104,19 +102,19 @@ class DialogSystem(DialogSystemInterface):
     #淡入
     def fadeIn(self,screen) -> None:
         for i in range(255,0,-5):
-            self.npc_and_background_image_content.display_bg_img(screen)
-            self.black_bg.set_alpha(i)
-            self.black_bg.draw(screen)
+            self.display_background_image(screen)
+            self._black_bg.set_alpha(i)
+            self._black_bg.draw(screen)
             pygame.display.flip()
         #重设black_bg的alpha值以便下一次使用
-        self.black_bg.set_alpha(255)
+        self._black_bg.set_alpha(255)
     #淡出
     def fadeOut(self,screen) -> None:
         pygame.mixer.music.fadeout(1000)
         pygame.mixer.fadeout(1000)
         for i in range(0,255,5):
-            self.black_bg.set_alpha(i)
-            self.black_bg.draw(screen)
+            self._black_bg.set_alpha(i)
+            self._black_bg.draw(screen)
             pygame.display.flip()
     def display(self,screen) -> None:
         #检测章节是否初始化
@@ -124,7 +122,8 @@ class DialogSystem(DialogSystemInterface):
         #背景音乐
         self.play_bgm(-1)
         #展示背景图片和npc立绘
-        self.npc_and_background_image_content.display(screen)
+        self.display_background_image(screen)
+        self._npcManager.display(screen)
         #按钮
         buttonEvent = self.ButtonsMananger.display(screen,self.dialogTxtSystem.isHidden)
         #显示对话框和对应文字
@@ -215,7 +214,7 @@ class DialogSystem(DialogSystemInterface):
                         #保存选取的选项
                         nextDialogId = self.dialogContent[self.dialogId]["next_dialog_id"]["target"][i]["id"]
                 else:
-                    optionBox_scaled = resizeImg(self.optionBox,(optionBox_width,optionBox_height))
+                    optionBox_scaled = resizeImg(self._optionBox,(optionBox_width,optionBox_height))
                 displayWithInCenter(option_txt,optionBox_scaled,optionBox_x,optionBox_y,screen)
             if nextDialogId != None:
                 self.dialog_options[self.dialogId] = {"id":i,"target":nextDialogId}
@@ -293,7 +292,7 @@ class DialogSystemDev(DialogSystemInterface):
         self.narrator = SingleLineInputBox(display.get_width()*0.2,self.dialoguebox.y+self.FONTSIZE,self.FONTSIZE,"white")
         self.content = MultipleLinesInputBox(display.get_width()*0.2,display.get_height()*0.73,self.FONTSIZE,"white")
         #将npc立绘系统设置为开发者模式
-        self.npc_and_background_image_content.devMode()
+        self._npcManager.devMode()
         #从配置文件中加载数据
         self.__loadDialogData(part)
         #背景选择界面
@@ -398,11 +397,9 @@ class DialogSystemDev(DialogSystemInterface):
     def __update_scene(self,theNextDialogId):
         if theNextDialogId in self.dialogData[self.part]:
             self.dialogId = theNextDialogId
-            #重设立绘系统
-            self.npc_and_background_image_content.update(
-                self.dialogData[self.part][self.dialogId]["characters_img"],
-                self.dialogData[self.part][self.dialogId]["background_img"]
-            )
+            #更新立绘和背景
+            self._npcManager.update(self.dialogData[self.part][self.dialogId]["characters_img"])
+            self._update_background_image(self.dialogData[self.part][self.dialogId]["background_img"])
             #更新对话框
             self.narrator.set_text(self.dialogData[self.part][self.dialogId]["narrator"])
             self.content.set_text(self.dialogData[self.part][self.dialogId]["content"])
@@ -462,7 +459,7 @@ class DialogSystemDev(DialogSystemInterface):
                     optionBox_y_base = (display.get_height()*3/4-(len(theNext["target"]))*2*display.get_width()*0.03)/4
                     for i in range(len(theNext["target"])):
                         option_txt = self.FONT.render(theNext["target"][i]["txt"],get_fontMode(),(255, 255, 255))
-                        optionBox_scaled = resizeImg(self.optionBox,
+                        optionBox_scaled = resizeImg(self._optionBox,
                         (option_txt.get_width()+display.get_width()*0.05,display.get_width()*0.05)
                         )
                         optionBox_x = (display.get_width()-optionBox_scaled.get_width())/2
@@ -476,7 +473,7 @@ class DialogSystemDev(DialogSystemInterface):
                                 break
                         for i in range(len(theNext["target"])):
                             option_txt = self.FONT.render(theNext["target"][i]["txt"],get_fontMode(),(255, 255, 255))
-                            optionBox_scaled = resizeImg(self.optionBox,
+                            optionBox_scaled = resizeImg(self._optionBox,
                             (option_txt.get_width()+display.get_width()*0.05,display.get_width()*0.05)
                             )
                             optionBox_x = (display.get_width()-optionBox_scaled.get_width())/2
@@ -487,9 +484,9 @@ class DialogSystemDev(DialogSystemInterface):
         return None
     def display(self,screen):
         #展示背景图片和npc立绘
-        self.npc_and_background_image_content.display(screen)
-        if self.npc_and_background_image_content.npcGetClick != None:
-            screen.blit(self.removeNpcButton,pygame.mouse.get_pos())
+        self.display_background_image(screen)
+        self._npcManager.display(screen)
+        if self._npcManager.npcGetClick != None: screen.blit(self.removeNpcButton,pygame.mouse.get_pos())
         #画上对话框
         self.dialoguebox.draw(screen)
         self._update_event()
@@ -578,10 +575,10 @@ class DialogSystemDev(DialogSystemInterface):
                 #鼠标右键
                 elif event.button == 3:
                     #移除角色立绘
-                    if self.npc_and_background_image_content.npcGetClick != None:
-                        self.dialogData[self.part][self.dialogId]["characters_img"].remove(self.npc_and_background_image_content.npcGetClick)
-                        self.npc_and_background_image_content.update_npc_data(self.dialogData[self.part][self.dialogId]["characters_img"])
-                        self.npc_and_background_image_content.npcGetClick = None
+                    if self._npcManager.npcGetClick != None:
+                        self.dialogData[self.part][self.dialogId]["characters_img"].remove(self._npcManager.npcGetClick)
+                        self._npcManager.update(self.dialogData[self.part][self.dialogId]["characters_img"])
+                        self._npcManager.npcGetClick = None
                 #鼠标滚轮
                 elif event.button == 4:
                     if self.UIContainerRight_kind == "npc":
@@ -596,7 +593,7 @@ class DialogSystemDev(DialogSystemInterface):
         #画上右侧的菜单选项
         self.UIContainerRightButton.display(screen,self.UIContainerRight.x)
         self.UIContainerRight.draw(screen)
-        if self.UIContainerRight.x<display.get_width():
+        if self.UIContainerRight.x < display.get_width():
             #检测按钮
             if isHover(self.button_select_background,None,self.UIContainerRight.x) and leftClick:
                 self.UIContainerRight_kind = "background"
@@ -615,7 +612,7 @@ class DialogSystemDev(DialogSystemInterface):
                     screen.blit(resizeImg(self.background_deselect,imgTmp.get_size()),pos)
                     if leftClick and isHover(imgTmp,pos):
                         self.dialogData[self.part][self.dialogId]["background_img"] = None
-                        self.npc_and_background_image_content.update_background_image(None)
+                        self._update_background_image(None)
                         leftClick = False
                         i = 0
                     else:
@@ -633,11 +630,11 @@ class DialogSystemDev(DialogSystemInterface):
                         i+=1
                         if leftClick and isHover(imgTmp,pos):
                             self.dialogData[self.part][self.dialogId]["background_img"] = imgName
-                            self.npc_and_background_image_content.update_background_image(imgName)
+                            self._update_background_image(imgName)
                             leftClick = False
             elif self.UIContainerRight_kind == "npc":
                 npc_local_y_temp = self.npc_local_y
-                for key,npcImage in self.npc_and_background_image_content.npcImageDict.items():
+                for key,npcImage in self._npcManager.npcImageDict.items():
                     if npc_local_y_temp >= display.get_height():
                         break
                     else:
@@ -650,5 +647,5 @@ class DialogSystemDev(DialogSystemInterface):
                                     self.dialogData[self.part][self.dialogId]["characters_img"] = []
                                 if len(self.dialogData[self.part][self.dialogId]["characters_img"]) < 2:
                                     self.dialogData[self.part][self.dialogId]["characters_img"].append(key)
-                                    self.npc_and_background_image_content.update_npc_data(self.dialogData[self.part][self.dialogId]["characters_img"])
+                                    self._npcManager.update(self.dialogData[self.part][self.dialogId]["characters_img"])
                         npc_local_y_temp += npcImage["normal"].get_height()*1.1

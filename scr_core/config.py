@@ -68,8 +68,7 @@ def set_setting(key:str,key2:str=None,value:any=None) -> None:
             __LINPG_DATA[key][key2] = value
 
 #保存设置参数
-def save_setting() -> None:
-    saveConfig("Save/setting.yaml",__LINPG_DATA)
+def save_setting() -> None: saveConfig("Save/setting.yaml",__LINPG_DATA)
 
 #重新加载设置配置文件，请勿在引擎外调用，重置配置文件请用reload_setting()
 def reload_DATA() -> None:

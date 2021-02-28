@@ -81,6 +81,8 @@ class MapObject:
                 elif decorationType == "chest":
                     self.__decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,decorationType))
                     self.__decorations[-1].items = itemData["items"]
+                    #是否箱子有白名单（只能被特定角色拾取）
+                    self.__decorations[-1].whitelist = itemData["whitelist"] if "whitelist" in itemData else None
                 else:
                     self.__decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,itemData["image"]))
         self.__decorations = numpy.sort(numpy.asarray(self.__decorations))

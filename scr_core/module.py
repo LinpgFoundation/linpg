@@ -39,11 +39,11 @@ class GameObject2d(GameObject):
     def size(self) -> tuple: return self.get_width(),self.get_height()
     def get_size(self) -> tuple: return self.get_width(),self.get_height()
     #将图片直接画到surface上
-    def draw(self,surface) -> None: self.display(surface)
+    def draw(self,surface:pygame.Surface) -> None: self.display(surface)
     #根据offSet将图片展示到surface的对应位置上 - 子类必须实现
-    def display(self,surface,offSet:tuple=(0,0)) -> None: throwException("error","The child class has to implement display() function!")
+    def display(self,surface:pygame.Surface,offSet:tuple=(0,0)) -> None: throwException("error","The child class has to implement display() function!")
     #忽略现有坐标，将图片画到surface的指定位置上，不推荐使用
-    def blit(self,surface,pos:tuple) -> None: 
+    def blit(self,surface:pygame.Surface,pos:tuple) -> None: 
         old_pos = self.get_pos()
         self.set_pos(pos)
         self.display(surface)

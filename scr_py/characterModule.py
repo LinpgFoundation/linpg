@@ -2,7 +2,7 @@
 from ..scr_core.function import *
 
 #存储角色受伤立绘的常量
-_CHARACTERS_GET_HURT_IMAGE_DICT = {}
+_CHARACTERS_GET_HURT_IMAGE_DICT:dict = {}
 
 #角色受伤立绘图形模块
 class CharacterGetHurtImageManagement(GameObject):

@@ -40,9 +40,9 @@ class FontGenerator:
         if self.__FONT == None or self.__SIZE != size or self.bold != ifBold or self.italic != ifItalic: self.update(size)
 
 #初始化字体的配置文件
-LINPG_FONT = get_setting("Font")
-LINPG_FONTTYPE = get_setting("FontType")
-LINPG_MODE = get_setting("Antialias")
+LINPG_FONT:str = get_setting("Font")
+LINPG_FONTTYPE:str = get_setting("FontType")
+LINPG_MODE:bool = get_setting("Antialias")
 #引擎标准文件渲染器
 LINPG_STANDARD_SMALL_FONT = FontGenerator()
 LINPG_STANDARD_MEDIUM_FONT = FontGenerator()

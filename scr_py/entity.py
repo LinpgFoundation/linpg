@@ -81,6 +81,8 @@ class Entity(GameObject):
         self.__if_map_need_update = False
         #攻击范围
         self.__attack_range = {"near":[],"middle":[],"far":[]}
+        #是否无敌
+        self.__if_invincible = False
         #血条图片
         global HP_GREEN_IMG,HP_RED_IMG,HP_EMPTY_IMG
         if HP_GREEN_IMG == None or HP_RED_IMG == None or HP_EMPTY_IMG == None:
@@ -161,7 +163,7 @@ class Entity(GameObject):
             throwException("error","You cannot heal a negative value")
     #降低血量
     def decreaseHp(self,damage:int):
-        if damage > 0:
+        if not self.__if_invincible and damage > 0:
             #如果有可再生的护甲
             if self.current_recoverable_armor > 0:
                 #如果伤害大于护甲值,则以护甲值为最大护甲将承受的伤害
@@ -188,7 +190,7 @@ class Entity(GameObject):
             if self.current_hp <= 0:
                 self.current_hp = 0
                 self.set_action("die",None)
-        elif damage == 0:
+        elif self.__if_invincible or damage == 0:
             pass
         else:
             throwException("error","You cannot do a negative damage")

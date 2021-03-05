@@ -1,45 +1,58 @@
 # cython: language_level=3
 from copy import deepcopy
+#尝试导入yaml库
+YAML_INITIALIZED:bool = False
 try:
     import yaml
-    _CONFIG_TYPE = "YAML"
+    YAML_INITIALIZED = True
 except:
-    throwException("warning","Cannot import yaml, we will try json instead.\n\
-        However, some function may be limited, we suggest you install yaml ASAP!")
-    import json
-    _CONFIG_TYPE = "JSON"
+    pass
+#导入json库
+import json
+#导入basic模块
 from .basic import *
 
 #配置文件加载
 def loadConfig(path:str,key:str=None) -> any:
-    if _CONFIG_TYPE == "YAML":
-        try:
-            with open(path, "r", encoding='utf-8') as f:
-                Data = yaml.load(f.read(),Loader=yaml.FullLoader)
-        except yaml.constructor.ConstructorError:
-            throwException("warning","Encounter a fatal error while loading the yaml file in path:\n\
-                '{}'\nOne possible reason is that at least one numpy array exists inside the yaml file.\n\
-                The program will try to load the data using yaml.UnsafeLoader.".format(path))
-            with open(path, "r", encoding='utf-8') as f:
-                Data = yaml.load(f.read(), Loader=yaml.UnsafeLoader)
+    #检测配置文件是否存在
+    if not os.path.exists(path): throwException("error","Cannot find file on path: {}".format(path))
+    #按照类型加载配置文件
+    if path.endswith(".yaml"):
+        if YAML_INITIALIZED:
+            try:
+                #尝试使用默认模式加载yaml配置文件
+                with open(path, "r", encoding='utf-8') as f: Data = yaml.load(f.read(),Loader=yaml.FullLoader)
+            except yaml.constructor.ConstructorError:
+                throwException("warning","Encounter a fatal error while loading the yaml file in path:\n'{}'\n\
+                    One possible reason is that at least one numpy array exists inside the yaml file.\n\
+                    The program will try to load the data using yaml.UnsafeLoader.".format(path))
+                #使用安全模式加载yaml配置文件
+                with open(path, "r", encoding='utf-8') as f: Data = yaml.load(f.read(), Loader=yaml.UnsafeLoader)
+        else:
+            throwException("error","You cannot load .yaml file because yaml is not imported successfully.")
+    elif path.endswith(".json"):
+        #使用json模块加载配置文件
+        with open(path, "r", encoding='utf-8') as f: Data = json.load(f)
     else:
-        with open(path, "r", encoding='utf-8') as f:
-            Data = json.load(f)
-    if key == None:
-        return Data
-    else:
-        return Data[key]
+        throwException("error","Linpg cannot load this kind of config, and can only load json and yaml (if pyyaml is installed).")
+    #返回配置文件中的数据
+    return Data if key == None else Data[key]
 
 #配置文件保存
 def saveConfig(path:str,data:any) -> None:
     with open(path, "w", encoding='utf-8') as f:
-        if _CONFIG_TYPE == "YAML":
-            yaml.dump(data, f, allow_unicode=True)
-        else:
+        if path.endswith(".yaml"):
+            if YAML_INITIALIZED:
+                yaml.dump(data, f, allow_unicode=True)
+            else:
+                throwException("error","You cannot save .yaml file because yaml is not imported successfully.")
+        elif path.endswith(".json"):
             json.dump(data, f)
+        else:
+            throwException("error","Linpg cannot save this kind of config, and can only save json and yaml (if pyyaml is installed).")
 
 #初始化储存设置配置文件的变量
-__LINPG_DATA = None
+__LINPG_DATA:dict = None
 
 #在不确定的情况下尝试获取设置配置文件
 def try_get_setting(key:str,key2:str=None) -> any:

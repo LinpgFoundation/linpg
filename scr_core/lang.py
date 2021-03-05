@@ -2,7 +2,7 @@
 from .config import *
 
 #语言配置文件
-__LINPG_LANG = None
+__LINPG_LANG:dict = None
 
 #重新加载语言配置文件
 def reload_lang() -> None:

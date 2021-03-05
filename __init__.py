@@ -5,7 +5,7 @@ try:
     from .scr_py.battle import *
 except FileNotFoundError:
     print("Battle system is disabled because some files are missing.")
-from .scr_core.experimental import *
+from .scr_core.tool import *
 import platform
 
 print("linpg 3.0alpha (pygame {}, python {})".format(pygame.version.ver,platform.python_version()))

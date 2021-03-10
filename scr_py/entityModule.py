@@ -5,7 +5,7 @@ from ..scr_core.function import *
 _CHARACTERS_GET_HURT_IMAGE_DICT:dict = {}
 
 #角色受伤立绘图形模块
-class CharacterGetHurtImageManagement(GameObject):
+class EntityGetHurtImage(GameObject):
     def __init__(self,self_type,y,width):
         GameObject.__init__(self,None,y)
         self.yToGo = None
@@ -23,7 +23,7 @@ class CharacterGetHurtImageManagement(GameObject):
             _CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = loadImg("Assets/image/npc/{}_hurt.png".format(characterType))
 
 #角色音效管理系统
-class CharacterSoundManagement:
+class EntitySoundManager:
     def __init__(self,channel_id:int) -> None:
         self.channel_id = channel_id
         self.__sounds_dict = {}
@@ -61,7 +61,7 @@ def calculate_range(effective_range_dic):
         return None
 
 #角色图片管理模块
-class CharacterImageManagement:
+class EntityImageManager:
     def __init__(self) -> None:
         self.__CHARACTERS_IMAGE_DICT = {}
     def get_img(self,characterType:str,action:str,imgId:int) -> pygame.Surface:

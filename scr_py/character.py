@@ -1,12 +1,16 @@
 # cython: language_level=3
-from tkinter.constants import NONE
 from .entity import *
+import queue
 
 #指向储存警觉图标的指针（不初始化直到Entity或其子类被调用）
-BEING_NOTICED_IMG:pygame.Surface = None
-FULLY_EXPOSED_IMG:pygame.Surface = None
-ORANGE_VIGILANCE_IMG:pygame.Surface = None
-RED_VIGILANCE_IMG:pygame.Surface = None
+_BEING_NOTICED_IMG:pygame.Surface = None
+_FULLY_EXPOSED_IMG:pygame.Surface = None
+_ORANGE_VIGILANCE_IMG:pygame.Surface = None
+_RED_VIGILANCE_IMG:pygame.Surface = None
+
+#攻击所需的AP
+AP_IS_NEEDED_TO_ATTACK:int = 5
+AP_IS_NEEDED_TO_MOVE_ONE_BLOCK:int = 2
 
 #友方角色类
 class FriendlyCharacter(Entity):
@@ -20,14 +24,15 @@ class FriendlyCharacter(Entity):
         self.skill_cover_range = defaultData["skill_cover_range"]
         self._detection = defaultData["detection"] if "detection" in defaultData and defaultData["detection"] != None else 0
         #生成被察觉的图标
-        global BEING_NOTICED_IMG,FULLY_EXPOSED_IMG
-        if BEING_NOTICED_IMG == None or FULLY_EXPOSED_IMG == None:
-            BEING_NOTICED_IMG = imgLoadFunction("Assets/image/UI/eye_orange.png",True)
-            FULLY_EXPOSED_IMG = imgLoadFunction("Assets/image/UI/eye_red.png",True)
-        self.__isNoticedImage = DynamicProgressBarSurface(FULLY_EXPOSED_IMG,BEING_NOTICED_IMG,0,0,0,0)
+        global _BEING_NOTICED_IMG,_FULLY_EXPOSED_IMG
+        if _BEING_NOTICED_IMG == None or _FULLY_EXPOSED_IMG == None:
+            _BEING_NOTICED_IMG = imgLoadFunction("Assets/image/UI/eye_orange.png",True)
+            _FULLY_EXPOSED_IMG = imgLoadFunction("Assets/image/UI/eye_red.png",True)
+        self.__isNoticedImage = DynamicProgressBarSurface(_FULLY_EXPOSED_IMG,_BEING_NOTICED_IMG,0,0,0,0)
         self.__isNoticedImage.set_percentage(self._detection/100)
+        #尝试加载重创的立绘
         try:
-            self._getHurtImage = CharacterGetHurtImageManagement(self.type,display.get_height()/4,display.get_height()/2)
+            self._getHurtImage = EntityGetHurtImage(self.type,display.get_height()/4,display.get_height()/2)
         except BaseException:
             print('警告：角色 {} 没有对应的破衣动画'.format(defaultData["type"]))
             self._getHurtImage = None
@@ -50,7 +55,8 @@ class FriendlyCharacter(Entity):
         self._getHurtImage.add(self.type)
     def decreaseHp(self,damage:int) -> None:
         super().decreaseHp(damage)
-        if self.current_hp <= 0 and not self.dying and self.kind != "HOC":
+        #如果角色在被攻击后处于濒死状态
+        if not self.is_alive() and not self.dying and self.kind != "HOC":
             self.dying = DYING_ROUND_LIMIT
             if self._getHurtImage != None:
                 self._getHurtImage.x = -self._getHurtImage.width
@@ -97,11 +103,11 @@ class HostileCharacter(Entity):
         Entity.__init__(self,defaultData,"sangvisFerri",mode)
         self.patrol_path = defaultData["patrol_path"] if "patrol_path" in defaultData else []
         self._vigilance = 0
-        global ORANGE_VIGILANCE_IMG,RED_VIGILANCE_IMG
-        if ORANGE_VIGILANCE_IMG == None or RED_VIGILANCE_IMG == None:
-            ORANGE_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_orange.png",True)
-            RED_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_red.png",True)
-        self.__vigilanceImage = DynamicProgressBarSurface(RED_VIGILANCE_IMG,ORANGE_VIGILANCE_IMG,0,0,0,0,"vertical")
+        global _ORANGE_VIGILANCE_IMG,_RED_VIGILANCE_IMG
+        if _ORANGE_VIGILANCE_IMG == None or _RED_VIGILANCE_IMG == None:
+            _ORANGE_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_orange.png",True)
+            _RED_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_red.png",True)
+        self.__vigilanceImage = DynamicProgressBarSurface(_RED_VIGILANCE_IMG,_ORANGE_VIGILANCE_IMG,0,0,0,0,"vertical")
         self.__vigilanceImage.set_percentage(self._vigilance/100)
     def alert(self,value:int=10) -> None:
         self._vigilance += value
@@ -131,124 +137,102 @@ class HostileCharacter(Entity):
             self.__vigilanceImage.set_size(eyeImgWidth,eyeImgHeight)
             self.__vigilanceImage.set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
             self.__vigilanceImage.draw(screen)
-    def make_decision(self,Map,friendlyCharacterData,hostileCharacterData,the_characters_detected_last_round):
-        character_with_min_hp = None
-        characters_can_be_detect = []
-        #检测是否有可以立马攻击的敌人
-        for character in friendlyCharacterData:
-            if friendlyCharacterData[character].detection > 0 and friendlyCharacterData[character].current_hp > 0:
-                #如果现在还没有可以直接攻击的角色或者当前历遍到角色的血量比最小值要高
-                if character_with_min_hp == None or friendlyCharacterData[character].current_hp <= friendlyCharacterData[character_with_min_hp[0]].current_hp:
-                    temp_distance = abs(friendlyCharacterData[character].x-self.x)+abs(friendlyCharacterData[character].y-self.y)
-                    if "far" in self.effective_range and self.effective_range["far"][0] <= temp_distance <= self.effective_range["far"][1]:
-                        character_with_min_hp = (character,"far")
-                    elif "middle" in self.effective_range and self.effective_range["middle"][0] <= temp_distance <= self.effective_range["middle"][1]:
-                        character_with_min_hp = (character,"middle")
-                    elif "near" in self.effective_range and self.effective_range["near"][0] <= temp_distance <= self.effective_range["near"][1]:
-                        if character_with_min_hp == None or friendlyCharacterData[character].current_hp <= friendlyCharacterData[character_with_min_hp[0]].current_hp:
-                            character_with_min_hp = (character,"near")
-                #按顺序按血量从小到大排列可以检测到的角色
-                if len(characters_can_be_detect) == 0:
-                    characters_can_be_detect = [character]
-                else:
-                    for i in range(len(characters_can_be_detect)):
-                        if friendlyCharacterData[character].current_hp < friendlyCharacterData[characters_can_be_detect[i]].current_hp:
-                            characters_can_be_detect.insert(i,character)
-        if character_with_min_hp != None:
-            #[行动, 需要攻击的目标, 所在范围]
-            return {"action": "attack",
-            "target": character_with_min_hp[0],
-            "target_area": character_with_min_hp[1]
-            }
-        elif self.kind == "HOC":
-            return {"action": "stay"}
-        else:
-            #先检测是否有可以移动后攻击的敌人
-            ap_need_to_attack = 5
-            max_moving_routes_for_attacking = int((self.max_action_point - ap_need_to_attack)/2)
-            characters_can_be_attacked = {}
-            #再次历遍所有characters_data以获取所有当前角色可以在移动后攻击到的敌对阵营角色
-            for character in friendlyCharacterData:
-                if friendlyCharacterData[character].detection == True and friendlyCharacterData[character].current_hp>0:
-                    #检测当前角色移动后足以攻击到这个敌对阵营的角色
-                    the_route = Map.findPath(self.get_pos(),friendlyCharacterData[character].get_pos(),hostileCharacterData,friendlyCharacterData,max_moving_routes_for_attacking,[character])
-                    if len(the_route)>0:
-                        temp_area = None
-                        temp_distance = abs(friendlyCharacterData[character].x-the_route[-1][0])+abs(friendlyCharacterData[character].y-the_route[-1][1])
-                        if "far" in self.effective_range and self.effective_range["far"][0] <= temp_distance <= self.effective_range["far"][1]:
-                            temp_area = "far"
-                        elif "middle" in self.effective_range and self.effective_range["middle"][0] <= temp_distance <= self.effective_range["middle"][1]:
-                            temp_area = "middle"
-                        elif "near" in self.effective_range and self.effective_range["near"][0] <= temp_distance <= self.effective_range["near"][1]:
-                            temp_area = "near"
-                        if temp_area != None:
-                            if (friendlyCharacterData[character].x,friendlyCharacterData[character].y) in the_route:
-                                the_route.remove((friendlyCharacterData[character].x,friendlyCharacterData[character].y))
-                            characters_can_be_attacked[character] = {"route":the_route,"area":temp_area}
-            #如果存在可以在移动后攻击到的敌人
-            if len(characters_can_be_attacked) >= 1:
-                character_with_min_hp = None
-                for key in characters_can_be_attacked:
-                    if character_with_min_hp == None or friendlyCharacterData[key].current_hp < friendlyCharacterData[character_with_min_hp].current_hp:
-                        character_with_min_hp = key
-                return {
-                    "action":"move&attack",
-                    "route":characters_can_be_attacked[character_with_min_hp]["route"],
-                    "target":character_with_min_hp,
-                    "target_area": characters_can_be_attacked[character_with_min_hp]["area"]
-                }
-            #如果不存在可以在移动后攻击到的敌人
-            elif len(characters_can_be_attacked) == 0:
-                #如果这一回合没有敌人暴露
-                if len(characters_can_be_detect) == 0:
-                    #如果上一个回合没有敌人暴露
-                    if len(the_characters_detected_last_round) == 0:
-                        #如果敌人没有巡逻路线
-                        if len(self.patrol_path) == 0:
-                            return {"action": "stay"}
-                        #如果敌人有巡逻路线
-                        else:
-                            the_route = Map.findPath(self.get_pos(),self.patrol_path[0],hostileCharacterData,friendlyCharacterData,max_moving_routes_for_attacking)
-                            if len(the_route) > 0:
-                                return {"action": "move","route":the_route}
-                            else:
-                                throwException("error","A hostile character cannot find a valid path!")
-                    #如果上一个回合有敌人暴露
+    def make_decision(self,Map,friendlyCharacterData,hostileCharacterData,the_characters_detected_last_round) -> queue:
+        #存储友方角色价值榜
+        target_value_board = []
+        for name,theCharacter in friendlyCharacterData.items():
+            if theCharacter.is_alive() and theCharacter.is_detected:
+                weight = 0
+                #计算距离的分数
+                weight += abs(self.x-theCharacter.x)+abs(self.y-theCharacter.y)
+                #计算血量分数
+                weight += self.current_hp*self.hp_precentage
+                target_value_board.append((name,weight))
+        #最大移动距离
+        blocks_can_move = int((self.max_action_point)/AP_IS_NEEDED_TO_MOVE_ONE_BLOCK)
+        #角色将会在该回合采取的行动
+        actions = queue.Queue()
+        #如果角色有可以攻击的对象，且角色至少有足够的行动点数攻击
+        if len(target_value_board) > 0 and self.max_action_point > AP_IS_NEEDED_TO_ATTACK:
+            action_point_can_use = self.max_action_point
+            #筛选分数最低的角色作为目标
+            target = target_value_board[0][0]
+            min_weight = target_value_board[0][1]
+            for data in target_value_board[1:]:
+                if data[1] < min_weight:
+                    min_weight = data[1]
+                    target = target_value_board[data[0]]
+            targetCharacterData = friendlyCharacterData[target]
+            if self.can_attack(targetCharacterData):
+                actions.put(DecisionHolder("attack",tuple((target,self.range_that_target_in(targetCharacterData)))))
+                action_point_can_use -= AP_IS_NEEDED_TO_ATTACK
+                """
+                if action_point_can_use > AP_IS_NEEDED_TO_ATTACK:
+                    if self.hp_precentage > 0.2:
+                        #如果自身血量正常，则应该考虑再次攻击角色
+                        actions.put(DecisionHolder("attack",target))
+                        action_point_can_use -= AP_IS_NEEDED_TO_ATTACK
                     else:
-                        that_character = None
-                        for each_chara in the_characters_detected_last_round:
-                            if that_character == None:
-                                that_character = each_chara
-                            else:
-                                if hostileCharacterData[that_character].current_hp < hostileCharacterData[that_character].current_hp:
-                                    that_character = that_character
-                        targetPosTemp = (the_characters_detected_last_round[that_character][0],the_characters_detected_last_round[that_character][1])
-                        the_route = Map.findPath(self.get_pos(),targetPosTemp,hostileCharacterData,friendlyCharacterData,max_moving_routes_for_attacking,[that_character])
+                        pass
+                """
+            else:
+                #寻找一条能到达该角色附近的线路
+                the_route = Map.findPath(self.pos,targetCharacterData.pos,hostileCharacterData,friendlyCharacterData,blocks_can_move,[target])
+                if len(the_route) > 0:
+                    potential_attacking_pos_index = {}
+                    for i in range(len(the_route)-int(AP_IS_NEEDED_TO_ATTACK/AP_IS_NEEDED_TO_MOVE_ONE_BLOCK+1)):
+                        #当前正在处理的坐标
+                        pos_on_route = the_route[i]
+                        #获取可能的攻击范围
+                        range_target_in_if_can_attack = self.range_target_in(targetCharacterData,pos_on_route)
+                        if range_target_in_if_can_attack != None and range_target_in_if_can_attack not in potential_attacking_pos_index:
+                            potential_attacking_pos_index[range_target_in_if_can_attack] = i+1
+                            if range_target_in_if_can_attack == "near":
+                                break
+                    if "near" in potential_attacking_pos_index:
+                        actions.put(DecisionHolder("move",the_route[:potential_attacking_pos_index["near"]]))
+                        actions.put(DecisionHolder("attack",tuple((target,"near"))))
+                    elif "middle" in potential_attacking_pos_index:
+                        actions.put(DecisionHolder("move",the_route[:potential_attacking_pos_index["middle"]]))
+                        actions.put(DecisionHolder("attack",tuple((target,"middle"))))
+                    elif "far" in potential_attacking_pos_index:
+                        actions.put(DecisionHolder("move",the_route[:potential_attacking_pos_index["far"]]))
+                        actions.put(DecisionHolder("attack",tuple((target,"far"))))
+                    else:
+                        actions.put(DecisionHolder("move",the_route))
+                else:
+                    throwException("error","A hostile character cannot find a valid path when trying to attack {}!".format(target))
+        #如果角色没有可以攻击的对象，则查看角色是否需要巡逻
+        elif len(self.patrol_path) > 0:
+                #如果巡逻坐标点只有一个（意味着角色需要在该坐标上长期镇守）
+                if len(self.patrol_path) == 1:
+                    if not is_same_pos(self.pos,self.patrol_path[0]):
+                        the_route = Map.findPath(self.pos,self.patrol_path[0],hostileCharacterData,friendlyCharacterData,blocks_can_move)
                         if len(the_route) > 0:
-                            if (targetPosTemp) in the_route:
-                                the_route.remove(targetPosTemp)
-                            return {"action": "move","route":the_route}
+                            actions.put(DecisionHolder("move",the_route))
                         else:
-                            return {"action": "stay"}
-                        
-                #如果这一回合有敌人暴露
+                            throwException("error","A hostile character cannot find a valid path!")
+                #如果巡逻坐标点有多个
                 else:
-                    targetPosTemp = (friendlyCharacterData[characters_can_be_detect[0]].x,friendlyCharacterData[characters_can_be_detect[0]].y)
-                    the_route = Map.findPath(self.get_pos(),targetPosTemp,hostileCharacterData,friendlyCharacterData,max_moving_routes_for_attacking,[characters_can_be_detect[0]])
+                    the_route = Map.findPath(self.pos,self.patrol_path[0],hostileCharacterData,friendlyCharacterData,blocks_can_move)
                     if len(the_route) > 0:
-                        if (targetPosTemp) in the_route:
-                            the_route.remove(targetPosTemp)
-                        return {"action": "move","route":the_route}
+                        actions.put(DecisionHolder("move",the_route))
+                        #如果角色在这次移动后到达了最近的巡逻点，则应该更新最近的巡逻点
+                        if is_same_pos(the_route[-1],self.patrol_path[0]): self.patrol_path.append(self.patrol_path.pop(0))
                     else:
-                        return {"action": "stay"}
+                        throwException("error","A hostile character cannot find a valid path!")
+        else:
+            pass
+        #放回一个装有指令的列表
+        return actions
 
 #初始化角色信息
 class CharacterDataLoader(threading.Thread):
     def __init__(self,alliances:dict,enemies:dict,mode:str) -> None:
         threading.Thread.__init__(self)
         self.DATABASE = loadCharacterData()
-        self.alliances = alliances
-        self.enemies = enemies
+        self.alliances = deepcopy(alliances)
+        self.enemies = deepcopy(enemies)
         self.totalNum = len(alliances)+len(enemies)
         self.currentID = 0
         self.mode = mode

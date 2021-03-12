@@ -9,6 +9,7 @@
         "chara",
         "cpdef",
         "cutscene",
+        "deque",
         "dtype",
         "elif",
         "isinstance",

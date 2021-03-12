@@ -359,7 +359,7 @@ class MapObject:
         else:
             return numpy.any(numpy.equal(self.__LightArea,[x,y]).all(1))
     #以下是A星寻路功能
-    def findPath(self,startPosition,endPosition,friend_data_dict,enemies_data_dict,routeLen=None,ignoreEnemyCharacters=[]):
+    def findPath(self,startPosition,endPosition,friendData:dict,enemyData:dict,int routeLen=-1,list ignoreEnemyCharacters=[]):
         #检测起点
         cdef (int,int) start_pos = convert_pos(startPosition)
         #检测终点
@@ -380,12 +380,12 @@ class MapObject:
             if item.type == "obstacle" or item.type == "campfire":
                 self.map2d[item.x][item.y] = 1
         #如果终点有我方角色，则不允许
-        for key,value in friend_data_dict.items():
+        for key,value in friendData.items():
             if value.x == end_pos[0] and value.y == end_pos[1]:
                 return []
         #历遍所有角色，将角色的坐标点设置为障碍方块
-        for key,value in enemies_data_dict.items():
-            if key != ignoreEnemyCharacters:
+        for key,value in enemyData.items():
+            if key not in ignoreEnemyCharacters:
                 self.map2d[value.x][value.y] = 1
         #如果终点是障碍物
         if self.map2d[end_pos[0]][end_pos[1]] != self.passTag:
@@ -395,12 +395,14 @@ class MapObject:
         self.endPoint = Point(end_pos[0],end_pos[1])
         #开始寻路
         cdef list pathList = self.__startFindingPath()
+        cdef int i
+        cdef int pathListLen = int(len(pathList))
         #遍历路径点,讲指定数量的点放到路径列表中
-        if len(pathList) > 0:
-            if routeLen != None and len(pathList) < routeLen or routeLen == None:
-                routeLen = len(pathList)
-            the_route = [pathList[i].get_pos() for i in range(routeLen)]
-            return the_route
+        if pathListLen > 0:
+            #生成路径的长度
+            if routeLen >= 0 and pathListLen < routeLen or routeLen <= 0: routeLen = pathListLen
+            #返回路径
+            return [pathList[i].get_pos() for i in range(routeLen)]
         else:
             return []
     def __getMinNode(self):
@@ -428,7 +430,7 @@ class MapObject:
             if node.point == self.endPoint:
                 return node
         return None
-    def __searchNear(self, minF, offSetX, offSetY):
+    def __searchNear(self, minF, int offSetX, int offSetY):
         """
         搜索节点周围的点
         :param minF:F值最小的节点

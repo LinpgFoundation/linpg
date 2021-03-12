@@ -152,6 +152,8 @@ class Entity(GameObject):
             return True
     """角色血量护甲参数管理"""
     #是否角色还活着
+    @property
+    def isAlive(self) -> bool: return self.__current_hp > 0
     def is_alive(self) -> bool: return self.__current_hp > 0
     #当前血量
     @property
@@ -209,7 +211,7 @@ class Entity(GameObject):
         another_entity.decreaseHp(damage)
         return damage
     #回复可再生护甲
-    def recoverArmor(self,value:int) -> None:
+    def recover_armor(self,value:int) -> None:
         self.__current_recoverable_armor += int(value)
         #防止可再生护甲的数值越界
         if self.__current_recoverable_armor > self.__max_recoverable_armor:
@@ -218,9 +220,9 @@ class Entity(GameObject):
             self.__current_recoverable_armor = 0
     """其他"""
     #设置反转
-    def setFlip(self,theBool:bool) -> None: self.if_flip = theBool
+    def set_flip(self,theBool:bool) -> None: self.if_flip = theBool
     #播放角色声音
-    def playSound(self,kind_of_sound:str) -> None: _CHARACTERS_SOUND_SYSTEM.play(self.type,kind_of_sound)
+    def play_sound(self,kind_of_sound:str) -> None: _CHARACTERS_SOUND_SYSTEM.play(self.type,kind_of_sound)
     #设置需要移动的路径
     def move_follow(self,path) -> None:
         if isinstance(path,(list,tuple)) and len(path)>0:
@@ -229,40 +231,36 @@ class Entity(GameObject):
         else:
             throwException("error","Character cannot move to a invalid path!")
     #根据路径移动
-    def __move_based_on_path(self,MapClass) -> None:
+    def __move_based_on_path(self) -> None:
         if len(self.__moving_path) > 0:
             if self.x < self.__moving_path[0][0]:
-                self.x+=0.05
-                self.setFlip(False)
+                self.x += 0.05
+                self.set_flip(False)
                 if self.x >= self.__moving_path[0][0]:
                     self.x = self.__moving_path[0][0]
                     self.__moving_path.pop(0)
-                    if MapClass.isAtNight():
-                        self.__if_map_need_update = True
+                    self.__if_map_need_update = True
             elif self.x > self.__moving_path[0][0]:
                 self.x-=0.05
-                self.setFlip(True)
+                self.set_flip(True)
                 if self.x <= self.__moving_path[0][0]:
                     self.x = self.__moving_path[0][0]
                     self.__moving_path.pop(0)
-                    if MapClass.isAtNight():
-                        self.__if_map_need_update = True
+                    self.__if_map_need_update = True
             elif self.y < self.__moving_path[0][1]:
                 self.y+=0.05
-                self.setFlip(True)
+                self.set_flip(True)
                 if self.y >= self.__moving_path[0][1]:
                     self.y = self.__moving_path[0][1]
                     self.__moving_path.pop(0)
-                    if MapClass.isAtNight():
-                        self.__if_map_need_update = True
+                    self.__if_map_need_update = True
             elif self.y > self.__moving_path[0][1]:
                 self.y-=0.05
-                self.setFlip(False)
+                self.set_flip(False)
                 if self.y <= self.__moving_path[0][1]:
                     self.y = self.__moving_path[0][1]
                     self.__moving_path.pop(0)
-                    if MapClass.isAtNight():
-                        self.__if_map_need_update = True
+                    self.__if_map_need_update = True
         else:
             self.__moving_path = None
             if self.get_imgId("set") != None:
@@ -335,7 +333,7 @@ class Entity(GameObject):
         return self.__attack_range
     #目标角色所在的攻击范围内
     def range_target_in(self,otherEntity,custom_pos=None) -> str:
-        distanceBetween:int = abs(otherEntity.x-self.x)+abs(otherEntity.y-self.y) if custom_pos == None else abs(otherEntity.x-custom_pos[0])+abs(otherEntity.y-custom_pos[1])
+        distanceBetween:int = abs(int(otherEntity.x-self.x))+abs(int(otherEntity.y-self.y)) if custom_pos == None else abs(int(otherEntity.x-custom_pos[0]))+abs(int(otherEntity.y-custom_pos[1]))
         if "near" in self.effective_range and self.effective_range["near"] != None and self.effective_range["near"][0] <= distanceBetween <= self.effective_range["near"][1]:
             return "near"
         elif "middle" in self.effective_range and self.effective_range["middle"] != None and self.effective_range["middle"][0] <= distanceBetween <= self.effective_range["middle"][1]:
@@ -358,19 +356,19 @@ class Entity(GameObject):
         else:
             throwException("error","This character has no valid effective range!")
     #根据坐标反转角色
-    def setFlipBasedPos(self,pos):
+    def set_flip_based_on_pos(self,pos):
         #转换坐标
         x,y = convert_pos(pos)
         #检测坐标
         if self.x > x:
-            self.setFlip(True)
+            self.set_flip(True)
         elif self.x == x:
             if self.y > y:
-                self.setFlip(False)
+                self.set_flip(False)
             else:
-                self.setFlip(True)
+                self.set_flip(True)
         else:
-            self.setFlip(False)
+            self.set_flip(False)
     """画出角色"""
     #把角色画到screen上
     def __blit_entity_img(self,screen,MapClass,action=None,pos=None,alpha=155) -> None:
@@ -398,7 +396,7 @@ class Entity(GameObject):
         self.__blit_entity_img(screen,MapClass,alpha=self.get_imgAlpaha(self.__current_action))
         #如果当前动作是移动
         if self.__current_action == "move" and self.__moving_path != None:
-            self.__move_based_on_path(MapClass)
+            self.__move_based_on_path()
         #如果角色图片还没播放完
         if not self._if_play_action_in_reversing:
             if self.__imgId_dict[self.__current_action]["imgId"] < self.get_imgNum(self.__current_action)-1:

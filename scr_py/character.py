@@ -1,6 +1,7 @@
 # cython: language_level=3
 from .entity import *
 import queue
+from collections import deque
 
 #指向储存警觉图标的指针（不初始化直到Entity或其子类被调用）
 _BEING_NOTICED_IMG:pygame.Surface = None
@@ -62,7 +63,7 @@ class FriendlyCharacter(Entity):
                 self._getHurtImage.x = -self._getHurtImage.width
                 self._getHurtImage.alpha = 255
                 self._getHurtImage.yToGo = 255
-                self.playSound("injured")
+                self.play_sound("injured")
     def heal(self,hpHealed:int) -> None:
         super().heal(hpHealed)
         if self.dying != False:
@@ -101,7 +102,7 @@ class HostileCharacter(Entity):
         for key in theSangvisFerrisDataDic:
             defaultData[key] = theSangvisFerrisDataDic[key]
         Entity.__init__(self,defaultData,"sangvisFerri",mode)
-        self.patrol_path = defaultData["patrol_path"] if "patrol_path" in defaultData else []
+        self.__patrol_path = deque(defaultData["patrol_path"]) if "patrol_path" in defaultData else deque()
         self._vigilance = 0
         global _ORANGE_VIGILANCE_IMG,_RED_VIGILANCE_IMG
         if _ORANGE_VIGILANCE_IMG == None or _RED_VIGILANCE_IMG == None:
@@ -137,7 +138,7 @@ class HostileCharacter(Entity):
             self.__vigilanceImage.set_size(eyeImgWidth,eyeImgHeight)
             self.__vigilanceImage.set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
             self.__vigilanceImage.draw(screen)
-    def make_decision(self,Map,friendlyCharacterData,hostileCharacterData,the_characters_detected_last_round) -> queue:
+    def make_decision(self,Map,friendlyCharacterData:dict,hostileCharacterData:dict,the_characters_detected_last_round:list) -> queue:
         #存储友方角色价值榜
         target_value_board = []
         for name,theCharacter in friendlyCharacterData.items():
@@ -164,7 +165,7 @@ class HostileCharacter(Entity):
                     target = target_value_board[data[0]]
             targetCharacterData = friendlyCharacterData[target]
             if self.can_attack(targetCharacterData):
-                actions.put(DecisionHolder("attack",tuple((target,self.range_that_target_in(targetCharacterData)))))
+                actions.put(DecisionHolder("attack",tuple((target,self.range_target_in(targetCharacterData)))))
                 action_point_can_use -= AP_IS_NEEDED_TO_ATTACK
                 """
                 if action_point_can_use > AP_IS_NEEDED_TO_ATTACK:
@@ -203,24 +204,27 @@ class HostileCharacter(Entity):
                 else:
                     throwException("error","A hostile character cannot find a valid path when trying to attack {}!".format(target))
         #如果角色没有可以攻击的对象，则查看角色是否需要巡逻
-        elif len(self.patrol_path) > 0:
-                #如果巡逻坐标点只有一个（意味着角色需要在该坐标上长期镇守）
-                if len(self.patrol_path) == 1:
-                    if not is_same_pos(self.pos,self.patrol_path[0]):
-                        the_route = Map.findPath(self.pos,self.patrol_path[0],hostileCharacterData,friendlyCharacterData,blocks_can_move)
-                        if len(the_route) > 0:
-                            actions.put(DecisionHolder("move",the_route))
-                        else:
-                            throwException("error","A hostile character cannot find a valid path!")
-                #如果巡逻坐标点有多个
-                else:
-                    the_route = Map.findPath(self.pos,self.patrol_path[0],hostileCharacterData,friendlyCharacterData,blocks_can_move)
+        elif len(self.__patrol_path) > 0:
+            #如果巡逻坐标点只有一个（意味着角色需要在该坐标上长期镇守）
+            if len(self.__patrol_path) == 1:
+                if not is_same_pos(self.pos,self.__patrol_path[0]):
+                    the_route = Map.findPath(self.pos,self.__patrol_path[0],hostileCharacterData,friendlyCharacterData,blocks_can_move)
                     if len(the_route) > 0:
                         actions.put(DecisionHolder("move",the_route))
-                        #如果角色在这次移动后到达了最近的巡逻点，则应该更新最近的巡逻点
-                        if is_same_pos(the_route[-1],self.patrol_path[0]): self.patrol_path.append(self.patrol_path.pop(0))
                     else:
                         throwException("error","A hostile character cannot find a valid path!")
+                else:
+                    #如果角色在该点上，则原地待机
+                    pass
+            #如果巡逻坐标点有多个
+            else:
+                the_route = Map.findPath(self.pos,self.__patrol_path[0],hostileCharacterData,friendlyCharacterData,blocks_can_move)
+                if len(the_route) > 0:
+                    actions.put(DecisionHolder("move",the_route))
+                    #如果角色在这次移动后到达了最近的巡逻点，则应该更新最近的巡逻点
+                    if is_same_pos(the_route[-1],self.__patrol_path[0]): self.__patrol_path.append(self.__patrol_path.popleft())
+                else:
+                    throwException("error","A hostile character cannot find a valid path!")
         else:
             pass
         #放回一个装有指令的列表

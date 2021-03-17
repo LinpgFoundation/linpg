@@ -240,9 +240,7 @@ class MultipleLinesInputBox(InputBoxInterface):
             self.holderIndex = i
         else:
             self.holderIndex = i-1
-    def display(self,screen,pygame_events=None) -> bool:
-        if pygame_events == None:
-            pygame_events = pygame.event.get()
+    def display(self,screen,pygame_events=pygame.event.get()) -> bool:
         mouse_x,mouse_y = pygame.mouse.get_pos()
         for event in pygame_events:
             if self.active:

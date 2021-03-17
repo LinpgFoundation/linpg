@@ -11,7 +11,13 @@ class DialogSystemInterface(SystemWithBackgroundMusic):
         #黑色Void帘幕
         self._black_bg = get_SingleColorSurface("black")
         #选项栏
-        self._optionBox = loadImg("Assets/image/UI/option.png")
+        self._optionBox = SrcalphaSurface("Assets/image/UI/option.png",0,0)
+        #选项栏-选中
+        try:
+            self.optionBoxSelected = SrcalphaSurface("Assets/image/UI/option_selected.png",0,0)
+        except:
+            throwException("warning","Cannot find 'option_selected.png' in 'UI' file, 'option.png' will be loaded instead.")
+            self.optionBoxSelected = self._optionBox.light_copy()
         #是否开启自动保存
         self.auto_save = False
         #背景图片
@@ -52,11 +58,20 @@ class DialogSystemInterface(SystemWithBackgroundMusic):
                     throwException("error","Cannot find a background image or video file called '{}'.".format(self.__backgroundImageName))
             else:
                 self.__backgroundImageSurface = self._black_bg.copy()
-    #将背景图片画到screen上
-    def display_background_image(self,screen) -> None:
+    #将背景图片画到surface上
+    def display_background_image(self,surface) -> None:
         if isinstance(self.__backgroundImageSurface,ImageSurface):
-            self.__backgroundImageSurface.set_size(screen.get_width(),screen.get_height())
-        self.__backgroundImageSurface.display(screen)
+            self.__backgroundImageSurface.set_size(surface.get_width(),surface.get_height())
+        self.__backgroundImageSurface.display(surface)
+    #把基础内容画到surface上
+    def display(self,surface) -> None:
+        #更新事件
+        self._update_event()
+        #检测章节是否初始化
+        if self.chapterId == None: raise throwException("error","The dialog has not been initialized!")
+        #展示背景图片和npc立绘
+        self.display_background_image(surface)
+        self._npcManager.display(surface)
 
 #npc立绘系统
 class NpcImageManager:
@@ -93,7 +108,7 @@ class NpcImageManager:
         self.npcImageDict[name]["dark"] = self.npcImageDict[name]["normal"].copy()
         self.npcImageDict[name]["dark"].addDarkness(50)
     #画出角色
-    def __displayNpc(self,name,x,y,alpha,screen) -> None:
+    def __displayNpc(self,name,x,y,alpha,surface) -> None:
         if alpha > 0:
             nameTemp = name.replace("&communication","").replace("&dark","")
             self.__ensure_the_existence_of(nameTemp)
@@ -116,16 +131,16 @@ class NpcImageManager:
                     x+=int(self.img_width/4)
             """
             img.set_pos(x,y)
-            img.draw(screen)
+            img.draw(surface)
             #如果是开发模式
             if self.dev_mode:
                 self.npcGetClick = None
                 if isHover(img,(x,y)):
-                    img.draw_outline(screen)
+                    img.draw_outline(surface)
                     self.npcGetClick = name
-    def display(self,screen):
-        window_x = screen.get_width()
-        window_y = screen.get_height()
+    def display(self,surface):
+        window_x = surface.get_width()
+        window_y = surface.get_height()
         npcImg_y = window_y-window_x/2
         #调整alpha值
         if self.npcLastRoundImgAlpha > 0:
@@ -145,93 +160,93 @@ class NpcImageManager:
                 pass
             #新增中间那个立绘
             elif len(self.npcThisRound) == 1:
-                self.__displayNpc(self.npcThisRound[0],window_x/4+x_moved_forNpcThisRound,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                self.__displayNpc(self.npcThisRound[0],window_x/4+x_moved_forNpcThisRound,npcImg_y,self.npcThisRoundImgAlpha,surface)
             #同时新增左右两边的立绘
             elif len(self.npcThisRound) == 2:
-                self.__displayNpc(self.npcThisRound[0],x_moved_forNpcThisRound,npcImg_y,self.npcThisRoundImgAlpha,screen)
-                self.__displayNpc(self.npcThisRound[1],window_x/2+x_moved_forNpcThisRound,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                self.__displayNpc(self.npcThisRound[0],x_moved_forNpcThisRound,npcImg_y,self.npcThisRoundImgAlpha,surface)
+                self.__displayNpc(self.npcThisRound[1],window_x/2+x_moved_forNpcThisRound,npcImg_y,self.npcThisRoundImgAlpha,surface)
         elif len(self.npcLastRound) == 1:
             #很快不再需要显示原来中间的立绘
             if len(self.npcThisRound) == 0:
-                self.__displayNpc(self.npcLastRound[0],window_x/4+x_moved_forNpcLastRound,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                self.__displayNpc(self.npcLastRound[0],window_x/4+x_moved_forNpcLastRound,npcImg_y,self.npcLastRoundImgAlpha,surface)
             #更换中间的立绘
             elif len(self.npcThisRound) == 1:
-                self.__displayNpc(self.npcLastRound[0],window_x/4,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                self.__displayNpc(self.npcThisRound[0],window_x/4,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                self.__displayNpc(self.npcLastRound[0],window_x/4,npcImg_y,self.npcLastRoundImgAlpha,surface)
+                self.__displayNpc(self.npcThisRound[0],window_x/4,npcImg_y,self.npcThisRoundImgAlpha,surface)
             elif len(self.npcThisRound) == 2:
                 #如果之前的中间变成了现在的左边，则立绘应该先向左移动
                 if self.__NPC_IMAGE_DATABASE.ifSameKind(self.npcLastRound[0],self.npcThisRound[0]):
                     if self.move_x+window_x/4 > 0:
                         self.move_x -= window_x/40
                     #显示左边立绘
-                    self.__displayNpc(self.npcLastRound[0],self.move_x+window_x/4,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                    self.__displayNpc(self.npcThisRound[0],self.move_x+window_x/4,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[0],self.move_x+window_x/4,npcImg_y,self.npcLastRoundImgAlpha,surface)
+                    self.__displayNpc(self.npcThisRound[0],self.move_x+window_x/4,npcImg_y,self.npcThisRoundImgAlpha,surface)
                     #显示右边立绘
-                    self.__displayNpc(self.npcThisRound[1],window_x/2,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcThisRound[1],window_x/2,npcImg_y,self.npcThisRoundImgAlpha,surface)
                 #如果之前的中间变成了现在的右边，则立绘应该先向右移动 - checked
                 elif self.__NPC_IMAGE_DATABASE.ifSameKind(self.npcLastRound[0],self.npcThisRound[1]):
                     if self.move_x+window_x/4 < window_x/2:
                         self.move_x += window_x/40
                     #显示左边立绘
-                    self.__displayNpc(self.npcThisRound[0],0,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcThisRound[0],0,npcImg_y,self.npcThisRoundImgAlpha,surface)
                     #显示右边立绘
-                    self.__displayNpc(self.npcLastRound[0],self.move_x+window_x/4,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                    self.__displayNpc(self.npcThisRound[1],self.move_x+window_x/4,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[0],self.move_x+window_x/4,npcImg_y,self.npcLastRoundImgAlpha,surface)
+                    self.__displayNpc(self.npcThisRound[1],self.move_x+window_x/4,npcImg_y,self.npcThisRoundImgAlpha,surface)
                 #之前的中间和现在两边无任何关系，先隐藏之前的立绘，然后显示现在的立绘 - checked
                 else:
                     if self.npcLastRoundImgAlpha > 0:
                         self.npcThisRoundImgAlpha -= 25
-                        self.__displayNpc(self.npcLastRound[0],window_x/4,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                        self.__displayNpc(self.npcLastRound[0],window_x/4,npcImg_y,self.npcLastRoundImgAlpha,surface)
                     else:
-                        self.__displayNpc(self.npcThisRound[0],0,npcImg_y,self.npcThisRoundImgAlpha,screen)
-                        self.__displayNpc(self.npcThisRound[1],window_x/2,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                        self.__displayNpc(self.npcThisRound[0],0,npcImg_y,self.npcThisRoundImgAlpha,surface)
+                        self.__displayNpc(self.npcThisRound[1],window_x/2,npcImg_y,self.npcThisRoundImgAlpha,surface)
         elif len(self.npcLastRound)==2:
             #隐藏之前的左右两边立绘
             if len(self.npcThisRound) == 0:
-                self.__displayNpc(self.npcLastRound[0],x_moved_forNpcLastRound,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                self.__displayNpc(self.npcLastRound[1],window_x/2+x_moved_forNpcLastRound,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                self.__displayNpc(self.npcLastRound[0],x_moved_forNpcLastRound,npcImg_y,self.npcLastRoundImgAlpha,surface)
+                self.__displayNpc(self.npcLastRound[1],window_x/2+x_moved_forNpcLastRound,npcImg_y,self.npcLastRoundImgAlpha,surface)
             elif len(self.npcThisRound) == 1:
                 #如果之前的左边变成了现在的中间，则立绘应该先向右边移动
                 if self.__NPC_IMAGE_DATABASE.ifSameKind(self.npcLastRound[0],self.npcThisRound[0]):
                     if self.move_x < window_x/4:
                         self.move_x += window_x/40
                     #左边立绘向右移动
-                    self.__displayNpc(self.npcLastRound[0],self.move_x,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                    self.__displayNpc(self.npcThisRound[0],self.move_x,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[0],self.move_x,npcImg_y,self.npcLastRoundImgAlpha,surface)
+                    self.__displayNpc(self.npcThisRound[0],self.move_x,npcImg_y,self.npcThisRoundImgAlpha,surface)
                     #右边立绘消失
-                    self.__displayNpc(self.npcLastRound[1],window_x/2,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[1],window_x/2,npcImg_y,self.npcLastRoundImgAlpha,surface)
                 #如果之前的右边变成了现在的中间，则立绘应该先向左边移动
                 elif self.__NPC_IMAGE_DATABASE.ifSameKind(self.npcLastRound[1],self.npcThisRound[0]):
                     if self.move_x+window_x/2 > window_x/4:
                         self.move_x -= window_x/40
                     #左边立绘消失
-                    self.__displayNpc(self.npcLastRound[0],0,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[0],0,npcImg_y,self.npcLastRoundImgAlpha,surface)
                     #右边立绘向左移动
-                    self.__displayNpc(self.npcLastRound[1],self.move_x+window_x/2,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                    self.__displayNpc(self.npcThisRound[0],self.move_x+window_x/2,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[1],self.move_x+window_x/2,npcImg_y,self.npcLastRoundImgAlpha,surface)
+                    self.__displayNpc(self.npcThisRound[0],self.move_x+window_x/2,npcImg_y,self.npcThisRoundImgAlpha,surface)
                 else:
                     if self.npcLastRoundImgAlpha > 0:
                         self.npcThisRoundImgAlpha -= 25
-                        self.__displayNpc(self.npcLastRound[0],0,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                        self.__displayNpc(self.npcLastRound[1],window_x/2,npcImg_y,self.npcLastRoundImgAlpha,screen)
+                        self.__displayNpc(self.npcLastRound[0],0,npcImg_y,self.npcLastRoundImgAlpha,surface)
+                        self.__displayNpc(self.npcLastRound[1],window_x/2,npcImg_y,self.npcLastRoundImgAlpha,surface)
                     else:
-                        self.__displayNpc(self.npcThisRound[0],window_x/4,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                        self.__displayNpc(self.npcThisRound[0],window_x/4,npcImg_y,self.npcThisRoundImgAlpha,surface)
             elif len(self.npcThisRound) == 2:
                 if self.__NPC_IMAGE_DATABASE.ifSameKind(self.npcLastRound[0],self.npcThisRound[1]) and\
                     self.__NPC_IMAGE_DATABASE.ifSameKind(self.npcLastRound[1],self.npcThisRound[0]):
                     if self.move_x+window_x/2 > 0:
                         self.move_x -= window_x/30
                     #左边到右边去
-                    self.__displayNpc(self.npcLastRound[0],-self.move_x,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                    self.__displayNpc(self.npcThisRound[1],-self.move_x,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[0],-self.move_x,npcImg_y,self.npcLastRoundImgAlpha,surface)
+                    self.__displayNpc(self.npcThisRound[1],-self.move_x,npcImg_y,self.npcThisRoundImgAlpha,surface)
                     #右边到左边去
-                    self.__displayNpc(self.npcLastRound[1],window_x/2+self.move_x,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                    self.__displayNpc(self.npcThisRound[0],window_x/2+self.move_x,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[1],window_x/2+self.move_x,npcImg_y,self.npcLastRoundImgAlpha,surface)
+                    self.__displayNpc(self.npcThisRound[0],window_x/2+self.move_x,npcImg_y,self.npcThisRoundImgAlpha,surface)
                 else:
-                    self.__displayNpc(self.npcLastRound[0],0,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                    self.__displayNpc(self.npcLastRound[1],window_x/2,npcImg_y,self.npcLastRoundImgAlpha,screen)
-                    self.__displayNpc(self.npcThisRound[0],0,npcImg_y,self.npcThisRoundImgAlpha,screen)
-                    self.__displayNpc(self.npcThisRound[1],window_x/2,npcImg_y,self.npcThisRoundImgAlpha,screen)
+                    self.__displayNpc(self.npcLastRound[0],0,npcImg_y,self.npcLastRoundImgAlpha,surface)
+                    self.__displayNpc(self.npcLastRound[1],window_x/2,npcImg_y,self.npcLastRoundImgAlpha,surface)
+                    self.__displayNpc(self.npcThisRound[0],0,npcImg_y,self.npcThisRoundImgAlpha,surface)
+                    self.__displayNpc(self.npcThisRound[1],window_x/2,npcImg_y,self.npcThisRoundImgAlpha,surface)
     #更新立绘
     def update(self,characterNameList):
         self.npcLastRound = self.npcThisRound
@@ -304,39 +319,39 @@ class DialogContent(DialogInterface):
     #如果音效还在播放则停止播放文字音效
     def stop_playing_text_sound(self) -> None:
         if pygame.mixer.get_busy() and self.__textPlayingSound != None: self.__textPlayingSound.stop()
-    def display(self,screen) -> None:
+    def display(self,surface) -> None:
         if not self.isHidden:
             if not self.__fade_out_stage:
-                self.__fadeIn(screen)
+                self.__fadeIn(surface)
             else:
-                self.__fadeOut(screen)
+                self.__fadeOut(surface)
     #渐入
-    def __fadeIn(self,screen) -> None:
+    def __fadeIn(self,surface) -> None:
         #如果对话框图片的最高高度没有被设置，则根据屏幕大小设置一个
         if self.dialoguebox_max_height == None:
-            self.dialoguebox_max_height = screen.get_height()/4
+            self.dialoguebox_max_height = surface.get_height()/4
         #如果当前对话框图片的y坐标不存在（一般出现在对话系统例行初始化后），则根据屏幕大小设置一个
         if self.dialoguebox_y == None:
-            self.dialoguebox_y = screen.get_height()*0.65+self.dialoguebox_max_height/2
+            self.dialoguebox_y = surface.get_height()*0.65+self.dialoguebox_max_height/2
         #画出对话框图片
-        screen.blit(resizeImg(self.dialoguebox,(screen.get_width()*0.74,self.dialoguebox_height)),
-        (screen.get_width()*0.13,self.dialoguebox_y))
+        surface.blit(resizeImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
+        (surface.get_width()*0.13,self.dialoguebox_y))
         #如果对话框图片还在放大阶段
         if self.dialoguebox_height < self.dialoguebox_max_height:
             self.dialoguebox_height += self.dialoguebox_max_height/10
             self.dialoguebox_y -= self.dialoguebox_max_height/20
         #如果已经放大好了
         else:
-            self.__blit_txt(screen)
+            self.__blit_txt(surface)
     #淡出
-    def __fadeOut(self,screen) -> None:
+    def __fadeOut(self,surface) -> None:
         #画出对话框图片
-        screen.blit(resizeImg(self.dialoguebox,(screen.get_width()*0.74,self.dialoguebox_height)),
-        (screen.get_width()*0.13,self.dialoguebox_y))
+        surface.blit(resizeImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
+        (surface.get_width()*0.13,self.dialoguebox_y))
         """
         if self.__txt_alpha > 0:
             self.__txt_alpha -= 17
-            self.__blit_txt(screen)
+            self.__blit_txt(surface)
         else:
         """
         if self.dialoguebox_height > 0:
@@ -345,19 +360,19 @@ class DialogContent(DialogInterface):
         else:
             self.resetDialogueboxData()
     #将文字画到屏幕上
-    def __blit_txt(self,screen) -> None:
-        x = int(screen.get_width()*0.2)
-        y = int(screen.get_height()*0.73)
+    def __blit_txt(self,surface) -> None:
+        x = int(surface.get_width()*0.2)
+        y = int(surface.get_height()*0.73)
         #写上当前讲话人的名字
         if self.narrator != None:
-            screen.blit(self.__render_font(self.narrator,(255, 255, 255)),(x,self.dialoguebox_y+self.FONTSIZE))
+            surface.blit(self.__render_font(self.narrator,(255, 255, 255)),(x,self.dialoguebox_y+self.FONTSIZE))
         #画出鼠标gif
-        self.mouseImg.display(screen)
+        self.mouseImg.display(surface)
         #对话框已播放的内容
         for i in range(self.displayedLine):
-            screen.blit(self.__render_font(self.content[i],(255, 255, 255)),(x,y+self.FONTSIZE*1.5*i))
+            surface.blit(self.__render_font(self.content[i],(255, 255, 255)),(x,y+self.FONTSIZE*1.5*i))
         #对话框正在播放的内容
-        screen.blit(
+        surface.blit(
             self.__render_font(self.content[self.displayedLine][:self.textIndex],(255, 255, 255)),
             (x,y+self.FONTSIZE*1.5*self.displayedLine)
             )
@@ -437,24 +452,24 @@ class DialogButtons:
         history_imgTemp.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
         self.historyButton = Button(history_imgTemp,window_x*0.1,window_y*0.05)
         self.historyButton.setHoverImg(history_img)
-    def display(self,screen,isHidden):
+    def display(self,surface,isHidden):
         if isHidden:
-            self.showButton.display(screen)
+            self.showButton.display(surface)
             return "hide" if isHover(self.showButton) else ""
         elif isHidden == False:
-            self.hideButton.display(screen)
-            self.historyButton.display(screen)
+            self.hideButton.display(surface)
+            self.historyButton.display(surface)
             action = ""
             if isHover(self.skipButton):
-                self.skipButtonHovered.draw(screen)
+                self.skipButtonHovered.draw(surface)
                 action = "skip"
             else:
-                self.skipButton.draw(screen)
+                self.skipButton.draw(surface)
             if isHover(self.autoButton):
-                self.autoButtonHovered.draw(screen)
+                self.autoButtonHovered.draw(surface)
                 if self.autoMode:
                     rotatedIcon = pygame.transform.rotate(self.autoIconHovered,self.autoIconDegree)
-                    screen.blit(rotatedIcon,(
+                    surface.blit(rotatedIcon,(
                         self.autoButtonHovered.description+self.autoIconHovered.get_width()/2-rotatedIcon.get_width()/2,
                         self.autoButtonHovered.y+self.icon_y+self.autoIconHovered.get_height()/2-rotatedIcon.get_height()/2
                         ))
@@ -463,13 +478,13 @@ class DialogButtons:
                     else:
                         self.autoIconDegree=0
                 else:
-                    screen.blit(self.autoIconHovered,(self.autoButtonHovered.description,self.autoButtonHovered.y+self.icon_y))
+                    surface.blit(self.autoIconHovered,(self.autoButtonHovered.description,self.autoButtonHovered.y+self.icon_y))
                 action = "auto"
             else:
                 if self.autoMode:
-                    self.autoButtonHovered.draw(screen)
+                    self.autoButtonHovered.draw(surface)
                     rotatedIcon = pygame.transform.rotate(self.autoIconHovered,self.autoIconDegree)
-                    screen.blit(rotatedIcon,(
+                    surface.blit(rotatedIcon,(
                         self.autoButtonHovered.description+self.autoIconHovered.get_width()/2-rotatedIcon.get_width()/2,
                         self.autoButtonHovered.y+self.icon_y+self.autoIconHovered.get_height()/2-rotatedIcon.get_height()/2
                         ))
@@ -478,8 +493,8 @@ class DialogButtons:
                     else:
                         self.autoIconDegree=0
                 else:
-                    self.autoButton.draw(screen)
-                    screen.blit(self.autoIcon,(self.autoButton.description,self.autoButton.y+self.icon_y))
+                    self.autoButton.draw(surface)
+                    surface.blit(self.autoIcon,(self.autoButton.description,self.autoButton.y+self.icon_y))
             if isHover(self.hideButton):
                 action = "hide"
             elif isHover(self.historyButton):

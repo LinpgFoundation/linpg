@@ -138,7 +138,7 @@ class HostileCharacter(Entity):
             self.__vigilanceImage.set_size(eyeImgWidth,eyeImgHeight)
             self.__vigilanceImage.set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
             self.__vigilanceImage.draw(screen)
-    def make_decision(self,Map,friendlyCharacterData:dict,hostileCharacterData:dict,the_characters_detected_last_round:list) -> queue:
+    def make_decision(self,Map,friendlyCharacterData:dict,hostileCharacterData:dict,the_characters_detected_last_round:dict) -> queue:
         #存储友方角色价值榜
         target_value_board = []
         for name,theCharacter in friendlyCharacterData.items():

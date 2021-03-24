@@ -120,7 +120,7 @@ def reload_DATA() -> None:
 reload_DATA()
 
 #全局数据
-__LINPG_GLOBAL_DATA = {}
+__LINPG_GLOBAL_DATA:dict = {}
 
 #设置特定的全局数据
 def set_glob_value(key:str,value:any) -> None:
@@ -140,3 +140,15 @@ def if_get_set_value(key:str,valueToGet:any,valueToSet:any) -> bool:
 def remove_glob_value(key:str) -> None:
     global __LINPG_GLOBAL_DATA
     del __LINPG_GLOBAL_DATA[key]
+
+#版本信息
+__SETUP_INFO:dict = loadConfig(os.path.join(os.path.dirname(__file__),"../setup.yaml"))
+
+#获取当前版本号
+def get_current_version() -> str: return "{0}.{1}.{2}".format(__SETUP_INFO["version"],__SETUP_INFO["revision"],__SETUP_INFO["patch"])
+#获取作者邮箱
+def get_author_email() -> str: return deepcopy(__SETUP_INFO["author_email"])
+#获取github项目地址
+def get_repository_url() -> str: return deepcopy(__SETUP_INFO["repository_url"])
+#获取项目简介
+def get_short_description() -> str:  return deepcopy(__SETUP_INFO["short_description"])

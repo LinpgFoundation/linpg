@@ -8,5 +8,5 @@ except FileNotFoundError:
 from .scr_core.tool import *
 import platform
 
-print("linpg 3.0alpha (pygame {}, python {})".format(pygame.version.ver,platform.python_version()))
+print("linpg {0} (pygame {1}, python {2})".format(get_current_version(),pygame.version.ver,platform.python_version()))
 print("Hello from the linpg community. http://tjygf.com/forum.php")

@@ -3,7 +3,7 @@ from .surface import *
 
 #环境系统
 class WeatherSystem:
-    def  __init__(self,weather,window_x,window_y,entityNum=50) -> None:
+    def  __init__(self, weather:str, window_x:int, window_y:int, entityNum:int=50) -> None:
         self.name = 0
         self.img_list = [loadImg(imgPath) for imgPath in glob.glob("Assets/image/environment/{}/*.png".format(weather))]
         self.ImgObject = []
@@ -15,7 +15,7 @@ class WeatherSystem:
             img_y = randomInt(1,window_y)
             self.ImgObject.append(Snow(imgId,img_size,img_speed,img_x,img_y))
     def display(self,screen,perBlockWidth) -> None:
-        speed_unit = perBlockWidth/15
+        speed_unit:int = int(perBlockWidth/15)
         for i in range(len(self.ImgObject)):
             if 0 <= self.ImgObject[i].x <= screen.get_width() and 0 <= self.ImgObject[i].y <= screen.get_height():
                 screen.blit(
@@ -30,12 +30,12 @@ class WeatherSystem:
 
 #雪花片
 class Snow(GameObject):
-    def  __init__(self,imgId,size,speed,x,y) -> None:
+    def  __init__(self, imgId:int, size:int, speed:int, x:int, y:int) -> None:
         GameObject.__init__(self,x,y)
         self.imgId = imgId
         self.size = size
         self.speed = speed
-    def move(self,speed_unit) -> None:
+    def move(self, speed_unit:int) -> None:
         self.x -= self.speed*speed_unit
         self.y += self.speed*speed_unit
 
@@ -113,7 +113,7 @@ class PauseMenu:
 class SettingContoller:
     def __init__(self) -> None:
         self.isDisplaying = False
-    def init(self,size) -> None:
+    def init(self, size:tuple) -> None:
         self.baseImgWidth = round(size[0]/3)
         self.baseImgHeight = round(size[0]/3)
         self.baseImg = loadImg("Assets/image/UI/setting_baseImg.png",(self.baseImgWidth,self.baseImgHeight))
@@ -123,8 +123,10 @@ class SettingContoller:
         self.bar_height = round(size[0]/60)
         self.bar_width = round(size[0]/5)
         self.button = loadImg("Assets/image/UI/setting_bar_circle.png",(self.bar_height,self.bar_height*2))
-        self.bar_img1 = DynamicProgressBarSurface("Assets/image/UI/setting_bar_full.png"
-        ,"Assets/image/UI/setting_bar_empty.png",0,0,self.bar_width,self.bar_height)
+        self.bar_img1 = DynamicProgressBarSurface(
+            "Assets/image/UI/setting_bar_full.png",
+            "Assets/image/UI/setting_bar_empty.png",
+            0,0,self.bar_width,self.bar_height)
         self.bar_img2 = self.bar_img1.light_copy()
         self.bar_img3 = self.bar_img2.light_copy()
         self.bar_x = int(self.baseImgX+(self.baseImgWidth-self.bar_width)/2)

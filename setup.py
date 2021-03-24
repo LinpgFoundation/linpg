@@ -1,21 +1,25 @@
 import setuptools
+from .scr_core.config import *
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+try:
+    with open("README.md", "r", encoding="utf-8") as fh: long_description = fh.read()
+except:
+    long_description = ""
 
 #生成.whl文件
 setuptools.setup(
-    name="linpg", # Replace with your own username
-    version="3.0.dev1",
-    author="yudonglin",
-    author_email="yudong9912@gmail.com",
-    description="A small example package",
-    long_description=long_description,
-    long_description_content_type="text/markdown",
-    url="https://github.com/pypa/sampleproject",
-    packages=setuptools.find_packages(),
-    classifiers=[
+    name = "linpg",
+    version = get_current_version(),
+    author = "Tigeia-Workshop",
+    author_email = get_author_email(),
+    description = get_short_description(),
+    long_description = long_description,
+    long_description_content_type = "text/markdown",
+    url = get_repository_url(),
+    packages = setuptools.find_packages(),
+    classifiers = [
         "Programming Language :: Python :: 3",
     ],
-    python_requires='>=3.6',
+    package_dir={"": "src"},
+    python_requires = '>=3.6',
 )

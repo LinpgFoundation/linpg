@@ -11,7 +11,7 @@ pygame.init()
 
 """加载"""
 #识别图片模块，用于引擎内加载图片，十分不建议在本文件外调用
-def imgLoadFunction(path:str, ifConvertAlpha:bool) -> pygame.Surface:
+def imgLoadFunction(path:any, ifConvertAlpha:bool) -> pygame.Surface:
     if isinstance(path,pygame.Surface):
         return path
     elif isinstance(path,str):
@@ -29,9 +29,9 @@ def imgLoadFunction(path:str, ifConvertAlpha:bool) -> pygame.Surface:
         throwException("error","The path '{}' has to be a string or at least a pygame.Surface!".format(path))
 
 #图片加载模块：接收图片路径,长,高,返回对应图片
-def loadImg(path:str, size:str=None, setAlpha:int=None, ifConvertAlpha:bool=True) -> pygame.Surface:
+def loadImg(path:any, size:tuple=None, setAlpha:int=None, ifConvertAlpha:bool=True) -> pygame.Surface:
     #加载图片
-    img = imgLoadFunction(path,ifConvertAlpha)
+    img:pygame.Surface = imgLoadFunction(path,ifConvertAlpha)
     #根据参数编辑图片
     if setAlpha != None: img.set_alpha(setAlpha)
     #如果没有给size,则直接返回Surface
@@ -51,7 +51,7 @@ def loadAllImgInFile(pathRule:str, width=None, height=None) -> list[pygame.Surfa
     return [loadImg(imgPath,(width,height)) for imgPath in glob.glob(pathRule)]
 
 #获取Surface
-def getSurface(size:tuple,surface_flags=None) -> pygame.Surface:
+def getSurface(size:tuple, surface_flags=None) -> pygame.Surface:
     if surface_flags != None:
         return pygame.Surface(size,flags=surface_flags)
     else:

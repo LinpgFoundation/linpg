@@ -3,7 +3,6 @@ import pygame.freetype
 from pygame.colordict import THECOLORS
 from .lang import *
 
-
 #文字渲染器管理模块
 class FontGenerator:
     def __init__(self):
@@ -44,23 +43,19 @@ LINPG_FONT:str = get_setting("Font")
 LINPG_FONTTYPE:str = get_setting("FontType")
 LINPG_MODE:bool = get_setting("Antialias")
 #引擎标准文件渲染器
-LINPG_STANDARD_SMALL_FONT = FontGenerator()
-LINPG_STANDARD_MEDIUM_FONT = FontGenerator()
-LINPG_STANDARD_BIG_FONT = FontGenerator()
+LINPG_STANDARD_SMALL_FONT:object = FontGenerator()
+LINPG_STANDARD_MEDIUM_FONT:object = FontGenerator()
+LINPG_STANDARD_BIG_FONT:object = FontGenerator()
 #上一次render的字体
-LINPG_LAST_FONT = FontGenerator()
+LINPG_LAST_FONT:object = FontGenerator()
 
 #获取文字信息
-def get_font():
-    return LINPG_FONT
-def get_fontType():
-    return LINPG_FONTTYPE
-def get_fontMode():
-    return LINPG_MODE
-def get_fontDetails():
-    return LINPG_FONT,LINPG_FONTTYPE,LINPG_MODE
+def get_font() -> str: return LINPG_FONT
+def get_fontType() -> str: return LINPG_FONTTYPE
+def get_fontMode() -> bool: return LINPG_MODE
+def get_fontDetails() -> tuple: return LINPG_FONT,LINPG_FONTTYPE,LINPG_MODE
 #设置和获取标准文字大小
-def set_standard_font_size(size:int,fonType:str="medium"):
+def set_standard_font_size(size:int, fonType:str="medium") -> None:
     if isinstance (size,int) and size > 0:
         if fonType == "medium":
             LINPG_STANDARD_MEDIUM_FONT.update(size)
@@ -72,7 +67,7 @@ def set_standard_font_size(size:int,fonType:str="medium"):
             throwException("error", "Standard font type must be 'small', 'medium', or 'big'!")
     else:
         throwException("error","Standard font size must be positive interger not {}!".format(size))
-def get_standard_font_size(fonType:str):
+def get_standard_font_size(fonType:str) -> int:
     if fonType == "medium":
         return LINPG_STANDARD_MEDIUM_FONT.get_size()
     elif fonType == "small":
@@ -82,7 +77,7 @@ def get_standard_font_size(fonType:str):
     else:
         throwException("error","Standard font type must be 'small', 'medium', or 'big'!")
 #标准文字快速渲染
-def standard_font_render(fonType:str,txt:str,color:str):
+def standard_font_render(fonType:str, txt:str, color:str) -> pygame.Surface:
     if fonType == "medium":
         return LINPG_STANDARD_MEDIUM_FONT.render(txt,color)
     elif fonType == "small":
@@ -103,7 +98,7 @@ def reload_setting() -> None:
     LINPG_MODE = get_setting("Antialias")
 
 #创建字体
-def createFont(size,ifBold=False,ifItalic=False):
+def createFont(size, ifBold:bool=False, ifItalic:bool=False) -> pygame.font:
     if LINPG_FONTTYPE == "default":
         try:
             return pygame.font.SysFont(LINPG_FONT,int(size),ifBold,ifItalic)
@@ -126,7 +121,7 @@ def createFont(size,ifBold=False,ifItalic=False):
         throwException("error","FontType option in setting file is incorrect!")
 
 #创建FreeType字体
-def createFreeTypeFont(size,ifBold=False,ifItalic=False):
+def createFreeTypeFont(size, ifBold:bool=False, ifItalic:bool=False) -> pygame.freetype:
     if LINPG_FONTTYPE == "default":
         try:
             return pygame.freetype.SysFont(LINPG_FONT,int(size),ifBold,ifItalic)
@@ -149,7 +144,7 @@ def createFreeTypeFont(size,ifBold=False,ifItalic=False):
         throwException("error","FontType option in setting file is incorrect!")
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
-def fontRender(txt,color,size:int,ifBold:bool=False,ifItalic:bool=False) -> pygame.Surface:
+def fontRender(txt, color, size:int, ifBold:bool=False, ifItalic:bool=False) -> pygame.Surface:
     LINPG_LAST_FONT.check_for_update(size,ifBold,ifItalic)
     if isinstance(color,str):
         text_out = LINPG_LAST_FONT.render(txt, findColorRGBA(color))
@@ -158,11 +153,11 @@ def fontRender(txt,color,size:int,ifBold:bool=False,ifItalic:bool=False) -> pyga
     return text_out
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
-def fontRenderWithoutBound(txt,color,size,ifBold=False,ifItalic=False) -> pygame.Surface:
+def fontRenderWithoutBound(txt, color, size:int, ifBold:bool=False, ifItalic:bool=False) -> pygame.Surface:
     return copeBounding(fontRender(txt,color,size,ifBold,ifItalic))
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
-def freeTypeRender(txt,color,size:int,ifBold:bool=False,ifItalic:bool=False) -> pygame.Surface:
+def freeTypeRender(txt, color, size:int, ifBold:bool=False, ifItalic:bool=False) -> pygame.Surface:
     normal_font = createFreeTypeFont(size,ifBold,ifItalic)
     if isinstance(color,str):
         text_out = normal_font.render(txt, LINPG_MODE, findColorRGBA(color))
@@ -180,24 +175,21 @@ class TextSurface:
         self.b_x = x - (self.b.get_width()-self.n.get_width())/2
         self.b_y = y - (self.b.get_height()-self.n.get_height())/2
         self.__isHover = False
-    def display(self,screen):
+    def display(self, surface:pygame.Surface) -> bool:
         mouse_x,mouse_y = pygame.mouse.get_pos()
         if self.n_x<=mouse_x<=self.n_x+self.n.get_width() and self.n_y<=mouse_y<=self.n_y+self.n.get_height():
-            screen.blit(self.b,(self.b_x,self.b_y))
+            surface.blit(self.b,(self.b_x,self.b_y))
             self.__isHover = True
         else:
-            screen.blit(self.n,(self.n_x,self.n_y))
+            surface.blit(self.n,(self.n_x,self.n_y))
             self.__isHover = False
         return self.__isHover
-    def draw(self,screen):
-        self.display(screen)
-    def isHover(self):
-        return self.__isHover
-    def get_pos(self):
-        return self.n_x,self.n_y
+    def draw(self, surface:pygame.Surface) -> None: self.display(surface)
+    def isHover(self) -> bool: return self.__isHover
+    def get_pos(self) -> tuple: return self.n_x,self.n_y
 
 #高级文字制作模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
-def fontRenderPro(txt,color,pos,size=50,ifBold=False,ifItalic=False) -> TextSurface:
+def fontRenderPro(txt, color, pos:tuple, size:int=50, ifBold:bool=False, ifItalic:bool=False) -> TextSurface:
     return TextSurface(fontRender(txt,color,size,ifBold,ifItalic),fontRender(txt,color,size*1.5,ifBold,ifItalic),pos[0],pos[1])
 
 #给定一个颜色的名字，返回对应的RGB列表

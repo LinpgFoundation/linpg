@@ -18,7 +18,9 @@
         "maxsize",
         "ndarray",
         "numpy",
+        "pyproject",
         "sangvis",
+        "setuptools",
         "surfarray",
         "swapaxes",
         "yudonglin"

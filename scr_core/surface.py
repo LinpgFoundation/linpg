@@ -1,37 +1,35 @@
 # cython: language_level=3
-from tkinter import Tk
-from tkinter.constants import E
 from .module import *
 
 #图形接口
 class ImageInterface(GameObject2d):
-    def __init__(self,img:pygame.Surface,x:float,y:float,width:int,height:int) -> None:
+    def __init__(self, img:pygame.Surface, x:Union[int,float], y:Union[int,float], width:any, height:any):
         GameObject2d.__init__(self,x,y)
         self.img = img
         self._width = width
         self._height = height
     #透明度
     def get_alpha(self) -> int: return self.img.get_alpha()
-    def set_alpha(self,value:int) -> None: self.img.set_alpha(value)
+    def set_alpha(self, value:int) -> None: self.img.set_alpha(value)
     #宽度
     def get_width(self) -> int: return self._width
-    def set_width(self,value:float) -> None: self._width = round(value)
+    def set_width(self, value:float) -> None: self._width = round(value)
     #高度
     def get_height(self) -> int: return self._height
-    def set_height(self,value:float) -> None: self._height = round(value)
+    def set_height(self, value:float) -> None: self._height = round(value)
     #尺寸
-    def set_size(self,width:int,height:int) -> None:
+    def set_size(self, width:float, height:float) -> None:
         self.set_width(width)
         self.set_height(height)
     #是否被鼠标触碰
-    def isHover(self,mouse_x:int,mouse_y:int) -> bool: return 0 < mouse_x-self.x < self._width and 0 < mouse_y-self.y < self._height
+    def isHover(self, mouse_x:int, mouse_y:int) -> bool: return 0 < mouse_x-self.x < self._width and 0 < mouse_y-self.y < self._height
     #画出轮廓
-    def draw_outline(self,surface:pygame.Surface,offSet:tuple=(0,0),color:str="red",line_width:int=2) -> None:
+    def draw_outline(self, surface:pygame.Surface, offSet:Union[list,tuple]=(0,0), color:str="red", line_width:int=2) -> None:
         pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect((self.x+offSet[0],self.y+offSet[1]),self.size),line_width)
 
 #用于处理有大面积透明像素的图片surface
 class SrcalphaSurface(ImageInterface):
-    def __init__(self,path_or_surface,x,y,width=None,height=None):
+    def __init__(self, path_or_surface:Union[str,pygame.Surface], x:any, y:any, width:any=None, height:any=None):
         ImageInterface.__init__(self,None,x,y,width,height)
         self._alpha = 255
         self.img_original = loadImg(path_or_surface)
@@ -41,7 +39,7 @@ class SrcalphaSurface(ImageInterface):
         self.__needUpdate = True if self._width != None and self._height != None else False
     #透明度
     def get_alpha(self) -> int: return self._alpha
-    def set_alpha(self,value:int) -> None:
+    def set_alpha(self, value:float) -> None:
         if value < 0:
             self._alpha = 0
         elif value > 255:
@@ -50,27 +48,27 @@ class SrcalphaSurface(ImageInterface):
             self._alpha = round(value)
         if self.img != None and self.img.get_alpha() != self._alpha: super().set_alpha(self._alpha)
     #宽度
-    def set_width(self,value:float) -> None:
+    def set_width(self, value:float) -> None:
         value = round(value)
         if self._width != value:
             super().set_width(value)
             self.__needUpdate = True
-    def set_width_with_size_locked(self,width:float) -> None:
+    def set_width_with_size_locked(self, width:float) -> None:
         height = round(width/self.img_original.get_width()*self.img_original.get_height())
         width = round(width)
         self.set_size(width,height)
     #高度
-    def set_height(self,value:float) -> None:
+    def set_height(self, value:float) -> None:
         value = round(value)
         if self._height != value:
             super().set_height(value)
             self.__needUpdate = True
-    def set_height_with_size_locked(self,height:float) -> None:
+    def set_height_with_size_locked(self, height:float) -> None:
         width = round(height/self.img_original.get_height()*self.img_original.get_width())
         height = round(height)
         self.set_size(width,height)
     #更新图片
-    def _update_img(self):
+    def _update_img(self) -> None:
         imgTmp = resizeImg(self.img_original,(self._width,self._height))
         rect = imgTmp.get_bounding_rect()
         self.img = getSurface(rect.size,pygame.SRCALPHA).convert_alpha()
@@ -81,11 +79,11 @@ class SrcalphaSurface(ImageInterface):
             self.img.set_alpha(self._alpha)
         self.__needUpdate = False
     #反转原图，并打上已反转的标记
-    def flip(self):
+    def flip(self) -> None:
         self.__isFlipped = not self.__isFlipped
         self.flip_original()
     #反转原图
-    def flip_original(self):
+    def flip_original(self) -> None:
         self.img_original = pygame.transform.flip(self.img_original,True,False)
         self.__needUpdate = True
     #如果不处于反转状态，则反转
@@ -95,18 +93,18 @@ class SrcalphaSurface(ImageInterface):
     def flip_back_to_normal(self) -> None:
         if self.__isFlipped: self.flip()
     #展示
-    def display(self,surface:pygame.Surface,offSet:tuple=(0,0)) -> None:
+    def display(self, surface:pygame.Surface, offSet:Union[list,tuple]=(0,0)) -> None:
         #如果图片需要更新，则先更新
         if self.__needUpdate: self._update_img()
         #将已经处理好的图片画在给定的图层上
         surface.blit(self.img,(self.x+self.__local_x+offSet[0], self.y+self.__local_y+offSet[1]))
     #画出轮廓
-    def draw_outline(self,surface:pygame.Surface,offSet:tuple=(0,0),color:str="red",line_width:int=2) -> None:
+    def draw_outline(self, surface:pygame.Surface, offSet:Union[list,tuple]=(0,0), color:str="red", line_width:int=2) -> None:
         pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect(
             (self.x+self.__local_x+offSet[0],self.y+self.__local_y+offSet[1]),self.img.get_size()
             ),line_width)
     #是否被鼠标触碰
-    def isHover(self,mouse_x:int,mouse_y:int) -> bool:
+    def isHover(self, mouse_x:int, mouse_y:int) -> bool:
         if self.img != None:
             return 0 < mouse_x-self.x-self.__local_x < self.img.get_width() and 0 < mouse_y-self.y-self.__local_y < self.img.get_height()
         else:
@@ -118,10 +116,10 @@ class SrcalphaSurface(ImageInterface):
     #返回一个浅复制品
     def light_copy(self): return SrcalphaSurface(self.img_original,self.x,self.y,self._width,self._height)
     #加暗度
-    def addDarkness(self,value:int) -> None:
+    def addDarkness(self, value:int) -> None:
         self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_SUB)
         self.__needUpdate = True
-    def addBrightness(self,value:int) -> None:
+    def addBrightness(self, value:int) -> None:
         self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_ADD)
         self.__needUpdate = True
 
@@ -140,7 +138,7 @@ class ImageSurface(ImageInterface):
         elif self._width != None and self._height == None:
             self._height = self._width/self.img.get_width()*self.img.get_height()
     #返回一个复制
-    def copy(self):
+    def copy(self) -> None:
         replica = ImageSurface(self.img.copy(),self.x,self.y,self._width,self._height,self.description)
         self.img.set_alpha(255)
         replica.xTogo = self.xTogo
@@ -148,17 +146,17 @@ class ImageSurface(ImageInterface):
         replica.items = self.items.copy()
         return replica
     #更新图片
-    def update(self,img_path,ifConvertAlpha=True) -> None:
+    def update(self, img_path:Union[str,pygame.Surface], ifConvertAlpha:bool=True) -> None:
         self.img = imgLoadFunction(img_path,ifConvertAlpha)
-    def drawOnTheCenterOf(self,surface:pygame.Surface) -> None:
+    def drawOnTheCenterOf(self, surface:pygame.Surface) -> None:
         surface.blit(resizeImg(self.img,self.size),((surface.get_width()-self._width)/2,(surface.get_height()-self._height)/2))
-    def display(self,surface,local_x:int=0,local_y:int=0) -> None: surface.blit(resizeImg(self.img,self.size),(self.x+local_x,self.y+local_y))
+    def display(self, surface:pygame.Surface, local_x:int=0, local_y:int=0) -> None: surface.blit(resizeImg(self.img,self.size),(self.x+local_x,self.y+local_y))
     #旋转
-    def rotate(self,angle:int) -> None: self.img = pygame.transform.rotate(self.img,angle)
+    def rotate(self, angle:int) -> None: self.img = pygame.transform.rotate(self.img,angle)
     #反转
-    def flip(self,vertical:bool=False,horizontal:bool=False) -> None: self.img = pygame.transform.flip(self.img,vertical,horizontal)
+    def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = pygame.transform.flip(self.img,vertical,horizontal)
     #淡出
-    def fade_out(self,speed:int) -> None:
+    def fade_out(self, speed:int) -> None:
         alphaTmp = self.get_alpha()
         if alphaTmp > 0: self.set_alpha(alphaTmp-speed)
 
@@ -202,7 +200,7 @@ class ProgressBar(ImageInterface):
         ImageInterface.__init__(self,None,x,y,max_width,height)
         self.percentage = 0
         self.color = findColorRGBA(color)
-    def display(self,surface,offSet:tuple=(0,0)) -> None:
+    def display(self,surface,offSet:Union[list,tuple]=(0,0)) -> None:
         pygame.draw.rect(surface,self.color,(self.x+offSet[0],self.y+offSet[1],self._width*self.percentage,self._height))
 
 #进度条Surface
@@ -235,7 +233,7 @@ class ProgressBarSurface(ImageInterface):
     def copy(self): return ProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return ProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #展示
-    def display(self,surface,offSet:tuple=(0,0)) -> None:
+    def display(self,surface,offSet:Union[list,tuple]=(0,0)) -> None:
         pos = (self.x+offSet[0],self.y+offSet[1])
         surface.blit(resizeImg(self.img2,self.size),pos)
         if self._current_percentage > 0:
@@ -268,7 +266,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
     def copy(self): return DynamicProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return DynamicProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #展示
-    def display(self,surface,offSet:tuple=(0,0)) -> None:
+    def display(self,surface,offSet:Union[list,tuple]=(0,0)) -> None:
         pos = (self.x+offSet[0],self.y+offSet[1])
         surface.blit(resizeImg(self.img2,self.size),pos)
         if self._current_percentage < self.__percentage_to_be and self.__perecent_update_each_time > 0 or\
@@ -356,7 +354,7 @@ class ButtonWithFadeInOut(Button):
 
 #gif图片管理
 class GifObject(ImageInterface):
-    def __init__(self,imgList:tuple,x,y,width,height,updateGap) -> None:
+    def __init__(self,imgList:Union[list,tuple],x,y,width,height,updateGap) -> None:
         ImageInterface.__init__(self,imgList,x,y,width,height)
         self.imgId = 0
         self.updateGap = updateGap
@@ -364,14 +362,14 @@ class GifObject(ImageInterface):
         self._alpha = 255
     #透明度
     def get_alpha(self) -> int: return self._alpha
-    def set_alpha(self,value) -> None:
+    def set_alpha(self, value:Union[int,float]) -> None:
         if value < 0:
             self._alpha = 0
         elif value > 255:
             self._alpha = 255
         else:
             self._alpha = round(value)
-    def display(self,surface,offSet:tuple=(0,0)):
+    def display(self, surface, offSet:Union[list,tuple]=(0,0)):
         img = resizeImg(self.img[self.imgId],self.size)
         #设置透明度
         if self._alpha != 255: img.set_alpha(self._alpha)
@@ -385,7 +383,7 @@ class GifObject(ImageInterface):
 
 #对话框基础模块
 class DialogInterface:
-    def __init__(self,img,fontSize):
+    def __init__(self, img:pygame.Surface, fontSize:Union[int,float]):
         self.dialoguebox = img
         self.FONTSIZE = int(fontSize)
         self.FONT = createFont(self.FONTSIZE)
@@ -393,7 +391,7 @@ class DialogInterface:
         self.narrator = None
         self.textIndex = None
         self.displayedLine = None
-    def update(self,txt,narrator):
+    def update(self, txt:list, narrator:str) -> None:
         self.textIndex = 0
         self.displayedLine = 0
         self.content = txt
@@ -406,7 +404,7 @@ class DialogInterface:
         else:
             return self.displayedLine >= len(self.content)-1 and self.textIndex >= len(self.content[self.displayedLine])-1
     #立刻播出所有内容
-    def play_all(self):
+    def play_all(self) -> None:
         if not self.is_all_played():
             self.displayedLine = len(self.content)-1
             self.textIndex = len(self.content[self.displayedLine])-1
@@ -429,7 +427,7 @@ class DialogBox(DialogInterface,GameObject2d):
         self.__flipped = False
     def get_width(self) -> int: return self.dialoguebox.get_width()
     def get_height(self)-> int:  return self.dialoguebox.get_height()
-    def set_size(self,width,height) -> tuple: self.dialoguebox = resizeImg(self.dialoguebox,(width,height))
+    def set_size(self,width,height) -> None: self.dialoguebox = resizeImg(self.dialoguebox,(width,height))
     def display(self,surface,characterInfoBoardUI=None):
         #如果对话框需要继续更新
         if self.__drew == False:
@@ -470,18 +468,18 @@ class DialogBox(DialogInterface,GameObject2d):
                 elif self.textIndex >= len(self.content[self.displayedLine]):
                     self.__drew = True
         surface.blit(self.__surface,(self.x,self.y))
-    def update(self,txt,narrator,narrator_icon=None):
+    def update(self, txt:list, narrator:str, narrator_icon:str=None) -> None:
         super().update(txt,narrator)
         self.updated = True
         self.__drew = False
         self.narrator_icon = narrator_icon
-    def reset(self):
+    def reset(self) -> None:
         self.x = self.deafult_x
         self.y = self.deafult_y
         self.updated = False
         #刷新对话框surface防止上一段的对话还残留在surface上
         self.content = []
         self.__surface = self.dialoguebox.copy()
-    def flip(self):
+    def flip(self) -> None:
         self.dialoguebox = pygame.transform.flip(self.dialoguebox,True,False)
         self.__flipped = not self.__flipped

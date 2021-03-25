@@ -8,7 +8,7 @@ class DialogSystem(DialogSystemInterface):
         #UI按钮
         self.ButtonsMananger = DialogButtons()
         #加载对话框系统
-        self.dialogTxtSystem = DialogContent(display.get_width()*0.015)
+        self.dialogTxtSystem = DialogContent(int(display.get_width()*0.015))
         #更新音效
         self.__update_sound_volume()
         #是否要显示历史对白页面
@@ -70,7 +70,7 @@ class DialogSystem(DialogSystemInterface):
         self.__update_scene(self.dialogId)
         self.dialogTxtSystem.resetDialogueboxData()
     #更新场景
-    def __update_scene(self,theNextDialogId:str) -> None:
+    def __update_scene(self,theNextDialogId:Union[str,int]) -> None:
         #如果dialog Id 不存在
         if theNextDialogId in self.dialogContent:
             #更新背景音乐

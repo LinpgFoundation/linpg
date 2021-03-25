@@ -6,7 +6,7 @@
 
 
 
-# Preamble / 前言
+# :speech_balloon: Preamble / 前言
 
 *"Just because c++ is the greatest language ever invented doesn't mean that writing games in c++ is easy and fun, and the same goes for pygame."*
 
@@ -14,7 +14,7 @@
 
 
 
-# About Linpg Engine / 关于Linpg引擎
+# :sparkles: About Linpg Engine / 关于Linpg引擎
 
 Linpg Engine is a game engine independently developed by Tigeia Workshop based on the pygame library, which aims to standardize the development of pygame games and make the game code cleaner, easier to read, expand and maintain.
 
@@ -30,7 +30,7 @@ Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游
 
 
 
-# 运行库 Dependencies
+# :hammer_and_wrench: Dependencies / 运行库 
 
 pygame
 
@@ -42,11 +42,11 @@ numpy
 
 ***Special shout out to the developers of these libraries. They make game development using python no longer unthinkable.***
 
-***感谢这些库的开发者，他（她）们让使用python开发游戏不再遥远。***
+##### ***感谢这些库的开发者，他（她）们让使用python开发游戏不再遥远。***
 
 
 
-# Changes in Linpg Engine through the generations / Linpg引擎历代的变化
+# :construction: Changes in Linpg Engine through the generations            Linpg引擎历代的变化
 
 #### Linpg 1（Obsolete, no longer maintained / 过时，不再维护）
 
@@ -88,7 +88,7 @@ Pygame native input box (English only) / 可用的pygame原生输入框（仅支
 
 #### Linpg 4（On Schedule / 未来-计划中）
 
-support pyglet / pyglet支持
+support pyglet (two libararies, one standrad) / pyglet支持（两个库，一个标准）
 
 Rewrite using a combination of c++ and cython for better performance / 底层采用c++和cython结合的方式重写以获取更高效的性能
 
@@ -110,7 +110,7 @@ The input box will support Chinese, Japanese, and more / 输入框支持中文�
 
 
 
-# License 版权说明
+# :open_book: License / 版权说明
 
 Please check LICENSE. (We will use GPL-3.0 after reaching 1k star and open source)
 

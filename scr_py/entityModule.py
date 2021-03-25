@@ -6,29 +6,29 @@ _CHARACTERS_GET_HURT_IMAGE_DICT:dict = {}
 
 #角色受伤立绘图形模块
 class EntityGetHurtImage(GameObject):
-    def __init__(self,self_type,y,width):
+    def __init__(self, self_type:str, y:Union[int,float], width:Union[int,float]):
         GameObject.__init__(self,None,y)
         self.yToGo = None
         self.width = int(width)
         self.alpha = 255
         self.add(self_type)
-    def draw(self,screen,characterType:str) -> None:
+    def draw(self, screen:pygame.Surface, characterType:str) -> None:
         GetHurtImage = resizeImg(_CHARACTERS_GET_HURT_IMAGE_DICT[characterType],(self.width,self.width))
         if self.alpha != 255:
             GetHurtImage.set_alpha(self.alpha)
         screen.blit(GetHurtImage,(self.x,self.y))
-    def add(self,characterType:str) -> None:
+    def add(self, characterType:str) -> None:
         global _CHARACTERS_GET_HURT_IMAGE_DICT
         if characterType not in _CHARACTERS_GET_HURT_IMAGE_DICT:
             _CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = loadImg("Assets/image/npc/{}_hurt.png".format(characterType))
 
 #角色音效管理系统
 class EntitySoundManager:
-    def __init__(self,channel_id:int) -> None:
+    def __init__(self, channel_id:int):
         self.channel_id = channel_id
         self.__sounds_dict = {}
     #加载音效
-    def add(self,characterType:str) -> None:
+    def add(self, characterType:str) -> None:
         if characterType not in self.__sounds_dict and os.path.exists("Assets/sound/character/"+characterType):
             self.__sounds_dict[characterType] = {}
             for soundType in os.listdir("Assets/sound/character/{}/".format(characterType)):
@@ -36,7 +36,7 @@ class EntitySoundManager:
                 for soundPath in glob.glob("Assets/sound/character/{}/{}/*".format(characterType,soundType)):
                     self.__sounds_dict[characterType][soundType].append(pygame.mixer.Sound(soundPath))
     #播放角色音效
-    def play(self,characterType:str,soundType:str) -> None:
+    def play(self, characterType:str, soundType:str) -> None:
         if characterType in self.__sounds_dict and soundType in self.__sounds_dict[characterType]:
             sound_list = self.__sounds_dict[characterType][soundType]
             if len(sound_list) > 1:
@@ -62,15 +62,15 @@ def calculate_range(effective_range_dic):
 
 #角色图片管理模块
 class EntityImageManager:
-    def __init__(self) -> None:
+    def __init__(self):
         self.__CHARACTERS_IMAGE_DICT = {}
-    def get_img(self,characterType:str,action:str,imgId:int) -> pygame.Surface:
+    def get_img(self, characterType:str, action:str, imgId:int) -> pygame.Surface:
         return self.__CHARACTERS_IMAGE_DICT[characterType][action]["img"][imgId]
-    def get_img_num(self,characterType:str,action:str) -> int:
+    def get_img_num(self, characterType:str, action:str) -> int:
         return self.__CHARACTERS_IMAGE_DICT[characterType][action]["imgNum"]
     #动图字典制作模块：接受一个友方角色名，返回对应的动图字典：
-    def createGifDict(self,characterType:str,faction:str,mode:str) -> dict:
-        if mode == None:
+    def createGifDict(self, characterType:str, faction:str, mode:str) -> dict:
+        if mode == "default":
             imgId_dict = {
                 "attack":self.loadImageCollection(characterType,"attack",faction),
                 "attack2":self.loadImageCollection(characterType,"attack2",faction),
@@ -101,7 +101,7 @@ class EntityImageManager:
         return imgId_dict
     #动图制作模块：接受一个友方角色名和动作,当前的方块标准长和高，返回对应角色动作list或者因为没图片而返回None
     #810*810 position:405/567
-    def loadImageCollection(self,characterType:str,action:str,faction:str) -> dict:
+    def loadImageCollection(self, characterType:str, action:str, faction:str) -> dict:
         if characterType not in self.__CHARACTERS_IMAGE_DICT:
             self.__CHARACTERS_IMAGE_DICT[characterType] = {}
         elif action in self.__CHARACTERS_IMAGE_DICT[characterType]:
@@ -183,7 +183,7 @@ def loadCharacterData() -> None:
 
 #射击音效 -- 频道2
 class AttackingSoundManager:
-    def __init__(self,volume,channel):
+    def __init__(self, volume:int, channel_id:int):
         self.__soundsData = {
             #突击步枪
             "AR": glob.glob(r'Assets/sound/attack/ar_*.ogg'),
@@ -196,20 +196,22 @@ class AttackingSoundManager:
             #冲锋枪
             "SMG": glob.glob(r'Assets/sound/attack/smg_*.ogg'),
         }
-        self.__channel = channel
+        self.set_channel(channel_id)
         self.volume = volume
         for key in self.__soundsData:
             for i in range(len(self.__soundsData[key])):
                 self.__soundsData[key][i] = pygame.mixer.Sound(self.__soundsData[key][i])
                 self.__soundsData[key][i].set_volume(volume/100.0)
-    def set_channel(self,channel:int) -> None: self.__channel = channel
-    def play(self,kind:str):
+    #设置播放的频道
+    def set_channel(self, channel_id:int) -> None: self.__channel = channel_id
+    #播放
+    def play(self, kind:str):
         if kind in self.__soundsData:
             pygame.mixer.Channel(self.__channel).play(self.__soundsData[kind][randomInt(0,len(self.__soundsData[kind])-1)])
 
 #用于存放角色做出的决定
 class DecisionHolder:
-    def __init__(self,action:str,data:any) -> None:
+    def __init__(self, action:str, data:any):
         self.action = action
         self.data = data
     @property

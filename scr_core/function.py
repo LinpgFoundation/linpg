@@ -3,12 +3,12 @@ from PIL import Image
 from .inputbox import *
 
 #高级图片加载模块：接收图片路径（或者已经载入的图片）,位置:[x,y],长,高,返回对应的图片class
-def loadImage(path,position,width=None,height=None,description="Default",ifConvertAlpha:bool=True) -> ImageSurface:
+def loadImage(path:Union[str,pygame.Surface], position, width=None, height=None, description="Default" ,ifConvertAlpha:bool=True) -> ImageSurface:
     return ImageSurface(imgLoadFunction(path,ifConvertAlpha),position[0],position[1],width,height,description)
 
 #高级动态图片加载模块：接收图片路径（或者已经载入的图片）,位置:[x,y],长,高,返回对应的图片class
-def loadDynamicImage(path,position,target_position,moveSpeed=(0,0),
-    width=None,height=None,description="Default",ifConvertAlpha:bool=True) -> DynamicImageSurface:
+def loadDynamicImage(path:Union[str,pygame.Surface], position, target_position, moveSpeed=(0,0),
+    width:Union[int,float]=None, height:Union[int,float]=None, description="Default", ifConvertAlpha:bool=True) -> DynamicImageSurface:
     return DynamicImageSurface(imgLoadFunction(path,ifConvertAlpha),position[0],position[1],target_position[0],target_position[1],\
         moveSpeed[0],moveSpeed[1],width,height,description)
 
@@ -43,7 +43,7 @@ def get_SingleColorSurface(color,size=None) -> ImageSurface:
     return ImageSurface(surfaceTmp,0,0,size[0],size[1])
 
 #检测图片是否被点击
-def isHover(imgObject,objectPos=(0,0),local_x=0,local_y=0) -> bool:
+def isHover(imgObject, objectPos=(0,0), local_x:Union[int,float]=0, local_y:Union[int,float]=0) -> bool:
     mouse_x,mouse_y = pygame.mouse.get_pos()
     #如果是pygame的面
     if isinstance(imgObject,pygame.Surface):

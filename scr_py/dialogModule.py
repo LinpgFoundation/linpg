@@ -4,7 +4,7 @@ from ..scr_pyd.movie import cutscene,VedioFrame,VedioPlayer
 
 #视觉小说系统接口
 class DialogSystemInterface(SystemWithBackgroundMusic):
-    def __init__(self) -> None:
+    def __init__(self):
         SystemWithBackgroundMusic.__init__(self)
         #加载对话的背景图片模块
         self._npcManager = NpcImageManager()
@@ -26,7 +26,7 @@ class DialogSystemInterface(SystemWithBackgroundMusic):
         self.__backgroundImageName = None
         self.__backgroundImageSurface = self._black_bg.copy()
     #初始化关键参数
-    def _initialize(self,chapterType:str,chapterId:int,collection_name:str,dialogId:str="head",dialog_options:dict={}) -> None:
+    def _initialize(self, chapterType:str, chapterId:int, collection_name:str, dialogId:str="head", dialog_options:dict={}) -> None:
         #类型
         self.chapterType = chapterType
         #章节id
@@ -38,7 +38,7 @@ class DialogSystemInterface(SystemWithBackgroundMusic):
         #合集名称-用于dlc和创意工坊
         self.collection_name = collection_name
     #更新背景图片
-    def _update_background_image(self,image_name) -> None:
+    def _update_background_image(self, image_name:str) -> None:
         if self.__backgroundImageName != image_name:
             #更新背景的名称
             self.__backgroundImageName = image_name
@@ -59,12 +59,12 @@ class DialogSystemInterface(SystemWithBackgroundMusic):
             else:
                 self.__backgroundImageSurface = self._black_bg.copy()
     #将背景图片画到surface上
-    def display_background_image(self,surface) -> None:
+    def display_background_image(self, surface:pygame.Surface) -> None:
         if isinstance(self.__backgroundImageSurface,ImageSurface):
             self.__backgroundImageSurface.set_size(surface.get_width(),surface.get_height())
         self.__backgroundImageSurface.display(surface)
     #把基础内容画到surface上
-    def display(self,surface) -> None:
+    def display(self, surface:pygame.Surface) -> None:
         #更新事件
         self._update_event()
         #检测章节是否初始化
@@ -92,15 +92,15 @@ class NpcImageManager:
         self.move_x = 0
         self.dev_mode = False
         self.npcGetClick = None
-    def devMode(self):
+    def devMode(self) -> None:
         for imgPath in glob.glob("Assets/image/npc/*"):
             self.__loadNpc(imgPath)
             self.dev_mode = True
     #确保角色存在
-    def __ensure_the_existence_of(self,name:str) -> None:
+    def __ensure_the_existence_of(self, name:str) -> None:
         if name not in self.npcImageDict: self.__loadNpc(os.path.join("Assets/image/npc",name))
     #加载角色
-    def __loadNpc(self,path):
+    def __loadNpc(self, path:str) -> None:
         name = os.path.basename(path)
         self.npcImageDict[name] = {}
         self.npcImageDict[name]["normal"] = SrcalphaSurface(path,0,0,self.img_width,self.img_width)
@@ -108,7 +108,7 @@ class NpcImageManager:
         self.npcImageDict[name]["dark"] = self.npcImageDict[name]["normal"].copy()
         self.npcImageDict[name]["dark"].addDarkness(50)
     #画出角色
-    def __displayNpc(self,name,x,y,alpha,surface) -> None:
+    def __displayNpc(self, name:str, x:Union[int,float], y:Union[int,float], alpha:int, surface:pygame.Surface) -> None:
         if alpha > 0:
             nameTemp = name.replace("&communication","").replace("&dark","")
             self.__ensure_the_existence_of(nameTemp)
@@ -138,7 +138,7 @@ class NpcImageManager:
                 if isHover(img,(x,y)):
                     img.draw_outline(surface)
                     self.npcGetClick = name
-    def display(self,surface):
+    def display(self, surface:pygame.Surface) -> None:
         window_x = surface.get_width()
         window_y = surface.get_height()
         npcImg_y = window_y-window_x/2
@@ -248,19 +248,16 @@ class NpcImageManager:
                     self.__displayNpc(self.npcThisRound[0],0,npcImg_y,self.npcThisRoundImgAlpha,surface)
                     self.__displayNpc(self.npcThisRound[1],window_x/2,npcImg_y,self.npcThisRoundImgAlpha,surface)
     #更新立绘
-    def update(self,characterNameList):
+    def update(self, characterNameList:Union[list,tuple,None]) -> None:
         self.npcLastRound = self.npcThisRound
-        if isinstance(characterNameList,(list,tuple)):
-            self.npcThisRound = characterNameList
-        else:
-            self.npcThisRound = []
+        self.npcThisRound = characterNameList if isinstance(characterNameList,(list,tuple)) else []
         self.npcLastRoundImgAlpha = 255
         self.npcThisRoundImgAlpha = 5
         self.move_x = 0
 
 #对话框和对话框内容
 class DialogContent(DialogInterface):
-    def __init__(self,fontSize):
+    def __init__(self, fontSize:int):
         DialogInterface.__init__(self,loadImg("Assets/image/UI/dialoguebox.png"),fontSize)
         try:
             self.__textPlayingSound = pygame.mixer.Sound("Assets/sound/ui/dialog_words_playing.ogg")
@@ -279,9 +276,8 @@ class DialogContent(DialogInterface):
         self.totalLetters = 0
         self.autoMode = False
         self.resetDialogueboxData()
-    def hideSwitch(self):
-        self.isHidden = not self.isHidden
-    def update(self,txt,narrator,forceNotResizeDialoguebox=False):
+    def hideSwitch(self) -> None: self.isHidden = not self.isHidden
+    def update(self, txt:list, narrator:str, forceNotResizeDialoguebox:bool=False) -> None:
         self.totalLetters = 0
         self.readTime = 0
         for i in range(len(self.content)):
@@ -290,7 +286,7 @@ class DialogContent(DialogInterface):
             self.__fade_out_stage = True
         super().update(txt,narrator)
         self.stop_playing_text_sound()
-    def resetDialogueboxData(self):
+    def resetDialogueboxData(self) -> None:
         self.__fade_out_stage = False
         self.dialoguebox_height = 0
         self.dialoguebox_y = None
@@ -302,14 +298,14 @@ class DialogContent(DialogInterface):
         else:
             return 0.0
     #修改文字播放时的音效的音量
-    def set_sound_volume(self,num:float) -> None:
+    def set_sound_volume(self, num:float) -> None:
         if self.__textPlayingSound != None: self.__textPlayingSound.set_volume(num/100.0)
     #是否需要更新
     def needUpdate(self) -> bool:
         return True if self.autoMode and self.readTime >= self.totalLetters else False
     #渲染文字
-    def fontRender(self,txt:str,color:tuple) -> pygame.Surface: return self.FONT.render(txt,get_fontMode(),color)
-    def __render_font(self,txt:str,color:tuple) ->pygame.Surface:
+    def fontRender(self, txt:str, color:tuple) -> pygame.Surface: return self.FONT.render(txt,get_fontMode(),color)
+    def __render_font(self, txt:str, color:tuple) ->pygame.Surface:
         return self.FONT.render(txt,get_fontMode(),color) 
         """
         font_surface = self.fontRender(txt,color)
@@ -319,14 +315,14 @@ class DialogContent(DialogInterface):
     #如果音效还在播放则停止播放文字音效
     def stop_playing_text_sound(self) -> None:
         if pygame.mixer.get_busy() and self.__textPlayingSound != None: self.__textPlayingSound.stop()
-    def display(self,surface) -> None:
+    def display(self, surface:pygame.Surface) -> None:
         if not self.isHidden:
             if not self.__fade_out_stage:
                 self.__fadeIn(surface)
             else:
                 self.__fadeOut(surface)
     #渐入
-    def __fadeIn(self,surface) -> None:
+    def __fadeIn(self, surface:pygame.Surface) -> None:
         #如果对话框图片的最高高度没有被设置，则根据屏幕大小设置一个
         if self.dialoguebox_max_height == None:
             self.dialoguebox_max_height = surface.get_height()/4
@@ -344,7 +340,7 @@ class DialogContent(DialogInterface):
         else:
             self.__blit_txt(surface)
     #淡出
-    def __fadeOut(self,surface) -> None:
+    def __fadeOut(self, surface:pygame.Surface) -> None:
         #画出对话框图片
         surface.blit(resizeImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
         (surface.get_width()*0.13,self.dialoguebox_y))
@@ -360,9 +356,9 @@ class DialogContent(DialogInterface):
         else:
             self.resetDialogueboxData()
     #将文字画到屏幕上
-    def __blit_txt(self,surface) -> None:
-        x = int(surface.get_width()*0.2)
-        y = int(surface.get_height()*0.73)
+    def __blit_txt(self, surface:pygame.Surface) -> None:
+        x:int = int(surface.get_width()*0.2)
+        y:int = int(surface.get_height()*0.73)
         #写上当前讲话人的名字
         if self.narrator != None:
             surface.blit(self.__render_font(self.narrator,(255, 255, 255)),(x,self.dialoguebox_y+self.FONTSIZE))
@@ -452,11 +448,11 @@ class DialogButtons:
         history_imgTemp.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
         self.historyButton = Button(history_imgTemp,window_x*0.1,window_y*0.05)
         self.historyButton.setHoverImg(history_img)
-    def display(self,surface,isHidden):
+    def display(self, surface:pygame.Surface, isHidden:bool) -> str:
         if isHidden:
             self.showButton.display(surface)
             return "hide" if isHover(self.showButton) else ""
-        elif isHidden == False:
+        else:
             self.hideButton.display(surface)
             self.historyButton.display(surface)
             action = ""
@@ -500,8 +496,8 @@ class DialogButtons:
             elif isHover(self.historyButton):
                 action = "history"
             return action
-    def autoModeSwitch(self):
-        if self.autoMode == False:
+    def autoModeSwitch(self) -> None:
+        if not self.autoMode:
             self.autoMode = True
         else:
             self.autoMode = False
@@ -516,11 +512,11 @@ class NpcImageDatabase:
             self.__DATA = {}
             saveConfig("Data/npcImageDatabase.yaml",self.__DATA)
             throwException("warning","Cannot find 'npcImageDatabase.yaml' in 'Data' file, a new one is created.")
-    def get_kind(self,fileName:str) -> str:
+    def get_kind(self, fileName:str) -> str:
         for key in self.__DATA:
             if fileName in self.__DATA[key]: return key
         return None
-    def ifSameKind(self,fileName1:str,fileName2:str) -> bool:
+    def ifSameKind(self, fileName1:str, fileName2:str) -> bool:
         fileName1 = fileName1.replace("&communication","").replace("&dark","")
         fileName2 = fileName2.replace("&communication","").replace("&dark","")
         for key in self.__DATA:

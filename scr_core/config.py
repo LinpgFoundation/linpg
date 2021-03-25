@@ -13,7 +13,7 @@ import json
 from .basic import *
 
 #配置文件加载
-def loadConfig(path:str,key:str=None) -> any:
+def loadConfig(path:str, key:str=None) -> any:
     #检测配置文件是否存在
     if not os.path.exists(path): throwException("error","Cannot find file on path: {}".format(path))
     #按照类型加载配置文件
@@ -39,7 +39,7 @@ def loadConfig(path:str,key:str=None) -> any:
     return Data if key == None else Data[key]
 
 #配置文件保存
-def saveConfig(path:str,data:any) -> None:
+def saveConfig(path:str, data:any) -> None:
     with open(path, "w", encoding='utf-8') as f:
         if path.endswith(".yaml"):
             if YAML_INITIALIZED:
@@ -55,7 +55,7 @@ def saveConfig(path:str,data:any) -> None:
 __LINPG_DATA:dict = None
 
 #在不确定的情况下尝试获取设置配置文件
-def try_get_setting(key:str,key2:str=None) -> any:
+def try_get_setting(key:str, key2:str=None) -> any:
     if key in __LINPG_DATA:
         if key2 == None:
             return deepcopy(__LINPG_DATA[key])
@@ -64,7 +64,7 @@ def try_get_setting(key:str,key2:str=None) -> any:
     return None
 
 #获取设置配置文件
-def get_setting(key:str=None,key2:str=None) -> any:
+def get_setting(key:str=None, key2:str=None) -> any:
     if key == None:
         return deepcopy(__LINPG_DATA)
     elif key2 == None:
@@ -73,7 +73,7 @@ def get_setting(key:str=None,key2:str=None) -> any:
         return deepcopy(__LINPG_DATA[key][key2])
 
 #修改设置参数
-def set_setting(key:str,key2:str=None,value:any=None) -> None:
+def set_setting(key:str, key2:str=None, value:any=None) -> None:
     if value != None:
         if key2 == None:
             __LINPG_DATA[key] = value
@@ -87,8 +87,7 @@ def save_setting() -> None: saveConfig("Save/setting.yaml",__LINPG_DATA)
 def reload_DATA() -> None:
     global __LINPG_DATA
     #如果配置文件setting.yaml存在
-    if os.path.exists("Save/setting.yaml"):
-        __LINPG_DATA = loadConfig("Save/setting.yaml")
+    if os.path.exists("Save/setting.yaml"): __LINPG_DATA = loadConfig("Save/setting.yaml")
     #如果不存在就创建一个
     else:
         #导入local,查看默认语言
@@ -123,13 +122,13 @@ reload_DATA()
 __LINPG_GLOBAL_DATA:dict = {}
 
 #设置特定的全局数据
-def set_glob_value(key:str,value:any) -> None:
+def set_glob_value(key:str, value:any) -> None:
     global __LINPG_GLOBAL_DATA
     __LINPG_GLOBAL_DATA[key] = value
 #获取特定的全局数据
-def get_glob_value(key:str) -> any:
-    return deepcopy(__LINPG_GLOBAL_DATA[key])
-def if_get_set_value(key:str,valueToGet:any,valueToSet:any) -> bool:
+def get_glob_value(key:str) -> any: return deepcopy(__LINPG_GLOBAL_DATA[key])
+#如果不是对应的值，则设置为对应的值，返回是否对应
+def if_get_set_value(key:str, valueToGet:any, valueToSet:any) -> bool:
     global __LINPG_GLOBAL_DATA
     if __LINPG_GLOBAL_DATA[key] == valueToGet:
         __LINPG_GLOBAL_DATA[key] = valueToSet

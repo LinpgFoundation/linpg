@@ -5,7 +5,7 @@ from .font import findColorRGBA
 
 #提示窗口
 class Message:
-    def __init__(self,title,message,buttons,info=False,warn=False,error=False,return_button=0,escape_button=0):
+    def __init__(self, title:str, message:str, buttons:tuple, info:bool=False, warn:bool=False, error:bool=False, return_button:int=0, escape_button:int=0):
         """ Display a message box.
         :param str title: A title string or None.
         :param str message: A message string.
@@ -25,31 +25,27 @@ class Message:
         self.error = error
         self.return_button = return_button
         self.escape_button = escape_button
-    def draw(self):
-        return messagebox(self.title,self.message,None,self.info,self.warn,self.error,self.buttons,self.return_button,self.escape_button)
+    def draw(self): return messagebox(self.title,self.message,None,self.info,self.warn,self.error,self.buttons,self.return_button,self.escape_button)
 
 #窗口
 class RenderedWindow:
-    def __init__(self,title,size,is_win_always_on_top):
+    def __init__(self, title:str, size:tuple, is_win_always_on_top:bool):
         self.title = title
         self.always_on_top = is_win_always_on_top
         self.set_size(size)
     @property
-    def size(self):
-        return self.__size
-    def set_size(self,size):
+    def size(self) -> tuple: return self.__size
+    def set_size(self,size:tuple) -> None:
         win = Window(self.title,size,always_on_top=self.always_on_top)
         self.__win = Renderer(win)
         self.__size = size
-    def clear(self):
-        self.__win.clear()
-    def present(self):
-        self.__win.present()
-    def draw_rect(self,rect_pos,color):
+    def clear(self) -> None: self.__win.clear()
+    def present(self) -> None: self.__win.present()
+    def draw_rect(self,rect_pos,color) -> None:
         self.__win.draw_color = findColorRGBA(color)
         self.__win.draw_rect(Rect(rect_pos))
-    def fill_rect(self,rect_pos,color):
+    def fill_rect(self,rect_pos,color) -> None:
         self.__win.draw_color = findColorRGBA(color)
         self.__win.fill_rect(Rect(rect_pos))
-    def fill(self,color):
+    def fill(self,color) -> None:
         self.fill_rect((0,0,self.__size[0],self.__size[1]),color)

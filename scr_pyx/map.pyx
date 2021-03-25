@@ -8,9 +8,9 @@ cdef dict _BLOCKS_DATABASE = loadConfig("Data/blocks.yaml","blocks")
 
 #地图模块
 class MapObject:
-    def  __init__(self,mapDataDic,int perBlockWidth,int perBlockHeight,darkMode=None):
+    def  __init__(self, dict mapDataDic, int perBlockWidth, int perBlockHeight):
         #加载地图设置
-        self.__darkMode = mapDataDic["darkMode"] if darkMode == None else darkMode
+        self.__darkMode = mapDataDic["darkMode"] if "darkMode" in mapDataDic else False
         #初始化地图数据
         self.__MapData = mapDataDic["map"]
         self.backgroundImageName = mapDataDic["backgroundImage"]
@@ -48,7 +48,7 @@ class MapObject:
     def dev_mode(self):
         if self.__debug_win == None:
             unit = 10
-            self.__debug_win = RenderedWindow("debug window",(self.row*unit+unit/4*(self.row+1),self.column*unit+unit/4*(self.row+1)),True)
+            self.__debug_win = RenderedWindow("debug window",(int(self.row*unit+unit/4*(self.row+1)),int(self.column*unit+unit/4*(self.row+1))),True)
             self.__debug_win.unit = unit
         else:
             self.__debug_win = None

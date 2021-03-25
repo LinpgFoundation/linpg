@@ -15,7 +15,7 @@ AP_IS_NEEDED_TO_MOVE_ONE_BLOCK:int = 2
 
 #友方角色类
 class FriendlyCharacter(Entity):
-    def __init__(self,theCharacterDataDic:dict,defaultData:dict,mode=None) -> None:
+    def __init__(self, theCharacterDataDic:dict, defaultData:dict, mode:str) -> None:
         for key in theCharacterDataDic:
             defaultData[key] = theCharacterDataDic[key]
         Entity.__init__(self,defaultData,"character",mode)
@@ -44,7 +44,7 @@ class FriendlyCharacter(Entity):
     @property
     def is_detected(self) -> bool: return self._detection >= 100
     #调整角色的隐蔽度
-    def notice(self,value:int=10) -> None:
+    def notice(self, value:int=10) -> None:
         self._detection += value
         if self._detection > 100:
             self._detection = 100
@@ -54,7 +54,7 @@ class FriendlyCharacter(Entity):
     def loadImg(self) -> None:
         super().loadImg()
         self._getHurtImage.add(self.type)
-    def decreaseHp(self,damage:int) -> None:
+    def decreaseHp(self, damage:int) -> None:
         super().decreaseHp(damage)
         #如果角色在被攻击后处于濒死状态
         if not self.is_alive() and not self.dying and self.kind != "HOC":
@@ -64,13 +64,13 @@ class FriendlyCharacter(Entity):
                 self._getHurtImage.alpha = 255
                 self._getHurtImage.yToGo = 255
                 self.play_sound("injured")
-    def heal(self,hpHealed:int) -> None:
+    def heal(self, hpHealed:int) -> None:
         super().heal(hpHealed)
         if self.dying != False:
             self.dying = False
             self._if_play_action_in_reversing = True
-    def drawUI(self,screen,MapClass) -> None:
-        blit_pos = super().drawUI(screen,MapClass)
+    def drawUI(self, surface:pygame.Surface, MapClass:object) -> None:
+        blit_pos = super().drawUI(surface,MapClass)
         #展示被察觉的程度
         if self._detection > 0:
             #参数
@@ -81,10 +81,10 @@ class FriendlyCharacter(Entity):
             #根据参数调整图片
             self.__isNoticedImage.set_size(eyeImgWidth,eyeImgHeight)
             self.__isNoticedImage.set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
-            self.__isNoticedImage.draw(screen)
+            self.__isNoticedImage.draw(surface)
         #重创立绘
         if self._getHurtImage != None and self._getHurtImage.x != None:
-            self._getHurtImage.draw(screen,self.type)
+            self._getHurtImage.draw(surface,self.type)
             if self._getHurtImage.x < self._getHurtImage.width/4:
                 self._getHurtImage.x += self._getHurtImage.width/25
             else:
@@ -98,7 +98,7 @@ class FriendlyCharacter(Entity):
 
 #敌对角色类
 class HostileCharacter(Entity):
-    def __init__(self,theSangvisFerrisDataDic:dict,defaultData:dict,mode=None):
+    def __init__(self, theSangvisFerrisDataDic:dict, defaultData:dict, mode:str):
         for key in theSangvisFerrisDataDic:
             defaultData[key] = theSangvisFerrisDataDic[key]
         Entity.__init__(self,defaultData,"sangvisFerri",mode)
@@ -110,7 +110,7 @@ class HostileCharacter(Entity):
             _RED_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_red.png",True)
         self.__vigilanceImage = DynamicProgressBarSurface(_RED_VIGILANCE_IMG,_ORANGE_VIGILANCE_IMG,0,0,0,0,"vertical")
         self.__vigilanceImage.set_percentage(self._vigilance/100)
-    def alert(self,value:int=10) -> None:
+    def alert(self, value:int=10) -> None:
         self._vigilance += value
         #防止警觉度数值超过阈值
         if self._vigilance > 100:
@@ -125,8 +125,8 @@ class HostileCharacter(Entity):
     @property
     def is_alert(self) -> bool: return self._vigilance >= 100
     #画UI - 列如血条
-    def drawUI(self,screen,MapClass) -> None:
-        blit_pos = super().drawUI(screen,MapClass)
+    def drawUI(self, surface:pygame.Surface, MapClass:object) -> None:
+        blit_pos = super().drawUI(surface,MapClass)
         #展示警觉的程度
         if self._vigilance > 0:
             #参数
@@ -137,8 +137,8 @@ class HostileCharacter(Entity):
             #根据参数调整图片
             self.__vigilanceImage.set_size(eyeImgWidth,eyeImgHeight)
             self.__vigilanceImage.set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
-            self.__vigilanceImage.draw(screen)
-    def make_decision(self,Map,friendlyCharacterData:dict,hostileCharacterData:dict,the_characters_detected_last_round:dict) -> queue:
+            self.__vigilanceImage.draw(surface)
+    def make_decision(self, Map:object, friendlyCharacterData:dict, hostileCharacterData:dict, the_characters_detected_last_round:dict) -> queue:
         #存储友方角色价值榜
         target_value_board = []
         for name,theCharacter in friendlyCharacterData.items():
@@ -232,7 +232,7 @@ class HostileCharacter(Entity):
 
 #初始化角色信息
 class CharacterDataLoader(threading.Thread):
-    def __init__(self,alliances:dict,enemies:dict,mode:str) -> None:
+    def __init__(self, alliances:dict, enemies:dict, mode:str) -> None:
         threading.Thread.__init__(self)
         self.DATABASE = loadCharacterData()
         self.alliances = deepcopy(alliances)

@@ -2,6 +2,7 @@
 from __future__ import annotations
 #python本体库
 import glob, os, random
+from typing import Union
 #额外库
 import numpy, pygame
 from pygame.locals import *
@@ -11,7 +12,7 @@ pygame.init()
 
 """加载"""
 #识别图片模块，用于引擎内加载图片，十分不建议在本文件外调用
-def imgLoadFunction(path:any, ifConvertAlpha:bool) -> pygame.Surface:
+def imgLoadFunction(path:Union[str,pygame.Surface], ifConvertAlpha:bool) -> pygame.Surface:
     if isinstance(path,pygame.Surface):
         return path
     elif isinstance(path,str):
@@ -29,20 +30,17 @@ def imgLoadFunction(path:any, ifConvertAlpha:bool) -> pygame.Surface:
         throwException("error","The path '{}' has to be a string or at least a pygame.Surface!".format(path))
 
 #图片加载模块：接收图片路径,长,高,返回对应图片
-def loadImg(path:any, size:tuple=None, setAlpha:int=None, ifConvertAlpha:bool=True) -> pygame.Surface:
+def loadImg(path:Union[str,pygame.Surface], size:Union[tuple,list]=[], setAlpha:int=255, ifConvertAlpha:bool=True) -> pygame.Surface:
     #加载图片
-    img:pygame.Surface = imgLoadFunction(path,ifConvertAlpha)
+    img = imgLoadFunction(path,ifConvertAlpha)
     #根据参数编辑图片
-    if setAlpha != None: img.set_alpha(setAlpha)
+    if setAlpha != 255: img.set_alpha(setAlpha)
     #如果没有给size,则直接返回Surface
-    if size == None or len(size) == 0:
-        return img
-    else:
-        return resizeImg(img,size)
+    return img if len(size) == 0 else resizeImg(img,size)
 
 #加载音效
 def loadSound(path:str, volume:float) -> pygame.mixer.Sound:
-    soundTmp = pygame.mixer.Sound(path)
+    soundTmp:object = pygame.mixer.Sound(path)
     soundTmp.set_volume(volume)
     return soundTmp
 
@@ -51,7 +49,7 @@ def loadAllImgInFile(pathRule:str, width=None, height=None) -> list[pygame.Surfa
     return [loadImg(imgPath,(width,height)) for imgPath in glob.glob(pathRule)]
 
 #获取Surface
-def getSurface(size:tuple, surface_flags=None) -> pygame.Surface:
+def getSurface(size:Union[tuple,list], surface_flags:any=None) -> pygame.Surface:
     if surface_flags != None:
         return pygame.Surface(size,flags=surface_flags)
     else:
@@ -59,7 +57,7 @@ def getSurface(size:tuple, surface_flags=None) -> pygame.Surface:
 
 """处理"""
 #重新编辑尺寸
-def resizeImg(img:pygame.Surface, size=(None,None)) -> pygame.Surface:
+def resizeImg(img:pygame.Surface, size:Union[tuple,list]=(None,None)) -> pygame.Surface:
     #转换尺寸
     if isinstance(size,(list,tuple,numpy.ndarray)):
         if len(size) == 1:
@@ -86,13 +84,13 @@ def resizeImg(img:pygame.Surface, size=(None,None)) -> pygame.Surface:
 
 #增加图片暗度
 def addDarkness(img:pygame.Surface, value:int) -> pygame.Surface:
-    newImg = img.copy()
+    newImg:pygame.Surface = img.copy()
     newImg.fill((value, value, value),special_flags=pygame.BLEND_RGB_SUB) 
     return newImg
 
 #减少图片暗度
 def removeDarkness(img:pygame.Surface, value:int) -> pygame.Surface:
-    newImg = img.copy()
+    newImg:pygame.Surface = img.copy()
     newImg.fill((value, value, value), special_flags=pygame.BLEND_RGB_ADD)
     return newImg
 
@@ -106,7 +104,7 @@ def changeDarkness(surface:pygame.Surface, value:int) -> pygame.Surface:
         return removeDarkness(surface,abs(value))
 
 #按照给定的位置对图片进行剪裁
-def cropImg(img:pygame.Surface, pos=(0,0),size=(0,0)) -> pygame.Surface:
+def cropImg(img:pygame.Surface, pos:Union[tuple,list]=(0,0),size:Union[tuple,list]=(0,0)) -> pygame.Surface:
     if isinstance(pos,pygame.Rect):
         cropped = getSurface(pos.size,pygame.SRCALPHA).convert_alpha()
         cropped.blit(img,(-pos.x,-pos.y))
@@ -120,17 +118,20 @@ def copeBounding(img:pygame.Surface) -> pygame.Surface: return cropImg(img,img.g
 
 """展示"""
 #图片blit模块：接受图片，位置（列表格式），屏幕，如果不是UI层需要local_x和local_y
-def drawImg(img:pygame.Surface, position:tuple, screen:pygame.Surface, local_x:int=0, local_y:int=0) -> None:
+def drawImg(img:pygame.Surface, position:Union[list,tuple], screen:pygame.Surface,
+    local_x:Union[int,float] = 0, local_y:Union[int,float] = 0) -> None:
     screen.blit(img,(position[0]+local_x,position[1]+local_y))
 
 #中心展示模块1：接受两个item和item2的x和y，将item1展示在item2的中心位置,但不展示item2：
-def displayInCenter(item1:pygame.Surface,item2:pygame.Surface,x,y,screen,local_x=0,local_y=0) -> None:
+def displayInCenter(item1:pygame.Surface, item2:pygame.Surface, x:Union[int,float], y:Union[int,float], screen:pygame.Surface,
+    local_x:Union[int,float] = 0, local_y:Union[int,float] = 0) -> None:
     added_x = (item2.get_width()-item1.get_width())/2
     added_y = (item2.get_height()-item1.get_height())/2
     screen.blit(item1,(x+added_x+local_x,y+added_y+local_y))
 
 #中心展示模块2：接受两个item和item2的x和y，展示item2后，将item1展示在item2的中心位置：
-def displayWithInCenter(item1:pygame.Surface,item2:pygame.Surface,x,y,screen,local_x=0,local_y=0) -> None:
+def displayWithInCenter(item1:pygame.Surface, item2:pygame.Surface, x:Union[int,float], y:Union[int,float], screen:pygame.Surface,
+    local_x:Union[int,float] = 0, local_y:Union[int,float] = 0) -> None:
     added_x = (item2.get_width()-item1.get_width())/2
     added_y = (item2.get_height()-item1.get_height())/2
     screen.blit(item2,(x+local_x,y+local_y))
@@ -149,24 +150,20 @@ def unloadBackgroundMusic() -> None:
 def randomInt(start:int, end:int) -> int: return random.randint(start,end)
 
 #转换坐标
-def convert_pos(pos:any) -> tuple:
+def convert_pos(pos:Union[list,tuple,dict,object,numpy.ndarray]) -> tuple:
     #检测坐标
     if isinstance(pos,(list,tuple,numpy.ndarray)):
-        x = pos[0]
-        y = pos[1]
+        return pos[0],pos[1]
     elif isinstance(pos,dict):
-        x = pos["x"]
-        y = pos["y"]
+        return pos["x"],pos["y"]
     else:
-        x = pos.x
-        y = pos.y
-    return x,y
+        return pos.x,pos.y
 
 #判断2个坐标是否相同
-def is_same_pos(pos1,pos2) -> bool: return convert_pos(pos1) == convert_pos(pos2)
+def is_same_pos(pos1:any, pos2:any) -> bool: return convert_pos(pos1) == convert_pos(pos2)
 
 #抛出引擎内的异常
-def throwException(exception_type:str,info:str) -> None:
+def throwException(exception_type:str, info:str) -> None:
     if exception_type == "error":
         raise Exception('LinpgEngine-Error: {}'.format(info))
     elif exception_type == "warning":

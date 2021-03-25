@@ -13,7 +13,7 @@ def reload_lang() -> None:
 reload_lang()
 
 #获取语言配置文件
-def get_lang(key:str,key2:str=None) -> any:
+def get_lang(key:str, key2:str=None) -> any:
     if key2 == None:
         if key in __LINPG_LANG:
             return deepcopy(__LINPG_LANG[key])

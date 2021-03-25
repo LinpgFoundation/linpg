@@ -4,7 +4,7 @@ from .character import *
 
 #战斗系统接口，请勿实例化
 class BattleSystemInterface(SystemWithBackgroundMusic):
-    def __init__(self,chapterType:str,chapterId:int,collection_name:str) -> None:
+    def __init__(self, chapterType:str, chapterId:int, collection_name:str) -> None:
         SystemWithBackgroundMusic.__init__(self)
         #用于判断是否移动屏幕的参数
         self.__mouse_move_temp_x = -1
@@ -33,23 +33,23 @@ class BattleSystemInterface(SystemWithBackgroundMusic):
         self.zoomIn = 100
         self.zoomIntoBe = 100
     #初始化地图
-    def _create_map(self,MapData,darkMode=None) -> None:
-        self.MAP = MapObject(MapData,self.standard_block_width,self.standard_block_height,darkMode)
+    def _create_map(self, MapData:dict) -> None:
+        self.MAP = MapObject(MapData,self.standard_block_width,self.standard_block_height)
     #计算光亮区域 并初始化地图
     def _calculate_darkness(self) -> None: self.MAP.calculate_darkness(self.alliances_data)
     #展示地图
-    def _display_map(self,screen:pygame.Surface) -> None:
+    def _display_map(self, screen:pygame.Surface) -> None:
         self._check_if_move_screen()
         self._move_screen()
         self.screen_to_move_x,self.screen_to_move_y = self.MAP.display_map(screen,self.screen_to_move_x,self.screen_to_move_y)
     #展示场景装饰物
-    def _display_decoration(self,screen:pygame.Surface) -> None:
+    def _display_decoration(self, screen:pygame.Surface) -> None:
         self.MAP.display_decoration(screen,self.alliances_data,self.enemies_data)
     #展示天气
-    def _display_weather(self,screen:pygame.Surface) -> None:
+    def _display_weather(self, screen:pygame.Surface) -> None:
         if self.weatherController != None: self.weatherController.display(screen,self.MAP.block_width)
     #初始化角色加载器
-    def _initial_characters_loader(self,alliancesData,enemiesData,mode=None) -> None:
+    def _initial_characters_loader(self, alliancesData:dict, enemiesData:dict, mode:str="default") -> None:
         self.__characterDataLoaderThread = CharacterDataLoader(alliancesData,enemiesData,mode)
     #启动角色加载器
     def _start_characters_loader(self) -> None: self.__characterDataLoaderThread.start()
@@ -75,19 +75,19 @@ class BattleSystemInterface(SystemWithBackgroundMusic):
             self.__pressKeyToMove["down"] = True if round(controller.joystick.get_axis(4)) == 1 else False
             self.__pressKeyToMove["right"] = True if round(controller.joystick.get_axis(3)) == 1 else False
             self.__pressKeyToMove["left"] = True if round(controller.joystick.get_axis(3)) == -1 else False
-    def _check_key_down(self,event:object) -> None:
+    def _check_key_down(self, event:object) -> None:
         if event.key == pygame.K_UP: self.__pressKeyToMove["up"] = True
         if event.key == pygame.K_DOWN: self.__pressKeyToMove["down"] = True
         if event.key == pygame.K_LEFT: self.__pressKeyToMove["left"] = True
         if event.key == pygame.K_RIGHT: self.__pressKeyToMove["right"] = True
         if event.key == pygame.K_p: self.MAP.dev_mode()
-    def _check_key_up(self,event:object) -> None:
+    def _check_key_up(self, event:object) -> None:
         if event.key == pygame.K_UP: self.__pressKeyToMove["up"] = False
         if event.key == pygame.K_DOWN: self.__pressKeyToMove["down"] = False
         if event.key == pygame.K_LEFT: self.__pressKeyToMove["left"] = False
         if event.key == pygame.K_RIGHT: self.__pressKeyToMove["right"] = False
     #根据鼠标移动屏幕
-    def _check_right_click_move(self,mouse_x:int,mouse_y:int) -> None:
+    def _check_right_click_move(self, mouse_x:int, mouse_y:int) -> None:
         if pygame.mouse.get_pressed()[2]:
             if self.__mouse_move_temp_x == -1 and self.__mouse_move_temp_y == -1:
                 self.__mouse_move_temp_x = mouse_x

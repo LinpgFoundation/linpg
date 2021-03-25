@@ -14,19 +14,19 @@ class WeatherSystem:
             img_x = randomInt(1,window_x*1.5)
             img_y = randomInt(1,window_y)
             self.ImgObject.append(Snow(imgId,img_size,img_speed,img_x,img_y))
-    def display(self,screen,perBlockWidth) -> None:
+    def display(self, surface:pygame.Surface, perBlockWidth:Union[int,float]) -> None:
         speed_unit:int = int(perBlockWidth/15)
         for i in range(len(self.ImgObject)):
-            if 0 <= self.ImgObject[i].x <= screen.get_width() and 0 <= self.ImgObject[i].y <= screen.get_height():
-                screen.blit(
+            if 0 <= self.ImgObject[i].x <= surface.get_width() and 0 <= self.ImgObject[i].y <= surface.get_height():
+                surface.blit(
                     resizeImg(self.img_list[self.ImgObject[i].imgId],
                         (perBlockWidth/self.ImgObject[i].size,perBlockWidth/self.ImgObject[i].size)
                     ),(self.ImgObject[i].x,self.ImgObject[i].y)
                 )
             self.ImgObject[i].move(speed_unit)
-            if self.ImgObject[i].x <= 0 or self.ImgObject[i].y >= screen.get_height():
+            if self.ImgObject[i].x <= 0 or self.ImgObject[i].y >= surface.get_height():
                 self.ImgObject[i].y = randomInt(-50,0)
-                self.ImgObject[i].x = randomInt(0,screen.get_width()*2)
+                self.ImgObject[i].x = randomInt(0,surface.get_width()*2)
 
 #雪花片
 class Snow(GameObject):
@@ -48,7 +48,7 @@ class PauseMenu:
         self.button_setting = None
         self.button_back = None
         self.screenshot = None
-    def __initial(self,screen) -> None:
+    def __initial(self, surface:pygame.Surface) -> None:
         width,height = display.get_size()
         surfaceTmp = pygame.Surface((width,height),flags=pygame.SRCALPHA).convert_alpha()
         pygame.draw.rect(surfaceTmp,(0,0,0),(0,0,width,height))
@@ -58,40 +58,40 @@ class PauseMenu:
         self.button_resume = fontRenderPro(
             get_lang("MainMenu","menu_main")["0_continue"],
             "white",
-            (screen.get_width()*0.1,screen.get_height()*0.4,screen.get_width()/38)
+            (surface.get_width()*0.1,surface.get_height()*0.4,surface.get_width()/38)
         )
         #按钮-保存游戏
         self.button_save = fontRenderPro(
             get_lang("SaveGame"),
             "white",
-            (screen.get_width()*0.1,screen.get_height()*0.5,screen.get_width()/38)
+            (surface.get_width()*0.1,surface.get_height()*0.5,surface.get_width()/38)
         )
         #按钮-设置
         self.button_setting = fontRenderPro(
             get_lang("MainMenu","menu_main")["5_setting"],
             "white",
-            (screen.get_width()*0.1,screen.get_height()*0.6,screen.get_width()/38)
+            (surface.get_width()*0.1,surface.get_height()*0.6,surface.get_width()/38)
         )
         #按钮-返回
         self.button_back = fontRenderPro(
             get_lang("DialogCreator","back"),
             "white",
-            (screen.get_width()*0.1,screen.get_height()*0.7,screen.get_width()/38)
+            (surface.get_width()*0.1,surface.get_height()*0.7,surface.get_width()/38)
         )
-    def display(self,screen,pygame_events=pygame.event.get()) -> None:
+    def display(self, surface:pygame.Surface, pygame_events=pygame.event.get()) -> None:
         #展示原先的背景
         if self.screenshot == None:
-            self.screenshot = screen.copy()
-        screen.blit(self.screenshot,(0,0))
+            self.screenshot = surface.copy()
+        surface.blit(self.screenshot,(0,0))
         #展示暂停菜单的背景层
         if self.white_bg == None:
-            self.__initial(screen)
-        self.white_bg.draw(screen)
+            self.__initial(surface)
+        self.white_bg.draw(surface)
         #展示按钮
-        self.button_resume.draw(screen)
-        self.button_save.draw(screen)
-        self.button_setting.draw(screen)
-        self.button_back.draw(screen)
+        self.button_resume.draw(surface)
+        self.button_save.draw(surface)
+        self.button_setting.draw(surface)
+        self.button_back.draw(surface)
         #判定按键
         for event in pygame_events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
@@ -113,7 +113,7 @@ class PauseMenu:
 class SettingContoller:
     def __init__(self) -> None:
         self.isDisplaying = False
-    def init(self, size:tuple) -> None:
+    def init(self, size:Union[list,tuple]) -> None:
         self.baseImgWidth = round(size[0]/3)
         self.baseImgHeight = round(size[0]/3)
         self.baseImg = loadImg("Assets/image/UI/setting_baseImg.png",(self.baseImgWidth,self.baseImgHeight))
@@ -165,48 +165,48 @@ class SettingContoller:
         self.buttons_y = self.baseImgY + self.baseImgHeight*0.88
         self.buttons_x1 = self.baseImgX + self.baseImgWidth*0.2
         self.buttons_x2 = self.buttons_x1 + self.cancelTxt_n.get_width()*1.7
-    def display(self,screen,pygame_events=pygame.event.get()) -> bool:
+    def display(self, surface:pygame.Surface, pygame_events=pygame.event.get()) -> bool:
         if self.isDisplaying:
             #底部图
-            screen.blit(self.baseImg,(self.baseImgX,self.baseImgY))
-            screen.blit(self.settingTitleTxt,(self.settingTitleTxt_x,self.settingTitleTxt_y))
+            surface.blit(self.baseImg,(self.baseImgX,self.baseImgY))
+            surface.blit(self.settingTitleTxt,(self.settingTitleTxt_x,self.settingTitleTxt_y))
             #语言
-            screen.blit(self.languageTxt,(self.bar_x,self.bar_y0))
+            surface.blit(self.languageTxt,(self.bar_x,self.bar_y0))
             #背景音乐
-            screen.blit(self.normalFont.render(
+            surface.blit(self.normalFont.render(
                 self.backgroundMusicTxt+": "+str(self.soundVolume_background_music),True,(255, 255, 255)),
                 (self.bar_x,self.bar_y1-self.FONTSIZE*1.4)
             )
             self.bar_img1.set_pos(self.bar_x,self.bar_y1)
             self.bar_img1.set_percentage(self.soundVolume_background_music/100)
-            self.bar_img1.draw(screen)
-            screen.blit(self.button,(
+            self.bar_img1.draw(surface)
+            surface.blit(self.button,(
                 self.bar_x+self.bar_img1.percentage*self.bar_img1.width-self.button.get_width()/2,
                 self.bar_y1-self.bar_height/2
                 )
             )
             #音效
-            screen.blit(self.normalFont.render(
+            surface.blit(self.normalFont.render(
                 self.soundEffectsTxt+": "+str(self.soundVolume_sound_effects),True,(255, 255, 255)),
                 (self.bar_x,self.bar_y2-self.FONTSIZE*1.4)
             )
             self.bar_img2.set_pos(self.bar_x,self.bar_y2)
             self.bar_img2.set_percentage(self.soundVolume_sound_effects/100)
-            self.bar_img2.draw(screen)
-            screen.blit(self.button,(
+            self.bar_img2.draw(surface)
+            surface.blit(self.button,(
                 self.bar_x+self.bar_img2.percentage*self.bar_img2.width-self.button.get_width()/2,
                 self.bar_y2-self.bar_height/2
                 )
             )
             #环境声
-            screen.blit(self.normalFont.render(
+            surface.blit(self.normalFont.render(
                 self.soundEnvironmentTxt+": "+str(self.soundVolume_sound_environment),True,(255, 255, 255)),
                 (self.bar_x,self.bar_y3-self.FONTSIZE*1.4)
             )
             self.bar_img3.set_pos(self.bar_x,self.bar_y3)
             self.bar_img3.set_percentage(self.soundVolume_sound_environment/100)
-            self.bar_img3.draw(screen)
-            screen.blit(self.button,(
+            self.bar_img3.draw(surface)
+            surface.blit(self.button,(
                 self.bar_x+self.bar_img3.percentage*self.bar_img3.width-self.button.get_width()/2,
                 self.bar_y3-self.bar_height/2
                 )
@@ -215,17 +215,17 @@ class SettingContoller:
             mouse_x,mouse_y=pygame.mouse.get_pos()
             #取消按钮
             if 0<mouse_x-self.buttons_x1<self.cancelTxt_n.get_width() and 0<mouse_y-self.buttons_y<self.cancelTxt_n.get_height():
-                screen.blit(self.cancelTxt_b,(self.buttons_x1,self.buttons_y))
+                surface.blit(self.cancelTxt_b,(self.buttons_x1,self.buttons_y))
                 if controller.get_event(pygame_events) == "comfirm":
                     self.soundVolume_background_music = get_setting("Sound","background_music")
                     self.soundVolume_sound_effects = get_setting("Sound","sound_effects")
                     self.soundVolume_sound_environment = get_setting("Sound","sound_environment")
                     self.isDisplaying = False
             else:
-                screen.blit(self.cancelTxt_n,(self.buttons_x1,self.buttons_y))
+                surface.blit(self.cancelTxt_n,(self.buttons_x1,self.buttons_y))
             #确认按钮
             if 0<mouse_x-self.buttons_x2<self.confirmTxt_n.get_width() and 0<mouse_y-self.buttons_y<self.confirmTxt_n.get_height():
-                screen.blit(self.confirmTxt_b,(self.buttons_x2,self.buttons_y))
+                surface.blit(self.confirmTxt_b,(self.buttons_x2,self.buttons_y))
                 if controller.get_event(pygame_events) == "comfirm":
                     set_setting("Sound","background_music",self.soundVolume_background_music)
                     set_setting("Sound","sound_effects",self.soundVolume_sound_effects)
@@ -235,7 +235,7 @@ class SettingContoller:
                     self.isDisplaying = False
                     return True
             else:
-                screen.blit(self.confirmTxt_n,(self.buttons_x2,self.buttons_y))
+                surface.blit(self.confirmTxt_n,(self.buttons_x2,self.buttons_y))
             #其他按键的判定按钮
             if pygame.mouse.get_pressed()[0] and 0<=mouse_x-self.bar_x<=self.bar_width:
                 #如果碰到背景音乐的音量条
@@ -249,4 +249,4 @@ class SettingContoller:
                     self.soundVolume_sound_environment = round(100*(mouse_x-self.bar_x)/self.bar_width)
         return False
 
-setting = SettingContoller()
+setting:SettingContoller = SettingContoller()

@@ -4,7 +4,7 @@ from .controller import *
 
 #坐标类
 class Coordinate:
-    def __init__(self, x:float, y:float) -> None:
+    def __init__(self, x:Union[int,float], y:Union[int,float]) -> None:
         self.x = x
         self.y = y
     #获取坐标
@@ -14,11 +14,11 @@ class Coordinate:
 
 #游戏对象接口
 class GameObject(Coordinate):
-    def __init__(self, x:float, y:float) -> None:
+    def __init__(self, x:Union[int,float], y:Union[int,float]) -> None:
         Coordinate.__init__(self,x,y)
     def __lt__(self,other) -> bool: return self.y+self.x < other.y+other.x
     #设置坐标
-    def set_pos(self, x:float, y:float) -> None:
+    def set_pos(self, x:Union[int,float], y:Union[int,float]) -> None:
         self.x = round(x)
         self.y = round(y)
     #检测是否在给定的位置上
@@ -26,7 +26,7 @@ class GameObject(Coordinate):
 
 #2d游戏对象接口
 class GameObject2d(GameObject):
-    def __init__(self, x:float, y:float) -> None:
+    def __init__(self, x:Union[int,float], y:Union[int,float]) -> None:
         GameObject.__init__(self,x,y)
     #宽
     @property
@@ -51,7 +51,7 @@ class GameObject2d(GameObject):
 
 #2.5d游戏对象接口 - 使用z轴判断图案的图层
 class GameObject2point5d(GameObject):
-    def __init__(self, x:float, y:float, z:float) -> None:
+    def __init__(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]) -> None:
         GameObject.__init__(self,x,y)
         self.z = z
     def __lt__(self,other) -> bool:
@@ -64,13 +64,13 @@ class GameObject2point5d(GameObject):
     def pos(self) -> tuple: return self.x,self.y,self.z
     def get_pos(self) -> tuple: return self.x,self.y,self.z
     #设置坐标
-    def set_pos(self, x:float, y:float, z:float) -> None:
+    def set_pos(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]) -> None:
         super().set_pos(x,y)
         self.z = round(z)
 
 #3d游戏对象接口
 class GameObject3d(GameObject2point5d):
-    def __init__(self, x:float, y:float, z:float) -> None:
+    def __init__(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]) -> None:
         GameObject2point5d.__init__(self,x,y,z)
     def __lt__(self,other) -> bool: return self.y+self.x+self.z < other.y+other.x+other.z
 
@@ -122,7 +122,7 @@ class SystemWithBackgroundMusic(SystemObject):
     def bgm_volume(self) -> float: return self.__bgm_volume
     def get_bgm_volume(self) -> float: return self.__bgm_volume
     #设置bgm音量
-    def set_bgm_volume(self,volume) -> None:
+    def set_bgm_volume(self,volume:Union[float,int]) -> None:
         if 1 >= volume >= 0:
             if self.__bgm_path != None and pygame.mixer.music.get_busy():
                 pygame.mixer.music.set_volume(volume)
@@ -166,7 +166,7 @@ class SoundManagement:
     #获取音量
     def get_volume(self) -> float: return self.__sounds_list[0].get_volume()
     #设置音量
-    def set_volume(self,volume):
+    def set_volume(self,volume:Union[float,int]):
         for i in range(len(self.__sounds_list)):
             self.__sounds_list[i].set_volume(volume)
 
@@ -187,18 +187,18 @@ class ItemNeedBlit:
         self.weight = weight
         self.pos = pos
         self.offSet = offSet
-    def __lt__(self,o) -> bool: return self.weight < o.weight
-    def blit(self,screen):
+    def __lt__(self,o:object) -> bool: return self.weight < o.weight
+    def blit(self, surface:pygame.Surface) -> None:
         if isinstance(self.image,pygame.Surface):
             if self.offSet == None:
-                screen.blit(self.image,self.pos)
+                surface.blit(self.image,self.pos)
             else:
-                screen.blit(self.image,(self.pos[0]+self.offSet[0],self.pos[1]+self.offSet[1]))
+                surface.blit(self.image,(self.pos[0]+self.offSet[0],self.pos[1]+self.offSet[1]))
         else:
             if self.offSet != None:
-                self.image.display(screen,self.offSet)
+                self.image.display(surface,self.offSet)
             else:
                 try:
-                    self.image.draw(screen)
+                    self.image.draw(surface)
                 except:
-                    self.image.display(screen)
+                    self.image.display(surface)

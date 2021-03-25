@@ -6,7 +6,7 @@ _CHARACTERS_IMAGE_SYS:object = EntityImageManager()
 #储存角色音效的常量
 _CHARACTERS_SOUND_SYSTEM:object = EntitySoundManager(5)
 #角色UI的文字数据
-_ENTITY_UI_FONT = createFont(display.get_width()/192)
+_ENTITY_UI_FONT:object = createFont(display.get_width()/192)
 
 #指向储存血条图片的指针（不初始化直到Entity或其子类被调用）
 _HP_GREEN_IMG:pygame.Surface = None
@@ -18,7 +18,7 @@ DYING_ROUND_LIMIT:int = 3
 
 #人形模块
 class Entity(GameObject):
-    def __init__(self,DATA:dict,faction:str,mode:str) -> None:
+    def __init__(self, DATA:dict, faction:str, mode:str):
         GameObject.__init__(self,DATA["x"],DATA["y"])
         #最大行动值
         self.max_action_point = DATA["action_point"]
@@ -53,8 +53,7 @@ class Entity(GameObject):
         #gif图片管理
         self.__imgId_dict = _CHARACTERS_IMAGE_SYS.createGifDict(self.type,faction,mode)
         #加载角色的音效
-        if mode != "dev":
-            _CHARACTERS_SOUND_SYSTEM.add(self.type)
+        if mode != "dev": _CHARACTERS_SOUND_SYSTEM.add(self.type)
         #弹夹容量
         self.magazine_capacity = DATA["magazine_capacity"]
         #最大攻击力
@@ -92,11 +91,11 @@ class Entity(GameObject):
     """角色动作参数管理"""
     #当前动作
     @property
-    def action(self): return self.__current_action
+    def action(self) -> str: return self.__current_action
     #获取当前动作，建议使用self.action
     def get_action(self) -> str: return self.__current_action
     #设置动作
-    def set_action(self,action:str="wait",ifLoop:bool=True) -> None:
+    def set_action(self, action:str="wait", ifLoop:bool=True) -> None:
         self.reset_imgId(self.__current_action)
         self.__current_action = action
         self.__if_action_loop = ifLoop
@@ -104,38 +103,35 @@ class Entity(GameObject):
     #是否闲置
     def is_idle(self) -> bool: return self.__current_action == self.idle_action
     #获取角色特定动作的图片播放ID
-    def get_imgId(self,action:str):
-        action = self.__imgId_dict[action]
-        if action != None:
-            return action["imgId"]
-        else:
-            return None
+    def get_imgId(self, action:str) -> int:
+        action_dict:dict = self.__imgId_dict[action]
+        return action_dict["imgId"] if action_dict != None else -1
     #获取角色特定动作的图片总数量
-    def get_imgNum(self,action:str) -> int: return _CHARACTERS_IMAGE_SYS.get_img_num(self.type,action)
+    def get_imgNum(self, action:str) -> int: return _CHARACTERS_IMAGE_SYS.get_img_num(self.type,action)
     #设定角色特定动作的图片播放ID
-    def set_imgId(self,action:str,imgId:int) -> None: self.__imgId_dict[action]["imgId"] = imgId
+    def set_imgId(self, action:str, imgId:int) -> None: self.__imgId_dict[action]["imgId"] = imgId
     #重置角色特定动作的图片播放ID
-    def reset_imgId(self,action:str) -> None: self.set_imgId(action,0)
+    def reset_imgId(self, action:str) -> None: self.set_imgId(action,0)
     #增加角色特定动作的图片播放ID
-    def add_imgId(self,action:str,amount:int=1) -> None: self.__imgId_dict[action]["imgId"] += amount
+    def add_imgId(self, action:str, amount:int=1) -> None: self.__imgId_dict[action]["imgId"] += amount
     #获取角色特定动作的图片透明度
-    def get_imgAlpaha(self,action:str) -> int: return self.__imgId_dict[action]["alpha"]
+    def get_imgAlpaha(self, action:str) -> int: return self.__imgId_dict[action]["alpha"]
     #设定角色特定动作的图片透明度
-    def set_imgAlpaha(self,action:str,alpha:int) -> None: self.__imgId_dict[action]["alpha"] = alpha
+    def set_imgAlpaha(self, action:str, alpha:int) -> None: self.__imgId_dict[action]["alpha"] = alpha
     """角色行动值参数管理"""
     #当前行动值
     @property
-    def current_action_point(self): return self.__current_action_point
+    def current_action_point(self) -> int : return self.__current_action_point
     #获取当前行动值,建议使用self.current_action_point
-    def get_current_action_point(self) -> int : return self.__current_action_point
+    def get_current_action_point(self) -> int: return self.__current_action_point
     #设置当前行动值，不建议非开发者使用
-    def set_current_action_point(self,point:int) -> None: self.__current_action_point = int(point)
+    def set_current_action_point(self, point:int) -> None: self.__current_action_point = int(point)
     #重置行动点数
     def reset_action_point(self) -> None: self.set_current_action_point(self.max_action_point)
     #是否有足够的开发点数
-    def have_enough_action_point(self,value:int) -> bool: return self.__current_action_point >= value
+    def have_enough_action_point(self, value:int) -> bool: return self.__current_action_point >= value
     #尝试减少行动值，如果成功，返回true,失败则返回false
-    def try_reduce_action_point(self,value:int) -> bool:
+    def try_reduce_action_point(self, value:int) -> bool:
         if not console.get_events("cheat"):
             if isinstance(value,int):
                 if self.__current_action_point >= value:
@@ -165,7 +161,7 @@ class Entity(GameObject):
     @property
     def hp_precentage(self) -> bool: return self.__current_hp/self.__max_hp
     #治愈
-    def heal(self,hpHealed:int) -> None:
+    def heal(self, hpHealed:int) -> None:
         if hpHealed > 0:
             self.__current_hp += hpHealed
         elif hpHealed == 0:
@@ -173,7 +169,7 @@ class Entity(GameObject):
         else:
             throwException("error","You cannot heal a negative value")
     #降低血量
-    def decreaseHp(self,damage:int):
+    def decreaseHp(self, damage:int):
         if not self.__if_invincible and damage > 0:
             #如果有可再生的护甲
             if self.__current_recoverable_armor > 0:
@@ -206,12 +202,12 @@ class Entity(GameObject):
         else:
             throwException("error","You cannot do a negative damage")
     #攻击另一个Entity
-    def attack(self,another_entity) -> int:
+    def attack(self, another_entity:object) -> int:
         damage = randomInt(self.min_damage,self.max_damage)
         another_entity.decreaseHp(damage)
         return damage
     #回复可再生护甲
-    def recover_armor(self,value:int) -> None:
+    def recover_armor(self, value:int) -> None:
         self.__current_recoverable_armor += int(value)
         #防止可再生护甲的数值越界
         if self.__current_recoverable_armor > self.__max_recoverable_armor:
@@ -220,11 +216,11 @@ class Entity(GameObject):
             self.__current_recoverable_armor = 0
     """其他"""
     #设置反转
-    def set_flip(self,theBool:bool) -> None: self.if_flip = theBool
+    def set_flip(self, theBool:bool) -> None: self.if_flip = theBool
     #播放角色声音
-    def play_sound(self,kind_of_sound:str) -> None: _CHARACTERS_SOUND_SYSTEM.play(self.type,kind_of_sound)
+    def play_sound(self, kind_of_sound:str) -> None: _CHARACTERS_SOUND_SYSTEM.play(self.type,kind_of_sound)
     #设置需要移动的路径
-    def move_follow(self,path) -> None:
+    def move_follow(self, path:Union[list,tuple]) -> None:
         if isinstance(path,(list,tuple)) and len(path)>0:
             self.__moving_path = path
             self.set_action("move")
@@ -263,7 +259,7 @@ class Entity(GameObject):
                     self.__if_map_need_update = True
         else:
             self.__moving_path = None
-            if self.get_imgId("set") != None:
+            if self.get_imgId("set") >= 0:
                 self.set_action("set",False)
             else:
                 self.set_action()
@@ -280,7 +276,7 @@ class Entity(GameObject):
             _CHARACTERS_IMAGE_SYS.loadImageCollection(self.type,theAction,self.faction)
         _CHARACTERS_SOUND_SYSTEM.add(self.type)
     #查看是否一个Entity在该角色的附近
-    def near(self,otherEntity) -> bool:
+    def near(self, otherEntity:object) -> bool:
         if self.x == otherEntity.x:
             if abs(self.y-otherEntity.y) <= 1:
                 return True
@@ -294,7 +290,7 @@ class Entity(GameObject):
         else:
             return False
     #获取角色的攻击范围
-    def getAttackRange(self,Map,ifHalfMode:bool=False) -> dict:
+    def getAttackRange(self, Map:object, ifHalfMode:bool=False) -> dict:
         #初始化列表
         for key in self.__attack_range:
             self.__attack_range[key].clear()
@@ -332,7 +328,7 @@ class Entity(GameObject):
                             self.__attack_range["near"].append((x,y))
         return self.__attack_range
     #目标角色所在的攻击范围内
-    def range_target_in(self,otherEntity,custom_pos=None) -> str:
+    def range_target_in(self, otherEntity:object, custom_pos:any=None) -> str:
         distanceBetween:int = abs(int(otherEntity.x-self.x))+abs(int(otherEntity.y-self.y)) if custom_pos == None else abs(int(otherEntity.x-custom_pos[0]))+abs(int(otherEntity.y-custom_pos[1]))
         if "near" in self.effective_range and self.effective_range["near"] != None and self.effective_range["near"][0] <= distanceBetween <= self.effective_range["near"][1]:
             return "near"
@@ -343,7 +339,7 @@ class Entity(GameObject):
         else:
             return None
     #判断是否在攻击范围内
-    def can_attack(self,otherEntity) -> bool: return self.range_target_in(otherEntity) != None
+    def can_attack(self, otherEntity:object) -> bool: return self.range_target_in(otherEntity) != None
     #返回该角色的理想攻击范围
     @property
     def ideal_attack_range(self) -> int:
@@ -356,7 +352,7 @@ class Entity(GameObject):
         else:
             throwException("error","This character has no valid effective range!")
     #根据坐标反转角色
-    def set_flip_based_on_pos(self,pos):
+    def set_flip_based_on_pos(self, pos:any):
         #转换坐标
         x,y = convert_pos(pos)
         #检测坐标
@@ -370,11 +366,11 @@ class Entity(GameObject):
         else:
             self.set_flip(False)
     """画出角色"""
-    #把角色画到screen上
-    def __blit_entity_img(self,screen,MapClass,action=None,pos=None,alpha=155) -> None:
+    #把角色画到surface上
+    def __blit_entity_img(self, surface:pygame.Surface, MapClass:object, action:str=None, pos:any=None, alpha:int=155) -> None:
+        #如果没有指定action,则默认使用当前的动作
+        if action == None: action = self.__current_action
         #调整小人图片的尺寸
-        if action == None:
-            action = self.__current_action
         img_of_char = _CHARACTERS_IMAGE_SYS.get_img(self.type,action,self.__imgId_dict[action]["imgId"])
         img_width = round(MapClass.block_width*1.6)
         img_of_char.set_size(img_width,img_width)
@@ -385,15 +381,15 @@ class Entity(GameObject):
             img_of_char.flip_if_not()
         else:
             img_of_char.flip_back_to_normal()
+        #如果没有指定pos,则默认使用当前的动作
+        if pos == None: pos = MapClass.calPosInMap(self.x,self.y)
         #把角色图片画到屏幕上
-        if pos == None:
-            pos = MapClass.calPosInMap(self.x,self.y)
         img_of_char.set_pos(pos[0]-MapClass.block_width*0.3,pos[1]-MapClass.block_width*0.85)
-        img_of_char.draw(screen)
+        img_of_char.draw(surface)
         #如果是开发者模式，则开启轮廓
-        if console.get_events("dev"): img_of_char.draw_outline(screen)
-    def draw(self,screen,MapClass) -> None:
-        self.__blit_entity_img(screen,MapClass,alpha=self.get_imgAlpaha(self.__current_action))
+        if console.get_events("dev"): img_of_char.draw_outline(surface)
+    def draw(self, surface:pygame.Surface, MapClass:object) -> None:
+        self.__blit_entity_img(surface,MapClass,alpha=self.get_imgAlpaha(self.__current_action))
         #如果当前动作是移动
         if self.__current_action == "move" and self.__moving_path != None:
             self.__move_based_on_path()
@@ -419,8 +415,8 @@ class Entity(GameObject):
             else:
                 self._if_play_action_in_reversing = False
                 self.set_action()
-    def draw_custom(self,action,pos,screen,MapClass,isContinue=True) -> None:
-        self.__blit_entity_img(screen,MapClass,action,pos)
+    def draw_custom(self, action:str, pos:any, surface:pygame.Surface, MapClass:object, isContinue:bool=True) -> None:
+        self.__blit_entity_img(surface,MapClass,action,pos)
         #调整id，并返回对应的bool状态
         if self.__imgId_dict[action]["imgId"] < self.get_imgNum(action)-1:
             self.__imgId_dict[action]["imgId"] += 1
@@ -431,7 +427,7 @@ class Entity(GameObject):
                 return True
             else:
                 return False
-    def drawUI(self,screen,MapClass) -> tuple:
+    def drawUI(self, surface:pygame.Surface, MapClass:object) -> tuple:
         #把角色图片画到屏幕上
         xTemp,yTemp = MapClass.calPosInMap(self.x,self.y)
         xTemp += MapClass.block_width*0.25
@@ -440,12 +436,12 @@ class Entity(GameObject):
             self.__hp_bar_green.set_size(MapClass.block_width/2, MapClass.block_width/10)
             self.__hp_bar_green.set_pos(xTemp,yTemp)
             self.__hp_bar_green.set_percentage(self.__current_hp/self.__max_hp)
-            self.__hp_bar_green.draw(screen)
-            displayInCenter(_ENTITY_UI_FONT.render("{}/{}".format(self.__current_hp,self.__max_hp),get_fontMode(),(0,0,0)),self.__hp_bar_green,xTemp,yTemp,screen)
+            self.__hp_bar_green.draw(surface)
+            displayInCenter(_ENTITY_UI_FONT.render("{}/{}".format(self.__current_hp,self.__max_hp),get_fontMode(),(0,0,0)),self.__hp_bar_green,xTemp,yTemp,surface)
         else:
             self.__hp_bar_red.set_size(MapClass.block_width/2, MapClass.block_width/10)
             self.__hp_bar_red.set_pos(xTemp,yTemp)
             self.__hp_bar_red.set_percentage(self.dying/DYING_ROUND_LIMIT)
-            self.__hp_bar_red.draw(screen)
-            displayInCenter(_ENTITY_UI_FONT.render("{0}/{1}".format(self.dying,DYING_ROUND_LIMIT),get_fontMode(),(0,0,0)),self.__hp_bar_red,xTemp,yTemp,screen)
+            self.__hp_bar_red.draw(surface)
+            displayInCenter(_ENTITY_UI_FONT.render("{0}/{1}".format(self.dying,DYING_ROUND_LIMIT),get_fontMode(),(0,0,0)),self.__hp_bar_red,xTemp,yTemp,surface)
         return xTemp,yTemp

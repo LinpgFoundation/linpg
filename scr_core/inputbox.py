@@ -3,17 +3,17 @@ import time
 from tkinter import Tk
 from .ui import *
 
-#输入框Interface，请勿实体化
-class InputBoxInterface(GameObject2d):
-    def __init__(self,x,y,font_size:int,txt_color,default_width) -> None:
+#输入框Abstract，请勿实体化
+class AbstractInputBox(GameObject2d):
+    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int):
         GameObject2d.__init__(self,x,y)
-        self.FONTSIZE = font_size
+        self.FONTSIZE = int(font_size)
         self.FONT = createFont(self.FONTSIZE)
         self.default_width = default_width
-        self.deafult_height = self.FONTSIZE*1.5
+        self.deafult_height = int(self.FONTSIZE*1.5)
         self.input_box = pygame.Rect(x, y, default_width, self.deafult_height)
-        self.color = pygame.Color('lightskyblue3')
-        self.txt_color = txt_color
+        self.color = findColorRGBA('lightskyblue3')
+        self.txt_color = findColorRGBA(txt_color)
         self.active = False
         self._text = None
         self._holder = self.FONT.render("|",get_fontMode(),self.txt_color)
@@ -22,17 +22,17 @@ class InputBoxInterface(GameObject2d):
     def get_width(self) -> int: return self.input_box.w
     def get_height(self) -> int: return self.input_box.h
     def get_fontsize(self) -> int: return self.FONTSIZE
-    def set_fontsize(self,font_size:int) -> None:
+    def set_fontsize(self, font_size:int) -> None:
         self.FONTSIZE = int(font_size)
         self.FONT = createFont(self.FONTSIZE)
-    def set_pos(self,x,y) -> None:
+    def set_pos(self, x:Union[int,float], y:Union[int,float]) -> None:
         super().set_pos(x,y)
         self.input_box = pygame.Rect(x, y, self.default_width, self.FONTSIZE*1.5)
 
 #单行输入框
-class SingleLineInputBox(InputBoxInterface):
-    def __init__(self,x,y,font_size,txt_color,default_width=150) -> None:
-        InputBoxInterface.__init__(self,x,y,font_size,txt_color,default_width)
+class SingleLineInputBox(AbstractInputBox):
+    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int=150):
+        AbstractInputBox.__init__(self,x,y,font_size,txt_color,default_width)
         self._text = ""
     def get_text(self) -> str:
         self.needSave = False
@@ -40,7 +40,7 @@ class SingleLineInputBox(InputBoxInterface):
             return None
         else:
             return self._text
-    def set_text(self,new_txt=None) -> None:
+    def set_text(self, new_txt:str=None) -> None:
         if new_txt != None and len(new_txt)>0:
             self._text = new_txt
             self.holderIndex = len(new_txt)-1
@@ -48,14 +48,14 @@ class SingleLineInputBox(InputBoxInterface):
             self._text = ""
             self.holderIndex = 0
         self._reset_inputbox_width()
-    def _add_char(self,char) -> None:
+    def _add_char(self, char:str) -> None:
         if len(char) > 0:
             self._text = self._text[:self.holderIndex]+char+self._text[self.holderIndex:]
             self.holderIndex += len(char)
             self._reset_inputbox_width()
         else:
             throwException("warning","The value of event.unicode is empty!")
-    def _remove_char(self,action) -> None:
+    def _remove_char(self, action:str) -> None:
         if action == "ahead":
             if self.holderIndex > 0:
                 self._text = self._text[:self.holderIndex-1]+self._text[self.holderIndex:]
@@ -66,7 +66,7 @@ class SingleLineInputBox(InputBoxInterface):
         else:
             throwException("error","Action has to be either 'ahead' or 'behind'!")
         self._reset_inputbox_width()
-    def _reset_holderIndex(self,mouse_x) -> None:
+    def _reset_holderIndex(self, mouse_x:int) -> None:
         last_width = 0
         local_x = mouse_x-self.x
         new_width = 0
@@ -86,7 +86,7 @@ class SingleLineInputBox(InputBoxInterface):
             self.input_box.w = max(self.default_width, self.FONT.size(self._text)[0]+self.FONTSIZE*0.6)
         else:
             self.input_box.w = self.default_width
-    def _keyDownEvents(self,event) -> bool:
+    def _keyDownEvents(self, event:object) -> bool:
         if event.key == pygame.K_BACKSPACE:
             self._remove_char("ahead")
             return True
@@ -104,7 +104,7 @@ class SingleLineInputBox(InputBoxInterface):
             self._add_char(Tk().clipboard_get())
             return True
         return False
-    def display(self,screen,pygame_events=pygame.event.get()) -> None:
+    def display(self, screen:pygame.Surface, pygame_events:any=pygame.event.get()) -> None:
         mouse_x,mouse_y = pygame.mouse.get_pos()
         for event in pygame_events:
             if self.active:
@@ -136,9 +136,9 @@ class SingleLineInputBox(InputBoxInterface):
                 screen.blit(self._holder, (self.x+self.FONTSIZE*0.25+self.FONT.size(self._text[:self.holderIndex])[0], self.y))
 
 #多行输入框
-class MultipleLinesInputBox(InputBoxInterface):
-    def __init__(self,x,y,font_size,txt_color,default_width=150) -> None:
-        InputBoxInterface.__init__(self,x,y,font_size,txt_color,default_width)
+class MultipleLinesInputBox(AbstractInputBox):
+    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int=150):
+        AbstractInputBox.__init__(self,x,y,font_size,txt_color,default_width)
         self._text = [""]
         self.lineId = 0
     def get_text(self) -> list:
@@ -147,7 +147,7 @@ class MultipleLinesInputBox(InputBoxInterface):
             return None
         else:
             return self._text
-    def set_text(self,new_txt=None) -> None:
+    def set_text(self, new_txt:Union[tuple,list]=None) -> None:
         if new_txt == None or len(self._text) == 0:
             self._text = [""]
         elif isinstance(new_txt,list):
@@ -155,7 +155,7 @@ class MultipleLinesInputBox(InputBoxInterface):
             self._reset_inputbox_size()
         else:
             throwException("error","The new_txt for MultipleLinesInputBox.set_text() must be a list!")
-    def set_fontsize(self,font_size) -> None:
+    def set_fontsize(self, font_size:int) -> None:
         super().set_fontsize(font_size)
         self._reset_inputbox_size()
     def _reset_inputbox_width(self) -> None:
@@ -172,7 +172,7 @@ class MultipleLinesInputBox(InputBoxInterface):
     def _reset_inputbox_size(self) -> None:
         self._reset_inputbox_width()
         self._reset_inputbox_height()
-    def _add_char(self,char) -> None:
+    def _add_char(self, char:str) -> None:
         if len(char) > 0:
             if "\n" not in char:
                 self._text[self.lineId] = self._text[self.lineId][:self.holderIndex]+char+self._text[self.lineId][self.holderIndex:]
@@ -194,7 +194,7 @@ class MultipleLinesInputBox(InputBoxInterface):
         else:
             throwException("warning","The value of event.unicode is empty!")
     #删除对应字符
-    def _remove_char(self,action:str) -> None:
+    def _remove_char(self, action:str) -> None:
         if action == "ahead":
             if self.holderIndex > 0:
                 self._text[self.lineId] = self._text[self.lineId][:self.holderIndex-1]+self._text[self.lineId][self.holderIndex:]
@@ -221,7 +221,7 @@ class MultipleLinesInputBox(InputBoxInterface):
         else:
             throwException("error", "Action has to be either 'ahead' or 'behind'!")
         self._reset_inputbox_size()
-    def _reset_holderIndex(self,mouse_x:int,mouse_y:int) -> None:
+    def _reset_holderIndex(self, mouse_x:int, mouse_y:int) -> None:
         self.lineId = round((mouse_y-self.y)/self.FONTSIZE)-1
         if self.lineId < 0:
             self.lineId = 0
@@ -241,7 +241,7 @@ class MultipleLinesInputBox(InputBoxInterface):
             self.holderIndex = i
         else:
             self.holderIndex = i-1
-    def display(self,screen,pygame_events=pygame.event.get()) -> bool:
+    def display(self, screen:pygame.Surface, pygame_events:any=pygame.event.get()) -> bool:
         mouse_x,mouse_y = pygame.mouse.get_pos()
         for event in pygame_events:
             if self.active:
@@ -303,9 +303,9 @@ class MultipleLinesInputBox(InputBoxInterface):
 
 #控制台
 class Console(SingleLineInputBox):
-    def __init__(self,x,y,font_size=32,default_width=150) -> None:
-        self.color_inactive = pygame.Color('lightskyblue3')
-        self.color_active = pygame.Color('dodgerblue2')
+    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int=32, default_width:int=150):
+        self.color_inactive = findColorRGBA('lightskyblue3')
+        self.color_active = findColorRGBA('dodgerblue2')
         SingleLineInputBox.__init__(self,x,y,font_size,self.color_active,default_width)
         self.color = self.color_active
         self.active = True
@@ -315,14 +315,14 @@ class Console(SingleLineInputBox):
         self.events = {}
         if try_get_setting("DeveloperMode"): self.events["dev"] = True
         self.txtOutput = []
-    def get_events(self,key=None):
+    def get_events(self, key:any=None):
         if key == None:
             return self.events
         elif key != None and key in self.events:
             return self.events[key]
         else:
             return None
-    def _keyDownEvents(self,event) -> bool:
+    def _keyDownEvents(self, event:object) -> bool:
         if super()._keyDownEvents(event):
             return True
         #向上-过去历史
@@ -338,23 +338,44 @@ class Console(SingleLineInputBox):
         #回车
         elif event.key == pygame.K_RETURN:
             if len(self._text)>0:
-                if self._text[0]=="/":
-                    if self._text == "/cheat on":
-                        self.events["cheat"] = True
-                        self.txtOutput.append("Cheat mode activated")
-                    elif self._text == "/cheat off":
-                        self.events["cheat"] = False
-                        self.txtOutput.append("Cheat mode deactivated")
-                    elif self._text[:5] == "/say ":
-                        self.txtOutput.append(self._text[5:])
-                    elif self._text == "/dev on":
-                        self.txtOutput.append("Development mode activated")
-                        self.events["dev"] = True
-                    elif self._text == "/dev off":
-                        self.txtOutput.append("Development mode deactivated")
-                        self.events["dev"] = False
+                if self._text.startswith('/'):
+                    cmd_blocks:list = self._text[1:].split()
+                    if cmd_blocks[0] == "cheat":
+                        if cmd_blocks[1] == "on":
+                            if "cheat" in self.events and self.events["cheat"]:
+                                self.txtOutput.append("Cheat mode has already been activated!")
+                            else:
+                                self.events["cheat"] = True
+                                self.txtOutput.append("Cheat mode is activated.")
+                        elif cmd_blocks[1] == "off":
+                            if "cheat" in self.events and not self.events["cheat"]:
+                                self.txtOutput.append("Cheat mode has already been deactivated!")
+                            else:
+                                self.events["cheat"] = False
+                                self.txtOutput.append("Cheat mode is deactivated.")
+                        else:
+                            self.txtOutput.append("Unknown status for cheat command.")
+                    elif cmd_blocks[0] == "say":
+                        self.txtOutput.append(self._text.replace("/say"))
+                    elif cmd_blocks[0] == "dev":
+                        if cmd_blocks[1] == "on":
+                            if "dev" in self.events and self.events["dev"]:
+                                self.txtOutput.append("Developer mode has been activated!")
+                            else:
+                                self.txtOutput.append("Developer mode is activated.")
+                                self.events["dev"] = True
+                        elif cmd_blocks[1] == "off":
+                            if "dev" in self.events and not self.events["dev"]:
+                                self.txtOutput.append("Developer mode has been deactivated!")
+                            else:
+                                self.txtOutput.append("Developer mode is deactivated.")
+                                self.events["dev"] = False
+                        else:
+                            self.txtOutput.append("Unknown status for dev command.")
+                    elif cmd_blocks[0] == "linpg" and cmd_blocks[1] == "info":
+                        self.txtOutput.append("Linpg Version: {}".format(get_current_version()))
                     else:
-                        self.txtOutput.append("Unknown command")
+                        self.txtOutput.append("Unknown command!")
                 else:
                     self.txtOutput.append(self._text)
                 self.textHistory.append(self._text) 
@@ -370,7 +391,7 @@ class Console(SingleLineInputBox):
             self.color = self.color_active if self.active else self.color_inactive
             return True
         return False
-    def display(self,screen,pygame_events=pygame.event.get()) -> None:
+    def display(self, screen:pygame.Surface, pygame_events=pygame.event.get()) -> None:
         if self.hidden == True:
             for event in pygame_events:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_BACKQUOTE:
@@ -410,4 +431,4 @@ class Console(SingleLineInputBox):
                 screen.blit(self._holder, (self.x+self.FONTSIZE*0.25+self.FONT.size(self._text[:self.holderIndex])[0], self.y))
 
 #初始化控制台模块
-console = Console(0,0)
+console:object = Console(0,0)

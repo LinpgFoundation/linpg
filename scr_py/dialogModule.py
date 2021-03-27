@@ -3,7 +3,7 @@ from ..scr_core.function import *
 from ..scr_pyd.movie import cutscene,VedioFrame,VedioPlayer
 
 #视觉小说系统接口
-class DialogSystemInterface(SystemWithBackgroundMusic):
+class AbstractDialogSystem(SystemWithBackgroundMusic):
     def __init__(self):
         SystemWithBackgroundMusic.__init__(self)
         #加载对话的背景图片模块
@@ -256,9 +256,9 @@ class NpcImageManager:
         self.move_x = 0
 
 #对话框和对话框内容
-class DialogContent(DialogInterface):
+class DialogContent(AbstractDialog):
     def __init__(self, fontSize:int):
-        DialogInterface.__init__(self,loadImg("Assets/image/UI/dialoguebox.png"),fontSize)
+        AbstractDialog.__init__(self,loadImg("Assets/image/UI/dialoguebox.png"),fontSize)
         try:
             self.__textPlayingSound = pygame.mixer.Sound("Assets/sound/ui/dialog_words_playing.ogg")
         except FileNotFoundError:

@@ -4,7 +4,7 @@ from math import ceil
 import av, pygame
 from ..scr_core.surface import ProgressBar,ImageSurface,get_setting
 
-cdef getAudioFromVideo(moviePath:str,audioType:str="mp3"):
+cdef getAudioFromVideo(moviePath:str, audioType:str="mp3"):
     #如果没有Cache文件夹，则创建一个
     if not os.path.exists("Cache"): os.makedirs("Cache")
     #获取路径
@@ -47,8 +47,8 @@ def loadAudioAsMusic(moviePath:str):
     if not get_setting("KeepVedioCache"): os.remove(path)
 
 #视频模块接口，不能实例化
-class VedioInterface(threading.Thread):
-    def __init__(self,path:str,width:int,height:int):
+class AbstractVedio(threading.Thread):
+    def __init__(self, path:str, width:int, height:int):
         threading.Thread.__init__(self)
         self._path = path
         self._video_container = av.open(self._path,mode='r')
@@ -83,9 +83,9 @@ class VedioInterface(threading.Thread):
     def display(self,screen): pygame.surfarray.blit_array(screen, self._frameQueue.get())
 
 #视频片段展示模块--灵活，但不能保证帧数和音乐同步
-class VedioFrame(VedioInterface):
-    def __init__(self,path:str,width:int,height:int,loop:int=True,with_music:int=False,play_range:tuple=None,volume:float=1):
-        VedioInterface.__init__(self,path,width,height)
+class VedioFrame(AbstractVedio):
+    def __init__(self, path:str, width:int, height:int, loop:int=True, with_music:int=False, play_range:tuple=None, volume:float=1):
+        AbstractVedio.__init__(self,path,width,height)
         self.loop = loop
         self.looped_times = 0
         self.bgm = loadAudioAsSound(path) if with_music else None
@@ -124,9 +124,9 @@ class VedioFrame(VedioInterface):
             self.bgm.set_volume(value)
 
 #视频播放系统模块--强制帧数和音乐同步，但不灵活
-class VedioPlayer(VedioInterface):
+class VedioPlayer(AbstractVedio):
     def __init__(self,path:str,width:int,height:int):
-        VedioInterface.__init__(self,path,width,height)
+        AbstractVedio.__init__(self,path,width,height)
         self.__allowFrameDelay = 10
         loadAudioAsMusic(path)
     def run(self):
@@ -146,7 +146,6 @@ def cutscene(screen,videoPath):
     cdef int is_skip = 0
     cdef int is_playing = 0
     cdef int temp_alpha
-    cdef (int, int) mouse_pos
     #初始化跳过按钮的参数
     skip_button = ImageSurface(
         pygame.image.load("Assets/image/UI/dialog_skip.png").convert_alpha(),
@@ -176,8 +175,7 @@ def cutscene(screen,videoPath):
             if len(events_of_mouse_click) > 0:
                 for event in events_of_mouse_click:
                     if event.button == 1:
-                        mouse_pos = pygame.mouse.get_pos()
-                        if skip_button.isHover(mouse_pos[0],mouse_pos[1]) and is_skip == 0:
+                        if skip_button.isHover() and is_skip == 0:
                             is_skip = 1
                             pygame.mixer.music.fadeout(5000)
                         break

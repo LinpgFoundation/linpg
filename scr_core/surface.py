@@ -2,7 +2,7 @@
 from .font import *
 
 #图形接口
-class ImageInterface(GameObject2d):
+class AbstractImage(GameObject2d):
     def __init__(self, img:pygame.Surface, x:Union[int,float], y:Union[int,float], width:any, height:any):
         GameObject2d.__init__(self,x,y)
         self.img = img
@@ -26,9 +26,9 @@ class ImageInterface(GameObject2d):
         pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect((self.x+offSet[0],self.y+offSet[1]),self.size),line_width)
 
 #用于处理有大面积透明像素的图片surface
-class SrcalphaSurface(ImageInterface):
+class SrcalphaSurface(AbstractImage):
     def __init__(self, path_or_surface:Union[str,pygame.Surface], x:any, y:any, width:any=None, height:any=None):
-        ImageInterface.__init__(self,None,x,y,width,height)
+        AbstractImage.__init__(self,None,x,y,width,height)
         self._alpha = 255
         self.img_original = loadImg(path_or_surface)
         self.__local_x = 0
@@ -102,9 +102,9 @@ class SrcalphaSurface(ImageInterface):
             (self.x+self.__local_x+offSet[0],self.y+self.__local_y+offSet[1]),self.img.get_size()
             ),line_width)
     #是否被鼠标触碰
-    def isHover(self, mouse_x:int, mouse_y:int) -> bool:
+    def isHover(self, mouse_pos:Union[tuple,list]=pygame.mouse.get_pos()) -> bool:
         if self.img != None:
-            return 0 < mouse_x-self.x-self.__local_x < self.img.get_width() and 0 < mouse_y-self.y-self.__local_y < self.img.get_height()
+            return 0 < mouse_pos[0]-self.x-self.__local_x < self.img.get_width() and 0 < mouse_pos[1]-self.y-self.__local_y < self.img.get_height()
         else:
             return False
     #返回local坐标
@@ -122,9 +122,9 @@ class SrcalphaSurface(ImageInterface):
         self.__needUpdate = True
 
 #高级图形类
-class ImageSurface(ImageInterface):
-    def __init__(self,img,x,y,width=None,height=None,description="Default") -> None:
-        ImageInterface.__init__(self,img,x,y,width,height)
+class ImageSurface(AbstractImage):
+    def __init__(self,img, x:Union[int,float], y:Union[int,float], width=None,height=None,description="Default") -> None:
+        AbstractImage.__init__(self,img,x,y,width,height)
         self.xTogo = x
         self.yTogo = y
         self.items = []
@@ -160,7 +160,7 @@ class ImageSurface(ImageInterface):
 
 #需要移动的动态图片
 class DynamicImageSurface(ImageSurface):
-    def __init__(self,img,x,y,target_x,target_y,moveSpeed_x,moveSpeed_y,width=None,height=None,description="Default") -> None:
+    def __init__(self,img, x:Union[int,float], y:Union[int,float], target_x,target_y,moveSpeed_x,moveSpeed_y,width=None,height=None,description="Default") -> None:
         ImageSurface.__init__(self,img,x,y,width,height,description)
         self.default_x = x
         self.default_y = y
@@ -193,18 +193,18 @@ class DynamicImageSurface(ImageSurface):
     def ifToward(self) -> bool: return self.__towardTargetPos
 
 #进度条
-class ProgressBar(ImageInterface):
-    def __init__(self,x,y,max_width,height,color) -> None:
-        ImageInterface.__init__(self,None,x,y,max_width,height)
+class ProgressBar(AbstractImage):
+    def __init__(self, x:Union[int,float], y:Union[int,float], max_width,height,color) -> None:
+        AbstractImage.__init__(self,None,x,y,max_width,height)
         self.percentage = 0
         self.color = findColorRGBA(color)
     def display(self,surface,offSet:Union[list,tuple]=(0,0)) -> None:
         pygame.draw.rect(surface,self.color,(self.x+offSet[0],self.y+offSet[1],self._width*self.percentage,self._height))
 
 #进度条Surface
-class ProgressBarSurface(ImageInterface):
-    def __init__(self,imgOnTop,imgOnBottom,x,y,max_width,height,mode="horizontal"):
-        ImageInterface.__init__(self,imgLoadFunction(imgOnTop,True),x,y,max_width,height)
+class ProgressBarSurface(AbstractImage):
+    def __init__(self,imgOnTop,imgOnBottom, x:Union[int,float], y:Union[int,float], max_width,height,mode="horizontal"):
+        AbstractImage.__init__(self,imgLoadFunction(imgOnTop,True),x,y,max_width,height)
         self.img2 = imgLoadFunction(imgOnBottom,True)
         self._current_percentage = 0
         self._mode = True if mode == "horizontal" else False
@@ -231,7 +231,7 @@ class ProgressBarSurface(ImageInterface):
     def copy(self): return ProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return ProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #展示
-    def display(self,surface,offSet:Union[list,tuple]=(0,0)) -> None:
+    def display(self,surface,offSet:Union[tuple,list]=(0,0)) -> None:
         pos = (self.x+offSet[0],self.y+offSet[1])
         surface.blit(resizeImg(self.img2,self.size),pos)
         if self._current_percentage > 0:
@@ -243,7 +243,7 @@ class ProgressBarSurface(ImageInterface):
 
 #动态进度条Surface
 class DynamicProgressBarSurface(ProgressBarSurface):
-    def __init__(self,imgOnTop,imgOnBottom,x,y,max_width,height,mode="horizontal"):
+    def __init__(self,imgOnTop,imgOnBottom, x:Union[int,float], y:Union[int,float], max_width,height,mode="horizontal"):
         ProgressBarSurface.__init__(self,imgOnTop,imgOnBottom,x,y,max_width,height,mode)
         self.__percentage_to_be = 0
         self.__perecent_update_each_time = 0
@@ -322,7 +322,7 @@ class Button(GameObject2d):
     def get_height(self) -> int: return self.img.get_height()
 
 class ButtonWithDes(Button):
-    def __init__(self,path,x,y,width,height,des) -> None:
+    def __init__(self,path, x:Union[int,float], y:Union[int,float], width,height,des) -> None:
         Button.__init__(self,path,x,y)
         width = int(width)
         height = int(height)
@@ -342,7 +342,7 @@ class ButtonWithDes(Button):
         if self.hoverEventTriggered: surface.blit(self.des_surface,pygame.mouse.get_pos())
 
 class ButtonWithFadeInOut(Button):
-    def __init__(self,buttonImgPath,txt,txt_color,alphaWhenNotHovered,x,y,height) -> None:
+    def __init__(self,buttonImgPath,txt,txt_color,alphaWhenNotHovered, x:Union[int,float], y:Union[int,float], height) -> None:
         Button.__init__(self,buttonImgPath,x,y)
         txtSurface = fontRenderWithoutBound(txt,txt_color,height*0.6)
         self.img = resizeImg(self.img,(txtSurface.get_width()+height,height))
@@ -351,9 +351,9 @@ class ButtonWithFadeInOut(Button):
         self.img.set_alpha(alphaWhenNotHovered)
 
 #gif图片管理
-class GifObject(ImageInterface):
-    def __init__(self,imgList:Union[list,tuple],x,y,width,height,updateGap) -> None:
-        ImageInterface.__init__(self,imgList,x,y,width,height)
+class GifObject(AbstractImage):
+    def __init__(self,imgList:Union[list,tuple], x:Union[int,float], y:Union[int,float], width,height,updateGap) -> None:
+        AbstractImage.__init__(self,imgList,x,y,width,height)
         self.imgId = 0
         self.updateGap = updateGap
         self.countDown = 0
@@ -380,7 +380,7 @@ class GifObject(ImageInterface):
             self.countDown += 1
 
 #对话框基础模块
-class DialogInterface:
+class AbstractDialog:
     def __init__(self, img:pygame.Surface, fontSize:Union[int,float]):
         self.dialoguebox = img
         self.FONTSIZE = int(fontSize)
@@ -408,9 +408,9 @@ class DialogInterface:
             self.textIndex = len(self.content[self.displayedLine])-1
 
 #对话框和对话框内容
-class DialogBox(DialogInterface,GameObject2d):
-    def __init__(self,imgPath,width,height,x,y,fontSize):
-        DialogInterface.__init__(self,loadImg(imgPath,(width,height)),fontSize)
+class DialogBox(AbstractDialog,GameObject2d):
+    def __init__(self,imgPath,width,height, x:Union[int,float], y:Union[int,float], fontSize):
+        AbstractDialog.__init__(self,loadImg(imgPath,(width,height)),fontSize)
         GameObject2d.__init__(self,x,y)
         self.__surface = None
         self.deafult_x = x

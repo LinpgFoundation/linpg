@@ -41,7 +41,9 @@ class GameObject2d(GameObject):
     def size(self) -> tuple: return self.get_width(),self.get_height()
     def get_size(self) -> tuple: return self.get_width(),self.get_height()
     #是否被鼠标触碰
-    def isHover(self, mouse_x:int, mouse_y:int) -> bool: return 0 < mouse_x-self.x < self.get_width() and 0 < mouse_y-self.y < self.get_height()
+    def isHover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
+        if mouse_pos == (-1,-1): mouse_pos = pygame.mouse.get_pos()
+        return 0 < mouse_pos[0]-self.x < self.get_width() and 0 < mouse_pos[1]-self.y < self.get_height()
     #将图片直接画到surface上
     def draw(self, surface:pygame.Surface) -> None: self.display(surface)
     #根据offSet将图片展示到surface的对应位置上 - 子类必须实现

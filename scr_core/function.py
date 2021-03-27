@@ -53,7 +53,7 @@ def isHover(imgObject, objectPos=(0,0), local_x:Union[int,float]=0, local_y:Unio
             return False
     #如果是Linpg引擎的GameObject2d类
     elif isinstance(imgObject,GameObject2d):
-        return imgObject.isHover(mouse_x-local_x,mouse_y-local_y)
+        return imgObject.isHover((mouse_x-local_x,mouse_y-local_y))
     #如果是Linpg引擎的Button类
     elif isinstance(imgObject,Button):
         if 0<=mouse_x-local_x-imgObject.x<=imgObject.img.get_width() and 0<=mouse_y-local_y-imgObject.y<=imgObject.img.get_height():

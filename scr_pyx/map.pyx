@@ -4,7 +4,11 @@ from ..scr_core.experimental import RenderedWindow
 
 _MAP_ENV_IMAGE = None
 #方块数据
-cdef dict _BLOCKS_DATABASE = loadConfig("Data/blocks.yaml","blocks")
+cdef dict _BLOCKS_DATABASE
+try:
+    _BLOCKS_DATABASE = loadConfig("Data/blocks.yaml","blocks")
+except:
+    _BLOCKS_DATABASE = {}
 
 #地图模块
 class MapObject:

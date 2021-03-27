@@ -3,7 +3,7 @@ from ..scr_pyd.map import MapObject
 from .character import *
 
 #战斗系统接口，请勿实例化
-class BattleSystemInterface(SystemWithBackgroundMusic):
+class AbstractBattleSystem(SystemWithBackgroundMusic):
     def __init__(self, chapterType:str, chapterId:int, collection_name:str) -> None:
         SystemWithBackgroundMusic.__init__(self)
         #用于判断是否移动屏幕的参数

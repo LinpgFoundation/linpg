@@ -2,9 +2,9 @@
 from .dialogModule import *
 
 #视觉小说系统模块
-class DialogSystem(DialogSystemInterface):
+class DialogSystem(AbstractDialogSystem):
     def __init__(self) -> None:
-        DialogSystemInterface.__init__(self)
+        AbstractDialogSystem.__init__(self)
         #UI按钮
         self.ButtonsMananger = DialogButtons()
         #加载对话框系统
@@ -267,9 +267,9 @@ class DialogSystem(DialogSystemInterface):
         controller.display(screen)
 
 #对话制作器
-class DialogSystemDev(DialogSystemInterface):
+class DialogSystemDev(AbstractDialogSystem):
     def __init__(self,chapterType,chapterId,part=None,collection_name=None):
-        DialogSystemInterface.__init__(self)
+        AbstractDialogSystem.__init__(self)
         self._initialize(chapterType,chapterId,collection_name)
         #设定初始化
         self.fileLocation = "Data/{0}/chapter{1}_dialogs_{2}.yaml".format(self.chapterType,self.chapterId,get_setting("Language")) if self.chapterType == "main_chapter"\

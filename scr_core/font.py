@@ -1,7 +1,7 @@
 # cython: language_level=3
 import pygame.freetype
 from pygame.colordict import THECOLORS
-from .lang import *
+from .module import *
 
 #文字渲染器管理模块
 class FontGenerator:
@@ -14,15 +14,12 @@ class FontGenerator:
     #是否斜体
     @property
     def italic(self) -> bool: return self.__FONT.italic
-    def update(self,size:int,ifBold:bool=False,ifItalic:bool=False) -> None:
+    def update(self, size:int, ifBold:bool=False, ifItalic:bool=False) -> None:
         self.__SIZE = size
         self.__FONT = createFont(size,ifBold,ifItalic)
-    def render(self,txt,color):
+    def render(self, txt:any, color:Union[tuple,list,str]):
         if self.__SIZE != None:
-            if isinstance(color,str):
-                return self.__FONT.render(txt, LINPG_MODE, findColorRGBA(color))
-            else:
-                return self.__FONT.render(txt, LINPG_MODE, color)
+            return self.__FONT.render(txt, LINPG_MODE, findColorRGBA(color))
         else:
             throwException("error","Standard font is not initialized!")
     def get_size(self) -> int:
@@ -98,7 +95,7 @@ def reload_setting() -> None:
     LINPG_MODE = get_setting("Antialias")
 
 #创建字体
-def createFont(size, ifBold:bool=False, ifItalic:bool=False) -> pygame.font:
+def createFont(size:Union[float,int], ifBold:bool=False, ifItalic:bool=False) -> any:
     if LINPG_FONTTYPE == "default":
         try:
             return pygame.font.SysFont(LINPG_FONT,int(size),ifBold,ifItalic)
@@ -121,7 +118,7 @@ def createFont(size, ifBold:bool=False, ifItalic:bool=False) -> pygame.font:
         throwException("error","FontType option in setting file is incorrect!")
 
 #创建FreeType字体
-def createFreeTypeFont(size:Union[float,int], ifBold:bool=False, ifItalic:bool=False) -> pygame.freetype:
+def createFreeTypeFont(size:Union[float,int], ifBold:bool=False, ifItalic:bool=False) ->any:
     if LINPG_FONTTYPE == "default":
         try:
             return pygame.freetype.SysFont(LINPG_FONT,int(size),ifBold,ifItalic)
@@ -144,7 +141,7 @@ def createFreeTypeFont(size:Union[float,int], ifBold:bool=False, ifItalic:bool=F
         throwException("error","FontType option in setting file is incorrect!")
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
-def fontRender(txt, color, size:int, ifBold:bool=False, ifItalic:bool=False) -> pygame.Surface:
+def fontRender(txt:any, color:any, size:int, ifBold:bool=False, ifItalic:bool=False) -> pygame.Surface:
     LINPG_LAST_FONT.check_for_update(size,ifBold,ifItalic)
     if isinstance(color,str):
         text_out = LINPG_LAST_FONT.render(txt, findColorRGBA(color))
@@ -153,11 +150,11 @@ def fontRender(txt, color, size:int, ifBold:bool=False, ifItalic:bool=False) -> 
     return text_out
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
-def fontRenderWithoutBound(txt, color, size:int, ifBold:bool=False, ifItalic:bool=False) -> pygame.Surface:
+def fontRenderWithoutBound(txt:any, color:Union[tuple,list,str], size:int, ifBold:bool=False, ifItalic:bool=False) -> pygame.Surface:
     return copeBounding(fontRender(txt,color,size,ifBold,ifItalic))
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
-def freeTypeRender(txt, color, size:int, ifBold:bool=False, ifItalic:bool=False) -> pygame.Surface:
+def freeTypeRender(txt:any, color:Union[tuple,list,str], size:int, ifBold:bool=False, ifItalic:bool=False) -> pygame.Surface:
     normal_font = createFreeTypeFont(size,ifBold,ifItalic)
     if isinstance(color,str):
         text_out = normal_font.render(txt, LINPG_MODE, findColorRGBA(color))
@@ -165,32 +162,28 @@ def freeTypeRender(txt, color, size:int, ifBold:bool=False, ifItalic:bool=False)
         text_out = normal_font.render(txt, LINPG_MODE, color)
     return text_out
 
-#文字画面类
-class TextSurface:
-    def __init__(self,n,b,x,y):
-        self.n = n
-        self.b = b
-        self.n_x = x
-        self.n_y = y
-        self.b_x = x - (self.b.get_width()-self.n.get_width())/2
-        self.b_y = y - (self.b.get_height()-self.n.get_height())/2
-        self.__isHover = False
-    def display(self, surface:pygame.Surface) -> bool:
+#动态文字类
+class DynamicTextSurface(GameObject2d):
+    def __init__(self, n:pygame.Surface, b:pygame.Surface, x:Union[int,float], y:Union[int,float]):
+        GameObject2d.__init__(self,x,y)
+        self.normal_font_surface = n
+        self.big_font_surface = b
+        self.b_x = x - (self.big_font_surface.get_width()-self.normal_font_surface.get_width())/2
+        self.b_y = y - (self.big_font_surface.get_height()-self.normal_font_surface.get_height())/2
+    def get_width(self) -> int:
+        return self.normal_font_surface.get_width()
+    def get_height(self) -> int:
+        return self.normal_font_surface.get_height()
+    def display(self, surface:pygame.Surface, offSet:tuple=(0,0)) -> None:
         mouse_x,mouse_y = pygame.mouse.get_pos()
-        if self.n_x<=mouse_x<=self.n_x+self.n.get_width() and self.n_y<=mouse_y<=self.n_y+self.n.get_height():
-            surface.blit(self.b,(self.b_x,self.b_y))
-            self.__isHover = True
+        if self.isHover(mouse_x+offSet[0],mouse_y+offSet[1]):
+            surface.blit(self.big_font_surface,(self.b_x+offSet[0],self.b_y+offSet[1]))
         else:
-            surface.blit(self.n,(self.n_x,self.n_y))
-            self.__isHover = False
-        return self.__isHover
-    def draw(self, surface:pygame.Surface) -> None: self.display(surface)
-    def isHover(self) -> bool: return self.__isHover
-    def get_pos(self) -> tuple: return self.n_x,self.n_y
+            surface.blit(self.normal_font_surface,(self.x+offSet[0],self.y+offSet[1]))
 
 #高级文字制作模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
-def fontRenderPro(txt, color, pos:tuple, size:int=50, ifBold:bool=False, ifItalic:bool=False) -> TextSurface:
-    return TextSurface(fontRender(txt,color,size,ifBold,ifItalic),fontRender(txt,color,size*1.5,ifBold,ifItalic),pos[0],pos[1])
+def fontRenderPro(txt:any, color:Union[tuple,list,str], pos:tuple, size:int=50, ifBold:bool=False, ifItalic:bool=False) -> DynamicTextSurface:
+    return DynamicTextSurface(fontRender(txt,color,size,ifBold,ifItalic),fontRender(txt,color,size*1.5,ifBold,ifItalic),pos[0],pos[1])
 
 #给定一个颜色的名字，返回对应的RGB列表
 def findColorRGBA(color:Union[tuple,list,str]) -> tuple:

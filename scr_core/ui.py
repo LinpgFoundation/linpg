@@ -97,14 +97,15 @@ class PauseMenu:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return "Break"
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                mouse_x,mouse_y = pygame.mouse.get_pos()
                 #判定按钮
-                if self.button_resume.isHover():
+                if self.button_resume.isHover(mouse_x,mouse_y):
                     return "Break"
-                elif self.button_save.isHover():
+                elif self.button_save.isHover(mouse_x,mouse_y):
                     return "Save"
-                elif self.button_setting.isHover():
+                elif self.button_setting.isHover(mouse_x,mouse_y):
                     return "Setting"
-                elif self.button_back.isHover():
+                elif self.button_back.isHover(mouse_x,mouse_y):
                     set_glob_value("BackToMainMenu",True)
                     return "BackToMainMenu"
         return False

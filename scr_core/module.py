@@ -1,10 +1,10 @@
 # cython: language_level=3
 import threading
-from .controller import *
+from .lang import *
 
 #坐标类
 class Coordinate:
-    def __init__(self, x:Union[int,float], y:Union[int,float]) -> None:
+    def __init__(self, x:Union[int,float], y:Union[int,float]):
         self.x = x
         self.y = y
     #获取坐标
@@ -14,36 +14,41 @@ class Coordinate:
 
 #游戏对象接口
 class GameObject(Coordinate):
-    def __init__(self, x:Union[int,float], y:Union[int,float]) -> None:
+    def __init__(self, x:Union[int,float], y:Union[int,float]):
         Coordinate.__init__(self,x,y)
-    def __lt__(self,other) -> bool: return self.y+self.x < other.y+other.x
+    def __lt__(self, other:Coordinate) -> bool: return self.y+self.x < other.y+other.x
     #设置坐标
     def set_pos(self, x:Union[int,float], y:Union[int,float]) -> None:
         self.x = round(x)
         self.y = round(y)
     #检测是否在给定的位置上
-    def on_pos(self, pos) -> bool: return is_same_pos(self.get_pos(),pos)
+    def on_pos(self, pos:any) -> bool: return is_same_pos(self.get_pos(),pos)
 
 #2d游戏对象接口
 class GameObject2d(GameObject):
-    def __init__(self, x:Union[int,float], y:Union[int,float]) -> None:
+    def __init__(self, x:Union[int,float], y:Union[int,float]):
         GameObject.__init__(self,x,y)
     #宽
     @property
     def width(self) -> int: return self.get_width()
+    def get_width(self) -> int: throwException("error","The child class has to implement get_width() function!")
     #高
     @property
     def height(self) -> int: return self.get_height()
+    def get_height(self) -> int: throwException("error","The child class has to implement get_height() function!")
     #尺寸
     @property
     def size(self) -> tuple: return self.get_width(),self.get_height()
     def get_size(self) -> tuple: return self.get_width(),self.get_height()
+    #是否被鼠标触碰
+    def isHover(self, mouse_x:int, mouse_y:int) -> bool: return 0 < mouse_x-self.x < self.get_width() and 0 < mouse_y-self.y < self.get_height()
     #将图片直接画到surface上
-    def draw(self,surface:pygame.Surface) -> None: self.display(surface)
+    def draw(self, surface:pygame.Surface) -> None: self.display(surface)
     #根据offSet将图片展示到surface的对应位置上 - 子类必须实现
-    def display(self,surface:pygame.Surface,offSet:tuple=(0,0)) -> None: throwException("error","The child class has to implement display() function!")
+    def display(self, surface:pygame.Surface, offSet:tuple=(0,0)) -> None:
+        throwException("error","The child class has to implement display() function!")
     #忽略现有坐标，将图片画到surface的指定位置上，不推荐使用
-    def blit(self,surface:pygame.Surface,pos:tuple) -> None: 
+    def blit(self, surface:pygame.Surface, pos:tuple) -> None: 
         old_pos = self.get_pos()
         self.set_pos(pos)
         self.display(surface)
@@ -51,10 +56,10 @@ class GameObject2d(GameObject):
 
 #2.5d游戏对象接口 - 使用z轴判断图案的图层
 class GameObject2point5d(GameObject):
-    def __init__(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]) -> None:
+    def __init__(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]):
         GameObject.__init__(self,x,y)
         self.z = z
-    def __lt__(self,other) -> bool:
+    def __lt__(self, other:GameObject) -> bool:
         if self.z != other.z:
             return self.z < other.z
         else:
@@ -70,19 +75,35 @@ class GameObject2point5d(GameObject):
 
 #3d游戏对象接口
 class GameObject3d(GameObject2point5d):
-    def __init__(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]) -> None:
+    def __init__(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]):
         GameObject2point5d.__init__(self,x,y,z)
     def __lt__(self,other) -> bool: return self.y+self.x+self.z < other.y+other.x+other.z
 
+#用于储存游戏对象的容器，类似html的div
+class GameObjectContainer(GameObject):
+    def __init__(self, x:Union[int,float], y:Union[int,float]):
+        GameObject.__init__(self,x,y)
+        self.items = []
+    #新增一个物品
+    def append(self, new_item:GameObject) -> None: self.items.append(new_item)
+    #移除一个物品
+    def pop(self, index:int) -> None: self.items.pop(index)
+    #清空物品栏
+    def clear(self) -> None: self.items.clear()
+    #把物品画到surface上
+    def draw(self, surface:pygame.Surface) -> None:
+        for item in self.items:
+            item.display(surface,self.pos)
+
 #系统模块接口
 class SystemObject:
-    def __init__(self) -> None:
+    def __init__(self):
         #输入事件
         self.__events = None
         #判定用于判定是否还在播放的参数
         self._isPlaying = True
     #是否正在播放
-    def is_playing(self) -> bool:  return self._isPlaying
+    def is_playing(self) -> bool: return self._isPlaying
     #获取输入事件
     @property
     def events(self): return self.__events

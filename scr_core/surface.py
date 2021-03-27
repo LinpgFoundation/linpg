@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .module import *
+from .font import *
 
 #图形接口
 class ImageInterface(GameObject2d):
@@ -21,8 +21,6 @@ class ImageInterface(GameObject2d):
     def set_size(self, width:float, height:float) -> None:
         self.set_width(width)
         self.set_height(height)
-    #是否被鼠标触碰
-    def isHover(self, mouse_x:int, mouse_y:int) -> bool: return 0 < mouse_x-self.x < self._width and 0 < mouse_y-self.y < self._height
     #画出轮廓
     def draw_outline(self, surface:pygame.Surface, offSet:Union[list,tuple]=(0,0), color:str="red", line_width:int=2) -> None:
         pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect((self.x+offSet[0],self.y+offSet[1]),self.size),line_width)

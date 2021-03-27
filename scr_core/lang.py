@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .config import *
+from .controller import *
 
 #语言配置文件
 __LINPG_LANG:dict = None

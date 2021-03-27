@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .font import *
+from .config import *
 
 #手柄控制组件
 class SingleJoystick:

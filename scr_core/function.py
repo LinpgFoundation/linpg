@@ -51,8 +51,8 @@ def isHover(imgObject, objectPos=(0,0), local_x:Union[int,float]=0, local_y:Unio
             return True
         else:
             return False
-    #如果是Linpg引擎的Image类
-    elif isinstance(imgObject,ImageInterface):
+    #如果是Linpg引擎的GameObject2d类
+    elif isinstance(imgObject,GameObject2d):
         return imgObject.isHover(mouse_x-local_x,mouse_y-local_y)
     #如果是Linpg引擎的Button类
     elif isinstance(imgObject,Button):
@@ -62,9 +62,6 @@ def isHover(imgObject, objectPos=(0,0), local_x:Union[int,float]=0, local_y:Unio
         else:
             imgObject.hoverEventOff()
             return False
-    #如果是Linpg引擎的TextSurface类
-    elif isinstance(imgObject,TextSurface):
-        return imgObject.isHover()
     else:
         throwException("error","Unable to check current object: {}".format(imgObject))
 

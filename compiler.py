@@ -26,12 +26,17 @@ if not compile_all:
     os.makedirs("scr_pyd")
     for path in glob.glob(r'*.pyd'): shutil.move(path,"scr_pyd")
 else:
-    #删除旧的build
-    for path in glob.glob(r'../linpg/*'):
-        try:
-            shutil.rmtree(path)
-        except NotADirectoryError:
-            os.remove(path)
+    #如果linpg文件夹不存在
+    if not os.path.exists("../linpg"):
+        os.makedirs("../linpg")
+    #如果linpg文件夹存在
+    else:
+        #删除旧的build
+        for path in glob.glob(r'../linpg/*'):
+            try:
+                shutil.rmtree(path)
+            except NotADirectoryError:
+                os.remove(path)
     """处理python文件"""
     folders_need_process = ["scr_core","scr_py"]
     for the_folder in folders_need_process:

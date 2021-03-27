@@ -1,13 +1,11 @@
-import setuptools
+from setuptools import setup
 from .scr_core.config import *
 
-try:
-    with open("README.md", "r", encoding="utf-8") as fh: long_description = fh.read()
-except:
-    long_description = ""
+#读取readme
+with open("README.md", "r", encoding="utf-8") as fh: long_description = fh.read()
 
 #生成.whl文件
-setuptools.setup(
+setup(
     name = "linpg",
     version = get_current_version(),
     author = "Tigeia-Workshop",
@@ -16,10 +14,14 @@ setuptools.setup(
     long_description = long_description,
     long_description_content_type = "text/markdown",
     url = get_repository_url(),
-    packages = setuptools.find_packages(),
+    license='LICENSE',
+    project_urls={
+        "Bug Tracker": "https://github.com/Tigeia-Workshop/linpg/issues",
+    },
     classifiers = [
         "Programming Language :: Python :: 3",
     ],
-    package_dir={"": "src"},
+    packages=['linpg'],
+    include_package_data=True,
     python_requires = '>=3.6',
 )

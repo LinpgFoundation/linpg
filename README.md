@@ -10,7 +10,7 @@
 
 *"Just because c++ is the greatest language ever invented doesn't mean that writing games in c++ is easy and fun, and the same goes for pygame."*
 
-*"c++是有史以来最伟大的语言，但并不代表用c++写游戏是一件很轻松有趣的事情，pygame也是如此。"*
+###### *"c++是有史以来最伟大的语言，但并不代表用c++写游戏是一件很轻松有趣的事情，pygame也是如此。"*
 
 
 
@@ -20,7 +20,7 @@ Linpg Engine is a game engine independently developed by Tigeia Workshop based o
 
 Linpg Engine is developed with a modular concept. It implements many features commonly used in game development at a low level. At the same time, Linpg Engine also maintains a high level of compatibility with pygame, making it easy for developers to migrate existing pygame projects to Linpg Engine or use Linpg Engine features on their own pygame projects.
 
-We always need your help to make Linpg the best it can be! Any contributors are welcome!
+We always need your help to make Linpg the best it can be! No matter what your region, culture, belief, or age is, any contributors are welcome
 
 Linpg引擎是缇吉娅工坊基于pygame库自主研发的游戏引擎，目的是为了规范化pygame游戏的开发，使得游戏代码更加整洁，易读，易扩展，易维护。
 
@@ -46,67 +46,87 @@ numpy
 
 
 
+###### 
+
+# :computer:Installation / 安装
+
+```
+pip install linpg
+```
+
+We also suggest you download
+
+[https://github.com/Tigeia-Workshop/A-story-of-us](https://github.com/Tigeia-Workshop/A-story-of-us)
+
+as your starting point.
+
+
+
 # :construction: Changes in Linpg Engine through the generations            Linpg引擎历代的变化
 
-#### Linpg 1（Obsolete, no longer maintained / 过时，不再维护）
+#### Linpg 1（Obsolete  / 过时，不再维护）
 
-(Hard coded) Basic implementation of the visual novel system / 视觉小说系统的基本实现 :white_check_mark:
+- (Hard coded) Basic implementation of the visual novel system / 视觉小说系统的基本实现 :white_check_mark:
 
-A simple main menu / 简易的主菜单页面:white_check_mark:
+- A simple main menu / 简易的主菜单页面:white_check_mark:
 
-#### Linpg 2（Obsolete, no longer maintained / 过时，不再维护）
 
-Non-hard coded and easy-to-edit visual novel system / 非hard coded，容易编辑的视觉小说系统 :white_check_mark:
+#### Linpg 2（Obsolete / 过时，不再维护）
 
-A more dynamic main menu / 更加动态化的主菜单页面:white_check_mark:
+- Non-hard coded and easy-to-edit visual novel system / 非hard coded，容易编辑的视觉小说系统 :white_check_mark:
 
-Basic implementation of the combat system / 战斗系统的基本实现:white_check_mark:
+- A more dynamic main menu / 更加动态化的主菜单页面:white_check_mark:
 
-Basic Support for video files / 对视频文件的支持:white_check_mark:
+- Basic implementation of the combat system / 战斗系统的基本实现:white_check_mark:
 
-The visual novel system maintains 55 fps and the combat system reaches 45 fps / 视觉小说系统保持55帧，战斗系统达到45帧:white_check_mark:
+- Basic Support for video files / 对视频文件的支持:white_check_mark:
+
+- The visual novel system maintains 55 fps and the combat system reaches 45 fps / 视觉小说系统保持55帧，战斗系统达到45帧:white_check_mark:
+
 
 #### Linpg 3（Current Version / 当前版本）
 
-A more modular and aesthetically modern visual novel system / 更加模块化和美观现代化的视觉小说系统 :white_check_mark:
+- A more modular and aesthetically modern visual novel system / 更加模块化和美观现代化的视觉小说系统 :white_check_mark:
 
-Options menu / 选项菜单模块:white_check_mark:
+- Options menu / 选项菜单模块:white_check_mark:
 
-Better and more complex combat system / 更加完善复杂的战斗系统:white_check_mark:
+- Better and more complex combat system / 更加完善复杂的战斗系统:white_check_mark:
 
-Map Editor / 可用的地图编辑器:white_check_mark:
+- Map Editor / 可用的地图编辑器:white_check_mark:
 
-Dialogue Editor / 可用的对话编辑器:white_check_mark:
+- Dialogue Editor / 可用的对话编辑器:white_check_mark:
 
-Most functions work when correct input is accepted / 大部分功能能在接受正确的输入后工作🔨
+- Most functions work when correct input is accepted / 大部分功能能在接受正确的输入后工作🔨
 
-Visual novel system and combat system can maintain 60 fps / 视觉小说系统和战斗系统保持60帧:white_check_mark:
+- Visual novel system and combat system can maintain 60 fps / 视觉小说系统和战斗系统保持60帧:white_check_mark:
 
-Video can be played at a stable 60 fps / 视频能稳定地以60帧播放:white_check_mark:
+- Video can be played at a stable 60 fps / 视频能稳定地以60帧播放:white_check_mark:
 
-Pygame native input box (English only) / 可用的pygame原生输入框（仅支持英文）:white_check_mark:
+- Pygame native input box (English only) / 可用的pygame原生输入框（仅支持英文）:white_check_mark:
+
 
 #### Linpg 4（On Schedule / 未来-计划中）
 
-support pyglet (two libararies, one standrad) / pyglet支持（两个库，一个标准）
+- support pyglet (two libararies, one standrad) / pyglet支持（两个库，一个标准）
 
-Rewrite using a combination of c++ and cython for better performance / 底层采用c++和cython结合的方式重写以获取更高效的性能
+- Rewrite using a combination of c++ and cython for better performance / 底层采用c++和cython结合的方式重写以获取更高效的性能
 
-Better options menu / 更好的选项菜单模块
+- Better options menu / 更好的选项菜单模块
 
-Enemy AI systems will be partially affected by machine learning. / 敌方AI系统将部分采用machine learning的意见
+- Enemy AI systems will be partially affected by machine learning. / 敌方AI系统将部分采用machine learning的意见
 
-More convenient and beautiful map editor and dialogue editor / 更加便捷美观的地图编辑器和对话编辑器
+- More convenient and beautiful map editor and dialogue editor / 更加便捷美观的地图编辑器和对话编辑器
 
-More readable and standardized code / 更加易读规范化的代码
+- More readable and standardized code / 更加易读规范化的代码
 
-Most functions are able to report errors and take the most appropriate approach after accepting incorrect input / 大部分功能能在接受错误的输入后报错并采取最合适的方案运行
+- Most functions are able to report errors and take the most appropriate approach after accepting incorrect input / 大部分功能能在接受错误的输入后报错并采取最合适的方案运行
 
-The combat system can have more varieties. / 战斗系统能有更多的玩法
+- The combat system can have more varieties. / 战斗系统能有更多的玩法
 
-Visual novel system and combat system can reach 144 fps / 视觉小说系统和战斗系统达到144帧
+- Visual novel system and combat system can reach 144 fps / 视觉小说系统和战斗系统达到144帧
 
-The input box will support Chinese, Japanese, and more / 输入框支持中文，日文，以及更多
+- The input box will support Chinese, Japanese, and more / 输入框支持中文，日文，以及更多
+
 
 
 

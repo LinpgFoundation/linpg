@@ -7,6 +7,11 @@ from typing import Union
 import numpy, pygame
 from pygame.locals import *
 
+"""
+结构:
+basic -> config -> controller -> lang -> module -> font -> surface -> ui -> inputbox -> function
+"""
+
 #初始化pygame
 pygame.init()
 
@@ -45,7 +50,7 @@ def loadSound(path:str, volume:float) -> pygame.mixer.Sound:
     return soundTmp
 
 #加载路径下的所有图片，储存到一个list当中，然后返回
-def loadAllImgInFile(pathRule:str, width=None, height=None) -> list[pygame.Surface]:
+def loadAllImgInFile(pathRule:str, width:any=None, height:any=None) -> list[pygame.Surface]:
     return [loadImg(imgPath,(width,height)) for imgPath in glob.glob(pathRule)]
 
 #获取Surface

@@ -43,7 +43,7 @@ def get_SingleColorSurface(color,size=None) -> ImageSurface:
     return ImageSurface(surfaceTmp,0,0,size[0],size[1])
 
 #检测图片是否被点击
-def isHover(imgObject, objectPos=(0,0), local_x:Union[int,float]=0, local_y:Union[int,float]=0) -> bool:
+def isHover(imgObject:object, objectPos:Union[tuple,list]=(0,0), local_x:Union[int,float]=0, local_y:Union[int,float]=0) -> bool:
     mouse_x,mouse_y = pygame.mouse.get_pos()
     #如果是pygame的面
     if isinstance(imgObject,pygame.Surface):
@@ -51,9 +51,6 @@ def isHover(imgObject, objectPos=(0,0), local_x:Union[int,float]=0, local_y:Unio
             return True
         else:
             return False
-    #如果是Linpg引擎的GameObject2d类
-    elif isinstance(imgObject,GameObject2d):
-        return imgObject.isHover((mouse_x-local_x,mouse_y-local_y))
     #如果是Linpg引擎的Button类
     elif isinstance(imgObject,Button):
         if 0<=mouse_x-local_x-imgObject.x<=imgObject.img.get_width() and 0<=mouse_y-local_y-imgObject.y<=imgObject.img.get_height():
@@ -62,6 +59,9 @@ def isHover(imgObject, objectPos=(0,0), local_x:Union[int,float]=0, local_y:Unio
         else:
             imgObject.hoverEventOff()
             return False
+    #如果是Linpg引擎的GameObject2d类(所有2d物品的父类)
+    elif isinstance(imgObject,GameObject2d):
+        return imgObject.isHover((mouse_x-local_x,mouse_y-local_y))
     else:
         throwException("error","Unable to check current object: {}".format(imgObject))
 

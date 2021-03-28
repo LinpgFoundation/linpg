@@ -110,14 +110,14 @@ class DialogSystem(AbstractDialogSystem):
             self._black_bg.set_alpha(i)
             self._black_bg.draw(screen)
             pygame.display.flip()
-    def display(self,screen) -> None:
-        super().display(screen)
+    def draw(self,screen) -> None:
+        super().draw(screen)
         #显示对话框和对应文字
-        self.dialogTxtSystem.display(screen)
+        self.dialogTxtSystem.draw(screen)
         #背景音乐
         self.play_bgm(-1)
         #按钮
-        buttonEvent = self.ButtonsMananger.display(screen,self.dialogTxtSystem.isHidden)
+        buttonEvent = self.ButtonsMananger.draw(screen,self.dialogTxtSystem.isHidden)
         #按键判定
         leftClick = False
         for event in self.events:
@@ -160,7 +160,7 @@ class DialogSystem(AbstractDialogSystem):
                 process_saved_text.set_alpha(0)
                 while True:
                     self._update_event()
-                    result = self.pause_menu.display(screen,self.events)
+                    result = self.pause_menu.draw(screen,self.events)
                     if result == "Break":
                         setting.isDisplaying = False
                         break
@@ -175,7 +175,7 @@ class DialogSystem(AbstractDialogSystem):
                         self._isPlaying = False
                         break
                     #如果播放玩菜单后发现有东西需要更新
-                    if setting.display(screen,self.events):
+                    if setting.draw(screen,self.events):
                         self.__update_sound_volume()
                     process_saved_text.drawOnTheCenterOf(screen)
                     process_saved_text.fade_out(5)
@@ -242,7 +242,7 @@ class DialogSystem(AbstractDialogSystem):
                     else:
                         dialogIdTemp = None
             screen.blit(self.historySurface,(0,0))
-            self.history_back.display(screen)
+            self.history_back.draw(screen)
             isHover(self.history_back)
         elif self.dialogTxtSystem.needUpdate() or leftClick:
             if self.dialogContent[self.dialogId]["next_dialog_id"] == None or self.dialogContent[self.dialogId]["next_dialog_id"]["target"] == None:
@@ -264,7 +264,7 @@ class DialogSystem(AbstractDialogSystem):
                 self.dialogTxtSystem.resetDialogueboxData()
                 self.fadeIn(screen)
         #刷新控制器，并展示自定义鼠标（如果存在）
-        controller.display(screen)
+        controller.draw(screen)
 
 #对话制作器
 class DialogSystemDev(AbstractDialogSystem):
@@ -478,14 +478,14 @@ class DialogSystemDev(AbstractDialogSystem):
                                 displayInCenter(option_txt,self._optionBox,self._optionBox.x,self._optionBox.y,screen)
                         display.flip()
         return None
-    def display(self,screen):
-        super().display(screen)
+    def draw(self,screen):
+        super().draw(screen)
         #画上对话框
         self.dialoguebox.draw(screen)
         if self._npcManager.npcGetClick != None: screen.blit(self.removeNpcButton,pygame.mouse.get_pos())
-        self.narrator.display(screen,self.events)
+        self.narrator.draw(screen,self.events)
         if self.narrator.needSave: self.dialogData[self.part][self.dialogId]["narrator"] = self.narrator.get_text()
-        self.content.display(screen,self.events)
+        self.content.draw(screen,self.events)
         if self.content.needSave:
             self.dialogData[self.part][self.dialogId]["content"] = self.content.get_text()
         #初始化数值
@@ -496,11 +496,11 @@ class DialogSystemDev(AbstractDialogSystem):
             if button == "next" and theNextDialogId == None or button == "next" and len(theNextDialogId)<2:
                 if isHover(self.buttonsUI["add"]):
                     buttonHovered = "add"
-                self.buttonsUI["add"].display(screen)
+                self.buttonsUI["add"].draw(screen)
             elif button != "add":
                 if isHover(self.buttonsUI[button]):
                     buttonHovered = button
-                self.buttonsUI[button].display(screen)
+                self.buttonsUI[button].draw(screen)
         if buttonHovered != None:
             self.buttonsUI[buttonHovered].displayDes(screen)
         leftClick = False
@@ -583,7 +583,7 @@ class DialogSystemDev(AbstractDialogSystem):
                     elif self.UIContainerRight_kind == "background":
                         self.background_image_local_y -= 10
         #画上右侧的菜单选项
-        self.UIContainerRightButton.display(screen,self.UIContainerRight.x)
+        self.UIContainerRightButton.display(screen,(self.UIContainerRight.x,0))
         self.UIContainerRight.draw(screen)
         if self.UIContainerRight.x < display.get_width():
             #检测按钮
@@ -592,8 +592,8 @@ class DialogSystemDev(AbstractDialogSystem):
             if isHover(self.button_select_npc,None,self.UIContainerRight.x) and leftClick:
                 self.UIContainerRight_kind = "npc"
             #画出按钮
-            self.button_select_background.display(screen,self.UIContainerRight.x)
-            self.button_select_npc.display(screen,self.UIContainerRight.x)
+            self.button_select_background.display(screen,(self.UIContainerRight.x,0))
+            self.button_select_npc.display(screen,(self.UIContainerRight.x,0))
             #画出对应的种类可选的背景图片或者立绘
             if self.UIContainerRight_kind == "background":
                 imgName = self.dialogData[self.part][self.dialogId]["background_img"]

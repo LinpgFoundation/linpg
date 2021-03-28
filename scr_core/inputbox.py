@@ -104,7 +104,7 @@ class SingleLineInputBox(AbstractInputBox):
             self._add_char(Tk().clipboard_get())
             return True
         return False
-    def display(self, screen:pygame.Surface, pygame_events:any=pygame.event.get()) -> None:
+    def draw(self, screen:pygame.Surface, pygame_events:any=pygame.event.get()) -> None:
         mouse_x,mouse_y = pygame.mouse.get_pos()
         for event in pygame_events:
             if self.active:
@@ -241,7 +241,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             self.holderIndex = i
         else:
             self.holderIndex = i-1
-    def display(self, screen:pygame.Surface, pygame_events:any=pygame.event.get()) -> bool:
+    def draw(self, screen:pygame.Surface, pygame_events:any=pygame.event.get()) -> bool:
         mouse_x,mouse_y = pygame.mouse.get_pos()
         for event in pygame_events:
             if self.active:
@@ -391,7 +391,7 @@ class Console(SingleLineInputBox):
             self.color = self.color_active if self.active else self.color_inactive
             return True
         return False
-    def display(self, screen:pygame.Surface, pygame_events=pygame.event.get()) -> None:
+    def draw(self, screen:pygame.Surface, pygame_events=pygame.event.get()) -> None:
         if self.hidden == True:
             for event in pygame_events:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_BACKQUOTE:

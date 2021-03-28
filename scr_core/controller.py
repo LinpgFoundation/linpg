@@ -41,7 +41,7 @@ class GameController:
             self.iconImg = None
         self.mouse_x,self.mouse_y = pygame.mouse.get_pos()
         self.movingSpeed = speed
-    def display(self, screen=None):
+    def draw(self, screen:pygame.Surface=None):
         self.joystick.update_device()
         self.mouse_x,self.mouse_y = pygame.mouse.get_pos()
         if self.joystick.inputController != None:
@@ -70,12 +70,12 @@ class DisplayController:
         self.__clock = pygame.time.Clock()
     def flip(self, pump:bool=False) -> None:
         self.__clock.tick(self.fps)
-        controller.display()
+        controller.draw()
         if pump: pygame.event.pump()
         pygame.display.flip()
     def update(self, rectangle=None, pump:bool=False):
         self.__clock.tick(self.fps)
-        controller.display()
+        controller.draw()
         if pump == True: pygame.event.pump()
         if rectangle == None:
             pygame.display.flip()

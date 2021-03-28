@@ -62,16 +62,16 @@ class AbstractDialogSystem(SystemWithBackgroundMusic):
     def display_background_image(self, surface:pygame.Surface) -> None:
         if isinstance(self.__backgroundImageSurface,ImageSurface):
             self.__backgroundImageSurface.set_size(surface.get_width(),surface.get_height())
-        self.__backgroundImageSurface.display(surface)
+        self.__backgroundImageSurface.draw(surface)
     #把基础内容画到surface上
-    def display(self, surface:pygame.Surface) -> None:
+    def draw(self, surface:pygame.Surface) -> None:
         #更新事件
         self._update_event()
         #检测章节是否初始化
         if self.chapterId == None: raise throwException("error","The dialog has not been initialized!")
         #展示背景图片和npc立绘
         self.display_background_image(surface)
-        self._npcManager.display(surface)
+        self._npcManager.draw(surface)
 
 #npc立绘系统
 class NpcImageManager:
@@ -138,7 +138,7 @@ class NpcImageManager:
                 if isHover(img,(x,y)):
                     img.draw_outline(surface)
                     self.npcGetClick = name
-    def display(self, surface:pygame.Surface) -> None:
+    def draw(self, surface:pygame.Surface) -> None:
         window_x = surface.get_width()
         window_y = surface.get_height()
         npcImg_y = window_y-window_x/2
@@ -315,7 +315,7 @@ class DialogContent(AbstractDialog):
     #如果音效还在播放则停止播放文字音效
     def stop_playing_text_sound(self) -> None:
         if pygame.mixer.get_busy() and self.__textPlayingSound != None: self.__textPlayingSound.stop()
-    def display(self, surface:pygame.Surface) -> None:
+    def draw(self, surface:pygame.Surface) -> None:
         if not self.isHidden:
             if not self.__fade_out_stage:
                 self.__fadeIn(surface)
@@ -363,7 +363,7 @@ class DialogContent(AbstractDialog):
         if self.narrator != None:
             surface.blit(self.__render_font(self.narrator,(255, 255, 255)),(x,self.dialoguebox_y+self.FONTSIZE))
         #画出鼠标gif
-        self.mouseImg.display(surface)
+        self.mouseImg.draw(surface)
         #对话框已播放的内容
         for i in range(self.displayedLine):
             surface.blit(self.__render_font(self.content[i],(255, 255, 255)),(x,y+self.FONTSIZE*1.5*i))
@@ -448,13 +448,13 @@ class DialogButtons:
         history_imgTemp.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
         self.historyButton = Button(history_imgTemp,window_x*0.1,window_y*0.05)
         self.historyButton.setHoverImg(history_img)
-    def display(self, surface:pygame.Surface, isHidden:bool) -> str:
+    def draw(self, surface:pygame.Surface, isHidden:bool) -> str:
         if isHidden:
-            self.showButton.display(surface)
+            self.showButton.draw(surface)
             return "hide" if isHover(self.showButton) else ""
         else:
-            self.hideButton.display(surface)
-            self.historyButton.display(surface)
+            self.hideButton.draw(surface)
+            self.historyButton.draw(surface)
             action = ""
             if isHover(self.skipButton):
                 self.skipButtonHovered.draw(surface)

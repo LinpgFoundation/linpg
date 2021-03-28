@@ -220,7 +220,7 @@ class Entity(GameObject):
     #播放角色声音
     def play_sound(self, kind_of_sound:str) -> None: _CHARACTERS_SOUND_SYSTEM.play(self.type,kind_of_sound)
     #设置需要移动的路径
-    def move_follow(self, path:Union[list,tuple]) -> None:
+    def move_follow(self, path:Union[tuple,list]) -> None:
         if isinstance(path,(list,tuple)) and len(path)>0:
             self.__moving_path = path
             self.set_action("move")

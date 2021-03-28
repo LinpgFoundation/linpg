@@ -80,7 +80,7 @@ class AbstractVedio(threading.Thread):
         array = frame.to_ndarray(width=self._width,height=self._height,format='rgb24')
         array = array.swapaxes(0,1)
         self._frameQueue.put(array)
-    def display(self,screen): pygame.surfarray.blit_array(screen, self._frameQueue.get())
+    def draw(self,screen): pygame.surfarray.blit_array(screen, self._frameQueue.get())
 
 #视频片段展示模块--灵活，但不能保证帧数和音乐同步
 class VedioFrame(AbstractVedio):
@@ -110,9 +110,8 @@ class VedioFrame(AbstractVedio):
                 else:
                     self.set_pos(self.start_point)
             self._clock.tick(self._frameRate)
-    def draw(self,screen): self.display(screen)
-    def display(self,screen):
-        super().display(screen)
+    def draw(self,screen):
+        super().draw(screen)
         if self.bgm != None and not self.bgm_channel.get_busy() and self.loop == True:
             self.bgm_channel.play(self.bgm)
     def clone(self):
@@ -167,7 +166,7 @@ def cutscene(screen,videoPath):
     #播放主循环
     while is_playing == 0:
         if VIDEO.is_alive():
-            VIDEO.display(screen)
+            VIDEO.draw(screen)
             skip_button.draw(screen)
             white_progress_bar.percentage = VIDEO.get_percentagePlayed()
             white_progress_bar.draw(screen)

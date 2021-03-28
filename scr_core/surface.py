@@ -22,7 +22,7 @@ class AbstractImage(GameObject2d):
         self.set_width(width)
         self.set_height(height)
     #画出轮廓
-    def draw_outline(self, surface:pygame.Surface, offSet:Union[list,tuple]=(0,0), color:str="red", line_width:int=2) -> None:
+    def draw_outline(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0), color:str="red", line_width:int=2) -> None:
         pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect((self.x+offSet[0],self.y+offSet[1]),self.size),line_width)
 
 #用于处理有大面积透明像素的图片surface
@@ -91,13 +91,13 @@ class SrcalphaSurface(AbstractImage):
     def flip_back_to_normal(self) -> None:
         if self.__isFlipped: self.flip()
     #展示
-    def display(self, surface:pygame.Surface, offSet:Union[list,tuple]=(0,0)) -> None:
+    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
         #如果图片需要更新，则先更新
         if self.__needUpdate: self._update_img()
         #将已经处理好的图片画在给定的图层上
         surface.blit(self.img,(self.x+self.__local_x+offSet[0], self.y+self.__local_y+offSet[1]))
     #画出轮廓
-    def draw_outline(self, surface:pygame.Surface, offSet:Union[list,tuple]=(0,0), color:str="red", line_width:int=2) -> None:
+    def draw_outline(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0), color:str="red", line_width:int=2) -> None:
         pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect(
             (self.x+self.__local_x+offSet[0],self.y+self.__local_y+offSet[1]),self.img.get_size()
             ),line_width)
@@ -123,7 +123,7 @@ class SrcalphaSurface(AbstractImage):
 
 #高级图形类
 class ImageSurface(AbstractImage):
-    def __init__(self,img, x:Union[int,float], y:Union[int,float], width=None,height=None,description="Default") -> None:
+    def __init__(self, img:pygame.Surface, x:Union[int,float], y:Union[int,float], width:any=None, height:any=None, description:str="Default"):
         AbstractImage.__init__(self,img,x,y,width,height)
         self.xTogo = x
         self.yTogo = y
@@ -148,7 +148,8 @@ class ImageSurface(AbstractImage):
         self.img = imgLoadFunction(img_path,ifConvertAlpha)
     def drawOnTheCenterOf(self, surface:pygame.Surface) -> None:
         surface.blit(resizeImg(self.img,self.size),((surface.get_width()-self._width)/2,(surface.get_height()-self._height)/2))
-    def display(self, surface:pygame.Surface, local_x:int=0, local_y:int=0) -> None: surface.blit(resizeImg(self.img,self.size),(self.x+local_x,self.y+local_y))
+    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
+        surface.blit(resizeImg(self.img,self.size),(self.x+offSet[0],self.y+offSet[1]))
     #旋转
     def rotate(self, angle:int) -> None: self.img = pygame.transform.rotate(self.img,angle)
     #反转
@@ -160,7 +161,8 @@ class ImageSurface(AbstractImage):
 
 #需要移动的动态图片
 class DynamicImageSurface(ImageSurface):
-    def __init__(self,img, x:Union[int,float], y:Union[int,float], target_x,target_y,moveSpeed_x,moveSpeed_y,width=None,height=None,description="Default") -> None:
+    def __init__(self, img:pygame.Surface, x:Union[int,float], y:Union[int,float], target_x:Union[int,float], target_y:Union[int,float],
+        moveSpeed_x:Union[int,float], moveSpeed_y:Union[int,float], width:any=None, height:any=None, description:str="Default"):
         ImageSurface.__init__(self,img,x,y,width,height,description)
         self.default_x = x
         self.default_y = y
@@ -169,8 +171,8 @@ class DynamicImageSurface(ImageSurface):
         self.moveSpeed_x = moveSpeed_x
         self.moveSpeed_y = moveSpeed_y
         self.__towardTargetPos = False
-    def display(self,surface,local_x=0,local_y=0) -> None:
-        super().display(surface,local_x,local_y)
+    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
+        super().display(surface,offSet)
         if self.__towardTargetPos == True:
             if self.default_x < self.target_x and self.x < self.target_x:
                 self.x += self.moveSpeed_x
@@ -194,16 +196,17 @@ class DynamicImageSurface(ImageSurface):
 
 #进度条
 class ProgressBar(AbstractImage):
-    def __init__(self, x:Union[int,float], y:Union[int,float], max_width,height,color) -> None:
+    def __init__(self, x:Union[int,float], y:Union[int,float], max_width:Union[int,float], height:Union[int,float], color:any):
         AbstractImage.__init__(self,None,x,y,max_width,height)
         self.percentage = 0
         self.color = findColorRGBA(color)
-    def display(self,surface,offSet:Union[list,tuple]=(0,0)) -> None:
+    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
         pygame.draw.rect(surface,self.color,(self.x+offSet[0],self.y+offSet[1],self._width*self.percentage,self._height))
 
 #进度条Surface
 class ProgressBarSurface(AbstractImage):
-    def __init__(self,imgOnTop,imgOnBottom, x:Union[int,float], y:Union[int,float], max_width,height,mode="horizontal"):
+    def __init__(self, imgOnTop:pygame.Surface, imgOnBottom:pygame.Surface, x:Union[int,float], y:Union[int,float],
+        max_width:Union[int,float], height:Union[int,float], mode:str="horizontal"):
         AbstractImage.__init__(self,imgLoadFunction(imgOnTop,True),x,y,max_width,height)
         self.img2 = imgLoadFunction(imgOnBottom,True)
         self._current_percentage = 0
@@ -212,7 +215,7 @@ class ProgressBarSurface(AbstractImage):
     @property
     def percentage(self) -> float: return self._current_percentage
     def get_percentage(self) -> float: return self._current_percentage
-    def set_percentage(self,value:float) -> None:
+    def set_percentage(self, value:float) -> None:
         if 0 <= value <= 1:
             self._current_percentage = value
         else:
@@ -221,7 +224,7 @@ class ProgressBarSurface(AbstractImage):
     @property
     def mode(self) -> str: return self.get_mode()
     def get_mode(self) -> str: return "horizontal" if self._mode else "vertical"
-    def set_mode(self,mode:str):
+    def set_mode(self, mode:str) -> None:
         if mode == "horizontal":
             self._mode = True
         elif mode == "vertical":
@@ -231,7 +234,7 @@ class ProgressBarSurface(AbstractImage):
     def copy(self): return ProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return ProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #展示
-    def display(self,surface,offSet:Union[tuple,list]=(0,0)) -> None:
+    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
         pos = (self.x+offSet[0],self.y+offSet[1])
         surface.blit(resizeImg(self.img2,self.size),pos)
         if self._current_percentage > 0:
@@ -243,7 +246,8 @@ class ProgressBarSurface(AbstractImage):
 
 #动态进度条Surface
 class DynamicProgressBarSurface(ProgressBarSurface):
-    def __init__(self,imgOnTop,imgOnBottom, x:Union[int,float], y:Union[int,float], max_width,height,mode="horizontal"):
+    def __init__(self, imgOnTop:pygame.Surface, imgOnBottom:pygame.Surface, x:Union[int,float], y:Union[int,float],
+        max_width:Union[int,float], height:Union[int,float], mode:str="horizontal"):
         ProgressBarSurface.__init__(self,imgOnTop,imgOnBottom,x,y,max_width,height,mode)
         self.__percentage_to_be = 0
         self.__perecent_update_each_time = 0
@@ -255,7 +259,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
     @property
     def percentage(self) -> float: return self.__percentage_to_be/self.accuracy
     def get_percentage(self) -> float: return self.__percentage_to_be/self.accuracy
-    def set_percentage(self,value:float) -> None:
+    def set_percentage(self, value:float) -> None:
         if 0 <= value <= 1:
             self.__percentage_to_be = value*self.accuracy
             self.__perecent_update_each_time = (self.__percentage_to_be-self._current_percentage)/self.__total_update_intervals
@@ -264,7 +268,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
     def copy(self): return DynamicProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return DynamicProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #展示
-    def display(self,surface,offSet:Union[list,tuple]=(0,0)) -> None:
+    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
         pos = (self.x+offSet[0],self.y+offSet[1])
         surface.blit(resizeImg(self.img2,self.size),pos)
         if self._current_percentage < self.__percentage_to_be and self.__perecent_update_each_time > 0 or\
@@ -299,13 +303,12 @@ class DynamicProgressBarSurface(ProgressBarSurface):
 
 #按钮
 class Button(GameObject2d):
-    def __init__(self,path,x,y):
+    def __init__(self, path:str, x:Union[int,float], y:Union[int,float]):
         GameObject2d.__init__(self,x,y)
         self.img = loadImg(path)
         self.img2 = None
         self.hoverEventTriggered = False
-    def setHoverImg(self,img): self.img2 = img
-    def display(self,surface,local_x=0,local_y=0): surface.blit(self.img,(self.x+local_x,self.y+local_y))
+    def setHoverImg(self, img:pygame.Surface) -> None: self.img2 = img
     def hoverEventOn(self):
         if self.img2 != None and self.hoverEventTriggered == False:
             tempSurface = self.img
@@ -320,9 +323,10 @@ class Button(GameObject2d):
             self.hoverEventTriggered = False
     def get_width(self) -> int: return self.img.get_width()
     def get_height(self) -> int: return self.img.get_height()
+    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None: surface.blit(self.img,(self.x+offSet[0],self.y+offSet[1]))
 
 class ButtonWithDes(Button):
-    def __init__(self,path, x:Union[int,float], y:Union[int,float], width,height,des) -> None:
+    def __init__(self, path:str, x:Union[int,float], y:Union[int,float], width:Union[int,float], height:Union[int,float], des:str):
         Button.__init__(self,path,x,y)
         width = int(width)
         height = int(height)
@@ -338,21 +342,25 @@ class ButtonWithDes(Button):
         self.des_surface.blit(self.des_font_surface,(self.des_font_surface.get_width()*0.1,self._height*0.1))
     def get_width(self) -> int: return self._width
     def get_height(self) -> int: return self._height
-    def displayDes(self,surface) -> None:
+    def displayDes(self, surface:pygame.Surface) -> None:
         if self.hoverEventTriggered: surface.blit(self.des_surface,pygame.mouse.get_pos())
 
 class ButtonWithFadeInOut(Button):
-    def __init__(self,buttonImgPath,txt,txt_color,alphaWhenNotHovered, x:Union[int,float], y:Union[int,float], height) -> None:
-        Button.__init__(self,buttonImgPath,x,y)
+    def __init__(self, path:str, txt:str, txt_color:any, alphaWhenNotHover:int, x:Union[int,float], y:Union[int,float], height:Union[int,float]):
+        Button.__init__(self,path,x,y)
         txtSurface = fontRenderWithoutBound(txt,txt_color,height*0.6)
         self.img = resizeImg(self.img,(txtSurface.get_width()+height,height))
         self.img.blit(txtSurface,(height*0.5,(height-txtSurface.get_height())/2))
         self.img2 = self.img.copy()
-        self.img.set_alpha(alphaWhenNotHovered)
+        self.img.set_alpha(alphaWhenNotHover)
+
+class DynamicButton(Button):
+    def __init__(self, path:str, x:Union[int,float], y:Union[int,float]):
+        Button.__init__(self,path,x,y)
 
 #gif图片管理
 class GifObject(AbstractImage):
-    def __init__(self,imgList:Union[list,tuple], x:Union[int,float], y:Union[int,float], width,height,updateGap) -> None:
+    def __init__(self,imgList:Union[tuple,list], x:Union[int,float], y:Union[int,float], width:Union[int,float], height:Union[int,float], updateGap:int):
         AbstractImage.__init__(self,imgList,x,y,width,height)
         self.imgId = 0
         self.updateGap = updateGap
@@ -367,7 +375,7 @@ class GifObject(AbstractImage):
             self._alpha = 255
         else:
             self._alpha = round(value)
-    def display(self, surface, offSet:Union[list,tuple]=(0,0)):
+    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)):
         img = resizeImg(self.img[self.imgId],self.size)
         #设置透明度
         if self._alpha != 255: img.set_alpha(self._alpha)
@@ -409,7 +417,7 @@ class AbstractDialog:
 
 #对话框和对话框内容
 class DialogBox(AbstractDialog,GameObject2d):
-    def __init__(self,imgPath,width,height, x:Union[int,float], y:Union[int,float], fontSize):
+    def __init__(self, imgPath:str, width:Union[int,float], height:Union[int,float], x:Union[int,float], y:Union[int,float], fontSize:int):
         AbstractDialog.__init__(self,loadImg(imgPath,(width,height)),fontSize)
         GameObject2d.__init__(self,x,y)
         self.__surface = None
@@ -426,7 +434,7 @@ class DialogBox(AbstractDialog,GameObject2d):
     def get_width(self) -> int: return self.dialoguebox.get_width()
     def get_height(self)-> int:  return self.dialoguebox.get_height()
     def set_size(self,width,height) -> None: self.dialoguebox = resizeImg(self.dialoguebox,(width,height))
-    def display(self,surface,characterInfoBoardUI=None):
+    def draw(self, surface:pygame.Surface, characterInfoBoardUI:object=None):
         #如果对话框需要继续更新
         if self.__drew == False:
             self.__surface = self.dialoguebox.copy()
@@ -436,8 +444,7 @@ class DialogBox(AbstractDialog,GameObject2d):
                     self.__surface.blit(self.FONT.render(self.narrator,get_fontMode(),(255,255,255)),(self.get_width()*0.6+self.narrator_x,self.narrator_y))
                 #角色图标
                 if self.narrator_icon != None and characterInfoBoardUI != None:
-                    img = characterInfoBoardUI.characterIconImages[self.narrator_icon]
-                    self.__surface.blit(img,(self.get_width()-self.txt_x,self.txt_y))
+                    self.__surface.blit(characterInfoBoardUI.characterIconImages[self.narrator_icon],(self.get_width()-self.txt_x,self.txt_y))
                 x = self.txt_x
             else:
                 #讲述人名称

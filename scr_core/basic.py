@@ -123,7 +123,7 @@ def copeBounding(img:pygame.Surface) -> pygame.Surface: return cropImg(img,img.g
 
 """展示"""
 #图片blit模块：接受图片，位置（列表格式），屏幕，如果不是UI层需要local_x和local_y
-def drawImg(img:pygame.Surface, position:Union[list,tuple], screen:pygame.Surface,
+def drawImg(img:pygame.Surface, position:Union[tuple,list], screen:pygame.Surface,
     local_x:Union[int,float] = 0, local_y:Union[int,float] = 0) -> None:
     screen.blit(img,(position[0]+local_x,position[1]+local_y))
 

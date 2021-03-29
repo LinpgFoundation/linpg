@@ -46,19 +46,51 @@ numpy
 
 
 
-###### 
-
 # :computer:Installation / 安装
 
 ```
 pip install linpg
 ```
 
-We also suggest you download
+We also highly suggest you download and use [https://github.com/Tigeia-Workshop/A-story-of-us](https://github.com/Tigeia-Workshop/A-story-of-us) as your starting point.
 
-[https://github.com/Tigeia-Workshop/A-story-of-us](https://github.com/Tigeia-Workshop/A-story-of-us)
 
-as your starting point.
+
+# :world_map: Branches / 分支​
+
+### master:
+
+This is the current stable version. / 这是最稳定的版本
+
+### dev:
+
+This branch holds the latest version that is currently available. While this version may contain patches that fix some old bugs, it may also contain unknown or known new bugs that may cause harm to your system or projects. This version is usually recommended for experienced developers.
+
+目前可以运行的最新版本，可能在修复了部分现有的bug的同时，又新增的bug。 推荐开发人员使用
+
+### *in-process:
+
+**DON'T USE THIS BRANCH!** This brach contains a version that is currently unfinished and cannot run on any system.
+
+还未完成，无法运行的版本，请勿使用
+
+### *exp:
+
+**DON'T USE THIS BRANCH!**  This branch contains an experimental version with some content that is still in the experimental stage.
+
+实验版本，包含了部分仍在试验阶段的内容，请勿使用
+
+
+
+*****: These branches are not always available to the public.
+
+
+
+# :books: How to contribute / 如何贡献代码
+
+- You need to fork the "dev" branch (not master) before you start.
+- When you finish your work, you should request to merge to the "dev" branch instead of "master."
+- We are looking forward to seeing a pull request with detailed notes about the changes and explain any changes that were made.
 
 
 

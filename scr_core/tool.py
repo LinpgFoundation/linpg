@@ -1,12 +1,7 @@
 # cython: language_level=3
 from .experimental import *
-from .config import loadConfig,saveConfig,glob
+from glob import glob
 from os import remove
-
-#整理配置文件（读取了再存）
-def organizeConfigInFolder(pathname:str) -> None:
-    for configFilePath in glob.glob(pathname):
-        saveConfig(configFilePath,loadConfig(configFilePath))
 
 #优化中文文档
 def optimizeCNContent(filePath:str) -> None:
@@ -49,5 +44,5 @@ def optimizeCNContent(filePath:str) -> None:
 
 #优化文件夹中特定文件的中文字符串
 def optimizeCNContenInFolder(pathname:str) -> None:
-    for configFilePath in glob.glob(pathname):
+    for configFilePath in glob(pathname):
         optimizeCNContent(configFilePath)

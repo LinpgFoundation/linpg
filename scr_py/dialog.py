@@ -24,7 +24,7 @@ class DialogSystem(AbstractDialogSystem):
     #保存数据-子类必须实现
     def save_process(self): throwException("error","You have to overwrite save_process() before continue!")
     #读取章节
-    def load(self,save_path:str) -> None:
+    def load(self, save_path:str) -> None:
         saveData = loadConfig(save_path)
         """章节信息"""
         self._initialize(
@@ -37,7 +37,7 @@ class DialogSystem(AbstractDialogSystem):
         self.part = saveData["type"]
         self.__process_data()
     #新建章节
-    def new(self,chapterType:str,chapterId:int,part:str,collection_name:str=None) -> None:
+    def new(self, chapterType:str, chapterId:int, part:str, collection_name:str=None) -> None:
         """章节信息"""
         self._initialize(chapterType,chapterId,collection_name)
         self.part = part
@@ -70,7 +70,7 @@ class DialogSystem(AbstractDialogSystem):
         self.__update_scene(self.dialogId)
         self.dialogTxtSystem.resetDialogueboxData()
     #更新场景
-    def __update_scene(self,theNextDialogId:Union[str,int]) -> None:
+    def __update_scene(self, theNextDialogId:Union[str,int]) -> None:
         #如果dialog Id 不存在
         if theNextDialogId in self.dialogContent:
             #更新背景音乐
@@ -94,30 +94,30 @@ class DialogSystem(AbstractDialogSystem):
         self.set_bgm_volume(get_setting("Sound","background_music")/100)
         self.dialogTxtSystem.set_sound_volume(get_setting("Sound","sound_effects"))
     #淡入
-    def fadeIn(self,screen) -> None:
+    def fadeIn(self, surface:pygame.Surface) -> None:
         for i in range(255,0,-5):
-            self.display_background_image(screen)
+            self.display_background_image(surface)
             self._black_bg.set_alpha(i)
-            self._black_bg.draw(screen)
+            self._black_bg.draw(surface)
             pygame.display.flip()
         #重设black_bg的alpha值以便下一次使用
         self._black_bg.set_alpha(255)
     #淡出
-    def fadeOut(self,screen) -> None:
+    def fadeOut(self, surface:pygame.Surface) -> None:
         pygame.mixer.music.fadeout(1000)
         pygame.mixer.fadeout(1000)
         for i in range(0,255,5):
             self._black_bg.set_alpha(i)
-            self._black_bg.draw(screen)
+            self._black_bg.draw(surface)
             pygame.display.flip()
-    def draw(self,screen) -> None:
-        super().draw(screen)
+    def draw(self, surface:pygame.Surface) -> None:
+        super().draw(surface)
         #显示对话框和对应文字
-        self.dialogTxtSystem.draw(screen)
+        self.dialogTxtSystem.draw(surface)
         #背景音乐
         self.play_bgm(-1)
         #按钮
-        buttonEvent = self.ButtonsMananger.draw(screen,self.dialogTxtSystem.isHidden)
+        buttonEvent = self.ButtonsMananger.draw(surface,self.dialogTxtSystem.isHidden)
         #按键判定
         leftClick = False
         for event in self.events:
@@ -128,7 +128,7 @@ class DialogSystem(AbstractDialogSystem):
                     #如果接来下没有文档了或者玩家按到了跳过按钮
                     elif buttonEvent == "skip" and not self.showHistory:
                         #淡出
-                        self.fadeOut(screen)
+                        self.fadeOut(surface)
                         self._isPlaying = False
                     elif buttonEvent == "auto" and not self.showHistory:
                         self.ButtonsMananger.autoModeSwitch()
@@ -160,7 +160,7 @@ class DialogSystem(AbstractDialogSystem):
                 process_saved_text.set_alpha(0)
                 while True:
                     self._update_event()
-                    result = self.pause_menu.draw(screen,self.events)
+                    result = self.pause_menu.draw(surface,self.events)
                     if result == "Break":
                         setting.isDisplaying = False
                         break
@@ -171,13 +171,13 @@ class DialogSystem(AbstractDialogSystem):
                         setting.isDisplaying = True
                     elif result == "BackToMainMenu":
                         setting.isDisplaying = False
-                        self.fadeOut(screen)
+                        self.fadeOut(surface)
                         self._isPlaying = False
                         break
                     #如果播放玩菜单后发现有东西需要更新
-                    if setting.draw(screen,self.events):
+                    if setting.draw(surface,self.events):
                         self.__update_sound_volume()
-                    process_saved_text.drawOnTheCenterOf(screen)
+                    process_saved_text.drawOnTheCenterOf(surface)
                     process_saved_text.fade_out(5)
                     display.flip()
                 del process_saved_text
@@ -197,15 +197,15 @@ class DialogSystem(AbstractDialogSystem):
                 if 0<mouse_x-optionBox_x<optionBox_width and 0<mouse_y-optionBox_y<optionBox_height:
                     self.optionBoxSelected.set_size(optionBox_width,optionBox_height)
                     self.optionBoxSelected.set_pos(optionBox_x,optionBox_y)
-                    self.optionBoxSelected.draw(screen)
-                    displayInCenter(option_txt,self.optionBoxSelected,self.optionBoxSelected.x,self.optionBoxSelected.y,screen)
+                    self.optionBoxSelected.draw(surface)
+                    displayInCenter(option_txt,self.optionBoxSelected,self.optionBoxSelected.x,self.optionBoxSelected.y,surface)
                     #保存选取的选项
                     if leftClick and not self.showHistory: nextDialogId = self.dialogContent[self.dialogId]["next_dialog_id"]["target"][i]["id"]
                 else:
                     self._optionBox.set_size(optionBox_width,optionBox_height)
                     self._optionBox.set_pos(optionBox_x,optionBox_y)
-                    self._optionBox.draw(screen)
-                    displayInCenter(option_txt,self._optionBox,self._optionBox.x,self._optionBox.y,screen)
+                    self._optionBox.draw(surface)
+                    displayInCenter(option_txt,self._optionBox,self._optionBox.x,self._optionBox.y,surface)
             if nextDialogId != None:
                 self.dialog_options[self.dialogId] = {"id":i,"target":nextDialogId}
                 #更新场景
@@ -241,34 +241,34 @@ class DialogSystem(AbstractDialogSystem):
                             dialogIdTemp = None
                     else:
                         dialogIdTemp = None
-            screen.blit(self.historySurface,(0,0))
-            self.history_back.draw(screen)
+            surface.blit(self.historySurface,(0,0))
+            self.history_back.draw(surface)
             is_hover(self.history_back)
         elif self.dialogTxtSystem.needUpdate() or leftClick:
             if self.dialogContent[self.dialogId]["next_dialog_id"] == None or self.dialogContent[self.dialogId]["next_dialog_id"]["target"] == None:
-                self.fadeOut(screen)
+                self.fadeOut(surface)
                 self._isPlaying = False
             elif self.dialogContent[self.dialogId]["next_dialog_id"]["type"] == "default":
                 self.__update_scene(self.dialogContent[self.dialogId]["next_dialog_id"]["target"])
             #如果是需要播放过程动画
             elif self.dialogContent[self.dialogId]["next_dialog_id"]["type"] == "cutscene":
-                self.fadeOut(screen)
-                cutscene(screen,"Assets\movie\{}".format(self.dialogContent[self.dialogId]["next_dialog_id"]["target"]))
+                self.fadeOut(surface)
+                cutscene(surface,"Assets\movie\{}".format(self.dialogContent[self.dialogId]["next_dialog_id"]["target"]))
                 self._isPlaying = False
             #如果是切换场景
             elif self.dialogContent[self.dialogId]["next_dialog_id"]["type"] == "changeScene":
-                self.fadeOut(screen)
+                self.fadeOut(surface)
                 pygame.time.wait(2000)
                 #更新场景
                 self.__update_scene(self.dialogContent[self.dialogId]["next_dialog_id"]["target"])
                 self.dialogTxtSystem.resetDialogueboxData()
-                self.fadeIn(screen)
+                self.fadeIn(surface)
         #刷新控制器，并展示自定义鼠标（如果存在）
-        controller.draw(screen)
+        controller.draw(surface)
 
 #对话制作器
 class DialogSystemDev(AbstractDialogSystem):
-    def __init__(self,chapterType,chapterId,part=None,collection_name=None):
+    def __init__(self, chapterType:str, chapterId:int, part:str=None, collection_name:str=None):
         AbstractDialogSystem.__init__(self)
         self._initialize(chapterType,chapterId,collection_name)
         #设定初始化
@@ -325,7 +325,7 @@ class DialogSystemDev(AbstractDialogSystem):
     @property
     def part(self) -> str: return self.parts[self.partId]
     #读取章节信息
-    def __loadDialogData(self,part) -> None:
+    def __loadDialogData(self, part:str) -> None:
         self.dialogData = loadConfig(self.fileLocation,"dialogs")
         self.parts = list(self.dialogData.keys())
         #如果dialogs字典是空的
@@ -363,7 +363,7 @@ class DialogSystemDev(AbstractDialogSystem):
         #更新场景
         self.__update_scene(self.dialogId)
     #保存数据
-    def __save(self):
+    def __save(self) -> None:
         self.dialogData[self.part][self.dialogId]["narrator"] = self.narrator.get_text()
         self.dialogData[self.part][self.dialogId]["content"] = self.content.get_text()
         if not self.isDefault:
@@ -384,7 +384,7 @@ class DialogSystemDev(AbstractDialogSystem):
         #重新加载self.dialogData以确保准确性
         self.__loadDialogData(self.part)
     #更新场景
-    def __update_scene(self,theNextDialogId):
+    def __update_scene(self, theNextDialogId:Union[str,int]):
         if theNextDialogId in self.dialogData[self.part]:
             self.dialogId = theNextDialogId
             #更新立绘和背景
@@ -398,7 +398,7 @@ class DialogSystemDev(AbstractDialogSystem):
         else:
             throwException("error","Cannot find the dialog with id '{}' in the data dictionary.".format(theNextDialogId))
     #添加新的对话
-    def __add_dialog(self,dialogId):
+    def __add_dialog(self, dialogId:Union[str,int]):
         self.dialogData[self.part][dialogId] = {
             "background_img": self.dialogData[self.part][self.dialogId]["background_img"],
             "background_music": self.dialogData[self.part][self.dialogId]["background_music"],
@@ -439,19 +439,19 @@ class DialogSystemDev(AbstractDialogSystem):
                                 return key
             return None
     #获取下一个对话的ID
-    def __get_next_id(self,screen) -> str:
+    def __get_next_id(self, surface:pygame.Surface) -> str:
         if "next_dialog_id" in self.dialogData[self.part][self.dialogId]:
             theNext:dict = self.dialogData[self.part][self.dialogId]["next_dialog_id"]
             if theNext != None:
                 if theNext["type"] == "default" or theNext["type"] == "changeScene":
                     return theNext["target"]
                 elif theNext["type"] == "option":
-                    optionBox_y_base = (screen.get_height()*3/4-(len(theNext["target"]))*2*screen.get_width()*0.03)/4
-                    option_button_height = screen.get_width()*0.05
-                    screenshot = screen.copy()
+                    optionBox_y_base = (surface.get_height()*3/4-(len(theNext["target"]))*2*surface.get_width()*0.03)/4
+                    option_button_height = surface.get_width()*0.05
+                    screenshot = surface.copy()
                     #等待玩家选择一个选项
                     while True:
-                        screen.blit(screenshot,(0,0))
+                        surface.blit(screenshot,(0,0))
                         self._update_event()
                         leftClick = False
                         for event in self.events:
@@ -461,31 +461,31 @@ class DialogSystemDev(AbstractDialogSystem):
                         for i in range(len(theNext["target"])):
                             button = theNext["target"][i]
                             option_txt = self.FONT.render(button["txt"],get_fontMode(),findColorRGBA("white"))
-                            option_button_width = int(option_txt.get_width()+screen.get_width()*0.05)
-                            option_button_x = int((screen.get_width()-option_button_width)/2)
-                            option_button_y = int((i+1)*2*screen.get_width()*0.03+optionBox_y_base)
+                            option_button_width = int(option_txt.get_width()+surface.get_width()*0.05)
+                            option_button_x = int((surface.get_width()-option_button_width)/2)
+                            option_button_y = int((i+1)*2*surface.get_width()*0.03+optionBox_y_base)
                             mouse_x,mouse_y = pygame.mouse.get_pos()
                             if 0<mouse_x-option_button_x<option_button_width and 0<mouse_y-option_button_y<option_button_height:
                                 self.optionBoxSelected.set_size(option_button_width,option_button_height)
                                 self.optionBoxSelected.set_pos(option_button_x,option_button_y)
-                                self.optionBoxSelected.draw(screen)
-                                displayInCenter(option_txt,self.optionBoxSelected,self.optionBoxSelected.x,self.optionBoxSelected.y,screen)
+                                self.optionBoxSelected.draw(surface)
+                                displayInCenter(option_txt,self.optionBoxSelected,self.optionBoxSelected.x,self.optionBoxSelected.y,surface)
                                 if leftClick: return button["id"]
                             else:
                                 self._optionBox.set_size(option_button_width,option_button_height)
                                 self._optionBox.set_pos(option_button_x,option_button_y)
-                                self._optionBox.draw(screen)
-                                displayInCenter(option_txt,self._optionBox,self._optionBox.x,self._optionBox.y,screen)
+                                self._optionBox.draw(surface)
+                                displayInCenter(option_txt,self._optionBox,self._optionBox.x,self._optionBox.y,surface)
                         display.flip()
         return None
-    def draw(self,screen):
-        super().draw(screen)
+    def draw(self, surface:pygame.Surface) -> None:
+        super().draw(surface)
         #画上对话框
-        self.dialoguebox.draw(screen)
-        if self._npcManager.npcGetClick != None: screen.blit(self.removeNpcButton,pygame.mouse.get_pos())
-        self.narrator.draw(screen,self.events)
+        self.dialoguebox.draw(surface)
+        if self._npcManager.npcGetClick != None: surface.blit(self.removeNpcButton,pygame.mouse.get_pos())
+        self.narrator.draw(surface,self.events)
         if self.narrator.needSave: self.dialogData[self.part][self.dialogId]["narrator"] = self.narrator.get_text()
-        self.content.draw(screen,self.events)
+        self.content.draw(surface,self.events)
         if self.content.needSave:
             self.dialogData[self.part][self.dialogId]["content"] = self.content.get_text()
         #初始化数值
@@ -496,11 +496,11 @@ class DialogSystemDev(AbstractDialogSystem):
             if button == "next" and theNextDialogId == None or button == "next" and len(theNextDialogId)<2:
                 if is_hover(self.buttonsUI["add"]):
                     buttonHovered = "add"
-                self.buttonsUI["add"].draw(screen)
+                self.buttonsUI["add"].draw(surface)
             elif button != "add":
                 if is_hover(self.buttonsUI[button]):
                     buttonHovered = button
-                self.buttonsUI[button].draw(screen)
+                self.buttonsUI[button].draw(surface)
         leftClick = False
         for event in self.events:
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -519,7 +519,7 @@ class DialogSystemDev(AbstractDialogSystem):
                             print("no last_dialog_id")
                     elif buttonHovered == "delete":
                         lastId = self.__get_last_id()
-                        nextId = self.__get_next_id(screen)
+                        nextId = self.__get_next_id(surface)
                         if lastId != None:
                             if self.dialogData[self.part][lastId]["next_dialog_id"]["type"] == "default" or self.dialogData[self.part][lastId]["next_dialog_id"]["type"] == "changeScene":
                                 self.dialogData[self.part][lastId]["next_dialog_id"]["target"] = nextId
@@ -540,7 +540,7 @@ class DialogSystemDev(AbstractDialogSystem):
                         else:
                             print("no last_dialog_id")
                     elif buttonHovered == "next":
-                        nextId = self.__get_next_id(screen)
+                        nextId = self.__get_next_id(surface)
                         if nextId != None:
                             self.__update_scene(nextId)
                         else:
@@ -581,8 +581,8 @@ class DialogSystemDev(AbstractDialogSystem):
                     elif self.UIContainerRight_kind == "background":
                         self.background_image_local_y -= 10
         #画上右侧的菜单选项
-        self.UIContainerRightButton.display(screen,(self.UIContainerRight.x,0))
-        self.UIContainerRight.draw(screen)
+        self.UIContainerRightButton.display(surface,(self.UIContainerRight.x,0))
+        self.UIContainerRight.draw(surface)
         if self.UIContainerRight.x < display.get_width():
             #检测按钮
             if is_hover(self.button_select_background,None,self.UIContainerRight.x) and leftClick:
@@ -590,16 +590,16 @@ class DialogSystemDev(AbstractDialogSystem):
             if is_hover(self.button_select_npc,None,self.UIContainerRight.x) and leftClick:
                 self.UIContainerRight_kind = "npc"
             #画出按钮
-            self.button_select_background.display(screen,(self.UIContainerRight.x,0))
-            self.button_select_npc.display(screen,(self.UIContainerRight.x,0))
+            self.button_select_background.display(surface,(self.UIContainerRight.x,0))
+            self.button_select_npc.display(surface,(self.UIContainerRight.x,0))
             #画出对应的种类可选的背景图片或者立绘
             if self.UIContainerRight_kind == "background":
                 imgName = self.dialogData[self.part][self.dialogId]["background_img"]
                 if imgName != None:
                     imgTmp = resizeImg(self.all_background_image[imgName],(self.UIContainerRight.get_width()*0.8,None))
                     pos = (self.UIContainerRight.x+self.UIContainerRight.get_width()*0.1,self.background_image_local_y)
-                    screen.blit(imgTmp,pos)
-                    screen.blit(resizeImg(self.background_deselect,imgTmp.get_size()),pos)
+                    surface.blit(imgTmp,pos)
+                    surface.blit(resizeImg(self.background_deselect,imgTmp.get_size()),pos)
                     if leftClick and is_hover(imgTmp,pos):
                         self.dialogData[self.part][self.dialogId]["background_img"] = None
                         self._update_background_image(None)
@@ -616,7 +616,7 @@ class DialogSystemDev(AbstractDialogSystem):
                             self.UIContainerRight.x+self.UIContainerRight.get_width()*0.1,
                             self.background_image_local_y+imgTmp.get_height()*1.5*i
                             )
-                        screen.blit(imgTmp,pos)
+                        surface.blit(imgTmp,pos)
                         i+=1
                         if leftClick and is_hover(imgTmp,pos):
                             self.dialogData[self.part][self.dialogId]["background_img"] = imgName
@@ -631,7 +631,7 @@ class DialogSystemDev(AbstractDialogSystem):
                         npcImage["normal"].set_width_with_size_locked(int(self.UIContainerRight.get_width()*0.8))
                         if npc_local_y_temp > -npcImage["normal"].get_height():
                             npcImage["normal"].set_pos(self.UIContainerRight.x,npc_local_y_temp)
-                            npcImage["normal"].draw(screen)
+                            npcImage["normal"].draw(surface)
                             if is_hover(npcImage["normal"]) and leftClick:
                                 if self.dialogData[self.part][self.dialogId]["characters_img"] == None:
                                     self.dialogData[self.part][self.dialogId]["characters_img"] = []

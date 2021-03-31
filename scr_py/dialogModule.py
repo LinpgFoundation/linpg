@@ -298,7 +298,7 @@ class DialogContent(AbstractDialog):
         else:
             return 0.0
     #修改文字播放时的音效的音量
-    def set_sound_volume(self, num:float) -> None:
+    def set_sound_volume(self, num:Union[float,int]) -> None:
         if self.__textPlayingSound != None: self.__textPlayingSound.set_volume(num/100.0)
     #是否需要更新
     def needUpdate(self) -> bool:
@@ -505,7 +505,7 @@ class DialogButtons:
 
 #立绘配置信息数据库
 class NpcImageDatabase:
-    def __init__(self) -> None:
+    def __init__(self):
         try:
             self.__DATA = loadConfig("Data/npcImageDatabase.yaml")
         except FileNotFoundError:

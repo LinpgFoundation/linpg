@@ -13,10 +13,14 @@ for lang_file in glob.glob(os.path.join(os.path.dirname(__file__),"../lang/*.jso
 #重新加载语言配置文件
 def reload_lang() -> None:
     global __LINPG_LANG
-    __LINPG_LANG = dicMerge(
-        loadConfig(os.path.join(os.path.dirname(__file__),"../lang/{}.json".format(get_setting("Language")))),
-        loadConfig("Lang/{}.yaml".format(get_setting("Language")))
-        )
+    try:
+        __LINPG_LANG = dicMerge(
+            loadConfig(os.path.join(os.path.dirname(__file__),"../lang/{}.json".format(get_setting("Language")))),
+            loadConfig("Lang/{}.yaml".format(get_setting("Language")))
+            )
+    except:
+        throwException("warning", "Linpg cannot load additional language file.")
+        __LINPG_LANG = loadConfig(os.path.join(os.path.dirname(__file__),"../lang/{}.json".format(get_setting("Language"))))
 
 #引擎初始化时应重新加载语言配置文件
 reload_lang()

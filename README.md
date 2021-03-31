@@ -1,6 +1,6 @@
 
 
-**Open Source after reach 1k star!!**
+**Open Source after reaching 1k star!!**
 
 ### **1k star后开源！！**
 

@@ -1,5 +1,5 @@
 from setuptools import setup
-from .scr_core.config import *
+from linpg.scr_core.config import get_current_version,get_author_email,get_short_description,get_repository_url
 
 #读取readme
 with open("README.md", "r", encoding="utf-8") as fh: long_description = fh.read()

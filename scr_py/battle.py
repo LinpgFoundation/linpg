@@ -47,7 +47,7 @@ class AbstractBattleSystem(SystemWithBackgroundMusic):
         self.MAP.display_decoration(screen,self.alliances_data,self.enemies_data)
     #展示天气
     def _display_weather(self, screen:pygame.Surface) -> None:
-        if self.weatherController != None: self.weatherController.display(screen,self.MAP.block_width)
+        if self.weatherController != None: self.weatherController.draw(screen,self.MAP.block_width)
     #初始化角色加载器
     def _initial_characters_loader(self, alliancesData:dict, enemiesData:dict, mode:str="default") -> None:
         self.__characterDataLoaderThread = CharacterDataLoader(alliancesData,enemiesData,mode)

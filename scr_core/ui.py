@@ -14,7 +14,7 @@ class WeatherSystem:
             img_x = randomInt(1,window_x*1.5)
             img_y = randomInt(1,window_y)
             self.ImgObject.append(Snow(imgId,img_size,img_speed,img_x,img_y))
-    def display(self, surface:pygame.Surface, perBlockWidth:Union[int,float]) -> None:
+    def draw(self, surface:pygame.Surface, perBlockWidth:Union[int,float]) -> None:
         speed_unit:int = int(perBlockWidth/15)
         for i in range(len(self.ImgObject)):
             if 0 <= self.ImgObject[i].x <= surface.get_width() and 0 <= self.ImgObject[i].y <= surface.get_height():
@@ -78,7 +78,7 @@ class PauseMenu:
             "white",
             (surface.get_width()*0.1,surface.get_height()*0.7,surface.get_width()/38)
         )
-    def display(self, surface:pygame.Surface, pygame_events=pygame.event.get()) -> None:
+    def draw(self, surface:pygame.Surface, pygame_events=pygame.event.get()) -> None:
         #展示原先的背景
         if self.screenshot == None:
             self.screenshot = surface.copy()
@@ -98,13 +98,13 @@ class PauseMenu:
                 return "Break"
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 #判定按钮
-                if self.button_resume.isHover():
+                if self.button_resume.is_hover():
                     return "Break"
-                elif self.button_save.isHover():
+                elif self.button_save.is_hover():
                     return "Save"
-                elif self.button_setting.isHover():
+                elif self.button_setting.is_hover():
                     return "Setting"
-                elif self.button_back.isHover():
+                elif self.button_back.is_hover():
                     set_glob_value("BackToMainMenu",True)
                     return "BackToMainMenu"
         return False
@@ -113,7 +113,7 @@ class PauseMenu:
 class SettingContoller:
     def __init__(self) -> None:
         self.isDisplaying = False
-    def init(self, size:Union[list,tuple]) -> None:
+    def init(self, size:Union[tuple,list]) -> None:
         self.baseImgWidth = round(size[0]/3)
         self.baseImgHeight = round(size[0]/3)
         self.baseImg = loadImg("Assets/image/UI/setting_baseImg.png",(self.baseImgWidth,self.baseImgHeight))
@@ -165,7 +165,7 @@ class SettingContoller:
         self.buttons_y = self.baseImgY + self.baseImgHeight*0.88
         self.buttons_x1 = self.baseImgX + self.baseImgWidth*0.2
         self.buttons_x2 = self.buttons_x1 + self.cancelTxt_n.get_width()*1.7
-    def display(self, surface:pygame.Surface, pygame_events=pygame.event.get()) -> bool:
+    def draw(self, surface:pygame.Surface, pygame_events=pygame.event.get()) -> bool:
         if self.isDisplaying:
             #底部图
             surface.blit(self.baseImg,(self.baseImgX,self.baseImgY))

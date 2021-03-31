@@ -1,1 +1,2 @@
 recursive-include linpg *.pyd
+recursive-include linpg *.json

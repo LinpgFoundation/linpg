@@ -41,19 +41,19 @@ class GameObject2d(GameObject):
     def size(self) -> tuple: return self.get_width(),self.get_height()
     def get_size(self) -> tuple: return self.get_width(),self.get_height()
     #是否被鼠标触碰
-    def isHover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
+    def is_hover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
         if mouse_pos == (-1,-1): mouse_pos = pygame.mouse.get_pos()
         return 0 < mouse_pos[0]-self.x < self.get_width() and 0 < mouse_pos[1]-self.y < self.get_height()
     #将图片直接画到surface上
     def draw(self, surface:pygame.Surface) -> None: self.display(surface)
     #根据offSet将图片展示到surface的对应位置上 - 子类必须实现
     def display(self, surface:pygame.Surface, offSet:tuple=(0,0)) -> None:
-        throwException("error","The child class has to implement display() function!")
+        throwException("error","The child class does not implement display() function!")
     #忽略现有坐标，将图片画到surface的指定位置上，不推荐使用
     def blit(self, surface:pygame.Surface, pos:tuple) -> None: 
         old_pos = self.get_pos()
         self.set_pos(pos)
-        self.display(surface)
+        self.draw(surface)
         self.set_pos(old_pos)
 
 #2.5d游戏对象接口 - 使用z轴判断图案的图层
@@ -85,6 +85,7 @@ class GameObject3d(GameObject2point5d):
 class GameObjectContainer(GameObject):
     def __init__(self, x:Union[int,float], y:Union[int,float]):
         GameObject.__init__(self,x,y)
+        self.hidden = False
         self.items = []
     #新增一个物品
     def append(self, new_item:GameObject) -> None: self.items.append(new_item)
@@ -94,8 +95,9 @@ class GameObjectContainer(GameObject):
     def clear(self) -> None: self.items.clear()
     #把物品画到surface上
     def draw(self, surface:pygame.Surface) -> None:
-        for item in self.items:
-            item.display(surface,self.pos)
+        if not self.hidden:
+            for item in self.items:
+                item.display(surface,self.pos)
 
 #系统模块接口
 class SystemObject:

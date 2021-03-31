@@ -95,20 +95,25 @@ def reload_setting() -> None:
     LINPG_MODE = get_setting("Antialias")
 
 #创建字体
-def createFont(size:Union[float,int], ifBold:bool=False, ifItalic:bool=False) -> any:
+def createFont(size:Union[int,float], ifBold:bool=False, ifItalic:bool=False) -> object:
+    global LINPG_FONT
+    global LINPG_FONTTYPE
+    global LINPG_MODE
+    #检测pygame的font模块是否已经初始化
+    font_size:int = int(size)
+    if not pygame.font.get_init(): pygame.font.init()
+    #根据类型处理
     if LINPG_FONTTYPE == "default":
-        try:
-            return pygame.font.SysFont(LINPG_FONT,int(size),ifBold,ifItalic)
-        except:
-            pygame.font.init()
-            normal_font = pygame.font.SysFont(LINPG_FONT,int(size),ifBold,ifItalic)
+        return pygame.font.SysFont(LINPG_FONT,font_size,ifBold,ifItalic)
     elif LINPG_FONTTYPE == "custom":
-        try:
-            normal_font = pygame.font.Font("Assets/font/{}.ttf".format(LINPG_FONT),int(size))
-        #如果文字没有初始化
-        except:
-            pygame.font.init()
-            normal_font = pygame.font.Font("Assets/font/{}.ttf".format(LINPG_FONT),int(size))
+        font_path:str = "Assets/font/{}.ttf".format(LINPG_FONT)
+        if os.path.exists(font_path):
+            normal_font = pygame.font.Font("Assets/font/{}.ttf".format(LINPG_FONT),font_size)
+        else:
+            throwException("warning", "Cannot find the {}.ttf file, the engine's font has been change to default.".format(LINPG_FONT))
+            LINPG_FONT = "arial"
+            LINPG_FONTTYPE = "default"
+            return pygame.font.SysFont(LINPG_FONT,font_size,ifBold,ifItalic)
         if ifBold:
             normal_font.set_bold(ifBold)
         if ifItalic:
@@ -176,7 +181,7 @@ class DynamicTextSurface(GameObject2d):
         return self.normal_font_surface.get_height()
     def display(self, surface:pygame.Surface, offSet:tuple=(0,0)) -> None:
         mouse_x,mouse_y = pygame.mouse.get_pos()
-        if self.isHover((mouse_x+offSet[0],mouse_y+offSet[1])):
+        if self.is_hover((mouse_x+offSet[0],mouse_y+offSet[1])):
             surface.blit(self.big_font_surface,(self.b_x+offSet[0],self.b_y+offSet[1]))
         else:
             surface.blit(self.normal_font_surface,(self.x+offSet[0],self.y+offSet[1]))

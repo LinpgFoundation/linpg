@@ -47,18 +47,18 @@ class EntitySoundManager:
             pygame.mixer.Channel(self.channel_id).play(sound)
 
 #计算最远攻击距离
-def calculate_range(effective_range_dic):
+def calculate_range(effective_range_dic:dict) -> int:
     if effective_range_dic != None:
-        max_attack_range = 0
+        max_attack_range:int = 0
         if "far" in effective_range_dic and effective_range_dic["far"] != None and max_attack_range < effective_range_dic["far"][-1]:
-            max_attack_range = effective_range_dic["far"][-1]
+            return effective_range_dic["far"][-1]
         if "middle" in effective_range_dic and effective_range_dic["middle"] != None and max_attack_range < effective_range_dic["middle"][-1]:
-            max_attack_range = effective_range_dic["middle"][-1]
+            return effective_range_dic["middle"][-1]
         if "near" in effective_range_dic and effective_range_dic["near"] != None and max_attack_range < effective_range_dic["near"][-1]:
-            max_attack_range = effective_range_dic["near"][-1]
+            return effective_range_dic["near"][-1]
         return max_attack_range
     else:
-        return None
+        return 0
 
 #角色图片管理模块
 class EntityImageManager:

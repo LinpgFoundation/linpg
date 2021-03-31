@@ -6,7 +6,7 @@ __LINPG_LANG:dict = None
 
 """
 #整理语言文件
-for lang_file in glob.glob(os.path.join(os.path.dirname(__file__),"../lang/*.yaml")):
+for lang_file in glob.glob(os.path.join(os.path.dirname(__file__),"../lang/*.json")):
     organizeConfigInFolder(lang_file)
 """
 
@@ -14,7 +14,7 @@ for lang_file in glob.glob(os.path.join(os.path.dirname(__file__),"../lang/*.yam
 def reload_lang() -> None:
     global __LINPG_LANG
     __LINPG_LANG = dicMerge(
-        loadConfig(os.path.join(os.path.dirname(__file__),"../lang/{}.yaml".format(get_setting("Language")))),
+        loadConfig(os.path.join(os.path.dirname(__file__),"../lang/{}.json".format(get_setting("Language")))),
         loadConfig("Lang/{}.yaml".format(get_setting("Language")))
         )
 

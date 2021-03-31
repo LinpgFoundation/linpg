@@ -176,7 +176,7 @@ class DynamicTextSurface(GameObject2d):
         return self.normal_font_surface.get_height()
     def display(self, surface:pygame.Surface, offSet:tuple=(0,0)) -> None:
         mouse_x,mouse_y = pygame.mouse.get_pos()
-        if self.isHover((mouse_x+offSet[0],mouse_y+offSet[1])):
+        if self.is_hover((mouse_x+offSet[0],mouse_y+offSet[1])):
             surface.blit(self.big_font_surface,(self.b_x+offSet[0],self.b_y+offSet[1]))
         else:
             surface.blit(self.normal_font_surface,(self.x+offSet[0],self.y+offSet[1]))

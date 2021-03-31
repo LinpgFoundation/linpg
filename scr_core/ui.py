@@ -98,13 +98,13 @@ class PauseMenu:
                 return "Break"
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 #判定按钮
-                if self.button_resume.isHover():
+                if self.button_resume.is_hover():
                     return "Break"
-                elif self.button_save.isHover():
+                elif self.button_save.is_hover():
                     return "Save"
-                elif self.button_setting.isHover():
+                elif self.button_setting.is_hover():
                     return "Setting"
-                elif self.button_back.isHover():
+                elif self.button_back.is_hover():
                     set_glob_value("BackToMainMenu",True)
                     return "BackToMainMenu"
         return False

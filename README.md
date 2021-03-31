@@ -16,11 +16,11 @@
 
 # :sparkles: About Linpg Engine / 关于Linpg引擎
 
-Linpg Engine is a game engine independently developed by Tigeia Workshop based on the pygame library, which aims to standardize the development of pygame games and make the game code cleaner, easier to read, expand and maintain.
+Linpg Engine is a game engine independently developed by Tigeia Workshop based on the pygame library, which aims to standardize the development of pygame games, as well as to make the codes easier to read, expand and maintain.
 
-Linpg Engine is developed with a modular concept. It implements many features commonly used in game development at a low level. At the same time, Linpg Engine also maintains a high level of compatibility with pygame, making it easy for developers to migrate existing pygame projects to Linpg Engine or use Linpg Engine features on their own pygame projects.
+Linpg Engine is developed with a modular concept. It implements many features commonly used in game development. Simultaneously, the Linpg Engine also maintains a high level of compatibility with pygame, making it easy for developers to migrate existing pygame projects to Linpg Engine or use Linpg Engine features on their pygame projects.
 
-We always need your help to make Linpg the best it can be! No matter what your region, culture, belief, or age is, any contributors are welcome
+We always need your help to make Linpg the best it can be! No matter what your region, culture, belief, or age is, any contributors are welcome!
 
 Linpg引擎是缇吉娅工坊基于pygame库自主研发的游戏引擎，目的是为了规范化pygame游戏的开发，使得游戏代码更加整洁，易读，易扩展，易维护。
 
@@ -60,37 +60,47 @@ We also highly suggest you download and use [https://github.com/Tigeia-Workshop/
 
 ### master:
 
-This is the current stable version. / 这是最稳定的版本
+This branch holds the current stable version. 
+
+该分支提供了当前的稳定版本
 
 ### dev:
 
-This branch holds the latest version that is currently available. While this version may contain patches that fix some old bugs, it may also contain unknown or known new bugs that may cause harm to your system or projects. This version is usually recommended for experienced developers.
+This branch holds the latest version that is available to the public. While this version may contain patches that fix identified problems, it may also have unknown or known new bugs that may cause harm to your system or projects. This version is typically recommended for experienced developers.
 
-目前可以运行的最新版本，可能在修复了部分现有的bug的同时，又新增的bug。 推荐开发人员使用
+目前可以运行的最新版本，可能在修复了部分现有的bug的同时，又带有新增的bug。 推荐开发人员使用
 
-### *in-process:
+### * in-process:
 
 **DON'T USE THIS BRANCH!** This brach contains a version that is currently unfinished and cannot run on any system.
 
 还未完成，无法运行的版本，请勿使用
 
-### *exp:
+### * exp:
 
-**DON'T USE THIS BRANCH!**  This branch contains an experimental version with some content that is still in the experimental stage.
+**DON'T USE THIS BRANCH!**  This branch contains a version that is still in the experimental stage.
 
 实验版本，包含了部分仍在试验阶段的内容，请勿使用
 
 
 
-*****: These branches are not always available to the public.
+*: These branches may not be available to the public.
 
 
 
 # :books: How to contribute / 如何贡献代码
 
-- You need to fork the "dev" branch (not master) before you start.
-- When you finish your work, you should request to merge to the "dev" branch instead of "master."
+- You need to fork the "dev" branch (not master) as your starting point.
+
+  你必须fork “dev”分支作为作为你的起始点。
+
+- After you have finished your work, you should request to merge to the "dev" branch instead of "master."
+
+  所有merge的请求必须pull到“dev”分支中。
+
 - We are looking forward to seeing a pull request with detailed notes about the changes and explain any changes that were made.
+
+  所有merge的请求必须阐明所有细节。
 
 
 

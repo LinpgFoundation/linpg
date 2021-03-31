@@ -174,7 +174,7 @@ def cutscene(screen,videoPath):
             if len(events_of_mouse_click) > 0:
                 for event in events_of_mouse_click:
                     if event.button == 1:
-                        if skip_button.isHover() and is_skip == 0:
+                        if skip_button.is_hover() and is_skip == 0:
                             is_skip = 1
                             pygame.mixer.music.fadeout(5000)
                         break

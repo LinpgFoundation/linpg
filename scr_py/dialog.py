@@ -18,7 +18,7 @@ class DialogSystem(AbstractDialogSystem):
         #展示历史界面-返回按钮
         buttonTemp = loadImg("Assets/image/UI/back.png",(display.get_width()*0.03,display.get_height()*0.04))
         self.history_back = Button(addDarkness(buttonTemp,100),display.get_width()*0.04,display.get_height()*0.04)
-        self.history_back.setHoverImg(buttonTemp)
+        self.history_back.set_hover_img(buttonTemp)
         #暂停菜单
         self.pause_menu = PauseMenu()
     #保存数据-子类必须实现
@@ -135,7 +135,7 @@ class DialogSystem(AbstractDialogSystem):
                         self.dialogTxtSystem.autoMode = self.ButtonsMananger.autoMode
                     elif buttonEvent == "history" and not self.showHistory:
                         self.showHistory = True
-                    elif isHover(self.history_back) and self.showHistory:
+                    elif is_hover(self.history_back) and self.showHistory:
                         self.showHistory = False
                         self.historySurface = None
                     #如果所有行都没有播出，则播出所有行
@@ -243,7 +243,7 @@ class DialogSystem(AbstractDialogSystem):
                         dialogIdTemp = None
             screen.blit(self.historySurface,(0,0))
             self.history_back.draw(screen)
-            isHover(self.history_back)
+            is_hover(self.history_back)
         elif self.dialogTxtSystem.needUpdate() or leftClick:
             if self.dialogContent[self.dialogId]["next_dialog_id"] == None or self.dialogContent[self.dialogId]["next_dialog_id"]["target"] == None:
                 self.fadeOut(screen)
@@ -301,13 +301,13 @@ class DialogSystemDev(AbstractDialogSystem):
         self.button_select_npc = ButtonWithFadeInOut("Assets/image/UI/menu.png",CONFIG["npc"],"black",100,button_width/2+self.button_select_background.get_width(),button_width/3,button_width/3)
         self.npc_local_y = 0
         self.buttonsUI = {
-            "back": ButtonWithDes("Assets/image/UI/back.png",button_width,button_y,button_width,button_width,CONFIG["back"]),
-            "delete": ButtonWithDes("Assets/image/UI/delete.png",button_width*2.25,button_y,button_width,button_width,CONFIG["delete"]),
-            "previous": ButtonWithDes("Assets/image/UI/previous.png",button_width*3.5,button_y,button_width,button_width,CONFIG["previous"]),
-            "next": ButtonWithDes("Assets/image/UI/dialog_skip.png",button_width*4.75,button_y,button_width,button_width,CONFIG["next"]),
-            "add": ButtonWithDes("Assets/image/UI/add.png",button_width*4.75,button_y,button_width,button_width,CONFIG["add"]),
+            "save": ButtonWithDes("Assets/image/UI/save.png",button_width*7.25,button_y,button_width,button_width,get_lang("General,save")),
             "reload": ButtonWithDes("Assets/image/UI/reload.png",button_width*6,button_y,button_width,button_width,CONFIG["reload"]),
-            "save": ButtonWithDes("Assets/image/UI/save.png",button_width*7.25,button_y,button_width,button_width,get_lang("General,save"))
+            "add": ButtonWithDes("Assets/image/UI/add.png",button_width*4.75,button_y,button_width,button_width,CONFIG["add"]),
+            "next": ButtonWithDes("Assets/image/UI/dialog_skip.png",button_width*4.75,button_y,button_width,button_width,CONFIG["next"]),
+            "previous": ButtonWithDes("Assets/image/UI/previous.png",button_width*3.5,button_y,button_width,button_width,CONFIG["previous"]),
+            "delete": ButtonWithDes("Assets/image/UI/delete.png",button_width*2.25,button_y,button_width,button_width,CONFIG["delete"]),
+            "back": ButtonWithDes("Assets/image/UI/back.png",button_width,button_y,button_width,button_width,CONFIG["back"])
         }
         self.please_enter_content = CONFIG["please_enter_content"]
         self.please_enter_name = CONFIG["please_enter_name"]
@@ -494,20 +494,18 @@ class DialogSystemDev(AbstractDialogSystem):
         #展示按钮
         for button in self.buttonsUI:
             if button == "next" and theNextDialogId == None or button == "next" and len(theNextDialogId)<2:
-                if isHover(self.buttonsUI["add"]):
+                if is_hover(self.buttonsUI["add"]):
                     buttonHovered = "add"
                 self.buttonsUI["add"].draw(screen)
             elif button != "add":
-                if isHover(self.buttonsUI[button]):
+                if is_hover(self.buttonsUI[button]):
                     buttonHovered = button
                 self.buttonsUI[button].draw(screen)
-        if buttonHovered != None:
-            self.buttonsUI[buttonHovered].displayDes(screen)
         leftClick = False
         for event in self.events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    if isHover(self.UIContainerRightButton,None,self.UIContainerRight.x):
+                    if is_hover(self.UIContainerRightButton,None,self.UIContainerRight.x):
                         self.UIContainerRight.switch()
                         self.UIContainerRightButton.flip(True,False)
                     #退出
@@ -587,9 +585,9 @@ class DialogSystemDev(AbstractDialogSystem):
         self.UIContainerRight.draw(screen)
         if self.UIContainerRight.x < display.get_width():
             #检测按钮
-            if isHover(self.button_select_background,None,self.UIContainerRight.x) and leftClick:
+            if is_hover(self.button_select_background,None,self.UIContainerRight.x) and leftClick:
                 self.UIContainerRight_kind = "background"
-            if isHover(self.button_select_npc,None,self.UIContainerRight.x) and leftClick:
+            if is_hover(self.button_select_npc,None,self.UIContainerRight.x) and leftClick:
                 self.UIContainerRight_kind = "npc"
             #画出按钮
             self.button_select_background.display(screen,(self.UIContainerRight.x,0))
@@ -602,7 +600,7 @@ class DialogSystemDev(AbstractDialogSystem):
                     pos = (self.UIContainerRight.x+self.UIContainerRight.get_width()*0.1,self.background_image_local_y)
                     screen.blit(imgTmp,pos)
                     screen.blit(resizeImg(self.background_deselect,imgTmp.get_size()),pos)
-                    if leftClick and isHover(imgTmp,pos):
+                    if leftClick and is_hover(imgTmp,pos):
                         self.dialogData[self.part][self.dialogId]["background_img"] = None
                         self._update_background_image(None)
                         leftClick = False
@@ -620,7 +618,7 @@ class DialogSystemDev(AbstractDialogSystem):
                             )
                         screen.blit(imgTmp,pos)
                         i+=1
-                        if leftClick and isHover(imgTmp,pos):
+                        if leftClick and is_hover(imgTmp,pos):
                             self.dialogData[self.part][self.dialogId]["background_img"] = imgName
                             self._update_background_image(imgName)
                             leftClick = False
@@ -634,7 +632,7 @@ class DialogSystemDev(AbstractDialogSystem):
                         if npc_local_y_temp > -npcImage["normal"].get_height():
                             npcImage["normal"].set_pos(self.UIContainerRight.x,npc_local_y_temp)
                             npcImage["normal"].draw(screen)
-                            if isHover(npcImage["normal"]) and leftClick:
+                            if is_hover(npcImage["normal"]) and leftClick:
                                 if self.dialogData[self.part][self.dialogId]["characters_img"] == None:
                                     self.dialogData[self.part][self.dialogId]["characters_img"] = []
                                 if len(self.dialogData[self.part][self.dialogId]["characters_img"]) < 2:

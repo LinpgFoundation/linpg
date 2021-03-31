@@ -102,7 +102,8 @@ class SrcalphaSurface(AbstractImage):
             (self.x+self.__local_x+offSet[0],self.y+self.__local_y+offSet[1]),self.img.get_size()
             ),line_width)
     #是否被鼠标触碰
-    def isHover(self, mouse_pos:Union[tuple,list]=pygame.mouse.get_pos()) -> bool:
+    def is_hover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
+        if mouse_pos == (-1,-1): mouse_pos = pygame.mouse.get_pos()
         if self.img != None:
             return 0 < mouse_pos[0]-self.x-self.__local_x < self.img.get_width() and 0 < mouse_pos[1]-self.y-self.__local_y < self.img.get_height()
         else:
@@ -307,22 +308,25 @@ class Button(GameObject2d):
         GameObject2d.__init__(self,x,y)
         self.img = loadImg(path)
         self.img2 = None
-        self.hoverEventTriggered = False
-    def setHoverImg(self, img:pygame.Surface) -> None: self.img2 = img
-    def hoverEventOn(self):
-        if self.img2 != None and self.hoverEventTriggered == False:
-            tempSurface = self.img
-            self.img = self.img2
-            self.img2 = tempSurface
-            self.hoverEventTriggered = True
-    def hoverEventOff(self):
-        if self.img2 != None and self.hoverEventTriggered == True:
-            tempSurface = self.img
-            self.img = self.img2
-            self.img2 = tempSurface
-            self.hoverEventTriggered = False
+        self._hoverEventTriggered = False
     def get_width(self) -> int: return self.img.get_width()
     def get_height(self) -> int: return self.img.get_height()
+    def set_hover_img(self, img:pygame.Surface) -> None: self.img2 = img
+    def is_hover(self, mouse_pos: Union[tuple, list]=(-1,-1)) -> bool:
+        if not super().is_hover(mouse_pos):
+            if self.img2 != None and self._hoverEventTriggered:
+                tempSurface = self.img
+                self.img = self.img2
+                self.img2 = tempSurface
+                self._hoverEventTriggered = False
+            return False
+        else:
+            if self.img2 != None and not self._hoverEventTriggered:
+                tempSurface = self.img
+                self.img = self.img2
+                self.img2 = tempSurface
+                self._hoverEventTriggered = True
+            return True
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None: surface.blit(self.img,(self.x+offSet[0],self.y+offSet[1]))
 
 class ButtonWithDes(Button):
@@ -331,7 +335,7 @@ class ButtonWithDes(Button):
         width = int(width)
         height = int(height)
         self.img = resizeImg(self.img,(width,height))
-        self.img2 = self.img.copy()
+        self.set_hover_img(self.img.copy())
         self.img.set_alpha(150)
         self._width = width
         self._height = height
@@ -342,8 +346,9 @@ class ButtonWithDes(Button):
         self.des_surface.blit(self.des_font_surface,(self.des_font_surface.get_width()*0.1,self._height*0.1))
     def get_width(self) -> int: return self._width
     def get_height(self) -> int: return self._height
-    def displayDes(self, surface:pygame.Surface) -> None:
-        if self.hoverEventTriggered: surface.blit(self.des_surface,pygame.mouse.get_pos())
+    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
+        super().display(surface, offSet)
+        if self._hoverEventTriggered: surface.blit(self.des_surface,pygame.mouse.get_pos())
 
 class ButtonWithFadeInOut(Button):
     def __init__(self, path:str, txt:str, txt_color:any, alphaWhenNotHover:int, x:Union[int,float], y:Union[int,float], height:Union[int,float]):
@@ -351,12 +356,8 @@ class ButtonWithFadeInOut(Button):
         txtSurface = fontRenderWithoutBound(txt,txt_color,height*0.6)
         self.img = resizeImg(self.img,(txtSurface.get_width()+height,height))
         self.img.blit(txtSurface,(height*0.5,(height-txtSurface.get_height())/2))
-        self.img2 = self.img.copy()
+        self.set_hover_img(self.img.copy())
         self.img.set_alpha(alphaWhenNotHover)
-
-class DynamicButton(Button):
-    def __init__(self, path:str, x:Union[int,float], y:Union[int,float]):
-        Button.__init__(self,path,x,y)
 
 #gif图片管理
 class GifObject(AbstractImage):

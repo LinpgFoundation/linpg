@@ -135,7 +135,7 @@ class NpcImageManager:
             #如果是开发模式
             if self.dev_mode:
                 self.npcGetClick = None
-                if isHover(img,(x,y)):
+                if is_hover(img,(x,y)):
                     img.draw_outline(surface)
                     self.npcGetClick = name
     def draw(self, surface:pygame.Surface) -> None:
@@ -436,32 +436,32 @@ class DialogButtons:
         hideUI_imgTemp = hideUI_img.copy()
         hideUI_imgTemp.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
         self.hideButton = Button(hideUI_imgTemp,window_x*0.05,window_y*0.05)
-        self.hideButton.setHoverImg(hideUI_img)
+        self.hideButton.set_hover_img(hideUI_img)
         showUI_img = loadImg("Assets/image/UI/dialog_show.png",(self.FONTSIZE,self.FONTSIZE))
         showUI_imgTemp = showUI_img.copy()
         showUI_imgTemp.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
         self.showButton = Button(showUI_imgTemp,window_x*0.05,window_y*0.05)
-        self.showButton.setHoverImg(showUI_img)
+        self.showButton.set_hover_img(showUI_img)
         #历史回溯按钮
         history_img = loadImg("Assets/image/UI/dialog_history.png",(self.FONTSIZE,self.FONTSIZE))
         history_imgTemp = history_img.copy()
         history_imgTemp.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
         self.historyButton = Button(history_imgTemp,window_x*0.1,window_y*0.05)
-        self.historyButton.setHoverImg(history_img)
+        self.historyButton.set_hover_img(history_img)
     def draw(self, surface:pygame.Surface, isHidden:bool) -> str:
         if isHidden:
             self.showButton.draw(surface)
-            return "hide" if isHover(self.showButton) else ""
+            return "hide" if is_hover(self.showButton) else ""
         else:
             self.hideButton.draw(surface)
             self.historyButton.draw(surface)
             action = ""
-            if isHover(self.skipButton):
+            if is_hover(self.skipButton):
                 self.skipButtonHovered.draw(surface)
                 action = "skip"
             else:
                 self.skipButton.draw(surface)
-            if isHover(self.autoButton):
+            if is_hover(self.autoButton):
                 self.autoButtonHovered.draw(surface)
                 if self.autoMode:
                     rotatedIcon = pygame.transform.rotate(self.autoIconHovered,self.autoIconDegree)
@@ -491,9 +491,9 @@ class DialogButtons:
                 else:
                     self.autoButton.draw(surface)
                     surface.blit(self.autoIcon,(self.autoButton.description,self.autoButton.y+self.icon_y))
-            if isHover(self.hideButton):
+            if is_hover(self.hideButton):
                 action = "hide"
-            elif isHover(self.historyButton):
+            elif is_hover(self.historyButton):
                 action = "history"
             return action
     def autoModeSwitch(self) -> None:

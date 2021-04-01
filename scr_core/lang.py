@@ -4,11 +4,8 @@ from .controller import *
 #语言配置文件
 __LINPG_LANG:dict = None
 
-"""
 #整理语言文件
-for lang_file in glob.glob(os.path.join(os.path.dirname(__file__),"../lang/*.json")):
-    organizeConfigInFolder(lang_file)
-"""
+organizeConfigInFolder(os.path.join(os.path.dirname(__file__),"../lang/*.json"))
 
 #重新加载语言配置文件
 def reload_lang() -> None:

@@ -14,8 +14,13 @@
         "please_enter_content": "對話內容",
         "please_enter_name": "角色名",
         "previous": "上一個對話",
-        "reload": "重新加載配置文件",
+        "reload": "重新加載文件",
         "removeNpc": "移除該角色"
+    },
+    "Global": {
+        "back": "返回",
+        "process_has_been_saved": "進度已保存",
+        "save": "保存"
     },
     "Numbers": [
         "零",
@@ -39,6 +44,5 @@
         "十八",
         "十九",
         "二十"
-    ],
-    "ProcessSaved": "進度已保存"
+    ]
 }

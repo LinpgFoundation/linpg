@@ -14,8 +14,13 @@
         "please_enter_content": "Content",
         "please_enter_name": "Name",
         "previous": "Previous dialog",
-        "reload": "Reload configuration file",
+        "reload": "Reload the file",
         "removeNpc": "Remove this npc"
+    },
+    "Global": {
+        "back": "Back",
+        "process_has_been_saved": "The process has been saved.",
+        "save": "Save"
     },
     "Numbers": [
         "Zero",
@@ -39,6 +44,5 @@
         "Eighteen",
         "Nineteen",
         "Twenty"
-    ],
-    "ProcessSaved": "The process has been saved."
+    ]
 }

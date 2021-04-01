@@ -45,17 +45,19 @@ class DialogSystem(AbstractDialogSystem):
     #加载章节信息
     def __process_data(self) -> None:
         #读取目标对话文件的数据
-        dialogData = loadConfig("Data/{0}/chapter{1}_dialogs_{2}.yaml".format(self.chapterType,self.chapterId,get_setting("Language")))\
-            if self.collection_name == None else loadConfig("Data/{0}/{1}/chapter{2}_dialogs_{3}.yaml"
-            .format(self.chapterType,self.collection_name,self.chapterId,get_setting("Language")))
+        dialogData = loadConfig("Data/{0}/chapter{1}_dialogs_{2}.yaml".format(self.chapterType,self.chapterId,get_setting("Language"))
+        ) if self.collection_name == None else loadConfig("Data/{0}/{1}/chapter{2}_dialogs_{3}.yaml"
+        .format(self.chapterType,self.collection_name,self.chapterId,get_setting("Language")))
+        default_lang_of_dialog = loadConfig("Data/{0}/info.yaml".format(self.chapterType),"default_lang") if self.collection_name == None\
+            else loadConfig("Data/{0}/{1}/info.yaml".format(self.chapterType,self.collection_name),"default_lang")
         #如果该dialog文件是另一个语言dialog文件的子类
-        if "default_lang" in dialogData and dialogData["default_lang"] != None:
+        if default_lang_of_dialog != get_setting("Language"):
             if self.collection_name == None:
-                self.dialogContent = loadConfig("Data/{0}/chapter{1}_dialogs_{2}.yaml".format(
-                    self.chapterType,self.chapterId,dialogData["default_lang"]))["dialogs"][self.part]
+                self.dialogContent = loadConfig("Data/{0}/chapter{1}_dialogs_{2}.yaml"
+                .format(self.chapterType,self.chapterId,default_lang_of_dialog),"dialogs")[self.part]
             else:
-                self.dialogContent = loadConfig("Data/{0}/{1}/chapter{2}_dialogs_{3}.yaml".format(
-                    self.chapterType,self.collection_name,self.chapterId,dialogData["default_lang"]))["dialogs"][self.part]
+                self.dialogContent = loadConfig("Data/{0}/{1}/chapter{2}_dialogs_{3}.yaml"
+                .format(self.chapterType,self.collection_name,self.chapterId,default_lang_of_dialog),"dialogs")[self.part]
             for key,currentDialog in dialogData["dialogs"][self.part].items():
                 if key in self.dialogContent:
                     for key2,dataNeedReplace in currentDialog.items():
@@ -156,7 +158,9 @@ class DialogSystem(AbstractDialogSystem):
                     else:
                         pass
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                process_saved_text = ImageSurface(self.dialogTxtSystem.FONT.render(get_lang("ProcessSaved"),get_fontMode(),(255, 255, 255)),0,0)
+                process_saved_text = ImageSurface(
+                    self.dialogTxtSystem.FONT.render(get_lang("Global","process_has_been_saved"),get_fontMode(),(255, 255, 255)),0,0
+                    )
                 process_saved_text.set_alpha(0)
                 while True:
                     self._update_event()
@@ -301,7 +305,7 @@ class DialogSystemDev(AbstractDialogSystem):
         self.button_select_npc = ButtonWithFadeInOut("Assets/image/UI/menu.png",CONFIG["npc"],"black",100,button_width/2+self.button_select_background.get_width(),button_width/3,button_width/3)
         self.npc_local_y = 0
         self.buttonsUI = {
-            "save": ButtonWithDes("Assets/image/UI/save.png",button_width*7.25,button_y,button_width,button_width,get_lang("General,save")),
+            "save": ButtonWithDes("Assets/image/UI/save.png",button_width*7.25,button_y,button_width,button_width,get_lang("Global","save")),
             "reload": ButtonWithDes("Assets/image/UI/reload.png",button_width*6,button_y,button_width,button_width,CONFIG["reload"]),
             "add": ButtonWithDes("Assets/image/UI/add.png",button_width*4.75,button_y,button_width,button_width,CONFIG["add"]),
             "next": ButtonWithDes("Assets/image/UI/dialog_skip.png",button_width*4.75,button_y,button_width,button_width,CONFIG["next"]),
@@ -339,24 +343,25 @@ class DialogSystemDev(AbstractDialogSystem):
             self.dialogData_default = None
         else:
             self.partId = 0 if part == None else self.parts.index(part)
+            default_lang_of_dialog = loadConfig("Data/{0}/info.yaml".format(self.chapterType),"default_lang") if self.collection_name == None\
+            else loadConfig("Data/{0}/{1}/info.yaml".format(self.chapterType,self.collection_name),"default_lang")
             #如果不是默认主语言
-            if "default_lang" in self.dialogData and self.dialogData["default_lang"] != None:
+            if default_lang_of_dialog != get_setting("Language"):
                 self.isDefault = False
                 #读取原始数据
-                self.dialogData_default = loadConfig(
-                    "Data/{0}/chapter{1}_dialogs_{2}.yaml".format(self.chapterType,self.chapterId,self.dialogData["default_lang"]),
-                    "dialogs") if self.chapterType == "main_chapter" else loadConfig("Data/{0}/{1}/chapter{2}_dialogs_{3}.yaml"
-                    .format(self.chapterType,self.collection_name,self.chapterId,self.dialogData["default_lang"]),"dialogs")
+                self.dialogData_default = loadConfig("Data/{0}/chapter{1}_dialogs_{2}.yaml"
+                .format(self.chapterType,self.chapterId,default_lang_of_dialog),"dialogs") if self.chapterType == "main_chapter"\
+                    else loadConfig("Data/{0}/{1}/chapter{2}_dialogs_{3}.yaml"
+                    .format(self.chapterType,self.collection_name,self.chapterId,default_lang_of_dialog),"dialogs")
                 #填入未被填入的数据
                 for part in self.dialogData_default:
                     for key,DIALOG_DATA_TEMP in self.dialogData_default[part].items():
                         if key in self.dialogData[part]:
                             for key2,dataNeedReplace in DIALOG_DATA_TEMP.items():
                                 if key2 not in self.dialogData[part][key]:
-                                    self.dialogData[part][key][key2] = dataNeedReplace
+                                    self.dialogData[part][key][key2] = deepcopy(dataNeedReplace)
                         else:
-                            self.dialogData[part][key] = DIALOG_DATA_TEMP
-                
+                            self.dialogData[part][key] = deepcopy(DIALOG_DATA_TEMP)
             else:
                 self.isDefault = True
                 self.dialogData_default = None
@@ -369,22 +374,21 @@ class DialogSystemDev(AbstractDialogSystem):
         if not self.isDefault:
             #移除掉相似的内容
             for part in self.dialogData_default:
-                for key,currentDialog in self.dialogData_default[part].items():
-                    if key in self.dialogData[part]:
-                        for key2,dataNeedCompare in currentDialog.items():
-                            if self.dialogData[part][key][key2] == dataNeedCompare:
-                                del self.dialogData[part][key][key2]
-                        if len(self.dialogData[part][key]) == 0:
-                            del self.dialogData[part][key]
+                for dialogId,defaultDialogData in self.dialogData_default[part].items():
+                    if dialogId in self.dialogData[part]:
+                        for dataType in defaultDialogData:
+                            if self.dialogData[part][dialogId][dataType] == defaultDialogData[dataType]:
+                                del self.dialogData[part][dialogId][dataType]
+                        if len(self.dialogData[part][dialogId]) == 0: del self.dialogData[part][dialogId]
         #读取原始数据
-        original_data = loadConfig(self.fileLocation)
+        original_data:dict = loadConfig(self.fileLocation)
         original_data["dialogs"] = self.dialogData
         #保存数据
         saveConfig(self.fileLocation,original_data)
         #重新加载self.dialogData以确保准确性
         self.__loadDialogData(self.part)
     #更新场景
-    def __update_scene(self, theNextDialogId:Union[str,int]):
+    def __update_scene(self, theNextDialogId:Union[str,int]) -> None:
         if theNextDialogId in self.dialogData[self.part]:
             self.dialogId = theNextDialogId
             #更新立绘和背景
@@ -398,7 +402,7 @@ class DialogSystemDev(AbstractDialogSystem):
         else:
             throwException("error","Cannot find the dialog with id '{}' in the data dictionary.".format(theNextDialogId))
     #添加新的对话
-    def __add_dialog(self, dialogId:Union[str,int]):
+    def __add_dialog(self, dialogId:Union[str,int]) -> None:
         self.dialogData[self.part][dialogId] = {
             "background_img": self.dialogData[self.part][self.dialogId]["background_img"],
             "background_music": self.dialogData[self.part][self.dialogId]["background_music"],
@@ -421,7 +425,7 @@ class DialogSystemDev(AbstractDialogSystem):
         else:
             self.__save()
     #获取上一个对话的ID
-    def __get_last_id(self) -> str:
+    def __get_last_id(self) -> Union[str,int]:
         if "last_dialog_id" in self.dialogData[self.part][self.dialogId] and self.dialogData[self.part][self.dialogId]["last_dialog_id"] != None:
             return self.dialogData[self.part][self.dialogId]["last_dialog_id"]
         elif self.dialogId == "head":
@@ -439,7 +443,7 @@ class DialogSystemDev(AbstractDialogSystem):
                                 return key
             return None
     #获取下一个对话的ID
-    def __get_next_id(self, surface:pygame.Surface) -> str:
+    def __get_next_id(self, surface:pygame.Surface) -> Union[str,int]:
         if "next_dialog_id" in self.dialogData[self.part][self.dialogId]:
             theNext:dict = self.dialogData[self.part][self.dialogId]["next_dialog_id"]
             if theNext != None:

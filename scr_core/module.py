@@ -155,7 +155,7 @@ class SystemWithBackgroundMusic(SystemObject):
         else:
             throwException("error","Volume '{}' is out of the range! (must between 0 and 1)".format(volume))
     #播放bgm
-    def play_bgm(self,times=1) -> None:
+    def play_bgm(self, times:int=1) -> None:
         if self.__bgm_path != None and not pygame.mixer.music.get_busy() and not self.__if_stop_playing_bgm:
             pygame.mixer.music.load(self.__bgm_path)
             pygame.mixer.music.set_volume(self.__bgm_volume)
@@ -174,12 +174,12 @@ class SystemWithBackgroundMusic(SystemObject):
 
 #音效管理模块
 class SoundManagement:
-    def __init__(self,channel_id):
+    def __init__(self, channel_id:int):
         self.channel_id = channel_id
         self.sound_id = 0
         self.__sounds_list = []
-    def add(self,path:str) -> None: self.__sounds_list.append(pygame.mixer.Sound(path))
-    def play(self,sound_id=None):
+    def add(self, path:str) -> None: self.__sounds_list.append(pygame.mixer.Sound(path))
+    def play(self, sound_id:int=None) -> None:
         if len(self.__sounds_list)>0 and not pygame.mixer.Channel(self.channel_id).get_busy():
             if sound_id == None:
                 self.sound_id = randomInt(0,len(self.__sounds_list)-1)
@@ -187,27 +187,27 @@ class SoundManagement:
                 self.sound_id = sound_id
             pygame.mixer.Channel(self.channel_id).play(self.__sounds_list[self.sound_id])
     #停止音乐
-    def stop(self): pygame.mixer.Channel(self.channel_id).stop()
+    def stop(self) -> None: pygame.mixer.Channel(self.channel_id).stop()
     #获取音量
     def get_volume(self) -> float: return self.__sounds_list[0].get_volume()
     #设置音量
-    def set_volume(self,volume:Union[float,int]):
+    def set_volume(self, volume:Union[float,int]) -> None:
         for i in range(len(self.__sounds_list)):
             self.__sounds_list[i].set_volume(volume)
 
 #使用多线程保存数据
 class SaveDataThread(threading.Thread):
-    def __init__(self,config_file_path,data):
+    def __init__(self, config_file_path:str, data:any):
         threading.Thread.__init__(self)
         self.config_file_path = config_file_path
         self.data = data
-    def run(self):
+    def run(self) -> None:
         saveConfig(self.config_file_path,self.data)
         del self.data,self.config_file_path
 
 #需要被打印的物品
 class ItemNeedBlit:
-    def __init__(self,image,weight,pos,offSet):
+    def __init__(self, image:object, weight:Union[int,float], pos:Union[tuple,list], offSet:Union[tuple,list]=(0,0)):
         self.image = image
         self.weight = weight
         self.pos = pos

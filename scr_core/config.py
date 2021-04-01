@@ -47,14 +47,15 @@ def saveConfig(path:str, data:any) -> None:
             else:
                 throwException("error","You cannot save .yaml file because yaml is not imported successfully.")
         elif path.endswith(".json"):
-            json.dump(data, f, indent=4, ensure_ascii=False)
+            json.dump(data, f, indent=4, ensure_ascii=False, sort_keys=True)
         else:
             throwException("error","Linpg cannot save this kind of config, and can only save json and yaml (if pyyaml is installed).")
 
 #整理配置文件（读取了再存）
 def organizeConfigInFolder(pathname:str) -> None:
     for configFilePath in glob.glob(pathname):
-        saveConfig(configFilePath,loadConfig(configFilePath))
+        data = loadConfig(configFilePath)
+        saveConfig(configFilePath,data)
 
 #初始化储存设置配置文件的变量
 __LINPG_DATA:dict = None

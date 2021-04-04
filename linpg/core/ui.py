@@ -5,7 +5,7 @@ from .surface import *
 class WeatherSystem:
     def  __init__(self, weather:str, window_x:int, window_y:int, entityNum:int=50) -> None:
         self.name = 0
-        self.img_list = [loadImg(imgPath) for imgPath in glob.glob("Assets/image/environment/{}/*.png".format(weather))]
+        self.img_list = [loadImg(imgPath) for imgPath in glob("Assets/image/environment/{}/*.png".format(weather))]
         self.ImgObject = []
         for i in range(entityNum):
             imgId = randomInt(0,len(self.img_list)-1)

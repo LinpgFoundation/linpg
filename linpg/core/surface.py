@@ -304,7 +304,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
 
 #按钮
 class Button(GameObject2d):
-    def __init__(self, path:str, x:Union[int,float], y:Union[int,float]):
+    def __init__(self, path:Union[str,pygame.Surface], x:Union[int,float], y:Union[int,float]):
         GameObject2d.__init__(self,x,y)
         self.img = loadImg(path)
         self.img2 = None

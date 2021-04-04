@@ -1,11 +1,11 @@
-from setuptools import setup
+import setuptools
 import linpg
 
 #读取readme
 with open("README.md", "r", encoding="utf-8") as fh: long_description = fh.read()
 
 #生成.whl文件
-setup(
+setuptools.setup(
     name = "linpg",
     version = linpg.get_current_version(),
     author = "Tigeia-Workshop",
@@ -21,7 +21,8 @@ setup(
     classifiers = [
         "Programming Language :: Python :: 3",
     ],
-    packages=['linpg'],
+    package_dir={"": "linpgdev"},
+    packages=setuptools.find_packages(where="linpgdev"),
     include_package_data=True,
     python_requires = '>=3.6',
     install_requires = [

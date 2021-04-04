@@ -1,7 +1,8 @@
 # cython: language_level=3
 from __future__ import annotations
 #python本体库
-import glob, os, random
+import os, random
+from glob import glob
 from typing import Union
 #额外库
 import numpy, pygame
@@ -51,7 +52,7 @@ def loadSound(path:str, volume:float) -> pygame.mixer.Sound:
 
 #加载路径下的所有图片，储存到一个list当中，然后返回
 def loadAllImgInFile(pathRule:str, width:any=None, height:any=None) -> list[pygame.Surface]:
-    return [loadImg(imgPath,(width,height)) for imgPath in glob.glob(pathRule)]
+    return [loadImg(imgPath,(width,height)) for imgPath in glob(pathRule)]
 
 #获取Surface
 def getSurface(size:Union[tuple,list], surface_flags:any=None) -> pygame.Surface:

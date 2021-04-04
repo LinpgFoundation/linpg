@@ -92,7 +92,7 @@ class NpcImageManager:
         self.dev_mode = False
         self.npcGetClick = None
     def devMode(self) -> None:
-        for imgPath in glob.glob("Assets/image/npc/*"):
+        for imgPath in glob("Assets/image/npc/*"):
             self.__loadNpc(imgPath)
             self.dev_mode = True
     #确保角色存在

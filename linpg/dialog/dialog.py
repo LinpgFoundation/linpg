@@ -322,7 +322,7 @@ class DialogSystemDev(AbstractDialogSystem):
         self.removeNpcButton = surfaceTmp
         #加载背景图片
         self.all_background_image = {}
-        for imgPath in glob.glob("Assets/image/dialog_background/*"):
+        for imgPath in glob("Assets/image/dialog_background/*"):
             self.all_background_image[os.path.basename(imgPath)] = loadImg(imgPath)
         self.background_image_local_y = display.get_height()*0.1
         self.smart_add_mode = False
@@ -536,8 +536,11 @@ class DialogSystemDev(AbstractDialogSystem):
                                 #如果当前next_dialog_id的类型不支持的话，报错
                                 throwException("error","Cannot recognize next_dialog_id type: {}, please fix it".format(self.dialogData[self.part][lastId]["next_dialog_id"]["type"]))
                             #修改下一个对白配置文件中的"last_dialog_id"的参数
-                            if "last_dialog_id" in self.dialogData[self.part][nextId] and self.dialogData[self.part][nextId]["last_dialog_id"] is not None:
-                                self.dialogData[self.part][nextId]["last_dialog_id"] = lastId
+                            if nextId is not None:
+                                if "last_dialog_id" in self.dialogData[self.part][nextId] and self.dialogData[self.part][nextId]["last_dialog_id"] is not None:
+                                    self.dialogData[self.part][nextId]["last_dialog_id"] = lastId
+                            else:
+                                self.dialogData[self.part][lastId]["next_dialog_id"] = None
                             needDeleteId = self.dialogId
                             self.__update_scene(lastId)
                             del self.dialogData[self.part][needDeleteId]

@@ -70,7 +70,7 @@ class EnvImagesManagement:
         except BaseException:
             throwException("warning","Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(key))
             self.__add_evn_image(key)
-    def get_decoration_image(self, decorationType:str, key:str, darkMode:bool) -> any:
+    def get_decoration_image(self, decorationType:str, key:Union[str,int], darkMode:bool) -> any:
         try:
             if darkMode:
                 return self.__DECORATION_IMAGE_DICT_DARK[decorationType][key]

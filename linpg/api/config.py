@@ -53,7 +53,7 @@ def saveConfig(path:str, data:any) -> None:
 
 #整理配置文件（读取了再存）
 def organizeConfigInFolder(pathname:str) -> None:
-    for configFilePath in glob.glob(pathname):
+    for configFilePath in glob(pathname):
         data = loadConfig(configFilePath)
         saveConfig(configFilePath,data)
 

@@ -33,7 +33,7 @@ class EntitySoundManager:
             self.__sounds_dict[characterType] = {}
             for soundType in os.listdir("Assets/sound/character/{}/".format(characterType)):
                 self.__sounds_dict[characterType][soundType] = []
-                for soundPath in glob.glob("Assets/sound/character/{}/{}/*".format(characterType,soundType)):
+                for soundPath in glob("Assets/sound/character/{}/{}/*".format(characterType,soundType)):
                     self.__sounds_dict[characterType][soundType].append(pygame.mixer.Sound(soundPath))
     #播放角色音效
     def play(self, characterType:str, soundType:str) -> None:
@@ -107,7 +107,7 @@ class EntityImageManager:
         elif action in self.__CHARACTERS_IMAGE_DICT[characterType]:
             return {"imgId":0,"alpha":255}
         if os.path.exists("Assets/image/{0}/{1}/{2}".format(faction,characterType,action)):
-            files_amount = len(glob.glob("Assets/image/{0}/{1}/{2}/*.png".format(faction,characterType,action)))
+            files_amount = len(glob("Assets/image/{0}/{1}/{2}/*.png".format(faction,characterType,action)))
             if files_amount > 0:
                 self.__CHARACTERS_IMAGE_DICT[characterType][action] = {"img":numpy.asarray([SrcalphaSurface(\
                     "Assets/image/{0}/{1}/{2}/{3}_{4}_{5}.png".format(faction,characterType,action,characterType,action,i)\
@@ -136,8 +136,8 @@ def makeFolderForCharacterSounds() -> None:
 def loadCharacterData() -> None:
     loadData = loadConfig("Data/character_data.yaml")
     ifAnythingChange = False
-    for path in glob.glob(r'Assets/image/character/*'):
-        name = path.replace("Assets/image/character\\","")
+    for path in glob(r'Assets/image/character/*'):
+        name = os.path.basename(path)
         if name not in loadData:
             loadData[name] = {
             "action_point": 1,
@@ -157,8 +157,8 @@ def loadCharacterData() -> None:
             }
             ifAnythingChange = True
             throwException("info","A new character call {} has been updated to the data file.".format(name))
-    for path in glob.glob(r'Assets/image/sangvisFerri/*'):
-        name = path.replace("Assets/image/sangvisFerri\\","")
+    for path in glob(r'Assets/image/sangvisFerri/*'):
+        name = os.path.basename(path)
         if name not in loadData:
             loadData[name] = {
             "action_point": 1,
@@ -186,15 +186,15 @@ class AttackingSoundManager:
     def __init__(self, volume:int, channel_id:int):
         self.__soundsData = {
             #突击步枪
-            "AR": glob.glob(r'Assets/sound/attack/ar_*.ogg'),
+            "AR": glob(r'Assets/sound/attack/ar_*.ogg'),
             #手枪
-            "HG": glob.glob(r'Assets/sound/attack/hg_*.ogg'),
+            "HG": glob(r'Assets/sound/attack/hg_*.ogg'),
             #机枪
-            "MG": glob.glob(r'Assets/sound/attack/mg_*.ogg'),
+            "MG": glob(r'Assets/sound/attack/mg_*.ogg'),
             #步枪
-            "RF": glob.glob(r'Assets/sound/attack/rf_*.ogg'),
+            "RF": glob(r'Assets/sound/attack/rf_*.ogg'),
             #冲锋枪
-            "SMG": glob.glob(r'Assets/sound/attack/smg_*.ogg'),
+            "SMG": glob(r'Assets/sound/attack/smg_*.ogg'),
         }
         self.set_channel(channel_id)
         self.volume = volume

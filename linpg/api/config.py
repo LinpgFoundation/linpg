@@ -36,7 +36,7 @@ def loadConfig(path:str, key:str=None) -> any:
     else:
         throwException("error","Linpg cannot load this kind of config, and can only load json and yaml (if pyyaml is installed).")
     #返回配置文件中的数据
-    return Data if key == None else Data[key]
+    return Data if key is None else Data[key]
 
 #配置文件保存
 def saveConfig(path:str, data:any) -> None:
@@ -63,7 +63,7 @@ __LINPG_DATA:dict = None
 #在不确定的情况下尝试获取设置配置文件
 def try_get_setting(key:str, key2:str=None) -> any:
     if key in __LINPG_DATA:
-        if key2 == None:
+        if key2 is None:
             return deepcopy(__LINPG_DATA[key])
         elif key2 in __LINPG_DATA[key]:
             return deepcopy(__LINPG_DATA[key][key2])
@@ -71,17 +71,17 @@ def try_get_setting(key:str, key2:str=None) -> any:
 
 #获取设置配置文件
 def get_setting(key:str=None, key2:str=None) -> any:
-    if key == None:
+    if key is None:
         return deepcopy(__LINPG_DATA)
-    elif key2 == None:
+    elif key2 is None:
         return deepcopy(__LINPG_DATA[key])
     else:
         return deepcopy(__LINPG_DATA[key][key2])
 
 #修改设置参数
 def set_setting(key:str, key2:str=None, value:any=None) -> None:
-    if value != None:
-        if key2 == None:
+    if value is not None:
+        if key2 is None:
             __LINPG_DATA[key] = value
         else:
             __LINPG_DATA[key][key2] = value
@@ -147,7 +147,7 @@ def remove_glob_value(key:str) -> None:
     del __LINPG_GLOBAL_DATA[key]
 
 #版本信息
-__SETUP_INFO:dict = loadConfig(os.path.join(os.path.dirname(__file__),"../setup.yaml"))
+__SETUP_INFO:dict = loadConfig(os.path.join(os.path.dirname(__file__),"../info.json"))
 
 #获取当前版本号
 def get_current_version() -> str: return "{0}.{1}.{2}".format(__SETUP_INFO["version"],__SETUP_INFO["revision"],__SETUP_INFO["patch"])

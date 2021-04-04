@@ -34,7 +34,7 @@ class SrcalphaSurface(AbstractImage):
         self.__local_x = 0
         self.__local_y = 0
         self.__isFlipped = False
-        self.__needUpdate = True if self._width != None and self._height != None else False
+        self.__needUpdate = True if self._width is not None and self._height is not None else False
     #透明度
     def get_alpha(self) -> int: return self._alpha
     def set_alpha(self, value:float) -> None:
@@ -44,7 +44,7 @@ class SrcalphaSurface(AbstractImage):
             self._alpha = 255
         else:
             self._alpha = round(value)
-        if self.img != None and self.img.get_alpha() != self._alpha: super().set_alpha(self._alpha)
+        if self.img is not None and self.img.get_alpha() != self._alpha: super().set_alpha(self._alpha)
     #宽度
     def set_width(self, value:float) -> None:
         value = round(value)
@@ -104,7 +104,7 @@ class SrcalphaSurface(AbstractImage):
     #是否被鼠标触碰
     def is_hover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
         if mouse_pos == (-1,-1): mouse_pos = pygame.mouse.get_pos()
-        if self.img != None:
+        if self.img is not None:
             return 0 < mouse_pos[0]-self.x-self.__local_x < self.img.get_width() and 0 < mouse_pos[1]-self.y-self.__local_y < self.img.get_height()
         else:
             return False
@@ -130,11 +130,11 @@ class ImageSurface(AbstractImage):
         self.yTogo = y
         self.items = []
         self.description = description
-        if self._width == None and self._height == None:
+        if self._width is None and self._height is None:
             self._width,self._height = self.img.get_size()
-        elif self._width == None and self._height != None:
+        elif self._width is None and self._height is not None:
             self._width = self._height/self.img.get_height()*self.img.get_width()
-        elif self._width != None and self._height == None:
+        elif self._width is not None and self._height is None:
             self._height = self._width/self.img.get_width()*self.img.get_height()
     #返回一个复制
     def copy(self) -> None:
@@ -314,14 +314,14 @@ class Button(GameObject2d):
     def set_hover_img(self, img:pygame.Surface) -> None: self.img2 = img
     def is_hover(self, mouse_pos: Union[tuple, list]=(-1,-1)) -> bool:
         if not super().is_hover(mouse_pos):
-            if self.img2 != None and self._hoverEventTriggered:
+            if self.img2 is not None and self._hoverEventTriggered:
                 tempSurface = self.img
                 self.img = self.img2
                 self.img2 = tempSurface
                 self._hoverEventTriggered = False
             return False
         else:
-            if self.img2 != None and not self._hoverEventTriggered:
+            if self.img2 is not None and not self._hoverEventTriggered:
                 tempSurface = self.img
                 self.img = self.img2
                 self.img2 = tempSurface
@@ -441,18 +441,18 @@ class DialogBox(AbstractDialog,GameObject2d):
             self.__surface = self.dialoguebox.copy()
             if self.__flipped == True:
                 #讲述人名称
-                if self.narrator != None:
+                if self.narrator is not None:
                     self.__surface.blit(self.FONT.render(self.narrator,get_fontMode(),(255,255,255)),(self.get_width()*0.6+self.narrator_x,self.narrator_y))
                 #角色图标
-                if self.narrator_icon != None and characterInfoBoardUI != None:
+                if self.narrator_icon is not None and characterInfoBoardUI is not None:
                     self.__surface.blit(characterInfoBoardUI.characterIconImages[self.narrator_icon],(self.get_width()-self.txt_x,self.txt_y))
                 x = self.txt_x
             else:
                 #讲述人名称
-                if self.narrator != None:
+                if self.narrator is not None:
                     self.__surface.blit(self.FONT.render(self.narrator,get_fontMode(),(255,255,255)),(self.narrator_x,self.narrator_y))
                 #角色图标
-                if self.narrator_icon != None and characterInfoBoardUI != None:
+                if self.narrator_icon is not None and characterInfoBoardUI is not None:
                     img = characterInfoBoardUI.characterIconImages[self.narrator_icon]
                     self.__surface.blit(img,(self.txt_x,self.txt_y))
                     x = self.txt_x+img.get_width() + self.FONTSIZE

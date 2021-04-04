@@ -23,10 +23,10 @@ class FriendlyCharacter(Entity):
         self.skill_effective_range = defaultData["skill_effective_range"]
         self.max_skill_range = calculate_range(defaultData["skill_effective_range"])
         self.skill_cover_range = defaultData["skill_cover_range"]
-        self._detection = defaultData["detection"] if "detection" in defaultData and defaultData["detection"] != None else 0
+        self._detection = defaultData["detection"] if "detection" in defaultData and defaultData["detection"] is not None else 0
         #生成被察觉的图标
         global _BEING_NOTICED_IMG,_FULLY_EXPOSED_IMG
-        if _BEING_NOTICED_IMG == None or _FULLY_EXPOSED_IMG == None:
+        if _BEING_NOTICED_IMG is None or _FULLY_EXPOSED_IMG is None:
             _BEING_NOTICED_IMG = imgLoadFunction("Assets/image/UI/eye_orange.png",True)
             _FULLY_EXPOSED_IMG = imgLoadFunction("Assets/image/UI/eye_red.png",True)
         self.__isNoticedImage = DynamicProgressBarSurface(_FULLY_EXPOSED_IMG,_BEING_NOTICED_IMG,0,0,0,0)
@@ -59,7 +59,7 @@ class FriendlyCharacter(Entity):
         #如果角色在被攻击后处于濒死状态
         if not self.is_alive() and not self.dying and self.kind != "HOC":
             self.dying = DYING_ROUND_LIMIT
-            if self._getHurtImage != None:
+            if self._getHurtImage is not None:
                 self._getHurtImage.x = -self._getHurtImage.width
                 self._getHurtImage.alpha = 255
                 self._getHurtImage.yToGo = 255
@@ -83,7 +83,7 @@ class FriendlyCharacter(Entity):
             self.__isNoticedImage.set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
             self.__isNoticedImage.draw(surface)
         #重创立绘
-        if self._getHurtImage != None and self._getHurtImage.x != None:
+        if self._getHurtImage is not None and self._getHurtImage.x is not None:
             self._getHurtImage.draw(surface,self.type)
             if self._getHurtImage.x < self._getHurtImage.width/4:
                 self._getHurtImage.x += self._getHurtImage.width/25
@@ -105,7 +105,7 @@ class HostileCharacter(Entity):
         self.__patrol_path = deque(defaultData["patrol_path"]) if "patrol_path" in defaultData else deque()
         self._vigilance = 0
         global _ORANGE_VIGILANCE_IMG,_RED_VIGILANCE_IMG
-        if _ORANGE_VIGILANCE_IMG == None or _RED_VIGILANCE_IMG == None:
+        if _ORANGE_VIGILANCE_IMG is None or _RED_VIGILANCE_IMG is None:
             _ORANGE_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_orange.png",True)
             _RED_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_red.png",True)
         self.__vigilanceImage = DynamicProgressBarSurface(_RED_VIGILANCE_IMG,_ORANGE_VIGILANCE_IMG,0,0,0,0,"vertical")
@@ -186,7 +186,7 @@ class HostileCharacter(Entity):
                         pos_on_route = the_route[i]
                         #获取可能的攻击范围
                         range_target_in_if_can_attack = self.range_target_in(targetCharacterData,pos_on_route)
-                        if range_target_in_if_can_attack != None and range_target_in_if_can_attack not in potential_attacking_pos_index:
+                        if range_target_in_if_can_attack is not None and range_target_in_if_can_attack not in potential_attacking_pos_index:
                             potential_attacking_pos_index[range_target_in_if_can_attack] = i+1
                             if range_target_in_if_can_attack == "near":
                                 break

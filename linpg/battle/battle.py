@@ -1,5 +1,4 @@
 # cython: language_level=3
-from ..scr_pyd.map import MapObject
 from .character import *
 
 #战斗系统接口，请勿实例化
@@ -47,7 +46,7 @@ class AbstractBattleSystem(SystemWithBackgroundMusic):
         self.MAP.display_decoration(screen,self.alliances_data,self.enemies_data)
     #展示天气
     def _display_weather(self, screen:pygame.Surface) -> None:
-        if self.weatherController != None: self.weatherController.draw(screen,self.MAP.block_width)
+        if self.weatherController is not None: self.weatherController.draw(screen,self.MAP.block_width)
     #初始化角色加载器
     def _initial_characters_loader(self, alliancesData:dict, enemiesData:dict, mode:str="default") -> None:
         self.__characterDataLoaderThread = CharacterDataLoader(alliancesData,enemiesData,mode)
@@ -106,28 +105,28 @@ class AbstractBattleSystem(SystemWithBackgroundMusic):
     def _check_if_move_screen(self) -> None:
         #根据按键情况设定要移动的数值
         if self.__pressKeyToMove["up"]:
-            if self.screen_to_move_y == None:
+            if self.screen_to_move_y is None:
                 self.screen_to_move_y = self.MAP.block_height/4
             else:
                 self.screen_to_move_y += self.MAP.block_height/4
         if self.__pressKeyToMove["down"]:
-            if self.screen_to_move_y == None:
+            if self.screen_to_move_y is None:
                 self.screen_to_move_y = -self.MAP.block_height/4
             else:
                 self.screen_to_move_y -= self.MAP.block_height/4
         if self.__pressKeyToMove["left"]:
-            if self.screen_to_move_x == None:
+            if self.screen_to_move_x is None:
                 self.screen_to_move_x = self.MAP.block_width/4
             else:
                 self.screen_to_move_x += self.MAP.block_width/4
         if self.__pressKeyToMove["right"]:
-            if self.screen_to_move_x == None:
+            if self.screen_to_move_x is None:
                 self.screen_to_move_x = -self.MAP.block_width/4
             else:
                 self.screen_to_move_x -= self.MAP.block_width/4
     def _move_screen(self) -> None:
         #如果需要移动屏幕
-        if self.screen_to_move_x != None and self.screen_to_move_x != 0:
+        if self.screen_to_move_x is not None and self.screen_to_move_x != 0:
             temp_value = int(self.MAP.getPos_x() + self.screen_to_move_x*0.2)
             if display.get_width()-self.MAP.surface_width<=temp_value<=0:
                 self.MAP.setPos_x(temp_value)
@@ -135,7 +134,7 @@ class AbstractBattleSystem(SystemWithBackgroundMusic):
                 if round(self.screen_to_move_x) == 0: self.screen_to_move_x = 0
             else:
                 self.screen_to_move_x = 0
-        if self.screen_to_move_y != None and self.screen_to_move_y !=0:
+        if self.screen_to_move_y is not None and self.screen_to_move_y !=0:
             temp_value = int(self.MAP.getPos_y() + self.screen_to_move_y*0.2)
             if display.get_height()-self.MAP.surface_height<=temp_value<=0:
                 self.MAP.setPos_y(temp_value)

@@ -80,11 +80,11 @@ class PauseMenu:
         )
     def draw(self, surface:pygame.Surface, pygame_events=pygame.event.get()) -> None:
         #展示原先的背景
-        if self.screenshot == None:
+        if self.screenshot is None:
             self.screenshot = surface.copy()
         surface.blit(self.screenshot,(0,0))
         #展示暂停菜单的背景层
-        if self.white_bg == None:
+        if self.white_bg is None:
             self.__initial(surface)
         self.white_bg.draw(surface)
         #展示按钮

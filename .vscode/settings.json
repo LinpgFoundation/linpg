@@ -19,11 +19,13 @@
         "maxsize",
         "ndarray",
         "numpy",
+        "pyinstaller",
         "pyproject",
         "sangvis",
         "setuptools",
         "surfarray",
         "swapaxes",
         "yudonglin"
-    ]
+    ],
+    "python.pythonPath": "C:\\Python\\python.exe"
 }

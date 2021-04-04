@@ -1,5 +1,5 @@
 # cython: language_level=3
-from ..scr_core.function import *
+from .map import *
 
 #存储角色受伤立绘的常量
 _CHARACTERS_GET_HURT_IMAGE_DICT:dict = {}
@@ -48,13 +48,13 @@ class EntitySoundManager:
 
 #计算最远攻击距离
 def calculate_range(effective_range_dic:dict) -> int:
-    if effective_range_dic != None:
+    if effective_range_dic is not None:
         max_attack_range:int = 0
-        if "far" in effective_range_dic and effective_range_dic["far"] != None and max_attack_range < effective_range_dic["far"][-1]:
+        if "far" in effective_range_dic and effective_range_dic["far"] is not None and max_attack_range < effective_range_dic["far"][-1]:
             return effective_range_dic["far"][-1]
-        if "middle" in effective_range_dic and effective_range_dic["middle"] != None and max_attack_range < effective_range_dic["middle"][-1]:
+        if "middle" in effective_range_dic and effective_range_dic["middle"] is not None and max_attack_range < effective_range_dic["middle"][-1]:
             return effective_range_dic["middle"][-1]
-        if "near" in effective_range_dic and effective_range_dic["near"] != None and max_attack_range < effective_range_dic["near"][-1]:
+        if "near" in effective_range_dic and effective_range_dic["near"] is not None and max_attack_range < effective_range_dic["near"][-1]:
             return effective_range_dic["near"][-1]
         return max_attack_range
     else:
@@ -91,7 +91,7 @@ class EntityImageManager:
                 """
                 temp_list = ["","2","3"]
                 imgId_dict["die"] = self.loadImageCollection(characterType,"die"+temp_list[randomInt(0,2)],faction)
-                if imgId_dict["die"]==None:
+                if imgId_dict["die"] is None:
                     imgId_dict["die"] = self.loadImageCollection(characterType,"die",faction)
                 """
         elif mode == "dev":

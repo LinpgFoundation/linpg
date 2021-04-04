@@ -41,7 +41,7 @@ class SingleLineInputBox(AbstractInputBox):
         else:
             return self._text
     def set_text(self, new_txt:str=None) -> None:
-        if new_txt != None and len(new_txt)>0:
+        if new_txt is not None and len(new_txt)>0:
             self._text = new_txt
             self.holderIndex = len(new_txt)-1
         else:
@@ -82,7 +82,7 @@ class SingleLineInputBox(AbstractInputBox):
         else:
             self.holderIndex = i-1
     def _reset_inputbox_width(self)  -> None:
-        if self._text != None and len(self._text)>0:
+        if self._text is not None and len(self._text)>0:
             self.input_box.w = max(self.default_width, self.FONT.size(self._text)[0]+self.FONTSIZE*0.6)
         else:
             self.input_box.w = self.default_width
@@ -126,7 +126,7 @@ class SingleLineInputBox(AbstractInputBox):
                 self.active = True
                 self._reset_holderIndex(mouse_x)
         # 画出文字
-        if self._text != None and len(self._text) > 0:
+        if self._text is not None and len(self._text) > 0:
             screen.blit(self.FONT.render(self._text,get_fontMode(),findColorRGBA(self.txt_color)), (self.x+self.FONTSIZE*0.25,self.y))
         #画出输入框
         if self.active:
@@ -148,7 +148,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         else:
             return self._text
     def set_text(self, new_txt:Union[tuple,list]=None) -> None:
-        if new_txt == None or len(self._text) == 0:
+        if new_txt is None or len(self._text) == 0:
             self._text = [""]
         elif isinstance(new_txt,list):
             self._text = new_txt
@@ -159,7 +159,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         super().set_fontsize(font_size)
         self._reset_inputbox_size()
     def _reset_inputbox_width(self) -> None:
-        if self._text != None and len(self._text) > 0:
+        if self._text is not None and len(self._text) > 0:
             width = self.default_width
             for txtTmp in self._text:
                 new_width = self.FONT.size(txtTmp)[0]+self.FONTSIZE/2
@@ -290,7 +290,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.x<=mouse_x<=self.x+self.input_box.w and self.y<=mouse_y<=self.y+self.input_box.h:
                 self.active = True
                 self._reset_holderIndex(mouse_x,mouse_y)
-        if self._text != None:
+        if self._text is not None:
             for i in range(len(self._text)): 
                 # 画出文字
                 screen.blit(self.FONT.render(self._text[i],get_fontMode(),findColorRGBA(self.txt_color)),(self.x+self.FONTSIZE*0.25,self.y+i*self.deafult_height))
@@ -316,9 +316,9 @@ class Console(SingleLineInputBox):
         if try_get_setting("DeveloperMode"): self.events["dev"] = True
         self.txtOutput = []
     def get_events(self, key:any=None):
-        if key == None:
+        if key is None:
             return self.events
-        elif key != None and key in self.events:
+        elif key is not None and key in self.events:
             return self.events[key]
         else:
             return None
@@ -422,7 +422,7 @@ class Console(SingleLineInputBox):
             for i in range(len(self.txtOutput)):
                 screen.blit(self.FONT.render(self.txtOutput[i],get_fontMode(),self.color),(self.x+self.FONTSIZE*0.25, self.y-(len(self.txtOutput)-i)*self.FONTSIZE*1.5))
             # 画出文字
-            if self._text != None and len(self._text) > 0:
+            if self._text is not None and len(self._text) > 0:
                 screen.blit(self.FONT.render(self._text,get_fontMode(),self.color),(self.x+self.FONTSIZE*0.25, self.y))
             #画出输入框
             pygame.draw.rect(screen, self.color, self.input_box, 2)

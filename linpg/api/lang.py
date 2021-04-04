@@ -5,7 +5,7 @@ from .controller import *
 __LINPG_LANG:dict = None
 
 #整理语言文件
-organizeConfigInFolder(os.path.join(os.path.dirname(__file__),"../lang/*.json"))
+#organizeConfigInFolder(os.path.join(os.path.dirname(__file__),"../lang/*.json"))
 
 #重新加载语言配置文件
 def reload_lang() -> None:
@@ -24,7 +24,7 @@ reload_lang()
 
 #获取语言配置文件
 def get_lang(key:str, key2:str=None) -> any:
-    if key2 == None:
+    if key2 is None:
         if key in __LINPG_LANG:
             return deepcopy(__LINPG_LANG[key])
         else:

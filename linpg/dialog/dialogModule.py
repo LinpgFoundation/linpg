@@ -1,6 +1,5 @@
 # cython: language_level=3
-from ..scr_core.function import *
-from ..scr_pyd.movie import cutscene,VedioFrame,VedioPlayer
+from .movie import *
 
 #视觉小说系统接口
 class AbstractDialogSystem(SystemWithBackgroundMusic):
@@ -43,7 +42,7 @@ class AbstractDialogSystem(SystemWithBackgroundMusic):
             #更新背景的名称
             self.__backgroundImageName = image_name
             #更新背景的图片数据
-            if self.__backgroundImageName != None:
+            if self.__backgroundImageName is not None:
                 #尝试加载图片式的背景
                 img_path = os.path.join(self.__backgroundImageFilePath,self.__backgroundImageName)
                 if os.path.exists(img_path):
@@ -68,7 +67,7 @@ class AbstractDialogSystem(SystemWithBackgroundMusic):
         #更新事件
         self._update_event()
         #检测章节是否初始化
-        if self.chapterId == None: raise throwException("error","The dialog has not been initialized!")
+        if self.chapterId is None: raise throwException("error","The dialog has not been initialized!")
         #展示背景图片和npc立绘
         self.display_background_image(surface)
         self._npcManager.draw(surface)
@@ -293,13 +292,13 @@ class DialogContent(AbstractDialog):
         self.__txt_alpha = 255
     #获取文字播放时的音效的音量
     def get_sound_volume(self) -> float: 
-        if self.__textPlayingSound != None:
+        if self.__textPlayingSound is not None:
             return self.__textPlayingSound.get_volume()
         else:
             return 0.0
     #修改文字播放时的音效的音量
     def set_sound_volume(self, num:Union[float,int]) -> None:
-        if self.__textPlayingSound != None: self.__textPlayingSound.set_volume(num/100.0)
+        if self.__textPlayingSound is not None: self.__textPlayingSound.set_volume(num/100.0)
     #是否需要更新
     def needUpdate(self) -> bool:
         return True if self.autoMode and self.readTime >= self.totalLetters else False
@@ -314,7 +313,7 @@ class DialogContent(AbstractDialog):
         """
     #如果音效还在播放则停止播放文字音效
     def stop_playing_text_sound(self) -> None:
-        if pygame.mixer.get_busy() and self.__textPlayingSound != None: self.__textPlayingSound.stop()
+        if pygame.mixer.get_busy() and self.__textPlayingSound is not None: self.__textPlayingSound.stop()
     def draw(self, surface:pygame.Surface) -> None:
         if not self.isHidden:
             if not self.__fade_out_stage:
@@ -324,10 +323,10 @@ class DialogContent(AbstractDialog):
     #渐入
     def __fadeIn(self, surface:pygame.Surface) -> None:
         #如果对话框图片的最高高度没有被设置，则根据屏幕大小设置一个
-        if self.dialoguebox_max_height == None:
+        if self.dialoguebox_max_height is None:
             self.dialoguebox_max_height = surface.get_height()/4
         #如果当前对话框图片的y坐标不存在（一般出现在对话系统例行初始化后），则根据屏幕大小设置一个
-        if self.dialoguebox_y == None:
+        if self.dialoguebox_y is None:
             self.dialoguebox_y = surface.get_height()*0.65+self.dialoguebox_max_height/2
         #画出对话框图片
         surface.blit(resizeImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
@@ -360,7 +359,7 @@ class DialogContent(AbstractDialog):
         x:int = int(surface.get_width()*0.2)
         y:int = int(surface.get_height()*0.73)
         #写上当前讲话人的名字
-        if self.narrator != None:
+        if self.narrator is not None:
             surface.blit(self.__render_font(self.narrator,(255, 255, 255)),(x,self.dialoguebox_y+self.FONTSIZE))
         #画出鼠标gif
         self.mouseImg.draw(surface)
@@ -374,12 +373,12 @@ class DialogContent(AbstractDialog):
             )
         #如果当前行的字符还没有完全播出
         if self.textIndex < len(self.content[self.displayedLine]):
-            if not pygame.mixer.get_busy() and self.__textPlayingSound != None:
+            if not pygame.mixer.get_busy() and self.__textPlayingSound is not None:
                 self.__textPlayingSound.play()
             self.textIndex +=1
         #当前行的所有字都播出后，播出下一行
         elif self.displayedLine < len(self.content)-1:
-            if not pygame.mixer.get_busy() and self.__textPlayingSound != None:
+            if not pygame.mixer.get_busy() and self.__textPlayingSound is not None:
                 self.__textPlayingSound.play()
             self.textIndex = 1
             self.displayedLine += 1

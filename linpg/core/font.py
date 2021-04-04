@@ -18,22 +18,22 @@ class FontGenerator:
         self.__SIZE = size
         self.__FONT = createFont(size,ifBold,ifItalic)
     def render(self, txt:any, color:Union[tuple,list,str]):
-        if self.__SIZE != None:
+        if self.__SIZE is not None:
             return self.__FONT.render(txt, LINPG_MODE, findColorRGBA(color))
         else:
             throwException("error","Standard font is not initialized!")
     def get_size(self) -> int:
-        if self.__SIZE != None:
+        if self.__SIZE is not None:
             return self.__SIZE
         else:
             throwException("error","Standard font is not initialized!")
     def get_font(self):
-        if self.__FONT != None:
+        if self.__FONT is not None:
             return self.__FONT
         else:
             throwException("error","Standard font is not initialized!")
     def check_for_update(self, size:int, ifBold:bool=False, ifItalic:bool=False) -> None:
-        if self.__FONT == None or self.__SIZE != size or self.bold != ifBold or self.italic != ifItalic: self.update(size)
+        if self.__FONT is None or self.__SIZE != size or self.bold != ifBold or self.italic != ifItalic: self.update(size)
 
 #初始化字体的配置文件
 LINPG_FONT:str = get_setting("Font")

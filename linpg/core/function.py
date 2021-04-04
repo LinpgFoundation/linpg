@@ -36,7 +36,7 @@ def loadGif(img_list_or_path,position,size,updateGap=1) -> GifObject:
 #获取特定颜色的表面
 def get_SingleColorSurface(color,size=None) -> ImageSurface:
     #如果size是none，则使用屏幕的尺寸
-    if size == None: size = display.get_size()
+    if size is None: size = display.get_size()
     #获取surface
     surfaceTmp = getSurface(size).convert()
     surfaceTmp.fill(color)

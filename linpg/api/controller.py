@@ -10,11 +10,11 @@ class SingleJoystick:
         self.update_device()
     #更新设备
     def update_device(self) -> None:
-        if self.inputController == None and pygame.joystick.get_count() > 0:
+        if self.inputController is None and pygame.joystick.get_count() > 0:
             self.inputController = pygame.joystick.Joystick(0)
             self.inputController.init()
             throwException("info","Joystick is detected and initialized successfully.")
-        elif self.inputController != None:
+        elif self.inputController is not None:
             if pygame.joystick.get_count() == 0:
                 self.inputController = None
             elif self.inputController.get_id() != pygame.joystick.Joystick(0).get_id():
@@ -23,12 +23,12 @@ class SingleJoystick:
                 throwException("info","Joystick changed! New joystick is detected and initialized successfully.")
     #手柄是否初始化
     def get_init(self) -> bool:
-        return self.inputController.get_init() if self.inputController != None else False
+        return self.inputController.get_init() if self.inputController is not None else False
     #获取该按钮的详情
     def get_button(self,buttonId) -> bool:
-        return self.inputController.get_button(buttonId) if self.inputController != None and self.inputController.get_init() else False
+        return self.inputController.get_button(buttonId) if self.inputController is not None and self.inputController.get_init() else False
     def get_axis(self,buttonId) -> float:
-        return self.inputController.get_axis(buttonId) if self.inputController != None and self.inputController.get_init() else 0.0
+        return self.inputController.get_axis(buttonId) if self.inputController is not None and self.inputController.get_init() else 0.0
 
 #输入管理组件
 class GameController:
@@ -44,13 +44,13 @@ class GameController:
     def draw(self, screen:pygame.Surface=None):
         self.joystick.update_device()
         self.mouse_x,self.mouse_y = pygame.mouse.get_pos()
-        if self.joystick.inputController != None:
+        if self.joystick.inputController is not None:
             if self.joystick.get_axis(0)>0.1 or self.joystick.get_axis(0)<-0.1:
                 self.mouse_x += int(self.movingSpeed*round(self.joystick.get_axis(0),1))
             if self.joystick.get_axis(1)>0.1 or self.joystick.get_axis(1)<-0.1:
                 self.mouse_y += int(self.movingSpeed*round(self.joystick.get_axis(1),1))
             pygame.mouse.set_pos((self.mouse_x,self.mouse_y))
-        if self.iconImg != None and screen != None:
+        if self.iconImg is not None and screen is not None:
             screen.blit(self.iconImg,(self.mouse_x,self.mouse_y))
     def get_event(self, pygame_events=pygame.event.get()):
         for event in pygame_events:
@@ -77,7 +77,7 @@ class DisplayController:
         self.__clock.tick(self.fps)
         controller.draw()
         if pump == True: pygame.event.pump()
-        if rectangle == None:
+        if rectangle is None:
             pygame.display.flip()
         else:
             pygame.display.update(rectangle)

@@ -1,10 +1,10 @@
 # cython: language_level=3
+from typing import Tuple
 from .mapModule import *
-from ..scr_core.experimental import RenderedWindow
 
-_MAP_ENV_IMAGE = None
+_MAP_ENV_IMAGE:object = None
 #方块数据
-cdef dict _BLOCKS_DATABASE
+_BLOCKS_DATABASE:dict = None
 try:
     _BLOCKS_DATABASE = loadConfig("Data/blocks.yaml","blocks")
 except:
@@ -12,7 +12,7 @@ except:
 
 #地图模块
 class MapObject:
-    def  __init__(self, dict mapDataDic, int perBlockWidth, int perBlockHeight):
+    def  __init__(self, mapDataDic:dict, perBlockWidth:int, perBlockHeight:int):
         #加载地图设置
         self.__darkMode = mapDataDic["darkMode"] if "darkMode" in mapDataDic else False
         #初始化地图数据
@@ -36,33 +36,29 @@ class MapObject:
         self.__block_on_surface = None
         self.__debug_win = None
     @property
-    def block_width(self):
-        return _MAP_ENV_IMAGE.get_block_width()
+    def block_width(self) -> int: return _MAP_ENV_IMAGE.get_block_width()
     @property
-    def block_height(self):
-        return _MAP_ENV_IMAGE.get_block_height()
+    def block_height(self) -> int: return _MAP_ENV_IMAGE.get_block_height()
     @property
-    def decorations(self):
-        return self.__decorations.copy().tolist()
+    def decorations(self): return self.__decorations.copy().tolist()
     #加载环境图片，一般被视为初始化的一部分
-    def load_env_img(self,block_size):
+    def load_env_img(self, block_size:tuple) -> None:
         global _MAP_ENV_IMAGE
         _MAP_ENV_IMAGE = EnvImagesManagement(self.__MapData,self.__decorations,self.backgroundImageName,block_size,self.__darkMode)
     #开发者模式
-    def dev_mode(self):
-        if self.__debug_win == None:
-            unit = 10
+    def dev_mode(self) -> None:
+        if self.__debug_win is None:
+            unit:int = 10
             self.__debug_win = RenderedWindow("debug window",(int(self.row*unit+unit/4*(self.row+1)),int(self.column*unit+unit/4*(self.row+1))),True)
             self.__debug_win.unit = unit
         else:
             self.__debug_win = None
     #显示开发面板
-    def __display_dev_panel(self):
+    def __display_dev_panel(self) -> None:
         self.__debug_win.clear()
         self.__debug_win.fill("black")
-        cdef int x,y
-        cpdef int start_x,start_y
-        cpdef int unit = self.__debug_win.unit
+        x:int; y:int; start_x:int; start_y:int
+        unit:int = self.__debug_win.unit
         for y in range(len(self.__block_on_surface)):
             for x in range(len(self.__block_on_surface[y])):
                 start_x = int(x*unit*1.25+unit/4)
@@ -73,10 +69,10 @@ class MapObject:
                     self.__debug_win.fill_rect((start_x,start_y,unit,unit),"white")
         self.__debug_win.present()
     #加载装饰物
-    def load_decorations(self,decorationData):
+    def load_decorations(self, decorationData:dict) -> None:
         self.__decorations = []
         for decorationType,itemsThatType in decorationData.items():
-            for itemKey,itemData in itemsThatType.items():
+            for itemData in itemsThatType.values():
                 if decorationType == "campfire":
                     self.__decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,decorationType))
                     self.__decorations[-1].imgId = randomInt(0,9)
@@ -91,26 +87,25 @@ class MapObject:
                     self.__decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,itemData["image"]))
         self.__decorations = numpy.sort(numpy.asarray(self.__decorations))
     #根据index寻找装饰物
-    def find_decoration_with_id(self,int index):
-        return self.__decorations[index]
+    def find_decoration_with_id(self, index:int) -> DecorationObject: return self.__decorations[index]
     #根据坐标寻找装饰物
-    def find_decoration_on(self,pos):
+    def find_decoration_on(self, pos:any) -> Union[DecorationObject,None]:
         for decoration in self.__decorations:
-            if is_same_pos(decoration.get_pos(),pos):
-                return decoration
+            #如果坐标一致，则应该是当前装饰物了
+            if is_same_pos(decoration.get_pos(),pos): return decoration
         return None
-    def interact_decoration_with_id(self,int index):
-        self.__decorations[index].switch()
+    #与给定Index的场景装饰物进行互动
+    def interact_decoration_with_id(self, index:int) -> None: self.__decorations[index].switch()
     #移除装饰物
-    def remove_decoration(self,decoration):
-        cdef (int,int) pos = decoration.get_pos()
-        cdef int i
+    def remove_decoration(self, decoration:object) -> None:
+        pos:tuple = decoration.get_pos()
+        i:int
         for i in range(len(self.__decorations)):
             if self.__decorations[i].get_pos() == pos:
                 self.__decorations = numpy.delete(self.__decorations,i)
                 break
     #控制地图放大缩小
-    def changePerBlockSize(self,float newPerBlockWidth,float newPerBlockHeight):
+    def changePerBlockSize(self, newPerBlockWidth:float, newPerBlockHeight:float) -> None:
         self.addPos_x((self.block_width-newPerBlockWidth)*self.column/2)
         self.addPos_y((self.block_height-newPerBlockHeight)*self.row/2)
         self.surface_width = int(newPerBlockWidth*0.9*((self.row+self.column+1)/2))
@@ -128,24 +123,22 @@ class MapObject:
     def getPos_y(self) -> float: return self.__local_y
     def isAtNight(self) -> int: return self.__darkMode
     #设置local坐标
-    def setPos(self,int x, int y):
+    def setPos(self, x:int, y:int) -> None:
         self.setPos_x(x)
         self.setPos_y(y)
-    def setPos_x(self,float value):
+    def setPos_x(self, value:float) -> None:
         if self.__local_x != value:
             self.__local_x = value
             self.__needUpdateMapSurface = True
-    def setPos_y(self,float value):
+    def setPos_y(self, value:float) -> None:
         if self.__local_y != value:
             self.__local_y = value
             self.__needUpdateMapSurface = True
     #增加local坐标
-    def addPos_x(self,float value):
-        self.setPos_x(self.__local_x+value)
-    def addPos_y(self,float value):
-        self.setPos_y(self.__local_y+value)
+    def addPos_x(self, value:float) -> None: self.setPos_x(self.__local_x+value)
+    def addPos_y(self, value:float) -> None: self.setPos_y(self.__local_y+value)
     #把地图画到屏幕上
-    def display_map(self,screen,screen_to_move_x=0,screen_to_move_y=0):
+    def display_map(self, screen:pygame.Surface, screen_to_move_x:int=0, screen_to_move_y:int=0) -> tuple:
         #检测屏幕是不是移到了不移到的地方
         if self.__local_x < screen.get_width()-self.surface_width:
             self.__local_x = screen.get_width()-self.surface_width
@@ -163,18 +156,17 @@ class MapObject:
             self.__needUpdateMapSurface = False
             self.__update_map_surface(screen.get_size())
         #显示调试窗口
-        if self.__debug_win != None and isinstance(self.__block_on_surface, numpy.ndarray):
+        if self.__debug_win is not None and isinstance(self.__block_on_surface, numpy.ndarray):
             self.__display_dev_panel()
         _MAP_ENV_IMAGE.display_background_surface(screen,self.getPos())
         return (screen_to_move_x,screen_to_move_y)
     #重新绘制地图
-    def __update_map_surface(self,window_size):
-        cdef (int, int) posTupleTemp
-        cdef int x,y
-        cdef int yRange = self.row
-        cdef int xRange = self.column
-        cdef int screen_min = -self.block_width
-        cdef (int,int) screen_size = window_size
+    def __update_map_surface(self, window_size:tuple) -> None:
+        posTupleTemp:tuple
+        x:int; y:int
+        yRange:int = self.row
+        xRange:int = self.column
+        screen_min:int = -self.block_width
         if not isinstance(self.__block_on_surface, numpy.ndarray):
             mapSurface = _MAP_ENV_IMAGE.new_surface(window_size,(self.surface_width,self.surface_height))
             self.__block_on_surface = numpy.zeros((self.row,self.column), dtype=numpy.int8)
@@ -183,7 +175,7 @@ class MapObject:
         for y in range(yRange):
             for x in range(xRange):
                 posTupleTemp = self.calPosInMap(x,y)
-                if screen_min<=posTupleTemp[0]<screen_size[0] and screen_min<=posTupleTemp[1]<screen_size[1]:
+                if screen_min<=posTupleTemp[0]<window_size[0] and screen_min<=posTupleTemp[1]<window_size[1]:
                     if self.__block_on_surface[y][x] == 0:
                         if not self.isPosInLightArea(x,y):
                             evn_img = _MAP_ENV_IMAGE.get_env_image(self.__MapData[y][x].name,True)
@@ -198,31 +190,30 @@ class MapObject:
                             self.__block_on_surface[y][x+1] = 0
                     else:
                         pass
-                elif posTupleTemp[0] >= screen_size[0] or posTupleTemp[1] >= screen_size[1]:
+                elif posTupleTemp[0] >= window_size[0] or posTupleTemp[1] >= window_size[1]:
                     break
-            if self.calPosInMap(0,y+1)[1] >= screen_size[1]:
+            if self.calPosInMap(0,y+1)[1] >= window_size[1]:
                 break
     #把装饰物画到屏幕上
-    def display_decoration(self,screen,alliances_data={},enemies_data={}):
-        cdef (int,int) thePosInMap
+    def display_decoration(self, screen:pygame.Surface, alliances_data:dict={}, enemies_data:dict={}) -> None:
+        thePosInMap:tuple
         #检测角色所占据的装饰物（即需要透明化，方便玩家看到角色）
-        cdef list charactersPos = []
-        for name,dataDic in {**alliances_data, **enemies_data}.items():
+        charactersPos:list = []
+        for dataDic in {**alliances_data, **enemies_data}.values():
             charactersPos.append((int(dataDic.x),int(dataDic.y)))
             charactersPos.append((int(dataDic.x)+1,int(dataDic.y)+1))
         #计算offSet
-        cdef int offSetX = round(self.block_width/4)
-        cdef int offSetY = round(self.block_width/8)
-        cdef int offSetX_tree = round(self.block_width*0.125)
-        cdef int offSetY_tree = round(self.block_width*0.25)
+        offSetX:int = round(self.block_width/4)
+        offSetY:int = round(self.block_width/8)
+        offSetX_tree:int = round(self.block_width*0.125)
+        offSetY_tree:int = round(self.block_width*0.25)
         #计算需要画出的范围
-        cdef int screen_min = -self.block_width
-        cdef (int,int) screen_size = screen.get_size()
+        screen_min:int = -self.block_width
         #历遍装饰物列表里的物品
         for item in self.__decorations:
             imgToBlit = None
             thePosInMap = self.calPosInMap(item.x,item.y)
-            if screen_min<=thePosInMap[0]<screen_size[0] and screen_min<=thePosInMap[1]<screen_size[1]:
+            if screen_min <= thePosInMap[0] < screen.get_width() and screen_min <= thePosInMap[1] < screen.get_height():
                 if not self.inLightArea(item):
                     keyWordTemp = True
                 else:
@@ -276,24 +267,23 @@ class MapObject:
                     imgToBlit = _MAP_ENV_IMAGE.get_decoration_image(item.type,item.image,keyWordTemp)
                     imgToBlit.set_size(self.block_width/2,self.block_width/2)
                 #画上装饰物
-                if imgToBlit != None:
+                if imgToBlit is not None:
                     imgToBlit.set_pos(thePosInMap[0]+offSetX,thePosInMap[1]-offSetY)
                     imgToBlit.draw(screen)
     #更新方块
-    def update_block(self,pos,name):
+    def update_block(self, pos:dict, name:str) -> None:
         self.__MapData[pos["y"]][pos["x"]].update(name,_BLOCKS_DATABASE[name]["canPassThrough"])
         self.__needUpdateMapSurface = True
     #是否角色能通过该方块
-    def ifBlockCanPassThrough(self,pos):
-        return self.__MapData[pos["y"]][pos["x"]].canPassThrough
+    def ifBlockCanPassThrough(self, pos:dict) -> bool: return self.__MapData[pos["y"]][pos["x"]].canPassThrough
     #计算在地图中的方块
-    def calBlockInMap(self,int mouse_x,int mouse_y):
-        cdef int guess_x = int(((mouse_x-self.__local_x-self.row*self.block_width*0.43)/0.43+(mouse_y-self.__local_y-self.block_width*0.4)/0.22)/2/self.block_width)
-        cdef int guess_y = int((mouse_y-self.__local_y-self.block_width*0.4)/self.block_width/0.22) - guess_x
-        cdef int x,y
-        cdef (int, int) posTupleTemp
-        cdef float lenUnitW = self.block_width/5
-        cdef float lenUnitH = self.block_width*0.8/393*214
+    def calBlockInMap(self, mouse_x:int, mouse_y:int):
+        guess_x:int = int(((mouse_x-self.__local_x-self.row*self.block_width*0.43)/0.43+(mouse_y-self.__local_y-self.block_width*0.4)/0.22)/2/self.block_width)
+        guess_y:int = int((mouse_y-self.__local_y-self.block_width*0.4)/self.block_width/0.22) - guess_x
+        x:int; y:int
+        posTupleTemp:tuple
+        lenUnitW:float = self.block_width/5
+        lenUnitH:float = self.block_width*0.8/393*214
         block_get_click = None
         for y in range(guess_y-1,guess_y+4):
             for x in range(guess_x-1,guess_x+4):
@@ -303,7 +293,7 @@ class MapObject:
                     break
         return block_get_click
     #计算方块被画出的位置
-    def getBlockExactLocation(self,int x,int y):
+    def getBlockExactLocation(self, x:int, y:int) -> dict:
         xStart,yStart = self.calPosInMap(x,y)
         return {
         "xStart": xStart,
@@ -312,17 +302,17 @@ class MapObject:
         "yEnd": yStart + self.block_width*0.5
         }
     #计算光亮区域
-    def calculate_darkness(self,alliances_data):
-        cpdef list lightArea = []
-        cdef int x,y
+    def calculate_darkness(self, alliances_data:dict) -> None:
+        lightArea:list = []
+        x:int; y:int
         for each_chara in alliances_data:
             the_character_effective_range = 2
             if alliances_data[each_chara].current_hp > 0 :
-                if alliances_data[each_chara].effective_range["far"] != None:
+                if alliances_data[each_chara].effective_range["far"] is not None:
                     the_character_effective_range = alliances_data[each_chara].effective_range["far"][1]+1
-                elif alliances_data[each_chara].effective_range["middle"] != None:
+                elif alliances_data[each_chara].effective_range["middle"] is not None:
                     the_character_effective_range = alliances_data[each_chara].effective_range["middle"][1]+1
-                elif alliances_data[each_chara].effective_range["near"] != None:
+                elif alliances_data[each_chara].effective_range["near"] is not None:
                     the_character_effective_range = alliances_data[each_chara].effective_range["near"][1]+1
             for y in range(int(alliances_data[each_chara].y-the_character_effective_range),int(alliances_data[each_chara].y+the_character_effective_range)):
                 if y < alliances_data[each_chara].y:
@@ -348,26 +338,21 @@ class MapObject:
         self.__needUpdateMapSurface = True
         self.__block_on_surface = None
     #计算在地图中的位置
-    def calPosInMap(self,float x,float y):
-        cdef float widthTmp = self.block_width*0.43
+    def calPosInMap(self, x:float, y:float) -> tuple:
+        widthTmp:float = self.block_width*0.43
         return round((x-y)*widthTmp+self.__local_x+self.row*widthTmp),round((y+x)*self.block_width*0.22+self.__local_y+self.block_width*0.4)
-    def calAbsPosInMap(self,float x,float y):
-        cdef float widthTmp = self.block_width*0.43
+    def calAbsPosInMap(self, x:float, y:float) -> tuple:
+        widthTmp:float = self.block_width*0.43
         return round((x-y)*widthTmp+self.row*widthTmp),round((y+x)*self.block_width*0.22+self.block_width*0.4)
     #查看角色是否在光亮范围内
-    def inLightArea(self,doll):
-        return self.isPosInLightArea(doll.x,doll.y)
-    def isPosInLightArea(self,int x,int y):
-        if not self.__darkMode:
-            return True
-        else:
-            return numpy.any(numpy.equal(self.__LightArea,[x,y]).all(1))
+    def inLightArea(self, entity:object) -> bool: return self.isPosInLightArea(entity.x,entity.y)
+    def isPosInLightArea(self, x:int, y:int) -> bool: return True if not self.__darkMode else numpy.any(numpy.equal(self.__LightArea,[x,y]).all(1))
     #以下是A星寻路功能
-    def findPath(self,startPosition,endPosition,friendData:dict,enemyData:dict,int routeLen=-1,list ignoreEnemyCharacters=[]):
+    def findPath(self, startPosition:any, endPosition:any, friendData:dict, enemyData:dict, routeLen:int=-1, ignoreEnemyCharacters:list=[]) -> list:
         #检测起点
-        cdef (int,int) start_pos = convert_pos(startPosition)
+        start_pos:tuple = convert_pos(startPosition)
         #检测终点
-        cdef (int,int) end_pos = convert_pos(endPosition)
+        end_pos:tuple = convert_pos(endPosition)
         #建立寻路地图
         self.map2d = numpy.zeros((self.column,self.row), dtype=numpy.int8)
         # 可行走标记
@@ -398,9 +383,8 @@ class MapObject:
         self.startPoint = Point(start_pos[0],start_pos[1])
         self.endPoint = Point(end_pos[0],end_pos[1])
         #开始寻路
-        cdef list pathList = self.__startFindingPath()
-        cdef int i
-        cdef int pathListLen = int(len(pathList))
+        pathList:list = self.__startFindingPath()
+        pathListLen:int = int(len(pathList))
         #遍历路径点,讲指定数量的点放到路径列表中
         if pathListLen > 0:
             #生成路径的长度
@@ -409,7 +393,7 @@ class MapObject:
             return [pathList[i].get_pos() for i in range(routeLen)]
         else:
             return []
-    def __getMinNode(self):
+    def __getMinNode(self) -> Node:
         """
         获得OpenList中F值最小的节点
         :return: Node
@@ -419,22 +403,22 @@ class MapObject:
             if node.g + node.h < currentNode.g + currentNode.h:
                 currentNode = node
         return currentNode
-    def __pointInCloseList(self, point):
+    def __pointInCloseList(self, point:Point) -> bool:
         for node in self.closeList:
             if node.point == point:
                 return True
         return False
-    def __pointInOpenList(self, point):
+    def __pointInOpenList(self, point:Point) -> Union[Node,None]:
         for node in self.openList:
             if node.point == point:
                 return node
         return None
-    def __endPointInCloseList(self):
+    def __endPointInCloseList(self) -> Union[Node,None]:
         for node in self.openList:
             if node.point == self.endPoint:
                 return node
         return None
-    def __searchNear(self, minF, int offSetX, int offSetY):
+    def __searchNear(self, minF:Node, offSetX:int, offSetY:int) -> None:
         """
         搜索节点周围的点
         :param minF:F值最小的节点
@@ -464,12 +448,12 @@ class MapObject:
             currentNode = Node(currentPoint, self.endPoint, g=minF.g + step)
             currentNode.father = minF
             self.openList.append(currentNode)
-            return
+            return None
         # 如果在openList中，判断minF到当前点的G是否更小
         if minF.g + step < currentNode.g:  # 如果更小，就重新计算g值，并且改变father
             currentNode.g = minF.g + step
             currentNode.father = minF
-    def __startFindingPath(self):
+    def __startFindingPath(self) -> list:
         """
         开始寻路
         :return: None或Point列表（路径）
@@ -502,7 +486,7 @@ class MapObject:
             if point:  # 如果终点在关闭表中，就返回结果
                 # print("关闭表中")
                 cPoint = point
-                pathList = []
+                pathList:list = []
                 while True:
                     if cPoint.father:
                         pathList.append(cPoint.point)

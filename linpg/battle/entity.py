@@ -82,7 +82,7 @@ class Entity(GameObject):
         self.__if_invincible = False
         #血条图片
         global _HP_GREEN_IMG,_HP_RED_IMG,_HP_EMPTY_IMG
-        if _HP_GREEN_IMG == None or _HP_RED_IMG == None or _HP_EMPTY_IMG == None:
+        if _HP_GREEN_IMG is None or _HP_RED_IMG is None or _HP_EMPTY_IMG is None:
             _HP_GREEN_IMG = imgLoadFunction("Assets/image/UI/hp_green.png",True)
             _HP_RED_IMG = imgLoadFunction("Assets/image/UI/hp_red.png",True)
             _HP_EMPTY_IMG = imgLoadFunction("Assets/image/UI/hp_empty.png",True)
@@ -105,7 +105,7 @@ class Entity(GameObject):
     #获取角色特定动作的图片播放ID
     def get_imgId(self, action:str) -> int:
         action_dict:dict = self.__imgId_dict[action]
-        return action_dict["imgId"] if action_dict != None else -1
+        return action_dict["imgId"] if action_dict is not None else -1
     #获取角色特定动作的图片总数量
     def get_imgNum(self, action:str) -> int: return _CHARACTERS_IMAGE_SYS.get_img_num(self.type,action)
     #设定角色特定动作的图片播放ID
@@ -311,43 +311,43 @@ class Entity(GameObject):
                     if x == self.x and y == self.y:
                         pass
                     if Map.row>y>=0 and Map.column>x>=0:
-                        if "far" in self.effective_range and self.effective_range["far"] != None and self.effective_range["far"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["far"][1]:
+                        if "far" in self.effective_range and self.effective_range["far"] is not None and self.effective_range["far"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["far"][1]:
                             self.__attack_range["far"].append((x,y))
-                        elif "middle" in self.effective_range and self.effective_range["middle"] != None and self.effective_range["middle"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["middle"][1]:
+                        elif "middle" in self.effective_range and self.effective_range["middle"] is not None and self.effective_range["middle"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["middle"][1]:
                             self.__attack_range["middle"].append((x,y))
-                        elif "near" in self.effective_range and self.effective_range["near"] != None and self.effective_range["near"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["near"][1]:
+                        elif "near" in self.effective_range and self.effective_range["near"] is not None and self.effective_range["near"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["near"][1]:
                             self.__attack_range["near"].append((x,y))
             else:
                 for x in range(self.x-self._max_effective_range+(y-self.y),self.x+self._max_effective_range-(y-self.y)+1):
                     if Map.row>y>=0 and Map.column>x>=0:
-                        if "far" in self.effective_range and self.effective_range["far"] != None and self.effective_range["far"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["far"][1]:
+                        if "far" in self.effective_range and self.effective_range["far"] is not None and self.effective_range["far"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["far"][1]:
                             self.__attack_range["far"].append((x,y))
-                        elif "middle" in self.effective_range and self.effective_range["middle"] != None and self.effective_range["middle"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["middle"][1]:
+                        elif "middle" in self.effective_range and self.effective_range["middle"] is not None and self.effective_range["middle"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["middle"][1]:
                             self.__attack_range["middle"].append((x,y))
-                        elif "near" in self.effective_range and self.effective_range["near"] != None and self.effective_range["near"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["near"][1]:
+                        elif "near" in self.effective_range and self.effective_range["near"] is not None and self.effective_range["near"][0] <= abs(x-self.x)+abs(y-self.y) <= self.effective_range["near"][1]:
                             self.__attack_range["near"].append((x,y))
         return self.__attack_range
     #目标角色所在的攻击范围内
     def range_target_in(self, otherEntity:object, custom_pos:any=None) -> str:
-        distanceBetween:int = abs(int(otherEntity.x-self.x))+abs(int(otherEntity.y-self.y)) if custom_pos == None else abs(int(otherEntity.x-custom_pos[0]))+abs(int(otherEntity.y-custom_pos[1]))
-        if "near" in self.effective_range and self.effective_range["near"] != None and self.effective_range["near"][0] <= distanceBetween <= self.effective_range["near"][1]:
+        distanceBetween:int = abs(int(otherEntity.x-self.x))+abs(int(otherEntity.y-self.y)) if custom_pos is None else abs(int(otherEntity.x-custom_pos[0]))+abs(int(otherEntity.y-custom_pos[1]))
+        if "near" in self.effective_range and self.effective_range["near"] is not None and self.effective_range["near"][0] <= distanceBetween <= self.effective_range["near"][1]:
             return "near"
-        elif "middle" in self.effective_range and self.effective_range["middle"] != None and self.effective_range["middle"][0] <= distanceBetween <= self.effective_range["middle"][1]:
+        elif "middle" in self.effective_range and self.effective_range["middle"] is not None and self.effective_range["middle"][0] <= distanceBetween <= self.effective_range["middle"][1]:
             return "middle"
-        elif "far" in self.effective_range and self.effective_range["far"] != None and self.effective_range["far"][0] <= distanceBetween <= self.effective_range["far"][1]:
+        elif "far" in self.effective_range and self.effective_range["far"] is not None and self.effective_range["far"][0] <= distanceBetween <= self.effective_range["far"][1]:
             return "far"
         else:
             return None
     #判断是否在攻击范围内
-    def can_attack(self, otherEntity:object) -> bool: return self.range_target_in(otherEntity) != None
+    def can_attack(self, otherEntity:object) -> bool: return self.range_target_in(otherEntity) is not None
     #返回该角色的理想攻击范围
     @property
     def ideal_attack_range(self) -> int:
-        if "near" in self.effective_range and self.effective_range["near"] != None:
+        if "near" in self.effective_range and self.effective_range["near"] is not None:
             return self.effective_range["near"][-1]
-        elif "middle" in self.effective_range and self.effective_range["middle"] != None:
+        elif "middle" in self.effective_range and self.effective_range["middle"] is not None:
             return self.effective_range["middle"][-1]
-        elif "far" in self.effective_range and self.effective_range["far"] != None:
+        elif "far" in self.effective_range and self.effective_range["far"] is not None:
             return self.effective_range["far"][-1]
         else:
             throwException("error","This character has no valid effective range!")
@@ -369,7 +369,7 @@ class Entity(GameObject):
     #把角色画到surface上
     def __blit_entity_img(self, surface:pygame.Surface, MapClass:object, action:str=None, pos:any=None, alpha:int=155) -> None:
         #如果没有指定action,则默认使用当前的动作
-        if action == None: action = self.__current_action
+        if action is None: action = self.__current_action
         #调整小人图片的尺寸
         img_of_char = _CHARACTERS_IMAGE_SYS.get_img(self.type,action,self.__imgId_dict[action]["imgId"])
         img_width = round(MapClass.block_width*1.6)
@@ -382,7 +382,7 @@ class Entity(GameObject):
         else:
             img_of_char.flip_back_to_normal()
         #如果没有指定pos,则默认使用当前的动作
-        if pos == None: pos = MapClass.calPosInMap(self.x,self.y)
+        if pos is None: pos = MapClass.calPosInMap(self.x,self.y)
         #把角色图片画到屏幕上
         img_of_char.set_pos(pos[0]-MapClass.block_width*0.3,pos[1]-MapClass.block_width*0.85)
         img_of_char.draw(surface)
@@ -391,7 +391,7 @@ class Entity(GameObject):
     def draw(self, surface:pygame.Surface, MapClass:object) -> None:
         self.__blit_entity_img(surface,MapClass,alpha=self.get_imgAlpaha(self.__current_action))
         #如果当前动作是移动
-        if self.__current_action == "move" and self.__moving_path != None:
+        if self.__current_action == "move" and self.__moving_path is not None:
             self.__move_based_on_path()
         #如果角色图片还没播放完
         if not self._if_play_action_in_reversing:
@@ -402,7 +402,7 @@ class Entity(GameObject):
                 self.__if_action_has_played_once = True
                 self.__imgId_dict[self.__current_action]["imgId"] = 0
             #如果角色图片播放完但不打算重新播
-            elif self.__if_action_loop == None:
+            elif self.__if_action_loop is None:
                 self.__if_action_has_played_once = True
             #如果角色图片播放完需要回到待机状态
             elif self.__if_action_loop == False:

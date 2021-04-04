@@ -1,6 +1,6 @@
 # cython: language_level=3
 import threading
-from .lang import *
+from ..api import *
 
 #坐标类
 class Coordinate:
@@ -107,6 +107,8 @@ class SystemObject:
         #判定用于判定是否还在播放的参数
         self._isPlaying = True
     #是否正在播放
+    @property
+    def isPlaying(self) -> bool: return self._isPlaying
     def is_playing(self) -> bool: return self._isPlaying
     #获取输入事件
     @property
@@ -128,7 +130,7 @@ class SystemWithBackgroundMusic(SystemObject):
     def get_bgm(self) -> str: return os.path.basename(self.__bgm_path)
     #设置bgm路径
     def set_bgm(self,path,forced=False) -> None:
-        if path == None:
+        if path is None:
             self.__bgm_path = None
             pygame.mixer.music.unload()
         #如果路径存在
@@ -149,14 +151,14 @@ class SystemWithBackgroundMusic(SystemObject):
     #设置bgm音量
     def set_bgm_volume(self,volume:Union[float,int]) -> None:
         if 1 >= volume >= 0:
-            if self.__bgm_path != None and pygame.mixer.music.get_busy():
+            if self.__bgm_path is not None and pygame.mixer.music.get_busy():
                 pygame.mixer.music.set_volume(volume)
             self.__bgm_volume = volume
         else:
             throwException("error","Volume '{}' is out of the range! (must between 0 and 1)".format(volume))
     #播放bgm
     def play_bgm(self, times:int=1) -> None:
-        if self.__bgm_path != None and not pygame.mixer.music.get_busy() and not self.__if_stop_playing_bgm:
+        if self.__bgm_path is not None and not pygame.mixer.music.get_busy() and not self.__if_stop_playing_bgm:
             pygame.mixer.music.load(self.__bgm_path)
             pygame.mixer.music.set_volume(self.__bgm_volume)
             pygame.mixer.music.play(times)
@@ -181,7 +183,7 @@ class SoundManagement:
     def add(self, path:str) -> None: self.__sounds_list.append(pygame.mixer.Sound(path))
     def play(self, sound_id:int=None) -> None:
         if len(self.__sounds_list)>0 and not pygame.mixer.Channel(self.channel_id).get_busy():
-            if sound_id == None:
+            if sound_id is None:
                 self.sound_id = randomInt(0,len(self.__sounds_list)-1)
             else:
                 self.sound_id = sound_id
@@ -215,12 +217,12 @@ class ItemNeedBlit:
     def __lt__(self,o:object) -> bool: return self.weight < o.weight
     def blit(self, surface:pygame.Surface) -> None:
         if isinstance(self.image,pygame.Surface):
-            if self.offSet == None:
+            if self.offSet is None:
                 surface.blit(self.image,self.pos)
             else:
                 surface.blit(self.image,(self.pos[0]+self.offSet[0],self.pos[1]+self.offSet[1]))
         else:
-            if self.offSet != None:
+            if self.offSet is not None:
                 self.image.display(surface,self.offSet)
             else:
                 try:

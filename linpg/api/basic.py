@@ -55,7 +55,7 @@ def loadAllImgInFile(pathRule:str, width:any=None, height:any=None) -> list[pyga
 
 #获取Surface
 def getSurface(size:Union[tuple,list], surface_flags:any=None) -> pygame.Surface:
-    if surface_flags != None:
+    if surface_flags is not None:
         return pygame.Surface(size,flags=surface_flags)
     else:
         return pygame.Surface(size)
@@ -77,9 +77,9 @@ def resizeImg(img:pygame.Surface, size:Union[tuple,list]=(None,None)) -> pygame.
     else:
         throwException("error","The size '{}' is not acceptable.".format(size))
     #编辑图片
-    if height!= None and height >= 0 and width == None:
+    if height is not None and height >= 0 and width is None:
         img = pygame.transform.scale(img,(round(height/img.get_height()*img.get_width()), round(height)))
-    elif height == None and width!= None and width >= 0:
+    elif height is None and width is not None and width >= 0:
         img = pygame.transform.scale(img,(round(width), round(width/img.get_width()*img.get_height())))
     elif width >= 0 and height >= 0:
         img = pygame.transform.scale(img, (round(width), round(height)))

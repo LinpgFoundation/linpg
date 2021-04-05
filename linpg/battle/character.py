@@ -162,7 +162,7 @@ class HostileCharacter(Entity):
             for data in target_value_board[1:]:
                 if data[1] < min_weight:
                     min_weight = data[1]
-                    target = target_value_board[data[0]]
+                    target = data[0]
             targetCharacterData = friendlyCharacterData[target]
             if self.can_attack(targetCharacterData):
                 actions.put(DecisionHolder("attack",tuple((target,self.range_target_in(targetCharacterData)))))

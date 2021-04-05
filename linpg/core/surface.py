@@ -174,7 +174,7 @@ class DynamicImageSurface(ImageSurface):
         self.__towardTargetPos = False
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
         super().display(surface,offSet)
-        if self.__towardTargetPos == True:
+        if self.__towardTargetPos is True:
             if self.default_x < self.target_x and self.x < self.target_x:
                 self.x += self.moveSpeed_x
             elif self.default_x > self.target_x and self.x > self.target_x:
@@ -439,7 +439,7 @@ class DialogBox(AbstractDialog,GameObject2d):
         #如果对话框需要继续更新
         if self.__drew == False:
             self.__surface = self.dialoguebox.copy()
-            if self.__flipped == True:
+            if self.__flipped is True:
                 #讲述人名称
                 if self.narrator is not None:
                     self.__surface.blit(self.FONT.render(self.narrator,get_fontMode(),(255,255,255)),(self.get_width()*0.6+self.narrator_x,self.narrator_y))

@@ -392,7 +392,7 @@ class Console(SingleLineInputBox):
             return True
         return False
     def draw(self, screen:pygame.Surface, pygame_events=pygame.event.get()) -> None:
-        if self.hidden == True:
+        if self.hidden is True:
             for event in pygame_events:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_BACKQUOTE:
                     self.hidden = False

@@ -199,13 +199,13 @@ class SoundManagement:
 
 #使用多线程保存数据
 class SaveDataThread(threading.Thread):
-    def __init__(self, config_file_path:str, data:any):
+    def __init__(self, path:str, data:str):
         threading.Thread.__init__(self)
-        self.config_file_path = config_file_path
+        self.path = path
         self.data = data
     def run(self) -> None:
-        saveConfig(self.config_file_path,self.data)
-        del self.data,self.config_file_path
+        saveConfig(self.path,self.data)
+        del self.data,self.path
 
 #需要被打印的物品
 class ItemNeedBlit:

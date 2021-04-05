@@ -221,7 +221,7 @@ class MapObject:
                 #篝火
                 if item.type == "campfire":
                     #查看篝火的状态是否正在变化，并调整对应的alpha值
-                    if item.triggered == True and item.alpha < 255:
+                    if item.triggered is True and item.alpha < 255:
                         item.alpha += 15
                     elif item.triggered == False and item.alpha > 0:
                         item.alpha -= 15
@@ -324,7 +324,7 @@ class MapObject:
                         if [x,y] not in lightArea:
                             lightArea.append([x,y])
         for item in self.__decorations:
-            if item.type == "campfire" and item.triggered == True:
+            if item.type == "campfire" and item.triggered is True:
                 for y in range(int(item.y-item.range),int(item.y+item.range)):
                     if y < item.y:
                         for x in range(int(item.x-item.range-(y-item.y)+1),int(item.x+item.range+(y-item.y))):
@@ -346,7 +346,7 @@ class MapObject:
         return round((x-y)*widthTmp+self.row*widthTmp),round((y+x)*self.block_width*0.22+self.block_width*0.4)
     #查看角色是否在光亮范围内
     def inLightArea(self, entity:object) -> bool: return self.isPosInLightArea(entity.x,entity.y)
-    def isPosInLightArea(self, x:int, y:int) -> bool: return True if not self.__darkMode else numpy.any(numpy.equal(self.__LightArea,[x,y]).all(1))
+    def isPosInLightArea(self, x:float, y:float) -> bool: return True if not self.__darkMode else numpy.any(numpy.equal(self.__LightArea,[int(x),int(y)]).all(1))
     #以下是A星寻路功能
     def findPath(self, startPosition:any, endPosition:any, friendData:dict, enemyData:dict, routeLen:int=-1, ignoreEnemyCharacters:list=[]) -> list:
         #检测起点

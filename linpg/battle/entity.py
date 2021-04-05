@@ -67,19 +67,19 @@ class Entity(GameObject):
         #当前动作
         self.__current_action = self.idle_action
         #动作是否重复
-        self.__if_action_loop = True
+        self.__if_action_loop:bool = True
         #动作是正序列播放还是反序播放
-        self._if_play_action_in_reversing = False
+        self._if_play_action_in_reversing:bool = False
         #是否动作已经播放一遍
-        self.__if_action_has_played_once = False
+        self.__if_action_has_played_once:bool = False
         #需要移动的路径
         self.__moving_path = None
         #是否需要重新渲染地图
-        self.__if_map_need_update = False
+        self.__if_map_need_update:bool = False
         #攻击范围
-        self.__attack_range = {"near":[],"middle":[],"far":[]}
+        self.__attack_range:dict = {"near":[],"middle":[],"far":[]}
         #是否无敌
-        self.__if_invincible = False
+        self.__if_invincible:bool = False
         #血条图片
         global _HP_GREEN_IMG,_HP_RED_IMG,_HP_EMPTY_IMG
         if _HP_GREEN_IMG is None or _HP_RED_IMG is None or _HP_EMPTY_IMG is None:
@@ -366,7 +366,7 @@ class Entity(GameObject):
         else:
             self.set_flip(False)
     """画出角色"""
-    #把角色画到surface上
+    #角色画到surface上
     def __blit_entity_img(self, surface:pygame.Surface, MapClass:object, action:str=None, pos:any=None, alpha:int=155) -> None:
         #如果没有指定action,则默认使用当前的动作
         if action is None: action = self.__current_action
@@ -388,24 +388,28 @@ class Entity(GameObject):
         img_of_char.draw(surface)
         #如果是开发者模式，则开启轮廓
         if console.get_events("dev"): img_of_char.draw_outline(surface)
+    #把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
     def draw(self, surface:pygame.Surface, MapClass:object) -> None:
         self.__blit_entity_img(surface,MapClass,alpha=self.get_imgAlpaha(self.__current_action))
+        #计算imgId
+        self.draw_nothing()
+    #不画出任何内容，只计算imgId
+    def draw_nothing(self) -> None:
         #如果当前动作是移动
-        if self.__current_action == "move" and self.__moving_path is not None:
-            self.__move_based_on_path()
+        if self.__current_action == "move" and self.__moving_path is not None: self.__move_based_on_path()
         #如果角色图片还没播放完
         if not self._if_play_action_in_reversing:
             if self.__imgId_dict[self.__current_action]["imgId"] < self.get_imgNum(self.__current_action)-1:
                 self.__imgId_dict[self.__current_action]["imgId"] += 1
             #如果角色图片播放完需要重新播
-            elif self.__if_action_loop == True:
+            elif self.__if_action_loop is True:
                 self.__if_action_has_played_once = True
                 self.__imgId_dict[self.__current_action]["imgId"] = 0
             #如果角色图片播放完但不打算重新播
             elif self.__if_action_loop is None:
                 self.__if_action_has_played_once = True
             #如果角色图片播放完需要回到待机状态
-            elif self.__if_action_loop == False:
+            elif not self.__if_action_loop:
                 self.set_action()
             else:
                 throwException("error","The self.__if_action_loop data error: {}".format(self.__if_action_loop))
@@ -415,14 +419,14 @@ class Entity(GameObject):
             else:
                 self._if_play_action_in_reversing = False
                 self.set_action()
-    def draw_custom(self, action:str, pos:any, surface:pygame.Surface, MapClass:object, isContinue:bool=True) -> None:
+    def draw_custom(self, action:str, pos:any, surface:pygame.Surface, MapClass:object, isContinue:bool=True) -> bool:
         self.__blit_entity_img(surface,MapClass,action,pos)
         #调整id，并返回对应的bool状态
         if self.__imgId_dict[action]["imgId"] < self.get_imgNum(action)-1:
             self.__imgId_dict[action]["imgId"] += 1
             return True
         else:
-            if isContinue == True:
+            if isContinue is True:
                 self.__imgId_dict[action]["imgId"] = 0
                 return True
             else:

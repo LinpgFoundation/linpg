@@ -176,7 +176,7 @@ def loadCharacterData() -> None:
             }
             ifAnythingChange = True
             throwException("info","A new character call {} has been updated to the data file.".format(name))
-    if ifAnythingChange == True:
+    if ifAnythingChange is True:
         saveConfig("Data/character_data.yaml",loadData)
     makeFolderForCharacterSounds()
     return loadData

@@ -1,5 +1,4 @@
 # cython: language_level=3
-from typing import Tuple
 from .mapModule import *
 
 _MAP_ENV_IMAGE:object = None

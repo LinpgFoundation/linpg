@@ -341,8 +341,11 @@ class DialogContent(AbstractDialog):
     #淡出
     def __fadeOut(self, surface:pygame.Surface) -> None:
         #画出对话框图片
-        surface.blit(resizeImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
-        (surface.get_width()*0.13,self.dialoguebox_y))
+        if self.dialoguebox_y is not None:
+            surface.blit(
+                resizeImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
+                (surface.get_width()*0.13,self.dialoguebox_y)
+                )
         """
         if self.__txt_alpha > 0:
             self.__txt_alpha -= 17
@@ -448,7 +451,7 @@ class DialogButtons:
         self.historyButton = Button(history_imgTemp,window_x*0.1,window_y*0.05)
         self.historyButton.set_hover_img(history_img)
     def draw(self, surface:pygame.Surface, isHidden:bool) -> str:
-        if isHidden:
+        if isHidden is True:
             self.showButton.draw(surface)
             return "hide" if is_hover(self.showButton) else ""
         else:

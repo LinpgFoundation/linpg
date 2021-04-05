@@ -1,6 +1,6 @@
 # cython: language_level=3
 import time
-from tkinter import Tk
+import tkinter
 from .ui import *
 
 #输入框Abstract，请勿实体化
@@ -101,7 +101,7 @@ class SingleLineInputBox(AbstractInputBox):
             return True
         elif event.key == pygame.K_LCTRL and pygame.key.get_pressed()[pygame.K_v]\
             or event.key == pygame.K_v and pygame.key.get_pressed()[pygame.K_LCTRL]:
-            self._add_char(Tk().clipboard_get())
+            self._add_char(tkinter.Tk().clipboard_get())
             return True
         return False
     def draw(self, screen:pygame.Surface, pygame_events:any=pygame.event.get()) -> None:
@@ -263,7 +263,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                         if self.holderIndex > len(self._text[self.lineId])-1:
                             self.holderIndex = len(self._text[self.lineId])-1
                     elif event.key == pygame.K_LCTRL and pygame.key.get_pressed()[pygame.K_v] or event.key == pygame.K_v and pygame.key.get_pressed()[pygame.K_LCTRL]:
-                        self._add_char(Tk().clipboard_get())
+                        self._add_char(tkinter.Tk().clipboard_get())
                         return True
                     #ESC，关闭
                     elif event.key == pygame.K_ESCAPE:

@@ -13,7 +13,7 @@ def loadDynamicImage(path:Union[str,pygame.Surface], position, target_position, 
         moveSpeed[0],moveSpeed[1],width,height,description)
 
 #加载GIF格式图片
-def loadGif(img_list_or_path,position,size,updateGap=1) -> GifObject:
+def loadGif(img_list_or_path:Union[list,tuple,str], position:tuple, size:tuple, updateGap:int=1) -> GifObject:
     if isinstance(img_list_or_path,str):
         imgList = []
         gif_img = Image.open(img_list_or_path)

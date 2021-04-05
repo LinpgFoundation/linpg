@@ -2,6 +2,7 @@
 from __future__ import annotations
 #python本体库
 import os, random
+from datetime import datetime
 from glob import glob
 from typing import Union
 #额外库
@@ -166,7 +167,13 @@ def is_same_pos(pos1:any, pos2:any) -> bool: return convert_pos(pos1) == convert
 #抛出引擎内的异常
 def throwException(exception_type:str, info:str) -> None:
     if exception_type == "error":
-        raise Exception('LinpgEngine-Error: {}'.format(info))
+        error_msg = 'LinpgEngine-Error: {}'.format(info)
+        #生成错误报告
+        if not os.path.exists("crash_reports"): os.mkdir("crash_reports")
+        with open("crash_reports/crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H:%M:%S")), "w", encoding='utf-8') as f:
+            f.write("Error_Message: {}".format(error_msg))
+        #打印出错误
+        raise Exception(error_msg)
     elif exception_type == "warning":
         print("LinpgEngine-Warning: {}".format(info))
     elif exception_type == "info":

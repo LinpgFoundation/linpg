@@ -1,0 +1,48 @@
+{
+    "Dialog": {
+        "auto": "Auto",
+        "choice": "Choice",
+        "skip": "Skip"
+    },
+    "DialogCreator": {
+        "add": "New dialog",
+        "back": "Back to main menu",
+        "background": "Background Image",
+        "delete": "Delete current dialog",
+        "next": "Next dialog",
+        "npc": "Npc",
+        "please_enter_content": "Content",
+        "please_enter_name": "Name",
+        "previous": "Previous dialog",
+        "reload": "Reload the file",
+        "removeNpc": "Remove this npc"
+    },
+    "Global": {
+        "back": "Back",
+        "process_has_been_saved": "The process has been saved.",
+        "save": "Save"
+    },
+    "Numbers": [
+        "Zero",
+        "One",
+        "Two",
+        "Three",
+        "Four",
+        "Five",
+        "Six",
+        "Seven",
+        "Eight",
+        "Nine",
+        "Ten",
+        "Eleven",
+        "Twelve",
+        "Thirteen",
+        "Fourteen",
+        "Fifteen",
+        "Sixteen",
+        "Seventeen",
+        "Eighteen",
+        "Nineteen",
+        "Twenty"
+    ]
+}

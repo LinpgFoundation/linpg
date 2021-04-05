@@ -1,19 +1,19 @@
-from setuptools import setup
-from linpg.scr_core.config import get_current_version,get_author_email,get_short_description,get_repository_url
+import setuptools
+import linpg
 
 #读取readme
 with open("README.md", "r", encoding="utf-8") as fh: long_description = fh.read()
 
 #生成.whl文件
-setup(
+setuptools.setup(
     name = "linpg",
-    version = get_current_version(),
+    version = linpg.get_current_version(),
     author = "Tigeia-Workshop",
-    author_email = get_author_email(),
-    description = get_short_description(),
+    author_email = linpg.get_author_email(),
+    description = linpg.get_short_description(),
     long_description = long_description,
     long_description_content_type = "text/markdown",
-    url = get_repository_url(),
+    url = linpg.get_repository_url(),
     license='LICENSE',
     project_urls={
         "Bug Tracker": "https://github.com/Tigeia-Workshop/linpg/issues",
@@ -21,7 +21,13 @@ setup(
     classifiers = [
         "Programming Language :: Python :: 3",
     ],
-    packages=['linpg'],
+    package_dir={"": "src"},
     include_package_data=True,
     python_requires = '>=3.6',
+    install_requires = [
+        "pygame",
+        "pyyaml",
+        "av",
+        "numpy",
+    ]
 )

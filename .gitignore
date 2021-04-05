@@ -2,3 +2,5 @@ __pycache__/
 *pyd
 build/
 scr_pyx/*.c
+tutorial-env/
+src/

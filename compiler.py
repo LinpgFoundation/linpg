@@ -17,6 +17,7 @@ if __name__ == '__main__':
     if os.path.exists("../linpg/building_key.txt"):
         remove_all_pyd_at_the_end = False
         os.remove("../linpg/building_key.txt")
+    if os.path.exists("src"): os.remove("src")
 
     """清空旧的Build"""
     #如果linpg文件夹不存在
@@ -80,6 +81,7 @@ if __name__ == '__main__':
                 shutil.copytree(file_or_folder,os.path.join(file_or_folder.replace("linpgdev","..")))
             else:
                 shutil.copy(file_or_folder,os.path.join(file_or_folder.replace("linpgdev","..")))
+        os.rename("linpgdev", "src")
     else:
         for file_or_folder in glob.glob(r"linpgdev/linpg/*"):
             shutil.move(file_or_folder,"../linpg")

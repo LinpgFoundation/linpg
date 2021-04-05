@@ -1,2 +1,3 @@
-recursive-include linpg *.pyd
-recursive-include linpg *.json
+recursive-include src/linpg *.pyd
+recursive-include src/linpg *.json
+recursive-include src/linpg *.py

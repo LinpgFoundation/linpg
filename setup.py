@@ -21,14 +21,13 @@ setuptools.setup(
     classifiers = [
         "Programming Language :: Python :: 3",
     ],
-    package_dir={"": "linpgdev"},
-    packages=setuptools.find_packages(where="linpgdev"),
+    package_dir={"": "src"},
     include_package_data=True,
     python_requires = '>=3.6',
     install_requires = [
         "pygame",
         "pyyaml",
-        "pyav",
+        "av",
         "numpy",
     ]
 )

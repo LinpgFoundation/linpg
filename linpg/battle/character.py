@@ -56,7 +56,7 @@ class FriendlyCharacter(Entity):
                 self.play_sound("injured")
     def heal(self, hpHealed:int) -> None:
         super().heal(hpHealed)
-        if self.dying != False:
+        if self.dying is not False:
             self.dying = False
             self._if_play_action_in_reversing = True
     def drawUI(self, surface:pygame.Surface, MapClass:object) -> None:

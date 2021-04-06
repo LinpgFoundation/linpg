@@ -25,8 +25,8 @@ class AbstractImage(GameObject2d):
     def draw_outline(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0), color:str="red", line_width:int=2) -> None:
         pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect((self.x+offSet[0],self.y+offSet[1]),self.size),line_width)
 
-#用于处理有大面积透明像素的图片surface
-class SrcalphaSurface(AbstractImage):
+#用于静态图片的surface
+class StaticImageSurface(AbstractImage):
     def __init__(self, path_or_surface:Union[str,pygame.Surface], x:any, y:any, width:any=None, height:any=None):
         AbstractImage.__init__(self,None,x,y,width,height)
         self._alpha = 255
@@ -111,9 +111,9 @@ class SrcalphaSurface(AbstractImage):
     #返回local坐标
     def get_local_pos(self) -> tuple: return self.x+self.__local_x,self.y+self.__local_y
     #返回一个复制品
-    def copy(self): return SrcalphaSurface(self.img_original.copy(),self.x,self.y,self._width,self._height)
+    def copy(self): return StaticImageSurface(self.img_original.copy(),self.x,self.y,self._width,self._height)
     #返回一个浅复制品
-    def light_copy(self): return SrcalphaSurface(self.img_original,self.x,self.y,self._width,self._height)
+    def light_copy(self): return StaticImageSurface(self.img_original,self.x,self.y,self._width,self._height)
     #加暗度
     def addDarkness(self, value:int) -> None:
         self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_SUB)
@@ -317,7 +317,7 @@ class Button(GameObject2d):
     def get_width(self) -> int: return self.img.get_width()
     def get_height(self) -> int: return self.img.get_height()
     def set_hover_img(self, img:pygame.Surface) -> None: self.img2 = img
-    def is_hover(self, mouse_pos: Union[tuple, list]=(-1,-1)) -> bool:
+    def is_hover(self, mouse_pos:Union[tuple, list]=(-1,-1)) -> bool:
         if not super().is_hover(mouse_pos):
             if self.img2 is not None and self._hoverEventTriggered:
                 tempSurface = self.img
@@ -439,10 +439,11 @@ class DialogBox(AbstractDialog,GameObject2d):
         self.__flipped = False
     def get_width(self) -> int: return self.dialoguebox.get_width()
     def get_height(self)-> int:  return self.dialoguebox.get_height()
-    def set_size(self,width,height) -> None: self.dialoguebox = resizeImg(self.dialoguebox,(width,height))
+    def set_size(self, width:Union[int,float,None], height:Union[int,float,None]) -> None:
+        self.dialoguebox = resizeImg(self.dialoguebox,(width,height))
     def draw(self, surface:pygame.Surface, characterInfoBoardUI:object=None):
         #如果对话框需要继续更新
-        if self.__drew == False:
+        if not self.__drew:
             self.__surface = self.dialoguebox.copy()
             if self.__flipped is True:
                 #讲述人名称

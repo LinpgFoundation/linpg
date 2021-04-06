@@ -53,7 +53,7 @@ def get_fontMode() -> bool: return LINPG_MODE
 def get_fontDetails() -> tuple: return LINPG_FONT,LINPG_FONTTYPE,LINPG_MODE
 #设置和获取标准文字大小
 def set_standard_font_size(size:int, fonType:str="medium") -> None:
-    if isinstance (size,int) and size > 0:
+    if isinstance(size,int) and size > 0:
         if fonType == "medium":
             LINPG_STANDARD_MEDIUM_FONT.update(size)
         elif fonType == "small":
@@ -123,7 +123,7 @@ def createFont(size:Union[int,float], ifBold:bool=False, ifItalic:bool=False) ->
         throwException("error","FontType option in setting file is incorrect!")
 
 #创建FreeType字体
-def createFreeTypeFont(size:Union[float,int], ifBold:bool=False, ifItalic:bool=False) ->any:
+def createFreeTypeFont(size:Union[float,int], ifBold:bool=False, ifItalic:bool=False) -> any:
     if LINPG_FONTTYPE == "default":
         try:
             return pygame.freetype.SysFont(LINPG_FONT,int(size),ifBold,ifItalic)
@@ -137,10 +137,10 @@ def createFreeTypeFont(size:Union[float,int], ifBold:bool=False, ifItalic:bool=F
         except BaseException:
             pygame.freetype.init()
             normal_font = pygame.freetype.Font("Assets/font/{}.ttf".format(LINPG_FONT),int(size))
-        if ifBold:
-            normal_font.set_bold(ifBold)
-        if ifItalic:
-            normal_font.set_italic(ifItalic)
+        #是否加粗
+        if ifBold is True: normal_font.set_bold(ifBold)
+        #是否斜体
+        if ifItalic is True: normal_font.set_italic(ifItalic)
         return normal_font
     else:
         throwException("error","FontType option in setting file is incorrect!")

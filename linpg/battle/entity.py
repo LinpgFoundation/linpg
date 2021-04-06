@@ -34,7 +34,7 @@ class Entity(GameObject):
         #最大可再生的护甲值
         self.__max_recoverable_armor = DATA["recoverable_armor"] if "recoverable_armor" in DATA else 0
         #是否濒死
-        self.dying:bool = False if self.is_alive() else DYING_ROUND_LIMIT
+        self.dying = False if self.is_alive() else DYING_ROUND_LIMIT
         #攻击距离
         self.effective_range = DATA["effective_range"]
         #最大攻击距离

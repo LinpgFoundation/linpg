@@ -34,7 +34,7 @@ def loadGif(img_list_or_path:Union[list,tuple,str], position:tuple, size:tuple, 
     return GifObject(numpy.asarray(imgList),position[0],position[1],size[0],size[1],updateGap)
 
 #获取特定颜色的表面
-def get_SingleColorSurface(color,size=None) -> ImageSurface:
+def getSingleColorSurface(color,size=None) -> ImageSurface:
     #如果size是none，则使用屏幕的尺寸
     if size is None: size = display.get_size()
     #获取surface
@@ -43,7 +43,7 @@ def get_SingleColorSurface(color,size=None) -> ImageSurface:
     return ImageSurface(surfaceTmp,0,0,size[0],size[1])
 
 #检测图片是否被点击
-def is_hover(imgObject:object, objectPos:Union[tuple,list]=(0,0), local_x:Union[int,float]=0, local_y:Union[int,float]=0) -> bool:
+def isHover(imgObject:object, objectPos:Union[tuple,list]=(0,0), local_x:Union[int,float]=0, local_y:Union[int,float]=0) -> bool:
     mouse_x,mouse_y = pygame.mouse.get_pos()
     #如果是pygame的面
     if isinstance(imgObject,pygame.Surface):

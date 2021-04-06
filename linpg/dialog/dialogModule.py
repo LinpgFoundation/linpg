@@ -8,12 +8,12 @@ class AbstractDialogSystem(SystemWithBackgroundMusic):
         #加载对话的背景图片模块
         self._npcManager = NpcImageManager()
         #黑色Void帘幕
-        self._black_bg = get_SingleColorSurface("black")
+        self._black_bg = getSingleColorSurface("black")
         #选项栏
-        self._optionBox = SrcalphaSurface("Assets/image/UI/option.png",0,0)
+        self._optionBox = StaticImageSurface("Assets/image/UI/option.png",0,0)
         #选项栏-选中
         try:
-            self.optionBoxSelected = SrcalphaSurface("Assets/image/UI/option_selected.png",0,0)
+            self.optionBoxSelected = StaticImageSurface("Assets/image/UI/option_selected.png",0,0)
         except:
             throwException("warning","Cannot find 'option_selected.png' in 'UI' file, 'option.png' will be loaded instead.")
             self.optionBoxSelected = self._optionBox.light_copy()
@@ -102,7 +102,7 @@ class NpcImageManager:
     def __loadNpc(self, path:str) -> None:
         name = os.path.basename(path)
         self.npcImageDict[name] = {}
-        self.npcImageDict[name]["normal"] = SrcalphaSurface(path,0,0,self.img_width,self.img_width)
+        self.npcImageDict[name]["normal"] = StaticImageSurface(path,0,0,self.img_width,self.img_width)
         #生成深色图片
         self.npcImageDict[name]["dark"] = self.npcImageDict[name]["normal"].copy()
         self.npcImageDict[name]["dark"].addDarkness(50)
@@ -132,9 +132,9 @@ class NpcImageManager:
             img.set_pos(x,y)
             img.draw(surface)
             #如果是开发模式
-            if self.dev_mode:
+            if self.dev_mode is True:
                 self.npcGetClick = None
-                if is_hover(img,(x,y)):
+                if isHover(img,(x,y)):
                     img.draw_outline(surface)
                     self.npcGetClick = name
     def draw(self, surface:pygame.Surface) -> None:
@@ -453,17 +453,17 @@ class DialogButtons:
     def draw(self, surface:pygame.Surface, isHidden:bool) -> str:
         if isHidden is True:
             self.showButton.draw(surface)
-            return "hide" if is_hover(self.showButton) else ""
+            return "hide" if self.showButton.is_hover() else ""
         else:
             self.hideButton.draw(surface)
             self.historyButton.draw(surface)
             action = ""
-            if is_hover(self.skipButton):
+            if self.skipButton.is_hover():
                 self.skipButtonHovered.draw(surface)
                 action = "skip"
             else:
                 self.skipButton.draw(surface)
-            if is_hover(self.autoButton):
+            if self.autoButton.is_hover():
                 self.autoButtonHovered.draw(surface)
                 if self.autoMode:
                     rotatedIcon = pygame.transform.rotate(self.autoIconHovered,self.autoIconDegree)
@@ -493,9 +493,9 @@ class DialogButtons:
                 else:
                     self.autoButton.draw(surface)
                     surface.blit(self.autoIcon,(self.autoButton.description,self.autoButton.y+self.icon_y))
-            if is_hover(self.hideButton):
+            if self.hideButton.is_hover():
                 action = "hide"
-            elif is_hover(self.historyButton):
+            elif self.historyButton.is_hover():
                 action = "history"
             return action
     def autoModeSwitch(self) -> None:

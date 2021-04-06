@@ -397,7 +397,7 @@ class Console(SingleLineInputBox):
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_BACKQUOTE:
                     self.hidden = False
                     break
-        elif self.hidden == False:
+        elif not self.hidden:
             for event in pygame_events:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x,mouse_y = pygame.mouse.get_pos()

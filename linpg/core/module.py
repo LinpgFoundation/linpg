@@ -129,14 +129,14 @@ class SystemWithBackgroundMusic(SystemObject):
     def bgm(self) -> str: return os.path.basename(self.__bgm_path)
     def get_bgm(self) -> str: return os.path.basename(self.__bgm_path)
     #设置bgm路径
-    def set_bgm(self,path,forced=False) -> None:
+    def set_bgm(self, path:Union[str,None], forced:bool=False) -> None:
         if path is None:
             self.__bgm_path = None
             pygame.mixer.music.unload()
         #如果路径存在
         elif os.path.exists(path):
             #只有在音乐路径不一致或者强制更新的情况下才会更新路径（同时卸载现有音乐）
-            if self.__bgm_path != path or forced:
+            if self.__bgm_path != path or forced is True:
                 self.__bgm_path = path
                 pygame.mixer.music.unload()
             else:

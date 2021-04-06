@@ -120,7 +120,7 @@ class VedioFrame(AbstractVedio):
             self._processFrame(frame)
             if self.end_point is not None and self.get_pos() >= self.end_point:
                 self.looped_times += 1
-                if self.loop != True:
+                if not self.loop:
                     self._stopped = True
                 else:
                     self.set_pos(self.start_point)
@@ -186,7 +186,7 @@ def cutscene(surface:pygame.Surface, videoPath:str) -> None:
                         is_skip = True
                         pygame.mixer.music.fadeout(5000)
                     break
-        if is_skip:
+        if is_skip is True:
             temp_alpha:int = black_bg.get_alpha()
             if temp_alpha < 255:
                 black_bg.set_alpha(temp_alpha+5)

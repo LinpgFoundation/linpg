@@ -137,7 +137,7 @@ class DialogSystem(AbstractDialogSystem):
                         self.dialogTxtSystem.autoMode = self.ButtonsMananger.autoMode
                     elif buttonEvent == "history" and not self.showHistory:
                         self.showHistory = True
-                    elif is_hover(self.history_back) and self.showHistory:
+                    elif self.history_back.is_hover() and self.showHistory:
                         self.showHistory = False
                         self.historySurface = None
                     #如果所有行都没有播出，则播出所有行
@@ -247,7 +247,7 @@ class DialogSystem(AbstractDialogSystem):
                         dialogIdTemp = None
             surface.blit(self.historySurface,(0,0))
             self.history_back.draw(surface)
-            is_hover(self.history_back)
+            self.history_back.is_hover()
         elif self.dialogTxtSystem.needUpdate() or leftClick:
             if self.dialogContent[self.dialogId]["next_dialog_id"] is None or self.dialogContent[self.dialogId]["next_dialog_id"]["target"] is None:
                 self.fadeOut(surface)
@@ -271,7 +271,7 @@ class DialogSystem(AbstractDialogSystem):
         controller.draw(surface)
 
 #对话制作器
-class DialogSystemDev(AbstractDialogSystem):
+class DialogEditor(AbstractDialogSystem):
     def __init__(self, chapterType:str, chapterId:int, part:str=None, collection_name:str=None):
         AbstractDialogSystem.__init__(self)
         self._initialize(chapterType,chapterId,collection_name)
@@ -498,18 +498,18 @@ class DialogSystemDev(AbstractDialogSystem):
         #展示按钮
         for button in self.buttonsUI:
             if button == "next" and theNextDialogId is None or button == "next" and len(theNextDialogId)<2:
-                if is_hover(self.buttonsUI["add"]):
+                if self.buttonsUI["add"].is_hover():
                     buttonHovered = "add"
                 self.buttonsUI["add"].draw(surface)
             elif button != "add":
-                if is_hover(self.buttonsUI[button]):
+                if self.buttonsUI[button].is_hover():
                     buttonHovered = button
                 self.buttonsUI[button].draw(surface)
         leftClick = False
         for event in self.events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    if is_hover(self.UIContainerRightButton,None,self.UIContainerRight.x):
+                    if isHover(self.UIContainerRightButton,local_x=self.UIContainerRight.x):
                         self.UIContainerRight.switch()
                         self.UIContainerRightButton.flip(True,False)
                     #退出
@@ -592,9 +592,9 @@ class DialogSystemDev(AbstractDialogSystem):
         self.UIContainerRight.draw(surface)
         if self.UIContainerRight.x < display.get_width():
             #检测按钮
-            if is_hover(self.button_select_background,None,self.UIContainerRight.x) and leftClick:
+            if isHover(self.button_select_background,local_x=self.UIContainerRight.x) and leftClick:
                 self.UIContainerRight_kind = "background"
-            if is_hover(self.button_select_npc,None,self.UIContainerRight.x) and leftClick:
+            if isHover(self.button_select_npc,local_x=self.UIContainerRight.x) and leftClick:
                 self.UIContainerRight_kind = "npc"
             #画出按钮
             self.button_select_background.display(surface,(self.UIContainerRight.x,0))
@@ -607,7 +607,7 @@ class DialogSystemDev(AbstractDialogSystem):
                     pos = (self.UIContainerRight.x+self.UIContainerRight.get_width()*0.1,self.background_image_local_y)
                     surface.blit(imgTmp,pos)
                     surface.blit(resizeImg(self.background_deselect,imgTmp.get_size()),pos)
-                    if leftClick and is_hover(imgTmp,pos):
+                    if leftClick and isHover(imgTmp,pos):
                         self.dialogData[self.part][self.dialogId]["background_img"] = None
                         self._update_background_image(None)
                         leftClick = False
@@ -625,7 +625,7 @@ class DialogSystemDev(AbstractDialogSystem):
                             )
                         surface.blit(imgTmp,pos)
                         i+=1
-                        if leftClick and is_hover(imgTmp,pos):
+                        if leftClick and isHover(imgTmp,pos):
                             self.dialogData[self.part][self.dialogId]["background_img"] = imgName
                             self._update_background_image(imgName)
                             leftClick = False
@@ -639,7 +639,7 @@ class DialogSystemDev(AbstractDialogSystem):
                         if npc_local_y_temp > -npcImage["normal"].get_height():
                             npcImage["normal"].set_pos(self.UIContainerRight.x,npc_local_y_temp)
                             npcImage["normal"].draw(surface)
-                            if is_hover(npcImage["normal"]) and leftClick:
+                            if npcImage["normal"].is_hover() and leftClick:
                                 if self.dialogData[self.part][self.dialogId]["characters_img"] is None:
                                     self.dialogData[self.part][self.dialogId]["characters_img"] = []
                                 if len(self.dialogData[self.part][self.dialogId]["characters_img"]) < 2:

@@ -1,7 +1,7 @@
 # cython: language_level=3
 from __future__ import annotations
 #python本体库
-import os, random
+import os, random, re
 from datetime import datetime
 from glob import glob
 from typing import Union
@@ -37,7 +37,7 @@ def imgLoadFunction(path:Union[str,pygame.Surface], ifConvertAlpha:bool) -> pyga
         throwException("error","The path '{}' has to be a string or at least a pygame.Surface!".format(path))
 
 #图片加载模块：接收图片路径,长,高,返回对应图片
-def loadImg(path:Union[str,pygame.Surface], size:Union[tuple,list]=[], setAlpha:int=255, ifConvertAlpha:bool=True) -> pygame.Surface:
+def loadImg(path:Union[str,pygame.Surface], size:Union[tuple,list]=tuple(), setAlpha:int=255, ifConvertAlpha:bool=True) -> pygame.Surface:
     #加载图片
     img = imgLoadFunction(path,ifConvertAlpha)
     #根据参数编辑图片
@@ -57,10 +57,7 @@ def loadAllImgInFile(pathRule:str, width:any=None, height:any=None) -> list[pyga
 
 #获取Surface
 def getSurface(size:Union[tuple,list], surface_flags:any=None) -> pygame.Surface:
-    if surface_flags is not None:
-        return pygame.Surface(size,flags=surface_flags)
-    else:
-        return pygame.Surface(size)
+    return pygame.Surface(size,flags=surface_flags) if surface_flags is not None else pygame.Surface(size)
 
 """处理"""
 #重新编辑尺寸
@@ -98,7 +95,7 @@ def addDarkness(img:pygame.Surface, value:int) -> pygame.Surface:
 #减少图片暗度
 def removeDarkness(img:pygame.Surface, value:int) -> pygame.Surface:
     newImg:pygame.Surface = img.copy()
-    newImg.fill((value, value, value), special_flags=pygame.BLEND_RGB_ADD)
+    newImg.fill((value, value, value),special_flags=pygame.BLEND_RGB_ADD)
     return newImg
 
 #调整图片亮度
@@ -166,7 +163,8 @@ def is_same_pos(pos1:any, pos2:any) -> bool: return convert_pos(pos1) == convert
 
 #抛出引擎内的异常
 def throwException(exception_type:str, info:str) -> None:
-    if exception_type == "error":
+    exception_type_lower:str = exception_type.lower()
+    if exception_type_lower == "error":
         error_msg = 'LinpgEngine-Error: {}'.format(info)
         #生成错误报告
         if not os.path.exists("crash_reports"): os.mkdir("crash_reports")
@@ -174,9 +172,15 @@ def throwException(exception_type:str, info:str) -> None:
             f.write("Error_Message: {}".format(error_msg))
         #打印出错误
         raise Exception(error_msg)
-    elif exception_type == "warning":
+    elif exception_type_lower == "warning":
         print("LinpgEngine-Warning: {}".format(info))
-    elif exception_type == "info":
+    elif exception_type_lower == "info":
         print('LinpgEngine-Info: {}'.format(info))
     else:
         throwException("error","Hey, the exception_type '{}' is not acceptable!".format(exception_type))
+
+#多段数字字符串排序 - by Jeff Atwood
+def natural_sort(l:list) -> list:
+    convert = lambda text: int(text) if text.isdigit() else text.lower() 
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+    return sorted(l, key = alphanum_key)

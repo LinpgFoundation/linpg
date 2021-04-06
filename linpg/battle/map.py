@@ -79,7 +79,7 @@ class MapObject:
                     self.__decorations[-1].alpha = 255
                 elif decorationType == "chest":
                     self.__decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,decorationType))
-                    self.__decorations[-1].items = itemData["items"]
+                    self.__decorations[-1].items = itemData["items"] if "items" in itemData else []
                     #是否箱子有白名单（只能被特定角色拾取）
                     self.__decorations[-1].whitelist = itemData["whitelist"] if "whitelist" in itemData else None
                 else:
@@ -109,7 +109,7 @@ class MapObject:
         self.addPos_y((self.block_height-newPerBlockHeight)*self.row/2)
         self.surface_width = int(newPerBlockWidth*0.9*((self.row+self.column+1)/2))
         self.surface_height = int(newPerBlockWidth*0.45*((self.row+self.column+1)/2)+newPerBlockWidth)
-        _MAP_ENV_IMAGE.resize(newPerBlockWidth,newPerBlockHeight)
+        _MAP_ENV_IMAGE.set_block_size(newPerBlockWidth,newPerBlockHeight)
         if self.surface_width < display.get_width():
             self.surface_width = display.get_width()
         if self.surface_height < display.get_height():
@@ -151,13 +151,14 @@ class MapObject:
         elif self.__local_y > 0:
             self.__local_y = 0
             screen_to_move_y = 0
-        if self.__needUpdateMapSurface:
+        if self.__needUpdateMapSurface is True:
             self.__needUpdateMapSurface = False
             self.__update_map_surface(screen.get_size())
         #显示调试窗口
-        if self.__debug_win is not None and isinstance(self.__block_on_surface, numpy.ndarray):
-            self.__display_dev_panel()
+        if self.__debug_win is not None and isinstance(self.__block_on_surface, numpy.ndarray): self.__display_dev_panel()
+        #画出背景
         _MAP_ENV_IMAGE.display_background_surface(screen,self.getPos())
+        #返回offset
         return (screen_to_move_x,screen_to_move_y)
     #重新绘制地图
     def __update_map_surface(self, window_size:tuple) -> None:
@@ -222,7 +223,7 @@ class MapObject:
                     #查看篝火的状态是否正在变化，并调整对应的alpha值
                     if item.triggered is True and item.alpha < 255:
                         item.alpha += 15
-                    elif item.triggered == False and item.alpha > 0:
+                    elif not item.triggered and item.alpha > 0:
                         item.alpha -= 15
                     #根据alpha值生成对应的图片
                     if item.alpha >= 255:
@@ -273,6 +274,7 @@ class MapObject:
     def update_block(self, pos:dict, name:str) -> None:
         self.__MapData[pos["y"]][pos["x"]].update(name,_BLOCKS_DATABASE[name]["canPassThrough"])
         self.__needUpdateMapSurface = True
+        self.__block_on_surface = None
     #是否角色能通过该方块
     def ifBlockCanPassThrough(self, pos:dict) -> bool: return self.__MapData[pos["y"]][pos["x"]].canPassThrough
     #计算在地图中的方块
@@ -360,7 +362,7 @@ class MapObject:
         """
         for y in range(theMap.row):
             for x in range(theMap.column):
-                if theMap.mapData[y][x].canPassThrough == False:
+                if not theMap.mapData[y][x].canPassThrough:
                     self.map2d[x][y]=1
         """
         #历遍设施，设置障碍方块

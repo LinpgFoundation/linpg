@@ -208,9 +208,11 @@ class EntityImageManager:
         if os.path.exists("Assets/image/{0}/{1}/{2}".format(faction,characterType,action)):
             files_amount = len(glob("Assets/image/{0}/{1}/{2}/*.png".format(faction,characterType,action)))
             if files_amount > 0:
-                self.__CHARACTERS_IMAGE_DICT[characterType][action] = {"img":numpy.asarray([SrcalphaSurface(\
-                    "Assets/image/{0}/{1}/{2}/{3}_{4}_{5}.png".format(faction,characterType,action,characterType,action,i)\
-                        ,0,0) for i in range(files_amount)]),"imgNum":files_amount}
+                self.__CHARACTERS_IMAGE_DICT[characterType][action] = {
+                    "img": numpy.asarray([StaticImageSurface("Assets/image/{0}/{1}/{2}/{3}_{4}_{5}.png"
+                    .format(faction,characterType,action,characterType,action,i),0,0) for i in range(files_amount)]),
+                    "imgNum": files_amount
+                    }
                 if faction == "sangvisFerri":
                     for img in self.__CHARACTERS_IMAGE_DICT[characterType][action]["img"]:
                         img.flip_original()

@@ -22,6 +22,105 @@ class EntityGetHurtImage(GameObject):
         if characterType not in _CHARACTERS_GET_HURT_IMAGE_DICT:
             _CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = loadImg("Assets/image/npc/{}_hurt.png".format(characterType))
 
+#指向储存角色被察觉和警觉的图标的指针
+_BEING_NOTICED_IMG:pygame.Surface = None
+_FULLY_EXPOSED_IMG:pygame.Surface = None
+_ORANGE_VIGILANCE_IMG:pygame.Surface = None
+_RED_VIGILANCE_IMG:pygame.Surface = None
+
+class EntityDynamicProgressBarSurface(DynamicProgressBarSurface):
+    def __init__(self, mode:str="horizontal"):
+        DynamicProgressBarSurface.__init__(self,None,None,0,0,0,0,mode)
+        self.load_image()
+    #检测被察觉的图标是否生产，如果没有则生成
+    def load_image(self):
+        global _BEING_NOTICED_IMG,_FULLY_EXPOSED_IMG,_ORANGE_VIGILANCE_IMG,_RED_VIGILANCE_IMG
+        #被察觉图标
+        if _BEING_NOTICED_IMG is None: _BEING_NOTICED_IMG = imgLoadFunction("Assets/image/UI/eye_orange.png",True)
+        if _FULLY_EXPOSED_IMG is None: _FULLY_EXPOSED_IMG = imgLoadFunction("Assets/image/UI/eye_red.png",True)
+        #警觉图标
+        if _ORANGE_VIGILANCE_IMG is None: _ORANGE_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_orange.png",True)
+        if _RED_VIGILANCE_IMG is None: _RED_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_red.png",True)
+    def draw(self, surface:pygame.Surface, isFriendlyCharacter:bool=True) -> None:
+        global _BEING_NOTICED_IMG,_FULLY_EXPOSED_IMG,_ORANGE_VIGILANCE_IMG,_RED_VIGILANCE_IMG
+        if not isFriendlyCharacter:
+            surface.blit(resizeImg(_ORANGE_VIGILANCE_IMG,self.size),self.pos)
+        else:
+            surface.blit(resizeImg(_BEING_NOTICED_IMG,self.size),self.pos)
+        self._check_and_update_percentage()
+        if self._current_percentage > 0:
+            imgOnTop = resizeImg(_FULLY_EXPOSED_IMG,self.size) if isFriendlyCharacter is True else resizeImg(_RED_VIGILANCE_IMG,self.size)
+            if self._mode:
+                if self._current_percentage < self._percentage_to_be:
+                    img2 = cropImg(imgOnTop,size=(int(self._width*self._percentage_to_be/self.accuracy),self._height))
+                    img2.set_alpha(100)
+                    surface.blit(img2,self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),self.pos)
+                else:
+                    if self._current_percentage > self._percentage_to_be:
+                        img2 = cropImg(imgOnTop,size=(int(self._width*self._current_percentage/self.accuracy),self._height))
+                        img2.set_alpha(100)
+                        surface.blit(img2,self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._percentage_to_be/self.accuracy),self._height)),self.pos)
+            else:
+                if self._current_percentage < self._percentage_to_be:
+                    img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._percentage_to_be/self.accuracy)))
+                    img2.set_alpha(100)
+                    surface.blit(img2,self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),self.pos)
+                else:
+                    if self._current_percentage > self._percentage_to_be:
+                        img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._current_percentage/self.accuracy)))
+                        img2.set_alpha(100)
+                        surface.blit(img2,self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._percentage_to_be/self.accuracy))),self.pos)
+
+#指向储存血条图片的指针（不初始化直到Entity或其子类被调用）
+_HP_GREEN_IMG:pygame.Surface = None
+_HP_RED_IMG:pygame.Surface = None
+_HP_EMPTY_IMG:pygame.Surface = None
+
+class EntityHpBar(DynamicProgressBarSurface):
+    def __init__(self):
+        DynamicProgressBarSurface.__init__(self,None,None,0,0,0,0)
+        self.load_image()
+    #检测被察觉的图标是否生产，如果没有则生成
+    def load_image(self):
+        global _HP_GREEN_IMG,_HP_RED_IMG,_HP_EMPTY_IMG
+        if _HP_GREEN_IMG is None: _HP_GREEN_IMG = imgLoadFunction("Assets/image/UI/hp_green.png",True)
+        if _HP_RED_IMG is None: _HP_RED_IMG = imgLoadFunction("Assets/image/UI/hp_red.png",True)
+        if  _HP_EMPTY_IMG is None: _HP_EMPTY_IMG = imgLoadFunction("Assets/image/UI/hp_empty.png",True)
+    def draw(self, surface:pygame.Surface, isDying:bool) -> None:
+        global _HP_GREEN_IMG,_HP_RED_IMG,_HP_EMPTY_IMG
+        surface.blit(resizeImg(_HP_EMPTY_IMG,self.size),self.pos)
+        self._check_and_update_percentage()
+        if self._current_percentage > 0:
+            imgOnTop = resizeImg(_HP_GREEN_IMG,self.size) if not isDying else resizeImg(_HP_RED_IMG,self.size)
+            if self._mode:
+                if self._current_percentage < self._percentage_to_be:
+                    img2 = cropImg(imgOnTop,size=(int(self._width*self._percentage_to_be/self.accuracy),self._height))
+                    img2.set_alpha(100)
+                    surface.blit(img2,self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),self.pos)
+                else:
+                    if self._current_percentage > self._percentage_to_be:
+                        img2 = cropImg(imgOnTop,size=(int(self._width*self._current_percentage/self.accuracy),self._height))
+                        img2.set_alpha(100)
+                        surface.blit(img2,self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._percentage_to_be/self.accuracy),self._height)),self.pos)
+            else:
+                if self._current_percentage < self._percentage_to_be:
+                    img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._percentage_to_be/self.accuracy)))
+                    img2.set_alpha(100)
+                    surface.blit(img2,self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),self.pos)
+                else:
+                    if self._current_percentage > self._percentage_to_be:
+                        img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._current_percentage/self.accuracy)))
+                        img2.set_alpha(100)
+                        surface.blit(img2,self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._percentage_to_be/self.accuracy))),self.pos)
+
 #角色音效管理系统
 class EntitySoundManager:
     def __init__(self, channel_id:int):

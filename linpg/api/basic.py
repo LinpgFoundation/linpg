@@ -170,7 +170,7 @@ def throwException(exception_type:str, info:str) -> None:
         error_msg = 'LinpgEngine-Error: {}'.format(info)
         #生成错误报告
         if not os.path.exists("crash_reports"): os.mkdir("crash_reports")
-        with open("crash_reports/crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H:%M:%S")), "w", encoding='utf-8') as f:
+        with open(os.path.join("crash_reports","crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
             f.write("Error_Message: {}".format(error_msg))
         #打印出错误
         raise Exception(error_msg)

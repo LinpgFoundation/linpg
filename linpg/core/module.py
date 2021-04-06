@@ -199,7 +199,7 @@ class SoundManagement:
 
 #使用多线程保存数据
 class SaveDataThread(threading.Thread):
-    def __init__(self, path:str, data:str):
+    def __init__(self, path:str, data:dict):
         threading.Thread.__init__(self)
         self.path = path
         self.data = data

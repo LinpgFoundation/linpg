@@ -25,7 +25,7 @@ class AbstractDialogSystem(SystemWithBackgroundMusic):
         self.__backgroundImageName = None
         self.__backgroundImageSurface = self._black_bg.copy()
     #初始化关键参数
-    def _initialize(self, chapterType:str, chapterId:int, collection_name:str, dialogId:str="head", dialog_options:dict={}) -> None:
+    def _initialize(self, chapterType:str, chapterId:int, collection_name:str, dialogId:Union[str,int]="head", dialog_options:dict={}) -> None:
         #类型
         self.chapterType = chapterType
         #章节id

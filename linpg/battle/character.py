@@ -3,12 +3,6 @@ from .entity import *
 import queue
 from collections import deque
 
-#指向储存警觉图标的指针（不初始化直到Entity或其子类被调用）
-_BEING_NOTICED_IMG:pygame.Surface = None
-_FULLY_EXPOSED_IMG:pygame.Surface = None
-_ORANGE_VIGILANCE_IMG:pygame.Surface = None
-_RED_VIGILANCE_IMG:pygame.Surface = None
-
 #攻击所需的AP
 AP_IS_NEEDED_TO_ATTACK:int = 5
 AP_IS_NEEDED_TO_MOVE_ONE_BLOCK:int = 2
@@ -25,20 +19,19 @@ class FriendlyCharacter(Entity):
         self.skill_cover_range = defaultData["skill_cover_range"]
         self._detection = defaultData["detection"] if "detection" in defaultData and defaultData["detection"] is not None else 0
         #生成被察觉的图标
-        global _BEING_NOTICED_IMG,_FULLY_EXPOSED_IMG
-        if _BEING_NOTICED_IMG is None or _FULLY_EXPOSED_IMG is None:
-            _BEING_NOTICED_IMG = imgLoadFunction("Assets/image/UI/eye_orange.png",True)
-            _FULLY_EXPOSED_IMG = imgLoadFunction("Assets/image/UI/eye_red.png",True)
-        self.__isNoticedImage = DynamicProgressBarSurface(_FULLY_EXPOSED_IMG,_BEING_NOTICED_IMG,0,0,0,0)
-        self.__isNoticedImage.set_percentage(self._detection/100)
-        #尝试加载重创的立绘
+        self.__beNoticedImage = EntityDynamicProgressBarSurface()
+        self.__beNoticedImage.set_percentage(self._detection/100)
+        #尝试加载重创立绘
         try:
-            self._getHurtImage = EntityGetHurtImage(self.type,display.get_height()/4,display.get_height()/2)
-        except BaseException:
-            print('警告：角色 {} 没有对应的破衣动画'.format(defaultData["type"]))
-            self._getHurtImage = None
-            if not os.path.exists("Assets/image/npc_icon/{}.png".format(defaultData["type"])):
-                print("而且你也忘了加入对应的头像")
+            self.__getHurtImage = EntityGetHurtImage(self.type,display.get_height()/4,display.get_height()/2)
+        except:
+            throwException("warning","Character {} does not have damaged artwork!".format(self.type))
+            self.__getHurtImage = None
+            if not os.path.exists("Assets/image/npc_icon/{}.png".format(self.type)): print("And also its icon.")
+    def load_image(self) -> None:
+        super().load_image()
+        self.__getHurtImage.add(self.type)
+        self.__beNoticedImage.load_image()
     @property
     def detection(self) -> int: return self._detection
     @property
@@ -50,19 +43,16 @@ class FriendlyCharacter(Entity):
             self._detection = 100
         elif self._detection < 0:
             self._detection = 0
-        self.__isNoticedImage.set_percentage(self._detection/100)
-    def loadImg(self) -> None:
-        super().loadImg()
-        self._getHurtImage.add(self.type)
+        self.__beNoticedImage.set_percentage(self._detection/100)
     def decreaseHp(self, damage:int) -> None:
         super().decreaseHp(damage)
         #如果角色在被攻击后处于濒死状态
         if not self.is_alive() and not self.dying and self.kind != "HOC":
             self.dying = DYING_ROUND_LIMIT
-            if self._getHurtImage is not None:
-                self._getHurtImage.x = -self._getHurtImage.width
-                self._getHurtImage.alpha = 255
-                self._getHurtImage.yToGo = 255
+            if self.__getHurtImage is not None:
+                self.__getHurtImage.x = -self.__getHurtImage.width
+                self.__getHurtImage.alpha = 255
+                self.__getHurtImage.yToGo = 255
                 self.play_sound("injured")
     def heal(self, hpHealed:int) -> None:
         super().heal(hpHealed)
@@ -79,22 +69,22 @@ class FriendlyCharacter(Entity):
             numberX = (eyeImgWidth - MapClass.block_width/6)/2
             numberY = (eyeImgHeight - MapClass.block_width/10)/2
             #根据参数调整图片
-            self.__isNoticedImage.set_size(eyeImgWidth,eyeImgHeight)
-            self.__isNoticedImage.set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
-            self.__isNoticedImage.draw(surface)
+            self.__beNoticedImage.set_size(eyeImgWidth,eyeImgHeight)
+            self.__beNoticedImage.set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
+            self.__beNoticedImage.draw(surface)
         #重创立绘
-        if self._getHurtImage is not None and self._getHurtImage.x is not None:
-            self._getHurtImage.draw(surface,self.type)
-            if self._getHurtImage.x < self._getHurtImage.width/4:
-                self._getHurtImage.x += self._getHurtImage.width/25
+        if self.__getHurtImage is not None and self.__getHurtImage.x is not None:
+            self.__getHurtImage.draw(surface,self.type)
+            if self.__getHurtImage.x < self.__getHurtImage.width/4:
+                self.__getHurtImage.x += self.__getHurtImage.width/25
             else:
-                if self._getHurtImage.yToGo > 0:
-                    self._getHurtImage.yToGo -= 5
+                if self.__getHurtImage.yToGo > 0:
+                    self.__getHurtImage.yToGo -= 5
                 else:
-                    if self._getHurtImage.alpha > 0:
-                        self._getHurtImage.alpha -= 2
+                    if self.__getHurtImage.alpha > 0:
+                        self.__getHurtImage.alpha -= 2
                     else:
-                        self._getHurtImage.x = None
+                        self.__getHurtImage.x = None
 
 #敌对角色类
 class HostileCharacter(Entity):
@@ -104,12 +94,11 @@ class HostileCharacter(Entity):
         Entity.__init__(self,defaultData,"sangvisFerri",mode)
         self.__patrol_path = deque(defaultData["patrol_path"]) if "patrol_path" in defaultData else deque()
         self._vigilance = 0
-        global _ORANGE_VIGILANCE_IMG,_RED_VIGILANCE_IMG
-        if _ORANGE_VIGILANCE_IMG is None or _RED_VIGILANCE_IMG is None:
-            _ORANGE_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_orange.png",True)
-            _RED_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_red.png",True)
-        self.__vigilanceImage = DynamicProgressBarSurface(_RED_VIGILANCE_IMG,_ORANGE_VIGILANCE_IMG,0,0,0,0,"vertical")
+        self.__vigilanceImage = EntityDynamicProgressBarSurface("vertical")
         self.__vigilanceImage.set_percentage(self._vigilance/100)
+    def load_image(self) -> None:
+        super().load_image()
+        self.__vigilanceImage.load_image()
     def alert(self, value:int=10) -> None:
         self._vigilance += value
         #防止警觉度数值超过阈值
@@ -137,7 +126,7 @@ class HostileCharacter(Entity):
             #根据参数调整图片
             self.__vigilanceImage.set_size(eyeImgWidth,eyeImgHeight)
             self.__vigilanceImage.set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
-            self.__vigilanceImage.draw(surface)
+            self.__vigilanceImage.draw(surface,False)
     def make_decision(self, Map:object, friendlyCharacterData:dict, hostileCharacterData:dict, the_characters_detected_last_round:dict) -> queue:
         #存储友方角色价值榜
         target_value_board = []
@@ -243,14 +232,14 @@ class CharacterDataLoader(threading.Thread):
     def run(self) -> None:
         for key,value in self.alliances.items():
             if isinstance(value,FriendlyCharacter):
-                value.loadImg()
+                value.load_image()
             else:
                 self.alliances[key] = FriendlyCharacter(value,self.DATABASE[value["type"]],self.mode)
             self.currentID+=1
             if console.get_events("dev"): print("total: {0}, current: {1}".format(self.totalNum,self.currentID))
         for key,value in self.enemies.items():
             if isinstance(value,HostileCharacter):
-                value.loadImg()
+                value.load_image()
             else:
                 self.enemies[key] = HostileCharacter(value,self.DATABASE[value["type"]],self.mode)
             self.currentID += 1

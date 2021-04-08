@@ -4,7 +4,7 @@ from .dialogModule import *
 #视觉小说系统模块
 class DialogSystem(AbstractDialogSystem):
     def __init__(self) -> None:
-        AbstractDialogSystem.__init__(self)
+        super().__init__()
         #UI按钮
         self.ButtonsMananger = DialogButtons()
         #加载对话框系统
@@ -273,7 +273,7 @@ class DialogSystem(AbstractDialogSystem):
 #对话制作器
 class DialogEditor(AbstractDialogSystem):
     def __init__(self, chapterType:str, chapterId:int, part:str=None, collection_name:str=None):
-        AbstractDialogSystem.__init__(self)
+        super().__init__()
         self._initialize(chapterType,chapterId,collection_name)
         #设定初始化
         self.fileLocation = "Data/{0}/chapter{1}_dialogs_{2}.yaml".format(self.chapterType,self.chapterId,get_setting("Language")) if self.chapterType == "main_chapter"\

@@ -6,7 +6,7 @@ from .ui import *
 #输入框Abstract，请勿实体化
 class AbstractInputBox(GameObject2d):
     def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int):
-        GameObject2d.__init__(self,x,y)
+        super().__init__(x,y)
         self.FONTSIZE = int(font_size)
         self.FONT = createFont(self.FONTSIZE)
         self.default_width = default_width
@@ -32,7 +32,7 @@ class AbstractInputBox(GameObject2d):
 #单行输入框
 class SingleLineInputBox(AbstractInputBox):
     def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int=150):
-        AbstractInputBox.__init__(self,x,y,font_size,txt_color,default_width)
+        super().__init__(x,y,font_size,txt_color,default_width)
         self._text = ""
     def get_text(self) -> str:
         self.needSave = False
@@ -138,7 +138,7 @@ class SingleLineInputBox(AbstractInputBox):
 #多行输入框
 class MultipleLinesInputBox(AbstractInputBox):
     def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int=150):
-        AbstractInputBox.__init__(self,x,y,font_size,txt_color,default_width)
+        super().__init__(x,y,font_size,txt_color,default_width)
         self._text = [""]
         self.lineId = 0
     def get_text(self) -> list:
@@ -306,7 +306,7 @@ class Console(SingleLineInputBox):
     def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int=32, default_width:int=150):
         self.color_inactive = findColorRGBA('lightskyblue3')
         self.color_active = findColorRGBA('dodgerblue2')
-        SingleLineInputBox.__init__(self,x,y,font_size,self.color_active,default_width)
+        super().__init__(x,y,font_size,self.color_active,default_width)
         self.color = self.color_active
         self.active = True
         self.hidden = True

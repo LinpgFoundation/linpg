@@ -14,7 +14,7 @@ DYING_ROUND_LIMIT:int = 3
 #人形模块
 class Entity(GameObject):
     def __init__(self, DATA:dict, faction:str, mode:str):
-        GameObject.__init__(self,DATA["x"],DATA["y"])
+        super().__init__(DATA["x"],DATA["y"])
         #最大行动值
         self.max_action_point = DATA["action_point"]
         #当前行动值

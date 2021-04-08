@@ -15,7 +15,7 @@ class Coordinate:
 #游戏对象接口
 class GameObject(Coordinate):
     def __init__(self, x:Union[int,float], y:Union[int,float]):
-        Coordinate.__init__(self,x,y)
+        super().__init__(x,y)
     def __lt__(self, other:Coordinate) -> bool: return self.y+self.x < other.y+other.x
     #设置坐标
     def set_pos(self, x:Union[int,float], y:Union[int,float]) -> None:
@@ -27,7 +27,7 @@ class GameObject(Coordinate):
 #2d游戏对象接口
 class GameObject2d(GameObject):
     def __init__(self, x:Union[int,float], y:Union[int,float]):
-        GameObject.__init__(self,x,y)
+        super().__init__(x,y)
     #宽
     @property
     def width(self) -> int: return self.get_width()
@@ -59,7 +59,7 @@ class GameObject2d(GameObject):
 #2.5d游戏对象接口 - 使用z轴判断图案的图层
 class GameObject2point5d(GameObject):
     def __init__(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]):
-        GameObject.__init__(self,x,y)
+        super().__init__(x,y)
         self.z = z
     def __lt__(self, other:GameObject) -> bool:
         if self.z != other.z:
@@ -78,13 +78,13 @@ class GameObject2point5d(GameObject):
 #3d游戏对象接口
 class GameObject3d(GameObject2point5d):
     def __init__(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]):
-        GameObject2point5d.__init__(self,x,y,z)
+        super().__init__(x,y,z)
     def __lt__(self,other) -> bool: return self.y+self.x+self.z < other.y+other.x+other.z
 
 #用于储存游戏对象的容器，类似html的div
 class GameObjectContainer(GameObject):
     def __init__(self, x:Union[int,float], y:Union[int,float]):
-        GameObject.__init__(self,x,y)
+        super().__init__(x,y)
         self.hidden = False
         self.items = []
     #新增一个物品
@@ -120,7 +120,7 @@ class SystemObject:
 #拥有背景音乐的系统模块接口
 class SystemWithBackgroundMusic(SystemObject):
     def __init__(self) -> None:
-        SystemObject.__init__(self)
+        super().__init__()
         self.__bgm_path = None
         self.__bgm_volume = 1
         self.__if_stop_playing_bgm = False
@@ -200,7 +200,7 @@ class SoundManagement:
 #使用多线程保存数据
 class SaveDataThread(threading.Thread):
     def __init__(self, path:str, data:dict):
-        threading.Thread.__init__(self)
+        super().__init__()
         self.path = path
         self.data = data
     def run(self) -> None:

@@ -4,7 +4,7 @@ from .movie import *
 #视觉小说系统接口
 class AbstractDialogSystem(SystemWithBackgroundMusic):
     def __init__(self):
-        SystemWithBackgroundMusic.__init__(self)
+        super().__init__()
         #加载对话的背景图片模块
         self._npcManager = NpcImageManager()
         #黑色Void帘幕
@@ -257,7 +257,7 @@ class NpcImageManager:
 #对话框和对话框内容
 class DialogContent(AbstractDialog):
     def __init__(self, fontSize:int):
-        AbstractDialog.__init__(self,loadImg("Assets/image/UI/dialoguebox.png"),fontSize)
+        super().__init__(loadImg("Assets/image/UI/dialoguebox.png"),fontSize)
         try:
             self.__textPlayingSound = pygame.mixer.Sound("Assets/sound/ui/dialog_words_playing.ogg")
         except FileNotFoundError:

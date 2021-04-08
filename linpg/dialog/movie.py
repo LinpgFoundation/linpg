@@ -48,7 +48,7 @@ def loadAudioAsMusic(moviePath:str) -> None:
 #视频模块接口，不能实例化
 class AbstractVedio(threading.Thread):
     def __init__(self, path:str, width:int, height:int):
-        threading.Thread.__init__(self)
+        super().__init__()
         self._path = path
         self._video_container = av.open(self._path,mode='r')
         self._video_stream = self._video_container.streams.video[0]
@@ -57,7 +57,7 @@ class AbstractVedio(threading.Thread):
         self._audio_stream.thread_type = 'AUTO'
         self._frameRate = round(self._video_stream.average_rate)
         self._frameQueue = queue.Queue(maxsize=self._frameRate)
-        self._stopped = False
+        self._stopped:bool = False
         self._clock = pygame.time.Clock()
         self._width = width
         self._height = height
@@ -88,7 +88,7 @@ class AbstractVedio(threading.Thread):
 #视频片段展示模块--灵活，但不能保证帧数和音乐同步
 class VedioFrame(AbstractVedio):
     def __init__(self, path:str, width:int, height:int, loop:bool=True, with_music:bool=False, play_range:tuple=None, volume:float=1.0):
-        AbstractVedio.__init__(self,path,width,height)
+        super().__init__(path,width,height)
         self.loop = loop
         self.looped_times = 0
         self.bgm = loadAudioAsSound(path) if with_music else None
@@ -98,6 +98,7 @@ class VedioFrame(AbstractVedio):
         self.bgm_channel = pygame.mixer.find_channel() if with_music else None
         self.start_point = play_range[0] if play_range is not None else None
         self.end_point = play_range[1] if play_range is not None else None
+        self.started:bool = False
     #音量
     def get_volume(self) -> float: return self.__volume
     def set_volume(self, value:float) -> None:
@@ -114,9 +115,11 @@ class VedioFrame(AbstractVedio):
         return VedioFrame(self._path,self._width,self._height,self.loop,with_music,(self.start_point,self.end_point),self.__volume)
     #开始执行线程
     def run(self) -> None:
+        self.started = True
         for frame in self._video_container.decode(self._video_stream):
-            if self._stopped:
-                break
+            #如果要中途停止
+            if self._stopped is True: break
+            #处理当前Frame
             self._processFrame(frame)
             if self.end_point is not None and self.get_pos() >= self.end_point:
                 self.looped_times += 1
@@ -134,7 +137,7 @@ class VedioFrame(AbstractVedio):
 #视频播放系统模块--强制帧数和音乐同步，但不灵活
 class VedioPlayer(AbstractVedio):
     def __init__(self, path:str, width:int, height:int):
-        AbstractVedio.__init__(self,path,width,height)
+        super().__init__(path,width,height)
         self.__allowFrameDelay = 10
         loadAudioAsMusic(path)
     #开始执行线程

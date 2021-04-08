@@ -170,7 +170,7 @@ def freeTypeRender(txt:any, color:Union[tuple,list,str], size:int, ifBold:bool=F
 #动态文字类
 class DynamicTextSurface(GameObject2d):
     def __init__(self, n:pygame.Surface, b:pygame.Surface, x:Union[int,float], y:Union[int,float]):
-        GameObject2d.__init__(self,x,y)
+        super().__init__(x,y)
         self.normal_font_surface = n
         self.big_font_surface = b
         self.b_x = x - (self.big_font_surface.get_width()-self.normal_font_surface.get_width())/2

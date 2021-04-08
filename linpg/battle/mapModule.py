@@ -136,7 +136,7 @@ class BlockObject:
 #点
 class Point(GameObject):
     def __init__(self, x:int, y:int):
-        GameObject.__init__(self,x,y)
+        super().__init__(x,y)
         self.x = x
         self.y = y
     def __eq__(self, other:object) -> bool: return True if self.x == other.x and self.y == other.y else False
@@ -144,7 +144,7 @@ class Point(GameObject):
 #管理场景装饰物的类
 class DecorationObject(GameObject):
     def  __init__(self, x:int, y:int, itemType:str, image:str):
-        GameObject.__init__(self,x,y)
+        super().__init__(x,y)
         self.type = itemType
         self.image = image
         self.alpha = None

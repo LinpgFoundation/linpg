@@ -7,7 +7,7 @@ _CHARACTERS_GET_HURT_IMAGE_DICT:dict = {}
 #角色受伤立绘图形模块
 class EntityGetHurtImage(GameObject):
     def __init__(self, self_type:str, y:Union[int,float], width:Union[int,float]):
-        GameObject.__init__(self,None,y)
+        super().__init__(None,y)
         self.yToGo = None
         self.width = int(width)
         self.alpha = 255
@@ -30,7 +30,7 @@ _RED_VIGILANCE_IMG:pygame.Surface = None
 
 class EntityDynamicProgressBarSurface(DynamicProgressBarSurface):
     def __init__(self, mode:str="horizontal"):
-        DynamicProgressBarSurface.__init__(self,None,None,0,0,0,0,mode)
+        super().__init__(None,None,0,0,0,0,mode)
         self.load_image()
     #检测被察觉的图标是否生产，如果没有则生成
     def load_image(self):
@@ -82,7 +82,7 @@ _HP_EMPTY_IMG:pygame.Surface = None
 
 class EntityHpBar(DynamicProgressBarSurface):
     def __init__(self):
-        DynamicProgressBarSurface.__init__(self,None,None,0,0,0,0)
+        super().__init__(None,None,0,0,0,0)
         self.load_image()
     #检测被察觉的图标是否生产，如果没有则生成
     def load_image(self):

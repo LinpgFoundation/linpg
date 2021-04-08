@@ -12,7 +12,7 @@ class FriendlyCharacter(Entity):
     def __init__(self, theCharacterDataDic:dict, defaultData:dict, mode:str) -> None:
         for key in theCharacterDataDic:
             defaultData[key] = theCharacterDataDic[key]
-        Entity.__init__(self,defaultData,"character",mode)
+        super().__init__(defaultData,"character",mode)
         self.bullets_carried = defaultData["bullets_carried"]
         self.skill_effective_range = defaultData["skill_effective_range"]
         self.max_skill_range = calculate_range(defaultData["skill_effective_range"])
@@ -91,7 +91,7 @@ class HostileCharacter(Entity):
     def __init__(self, theSangvisFerrisDataDic:dict, defaultData:dict, mode:str):
         for key in theSangvisFerrisDataDic:
             defaultData[key] = theSangvisFerrisDataDic[key]
-        Entity.__init__(self,defaultData,"sangvisFerri",mode)
+        super().__init__(defaultData,"sangvisFerri",mode)
         self.__patrol_path = deque(defaultData["patrol_path"]) if "patrol_path" in defaultData else deque()
         self._vigilance = 0
         self.__vigilanceImage = EntityDynamicProgressBarSurface("vertical")
@@ -222,7 +222,7 @@ class HostileCharacter(Entity):
 #初始化角色信息
 class CharacterDataLoader(threading.Thread):
     def __init__(self, alliances:dict, enemies:dict, mode:str) -> None:
-        threading.Thread.__init__(self)
+        super().__init__()
         self.DATABASE = loadCharacterData()
         self.alliances = deepcopy(alliances)
         self.enemies = deepcopy(enemies)

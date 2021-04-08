@@ -31,7 +31,7 @@ class WeatherSystem:
 #雪花片
 class Snow(GameObject):
     def  __init__(self, imgId:int, size:int, speed:int, x:int, y:int) -> None:
-        GameObject.__init__(self,x,y)
+        super().__init__(x,y)
         self.imgId = imgId
         self.size = size
         self.speed = speed

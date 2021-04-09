@@ -1,8 +1,5 @@
 # cython: language_level=3
-from threading import current_thread
-
-from pygame import mouse
-from .font import *
+from ..api import *
 
 #图形接口
 class AbstractImage(GameObject2d):
@@ -215,7 +212,8 @@ class ProgressBarSurface(AbstractImage):
         super().__init__(imgOnTop,x,y,max_width,height)
         self.img2 = imgLoadFunction(imgOnBottom,True) if imgOnBottom is not None else None
         self._current_percentage = 0
-        self._mode = True if mode == "horizontal" else False
+        self._mode:bool = True
+        self.set_mode(mode)
     #百分比
     @property
     def percentage(self) -> float: return self._current_percentage
@@ -498,46 +496,3 @@ class DialogBox(AbstractDialog,GameObject2d):
     def flip(self) -> None:
         self.dialoguebox = pygame.transform.flip(self.dialoguebox,True,False)
         self.__flipped = not self.__flipped
-
-#带有滚动条的Surface容器
-class SurfaceContainerWithScrollbar(AbstractImage):
-    def __init__(self, img:Union[pygame.Surface,None], x:Union[int,float], y:Union[int,float], width:Union[int,float], height:Union[int,float]):
-        super().__init__(img,x,y,width,height)
-        self.__local_x = 0
-        self.__local_y = 0
-        self.items = {}
-        self.hidden = False
-        self.height_between_item = 10
-        self.move_speed = 10
-        self.__total_width = 0
-        self.__total_height = 0
-    def add(self, key:Union[str,int], value:Union[AbstractImage,pygame.Surface]) -> None:
-        self.items[key] = value
-        self.__total_height += value.get_height()
-    def remove(self, key:Union[str,int]) -> None:
-        del self.items[key]
-    def clear(self) -> None:
-        self.items.clear()
-    def check_event(self, pygame_events):
-        if self.is_hover():
-            for event in pygame_events:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 4:
-                        self.__local_y -= self.move_speed
-                        break
-                    elif event.button == 5:
-                        self.__local_y += self.move_speed
-                        break
-    def draw(self, screen:pygame.Surface) -> None:
-        if self.img != None: screen.blit(self.img,self.pos)
-        current_x = self.x + self.__local_x
-        current_y = self.y + self.__local_y
-        if self.__total_height >= self._height:
-            pygame.draw.rect(screen,findColorRGBA("white"),pygame.Rect(
-                current_x,self.y-self._height*(self.__local_y/self.__total_height),10,self._height*(self._height/self.__total_height)
-                )
-            )
-        for item in self.items.values():
-            #if 0 <= current_y-self.y <= self._height:
-            screen.blit(item,(current_x,current_y))
-            current_y += self.height_between_item + item.get_height()

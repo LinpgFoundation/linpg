@@ -47,13 +47,12 @@ def isHover(imgObject:object, objectPos:Union[tuple,list]=(0,0), local_x:Union[i
     mouse_x,mouse_y = pygame.mouse.get_pos()
     #如果是pygame的面
     if isinstance(imgObject,pygame.Surface):
-        if 0<mouse_x-local_x-objectPos[0]<imgObject.get_width() and 0<mouse_y-local_y-objectPos[1]<imgObject.get_height():
-            return True
-        else:
-            return False
+        return True if 0 < mouse_x-local_x-objectPos[0] < imgObject.get_width() and 0 < mouse_y-local_y-objectPos[1] < imgObject.get_height()\
+            else False
+    elif isinstance(imgObject,pygame.Rect):
+        return True if imgObject.x < mouse_x-local_x < imgObject.right and imgObject.y < mouse_y-local_y < imgObject.bottom else False
     #如果是Linpg引擎的GameObject2d类(所有2d物品的父类)
     elif isinstance(imgObject,GameObject2d):
         return imgObject.is_hover((mouse_x-local_x,mouse_y-local_y))
     else:
         throwException("error","Unable to check current object: {}".format(imgObject))
-

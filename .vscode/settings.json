@@ -4,6 +4,7 @@
         "KEYUP",
         "LCTRL",
         "MOUSEBUTTONDOWN",
+        "MOUSEBUTTONUP",
         "RGBA",
         "SRCALPHA",
         "alphanum",

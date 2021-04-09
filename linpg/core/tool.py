@@ -1,6 +1,5 @@
 # cython: language_level=3
 from .experimental import *
-from glob import glob
 from os import remove
 
 #优化中文文档

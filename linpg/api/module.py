@@ -1,6 +1,6 @@
 # cython: language_level=3
 import threading
-from ..api import *
+from .lang import *
 
 #坐标类
 class Coordinate:
@@ -80,24 +80,6 @@ class GameObject3d(GameObject2point5d):
     def __init__(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]):
         super().__init__(x,y,z)
     def __lt__(self,other) -> bool: return self.y+self.x+self.z < other.y+other.x+other.z
-
-#用于储存游戏对象的容器，类似html的div
-class GameObjectContainer(GameObject):
-    def __init__(self, x:Union[int,float], y:Union[int,float]):
-        super().__init__(x,y)
-        self.hidden = False
-        self.items = []
-    #新增一个物品
-    def append(self, new_item:GameObject) -> None: self.items.append(new_item)
-    #移除一个物品
-    def pop(self, index:int) -> None: self.items.pop(index)
-    #清空物品栏
-    def clear(self) -> None: self.items.clear()
-    #把物品画到surface上
-    def draw(self, surface:pygame.Surface) -> None:
-        if not self.hidden:
-            for item in self.items:
-                item.display(surface,self.pos)
 
 #系统模块接口
 class SystemObject:

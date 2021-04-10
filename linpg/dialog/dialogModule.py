@@ -89,12 +89,8 @@ class NpcImageManager:
         self.__NPC_IMAGE_DATABASE = NpcImageDatabase()
         self.img_width = int(display.get_width()/2)
         self.move_x = 0
-        self.dev_mode = False
+        self.dev_mode:bool = False
         self.npcGetClick = None
-    def devMode(self) -> None:
-        for imgPath in glob("Assets/image/npc/*"):
-            self.__loadNpc(imgPath)
-            self.dev_mode = True
     #确保角色存在
     def __ensure_the_existence_of(self, name:str) -> None:
         if name not in self.npcImageDict: self.__loadNpc(os.path.join("Assets/image/npc",name))

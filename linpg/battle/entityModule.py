@@ -121,29 +121,63 @@ class EntityHpBar(DynamicProgressBarSurface):
                         surface.blit(img2,self.pos)
                     surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._percentage_to_be/self.accuracy))),self.pos)
 
-#角色音效管理系统
-class EntitySoundManager:
+#音效管理模块-字典
+class AbstractEntitySoundManager(AbstractSoundManager):
     def __init__(self, channel_id:int):
-        self.channel_id = channel_id
-        self.__sounds_dict = {}
+        super().__init__(channel_id)
+        self._SOUNDS_PATH:str = ''
+        self._sounds_dict:dict = {}
+
+#角色音效管理系统
+class EntitySoundManager(AbstractEntitySoundManager):
+    def __init__(self, channel_id:int):
+        super().__init__(channel_id)
+        self._SOUNDS_PATH = "Assets/sound/character"
     #加载音效
     def add(self, characterType:str) -> None:
-        if characterType not in self.__sounds_dict and os.path.exists("Assets/sound/character/"+characterType):
-            self.__sounds_dict[characterType] = {}
-            for soundType in os.listdir("Assets/sound/character/{}/".format(characterType)):
-                self.__sounds_dict[characterType][soundType] = []
-                for soundPath in glob("Assets/sound/character/{}/{}/*".format(characterType,soundType)):
-                    self.__sounds_dict[characterType][soundType].append(pygame.mixer.Sound(soundPath))
+        if characterType not in self._sounds_dict and os.path.exists(os.path.join(self._SOUNDS_PATH,characterType)):
+            self._sounds_dict[characterType] = {}
+            for soundType in os.listdir(os.path.join(self._SOUNDS_PATH,characterType)):
+                self._sounds_dict[characterType][soundType] = []
+                for soundPath in glob(os.path.join(self._SOUNDS_PATH,characterType,soundType,"*")):
+                    self._sounds_dict[characterType][soundType].append(pygame.mixer.Sound(soundPath))
     #播放角色音效
     def play(self, characterType:str, soundType:str) -> None:
-        if characterType in self.__sounds_dict and soundType in self.__sounds_dict[characterType]:
-            sound_list = self.__sounds_dict[characterType][soundType]
+        if characterType in self._sounds_dict and soundType in self._sounds_dict[characterType]:
+            sound_list = self._sounds_dict[characterType][soundType]
             if len(sound_list) > 1:
                 sound = sound_list[randomInt(0,len(sound_list)-1)]
             else:
                 sound = sound_list[0]
             sound.set_volume(get_setting("Sound","sound_effects")/100.0)
-            pygame.mixer.Channel(self.channel_id).play(sound)
+            pygame.mixer.Channel(self._channel_id).play(sound)
+
+#射击音效 -- 频道2
+class AttackingSoundManager(AbstractEntitySoundManager):
+    def __init__(self, volume:int, channel_id:int):
+        super().__init__(channel_id)
+        self._SOUNDS_PATH = "Assets/sound/attack"
+        self._sounds_dict = {
+            #突击步枪
+            "AR": glob(os.path.join(self._SOUNDS_PATH,'ar_*.ogg')),
+            #手枪
+            "HG": glob(os.path.join(self._SOUNDS_PATH,'hg_*.ogg')),
+            #机枪
+            "MG": glob(os.path.join(self._SOUNDS_PATH,'mg_*.ogg')),
+            #步枪
+            "RF": glob(os.path.join(self._SOUNDS_PATH,'rf_*.ogg')),
+            #冲锋枪
+            "SMG": glob(os.path.join(self._SOUNDS_PATH,'smg_*.ogg')),
+        }
+        self.volume:int = volume
+        for key in self._sounds_dict:
+            for i in range(len(self._sounds_dict[key])):
+                self._sounds_dict[key][i] = pygame.mixer.Sound(self._sounds_dict[key][i])
+                self._sounds_dict[key][i].set_volume(volume/100.0)
+    #播放
+    def play(self, kind:str) -> None:
+        if kind in self._sounds_dict:
+            pygame.mixer.Channel(self._channel).play(self._sounds_dict[kind][randomInt(0,len(self._sounds_dict[kind])-1)])
 
 #计算最远攻击距离
 def calculate_range(effective_range_dic:dict) -> int:
@@ -281,34 +315,6 @@ def loadCharacterData() -> None:
         saveConfig("Data/character_data.yaml",loadData)
     makeFolderForCharacterSounds()
     return loadData
-
-#射击音效 -- 频道2
-class AttackingSoundManager:
-    def __init__(self, volume:int, channel_id:int):
-        self.__soundsData = {
-            #突击步枪
-            "AR": glob(r'Assets/sound/attack/ar_*.ogg'),
-            #手枪
-            "HG": glob(r'Assets/sound/attack/hg_*.ogg'),
-            #机枪
-            "MG": glob(r'Assets/sound/attack/mg_*.ogg'),
-            #步枪
-            "RF": glob(r'Assets/sound/attack/rf_*.ogg'),
-            #冲锋枪
-            "SMG": glob(r'Assets/sound/attack/smg_*.ogg'),
-        }
-        self.set_channel(channel_id)
-        self.volume = volume
-        for key in self.__soundsData:
-            for i in range(len(self.__soundsData[key])):
-                self.__soundsData[key][i] = pygame.mixer.Sound(self.__soundsData[key][i])
-                self.__soundsData[key][i].set_volume(volume/100.0)
-    #设置播放的频道
-    def set_channel(self, channel_id:int) -> None: self.__channel = channel_id
-    #播放
-    def play(self, kind:str):
-        if kind in self.__soundsData:
-            pygame.mixer.Channel(self.__channel).play(self.__soundsData[kind][randomInt(0,len(self.__soundsData[kind])-1)])
 
 #用于存放角色做出的决定
 class DecisionHolder:

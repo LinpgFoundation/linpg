@@ -11,6 +11,11 @@ class Coordinate:
     @property
     def pos(self) -> tuple: return self.x,self.y
     def get_pos(self) -> tuple: return self.x,self.y
+    #位置
+    @property
+    def left(self) -> Union[int,float]: return self.x
+    @property
+    def top(self) -> Union[int,float]: return self.y
 
 #游戏对象接口
 class GameObject(Coordinate):
@@ -40,6 +45,22 @@ class GameObject2d(GameObject):
     @property
     def size(self) -> tuple: return self.get_width(),self.get_height()
     def get_size(self) -> tuple: return self.get_width(),self.get_height()
+    #位置
+    @property
+    def right(self) -> Union[int,float]: return self.x+self.get_width()
+    @property
+    def bottom(self) -> Union[int,float]: return self.y+self.get_height()
+    #中心位置
+    @property
+    def centerx(self) -> Union[int,float]: return self.x+self.get_width()/2
+    @property
+    def centery(self) ->  Union[int,float]: return self.y+self.get_height()/2
+    @property
+    def center(self) -> tuple: return self.x+self.get_width()/2,self.y+self.get_height()/2
+    def get_center(self) -> tuple: return self.x+self.get_width()/2,self.y+self.get_height()/2
+    def set_center(self, centerx:Union[int,float], centery:Union[int,float]) -> None:
+        self.x = int(self.x*2+self.get_width()/2-self.centerx)
+        self.y = int(self.y*2+self.get_height()/2-self.centery)
     #是否被鼠标触碰
     def is_hover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
         if mouse_pos == (-1,-1): mouse_pos = pygame.mouse.get_pos()

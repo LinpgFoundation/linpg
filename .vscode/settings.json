@@ -8,6 +8,8 @@
         "RGBA",
         "SRCALPHA",
         "alphanum",
+        "centerx",
+        "centery",
         "chara",
         "cpdef",
         "cutscene",

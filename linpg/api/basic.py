@@ -184,3 +184,15 @@ def natural_sort(l:list) -> list:
     convert = lambda text: int(text) if text.isdigit() else text.lower() 
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
     return sorted(l, key = alphanum_key)
+
+#是否触碰pygame类
+def isHoverPygameObject(imgObject:object, objectPos:Union[tuple,list]=(0,0), local_x:Union[int,float]=0, local_y:Union[int,float]=0) -> bool:
+    mouse_x,mouse_y = pygame.mouse.get_pos()
+    #如果是pygame的面
+    if isinstance(imgObject,pygame.Surface):
+        return True if 0 < mouse_x-local_x-objectPos[0] < imgObject.get_width() and 0 < mouse_y-local_y-objectPos[1] < imgObject.get_height()\
+            else False
+    elif isinstance(imgObject,pygame.Rect):
+        return True if imgObject.x < mouse_x-local_x < imgObject.right and imgObject.y < mouse_y-local_y < imgObject.bottom else False
+    else:
+        throwException("error","Unable to check current object: {0} (type:{1})".format(imgObject,type(imgObject)))

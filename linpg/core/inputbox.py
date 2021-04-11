@@ -1,12 +1,12 @@
 # cython: language_level=3
 import time
-from tkinter import Tk
+import tkinter
 from .ui import *
 
 #输入框Abstract，请勿实体化
 class AbstractInputBox(GameObject2d):
     def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int):
-        GameObject2d.__init__(self,x,y)
+        super().__init__(x,y)
         self.FONTSIZE = int(font_size)
         self.FONT = createFont(self.FONTSIZE)
         self.default_width = default_width
@@ -32,7 +32,7 @@ class AbstractInputBox(GameObject2d):
 #单行输入框
 class SingleLineInputBox(AbstractInputBox):
     def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int=150):
-        AbstractInputBox.__init__(self,x,y,font_size,txt_color,default_width)
+        super().__init__(x,y,font_size,txt_color,default_width)
         self._text = ""
     def get_text(self) -> str:
         self.needSave = False
@@ -101,7 +101,7 @@ class SingleLineInputBox(AbstractInputBox):
             return True
         elif event.key == pygame.K_LCTRL and pygame.key.get_pressed()[pygame.K_v]\
             or event.key == pygame.K_v and pygame.key.get_pressed()[pygame.K_LCTRL]:
-            self._add_char(Tk().clipboard_get())
+            self._add_char(tkinter.Tk().clipboard_get())
             return True
         return False
     def draw(self, screen:pygame.Surface, pygame_events:any=pygame.event.get()) -> None:
@@ -138,7 +138,7 @@ class SingleLineInputBox(AbstractInputBox):
 #多行输入框
 class MultipleLinesInputBox(AbstractInputBox):
     def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int=150):
-        AbstractInputBox.__init__(self,x,y,font_size,txt_color,default_width)
+        super().__init__(x,y,font_size,txt_color,default_width)
         self._text = [""]
         self.lineId = 0
     def get_text(self) -> list:
@@ -263,7 +263,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                         if self.holderIndex > len(self._text[self.lineId])-1:
                             self.holderIndex = len(self._text[self.lineId])-1
                     elif event.key == pygame.K_LCTRL and pygame.key.get_pressed()[pygame.K_v] or event.key == pygame.K_v and pygame.key.get_pressed()[pygame.K_LCTRL]:
-                        self._add_char(Tk().clipboard_get())
+                        self._add_char(tkinter.Tk().clipboard_get())
                         return True
                     #ESC，关闭
                     elif event.key == pygame.K_ESCAPE:
@@ -306,7 +306,7 @@ class Console(SingleLineInputBox):
     def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int=32, default_width:int=150):
         self.color_inactive = findColorRGBA('lightskyblue3')
         self.color_active = findColorRGBA('dodgerblue2')
-        SingleLineInputBox.__init__(self,x,y,font_size,self.color_active,default_width)
+        super().__init__(x,y,font_size,self.color_active,default_width)
         self.color = self.color_active
         self.active = True
         self.hidden = True
@@ -397,7 +397,7 @@ class Console(SingleLineInputBox):
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_BACKQUOTE:
                     self.hidden = False
                     break
-        elif self.hidden == False:
+        elif not self.hidden:
             for event in pygame_events:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_x,mouse_y = pygame.mouse.get_pos()

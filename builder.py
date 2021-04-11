@@ -21,6 +21,6 @@ os.system("python -m pip install --user --upgrade twine")
 os.system("twine upload dist/*")
 
 #删除不需要的文件
-folders_need_remove = ["dist","Save","build"]
+folders_need_remove = ["dist","Save","build","crash_reports"]
 for path in folders_need_remove:
     if os.path.exists(path): shutil.rmtree(path)

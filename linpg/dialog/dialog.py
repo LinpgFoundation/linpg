@@ -1,10 +1,11 @@
 # cython: language_level=3
+from pygame.key import name
 from .dialogModule import *
 
 #视觉小说系统模块
 class DialogSystem(AbstractDialogSystem):
     def __init__(self) -> None:
-        AbstractDialogSystem.__init__(self)
+        super().__init__()
         #UI按钮
         self.ButtonsMananger = DialogButtons()
         #加载对话框系统
@@ -137,7 +138,7 @@ class DialogSystem(AbstractDialogSystem):
                         self.dialogTxtSystem.autoMode = self.ButtonsMananger.autoMode
                     elif buttonEvent == "history" and not self.showHistory:
                         self.showHistory = True
-                    elif is_hover(self.history_back) and self.showHistory:
+                    elif self.history_back.is_hover() and self.showHistory:
                         self.showHistory = False
                         self.historySurface = None
                     #如果所有行都没有播出，则播出所有行
@@ -247,7 +248,7 @@ class DialogSystem(AbstractDialogSystem):
                         dialogIdTemp = None
             surface.blit(self.historySurface,(0,0))
             self.history_back.draw(surface)
-            is_hover(self.history_back)
+            self.history_back.is_hover()
         elif self.dialogTxtSystem.needUpdate() or leftClick:
             if self.dialogContent[self.dialogId]["next_dialog_id"] is None or self.dialogContent[self.dialogId]["next_dialog_id"]["target"] is None:
                 self.fadeOut(surface)
@@ -271,9 +272,9 @@ class DialogSystem(AbstractDialogSystem):
         controller.draw(surface)
 
 #对话制作器
-class DialogSystemDev(AbstractDialogSystem):
+class DialogEditor(AbstractDialogSystem):
     def __init__(self, chapterType:str, chapterId:int, part:str=None, collection_name:str=None):
-        AbstractDialogSystem.__init__(self)
+        super().__init__()
         self._initialize(chapterType,chapterId,collection_name)
         #设定初始化
         self.fileLocation = "Data/{0}/chapter{1}_dialogs_{2}.yaml".format(self.chapterType,self.chapterId,get_setting("Language")) if self.chapterType == "main_chapter"\
@@ -286,24 +287,55 @@ class DialogSystemDev(AbstractDialogSystem):
         self.narrator = SingleLineInputBox(display.get_width()*0.2,self.dialoguebox.y+self.FONTSIZE,self.FONTSIZE,"white")
         self.content = MultipleLinesInputBox(display.get_width()*0.2,display.get_height()*0.73,self.FONTSIZE,"white")
         #将npc立绘系统设置为开发者模式
-        self._npcManager.devMode()
+        self._npcManager.dev_mode = True
+        #加载容器
+        container_width = int(display.get_width()*0.2)
+        self.UIContainerRightImage = loadImg("Assets/image/UI/container.png",(container_width,display.get_height()))
+        #背景容器
+        self.UIContainerRight_bg = SurfaceContainerWithScrollbar(
+            None, 0, int(display.get_height()*0.1), int(container_width*0.95), int(display.get_height()*0.8), "vertical"
+            )
+        self.UIContainerRight_bg.set_scroll_bar_pos("right")
+        #加载背景图片
+        self.background_deselect = loadImg("Assets/image/UI/deselect.png")
+        self.UIContainerRight_bg.set("current_select",None)
+        for imgPath in glob("Assets/image/dialog_background/*"):
+            self.UIContainerRight_bg.set(os.path.basename(imgPath),loadImg(imgPath,(container_width*0.8,None)))
+        self.UIContainerRight_bg.panding = container_width*0.1
+        self.__current_select_bg_name = None
+        self.__current_select_bg_copy = None
+        #npc立绘容器
+        self.UIContainerRight_npc = SurfaceContainerWithScrollbar(
+            None, 0, int(display.get_height()*0.1), int(container_width*0.95), int(display.get_height()*0.8), "vertical"
+            )
+        self.UIContainerRight_npc.set_scroll_bar_pos("right")
+        #加载npc立绘
+        for imgPath in glob("Assets/image/npc/*"):
+            self.UIContainerRight_npc.set(os.path.basename(imgPath),loadImg(imgPath,(container_width*0.8,None)))
+        self.UIContainerRight_npc.hidden = True
         #从配置文件中加载数据
         self.__loadDialogData(part)
-        #背景选择界面
-        widthTmp = int(display.get_width()*0.2)
-        self.UIContainerRight = loadDynamicImage("Assets/image/UI/container.png",(display.get_width()*0.8+widthTmp,0),(display.get_width()*0.8,0),(widthTmp/10,0),widthTmp,display.get_height())
-        self.UIContainerRightButton = loadImage("Assets/image/UI/container_button.png",(-display.get_width()*0.03,display.get_height()*0.4),int(display.get_width()*0.04),int(display.get_height()*0.2))
-        self.UIContainerRight.rotate(90)
+        #容器按钮
+        button_width = int(display.get_width()*0.04)
+        self.UIContainerRightButton = loadDynamicImage(
+            "Assets/image/UI/container_button.png",
+            (display.get_width()-button_width,display.get_height()*0.4),
+            (display.get_width()-button_width-container_width,display.get_height()*0.4),
+            (container_width/10,0),button_width,int(display.get_height()*0.2)
+            )
         self.UIContainerRightButton.rotate(90)
-        self.background_deselect = loadImg("Assets/image/UI/deselect.png")
-        self.UIContainerRight_kind = "background"
         #UI按钮
         CONFIG = get_lang("DialogCreator")
-        button_width = display.get_width()*0.05
-        button_y = display.get_height()*0.03
-        self.button_select_background = ButtonWithFadeInOut("Assets/image/UI/menu.png",CONFIG["background"],"black",100,button_width/3,button_width/3,button_width/3)
-        self.button_select_npc = ButtonWithFadeInOut("Assets/image/UI/menu.png",CONFIG["npc"],"black",100,button_width/2+self.button_select_background.get_width(),button_width/3,button_width/3)
-        self.npc_local_y = 0
+        button_width = int(display.get_width()*0.05)
+        button_y = int(display.get_height()*0.03)
+        #控制容器转换的按钮
+        self.button_select_background = ButtonWithFadeInOut(
+            "Assets/image/UI/menu.png",CONFIG["background"],"black",100,button_width/3,button_y*2,button_width/3
+            )
+        self.button_select_npc = ButtonWithFadeInOut(
+            "Assets/image/UI/menu.png",CONFIG["npc"],"black",100,button_width/2+self.button_select_background.get_width(),button_y*2,button_width/3
+            )
+        #页面右上方的一排按钮
         self.buttonsUI = {
             "save": ButtonWithDes("Assets/image/UI/save.png",button_width*7.25,button_y,button_width,button_width,get_lang("Global","save")),
             "reload": ButtonWithDes("Assets/image/UI/reload.png",button_width*6,button_y,button_width,button_width,CONFIG["reload"]),
@@ -320,14 +352,26 @@ class DialogSystemDev(AbstractDialogSystem):
         pygame.draw.rect(surfaceTmp,(255,255,255),(0,0, surfaceTmp.get_width(),surfaceTmp.get_height()))
         surfaceTmp.blit(self.removeNpcButton,(self.removeNpcButton.get_width()*0.1,0))
         self.removeNpcButton = surfaceTmp
-        #加载背景图片
-        self.all_background_image = {}
-        for imgPath in glob("Assets/image/dialog_background/*"):
-            self.all_background_image[os.path.basename(imgPath)] = loadImg(imgPath)
-        self.background_image_local_y = display.get_height()*0.1
         self.smart_add_mode = False
     @property
     def part(self) -> str: return self.parts[self.partId]
+    #更新背景选项栏
+    def _update_background_image(self, image_name:str) -> None:
+        super()._update_background_image(image_name)
+        if image_name is not None:
+            if self.__current_select_bg_name is not None:
+                self.UIContainerRight_bg.set("current_select",self.__current_select_bg_copy)
+                self.UIContainerRight_bg.swap("current_select",self.__current_select_bg_name)
+            self.UIContainerRight_bg.swap("current_select",image_name)
+            self.__current_select_bg_name = image_name
+            current_select_bg = self.UIContainerRight_bg.get("current_select")
+            self.__current_select_bg_copy = current_select_bg.copy()
+            current_select_bg.blit(resizeImg(self.background_deselect,current_select_bg.get_size()),(0,0))
+        else:
+            self.UIContainerRight_bg.set(self.__current_select_bg_name,self.__current_select_bg_copy)
+            self.UIContainerRight_bg.set("current_select",None)
+            self.__current_select_bg_name = None
+            self.__current_select_bg_copy = None
     #读取章节信息
     def __loadDialogData(self, part:str) -> None:
         self.dialogData = loadConfig(self.fileLocation,"dialogs")
@@ -498,19 +542,19 @@ class DialogSystemDev(AbstractDialogSystem):
         #展示按钮
         for button in self.buttonsUI:
             if button == "next" and theNextDialogId is None or button == "next" and len(theNextDialogId)<2:
-                if is_hover(self.buttonsUI["add"]):
+                if self.buttonsUI["add"].is_hover():
                     buttonHovered = "add"
                 self.buttonsUI["add"].draw(surface)
             elif button != "add":
-                if is_hover(self.buttonsUI[button]):
+                if self.buttonsUI[button].is_hover():
                     buttonHovered = button
                 self.buttonsUI[button].draw(surface)
-        leftClick = False
+        leftClick:bool = False
         for event in self.events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    if is_hover(self.UIContainerRightButton,None,self.UIContainerRight.x):
-                        self.UIContainerRight.switch()
+                    if (self.UIContainerRightButton.is_hover()):
+                        self.UIContainerRightButton.switch()
                         self.UIContainerRightButton.flip(True,False)
                     #退出
                     elif buttonHovered == "back":
@@ -576,73 +620,41 @@ class DialogSystemDev(AbstractDialogSystem):
                         self.dialogData[self.part][self.dialogId]["characters_img"].remove(self._npcManager.npcGetClick)
                         self._npcManager.update(self.dialogData[self.part][self.dialogId]["characters_img"])
                         self._npcManager.npcGetClick = None
-                #鼠标滚轮
-                elif event.button == 4:
-                    if self.UIContainerRight_kind == "npc":
-                        self.npc_local_y += 10
-                    elif self.UIContainerRight_kind == "background":
-                        self.background_image_local_y += 10
-                elif event.button == 5:
-                    if self.UIContainerRight_kind == "npc":
-                        self.npc_local_y -= 10
-                    elif self.UIContainerRight_kind == "background":
-                        self.background_image_local_y -= 10
-        #画上右侧的菜单选项
-        self.UIContainerRightButton.display(surface,(self.UIContainerRight.x,0))
-        self.UIContainerRight.draw(surface)
-        if self.UIContainerRight.x < display.get_width():
+        #画上右侧菜单的按钮
+        self.UIContainerRightButton.draw(surface)
+        #画上右侧菜单
+        if self.UIContainerRightButton.right < display.get_width():
+            surface.blit(self.UIContainerRightImage,(self.UIContainerRightButton.right,0))
+            self.UIContainerRight_bg.display(surface,(self.UIContainerRightButton.right,0),self.events)
+            self.UIContainerRight_npc.display(surface,(self.UIContainerRightButton.right,0),self.events)
             #检测按钮
-            if is_hover(self.button_select_background,None,self.UIContainerRight.x) and leftClick:
-                self.UIContainerRight_kind = "background"
-            if is_hover(self.button_select_npc,None,self.UIContainerRight.x) and leftClick:
-                self.UIContainerRight_kind = "npc"
+            if isHover(self.button_select_background,local_x=self.UIContainerRightButton.right) and leftClick is True:
+                self.UIContainerRight_bg.hidden = False
+                self.UIContainerRight_npc.hidden = True
+                leftClick = False
+            if isHover(self.button_select_npc,local_x=self.UIContainerRightButton.right) and leftClick is True:
+                self.UIContainerRight_bg.hidden = True
+                self.UIContainerRight_npc.hidden = False
+                leftClick = False
             #画出按钮
-            self.button_select_background.display(surface,(self.UIContainerRight.x,0))
-            self.button_select_npc.display(surface,(self.UIContainerRight.x,0))
-            #画出对应的种类可选的背景图片或者立绘
-            if self.UIContainerRight_kind == "background":
-                imgName = self.dialogData[self.part][self.dialogId]["background_img"]
-                if imgName is not None:
-                    imgTmp = resizeImg(self.all_background_image[imgName],(self.UIContainerRight.get_width()*0.8,None))
-                    pos = (self.UIContainerRight.x+self.UIContainerRight.get_width()*0.1,self.background_image_local_y)
-                    surface.blit(imgTmp,pos)
-                    surface.blit(resizeImg(self.background_deselect,imgTmp.get_size()),pos)
-                    if leftClick and is_hover(imgTmp,pos):
-                        self.dialogData[self.part][self.dialogId]["background_img"] = None
-                        self._update_background_image(None)
-                        leftClick = False
-                        i = 0
-                    else:
-                        i = 1
-                else:
-                    i = 0
-                for imgName in self.all_background_image:
-                    if imgName != self.dialogData[self.part][self.dialogId]["background_img"]:
-                        imgTmp = resizeImg(self.all_background_image[imgName],(self.UIContainerRight.get_width()*0.8,None))
-                        pos = (
-                            self.UIContainerRight.x+self.UIContainerRight.get_width()*0.1,
-                            self.background_image_local_y+imgTmp.get_height()*1.5*i
-                            )
-                        surface.blit(imgTmp,pos)
-                        i+=1
-                        if leftClick and is_hover(imgTmp,pos):
+            self.button_select_background.display(surface,(self.UIContainerRightButton.right,0))
+            self.button_select_npc.display(surface,(self.UIContainerRightButton.right,0))
+            #检测是否有物品被选中需要更新
+            if leftClick is True:
+                if not self.UIContainerRight_bg.hidden:
+                    imgName = self.UIContainerRight_bg.current_hovered_item
+                    if imgName is not None:
+                        if imgName != "current_select":
                             self.dialogData[self.part][self.dialogId]["background_img"] = imgName
                             self._update_background_image(imgName)
-                            leftClick = False
-            elif self.UIContainerRight_kind == "npc":
-                npc_local_y_temp = self.npc_local_y
-                for key,npcImage in self._npcManager.npcImageDict.items():
-                    if npc_local_y_temp >= display.get_height():
-                        break
-                    else:
-                        npcImage["normal"].set_width_with_size_locked(int(self.UIContainerRight.get_width()*0.8))
-                        if npc_local_y_temp > -npcImage["normal"].get_height():
-                            npcImage["normal"].set_pos(self.UIContainerRight.x,npc_local_y_temp)
-                            npcImage["normal"].draw(surface)
-                            if is_hover(npcImage["normal"]) and leftClick:
-                                if self.dialogData[self.part][self.dialogId]["characters_img"] is None:
-                                    self.dialogData[self.part][self.dialogId]["characters_img"] = []
-                                if len(self.dialogData[self.part][self.dialogId]["characters_img"]) < 2:
-                                    self.dialogData[self.part][self.dialogId]["characters_img"].append(key)
-                                    self._npcManager.update(self.dialogData[self.part][self.dialogId]["characters_img"])
-                        npc_local_y_temp += npcImage["normal"].get_height()*1.1
+                        else:
+                            self.dialogData[self.part][self.dialogId]["background_img"] = None
+                            self._update_background_image(None)
+                elif not self.UIContainerRight_npc.hidden:
+                    imgName = self.UIContainerRight_npc.current_hovered_item
+                    if imgName is not None:
+                        if self.dialogData[self.part][self.dialogId]["characters_img"] is None:
+                            self.dialogData[self.part][self.dialogId]["characters_img"] = []
+                        if len(self.dialogData[self.part][self.dialogId]["characters_img"]) < 2:
+                            self.dialogData[self.part][self.dialogId]["characters_img"].append(imgName)
+                            self._npcManager.update(self.dialogData[self.part][self.dialogId]["characters_img"])

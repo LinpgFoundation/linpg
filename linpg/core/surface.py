@@ -1,10 +1,10 @@
 # cython: language_level=3
-from .font import *
+from ..api import *
 
 #图形接口
 class AbstractImage(GameObject2d):
-    def __init__(self, img:pygame.Surface, x:Union[int,float], y:Union[int,float], width:any, height:any):
-        GameObject2d.__init__(self,x,y)
+    def __init__(self, img:Union[pygame.Surface,None], x:Union[int,float], y:Union[int,float], width:any, height:any):
+        super().__init__(x,y)
         self.img = img
         self._width = width
         self._height = height
@@ -25,10 +25,10 @@ class AbstractImage(GameObject2d):
     def draw_outline(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0), color:str="red", line_width:int=2) -> None:
         pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect((self.x+offSet[0],self.y+offSet[1]),self.size),line_width)
 
-#用于处理有大面积透明像素的图片surface
-class SrcalphaSurface(AbstractImage):
+#用于静态图片的surface
+class StaticImageSurface(AbstractImage):
     def __init__(self, path_or_surface:Union[str,pygame.Surface], x:any, y:any, width:any=None, height:any=None):
-        AbstractImage.__init__(self,None,x,y,width,height)
+        super().__init__(None,x,y,width,height)
         self._alpha = 255
         self.img_original = loadImg(path_or_surface)
         self.__local_x = 0
@@ -90,12 +90,6 @@ class SrcalphaSurface(AbstractImage):
     #反转回正常状态
     def flip_back_to_normal(self) -> None:
         if self.__isFlipped: self.flip()
-    #展示
-    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        #如果图片需要更新，则先更新
-        if self.__needUpdate: self._update_img()
-        #将已经处理好的图片画在给定的图层上
-        surface.blit(self.img,(self.x+self.__local_x+offSet[0], self.y+self.__local_y+offSet[1]))
     #画出轮廓
     def draw_outline(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0), color:str="red", line_width:int=2) -> None:
         pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect(
@@ -111,9 +105,9 @@ class SrcalphaSurface(AbstractImage):
     #返回local坐标
     def get_local_pos(self) -> tuple: return self.x+self.__local_x,self.y+self.__local_y
     #返回一个复制品
-    def copy(self): return SrcalphaSurface(self.img_original.copy(),self.x,self.y,self._width,self._height)
+    def copy(self): return StaticImageSurface(self.img_original.copy(),self.x,self.y,self._width,self._height)
     #返回一个浅复制品
-    def light_copy(self): return SrcalphaSurface(self.img_original,self.x,self.y,self._width,self._height)
+    def light_copy(self): return StaticImageSurface(self.img_original,self.x,self.y,self._width,self._height)
     #加暗度
     def addDarkness(self, value:int) -> None:
         self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_SUB)
@@ -121,11 +115,17 @@ class SrcalphaSurface(AbstractImage):
     def addBrightness(self, value:int) -> None:
         self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_ADD)
         self.__needUpdate = True
+    #展示
+    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
+        #如果图片需要更新，则先更新
+        if self.__needUpdate: self._update_img()
+        #将已经处理好的图片画在给定的图层上
+        surface.blit(self.img,(self.x+self.__local_x+offSet[0], self.y+self.__local_y+offSet[1]))
 
 #高级图形类
 class ImageSurface(AbstractImage):
     def __init__(self, img:pygame.Surface, x:Union[int,float], y:Union[int,float], width:any=None, height:any=None, description:str="Default"):
-        AbstractImage.__init__(self,img,x,y,width,height)
+        super().__init__(img,x,y,width,height)
         self.xTogo = x
         self.yTogo = y
         self.items = []
@@ -164,7 +164,7 @@ class ImageSurface(AbstractImage):
 class DynamicImageSurface(ImageSurface):
     def __init__(self, img:pygame.Surface, x:Union[int,float], y:Union[int,float], target_x:Union[int,float], target_y:Union[int,float],
         moveSpeed_x:Union[int,float], moveSpeed_y:Union[int,float], width:any=None, height:any=None, description:str="Default"):
-        ImageSurface.__init__(self,img,x,y,width,height,description)
+        super().__init__(img,x,y,width,height,description)
         self.default_x = x
         self.default_y = y
         self.target_x = target_x
@@ -198,7 +198,7 @@ class DynamicImageSurface(ImageSurface):
 #进度条
 class ProgressBar(AbstractImage):
     def __init__(self, x:Union[int,float], y:Union[int,float], max_width:Union[int,float], height:Union[int,float], color:any):
-        AbstractImage.__init__(self,None,x,y,max_width,height)
+        super().__init__(None,x,y,max_width,height)
         self.percentage = 0
         self.color = findColorRGBA(color)
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
@@ -208,10 +208,12 @@ class ProgressBar(AbstractImage):
 class ProgressBarSurface(AbstractImage):
     def __init__(self, imgOnTop:pygame.Surface, imgOnBottom:pygame.Surface, x:Union[int,float], y:Union[int,float],
         max_width:Union[int,float], height:Union[int,float], mode:str="horizontal"):
-        AbstractImage.__init__(self,imgLoadFunction(imgOnTop,True),x,y,max_width,height)
-        self.img2 = imgLoadFunction(imgOnBottom,True)
+        if imgOnTop is not None: imgOnTop = imgLoadFunction(imgOnTop,True)
+        super().__init__(imgOnTop,x,y,max_width,height)
+        self.img2 = imgLoadFunction(imgOnBottom,True) if imgOnBottom is not None else None
         self._current_percentage = 0
-        self._mode = True if mode == "horizontal" else False
+        self._mode:bool = True
+        self.set_mode(mode)
     #百分比
     @property
     def percentage(self) -> float: return self._current_percentage
@@ -232,6 +234,7 @@ class ProgressBarSurface(AbstractImage):
             self._mode = False
         else:
             throwException("error","Mode '{}' is not supported!".format(mode))
+    #克隆
     def copy(self): return ProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return ProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #展示
@@ -249,8 +252,8 @@ class ProgressBarSurface(AbstractImage):
 class DynamicProgressBarSurface(ProgressBarSurface):
     def __init__(self, imgOnTop:pygame.Surface, imgOnBottom:pygame.Surface, x:Union[int,float], y:Union[int,float],
         max_width:Union[int,float], height:Union[int,float], mode:str="horizontal"):
-        ProgressBarSurface.__init__(self,imgOnTop,imgOnBottom,x,y,max_width,height,mode)
-        self.__percentage_to_be = 0
+        super().__init__(imgOnTop,imgOnBottom,x,y,max_width,height,mode)
+        self._percentage_to_be = 0
         self.__perecent_update_each_time = 0
         self.__total_update_intervals = 10
     #数据准确度
@@ -258,61 +261,64 @@ class DynamicProgressBarSurface(ProgressBarSurface):
     def accuracy(self) -> int: return self.__total_update_intervals*100
     #百分比
     @property
-    def percentage(self) -> float: return self.__percentage_to_be/self.accuracy
-    def get_percentage(self) -> float: return self.__percentage_to_be/self.accuracy
+    def percentage(self) -> float: return self._percentage_to_be/self.accuracy
+    def get_percentage(self) -> float: return self._percentage_to_be/self.accuracy
     def set_percentage(self, value:float) -> None:
         if 0 <= value <= 1:
-            self.__percentage_to_be = value*self.accuracy
-            self.__perecent_update_each_time = (self.__percentage_to_be-self._current_percentage)/self.__total_update_intervals
+            self._percentage_to_be = value*self.accuracy
+            self.__perecent_update_each_time = (self._percentage_to_be-self._current_percentage)/self.__total_update_intervals
         else:
             throwException("error","The percentage must be <= 1 and >= 0!")
     def copy(self): return DynamicProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return DynamicProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
+    #检查并更新百分比
+    def _check_and_update_percentage(self) -> None:
+        if self._current_percentage < self._percentage_to_be and self.__perecent_update_each_time > 0 or\
+            self._current_percentage > self._percentage_to_be and self.__perecent_update_each_time < 0:
+            self._current_percentage += self.__perecent_update_each_time
     #展示
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        pos = (self.x+offSet[0],self.y+offSet[1])
+        pos:tuple = (self.x+offSet[0],self.y+offSet[1])
         surface.blit(resizeImg(self.img2,self.size),pos)
-        if self._current_percentage < self.__percentage_to_be and self.__perecent_update_each_time > 0 or\
-            self._current_percentage > self.__percentage_to_be and self.__perecent_update_each_time < 0:
-            self._current_percentage += self.__perecent_update_each_time
+        self._check_and_update_percentage()
         if self._current_percentage > 0:
             imgOnTop = resizeImg(self.img,self.size)
             if self._mode:
-                if self._current_percentage < self.__percentage_to_be:
-                    img2 = cropImg(imgOnTop,size=(int(self._width*self.__percentage_to_be/self.accuracy),self._height))
+                if self._current_percentage < self._percentage_to_be:
+                    img2 = cropImg(imgOnTop,size=(int(self._width*self._percentage_to_be/self.accuracy),self._height))
                     img2.set_alpha(100)
                     surface.blit(img2,pos)
                     surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),pos)
                 else:
-                    if self._current_percentage > self.__percentage_to_be:
+                    if self._current_percentage > self._percentage_to_be:
                         img2 = cropImg(imgOnTop,size=(int(self._width*self._current_percentage/self.accuracy),self._height))
                         img2.set_alpha(100)
                         surface.blit(img2,pos)
-                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self.__percentage_to_be/self.accuracy),self._height)),pos)
+                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._percentage_to_be/self.accuracy),self._height)),pos)
             else:
-                if self._current_percentage < self.__percentage_to_be:
-                    img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self.__percentage_to_be/self.accuracy)))
+                if self._current_percentage < self._percentage_to_be:
+                    img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._percentage_to_be/self.accuracy)))
                     img2.set_alpha(100)
                     surface.blit(img2,pos)
                     surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),pos)
                 else:
-                    if self._current_percentage > self.__percentage_to_be:
+                    if self._current_percentage > self._percentage_to_be:
                         img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._current_percentage/self.accuracy)))
                         img2.set_alpha(100)
                         surface.blit(img2,pos)
-                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self.__percentage_to_be/self.accuracy))),pos)
+                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._percentage_to_be/self.accuracy))),pos)
 
 #按钮
 class Button(GameObject2d):
     def __init__(self, path:Union[str,pygame.Surface], x:Union[int,float], y:Union[int,float]):
-        GameObject2d.__init__(self,x,y)
+        super().__init__(x,y)
         self.img = loadImg(path)
         self.img2 = None
         self._hoverEventTriggered = False
     def get_width(self) -> int: return self.img.get_width()
     def get_height(self) -> int: return self.img.get_height()
     def set_hover_img(self, img:pygame.Surface) -> None: self.img2 = img
-    def is_hover(self, mouse_pos: Union[tuple, list]=(-1,-1)) -> bool:
+    def is_hover(self, mouse_pos:Union[tuple, list]=(-1,-1)) -> bool:
         if not super().is_hover(mouse_pos):
             if self.img2 is not None and self._hoverEventTriggered:
                 tempSurface = self.img
@@ -331,7 +337,7 @@ class Button(GameObject2d):
 
 class ButtonWithDes(Button):
     def __init__(self, path:str, x:Union[int,float], y:Union[int,float], width:Union[int,float], height:Union[int,float], des:str):
-        Button.__init__(self,path,x,y)
+        super().__init__(path,x,y)
         width = int(width)
         height = int(height)
         self.img = resizeImg(self.img,(width,height))
@@ -352,7 +358,7 @@ class ButtonWithDes(Button):
 
 class ButtonWithFadeInOut(Button):
     def __init__(self, path:str, txt:str, txt_color:any, alphaWhenNotHover:int, x:Union[int,float], y:Union[int,float], height:Union[int,float]):
-        Button.__init__(self,path,x,y)
+        super().__init__(path,x,y)
         txtSurface = fontRenderWithoutBound(txt,txt_color,height*0.6)
         self.img = resizeImg(self.img,(txtSurface.get_width()+height,height))
         self.img.blit(txtSurface,(height*0.5,(height-txtSurface.get_height())/2))
@@ -362,7 +368,7 @@ class ButtonWithFadeInOut(Button):
 #gif图片管理
 class GifObject(AbstractImage):
     def __init__(self,imgList:Union[tuple,list], x:Union[int,float], y:Union[int,float], width:Union[int,float], height:Union[int,float], updateGap:int):
-        AbstractImage.__init__(self,imgList,x,y,width,height)
+        super().__init__(imgList,x,y,width,height)
         self.imgId = 0
         self.updateGap = updateGap
         self.countDown = 0
@@ -434,10 +440,11 @@ class DialogBox(AbstractDialog,GameObject2d):
         self.__flipped = False
     def get_width(self) -> int: return self.dialoguebox.get_width()
     def get_height(self)-> int:  return self.dialoguebox.get_height()
-    def set_size(self,width,height) -> None: self.dialoguebox = resizeImg(self.dialoguebox,(width,height))
+    def set_size(self, width:Union[int,float,None], height:Union[int,float,None]) -> None:
+        self.dialoguebox = resizeImg(self.dialoguebox,(width,height))
     def draw(self, surface:pygame.Surface, characterInfoBoardUI:object=None):
         #如果对话框需要继续更新
-        if self.__drew == False:
+        if not self.__drew:
             self.__surface = self.dialoguebox.copy()
             if self.__flipped is True:
                 #讲述人名称

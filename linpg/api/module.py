@@ -1,33 +1,42 @@
 # cython: language_level=3
 import threading
-from ..api import *
+from .lang import *
 
 #坐标类
 class Coordinate:
     def __init__(self, x:Union[int,float], y:Union[int,float]):
         self.x = x
         self.y = y
-    #获取坐标
+    #坐标信息
     @property
     def pos(self) -> tuple: return self.x,self.y
     def get_pos(self) -> tuple: return self.x,self.y
+    def set_pos(self, x:Union[int,float], y:Union[int,float]) -> None:
+        self.x = x
+        self.y = y
+    #检测是否在给定的位置上
+    def on_pos(self, pos:any) -> bool: return is_same_pos(self.get_pos(),pos)
 
 #游戏对象接口
 class GameObject(Coordinate):
     def __init__(self, x:Union[int,float], y:Union[int,float]):
-        Coordinate.__init__(self,x,y)
+        super().__init__(x,y)
     def __lt__(self, other:Coordinate) -> bool: return self.y+self.x < other.y+other.x
-    #设置坐标
-    def set_pos(self, x:Union[int,float], y:Union[int,float]) -> None:
-        self.x = round(x)
-        self.y = round(y)
-    #检测是否在给定的位置上
-    def on_pos(self, pos:any) -> bool: return is_same_pos(self.get_pos(),pos)
+    #左侧位置
+    @property
+    def left(self) -> Union[int,float]: return self.x
+    def get_left(self) -> Union[int,float]: return self.x
+    def set_left(self, value:Union[int,float]) -> None: self.x = value
+    #右侧位置
+    @property
+    def top(self) -> Union[int,float]: return self.y
+    def get_top(self) -> Union[int,float]: return self.y
+    def set_top(self, value:Union[int,float]) -> None: self.y = value
 
 #2d游戏对象接口
 class GameObject2d(GameObject):
     def __init__(self, x:Union[int,float], y:Union[int,float]):
-        GameObject.__init__(self,x,y)
+        super().__init__(x,y)
     #宽
     @property
     def width(self) -> int: return self.get_width()
@@ -40,6 +49,27 @@ class GameObject2d(GameObject):
     @property
     def size(self) -> tuple: return self.get_width(),self.get_height()
     def get_size(self) -> tuple: return self.get_width(),self.get_height()
+    #右侧位置
+    @property
+    def right(self) -> Union[int,float]: return self.x+self.get_width()
+    def get_right(self) -> Union[int,float]: return self.x+self.get_width()
+    def set_right(self, value:Union[int,float]) -> None: self.x = value-self.get_width()
+    #底部位置
+    @property
+    def bottom(self) -> Union[int,float]: return self.y+self.get_height()
+    def get_bottom(self) -> Union[int,float]: return self.y+self.get_height()
+    def set_bottom(self, value:Union[int,float]) -> None: self.y = value-self.get_height()
+    #中心位置
+    @property
+    def centerx(self) -> Union[int,float]: return self.x+self.get_width()/2
+    @property
+    def centery(self) ->  Union[int,float]: return self.y+self.get_height()/2
+    @property
+    def center(self) -> tuple: return self.x+self.get_width()/2,self.y+self.get_height()/2
+    def get_center(self) -> tuple: return self.x+self.get_width()/2,self.y+self.get_height()/2
+    def set_center(self, centerx:Union[int,float], centery:Union[int,float]) -> None:
+        self.x = int(self.x*2+self.get_width()/2-centerx)
+        self.y = int(self.y*2+self.get_height()/2-centery)
     #是否被鼠标触碰
     def is_hover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
         if mouse_pos == (-1,-1): mouse_pos = pygame.mouse.get_pos()
@@ -59,7 +89,7 @@ class GameObject2d(GameObject):
 #2.5d游戏对象接口 - 使用z轴判断图案的图层
 class GameObject2point5d(GameObject):
     def __init__(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]):
-        GameObject.__init__(self,x,y)
+        super().__init__(x,y)
         self.z = z
     def __lt__(self, other:GameObject) -> bool:
         if self.z != other.z:
@@ -78,26 +108,8 @@ class GameObject2point5d(GameObject):
 #3d游戏对象接口
 class GameObject3d(GameObject2point5d):
     def __init__(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]):
-        GameObject2point5d.__init__(self,x,y,z)
+        super().__init__(x,y,z)
     def __lt__(self,other) -> bool: return self.y+self.x+self.z < other.y+other.x+other.z
-
-#用于储存游戏对象的容器，类似html的div
-class GameObjectContainer(GameObject):
-    def __init__(self, x:Union[int,float], y:Union[int,float]):
-        GameObject.__init__(self,x,y)
-        self.hidden = False
-        self.items = []
-    #新增一个物品
-    def append(self, new_item:GameObject) -> None: self.items.append(new_item)
-    #移除一个物品
-    def pop(self, index:int) -> None: self.items.pop(index)
-    #清空物品栏
-    def clear(self) -> None: self.items.clear()
-    #把物品画到surface上
-    def draw(self, surface:pygame.Surface) -> None:
-        if not self.hidden:
-            for item in self.items:
-                item.display(surface,self.pos)
 
 #系统模块接口
 class SystemObject:
@@ -120,7 +132,7 @@ class SystemObject:
 #拥有背景音乐的系统模块接口
 class SystemWithBackgroundMusic(SystemObject):
     def __init__(self) -> None:
-        SystemObject.__init__(self)
+        super().__init__()
         self.__bgm_path = None
         self.__bgm_volume = 1
         self.__if_stop_playing_bgm = False
@@ -129,14 +141,14 @@ class SystemWithBackgroundMusic(SystemObject):
     def bgm(self) -> str: return os.path.basename(self.__bgm_path)
     def get_bgm(self) -> str: return os.path.basename(self.__bgm_path)
     #设置bgm路径
-    def set_bgm(self,path,forced=False) -> None:
+    def set_bgm(self, path:Union[str,None], forced:bool=False) -> None:
         if path is None:
             self.__bgm_path = None
             pygame.mixer.music.unload()
         #如果路径存在
         elif os.path.exists(path):
             #只有在音乐路径不一致或者强制更新的情况下才会更新路径（同时卸载现有音乐）
-            if self.__bgm_path != path or forced:
+            if self.__bgm_path != path or forced is True:
                 self.__bgm_path = path
                 pygame.mixer.music.unload()
             else:
@@ -174,22 +186,31 @@ class SystemWithBackgroundMusic(SystemObject):
         self.__bgm_path = None
         pygame.mixer.music.unload()
 
-#音效管理模块
-class SoundManagement:
+#音效管理模块接口
+class AbstractSoundManager:
     def __init__(self, channel_id:int):
-        self.channel_id = channel_id
+        self._channel_id:int = int(channel_id)
+    @property
+    def channel_id(self) -> int: return self._channel_id
+    def get_channel_id(self) -> int: return self._channel_id
+    def set_channel_id(self, channel_id:int) -> None: self.channel_id = int(channel_id)
+
+#音效管理模块-列表
+class SoundManagement(AbstractSoundManager):
+    def __init__(self, channel_id:int):
+        super().__init__(channel_id)
         self.sound_id = 0
         self.__sounds_list = []
     def add(self, path:str) -> None: self.__sounds_list.append(pygame.mixer.Sound(path))
     def play(self, sound_id:int=None) -> None:
-        if len(self.__sounds_list)>0 and not pygame.mixer.Channel(self.channel_id).get_busy():
+        if len(self.__sounds_list)>0 and not pygame.mixer.Channel(self._channel_id).get_busy():
             if sound_id is None:
                 self.sound_id = randomInt(0,len(self.__sounds_list)-1)
             else:
                 self.sound_id = sound_id
-            pygame.mixer.Channel(self.channel_id).play(self.__sounds_list[self.sound_id])
+            pygame.mixer.Channel(self._channel_id).play(self.__sounds_list[self.sound_id])
     #停止音乐
-    def stop(self) -> None: pygame.mixer.Channel(self.channel_id).stop()
+    def stop(self) -> None: pygame.mixer.Channel(self._channel_id).stop()
     #获取音量
     def get_volume(self) -> float: return self.__sounds_list[0].get_volume()
     #设置音量
@@ -199,8 +220,8 @@ class SoundManagement:
 
 #使用多线程保存数据
 class SaveDataThread(threading.Thread):
-    def __init__(self, path:str, data:str):
-        threading.Thread.__init__(self)
+    def __init__(self, path:str, data:dict):
+        super().__init__()
         self.path = path
         self.data = data
     def run(self) -> None:

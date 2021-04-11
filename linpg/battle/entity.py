@@ -8,18 +8,13 @@ _CHARACTERS_SOUND_SYSTEM:object = EntitySoundManager(5)
 #角色UI的文字数据
 _ENTITY_UI_FONT:object = createFont(display.get_width()/192)
 
-#指向储存血条图片的指针（不初始化直到Entity或其子类被调用）
-_HP_GREEN_IMG:pygame.Surface = None
-_HP_RED_IMG:pygame.Surface = None
-_HP_EMPTY_IMG:pygame.Surface = None
-
 #濒死回合限制
 DYING_ROUND_LIMIT:int = 3
 
 #人形模块
 class Entity(GameObject):
     def __init__(self, DATA:dict, faction:str, mode:str):
-        GameObject.__init__(self,DATA["x"],DATA["y"])
+        super().__init__(DATA["x"],DATA["y"])
         #最大行动值
         self.max_action_point = DATA["action_point"]
         #当前行动值
@@ -81,13 +76,7 @@ class Entity(GameObject):
         #是否无敌
         self.__if_invincible:bool = False
         #血条图片
-        global _HP_GREEN_IMG,_HP_RED_IMG,_HP_EMPTY_IMG
-        if _HP_GREEN_IMG is None or _HP_RED_IMG is None or _HP_EMPTY_IMG is None:
-            _HP_GREEN_IMG = imgLoadFunction("Assets/image/UI/hp_green.png",True)
-            _HP_RED_IMG = imgLoadFunction("Assets/image/UI/hp_red.png",True)
-            _HP_EMPTY_IMG = imgLoadFunction("Assets/image/UI/hp_empty.png",True)
-        self.__hp_bar_green = DynamicProgressBarSurface(_HP_GREEN_IMG,_HP_EMPTY_IMG,0,0,0,0)
-        self.__hp_bar_red = DynamicProgressBarSurface(_HP_RED_IMG,_HP_EMPTY_IMG,0,0,0,0)
+        self.__hp_bar = EntityHpBar()
     """角色动作参数管理"""
     #当前动作
     @property
@@ -271,29 +260,23 @@ class Entity(GameObject):
         else:
             return False
     #加载图片
-    def loadImg(self) -> None:
+    def load_image(self) -> None:
         for theAction in self.__imgId_dict:
             _CHARACTERS_IMAGE_SYS.loadImageCollection(self.type,theAction,self.faction)
         _CHARACTERS_SOUND_SYSTEM.add(self.type)
+        self.__hp_bar.load_image()
     #查看是否一个Entity在该角色的附近
     def near(self, otherEntity:object) -> bool:
         if self.x == otherEntity.x:
-            if abs(self.y-otherEntity.y) <= 1:
-                return True
-            else:
-                return False
+            return True if abs(self.y-otherEntity.y) <= 1 else False
         elif self.y == otherEntity.y:
-            if abs(self.x-otherEntity.x) <= 1:
-                return True
-            else:
-                return False
+            return True if abs(self.x-otherEntity.x) <= 1 else False
         else:
             return False
     #获取角色的攻击范围
     def getAttackRange(self, Map:object, ifHalfMode:bool=False) -> dict:
         #初始化列表
-        for key in self.__attack_range:
-            self.__attack_range[key].clear()
+        for value in self.__attack_range.values(): value.clear()
         #确定范围
         if not ifHalfMode:
             start_point = self.y-self._max_effective_range
@@ -436,16 +419,20 @@ class Entity(GameObject):
         xTemp,yTemp = MapClass.calPosInMap(self.x,self.y)
         xTemp += MapClass.block_width*0.25
         yTemp -= MapClass.block_width*0.2
+        self.__hp_bar.set_size(MapClass.block_width/2,MapClass.block_width/10)
+        self.__hp_bar.set_pos(xTemp,yTemp)
         if not self.dying:
-            self.__hp_bar_green.set_size(MapClass.block_width/2, MapClass.block_width/10)
-            self.__hp_bar_green.set_pos(xTemp,yTemp)
-            self.__hp_bar_green.set_percentage(self.__current_hp/self.__max_hp)
-            self.__hp_bar_green.draw(surface)
-            displayInCenter(_ENTITY_UI_FONT.render("{}/{}".format(self.__current_hp,self.__max_hp),get_fontMode(),(0,0,0)),self.__hp_bar_green,xTemp,yTemp,surface)
+            self.__hp_bar.set_percentage(self.__current_hp/self.__max_hp)
+            self.__hp_bar.draw(surface,False)
+            displayInCenter(
+                _ENTITY_UI_FONT.render("{0}/{1}".format(self.__current_hp,self.__max_hp),get_fontMode(),(0,0,0)),
+                self.__hp_bar,xTemp,yTemp,surface
+                )
         else:
-            self.__hp_bar_red.set_size(MapClass.block_width/2, MapClass.block_width/10)
-            self.__hp_bar_red.set_pos(xTemp,yTemp)
-            self.__hp_bar_red.set_percentage(self.dying/DYING_ROUND_LIMIT)
-            self.__hp_bar_red.draw(surface)
-            displayInCenter(_ENTITY_UI_FONT.render("{0}/{1}".format(self.dying,DYING_ROUND_LIMIT),get_fontMode(),(0,0,0)),self.__hp_bar_red,xTemp,yTemp,surface)
+            self.__hp_bar.set_percentage(self.dying/DYING_ROUND_LIMIT)
+            self.__hp_bar.draw(surface,True)
+            displayInCenter(
+                _ENTITY_UI_FONT.render("{0}/{1}".format(self.dying,DYING_ROUND_LIMIT),get_fontMode(),(0,0,0))
+                ,self.__hp_bar,xTemp,yTemp,surface
+                )
         return xTemp,yTemp

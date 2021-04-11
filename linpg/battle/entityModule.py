@@ -7,7 +7,7 @@ _CHARACTERS_GET_HURT_IMAGE_DICT:dict = {}
 #角色受伤立绘图形模块
 class EntityGetHurtImage(GameObject):
     def __init__(self, self_type:str, y:Union[int,float], width:Union[int,float]):
-        GameObject.__init__(self,None,y)
+        super().__init__(None,y)
         self.yToGo = None
         self.width = int(width)
         self.alpha = 255
@@ -22,29 +22,162 @@ class EntityGetHurtImage(GameObject):
         if characterType not in _CHARACTERS_GET_HURT_IMAGE_DICT:
             _CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = loadImg("Assets/image/npc/{}_hurt.png".format(characterType))
 
-#角色音效管理系统
-class EntitySoundManager:
+#指向储存角色被察觉和警觉的图标的指针
+_BEING_NOTICED_IMG:pygame.Surface = None
+_FULLY_EXPOSED_IMG:pygame.Surface = None
+_ORANGE_VIGILANCE_IMG:pygame.Surface = None
+_RED_VIGILANCE_IMG:pygame.Surface = None
+
+class EntityDynamicProgressBarSurface(DynamicProgressBarSurface):
+    def __init__(self, mode:str="horizontal"):
+        super().__init__(None,None,0,0,0,0,mode)
+        self.load_image()
+    #检测被察觉的图标是否生产，如果没有则生成
+    def load_image(self):
+        global _BEING_NOTICED_IMG,_FULLY_EXPOSED_IMG,_ORANGE_VIGILANCE_IMG,_RED_VIGILANCE_IMG
+        #被察觉图标
+        if _BEING_NOTICED_IMG is None: _BEING_NOTICED_IMG = imgLoadFunction("Assets/image/UI/eye_orange.png",True)
+        if _FULLY_EXPOSED_IMG is None: _FULLY_EXPOSED_IMG = imgLoadFunction("Assets/image/UI/eye_red.png",True)
+        #警觉图标
+        if _ORANGE_VIGILANCE_IMG is None: _ORANGE_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_orange.png",True)
+        if _RED_VIGILANCE_IMG is None: _RED_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_red.png",True)
+    def draw(self, surface:pygame.Surface, isFriendlyCharacter:bool=True) -> None:
+        global _BEING_NOTICED_IMG,_FULLY_EXPOSED_IMG,_ORANGE_VIGILANCE_IMG,_RED_VIGILANCE_IMG
+        if not isFriendlyCharacter:
+            surface.blit(resizeImg(_ORANGE_VIGILANCE_IMG,self.size),self.pos)
+        else:
+            surface.blit(resizeImg(_BEING_NOTICED_IMG,self.size),self.pos)
+        self._check_and_update_percentage()
+        if self._current_percentage > 0:
+            imgOnTop = resizeImg(_FULLY_EXPOSED_IMG,self.size) if isFriendlyCharacter is True else resizeImg(_RED_VIGILANCE_IMG,self.size)
+            if self._mode:
+                if self._current_percentage < self._percentage_to_be:
+                    img2 = cropImg(imgOnTop,size=(int(self._width*self._percentage_to_be/self.accuracy),self._height))
+                    img2.set_alpha(100)
+                    surface.blit(img2,self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),self.pos)
+                else:
+                    if self._current_percentage > self._percentage_to_be:
+                        img2 = cropImg(imgOnTop,size=(int(self._width*self._current_percentage/self.accuracy),self._height))
+                        img2.set_alpha(100)
+                        surface.blit(img2,self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._percentage_to_be/self.accuracy),self._height)),self.pos)
+            else:
+                if self._current_percentage < self._percentage_to_be:
+                    img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._percentage_to_be/self.accuracy)))
+                    img2.set_alpha(100)
+                    surface.blit(img2,self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),self.pos)
+                else:
+                    if self._current_percentage > self._percentage_to_be:
+                        img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._current_percentage/self.accuracy)))
+                        img2.set_alpha(100)
+                        surface.blit(img2,self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._percentage_to_be/self.accuracy))),self.pos)
+
+#指向储存血条图片的指针（不初始化直到Entity或其子类被调用）
+_HP_GREEN_IMG:pygame.Surface = None
+_HP_RED_IMG:pygame.Surface = None
+_HP_EMPTY_IMG:pygame.Surface = None
+
+class EntityHpBar(DynamicProgressBarSurface):
+    def __init__(self):
+        super().__init__(None,None,0,0,0,0)
+        self.load_image()
+    #检测被察觉的图标是否生产，如果没有则生成
+    def load_image(self):
+        global _HP_GREEN_IMG,_HP_RED_IMG,_HP_EMPTY_IMG
+        if _HP_GREEN_IMG is None: _HP_GREEN_IMG = imgLoadFunction("Assets/image/UI/hp_green.png",True)
+        if _HP_RED_IMG is None: _HP_RED_IMG = imgLoadFunction("Assets/image/UI/hp_red.png",True)
+        if  _HP_EMPTY_IMG is None: _HP_EMPTY_IMG = imgLoadFunction("Assets/image/UI/hp_empty.png",True)
+    def draw(self, surface:pygame.Surface, isDying:bool) -> None:
+        global _HP_GREEN_IMG,_HP_RED_IMG,_HP_EMPTY_IMG
+        surface.blit(resizeImg(_HP_EMPTY_IMG,self.size),self.pos)
+        self._check_and_update_percentage()
+        if self._current_percentage > 0:
+            imgOnTop = resizeImg(_HP_GREEN_IMG,self.size) if not isDying else resizeImg(_HP_RED_IMG,self.size)
+            if self._mode:
+                if self._current_percentage < self._percentage_to_be:
+                    img2 = cropImg(imgOnTop,size=(int(self._width*self._percentage_to_be/self.accuracy),self._height))
+                    img2.set_alpha(100)
+                    surface.blit(img2,self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),self.pos)
+                else:
+                    if self._current_percentage > self._percentage_to_be:
+                        img2 = cropImg(imgOnTop,size=(int(self._width*self._current_percentage/self.accuracy),self._height))
+                        img2.set_alpha(100)
+                        surface.blit(img2,self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._percentage_to_be/self.accuracy),self._height)),self.pos)
+            else:
+                if self._current_percentage < self._percentage_to_be:
+                    img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._percentage_to_be/self.accuracy)))
+                    img2.set_alpha(100)
+                    surface.blit(img2,self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),self.pos)
+                else:
+                    if self._current_percentage > self._percentage_to_be:
+                        img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._current_percentage/self.accuracy)))
+                        img2.set_alpha(100)
+                        surface.blit(img2,self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._percentage_to_be/self.accuracy))),self.pos)
+
+#音效管理模块-字典
+class AbstractEntitySoundManager(AbstractSoundManager):
     def __init__(self, channel_id:int):
-        self.channel_id = channel_id
-        self.__sounds_dict = {}
+        super().__init__(channel_id)
+        self._SOUNDS_PATH:str = ''
+        self._sounds_dict:dict = {}
+
+#角色音效管理系统
+class EntitySoundManager(AbstractEntitySoundManager):
+    def __init__(self, channel_id:int):
+        super().__init__(channel_id)
+        self._SOUNDS_PATH = "Assets/sound/character"
     #加载音效
     def add(self, characterType:str) -> None:
-        if characterType not in self.__sounds_dict and os.path.exists("Assets/sound/character/"+characterType):
-            self.__sounds_dict[characterType] = {}
-            for soundType in os.listdir("Assets/sound/character/{}/".format(characterType)):
-                self.__sounds_dict[characterType][soundType] = []
-                for soundPath in glob("Assets/sound/character/{}/{}/*".format(characterType,soundType)):
-                    self.__sounds_dict[characterType][soundType].append(pygame.mixer.Sound(soundPath))
+        if characterType not in self._sounds_dict and os.path.exists(os.path.join(self._SOUNDS_PATH,characterType)):
+            self._sounds_dict[characterType] = {}
+            for soundType in os.listdir(os.path.join(self._SOUNDS_PATH,characterType)):
+                self._sounds_dict[characterType][soundType] = []
+                for soundPath in glob(os.path.join(self._SOUNDS_PATH,characterType,soundType,"*")):
+                    self._sounds_dict[characterType][soundType].append(pygame.mixer.Sound(soundPath))
     #播放角色音效
     def play(self, characterType:str, soundType:str) -> None:
-        if characterType in self.__sounds_dict and soundType in self.__sounds_dict[characterType]:
-            sound_list = self.__sounds_dict[characterType][soundType]
+        if characterType in self._sounds_dict and soundType in self._sounds_dict[characterType]:
+            sound_list = self._sounds_dict[characterType][soundType]
             if len(sound_list) > 1:
                 sound = sound_list[randomInt(0,len(sound_list)-1)]
             else:
                 sound = sound_list[0]
             sound.set_volume(get_setting("Sound","sound_effects")/100.0)
-            pygame.mixer.Channel(self.channel_id).play(sound)
+            pygame.mixer.Channel(self._channel_id).play(sound)
+
+#射击音效 -- 频道2
+class AttackingSoundManager(AbstractEntitySoundManager):
+    def __init__(self, volume:int, channel_id:int):
+        super().__init__(channel_id)
+        self._SOUNDS_PATH = "Assets/sound/attack"
+        self._sounds_dict = {
+            #突击步枪
+            "AR": glob(os.path.join(self._SOUNDS_PATH,'ar_*.ogg')),
+            #手枪
+            "HG": glob(os.path.join(self._SOUNDS_PATH,'hg_*.ogg')),
+            #机枪
+            "MG": glob(os.path.join(self._SOUNDS_PATH,'mg_*.ogg')),
+            #步枪
+            "RF": glob(os.path.join(self._SOUNDS_PATH,'rf_*.ogg')),
+            #冲锋枪
+            "SMG": glob(os.path.join(self._SOUNDS_PATH,'smg_*.ogg')),
+        }
+        self.volume:int = volume
+        for key in self._sounds_dict:
+            for i in range(len(self._sounds_dict[key])):
+                self._sounds_dict[key][i] = pygame.mixer.Sound(self._sounds_dict[key][i])
+                self._sounds_dict[key][i].set_volume(volume/100.0)
+    #播放
+    def play(self, kind:str) -> None:
+        if kind in self._sounds_dict:
+            pygame.mixer.Channel(self._channel).play(self._sounds_dict[kind][randomInt(0,len(self._sounds_dict[kind])-1)])
 
 #计算最远攻击距离
 def calculate_range(effective_range_dic:dict) -> int:
@@ -109,9 +242,11 @@ class EntityImageManager:
         if os.path.exists("Assets/image/{0}/{1}/{2}".format(faction,characterType,action)):
             files_amount = len(glob("Assets/image/{0}/{1}/{2}/*.png".format(faction,characterType,action)))
             if files_amount > 0:
-                self.__CHARACTERS_IMAGE_DICT[characterType][action] = {"img":numpy.asarray([SrcalphaSurface(\
-                    "Assets/image/{0}/{1}/{2}/{3}_{4}_{5}.png".format(faction,characterType,action,characterType,action,i)\
-                        ,0,0) for i in range(files_amount)]),"imgNum":files_amount}
+                self.__CHARACTERS_IMAGE_DICT[characterType][action] = {
+                    "img": numpy.asarray([StaticImageSurface("Assets/image/{0}/{1}/{2}/{3}_{4}_{5}.png"
+                    .format(faction,characterType,action,characterType,action,i),0,0) for i in range(files_amount)]),
+                    "imgNum": files_amount
+                    }
                 if faction == "sangvisFerri":
                     for img in self.__CHARACTERS_IMAGE_DICT[characterType][action]["img"]:
                         img.flip_original()
@@ -180,34 +315,6 @@ def loadCharacterData() -> None:
         saveConfig("Data/character_data.yaml",loadData)
     makeFolderForCharacterSounds()
     return loadData
-
-#射击音效 -- 频道2
-class AttackingSoundManager:
-    def __init__(self, volume:int, channel_id:int):
-        self.__soundsData = {
-            #突击步枪
-            "AR": glob(r'Assets/sound/attack/ar_*.ogg'),
-            #手枪
-            "HG": glob(r'Assets/sound/attack/hg_*.ogg'),
-            #机枪
-            "MG": glob(r'Assets/sound/attack/mg_*.ogg'),
-            #步枪
-            "RF": glob(r'Assets/sound/attack/rf_*.ogg'),
-            #冲锋枪
-            "SMG": glob(r'Assets/sound/attack/smg_*.ogg'),
-        }
-        self.set_channel(channel_id)
-        self.volume = volume
-        for key in self.__soundsData:
-            for i in range(len(self.__soundsData[key])):
-                self.__soundsData[key][i] = pygame.mixer.Sound(self.__soundsData[key][i])
-                self.__soundsData[key][i].set_volume(volume/100.0)
-    #设置播放的频道
-    def set_channel(self, channel_id:int) -> None: self.__channel = channel_id
-    #播放
-    def play(self, kind:str):
-        if kind in self.__soundsData:
-            pygame.mixer.Channel(self.__channel).play(self.__soundsData[kind][randomInt(0,len(self.__soundsData[kind])-1)])
 
 #用于存放角色做出的决定
 class DecisionHolder:

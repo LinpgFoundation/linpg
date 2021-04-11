@@ -13,7 +13,7 @@ def loadDynamicImage(path:Union[str,pygame.Surface], position, target_position, 
         moveSpeed[0],moveSpeed[1],width,height,description)
 
 #加载GIF格式图片
-def loadGif(img_list_or_path,position,size,updateGap=1) -> GifObject:
+def loadGif(img_list_or_path:Union[list,tuple,str], position:tuple, size:tuple, updateGap:int=1) -> GifObject:
     if isinstance(img_list_or_path,str):
         imgList = []
         gif_img = Image.open(img_list_or_path)
@@ -34,7 +34,7 @@ def loadGif(img_list_or_path,position,size,updateGap=1) -> GifObject:
     return GifObject(numpy.asarray(imgList),position[0],position[1],size[0],size[1],updateGap)
 
 #获取特定颜色的表面
-def get_SingleColorSurface(color,size=None) -> ImageSurface:
+def getSingleColorSurface(color,size=None) -> ImageSurface:
     #如果size是none，则使用屏幕的尺寸
     if size is None: size = display.get_size()
     #获取surface
@@ -43,17 +43,10 @@ def get_SingleColorSurface(color,size=None) -> ImageSurface:
     return ImageSurface(surfaceTmp,0,0,size[0],size[1])
 
 #检测图片是否被点击
-def is_hover(imgObject:object, objectPos:Union[tuple,list]=(0,0), local_x:Union[int,float]=0, local_y:Union[int,float]=0) -> bool:
+def isHover(imgObject:object, objectPos:Union[tuple,list]=(0,0), local_x:Union[int,float]=0, local_y:Union[int,float]=0) -> bool:
     mouse_x,mouse_y = pygame.mouse.get_pos()
-    #如果是pygame的面
-    if isinstance(imgObject,pygame.Surface):
-        if 0<mouse_x-local_x-objectPos[0]<imgObject.get_width() and 0<mouse_y-local_y-objectPos[1]<imgObject.get_height():
-            return True
-        else:
-            return False
     #如果是Linpg引擎的GameObject2d类(所有2d物品的父类)
-    elif isinstance(imgObject,GameObject2d):
+    if isinstance(imgObject,GameObject2d):
         return imgObject.is_hover((mouse_x-local_x,mouse_y-local_y))
     else:
-        throwException("error","Unable to check current object: {}".format(imgObject))
-
+        return isHoverPygameObject(imgObject,objectPos,local_x,local_y)

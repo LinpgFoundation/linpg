@@ -4,16 +4,16 @@ from .movie import *
 #视觉小说系统接口
 class AbstractDialogSystem(SystemWithBackgroundMusic):
     def __init__(self):
-        SystemWithBackgroundMusic.__init__(self)
+        super().__init__()
         #加载对话的背景图片模块
         self._npcManager = NpcImageManager()
         #黑色Void帘幕
-        self._black_bg = get_SingleColorSurface("black")
+        self._black_bg = getSingleColorSurface("black")
         #选项栏
-        self._optionBox = SrcalphaSurface("Assets/image/UI/option.png",0,0)
+        self._optionBox = StaticImageSurface("Assets/image/UI/option.png",0,0)
         #选项栏-选中
         try:
-            self.optionBoxSelected = SrcalphaSurface("Assets/image/UI/option_selected.png",0,0)
+            self.optionBoxSelected = StaticImageSurface("Assets/image/UI/option_selected.png",0,0)
         except:
             throwException("warning","Cannot find 'option_selected.png' in 'UI' file, 'option.png' will be loaded instead.")
             self.optionBoxSelected = self._optionBox.light_copy()
@@ -25,7 +25,7 @@ class AbstractDialogSystem(SystemWithBackgroundMusic):
         self.__backgroundImageName = None
         self.__backgroundImageSurface = self._black_bg.copy()
     #初始化关键参数
-    def _initialize(self, chapterType:str, chapterId:int, collection_name:str, dialogId:str="head", dialog_options:dict={}) -> None:
+    def _initialize(self, chapterType:str, chapterId:int, collection_name:str, dialogId:Union[str,int]="head", dialog_options:dict={}) -> None:
         #类型
         self.chapterType = chapterType
         #章节id
@@ -89,12 +89,8 @@ class NpcImageManager:
         self.__NPC_IMAGE_DATABASE = NpcImageDatabase()
         self.img_width = int(display.get_width()/2)
         self.move_x = 0
-        self.dev_mode = False
+        self.dev_mode:bool = False
         self.npcGetClick = None
-    def devMode(self) -> None:
-        for imgPath in glob("Assets/image/npc/*"):
-            self.__loadNpc(imgPath)
-            self.dev_mode = True
     #确保角色存在
     def __ensure_the_existence_of(self, name:str) -> None:
         if name not in self.npcImageDict: self.__loadNpc(os.path.join("Assets/image/npc",name))
@@ -102,7 +98,7 @@ class NpcImageManager:
     def __loadNpc(self, path:str) -> None:
         name = os.path.basename(path)
         self.npcImageDict[name] = {}
-        self.npcImageDict[name]["normal"] = SrcalphaSurface(path,0,0,self.img_width,self.img_width)
+        self.npcImageDict[name]["normal"] = StaticImageSurface(path,0,0,self.img_width,self.img_width)
         #生成深色图片
         self.npcImageDict[name]["dark"] = self.npcImageDict[name]["normal"].copy()
         self.npcImageDict[name]["dark"].addDarkness(50)
@@ -132,9 +128,9 @@ class NpcImageManager:
             img.set_pos(x,y)
             img.draw(surface)
             #如果是开发模式
-            if self.dev_mode:
+            if self.dev_mode is True:
                 self.npcGetClick = None
-                if is_hover(img,(x,y)):
+                if isHover(img,(x,y)):
                     img.draw_outline(surface)
                     self.npcGetClick = name
     def draw(self, surface:pygame.Surface) -> None:
@@ -257,7 +253,7 @@ class NpcImageManager:
 #对话框和对话框内容
 class DialogContent(AbstractDialog):
     def __init__(self, fontSize:int):
-        AbstractDialog.__init__(self,loadImg("Assets/image/UI/dialoguebox.png"),fontSize)
+        super().__init__(loadImg("Assets/image/UI/dialoguebox.png"),fontSize)
         try:
             self.__textPlayingSound = pygame.mixer.Sound("Assets/sound/ui/dialog_words_playing.ogg")
         except FileNotFoundError:
@@ -341,8 +337,11 @@ class DialogContent(AbstractDialog):
     #淡出
     def __fadeOut(self, surface:pygame.Surface) -> None:
         #画出对话框图片
-        surface.blit(resizeImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
-        (surface.get_width()*0.13,self.dialoguebox_y))
+        if self.dialoguebox_y is not None:
+            surface.blit(
+                resizeImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
+                (surface.get_width()*0.13,self.dialoguebox_y)
+                )
         """
         if self.__txt_alpha > 0:
             self.__txt_alpha -= 17
@@ -448,19 +447,19 @@ class DialogButtons:
         self.historyButton = Button(history_imgTemp,window_x*0.1,window_y*0.05)
         self.historyButton.set_hover_img(history_img)
     def draw(self, surface:pygame.Surface, isHidden:bool) -> str:
-        if isHidden:
+        if isHidden is True:
             self.showButton.draw(surface)
-            return "hide" if is_hover(self.showButton) else ""
+            return "hide" if self.showButton.is_hover() else ""
         else:
             self.hideButton.draw(surface)
             self.historyButton.draw(surface)
             action = ""
-            if is_hover(self.skipButton):
+            if self.skipButton.is_hover():
                 self.skipButtonHovered.draw(surface)
                 action = "skip"
             else:
                 self.skipButton.draw(surface)
-            if is_hover(self.autoButton):
+            if self.autoButton.is_hover():
                 self.autoButtonHovered.draw(surface)
                 if self.autoMode:
                     rotatedIcon = pygame.transform.rotate(self.autoIconHovered,self.autoIconDegree)
@@ -490,9 +489,9 @@ class DialogButtons:
                 else:
                     self.autoButton.draw(surface)
                     surface.blit(self.autoIcon,(self.autoButton.description,self.autoButton.y+self.icon_y))
-            if is_hover(self.hideButton):
+            if self.hideButton.is_hover():
                 action = "hide"
-            elif is_hover(self.historyButton):
+            elif self.historyButton.is_hover():
                 action = "history"
             return action
     def autoModeSwitch(self) -> None:

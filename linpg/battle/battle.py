@@ -4,7 +4,7 @@ from .character import *
 #战斗系统接口，请勿实例化
 class AbstractBattleSystem(SystemWithBackgroundMusic):
     def __init__(self, chapterType:str, chapterId:int, collection_name:str) -> None:
-        SystemWithBackgroundMusic.__init__(self)
+        super().__init__()
         #用于判断是否移动屏幕的参数
         self.__mouse_move_temp_x = -1
         self.__mouse_move_temp_y = -1

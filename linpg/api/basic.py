@@ -1,7 +1,8 @@
 # cython: language_level=3
 from __future__ import annotations
 #python本体库
-import os, random
+import os, random, re
+from datetime import datetime
 from glob import glob
 from typing import Union
 #额外库
@@ -36,7 +37,7 @@ def imgLoadFunction(path:Union[str,pygame.Surface], ifConvertAlpha:bool) -> pyga
         throwException("error","The path '{}' has to be a string or at least a pygame.Surface!".format(path))
 
 #图片加载模块：接收图片路径,长,高,返回对应图片
-def loadImg(path:Union[str,pygame.Surface], size:Union[tuple,list]=[], setAlpha:int=255, ifConvertAlpha:bool=True) -> pygame.Surface:
+def loadImg(path:Union[str,pygame.Surface], size:Union[tuple,list]=tuple(), setAlpha:int=255, ifConvertAlpha:bool=True) -> pygame.Surface:
     #加载图片
     img = imgLoadFunction(path,ifConvertAlpha)
     #根据参数编辑图片
@@ -56,10 +57,7 @@ def loadAllImgInFile(pathRule:str, width:any=None, height:any=None) -> list[pyga
 
 #获取Surface
 def getSurface(size:Union[tuple,list], surface_flags:any=None) -> pygame.Surface:
-    if surface_flags is not None:
-        return pygame.Surface(size,flags=surface_flags)
-    else:
-        return pygame.Surface(size)
+    return pygame.Surface(size,flags=surface_flags) if surface_flags is not None else pygame.Surface(size)
 
 """处理"""
 #重新编辑尺寸
@@ -97,7 +95,7 @@ def addDarkness(img:pygame.Surface, value:int) -> pygame.Surface:
 #减少图片暗度
 def removeDarkness(img:pygame.Surface, value:int) -> pygame.Surface:
     newImg:pygame.Surface = img.copy()
-    newImg.fill((value, value, value), special_flags=pygame.BLEND_RGB_ADD)
+    newImg.fill((value, value, value),special_flags=pygame.BLEND_RGB_ADD)
     return newImg
 
 #调整图片亮度
@@ -125,18 +123,18 @@ def copeBounding(img:pygame.Surface) -> pygame.Surface: return cropImg(img,img.g
 """展示"""
 #中心展示模块1：接受两个item和item2的x和y，将item1展示在item2的中心位置,但不展示item2：
 def displayInCenter(item1:pygame.Surface, item2:pygame.Surface, x:Union[int,float], y:Union[int,float], screen:pygame.Surface,
-    local_x:Union[int,float] = 0, local_y:Union[int,float] = 0) -> None:
+    off_set_x:Union[int,float] = 0, off_set_y:Union[int,float] = 0) -> None:
     added_x = (item2.get_width()-item1.get_width())/2
     added_y = (item2.get_height()-item1.get_height())/2
-    screen.blit(item1,(x+added_x+local_x,y+added_y+local_y))
+    screen.blit(item1,(x+added_x+off_set_x,y+added_y+off_set_y))
 
 #中心展示模块2：接受两个item和item2的x和y，展示item2后，将item1展示在item2的中心位置：
 def displayWithInCenter(item1:pygame.Surface, item2:pygame.Surface, x:Union[int,float], y:Union[int,float], screen:pygame.Surface,
-    local_x:Union[int,float] = 0, local_y:Union[int,float] = 0) -> None:
+    off_set_x:Union[int,float] = 0, off_set_y:Union[int,float] = 0) -> None:
     added_x = (item2.get_width()-item1.get_width())/2
     added_y = (item2.get_height()-item1.get_height())/2
-    screen.blit(item2,(x+local_x,y+local_y))
-    screen.blit(item1,(x+added_x+local_x,y+added_y+local_y))
+    screen.blit(item2,(x+off_set_x,y+off_set_y))
+    screen.blit(item1,(x+added_x+off_set_x,y+added_y+off_set_y))
 
 """其他"""
 #字典合并
@@ -151,7 +149,7 @@ def unloadBackgroundMusic() -> None:
 def randomInt(start:int, end:int) -> int: return random.randint(start,end)
 
 #转换坐标
-def convert_pos(pos:Union[list,tuple,dict,object,numpy.ndarray]) -> tuple:
+def convert_pos(pos:Union[list,tuple,dict,object,pygame.Rect,numpy.ndarray]) -> tuple:
     #检测坐标
     if isinstance(pos,(list,tuple,numpy.ndarray)):
         return pos[0],pos[1]
@@ -163,13 +161,50 @@ def convert_pos(pos:Union[list,tuple,dict,object,numpy.ndarray]) -> tuple:
 #判断2个坐标是否相同
 def is_same_pos(pos1:any, pos2:any) -> bool: return convert_pos(pos1) == convert_pos(pos2)
 
+#相加2个坐标
+def add_pos(pos1:any, pos2:any) -> tuple:
+    pos1:tuple = convert_pos(pos1)
+    pos2:tuple = convert_pos(pos2)
+    return pos1[0]+pos2[0],pos1[1]+pos2[1]
+
+#相减2个坐标
+def subtract_pos(pos1:any, pos2:any) -> tuple:
+    pos1:tuple = convert_pos(pos1)
+    pos2:tuple = convert_pos(pos2)
+    return pos1[0]-pos2[0],pos1[1]-pos2[1]
+
 #抛出引擎内的异常
 def throwException(exception_type:str, info:str) -> None:
-    if exception_type == "error":
-        raise Exception('LinpgEngine-Error: {}'.format(info))
-    elif exception_type == "warning":
+    exception_type_lower:str = exception_type.lower()
+    if exception_type_lower == "error":
+        error_msg = 'LinpgEngine-Error: {}'.format(info)
+        #生成错误报告
+        if not os.path.exists("crash_reports"): os.mkdir("crash_reports")
+        with open(os.path.join("crash_reports","crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
+            f.write("Error_Message: {}".format(error_msg))
+        #打印出错误
+        raise Exception(error_msg)
+    elif exception_type_lower == "warning":
         print("LinpgEngine-Warning: {}".format(info))
-    elif exception_type == "info":
+    elif exception_type_lower == "info":
         print('LinpgEngine-Info: {}'.format(info))
     else:
         throwException("error","Hey, the exception_type '{}' is not acceptable!".format(exception_type))
+
+#多段数字字符串排序 - by Jeff Atwood
+def natural_sort(l:list) -> list:
+    convert = lambda text: int(text) if text.isdigit() else text.lower() 
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+    return sorted(l, key = alphanum_key)
+
+#是否触碰pygame类
+def isHoverPygameObject(imgObject:object, objectPos:Union[tuple,list]=(0,0), off_set_x:Union[int,float]=0, off_set_y:Union[int,float]=0) -> bool:
+    mouse_x,mouse_y = pygame.mouse.get_pos()
+    #如果是pygame的面
+    if isinstance(imgObject,pygame.Surface):
+        return True if 0 < mouse_x-off_set_x-objectPos[0] < imgObject.get_width() and 0 < mouse_y-off_set_y-objectPos[1] < imgObject.get_height()\
+            else False
+    elif isinstance(imgObject,pygame.Rect):
+        return True if imgObject.x < mouse_x-off_set_x < imgObject.right and imgObject.y < mouse_y-off_set_y < imgObject.bottom else False
+    else:
+        throwException("error","Unable to check current object: {0} (type:{1})".format(imgObject,type(imgObject)))

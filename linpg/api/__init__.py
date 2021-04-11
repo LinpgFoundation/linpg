@@ -1,6 +1,6 @@
 # cython: language_level=3
 """
 结构:
-basic -> config -> controller -> lang
+basic -> config -> controller -> lang -> module -> font
 """
-from .lang import *
+from .font import *

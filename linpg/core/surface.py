@@ -1,40 +1,48 @@
 # cython: language_level=3
 from ..api import *
 
-#图形接口
-class AbstractImage(GameObject2d):
-    def __init__(self, img:Union[pygame.Surface,None], x:Union[int,float], y:Union[int,float], width:any, height:any):
-        super().__init__(x,y)
-        self.img = img
-        self._width = width
-        self._height = height
-    #透明度
-    def get_alpha(self) -> int: return self.img.get_alpha()
-    def set_alpha(self, value:int) -> None: self.img.set_alpha(value)
+#与pygame.Rect类似的形状类
+class Shape(GameObject2d):
+    def __init__(self, left:Union[int,float], top:Union[int,float], width:Union[int,float], height:Union[int,float]):
+        super().__init__(left,top)
+        self._width = int(width)
+        self._height = int(height)
     #宽度
     def get_width(self) -> int: return self._width
-    def set_width(self, value:float) -> None: self._width = round(value)
+    def set_width(self, value:Union[int,float]) -> None: self._width = round(value)
     #高度
     def get_height(self) -> int: return self._height
-    def set_height(self, value:float) -> None: self._height = round(value)
+    def set_height(self, value:Union[int,float]) -> None: self._height = round(value)
     #尺寸
     def set_size(self, width:float, height:float) -> None:
         self.set_width(width)
         self.set_height(height)
     #画出轮廓
     def draw_outline(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0), color:str="red", line_width:int=2) -> None:
-        pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect((self.x+offSet[0],self.y+offSet[1]),self.size),line_width)
+        pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect(add_pos(self.pos,offSet),self.size),line_width)
+
+#图形接口
+class AbstractImage(Shape):
+    def __init__(self, img:Union[pygame.Surface,None], x:Union[int,float], y:Union[int,float], width:any, height:any):
+        super().__init__(x,y,0,0)
+        self.img = img
+        self._width = width
+        self._height = height
+    #透明度
+    def get_alpha(self) -> int: return self.img.get_alpha()
+    def set_alpha(self, value:int) -> None: self.img.set_alpha(value)
 
 #用于静态图片的surface
 class StaticImageSurface(AbstractImage):
     def __init__(self, path_or_surface:Union[str,pygame.Surface], x:any, y:any, width:any=None, height:any=None):
         super().__init__(None,x,y,width,height)
-        self._alpha = 255
+        self._alpha:int = 255
         self.img_original = loadImg(path_or_surface)
         self.__local_x = 0
         self.__local_y = 0
-        self.__isFlipped = False
-        self.__needUpdate = True if self._width is not None and self._height is not None else False
+        self.__isFlipped:bool = False
+        self.__needUpdate:bool = True if self._width is not None and self._height is not None else False
+        self.__crop_rect:object = None
     #透明度
     def get_alpha(self) -> int: return self._alpha
     def set_alpha(self, value:float) -> None:
@@ -43,7 +51,7 @@ class StaticImageSurface(AbstractImage):
         elif value > 255:
             self._alpha = 255
         else:
-            self._alpha = round(value)
+            self._alpha = int(value)
         if self.img is not None and self.img.get_alpha() != self._alpha: super().set_alpha(self._alpha)
     #宽度
     def set_width(self, value:float) -> None:
@@ -65,10 +73,28 @@ class StaticImageSurface(AbstractImage):
         width = round(height/self.img_original.get_height()*self.img_original.get_width())
         height = round(height)
         self.set_size(width,height)
+    #自定义crop范围
+    @property
+    def crop_rect(self) -> object: return self.__crop_rect
+    def get_crop_rect(self) -> object: return self.__crop_rect
+    def set_crop_rect(self, rect:Union[pygame.Rect,Shape,None]) -> None:
+        if rect is None or isinstance(rect,(pygame.Rect,Shape)):
+            if self.__crop_rect != rect:
+                self.__crop_rect = rect
+                self.__needUpdate = True
+            else:
+                pass
+        else:
+            throwException("error","You have to input either a None or a Rect, not {}".format(type(rect)))
     #更新图片
     def _update_img(self) -> None:
         imgTmp = resizeImg(self.img_original,(self._width,self._height))
         rect = imgTmp.get_bounding_rect()
+        if self.__crop_rect is not None:
+            rect = Shape(
+                max(rect.x,self.__crop_rect.x),max(rect.y,self.__crop_rect.y),
+                min(rect.width,self.__crop_rect.width),min(rect.height,self.__crop_rect.height)
+                )
         self.img = getSurface(rect.size,pygame.SRCALPHA).convert_alpha()
         self.__local_x = rect.x
         self.__local_y = rect.y
@@ -115,6 +141,8 @@ class StaticImageSurface(AbstractImage):
     def addBrightness(self, value:int) -> None:
         self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_ADD)
         self.__needUpdate = True
+    def sub_subsurface(self, rect:pygame.Rect) -> pygame.Surface:
+        pass
     #展示
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
         #如果图片需要更新，则先更新
@@ -150,7 +178,7 @@ class ImageSurface(AbstractImage):
     def drawOnTheCenterOf(self, surface:pygame.Surface) -> None:
         surface.blit(resizeImg(self.img,self.size),((surface.get_width()-self._width)/2,(surface.get_height()-self._height)/2))
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        surface.blit(resizeImg(self.img,self.size),(self.x+offSet[0],self.y+offSet[1]))
+        surface.blit(resizeImg(self.img,self.size),add_pos(self.pos,offSet))
     #旋转
     def rotate(self, angle:int) -> None: self.img = pygame.transform.rotate(self.img,angle)
     #反转
@@ -202,7 +230,7 @@ class ProgressBar(AbstractImage):
         self.percentage = 0
         self.color = findColorRGBA(color)
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        pygame.draw.rect(surface,self.color,(self.x+offSet[0],self.y+offSet[1],self._width*self.percentage,self._height))
+        pygame.draw.rect(surface,self.color,pygame.Rect(add_pos(self.pos,offSet),(int(self._width*self.percentage),self._height)))
 
 #进度条Surface
 class ProgressBarSurface(AbstractImage):
@@ -278,7 +306,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
             self._current_percentage += self.__perecent_update_each_time
     #展示
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        pos:tuple = (self.x+offSet[0],self.y+offSet[1])
+        pos:tuple = add_pos(self.pos,offSet)
         surface.blit(resizeImg(self.img2,self.size),pos)
         self._check_and_update_percentage()
         if self._current_percentage > 0:
@@ -333,7 +361,7 @@ class Button(GameObject2d):
                 self.img2 = tempSurface
                 self._hoverEventTriggered = True
             return True
-    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None: surface.blit(self.img,(self.x+offSet[0],self.y+offSet[1]))
+    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None: surface.blit(self.img,add_pos(self.pos,offSet))
 
 class ButtonWithDes(Button):
     def __init__(self, path:str, x:Union[int,float], y:Union[int,float], width:Union[int,float], height:Union[int,float], des:str):
@@ -386,7 +414,7 @@ class GifObject(AbstractImage):
         img = resizeImg(self.img[self.imgId],self.size)
         #设置透明度
         if self._alpha != 255: img.set_alpha(self._alpha)
-        surface.blit(img,(self.x+offSet[0],self.y+offSet[1]))
+        surface.blit(img,add_pos(self.pos,offSet))
         if self.countDown >= self.updateGap:
             self.countDown = 0
             self.imgId += 1

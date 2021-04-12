@@ -82,12 +82,19 @@ class NpcImageManager:
         self.npcLastRoundImgAlpha = 255
         self.npcThisRound = []
         self.npcThisRoundImgAlpha = 0
+        self.__darkness:int = 50
+        self.__img_width:int = int(display.get_width()/2)
         try:
-            self.communication = loadImg("Assets/image/UI/communication.png")
+            self.__communication_surface_rect:object = Shape(int(self.__img_width*0.25),0,int(self.__img_width*0.5),int(self.__img_width*0.56))
+            self.__communication = StaticImageSurface(
+                "Assets/image/UI/communication.png",0,0,self.__communication_surface_rect.width,self.__communication_surface_rect.height
+                )
+            self.__communication_dark = self.__communication.copy()
+            self.__communication_dark.addDarkness(self.__darkness)
         except:
-            self.communication = None
+            self.__communication = None
+            self.__communication_dark = None
         self.__NPC_IMAGE_DATABASE = NpcImageDatabase()
-        self.img_width = int(display.get_width()/2)
         self.move_x = 0
         self.dev_mode:bool = False
         self.npcGetClick = None
@@ -98,35 +105,32 @@ class NpcImageManager:
     def __loadNpc(self, path:str) -> None:
         name = os.path.basename(path)
         self.npcImageDict[name] = {}
-        self.npcImageDict[name]["normal"] = StaticImageSurface(path,0,0,self.img_width,self.img_width)
+        self.npcImageDict[name]["normal"] = StaticImageSurface(path,0,0,self.__img_width,self.__img_width)
         #生成深色图片
         self.npcImageDict[name]["dark"] = self.npcImageDict[name]["normal"].copy()
-        self.npcImageDict[name]["dark"].addDarkness(50)
+        self.npcImageDict[name]["dark"].addDarkness(self.__darkness)
     #画出角色
     def __displayNpc(self, name:str, x:Union[int,float], y:Union[int,float], alpha:int, surface:pygame.Surface) -> None:
         if alpha > 0:
-            nameTemp = name.replace("&communication","").replace("&dark","")
+            nameTemp = name.replace("<c>","").replace("<d>","")
             self.__ensure_the_existence_of(nameTemp)
             #加载npc的基础立绘
-            img = self.npcImageDict[nameTemp]["dark"] if "&dark" in name else self.npcImageDict[nameTemp]["normal"]
-            img.set_size(self.img_width,self.img_width)
+            img = self.npcImageDict[nameTemp]["dark"] if "<d>" in name else self.npcImageDict[nameTemp]["normal"]
+            img.set_size(self.__img_width,self.__img_width)
             img.set_alpha(alpha)
-            """
-            if "&communication" in name:
-                if "communication" not in self.npcImageDict[nameTemp]:
-                    #生成通讯图片
-                    self.npcImageDict[nameTemp]["communication"] = getSurface((int(self.img_width/1.9), int(self.img_width/1.8)),pygame.SRCALPHA)
-                    self.npcImageDict[nameTemp]["communication"].blit(self.npcImageDict[nameTemp]["normal"],(-int(self.img_width/4),0))
-                    self.npcImageDict[nameTemp]["communication"].blit(resizeImg(self.communication,(self.img_width/1.9,self.img_width/1.7)),(0,0))
-                    #生成深色的通讯图片
-                    self.npcImageDict[nameTemp]["communication_dark"] = self.npcImageDict[nameTemp]["communication"].copy()
-                    dark = pygame.Surface((int(self.img_width/1.9), int(self.img_width/1.8)), flags=pygame.SRCALPHA).convert_alpha()
-                    dark.fill((50,50,50))
-                    self.npcImageDict[nameTemp]["communication_dark"].blit(dark, (0, 0), special_flags=pygame.BLEND_RGB_SUB)
-                    x+=int(self.img_width/4)
-            """
             img.set_pos(x,y)
-            img.draw(surface)
+            if "<c>" in name:
+                img.set_crop_rect(self.__communication_surface_rect)
+                img.draw(surface)
+                if "<d>" in name:
+                    self.__communication_dark.set_pos(x+self.__communication_surface_rect.x,y+self.__communication_surface_rect.y)
+                    self.__communication_dark.draw(surface)
+                else:
+                    self.__communication.set_pos(x+self.__communication_surface_rect.x,y+self.__communication_surface_rect.y)
+                    self.__communication.draw(surface)
+            else:
+                img.set_crop_rect(None)
+                img.draw(surface)
             #如果是开发模式
             if self.dev_mode is True:
                 self.npcGetClick = None
@@ -140,12 +144,12 @@ class NpcImageManager:
         #调整alpha值
         if self.npcLastRoundImgAlpha > 0:
             self.npcLastRoundImgAlpha -= 15
-            x_moved_forNpcLastRound = self.img_width/4-self.img_width/4*self.npcLastRoundImgAlpha/255
+            x_moved_forNpcLastRound = self.__img_width/4-self.__img_width/4*self.npcLastRoundImgAlpha/255
         else:
             x_moved_forNpcLastRound = 0
         if self.npcThisRoundImgAlpha < 255:
             self.npcThisRoundImgAlpha += 25
-            x_moved_forNpcThisRound = self.img_width/4*self.npcThisRoundImgAlpha/255-self.img_width/4
+            x_moved_forNpcThisRound = self.__img_width/4*self.npcThisRoundImgAlpha/255-self.__img_width/4
         else:
             x_moved_forNpcThisRound = 0
         #画上上一幕的立绘
@@ -300,13 +304,6 @@ class DialogContent(AbstractDialog):
         return True if self.autoMode and self.readTime >= self.totalLetters else False
     #渲染文字
     def fontRender(self, txt:str, color:tuple) -> pygame.Surface: return self.FONT.render(txt,get_fontMode(),color)
-    def __render_font(self, txt:str, color:tuple) ->pygame.Surface:
-        return self.FONT.render(txt,get_fontMode(),color) 
-        """
-        font_surface = self.fontRender(txt,color)
-        if self.__txt_alpha != 255: font_surface.set_alpha(self.__txt_alpha)
-        return font_surface
-        """
     #如果音效还在播放则停止播放文字音效
     def stop_playing_text_sound(self) -> None:
         if pygame.mixer.get_busy() and self.__textPlayingSound is not None: self.__textPlayingSound.stop()
@@ -342,12 +339,6 @@ class DialogContent(AbstractDialog):
                 resizeImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
                 (surface.get_width()*0.13,self.dialoguebox_y)
                 )
-        """
-        if self.__txt_alpha > 0:
-            self.__txt_alpha -= 17
-            self.__blit_txt(surface)
-        else:
-        """
         if self.dialoguebox_height > 0:
             self.dialoguebox_height -= self.dialoguebox_max_height/10
             self.dialoguebox_y += self.dialoguebox_max_height/20
@@ -359,15 +350,15 @@ class DialogContent(AbstractDialog):
         y:int = int(surface.get_height()*0.73)
         #写上当前讲话人的名字
         if self.narrator is not None:
-            surface.blit(self.__render_font(self.narrator,(255, 255, 255)),(x,self.dialoguebox_y+self.FONTSIZE))
+            surface.blit(self.fontRender(self.narrator,(255, 255, 255)),(x,self.dialoguebox_y+self.FONTSIZE))
         #画出鼠标gif
         self.mouseImg.draw(surface)
         #对话框已播放的内容
         for i in range(self.displayedLine):
-            surface.blit(self.__render_font(self.content[i],(255, 255, 255)),(x,y+self.FONTSIZE*1.5*i))
+            surface.blit(self.fontRender(self.content[i],(255, 255, 255)),(x,y+self.FONTSIZE*1.5*i))
         #对话框正在播放的内容
         surface.blit(
-            self.__render_font(self.content[self.displayedLine][:self.textIndex],(255, 255, 255)),
+            self.fontRender(self.content[self.displayedLine][:self.textIndex],(255, 255, 255)),
             (x,y+self.FONTSIZE*1.5*self.displayedLine)
             )
         #如果当前行的字符还没有完全播出
@@ -515,8 +506,8 @@ class NpcImageDatabase:
             if fileName in self.__DATA[key]: return key
         return None
     def ifSameKind(self, fileName1:str, fileName2:str) -> bool:
-        fileName1 = fileName1.replace("&communication","").replace("&dark","")
-        fileName2 = fileName2.replace("&communication","").replace("&dark","")
+        fileName1 = fileName1.replace("<c>","").replace("<d>","")
+        fileName2 = fileName2.replace("<c>","").replace("<d>","")
         for key in self.__DATA:
             if fileName1 in self.__DATA[key]:
                 if fileName2 in self.__DATA[key]:

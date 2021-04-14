@@ -177,14 +177,18 @@ def subtract_pos(pos1:any, pos2:any) -> tuple:
 def throwException(exception_type:str, info:str) -> None:
     exception_type_lower:str = exception_type.lower()
     if exception_type_lower == "error":
-        error_msg = 'LinpgEngine-Error: {}'.format(info)
         #生成错误报告
         if not os.path.exists("crash_reports"): os.mkdir("crash_reports")
         with open(os.path.join("crash_reports","crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
-            f.write("Error_Message: {}".format(error_msg))
+            f.write("Error Message From Linpg: {}".format(info))
         #打印出错误
-        raise Exception(error_msg)
+        raise Exception('LinpgEngine-Error: {}'.format(info))
     elif exception_type_lower == "warning":
+        #生成错误报告
+        if not os.path.exists("crash_reports"): os.mkdir("crash_reports")
+        with open(os.path.join("crash_reports","crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
+            f.write("Warning Message From Linpg: {}".format(info))
+        #打印出警告
         print("LinpgEngine-Warning: {}".format(info))
     elif exception_type_lower == "info":
         print('LinpgEngine-Info: {}'.format(info))

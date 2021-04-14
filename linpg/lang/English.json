@@ -2,6 +2,8 @@
     "Dialog": {
         "auto": "Auto",
         "choice": "Choice",
+        "leave_without_save1": "You are about to leave without saving your work!",
+        "leave_without_save2": "Do you ant to save your changes?",
         "skip": "Skip"
     },
     "DialogCreator": {
@@ -19,8 +21,11 @@
     },
     "Global": {
         "back": "Back",
+        "cancel": "Cancel",
+        "dont_save": "Don't Save",
         "process_has_been_saved": "The process has been saved.",
-        "save": "Save"
+        "save": "Save",
+        "warning": "Warning"
     },
     "Language": "English",
     "Numbers": [

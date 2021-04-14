@@ -2,22 +2,34 @@
 from .surface import *
 
 #用于储存游戏对象的容器，类似html的div
-class GameObjectContainer(GameObject):
-    def __init__(self, x:Union[int,float], y:Union[int,float]):
-        super().__init__(x,y)
-        self.hidden = False
-        self.items = []
+class GameObjectContainer(AbstractImage):
+    def __init__(self, bg_img:Union[str,pygame.Surface,None], x:Union[int,float], y:Union[int,float], width:Union[int,float], height:Union[int,float]):
+        if bg_img is not None: bg_img = StaticImageSurface(bg_img,0,0,width,height)
+        super().__init__(bg_img,x,y,width,height) 
+        self.hidden:bool = False
+        self.items:list = []
     #新增一个物品
     def append(self, new_item:GameObject) -> None: self.items.append(new_item)
     #移除一个物品
     def pop(self, index:int) -> None: self.items.pop(index)
     #清空物品栏
     def clear(self) -> None: self.items.clear()
+    #设置尺寸
+    def set_width(self, value:Union[int,float]) -> None:
+        super().set_width(value)
+        if self.img is not None: self.img.set_width(value)
+    def set_height(self, value:Union[int,float]) -> None:
+        super().set_height(value)
+        if self.img is not None: self.img.set_height(value)
     #把物品画到surface上
-    def draw(self, surface:pygame.Surface) -> None:
+    def draw(self, surface:pygame.Surface) -> None: self.display(surface)
+    def display(self, surface:pygame.Surface, offSet:tuple=(0,0)) -> None:
         if not self.hidden:
+            #画出背景
+            if self.img is not None: self.img.display(surface,add_pos(self.pos,offSet))
+            #画出物品
             for item in self.items:
-                item.display(surface,self.pos)
+                item.display(surface,add_pos(self.pos,offSet))
 
 #带有滚动条的Surface容器
 class SurfaceContainerWithScrollbar(AbstractImage):

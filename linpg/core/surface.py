@@ -23,7 +23,7 @@ class Shape(GameObject2d):
 
 #图形接口
 class AbstractImage(Shape):
-    def __init__(self, img:Union[pygame.Surface,None], x:Union[int,float], y:Union[int,float], width:any, height:any):
+    def __init__(self, img:any, x:Union[int,float], y:Union[int,float], width:any, height:any):
         super().__init__(x,y,0,0)
         self.img = img
         self._width = width
@@ -390,8 +390,9 @@ class ButtonWithFadeInOut(Button):
     def __init__(self, path:str, txt:str, txt_color:any, alphaWhenNotHover:int, x:Union[int,float], y:Union[int,float], height:Union[int,float]):
         super().__init__(path,x,y)
         txtSurface = fontRenderWithoutBound(txt,txt_color,height*0.6)
-        self.img = resizeImg(self.img,(txtSurface.get_width()+height,height))
-        self.img.blit(txtSurface,(height*0.5,(height-txtSurface.get_height())/2))
+        padding = int((height-txtSurface.get_height())/2)
+        self.img = resizeImg(self.img,(txtSurface.get_width()+padding*2,height))
+        self.img.blit(txtSurface,(padding,padding))
         self.set_hover_img(self.img.copy())
         self.img.set_alpha(alphaWhenNotHover)
 

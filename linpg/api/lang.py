@@ -25,12 +25,19 @@ reload_lang()
 #获取语言配置文件
 def get_lang(key:str, key2:str=None) -> any:
     if key2 is None:
-        if key in _LINPG_LANG:
+        try:
             return deepcopy(_LINPG_LANG[key])
-        else:
-            return None
+        except KeyError:
+            throwException("Warning",'Getting "KeyError" while trying to get {}!'.format(key))
+            print("Please check your code or report this bug to the developer!")
+            return key
     else:
-        return deepcopy(_LINPG_LANG[key][key2])
+        try:
+            return deepcopy(_LINPG_LANG[key][key2])
+        except KeyError:
+            throwException("Warning",'Getting "KeyError" while trying to get {} from {} category!'.format(key2,key))
+            print("Please check your code or report this bug to the developer!")
+            return key2
 
 #获取本地化的数字
 def get_num_in_local_text(num:Union[int,str]) -> str:

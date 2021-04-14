@@ -293,7 +293,7 @@ class DialogEditor(AbstractDialogSystem):
         self.UIContainerRightImage = loadImg("Assets/image/UI/container.png",(container_width,display.get_height()))
         #背景容器
         self.UIContainerRight_bg = SurfaceContainerWithScrollbar(
-            None, 0, int(display.get_height()*0.1), int(container_width*0.95), int(display.get_height()*0.8), "vertical"
+            None, int(container_width*0.075), int(display.get_height()*0.1), int(container_width*0.85), int(display.get_height()*0.85), "vertical"
             )
         self.UIContainerRight_bg.set_scroll_bar_pos("right")
         #加载背景图片
@@ -301,18 +301,19 @@ class DialogEditor(AbstractDialogSystem):
         self.UIContainerRight_bg.set("current_select",None)
         for imgPath in glob("Assets/image/dialog_background/*"):
             self.UIContainerRight_bg.set(os.path.basename(imgPath),loadImg(imgPath,(container_width*0.8,None)))
-        self.UIContainerRight_bg.panding = container_width*0.1
+        self.UIContainerRight_bg.distance_between_item = int(display.get_height()*0.02)
         self.__current_select_bg_name = None
         self.__current_select_bg_copy = None
         #npc立绘容器
         self.UIContainerRight_npc = SurfaceContainerWithScrollbar(
-            None, 0, int(display.get_height()*0.1), int(container_width*0.95), int(display.get_height()*0.8), "vertical"
+            None, int(container_width*0.075), int(display.get_height()*0.1), int(container_width*0.85), int(display.get_height()*0.85), "vertical"
             )
         self.UIContainerRight_npc.set_scroll_bar_pos("right")
         #加载npc立绘
         for imgPath in glob("Assets/image/npc/*"):
             self.UIContainerRight_npc.set(os.path.basename(imgPath),loadImg(imgPath,(container_width*0.8,None)))
         self.UIContainerRight_npc.hidden = True
+        self.UIContainerRight_npc.distance_between_item = 0
         #从配置文件中加载数据
         self.__loadDialogData(part)
         #容器按钮
@@ -326,7 +327,6 @@ class DialogEditor(AbstractDialogSystem):
         self.UIContainerRightButton.rotate(90)
         #UI按钮
         CONFIG = get_lang("DialogCreator")
-        button_width = int(display.get_width()*0.05)
         button_y = int(display.get_height()*0.03)
         #控制容器转换的按钮
         self.button_select_background = ButtonWithFadeInOut(
@@ -553,7 +553,7 @@ class DialogEditor(AbstractDialogSystem):
         for event in self.events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    if (self.UIContainerRightButton.is_hover()):
+                    if self.UIContainerRightButton.is_hover():
                         self.UIContainerRightButton.switch()
                         self.UIContainerRightButton.flip(True,False)
                     #退出

@@ -42,6 +42,7 @@ class SurfaceContainerWithScrollbar(AbstractImage):
         self.set_mode(mode)
         self.__scroll_bar_pos:bool = True
         self.__current_hovered_item:any = None
+        self.__item_per_line:int = 1
     #获取本地坐标
     def get_local_pos(self) -> tuple: return self.__local_x,self.__local_y
     #模式
@@ -92,41 +93,11 @@ class SurfaceContainerWithScrollbar(AbstractImage):
         else:
             throwException("error",'Scroll bar position "{}" is not supported! Try sth like "right" or "bottom" instead.'.format(pos))
     #添加一个物品
-    def set(self, key:Union[str,int], value:Union[AbstractImage,pygame.Surface,None]) -> None:
-        if value is not None:
-            #如果物品不在字典中
-            if key not in self.__items_dict or self.__items_dict[key] is None:
-                if not self.__mode:
-                    self.__total_height += value.get_height()+self.distance_between_item
-                else:
-                    self.__total_width += value.get_width()+self.distance_between_item
-            #如果字典中的物品不是None,则应该计算差值
-            else:
-                if not self.__mode:
-                    self.__total_height += self.__items_dict[key].get_height()-value.get_height()
-                else:
-                    self.__total_width += self.__items_dict[key].get_width()-value.get_width()
-        #如果新的物品是None,则应该减去长度
-        elif key in self.__items_dict:
-            #如果旧的物品是None，或者不存在，则应该不考虑
-            if key not in self.__items_dict or self.__items_dict[key] is None:
-                pass
-            else:
-                if not self.__mode:
-                    self.__total_height -= int(self.__items_dict[key].get_height()+self.distance_between_item)
-                else:
-                    self.__total_width -= int(self.__items_dict[key].get_width()+self.distance_between_item)
-        self.__items_dict[key] = value
+    def set(self, key:Union[str,int], value:Union[AbstractImage,pygame.Surface,None]) -> None: self.__items_dict[key] = value
     #获取一个物品
-    def get(self, key:Union[str,int]): return self.__items_dict[key]
+    def get(self, key:Union[str,int]) -> Union[AbstractImage,pygame.Surface,None]: return self.__items_dict[key]
     #移除一个物品
-    def remove(self, key:Union[str,int]) -> None:
-        if self.__items_dict[key] is not None:
-            if not self.__mode:
-                self.__total_height -= (self.__items_dict[key].get_height()+self.distance_between_item)
-            else:
-                self.__total_width -= (self.__items_dict[key].get_width()+self.distance_between_item)
-        del self.__items_dict[key]
+    def remove(self, key:Union[str,int]) -> None: del self.__items_dict[key]
     #交换2个key名下的图片
     def swap(self, key1:Union[str,int], key2:Union[str,int]) -> None:
         temp_reference = self.__items_dict[key1]
@@ -135,10 +106,6 @@ class SurfaceContainerWithScrollbar(AbstractImage):
     #清除所有物品
     def clear(self) -> None:
         self.__items_dict.clear()
-        if not self.__mode:
-            self.__total_height = 0
-        else:
-            self.__total_width = 0
     #正在被触碰的物品
     @property
     def current_hovered_item(self) -> Union[str,int,None]: return self.__current_hovered_item
@@ -190,13 +157,111 @@ class SurfaceContainerWithScrollbar(AbstractImage):
                         self._width, self.button_tickness
                         )
         return None
+    #每一行放多少个物品
+    @property
+    def item_per_line(self) -> int: return self.__item_per_line
+    def get_item_per_line(self) -> int: return self.__item_per_line
+    def set_item_per_line(self, value:int) -> None: self.__item_per_line = int(value)
     #把素材画到屏幕上
     def display(self, surface:pygame.Surface, off_set:tuple=(0,0), pygame_events:any=None) -> None:
         self.__current_hovered_item = None
         if not self.hidden:
+            """画出"""
+            #如果有背景图片，则画出
+            if self.img is not None: surface.blit(self.img,add_pos(self.pos,off_set))
+            #计算出基础坐标
+            current_x:int = int(self.x+self.__local_x+off_set[0])
+            current_y:int = int(self.y+self.__local_y+off_set[1])
+            if not self.__mode:
+                current_x += self.panding
+            else:
+                current_y += self.panding
+            #定义部分用到的变量
+            abs_local_y:int; crop_height:int; new_height:int
+            abs_local_x:int; crop_width:int; new_width:int
+            subsurface_rect:pygame.Rect
+            item_has_been_dawn_on_this_line:int = 0
+            #画出物品栏里的图片
+            for key,item in self.__items_dict.items():
+                if item is not None:
+                    if not self.__mode:
+                        abs_local_y = int(current_y-self.y)
+                        if 0 <= abs_local_y < self._height:
+                            new_height = self._height-abs_local_y
+                            if new_height > item.get_height():
+                                new_height = item.get_height()
+                            new_width = item.get_width()
+                            if new_width > self._width:
+                                new_width = self._width
+                            subsurface_rect = pygame.Rect(0,0,new_width,new_height)
+                            surface.blit(item.subsurface(subsurface_rect),(current_x,current_y))
+                            if isHoverPygameObject(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
+                                self.__current_hovered_item = key
+                        elif -(item.get_height()) <= abs_local_y < 0:
+                            crop_height = -abs_local_y
+                            new_height = item.get_height()-crop_height
+                            if new_height > self._height:
+                                new_height = self._height
+                            new_width = item.get_width()
+                            if new_width > self._width:
+                                new_width = self._width
+                            subsurface_rect = pygame.Rect(0,crop_height,new_width,new_height)
+                            surface.blit(item.subsurface(subsurface_rect),(current_x,current_y+crop_height))
+                            if isHoverPygameObject(subsurface_rect,off_set_x=current_x,off_set_y=current_y+crop_height):
+                                self.__current_hovered_item = key
+                        #换行
+                        if item_has_been_dawn_on_this_line >= self.__item_per_line-1:
+                            current_y += self.distance_between_item + item.get_height()
+                            current_x = int(self.x+self.__local_x+off_set[0]+self.panding)
+                            item_has_been_dawn_on_this_line = 0
+                        else:
+                            current_x += self.distance_between_item + item.get_width()
+                            item_has_been_dawn_on_this_line += 1
+                    else:
+                        abs_local_x = int(current_x-self.x)
+                        if 0 <= abs_local_x < self._width:
+                            new_width = self._width-abs_local_x
+                            if new_width > item.get_width():
+                                new_width = item.get_width()
+                            new_height = item.get_height()
+                            if new_height > self._height:
+                                new_height = self._height
+                            subsurface_rect = pygame.Rect(0,0,new_width,new_height)
+                            surface.blit(item.subsurface(subsurface_rect),(current_x,current_y))
+                            if isHoverPygameObject(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
+                                self.__current_hovered_item = key
+                        elif -(item.get_width()) <= abs_local_x < 0:
+                            crop_width = -abs_local_x
+                            new_width = item.get_width()-crop_width
+                            if new_width > self._width:
+                                new_width = self._width
+                            new_height = item.get_height()
+                            if new_height > self._height:
+                                new_height = self._height
+                            subsurface_rect = pygame.Rect(crop_width,0,new_width,new_height)
+                            surface.blit(item.subsurface(subsurface_rect),(current_x+crop_width,current_y))
+                            if isHoverPygameObject(subsurface_rect,off_set_x=current_x+crop_width,off_set_y=current_y):
+                                self.__current_hovered_item = key
+                        #换行
+                        if item_has_been_dawn_on_this_line >= self.__item_per_line-1:
+                            current_x += self.distance_between_item + item.get_width()
+                            current_y = int(self.y+self.__local_y+off_set[1]+self.panding)
+                            item_has_been_dawn_on_this_line = 0
+                        else:
+                            current_y += self.distance_between_item + item.get_height()
+                            item_has_been_dawn_on_this_line += 1
+            #处理总长宽
+            if not self.__mode:
+                self.__total_height = int(current_y-self.y-self.__local_y-off_set[1])
+                if item_has_been_dawn_on_this_line > 0: self.__total_height += item.get_height()
+                self.__total_width = self._width
+            else:
+                self.__total_width = int(current_x-self.x-self.__local_x-off_set[0])
+                if item_has_been_dawn_on_this_line > 0: self.__total_width += item.get_width()
+                self.__total_height = self._height
+            """处理事件"""
             #获取鼠标坐标
             mouse_pos:tuple = pygame.mouse.get_pos()
-            """处理事件"""
             if self.is_hover(subtract_pos(mouse_pos,off_set)):
                 if not self.__mode and self.__total_height > self._height or self.__mode is True and self.__total_width > self._width:
                     #获取pygame事件
@@ -261,75 +326,7 @@ class SurfaceContainerWithScrollbar(AbstractImage):
                 elif self.__total_width > self._width:
                     local_x_max = self._width-self.__total_width
                     if self.__local_x < local_x_max: self.__local_x = local_x_max
-            """画出"""
-            #如果有背景图片，则画出
-            if self.img is not None: surface.blit(self.img,add_pos(self.pos,off_set))
-            #计算出基础坐标
-            current_x:int = int(self.x+self.__local_x+off_set[0])
-            current_y:int = int(self.y+self.__local_y+off_set[1])
-            if not self.__mode:
-                current_x += self.panding
-            else:
-                current_y += self.panding
-            #定义部分用到的变量
-            abs_local_y:int; crop_height:int; new_height:int
-            abs_local_x:int; crop_width:int; new_width:int
-            subsurface_rect:pygame.Rect
-            #画出物品栏里的图片
-            for key,item in self.__items_dict.items():
-                if item is not None:
-                    if not self.__mode:
-                        abs_local_y = int(current_y-self.y)
-                        if 0 <= abs_local_y < self._height:
-                            new_height = self._height-abs_local_y
-                            if new_height > item.get_height():
-                                new_height = item.get_height()
-                            new_width = item.get_width()
-                            if new_width > self._width:
-                                new_width = self._width
-                            subsurface_rect = pygame.Rect(0,0,new_width,new_height)
-                            surface.blit(item.subsurface(subsurface_rect),(current_x,current_y))
-                            if isHoverPygameObject(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
-                                self.__current_hovered_item = key
-                        elif -(item.get_height()) <= abs_local_y < 0:
-                            crop_height = -abs_local_y
-                            new_height = item.get_height()-crop_height
-                            if new_height > self._height:
-                                new_height = self._height
-                            new_width = item.get_width()
-                            if new_width > self._width:
-                                new_width = self._width
-                            subsurface_rect = pygame.Rect(0,crop_height,new_width,new_height)
-                            surface.blit(item.subsurface(subsurface_rect),(current_x,current_y+crop_height))
-                            if isHoverPygameObject(subsurface_rect,off_set_x=current_x,off_set_y=current_y+crop_height):
-                                self.__current_hovered_item = key
-                        current_y += self.distance_between_item + item.get_height()
-                    else:
-                        abs_local_x = int(current_x-self.x)
-                        if 0 <= abs_local_x < self._width:
-                            new_width = self._width-abs_local_x
-                            if new_width > item.get_width():
-                                new_width = item.get_width()
-                            new_height = item.get_height()
-                            if new_height > self._height:
-                                new_height = self._height
-                            subsurface_rect = pygame.Rect(0,0,new_width,new_height)
-                            surface.blit(item.subsurface(subsurface_rect),(current_x,current_y))
-                            if isHoverPygameObject(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
-                                self.__current_hovered_item = key
-                        elif -(item.get_width()) <= abs_local_x < 0:
-                            crop_width = -abs_local_x
-                            new_width = item.get_width()-crop_width
-                            if new_width > self._width:
-                                new_width = self._width
-                            new_height = item.get_height()
-                            if new_height > self._height:
-                                new_height = self._height
-                            subsurface_rect = pygame.Rect(crop_width,0,new_width,new_height)
-                            surface.blit(item.subsurface(subsurface_rect),(current_x+crop_width,current_y))
-                            if isHoverPygameObject(subsurface_rect,off_set_x=current_x+crop_width,off_set_y=current_y):
-                                self.__current_hovered_item = key
-                        current_x += self.distance_between_item + item.get_width()
+            
             #画出滚动条
             scroll_button_rect = self.__get_scroll_button_rect(off_set[0],off_set[1])
             if scroll_button_rect is not None: pygame.draw.rect(surface,findColorRGBA("white"),scroll_button_rect)

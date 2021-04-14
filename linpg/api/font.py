@@ -177,6 +177,12 @@ class TextSurface(GameObject2d):
         return self.font_surface.get_width()
     def get_height(self) -> int:
         return self.font_surface.get_height()
+    #透明度
+    @property
+    def alpha(self) -> int: return self.get_alpha()
+    def get_alpha(self) -> int: return self.font_surface.get_alpha()
+    def set_alpha(self, value:int) -> None: self.font_surface.set_alpha(value)
+    #画出
     def display(self, surface:pygame.Surface, offSet:tuple=(0,0)) -> None:
         surface.blit(self.font_surface,add_pos(self.pos,offSet))
 
@@ -187,6 +193,11 @@ class DynamicTextSurface(TextSurface):
         self.big_font_surface = b
         self.b_x = x - (self.big_font_surface.get_width()-self.font_surface.get_width())/2
         self.b_y = y - (self.big_font_surface.get_height()-self.font_surface.get_height())/2
+    #设置透明度
+    def set_alpha(self, value:int) -> None:
+        super().set_alpha(value)
+        self.big_font_surface.set_alpha(value)
+    #画出
     def display(self, surface:pygame.Surface, offSet:tuple=(0,0)) -> None:
         mouse_pos = pygame.mouse.get_pos()
         if self.is_hover(add_pos(mouse_pos,offSet)):

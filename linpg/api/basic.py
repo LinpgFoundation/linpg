@@ -208,3 +208,7 @@ def isHoverPygameObject(imgObject:object, objectPos:Union[tuple,list]=(0,0), off
         return True if imgObject.x < mouse_x-off_set_x < imgObject.right and imgObject.y < mouse_y-off_set_y < imgObject.bottom else False
     else:
         throwException("error","Unable to check current object: {0} (type:{1})".format(imgObject,type(imgObject)))
+
+#检测数值是否越界
+def keepInRange(number:Union[int,float], min_value:Union[int,float], max_value:Union[int,float]) -> Union[int,float]:
+    return max(min(max_value, number), min_value)

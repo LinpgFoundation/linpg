@@ -135,9 +135,10 @@ class SettingContoller:
         self.bar_y2 = self.baseImgY + self.baseImgHeight*0.6
         self.bar_y3 = self.baseImgY + self.baseImgHeight*0.8
         #音量数值
-        self.soundVolume_background_music = get_setting("Sound","background_music")
-        self.soundVolume_sound_effects = get_setting("Sound","sound_effects")
-        self.soundVolume_sound_environment = get_setting("Sound","sound_environment")
+        self.soundVolume_background_music = 0
+        self.soundVolume_sound_effects = 0
+        self.soundVolume_sound_environment = 0
+        self.__update_sound()
         #设置UI中的文字
         self.FONTSIZE = round(size[0]/50)
         self.fontSizeBig = round(size[0]/50*1.5)
@@ -165,6 +166,10 @@ class SettingContoller:
         self.buttons_y = self.baseImgY + self.baseImgHeight*0.88
         self.buttons_x1 = self.baseImgX + self.baseImgWidth*0.2
         self.buttons_x2 = self.buttons_x1 + self.cancelTxt_n.get_width()*1.7
+    def __update_sound(self):
+        self.soundVolume_background_music = keepInRange(get_setting("Sound","background_music"),0,100)
+        self.soundVolume_sound_effects = keepInRange(get_setting("Sound","sound_effects"),0,100)
+        self.soundVolume_sound_environment = keepInRange(get_setting("Sound","sound_environment"),0,100)
     def draw(self, surface:pygame.Surface, pygame_events=pygame.event.get()) -> bool:
         if self.isDisplaying:
             #底部图
@@ -217,9 +222,7 @@ class SettingContoller:
             if 0<mouse_x-self.buttons_x1<self.cancelTxt_n.get_width() and 0<mouse_y-self.buttons_y<self.cancelTxt_n.get_height():
                 surface.blit(self.cancelTxt_b,(self.buttons_x1,self.buttons_y))
                 if controller.get_event(pygame_events) == "comfirm":
-                    self.soundVolume_background_music = get_setting("Sound","background_music")
-                    self.soundVolume_sound_effects = get_setting("Sound","sound_effects")
-                    self.soundVolume_sound_environment = get_setting("Sound","sound_environment")
+                    self.__update_sound()
                     self.isDisplaying = False
             else:
                 surface.blit(self.cancelTxt_n,(self.buttons_x1,self.buttons_y))

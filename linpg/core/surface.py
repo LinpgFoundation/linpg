@@ -29,6 +29,8 @@ class AbstractImage(Shape):
         self._width = width
         self._height = height
     #透明度
+    @property
+    def alpha(self) -> int: return self.get_alpha()
     def get_alpha(self) -> int: return self.img.get_alpha()
     def set_alpha(self, value:int) -> None: self.img.set_alpha(value)
 
@@ -46,12 +48,7 @@ class StaticImageSurface(AbstractImage):
     #透明度
     def get_alpha(self) -> int: return self._alpha
     def set_alpha(self, value:float) -> None:
-        if value < 0:
-            self._alpha = 0
-        elif value > 255:
-            self._alpha = 255
-        else:
-            self._alpha = int(value)
+        self._alpha = keepInRange(int(value),0,255)
         if self.img is not None and self.img.get_alpha() != self._alpha: super().set_alpha(self._alpha)
     #宽度
     def set_width(self, value:float) -> None:
@@ -91,10 +88,9 @@ class StaticImageSurface(AbstractImage):
         imgTmp = resizeImg(self.img_original,(self._width,self._height))
         rect = imgTmp.get_bounding_rect()
         if self.__crop_rect is not None:
-            rect = Shape(
-                max(rect.x,self.__crop_rect.x),max(rect.y,self.__crop_rect.y),
-                min(rect.width,self.__crop_rect.width),min(rect.height,self.__crop_rect.height)
-                )
+            new_x:int = max(rect.x,self.__crop_rect.x)
+            new_y:int = max(rect.y,self.__crop_rect.y)
+            rect = Shape(new_x,new_y,min(rect.right,self.__crop_rect.right)-new_x,min(rect.bottom,self.__crop_rect.bottom)-new_y)
         self.img = getSurface(rect.size,pygame.SRCALPHA).convert_alpha()
         self.__local_x = rect.x
         self.__local_y = rect.y
@@ -141,8 +137,6 @@ class StaticImageSurface(AbstractImage):
     def addBrightness(self, value:int) -> None:
         self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_ADD)
         self.__needUpdate = True
-    def sub_subsurface(self, rect:pygame.Rect) -> pygame.Surface:
-        pass
     #展示
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
         #如果图片需要更新，则先更新
@@ -203,23 +197,31 @@ class DynamicImageSurface(ImageSurface):
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
         super().display(surface,offSet)
         if self.__towardTargetPos is True:
-            if self.default_x < self.target_x and self.x < self.target_x:
-                self.x += self.moveSpeed_x
-            elif self.default_x > self.target_x and self.x > self.target_x:
-                self.x -= self.moveSpeed_x
-            if self.default_y < self.target_y and self.y < self.target_y:
-                self.y += self.moveSpeed_y
-            elif self.default_y > self.target_y and self.y > self.target_y:
-                self.y -= self.moveSpeed_y
+            if self.default_x < self.target_x:
+                if self.x < self.target_x: self.x += self.moveSpeed_x
+                if self.x > self.target_x: self.x = self.target_x
+            elif self.default_x > self.target_x:
+                if self.x > self.target_x: self.x -= self.moveSpeed_x
+                if self.x < self.target_x: self.x = self.target_x
+            if self.default_y < self.target_y:
+                if self.y < self.target_y: self.y += self.moveSpeed_y
+                if self.y > self.target_y: self.y = self.target_y
+            elif self.default_y > self.target_y:
+                if self.y > self.target_y: self.y -= self.moveSpeed_y
+                if self.y < self.target_y: self.y = self.target_y
         else:
-            if self.default_x < self.target_x and self.x > self.default_x:
-                self.x -= self.moveSpeed_x
-            elif self.default_x > self.target_x and self.x < self.default_x:
-                self.x += self.moveSpeed_x
-            if self.default_y < self.target_y and self.y > self.default_y:
-                self.y -= self.moveSpeed_y
-            elif self.default_y > self.target_y and self.y < self.default_y:
-                self.y += self.moveSpeed_y
+            if self.default_x < self.target_x:
+                if self.x > self.default_x: self.x -= self.moveSpeed_x
+                if self.x < self.default_x: self.x = self.default_x
+            elif self.default_x > self.target_x:
+                if self.x < self.default_x: self.x += self.moveSpeed_x
+                if self.x > self.default_x: self.x = self.default_x
+            if self.default_y < self.target_y:
+                if self.y > self.default_y: self.y -= self.moveSpeed_y
+                if self.y < self.default_y: self.y = self.default_y
+            elif self.default_y > self.target_y:
+                if self.y < self.default_y: self.y += self.moveSpeed_y
+                if self.y > self.default_y: self.y = self.default_y
     def switch(self) -> None: self.__towardTargetPos = not self.__towardTargetPos
     def ifToward(self) -> bool: return self.__towardTargetPos
 
@@ -403,13 +405,7 @@ class GifObject(AbstractImage):
         self._alpha = 255
     #透明度
     def get_alpha(self) -> int: return self._alpha
-    def set_alpha(self, value:Union[int,float]) -> None:
-        if value < 0:
-            self._alpha = 0
-        elif value > 255:
-            self._alpha = 255
-        else:
-            self._alpha = round(value)
+    def set_alpha(self, value:Union[int,float]) -> None: self._alpha = keepInRange(int(value),0,255)
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)):
         img = resizeImg(self.img[self.imgId],self.size)
         #设置透明度

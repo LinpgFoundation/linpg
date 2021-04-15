@@ -4,8 +4,6 @@ import glob
 import os
 import shutil
 
-#py compiler.py build_ext --inplace
-
 if __name__ == '__main__':
 
     #是否保留c文件
@@ -17,7 +15,7 @@ if __name__ == '__main__':
     if os.path.exists("../linpg/building_key.txt"):
         remove_all_pyd_at_the_end = False
         os.remove("../linpg/building_key.txt")
-    if os.path.exists("src"): os.remove("src")
+    if os.path.exists("src"): shutil.rmtree("src")
 
     """清空旧的Build"""
     #如果linpg文件夹不存在

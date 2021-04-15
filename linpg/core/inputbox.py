@@ -7,14 +7,14 @@ from .ui import *
 class AbstractInputBox(GameObject2d):
     def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int):
         super().__init__(x,y)
-        self.FONTSIZE = int(font_size)
+        self.FONTSIZE:int = int(font_size)
         self.FONT = createFont(self.FONTSIZE)
         self.default_width = default_width
         self.deafult_height = int(self.FONTSIZE*1.5)
         self.input_box = pygame.Rect(x, y, default_width, self.deafult_height)
         self.color = findColorRGBA('lightskyblue3')
         self.txt_color = findColorRGBA(txt_color)
-        self.active = False
+        self.active:bool = False
         self._text = None
         self._holder = self.FONT.render("|",get_fontMode(),self.txt_color)
         self.holderIndex = 0
@@ -33,7 +33,7 @@ class AbstractInputBox(GameObject2d):
 class SingleLineInputBox(AbstractInputBox):
     def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int=150):
         super().__init__(x,y,font_size,txt_color,default_width)
-        self._text = ""
+        self._text:str = ""
     def get_text(self) -> str:
         self.needSave = False
         if self._text == "":
@@ -308,32 +308,29 @@ class Console(SingleLineInputBox):
         self.color_active = findColorRGBA('dodgerblue2')
         super().__init__(x,y,font_size,self.color_active,default_width)
         self.color = self.color_active
-        self.active = True
-        self.hidden = True
-        self.textHistory = []
-        self.backwordID = 1
-        self.events = {}
-        if try_get_setting("DeveloperMode"): self.events["dev"] = True
-        self.txtOutput = []
-    def get_events(self, key:any=None):
-        if key is None:
-            return self.events
-        elif key is not None and key in self.events:
-            return self.events[key]
-        else:
-            return None
+        self.active:bool = True
+        self.hidden:bool = True
+        self.textHistory:list = []
+        self.__backward_id:int = 1
+        self.__events:dict = { "dev": True if try_get_setting("DeveloperMode") is True else False }
+        self.txtOutput:list = []
+    def get_events(self, key:Union[int,str]) -> any:
+        try:
+            return self.__events[key]
+        except KeyError:
+            throwException("error",'Console cannot find key "{}"!'.format(key))
     def _keyDownEvents(self, event:object) -> bool:
         if super()._keyDownEvents(event):
             return True
         #向上-过去历史
-        elif event.key == pygame.K_UP and self.backwordID<len(self.textHistory):
-            self.backwordID += 1
-            self.set_text(self.textHistory[len(self.textHistory)-self.backwordID])
+        elif event.key == pygame.K_UP and self.__backward_id<len(self.textHistory):
+            self.__backward_id += 1
+            self.set_text(self.textHistory[len(self.textHistory)-self.__backward_id])
             return True
         #向下-过去历史，最近的一个
-        elif event.key == pygame.K_DOWN and self.backwordID>1:
-            self.backwordID -= 1
-            self.set_text(self.textHistory[len(self.textHistory)-self.backwordID])
+        elif event.key == pygame.K_DOWN and self.__backward_id>1:
+            self.__backward_id -= 1
+            self.set_text(self.textHistory[len(self.textHistory)-self.__backward_id])
             return True
         #回车
         elif event.key == pygame.K_RETURN:
@@ -342,16 +339,16 @@ class Console(SingleLineInputBox):
                     cmd_blocks:list = self._text[1:].split()
                     if cmd_blocks[0] == "cheat":
                         if cmd_blocks[1] == "on":
-                            if "cheat" in self.events and self.events["cheat"]:
+                            if "cheat" in self.__events and self.__events["cheat"]:
                                 self.txtOutput.append("Cheat mode has already been activated!")
                             else:
-                                self.events["cheat"] = True
+                                self.__events["cheat"] = True
                                 self.txtOutput.append("Cheat mode is activated.")
                         elif cmd_blocks[1] == "off":
-                            if "cheat" in self.events and not self.events["cheat"]:
+                            if "cheat" in self.__events and not self.__events["cheat"]:
                                 self.txtOutput.append("Cheat mode has already been deactivated!")
                             else:
-                                self.events["cheat"] = False
+                                self.__events["cheat"] = False
                                 self.txtOutput.append("Cheat mode is deactivated.")
                         else:
                             self.txtOutput.append("Unknown status for cheat command.")
@@ -359,17 +356,17 @@ class Console(SingleLineInputBox):
                         self.txtOutput.append(self._text.replace("/say"))
                     elif cmd_blocks[0] == "dev":
                         if cmd_blocks[1] == "on":
-                            if "dev" in self.events and self.events["dev"]:
+                            if "dev" in self.__events and self.__events["dev"]:
                                 self.txtOutput.append("Developer mode has been activated!")
                             else:
                                 self.txtOutput.append("Developer mode is activated.")
-                                self.events["dev"] = True
+                                self.__events["dev"] = True
                         elif cmd_blocks[1] == "off":
-                            if "dev" in self.events and not self.events["dev"]:
+                            if "dev" in self.__events and not self.__events["dev"]:
                                 self.txtOutput.append("Developer mode has been deactivated!")
                             else:
                                 self.txtOutput.append("Developer mode is deactivated.")
-                                self.events["dev"] = False
+                                self.__events["dev"] = False
                         else:
                             self.txtOutput.append("Unknown status for dev command.")
                     elif cmd_blocks[0] == "linpg" and cmd_blocks[1] == "info":
@@ -380,7 +377,7 @@ class Console(SingleLineInputBox):
                     self.txtOutput.append(self._text)
                 self.textHistory.append(self._text) 
                 self.set_text()
-                self.backwordID = 1
+                self.__backward_id = 1
             else:
                 throwException("warning","The input box is empty!")
             return True

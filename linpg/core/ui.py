@@ -1,44 +1,6 @@
 # cython: language_level=3
 from .container import *
 
-#环境系统
-class WeatherSystem:
-    def  __init__(self, weather:str, window_x:int, window_y:int, entityNum:int=50) -> None:
-        self.name = 0
-        self.img_list = [loadImg(imgPath) for imgPath in glob("Assets/image/environment/{}/*.png".format(weather))]
-        self.ImgObject = []
-        for i in range(entityNum):
-            imgId = randomInt(0,len(self.img_list)-1)
-            img_size = randomInt(5,10)
-            img_speed = randomInt(1,4)
-            img_x = randomInt(1,window_x*1.5)
-            img_y = randomInt(1,window_y)
-            self.ImgObject.append(Snow(imgId,img_size,img_speed,img_x,img_y))
-    def draw(self, surface:pygame.Surface, perBlockWidth:Union[int,float]) -> None:
-        speed_unit:int = int(perBlockWidth/15)
-        for i in range(len(self.ImgObject)):
-            if 0 <= self.ImgObject[i].x <= surface.get_width() and 0 <= self.ImgObject[i].y <= surface.get_height():
-                surface.blit(
-                    resizeImg(self.img_list[self.ImgObject[i].imgId],
-                        (perBlockWidth/self.ImgObject[i].size,perBlockWidth/self.ImgObject[i].size)
-                    ),(self.ImgObject[i].x,self.ImgObject[i].y)
-                )
-            self.ImgObject[i].move(speed_unit)
-            if self.ImgObject[i].x <= 0 or self.ImgObject[i].y >= surface.get_height():
-                self.ImgObject[i].y = randomInt(-50,0)
-                self.ImgObject[i].x = randomInt(0,surface.get_width()*2)
-
-#雪花片
-class Snow(GameObject):
-    def  __init__(self, imgId:int, size:int, speed:int, x:int, y:int) -> None:
-        super().__init__(x,y)
-        self.imgId = imgId
-        self.size = size
-        self.speed = speed
-    def move(self, speed_unit:int) -> None:
-        self.x -= self.speed*speed_unit
-        self.y += self.speed*speed_unit
-
 #暂停菜单
 class PauseMenu:
     def __init__(self) -> None:

@@ -329,11 +329,14 @@ class DialogEditor(AbstractDialogSystem):
         button_y = int(display.get_height()*0.03)
         #控制容器转换的按钮
         self.button_select_background = ButtonWithFadeInOut(
-            os.path.join(DIALOG_UI_PATH,"menu.png"),CONFIG["background"],"black",100,button_width/3,button_y*2,button_width/3
+            os.path.join(DIALOG_UI_PATH,"menu.png"),CONFIG["background"],"black",100,0,button_y*2,button_width/2
             )
         self.button_select_npc = ButtonWithFadeInOut(
-            os.path.join(DIALOG_UI_PATH,"menu.png"),CONFIG["npc"],"black",100,button_width/2+self.button_select_background.get_width(),button_y*2,button_width/3
+            os.path.join(DIALOG_UI_PATH,"menu.png"),CONFIG["npc"],"black",100,0,button_y*2,button_width/2
             )
+        panding:int = int((container_width-self.button_select_background.get_width()-self.button_select_npc.get_width())/3)
+        self.button_select_background.set_left(panding)
+        self.button_select_npc.set_left(self.button_select_background.get_right()+panding)
         #页面右上方的一排按钮
         self.buttonsUI = {
             "save": ButtonWithDes(os.path.join(DIALOG_UI_PATH,"save.png"),button_width*7.25,button_y,button_width,button_width,get_lang("Global","save")),
@@ -352,36 +355,11 @@ class DialogEditor(AbstractDialogSystem):
         surfaceTmp.blit(self.removeNpcButton,(self.removeNpcButton.get_width()*0.1,0))
         self.removeNpcButton = surfaceTmp
         self.smart_add_mode = False
-        """未保存离开时的警告"""
-        warning_container_width:int = display.get_width()/2
-        warning_container_height:int = display.get_height()/4
-        self.__leave_without_warning_container = GameObjectContainer(
-            os.path.join(DIALOG_UI_PATH,"container.png"),0,0,warning_container_width,warning_container_height
+        #未保存离开时的警告
+        self.__no_save_warning = LeaveWithoutSavingWarning(
+            os.path.join(DIALOG_UI_PATH,"container.png"),self.FONTSIZE,0,0,display.get_width()/2,display.get_height()/4
             )
-        self.__leave_without_warning_container.set_center(display.get_width()/2,display.get_height()/2)
-        self.__leave_without_warning_container.append(TextSurface(fontRender(get_lang("Global","warning"),"white",self.FONTSIZE),0,self.FONTSIZE))
-        self.__leave_without_warning_container.items[-1].set_centerx(warning_container_width/2)
-        self.__leave_without_warning_container.append(TextSurface(fontRender(get_lang("Dialog","leave_without_save1"),"white",self.FONTSIZE),0,self.FONTSIZE*2.5))
-        self.__leave_without_warning_container.items[-1].set_centerx(warning_container_width/2)
-        self.__leave_without_warning_container.append(TextSurface(fontRender(get_lang("Dialog","leave_without_save2"),"white",self.FONTSIZE),0,self.FONTSIZE*4))
-        self.__leave_without_warning_container.items[-1].set_centerx(warning_container_width/2)
-        save_button = ButtonWithFadeInOut(os.path.join(DIALOG_UI_PATH,"menu.png"),get_lang("Global","save"),"black",200,0,0,self.FONTSIZE*2)
-        save_button.set_bottom(warning_container_height*0.9)
-        dont_save_button = ButtonWithFadeInOut(os.path.join(DIALOG_UI_PATH,"menu.png"),get_lang("Global","dont_save"),"black",200,0,0,self.FONTSIZE*2)
-        dont_save_button.set_bottom(warning_container_height*0.9)
-        cancel_button = ButtonWithFadeInOut(os.path.join(DIALOG_UI_PATH,"menu.png"),get_lang("Global","cancel"),"black",200,0,0,self.FONTSIZE*2)
-        cancel_button.set_bottom(warning_container_height*0.9)
-        panding_on_side:int = int(warning_container_width*0.1)
-        panding_between_button:int = int(
-            (warning_container_width-panding_on_side*2-save_button.get_width()-dont_save_button.get_width()-cancel_button.get_width())/2
-        )
-        save_button.set_left(panding_on_side)
-        dont_save_button.set_left(save_button.get_right()+panding_between_button)
-        cancel_button.set_left(dont_save_button.get_right()+panding_between_button)
-        self.__leave_without_warning_container.append(save_button)
-        self.__leave_without_warning_container.append(dont_save_button)
-        self.__leave_without_warning_container.append(cancel_button)
-        self.__leave_without_warning_container.hidden = True
+        self.__no_save_warning.set_center(display.get_width()/2,display.get_height()/2)
     @property
     def part(self) -> str: return self.parts[self.partId]
     #更新背景选项栏
@@ -596,8 +574,9 @@ class DialogEditor(AbstractDialogSystem):
                     elif buttonHovered == "back":
                         if self.__no_changes_were_made() is True:
                             self._isPlaying = False
+                            break
                         else:
-                            self.__leave_without_warning_container.hidden = False
+                            self.__no_save_warning.hidden = False
                     elif buttonHovered == "previous":
                         lastId = self.__get_last_id()
                         if lastId is not None:
@@ -659,6 +638,7 @@ class DialogEditor(AbstractDialogSystem):
                         self.dialogData[self.part][self.dialogId]["characters_img"].remove(self._npcManager.npcGetClick)
                         self._npcManager.update(self.dialogData[self.part][self.dialogId]["characters_img"])
                         self._npcManager.npcGetClick = None
+        
         #画上右侧菜单的按钮
         self.UIContainerRightButton.draw(surface)
         #画上右侧菜单
@@ -666,6 +646,8 @@ class DialogEditor(AbstractDialogSystem):
             surface.blit(self.UIContainerRightImage,(self.UIContainerRightButton.right,0))
             self.UIContainerRight_bg.display(surface,(self.UIContainerRightButton.right,0),self.events)
             self.UIContainerRight_npc.display(surface,(self.UIContainerRightButton.right,0),self.events)
+            #self.UIContainerRight_bg.draw_outline(surface,(self.UIContainerRightButton.right,0))
+            #self.UIContainerRight_npc.draw_outline(surface,(self.UIContainerRightButton.right,0))
             #检测按钮
             if isHover(self.button_select_background,local_x=self.UIContainerRightButton.right) and leftClick is True:
                 self.UIContainerRight_bg.hidden = False
@@ -678,8 +660,6 @@ class DialogEditor(AbstractDialogSystem):
             #画出按钮
             self.button_select_background.display(surface,(self.UIContainerRightButton.right,0))
             self.button_select_npc.display(surface,(self.UIContainerRightButton.right,0))
-
-            
             #检测是否有物品被选中需要更新
             if leftClick is True:
                 if not self.UIContainerRight_bg.hidden:
@@ -699,27 +679,23 @@ class DialogEditor(AbstractDialogSystem):
                         if len(self.dialogData[self.part][self.dialogId]["characters_img"]) < 2:
                             self.dialogData[self.part][self.dialogId]["characters_img"].append(imgName)
                             self._npcManager.update(self.dialogData[self.part][self.dialogId]["characters_img"])
+        
         #未保存离开时的警告
-        self.__leave_without_warning_container.draw(surface)
-        if not self.__leave_without_warning_container.hidden:
+        self.__no_save_warning.draw(surface)
+        if not self.__no_save_warning.hidden:
+            #保存并离开
             if isHover(
-                self.__leave_without_warning_container.items[-1],
-                local_x=self.__leave_without_warning_container.x,
-                local_y=self.__leave_without_warning_container.y
+                self.__no_save_warning.save_button, local_x=self.__no_save_warning.x, local_y=self.__no_save_warning.y
                 ) and leftClick is True:
-                self.__leave_without_warning_container.hidden = True
-            if isHover(
-                self.__leave_without_warning_container.items[-2],
-                local_x=self.__leave_without_warning_container.x,
-                local_y=self.__leave_without_warning_container.y
-                ) and leftClick is True:
-                self.__leave_without_warning_container.hidden = True
-                self._isPlaying = False
-            if isHover(
-                self.__leave_without_warning_container.items[-3],
-                local_x=self.__leave_without_warning_container.x,
-                local_y=self.__leave_without_warning_container.y
-                ) and leftClick is True:
-                self.__leave_without_warning_container.hidden = True
                 self.__save()
+                self._isPlaying = False
+            #取消
+            if isHover(
+                self.__no_save_warning.cancel_button, local_x=self.__no_save_warning.x, local_y=self.__no_save_warning.y
+                ) and leftClick is True:
+                self.__no_save_warning.hidden = True
+            #不保存并离开
+            if isHover(
+                self.__no_save_warning.dont_save_button, local_x=self.__no_save_warning.x, local_y=self.__no_save_warning.y
+                ) and leftClick is True:
                 self._isPlaying = False

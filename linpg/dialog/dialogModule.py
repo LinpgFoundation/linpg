@@ -1,8 +1,5 @@
 # cython: language_level=3
-from .movie import *
-
-#ui路径
-DIALOG_UI_PATH:str = "Assets/image/UI"
+from .ui import *
 
 #视觉小说系统接口
 class AbstractDialogSystem(SystemWithBackgroundMusic):
@@ -21,7 +18,7 @@ class AbstractDialogSystem(SystemWithBackgroundMusic):
             throwException("warning","Cannot find 'option_selected.png' in 'UI' file, 'option.png' will be loaded instead.")
             self.optionBoxSelected = self._optionBox.light_copy()
         #是否开启自动保存
-        self.auto_save = False
+        self.auto_save:bool = False
         #背景图片
         self.__backgroundImageFilePath = "Assets/image/dialog_background"
         self.__dynamicBackgroundFilePath = "Assets/movie"
@@ -135,11 +132,9 @@ class NpcImageManager:
                 img.set_crop_rect(None)
                 img.draw(surface)
             #如果是开发模式
-            if self.dev_mode is True:
-                self.npcGetClick = None
-                if isHover(img,(x,y)):
-                    img.draw_outline(surface)
-                    self.npcGetClick = name
+            if self.dev_mode is True and isHover(img,(x,y)):
+                img.draw_outline(surface)
+                self.npcGetClick = name
     def draw(self, surface:pygame.Surface) -> None:
         window_x = surface.get_width()
         window_y = surface.get_height()
@@ -155,6 +150,8 @@ class NpcImageManager:
             x_moved_forNpcThisRound = self.__img_width/4*self.__npcThisRoundImgAlpha/255-self.__img_width/4
         else:
             x_moved_forNpcThisRound = 0
+        #初始化被选择的角色名字
+        self.npcGetClick = None
         #画上上一幕的立绘
         if len(self.__npcLastRound) == 0:
             #前后都无立绘，那干嘛要显示东西
@@ -343,7 +340,7 @@ class DialogContent(AbstractDialog):
                 (surface.get_width()*0.13,self.dialoguebox_y)
                 )
         if self.dialoguebox_height > 0:
-            self.dialoguebox_height -= self.dialoguebox_max_height/10
+            self.dialoguebox_height = max(self.dialoguebox_height-self.dialoguebox_max_height/10,0)
             self.dialoguebox_y += self.dialoguebox_max_height/20
         else:
             self.resetDialogueboxData()
@@ -380,120 +377,6 @@ class DialogContent(AbstractDialog):
             self.stop_playing_text_sound()
             if self.autoMode and self.readTime < self.totalLetters:
                 self.readTime += self.READINGSPEED
-
-#对话系统按钮UI模块
-class DialogButtons:
-    def __init__(self):
-        #从设置中读取信息
-        window_x,window_y = display.get_size()
-        self.FONTSIZE = int(window_x*0.0175)
-        self.FONT = createFont(self.FONTSIZE)
-        #从语言文件中读取按钮文字
-        dialog_txt = get_lang("Dialog")
-        #生成跳过按钮
-        tempButtonIcon = loadImg(os.path.join(DIALOG_UI_PATH,"dialog_skip.png"),(self.FONTSIZE,self.FONTSIZE))
-        tempButtonTxt = self.FONT.render(dialog_txt["skip"],get_fontMode(),(255, 255, 255))
-        temp_w = tempButtonTxt.get_width()+self.FONTSIZE*1.5
-        self.choiceTxt = dialog_txt["choice"]
-        self.skipButton = pygame.Surface((temp_w,tempButtonTxt.get_height()),flags=pygame.SRCALPHA).convert_alpha()
-        self.skipButtonHovered = pygame.Surface((temp_w,tempButtonTxt.get_height()),flags=pygame.SRCALPHA).convert_alpha()
-        self.icon_y = (tempButtonTxt.get_height()-tempButtonIcon.get_height())/2
-        self.skipButtonHovered.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONTSIZE*0.5,self.icon_y))
-        self.skipButtonHovered.blit(tempButtonTxt,(0,0))
-        tempButtonTxt = self.FONT.render(dialog_txt["skip"],get_fontMode(),(105, 105, 105))
-        tempButtonIcon.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
-        self.skipButton.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONTSIZE*0.5,self.icon_y))
-        self.skipButton.blit(tempButtonTxt,(0,0))
-        self.skipButton = ImageSurface(self.skipButton,window_x*0.9,window_y*0.05)
-        self.skipButtonHovered = ImageSurface(self.skipButtonHovered,window_x*0.9,window_y*0.05)
-        #生成自动播放按钮
-        self.autoIconHovered = loadImg(os.path.join(DIALOG_UI_PATH,"dialog_auto.png"),(self.FONTSIZE,self.FONTSIZE))
-        self.autoIcon = self.autoIconHovered.copy()
-        self.autoIcon.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
-        self.autoIconDegree = 0
-        self.autoIconDegreeChange = (2**0.5-1)*self.FONTSIZE/45
-        self.autoMode = False
-        tempButtonTxt = self.FONT.render(dialog_txt["auto"],get_fontMode(),(105, 105, 105))
-        temp_w = tempButtonTxt.get_width()+self.FONTSIZE*1.5
-        self.autoButton = pygame.Surface((temp_w,tempButtonTxt.get_height()),flags=pygame.SRCALPHA).convert_alpha()
-        self.autoButtonHovered = pygame.Surface((temp_w,tempButtonTxt.get_height()),flags=pygame.SRCALPHA).convert_alpha()
-        self.autoButton.blit(tempButtonTxt,(0,0))
-        self.autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"],get_fontMode(),(255, 255, 255)),(0,0))
-        self.autoButton = ImageSurface(self.autoButton,window_x*0.8,window_y*0.05)
-        self.autoButton.description = int(self.autoButton.x+self.autoButton.img.get_width()-self.FONTSIZE)
-        self.autoButtonHovered = ImageSurface(self.autoButtonHovered,window_x*0.8,window_y*0.05)
-        self.autoButtonHovered.description = int(self.autoButtonHovered.x+self.autoButtonHovered.img.get_width()-self.FONTSIZE)
-        #隐藏按钮
-        hideUI_img = loadImg(os.path.join(DIALOG_UI_PATH,"dialog_hide.png"),(self.FONTSIZE,self.FONTSIZE))
-        hideUI_imgTemp = hideUI_img.copy()
-        hideUI_imgTemp.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
-        self.hideButton = Button(hideUI_imgTemp,window_x*0.05,window_y*0.05)
-        self.hideButton.set_hover_img(hideUI_img)
-        showUI_img = loadImg(os.path.join(DIALOG_UI_PATH,"dialog_show.png"),(self.FONTSIZE,self.FONTSIZE))
-        showUI_imgTemp = showUI_img.copy()
-        showUI_imgTemp.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
-        self.showButton = Button(showUI_imgTemp,window_x*0.05,window_y*0.05)
-        self.showButton.set_hover_img(showUI_img)
-        #历史回溯按钮
-        history_img = loadImg(os.path.join(DIALOG_UI_PATH,"dialog_history.png"),(self.FONTSIZE,self.FONTSIZE))
-        history_imgTemp = history_img.copy()
-        history_imgTemp.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
-        self.historyButton = Button(history_imgTemp,window_x*0.1,window_y*0.05)
-        self.historyButton.set_hover_img(history_img)
-    def draw(self, surface:pygame.Surface, isHidden:bool) -> str:
-        if isHidden is True:
-            self.showButton.draw(surface)
-            return "hide" if self.showButton.is_hover() else ""
-        else:
-            self.hideButton.draw(surface)
-            self.historyButton.draw(surface)
-            action = ""
-            if self.skipButton.is_hover():
-                self.skipButtonHovered.draw(surface)
-                action = "skip"
-            else:
-                self.skipButton.draw(surface)
-            if self.autoButton.is_hover():
-                self.autoButtonHovered.draw(surface)
-                if self.autoMode:
-                    rotatedIcon = pygame.transform.rotate(self.autoIconHovered,self.autoIconDegree)
-                    surface.blit(rotatedIcon,(
-                        self.autoButtonHovered.description+self.autoIconHovered.get_width()/2-rotatedIcon.get_width()/2,
-                        self.autoButtonHovered.y+self.icon_y+self.autoIconHovered.get_height()/2-rotatedIcon.get_height()/2
-                        ))
-                    if self.autoIconDegree < 180:
-                        self.autoIconDegree+=1
-                    else:
-                        self.autoIconDegree=0
-                else:
-                    surface.blit(self.autoIconHovered,(self.autoButtonHovered.description,self.autoButtonHovered.y+self.icon_y))
-                action = "auto"
-            else:
-                if self.autoMode:
-                    self.autoButtonHovered.draw(surface)
-                    rotatedIcon = pygame.transform.rotate(self.autoIconHovered,self.autoIconDegree)
-                    surface.blit(rotatedIcon,(
-                        self.autoButtonHovered.description+self.autoIconHovered.get_width()/2-rotatedIcon.get_width()/2,
-                        self.autoButtonHovered.y+self.icon_y+self.autoIconHovered.get_height()/2-rotatedIcon.get_height()/2
-                        ))
-                    if self.autoIconDegree < 180:
-                        self.autoIconDegree+=1
-                    else:
-                        self.autoIconDegree=0
-                else:
-                    self.autoButton.draw(surface)
-                    surface.blit(self.autoIcon,(self.autoButton.description,self.autoButton.y+self.icon_y))
-            if self.hideButton.is_hover():
-                action = "hide"
-            elif self.historyButton.is_hover():
-                action = "history"
-            return action
-    def autoModeSwitch(self) -> None:
-        if not self.autoMode:
-            self.autoMode = True
-        else:
-            self.autoMode = False
-            self.autoIconDegree = 0
 
 #立绘配置信息数据库
 class NpcImageDatabase:

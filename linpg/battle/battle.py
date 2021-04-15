@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .character import *
+from .ui import *
 
 #战斗系统接口，请勿实例化
 class AbstractBattleSystem(SystemWithBackgroundMusic):

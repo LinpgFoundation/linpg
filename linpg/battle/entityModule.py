@@ -177,7 +177,7 @@ class AttackingSoundManager(AbstractEntitySoundManager):
     #播放
     def play(self, kind:str) -> None:
         if kind in self._sounds_dict:
-            pygame.mixer.Channel(self._channel).play(self._sounds_dict[kind][randomInt(0,len(self._sounds_dict[kind])-1)])
+            pygame.mixer.Channel(self._channel_id).play(self._sounds_dict[kind][randomInt(0,len(self._sounds_dict[kind])-1)])
 
 #计算最远攻击距离
 def calculate_range(effective_range_dic:dict) -> int:

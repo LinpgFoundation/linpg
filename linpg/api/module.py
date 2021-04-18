@@ -12,10 +12,10 @@ class Coordinate:
     def pos(self) -> tuple: return self.x,self.y
     def get_pos(self) -> tuple: return self.x,self.y
     def set_pos(self, x:Union[int,float], y:Union[int,float]) -> None:
-        self.x = x
-        self.y = y
+        self.x = int(x)
+        self.y = int(y)
     #检测是否在给定的位置上
-    def on_pos(self, pos:any) -> bool: return is_same_pos(self.get_pos(),pos)
+    def on_pos(self, pos:any) -> bool: return is_same_pos(self.pos,pos)
 
 #游戏对象接口
 class GameObject(Coordinate):
@@ -24,14 +24,14 @@ class GameObject(Coordinate):
     def __lt__(self, other:Coordinate) -> bool: return self.y+self.x < other.y+other.x
     #左侧位置
     @property
-    def left(self) -> Union[int,float]: return self.x
-    def get_left(self) -> Union[int,float]: return self.x
-    def set_left(self, value:Union[int,float]) -> None: self.x = value
+    def left(self) -> int: return int(self.x)
+    def get_left(self) -> int: return int(self.x)
+    def set_left(self, value:Union[int,float]) -> None: self.x = int(value)
     #右侧位置
     @property
-    def top(self) -> Union[int,float]: return self.y
-    def get_top(self) -> Union[int,float]: return self.y
-    def set_top(self, value:Union[int,float]) -> None: self.y = value
+    def top(self) -> int: return int(self.y)
+    def get_top(self) -> int: return int(self.y)
+    def set_top(self, value:Union[int,float]) -> None: self.y = int(value)
 
 #2d游戏对象接口
 class GameObject2d(GameObject):
@@ -51,25 +51,29 @@ class GameObject2d(GameObject):
     def get_size(self) -> tuple: return self.get_width(),self.get_height()
     #右侧位置
     @property
-    def right(self) -> Union[int,float]: return self.x+self.get_width()
-    def get_right(self) -> Union[int,float]: return self.x+self.get_width()
-    def set_right(self, value:Union[int,float]) -> None: self.x = value-self.get_width()
+    def right(self) -> int: return int(self.x+self.get_width())
+    def get_right(self) -> int: return int(self.x+self.get_width())
+    def set_right(self, value:Union[int,float]) -> None: self.x = int(value-self.get_width())
     #底部位置
     @property
-    def bottom(self) -> Union[int,float]: return self.y+self.get_height()
-    def get_bottom(self) -> Union[int,float]: return self.y+self.get_height()
-    def set_bottom(self, value:Union[int,float]) -> None: self.y = value-self.get_height()
+    def bottom(self) -> int: return int(self.y+self.get_height())
+    def get_bottom(self) -> int: return int(self.y+self.get_height())
+    def set_bottom(self, value:Union[int,float]) -> None: self.y = int(value-self.get_height())
     #中心位置
     @property
-    def centerx(self) -> Union[int,float]: return self.x+self.get_width()/2
+    def centerx(self) -> int: return int(self.x+self.get_width()/2)
+    def get_centerx(self) -> int: return int(self.x+self.get_width()/2)
+    def set_centerx(self, centerx:Union[int,float]) -> None: self.x = int(centerx-self.get_width()/2)
     @property
-    def centery(self) ->  Union[int,float]: return self.y+self.get_height()/2
+    def centery(self) ->  int: return int(self.y+self.get_height()/2)
+    def get_centery(self) -> int: return int(self.y+self.get_height()/2)
+    def set_centery(self, centery:Union[int,float]) -> None: self.y = int(centery-self.get_height()/2)
     @property
-    def center(self) -> tuple: return self.x+self.get_width()/2,self.y+self.get_height()/2
-    def get_center(self) -> tuple: return self.x+self.get_width()/2,self.y+self.get_height()/2
+    def center(self) -> tuple: return self.centerx,self.centery
+    def get_center(self) -> tuple: return self.centerx,self.centery
     def set_center(self, centerx:Union[int,float], centery:Union[int,float]) -> None:
-        self.x = int(self.x*2+self.get_width()/2-centerx)
-        self.y = int(self.y*2+self.get_height()/2-centery)
+        self.set_centerx(centerx)
+        self.set_centery(centery)
     #是否被鼠标触碰
     def is_hover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
         if mouse_pos == (-1,-1): mouse_pos = pygame.mouse.get_pos()

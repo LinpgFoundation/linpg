@@ -50,3 +50,11 @@ def isHover(imgObject:object, objectPos:Union[tuple,list]=(0,0), local_x:Union[i
         return imgObject.is_hover((mouse_x-local_x,mouse_y-local_y))
     else:
         return isHoverPygameObject(imgObject,objectPos,local_x,local_y)
+
+#转换pygame的rect类
+def convert_rect(rect:pygame.Rect) -> Shape:
+    return Shape(rect.x,rect.y,rect.width,rect.height)
+
+#是否形状一样
+def is_same_shape(rect1:Union[Shape,pygame.Rect],rect2:Union[Shape,pygame.Rect]) -> bool:
+    return rect1.x == rect2.x and rect1.y == rect2.y and rect1.width == rect2.width and rect1.height == rect2.height

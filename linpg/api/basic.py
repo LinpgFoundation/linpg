@@ -177,14 +177,18 @@ def subtract_pos(pos1:any, pos2:any) -> tuple:
 def throwException(exception_type:str, info:str) -> None:
     exception_type_lower:str = exception_type.lower()
     if exception_type_lower == "error":
-        error_msg = 'LinpgEngine-Error: {}'.format(info)
         #生成错误报告
         if not os.path.exists("crash_reports"): os.mkdir("crash_reports")
         with open(os.path.join("crash_reports","crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
-            f.write("Error_Message: {}".format(error_msg))
+            f.write("Error Message From Linpg: {}".format(info))
         #打印出错误
-        raise Exception(error_msg)
+        raise Exception('LinpgEngine-Error: {}'.format(info))
     elif exception_type_lower == "warning":
+        #生成错误报告
+        if not os.path.exists("crash_reports"): os.mkdir("crash_reports")
+        with open(os.path.join("crash_reports","crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
+            f.write("Warning Message From Linpg: {}".format(info))
+        #打印出警告
         print("LinpgEngine-Warning: {}".format(info))
     elif exception_type_lower == "info":
         print('LinpgEngine-Info: {}'.format(info))
@@ -200,11 +204,17 @@ def natural_sort(l:list) -> list:
 #是否触碰pygame类
 def isHoverPygameObject(imgObject:object, objectPos:Union[tuple,list]=(0,0), off_set_x:Union[int,float]=0, off_set_y:Union[int,float]=0) -> bool:
     mouse_x,mouse_y = pygame.mouse.get_pos()
-    #如果是pygame的面
+    #如果是pygame的Surface类
     if isinstance(imgObject,pygame.Surface):
         return True if 0 < mouse_x-off_set_x-objectPos[0] < imgObject.get_width() and 0 < mouse_y-off_set_y-objectPos[1] < imgObject.get_height()\
             else False
+    #如果是Rect类
     elif isinstance(imgObject,pygame.Rect):
-        return True if imgObject.x < mouse_x-off_set_x < imgObject.right and imgObject.y < mouse_y-off_set_y < imgObject.bottom else False
+        return True if 0 < mouse_x-off_set_x-imgObject.x < imgObject.width and 0 < mouse_y-off_set_y-imgObject.y < imgObject.height\
+            else False
     else:
         throwException("error","Unable to check current object: {0} (type:{1})".format(imgObject,type(imgObject)))
+
+#检测数值是否越界
+def keepInRange(number:Union[int,float], min_value:Union[int,float], max_value:Union[int,float]) -> Union[int,float]:
+    return max(min(max_value, number), min_value)

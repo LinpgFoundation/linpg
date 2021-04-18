@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .character import *
+from .ui import *
 
 #战斗系统接口，请勿实例化
 class AbstractBattleSystem(SystemWithBackgroundMusic):
@@ -11,9 +11,9 @@ class AbstractBattleSystem(SystemWithBackgroundMusic):
         self.screen_to_move_x = None
         self.screen_to_move_y = None
         #是否是死亡的那个
-        self.the_dead_one = {}
+        self.the_dead_one:dict = {}
         #用于检测是否有方向键被按到的字典
-        self.__pressKeyToMove = {"up":False,"down":False,"left":False,"right":False}
+        self.__pressKeyToMove:dict = {"up":False,"down":False,"left":False,"right":False}
         #角色数据
         self.alliances_data = None
         self.enemies_data = None
@@ -26,14 +26,14 @@ class AbstractBattleSystem(SystemWithBackgroundMusic):
         self.chapterType = chapterType
         self.collection_name = collection_name
         #方格标准尺寸
-        self.standard_block_width = round(display.get_width()/10)
-        self.standard_block_height = round(display.get_height()/10)
+        self._standard_block_width:int = int(display.get_width()/10)
+        self._standard_block_height:int = int(display.get_height()/10)
         #缩进
         self.zoomIn = 100
         self.zoomIntoBe = 100
     #初始化地图
-    def _create_map(self, MapData:dict) -> None:
-        self.MAP = MapObject(MapData,self.standard_block_width,self.standard_block_height)
+    def _create_map(self, map_data:dict) -> None:
+        self.MAP = MapObject(map_data,self._standard_block_width,self._standard_block_height)
     #计算光亮区域 并初始化地图
     def _calculate_darkness(self) -> None: self.MAP.calculate_darkness(self.alliances_data)
     #展示地图
@@ -128,17 +128,17 @@ class AbstractBattleSystem(SystemWithBackgroundMusic):
         #如果需要移动屏幕
         if self.screen_to_move_x is not None and self.screen_to_move_x != 0:
             temp_value = int(self.MAP.getPos_x() + self.screen_to_move_x*0.2)
-            if display.get_width()-self.MAP.surface_width<=temp_value<=0:
+            if display.get_width()-self.MAP.surface_width <= temp_value <= 0:
                 self.MAP.setPos_x(temp_value)
-                self.screen_to_move_x*=0.8
+                self.screen_to_move_x *= 0.8
                 if round(self.screen_to_move_x) == 0: self.screen_to_move_x = 0
             else:
                 self.screen_to_move_x = 0
-        if self.screen_to_move_y is not None and self.screen_to_move_y !=0:
+        if self.screen_to_move_y is not None and self.screen_to_move_y != 0:
             temp_value = int(self.MAP.getPos_y() + self.screen_to_move_y*0.2)
-            if display.get_height()-self.MAP.surface_height<=temp_value<=0:
+            if display.get_height()-self.MAP.surface_height <= temp_value <= 0:
                 self.MAP.setPos_y(temp_value)
-                self.screen_to_move_y*=0.8
+                self.screen_to_move_y *= 0.8
                 if round(self.screen_to_move_y) == 0: self.screen_to_move_y = 0
             else:
                 self.screen_to_move_y = 0

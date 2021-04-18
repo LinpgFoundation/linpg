@@ -1,49 +1,54 @@
 # cython: language_level=3
 from ..api import *
 
-#图形接口
-class AbstractImage(GameObject2d):
-    def __init__(self, img:Union[pygame.Surface,None], x:Union[int,float], y:Union[int,float], width:any, height:any):
-        super().__init__(x,y)
-        self.img = img
-        self._width = width
-        self._height = height
-    #透明度
-    def get_alpha(self) -> int: return self.img.get_alpha()
-    def set_alpha(self, value:int) -> None: self.img.set_alpha(value)
+#与pygame.Rect类似的形状类
+class Shape(GameObject2d):
+    def __init__(self, left:Union[int,float], top:Union[int,float], width:Union[int,float], height:Union[int,float]):
+        super().__init__(left,top)
+        self._width = int(width)
+        self._height = int(height)
     #宽度
     def get_width(self) -> int: return self._width
-    def set_width(self, value:float) -> None: self._width = round(value)
+    def set_width(self, value:Union[int,float]) -> None: self._width = round(value)
     #高度
     def get_height(self) -> int: return self._height
-    def set_height(self, value:float) -> None: self._height = round(value)
+    def set_height(self, value:Union[int,float]) -> None: self._height = round(value)
     #尺寸
     def set_size(self, width:float, height:float) -> None:
         self.set_width(width)
         self.set_height(height)
     #画出轮廓
     def draw_outline(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0), color:str="red", line_width:int=2) -> None:
-        pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect((self.x+offSet[0],self.y+offSet[1]),self.size),line_width)
+        pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect(add_pos(self.pos,offSet),self.size),line_width)
+
+#图形接口
+class AbstractImage(Shape):
+    def __init__(self, img:any, x:Union[int,float], y:Union[int,float], width:any, height:any):
+        super().__init__(x,y,0,0)
+        self.img = img
+        self._width = width
+        self._height = height
+    #透明度
+    @property
+    def alpha(self) -> int: return self.get_alpha()
+    def get_alpha(self) -> int: return self.img.get_alpha()
+    def set_alpha(self, value:int) -> None: self.img.set_alpha(value)
 
 #用于静态图片的surface
 class StaticImageSurface(AbstractImage):
     def __init__(self, path_or_surface:Union[str,pygame.Surface], x:any, y:any, width:any=None, height:any=None):
         super().__init__(None,x,y,width,height)
-        self._alpha = 255
+        self._alpha:int = 255
         self.img_original = loadImg(path_or_surface)
         self.__local_x = 0
         self.__local_y = 0
-        self.__isFlipped = False
-        self.__needUpdate = True if self._width is not None and self._height is not None else False
+        self.__isFlipped:bool = False
+        self.__needUpdate:bool = True if self._width is not None and self._height is not None else False
+        self.__crop_rect:object = None
     #透明度
     def get_alpha(self) -> int: return self._alpha
     def set_alpha(self, value:float) -> None:
-        if value < 0:
-            self._alpha = 0
-        elif value > 255:
-            self._alpha = 255
-        else:
-            self._alpha = round(value)
+        self._alpha = keepInRange(int(value),0,255)
         if self.img is not None and self.img.get_alpha() != self._alpha: super().set_alpha(self._alpha)
     #宽度
     def set_width(self, value:float) -> None:
@@ -65,10 +70,27 @@ class StaticImageSurface(AbstractImage):
         width = round(height/self.img_original.get_height()*self.img_original.get_width())
         height = round(height)
         self.set_size(width,height)
+    #自定义crop范围
+    @property
+    def crop_rect(self) -> object: return self.__crop_rect
+    def get_crop_rect(self) -> object: return self.__crop_rect
+    def set_crop_rect(self, rect:Union[pygame.Rect,Shape,None]) -> None:
+        if rect is None or isinstance(rect,(pygame.Rect,Shape)):
+            if self.__crop_rect != rect:
+                self.__crop_rect = rect
+                self.__needUpdate = True
+            else:
+                pass
+        else:
+            throwException("error","You have to input either a None or a Rect, not {}".format(type(rect)))
     #更新图片
     def _update_img(self) -> None:
         imgTmp = resizeImg(self.img_original,(self._width,self._height))
         rect = imgTmp.get_bounding_rect()
+        if self.__crop_rect is not None:
+            new_x:int = max(rect.x,self.__crop_rect.x)
+            new_y:int = max(rect.y,self.__crop_rect.y)
+            rect = Shape(new_x,new_y,min(rect.right,self.__crop_rect.right)-new_x,min(rect.bottom,self.__crop_rect.bottom)-new_y)
         self.img = getSurface(rect.size,pygame.SRCALPHA).convert_alpha()
         self.__local_x = rect.x
         self.__local_y = rect.y
@@ -150,7 +172,7 @@ class ImageSurface(AbstractImage):
     def drawOnTheCenterOf(self, surface:pygame.Surface) -> None:
         surface.blit(resizeImg(self.img,self.size),((surface.get_width()-self._width)/2,(surface.get_height()-self._height)/2))
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        surface.blit(resizeImg(self.img,self.size),(self.x+offSet[0],self.y+offSet[1]))
+        surface.blit(resizeImg(self.img,self.size),add_pos(self.pos,offSet))
     #旋转
     def rotate(self, angle:int) -> None: self.img = pygame.transform.rotate(self.img,angle)
     #反转
@@ -175,23 +197,31 @@ class DynamicImageSurface(ImageSurface):
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
         super().display(surface,offSet)
         if self.__towardTargetPos is True:
-            if self.default_x < self.target_x and self.x < self.target_x:
-                self.x += self.moveSpeed_x
-            elif self.default_x > self.target_x and self.x > self.target_x:
-                self.x -= self.moveSpeed_x
-            if self.default_y < self.target_y and self.y < self.target_y:
-                self.y += self.moveSpeed_y
-            elif self.default_y > self.target_y and self.y > self.target_y:
-                self.y -= self.moveSpeed_y
+            if self.default_x < self.target_x:
+                if self.x < self.target_x: self.x += self.moveSpeed_x
+                if self.x > self.target_x: self.x = self.target_x
+            elif self.default_x > self.target_x:
+                if self.x > self.target_x: self.x -= self.moveSpeed_x
+                if self.x < self.target_x: self.x = self.target_x
+            if self.default_y < self.target_y:
+                if self.y < self.target_y: self.y += self.moveSpeed_y
+                if self.y > self.target_y: self.y = self.target_y
+            elif self.default_y > self.target_y:
+                if self.y > self.target_y: self.y -= self.moveSpeed_y
+                if self.y < self.target_y: self.y = self.target_y
         else:
-            if self.default_x < self.target_x and self.x > self.default_x:
-                self.x -= self.moveSpeed_x
-            elif self.default_x > self.target_x and self.x < self.default_x:
-                self.x += self.moveSpeed_x
-            if self.default_y < self.target_y and self.y > self.default_y:
-                self.y -= self.moveSpeed_y
-            elif self.default_y > self.target_y and self.y < self.default_y:
-                self.y += self.moveSpeed_y
+            if self.default_x < self.target_x:
+                if self.x > self.default_x: self.x -= self.moveSpeed_x
+                if self.x < self.default_x: self.x = self.default_x
+            elif self.default_x > self.target_x:
+                if self.x < self.default_x: self.x += self.moveSpeed_x
+                if self.x > self.default_x: self.x = self.default_x
+            if self.default_y < self.target_y:
+                if self.y > self.default_y: self.y -= self.moveSpeed_y
+                if self.y < self.default_y: self.y = self.default_y
+            elif self.default_y > self.target_y:
+                if self.y < self.default_y: self.y += self.moveSpeed_y
+                if self.y > self.default_y: self.y = self.default_y
     def switch(self) -> None: self.__towardTargetPos = not self.__towardTargetPos
     def ifToward(self) -> bool: return self.__towardTargetPos
 
@@ -202,7 +232,7 @@ class ProgressBar(AbstractImage):
         self.percentage = 0
         self.color = findColorRGBA(color)
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        pygame.draw.rect(surface,self.color,(self.x+offSet[0],self.y+offSet[1],self._width*self.percentage,self._height))
+        pygame.draw.rect(surface,self.color,pygame.Rect(add_pos(self.pos,offSet),(int(self._width*self.percentage),self._height)))
 
 #进度条Surface
 class ProgressBarSurface(AbstractImage):
@@ -239,7 +269,7 @@ class ProgressBarSurface(AbstractImage):
     def light_copy(self): return ProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #展示
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        pos = (self.x+offSet[0],self.y+offSet[1])
+        pos = add_pos(self.pos,offSet)
         surface.blit(resizeImg(self.img2,self.size),pos)
         if self._current_percentage > 0:
             imgOnTop = resizeImg(self.img,self.size)
@@ -268,7 +298,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
             self._percentage_to_be = value*self.accuracy
             self.__perecent_update_each_time = (self._percentage_to_be-self._current_percentage)/self.__total_update_intervals
         else:
-            throwException("error","The percentage must be <= 1 and >= 0!")
+            throwException("error","The percentage must be <= 1 and >= 0, not {}!".format(value))
     def copy(self): return DynamicProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return DynamicProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #检查并更新百分比
@@ -278,7 +308,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
             self._current_percentage += self.__perecent_update_each_time
     #展示
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        pos:tuple = (self.x+offSet[0],self.y+offSet[1])
+        pos:tuple = add_pos(self.pos,offSet)
         surface.blit(resizeImg(self.img2,self.size),pos)
         self._check_and_update_percentage()
         if self._current_percentage > 0:
@@ -333,7 +363,7 @@ class Button(GameObject2d):
                 self.img2 = tempSurface
                 self._hoverEventTriggered = True
             return True
-    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None: surface.blit(self.img,(self.x+offSet[0],self.y+offSet[1]))
+    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None: surface.blit(self.img,add_pos(self.pos,offSet))
 
 class ButtonWithDes(Button):
     def __init__(self, path:str, x:Union[int,float], y:Union[int,float], width:Union[int,float], height:Union[int,float], des:str):
@@ -360,8 +390,9 @@ class ButtonWithFadeInOut(Button):
     def __init__(self, path:str, txt:str, txt_color:any, alphaWhenNotHover:int, x:Union[int,float], y:Union[int,float], height:Union[int,float]):
         super().__init__(path,x,y)
         txtSurface = fontRenderWithoutBound(txt,txt_color,height*0.6)
-        self.img = resizeImg(self.img,(txtSurface.get_width()+height,height))
-        self.img.blit(txtSurface,(height*0.5,(height-txtSurface.get_height())/2))
+        padding = int((height-txtSurface.get_height())/2)
+        self.img = resizeImg(self.img,(txtSurface.get_width()+padding*2,height))
+        self.img.blit(txtSurface,(padding,padding))
         self.set_hover_img(self.img.copy())
         self.img.set_alpha(alphaWhenNotHover)
 
@@ -375,18 +406,12 @@ class GifObject(AbstractImage):
         self._alpha = 255
     #透明度
     def get_alpha(self) -> int: return self._alpha
-    def set_alpha(self, value:Union[int,float]) -> None:
-        if value < 0:
-            self._alpha = 0
-        elif value > 255:
-            self._alpha = 255
-        else:
-            self._alpha = round(value)
+    def set_alpha(self, value:Union[int,float]) -> None: self._alpha = keepInRange(int(value),0,255)
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)):
         img = resizeImg(self.img[self.imgId],self.size)
         #设置透明度
         if self._alpha != 255: img.set_alpha(self._alpha)
-        surface.blit(img,(self.x+offSet[0],self.y+offSet[1]))
+        surface.blit(img,add_pos(self.pos,offSet))
         if self.countDown >= self.updateGap:
             self.countDown = 0
             self.imgId += 1
@@ -435,9 +460,9 @@ class DialogBox(AbstractDialog,GameObject2d):
         self.narrator_icon = None
         self.narrator_x = fontSize*3
         self.narrator_y = fontSize/2
-        self.updated = False
-        self.__drew = False
-        self.__flipped = False
+        self.updated:bool = False
+        self.__drew:bool = False
+        self.__flipped:bool = False
     def get_width(self) -> int: return self.dialoguebox.get_width()
     def get_height(self)-> int:  return self.dialoguebox.get_height()
     def set_size(self, width:Union[int,float,None], height:Union[int,float,None]) -> None:

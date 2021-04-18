@@ -1,44 +1,6 @@
 # cython: language_level=3
 from .container import *
 
-#环境系统
-class WeatherSystem:
-    def  __init__(self, weather:str, window_x:int, window_y:int, entityNum:int=50) -> None:
-        self.name = 0
-        self.img_list = [loadImg(imgPath) for imgPath in glob("Assets/image/environment/{}/*.png".format(weather))]
-        self.ImgObject = []
-        for i in range(entityNum):
-            imgId = randomInt(0,len(self.img_list)-1)
-            img_size = randomInt(5,10)
-            img_speed = randomInt(1,4)
-            img_x = randomInt(1,window_x*1.5)
-            img_y = randomInt(1,window_y)
-            self.ImgObject.append(Snow(imgId,img_size,img_speed,img_x,img_y))
-    def draw(self, surface:pygame.Surface, perBlockWidth:Union[int,float]) -> None:
-        speed_unit:int = int(perBlockWidth/15)
-        for i in range(len(self.ImgObject)):
-            if 0 <= self.ImgObject[i].x <= surface.get_width() and 0 <= self.ImgObject[i].y <= surface.get_height():
-                surface.blit(
-                    resizeImg(self.img_list[self.ImgObject[i].imgId],
-                        (perBlockWidth/self.ImgObject[i].size,perBlockWidth/self.ImgObject[i].size)
-                    ),(self.ImgObject[i].x,self.ImgObject[i].y)
-                )
-            self.ImgObject[i].move(speed_unit)
-            if self.ImgObject[i].x <= 0 or self.ImgObject[i].y >= surface.get_height():
-                self.ImgObject[i].y = randomInt(-50,0)
-                self.ImgObject[i].x = randomInt(0,surface.get_width()*2)
-
-#雪花片
-class Snow(GameObject):
-    def  __init__(self, imgId:int, size:int, speed:int, x:int, y:int) -> None:
-        super().__init__(x,y)
-        self.imgId = imgId
-        self.size = size
-        self.speed = speed
-    def move(self, speed_unit:int) -> None:
-        self.x -= self.speed*speed_unit
-        self.y += self.speed*speed_unit
-
 #暂停菜单
 class PauseMenu:
     def __init__(self) -> None:
@@ -135,9 +97,10 @@ class SettingContoller:
         self.bar_y2 = self.baseImgY + self.baseImgHeight*0.6
         self.bar_y3 = self.baseImgY + self.baseImgHeight*0.8
         #音量数值
-        self.soundVolume_background_music = get_setting("Sound","background_music")
-        self.soundVolume_sound_effects = get_setting("Sound","sound_effects")
-        self.soundVolume_sound_environment = get_setting("Sound","sound_environment")
+        self.soundVolume_background_music = 0
+        self.soundVolume_sound_effects = 0
+        self.soundVolume_sound_environment = 0
+        self.__update_sound()
         #设置UI中的文字
         self.FONTSIZE = round(size[0]/50)
         self.fontSizeBig = round(size[0]/50*1.5)
@@ -165,6 +128,10 @@ class SettingContoller:
         self.buttons_y = self.baseImgY + self.baseImgHeight*0.88
         self.buttons_x1 = self.baseImgX + self.baseImgWidth*0.2
         self.buttons_x2 = self.buttons_x1 + self.cancelTxt_n.get_width()*1.7
+    def __update_sound(self):
+        self.soundVolume_background_music = keepInRange(get_setting("Sound","background_music"),0,100)
+        self.soundVolume_sound_effects = keepInRange(get_setting("Sound","sound_effects"),0,100)
+        self.soundVolume_sound_environment = keepInRange(get_setting("Sound","sound_environment"),0,100)
     def draw(self, surface:pygame.Surface, pygame_events=pygame.event.get()) -> bool:
         if self.isDisplaying:
             #底部图
@@ -217,9 +184,7 @@ class SettingContoller:
             if 0<mouse_x-self.buttons_x1<self.cancelTxt_n.get_width() and 0<mouse_y-self.buttons_y<self.cancelTxt_n.get_height():
                 surface.blit(self.cancelTxt_b,(self.buttons_x1,self.buttons_y))
                 if controller.get_event(pygame_events) == "comfirm":
-                    self.soundVolume_background_music = get_setting("Sound","background_music")
-                    self.soundVolume_sound_effects = get_setting("Sound","sound_effects")
-                    self.soundVolume_sound_environment = get_setting("Sound","sound_environment")
+                    self.__update_sound()
                     self.isDisplaying = False
             else:
                 surface.blit(self.cancelTxt_n,(self.buttons_x1,self.buttons_y))

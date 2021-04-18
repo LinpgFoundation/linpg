@@ -58,51 +58,52 @@ def organizeConfigInFolder(pathname:str) -> None:
         saveConfig(configFilePath,data)
 
 #初始化储存设置配置文件的变量
-__LINPG_DATA:dict = None
+_LINPG_DATA:dict = None
 
 #在不确定的情况下尝试获取设置配置文件
 def try_get_setting(key:str, key2:str=None) -> any:
-    if key in __LINPG_DATA:
+    if key in _LINPG_DATA:
         if key2 is None:
-            return deepcopy(__LINPG_DATA[key])
-        elif key2 in __LINPG_DATA[key]:
-            return deepcopy(__LINPG_DATA[key][key2])
+            return deepcopy(_LINPG_DATA[key])
+        elif key2 in _LINPG_DATA[key]:
+            return deepcopy(_LINPG_DATA[key][key2])
     return None
 
 #获取设置配置文件
 def get_setting(key:str=None, key2:str=None) -> any:
     if key is None:
-        return deepcopy(__LINPG_DATA)
+        return deepcopy(_LINPG_DATA)
     elif key2 is None:
-        return deepcopy(__LINPG_DATA[key])
+        return deepcopy(_LINPG_DATA[key])
     else:
-        return deepcopy(__LINPG_DATA[key][key2])
+        return deepcopy(_LINPG_DATA[key][key2])
 
 #修改设置参数
 def set_setting(key:str, key2:str=None, value:any=None) -> None:
     if value is not None:
         if key2 is None:
-            __LINPG_DATA[key] = value
+            _LINPG_DATA[key] = value
         else:
-            __LINPG_DATA[key][key2] = value
+            _LINPG_DATA[key][key2] = value
 
 #保存设置参数
-def save_setting() -> None: saveConfig("Save/setting.yaml",__LINPG_DATA)
+def save_setting() -> None: saveConfig("Save/setting.yaml",_LINPG_DATA)
 
 #重新加载设置配置文件，请勿在引擎外调用，重置配置文件请用reload_setting()
 def reload_DATA() -> None:
-    global __LINPG_DATA
+    global _LINPG_DATA
     #如果配置文件setting.yaml存在
-    if os.path.exists("Save/setting.yaml"): __LINPG_DATA = loadConfig("Save/setting.yaml")
+    if os.path.exists("Save/setting.yaml"): _LINPG_DATA = loadConfig("Save/setting.yaml")
     #如果不存在就创建一个
     else:
         #导入local,查看默认语言
         import locale
-        __LINPG_DATA = {
+        _LINPG_DATA = {
             "Antialias": True,
             "FPS": 60,
             "Font": "MicrosoftYaHei-2",
             "FontType": "custom",
+            "FullScreen": True,
             "KeepVedioCache": True,
             "Language": locale.getdefaultlocale(),
             "MouseIconWidth": 18,
@@ -115,7 +116,7 @@ def reload_DATA() -> None:
                 "sound_environment": 100,
             }
         }
-        __LINPG_DATA["Language"] = "SimplifiedChinese" if __LINPG_DATA["Language"][0] == "zh_CN" else "English"
+        _LINPG_DATA["Language"] = "SimplifiedChinese" if _LINPG_DATA["Language"][0] == "zh_CN" else "English"
         #别忘了看看Save文件夹是不是都不存在
         if not os.path.exists("Save"): os.makedirs("Save")
         #保存设置
@@ -124,36 +125,34 @@ def reload_DATA() -> None:
 #加载设置配置文件
 reload_DATA()
 
-#全局数据
-__LINPG_GLOBAL_DATA:dict = {}
-
+"""全局数据"""
+_LINPG_GLOBAL_DATA:dict = {}
 #设置特定的全局数据
 def set_glob_value(key:str, value:any) -> None:
-    global __LINPG_GLOBAL_DATA
-    __LINPG_GLOBAL_DATA[key] = value
+    global _LINPG_GLOBAL_DATA
+    _LINPG_GLOBAL_DATA[key] = value
 #获取特定的全局数据
-def get_glob_value(key:str) -> any: return deepcopy(__LINPG_GLOBAL_DATA[key])
+def get_glob_value(key:str) -> any: return deepcopy(_LINPG_GLOBAL_DATA[key])
 #如果不是对应的值，则设置为对应的值，返回是否对应
 def if_get_set_value(key:str, valueToGet:any, valueToSet:any) -> bool:
-    global __LINPG_GLOBAL_DATA
-    if __LINPG_GLOBAL_DATA[key] == valueToGet:
-        __LINPG_GLOBAL_DATA[key] = valueToSet
+    global _LINPG_GLOBAL_DATA
+    if _LINPG_GLOBAL_DATA[key] == valueToGet:
+        _LINPG_GLOBAL_DATA[key] = valueToSet
         return True
     else:
         return False
 #删除特定的全局数据
 def remove_glob_value(key:str) -> None:
-    global __LINPG_GLOBAL_DATA
-    del __LINPG_GLOBAL_DATA[key]
+    global _LINPG_GLOBAL_DATA
+    del _LINPG_GLOBAL_DATA[key]
 
-#版本信息
-__SETUP_INFO:dict = loadConfig(os.path.join(os.path.dirname(__file__),"../info.json"))
-
+"""版本信息"""
+_SETUP_INFO:dict = loadConfig(os.path.join(os.path.dirname(__file__),"../info.json"))
 #获取当前版本号
-def get_current_version() -> str: return "{0}.{1}.{2}".format(__SETUP_INFO["version"],__SETUP_INFO["revision"],__SETUP_INFO["patch"])
+def get_current_version() -> str: return "{0}.{1}.{2}".format(_SETUP_INFO["version"],_SETUP_INFO["revision"],_SETUP_INFO["patch"])
 #获取作者邮箱
-def get_author_email() -> str: return deepcopy(__SETUP_INFO["author_email"])
+def get_author_email() -> str: return deepcopy(_SETUP_INFO["author_email"])
 #获取github项目地址
-def get_repository_url() -> str: return deepcopy(__SETUP_INFO["repository_url"])
+def get_repository_url() -> str: return deepcopy(_SETUP_INFO["repository_url"])
 #获取项目简介
-def get_short_description() -> str:  return deepcopy(__SETUP_INFO["short_description"])
+def get_short_description() -> str:  return deepcopy(_SETUP_INFO["short_description"])

@@ -1,5 +1,4 @@
 # cython: language_level=3
-from pygame.key import name
 from .dialogModule import *
 
 #视觉小说系统模块
@@ -17,7 +16,7 @@ class DialogSystem(AbstractDialogSystem):
         self.historySurface = None
         self.historySurface_local_y = 0
         #展示历史界面-返回按钮
-        buttonTemp = loadImg("Assets/image/UI/back.png",(display.get_width()*0.03,display.get_height()*0.04))
+        buttonTemp = loadImg(os.path.join(DIALOG_UI_PATH,"back.png"),(display.get_width()*0.03,display.get_height()*0.04))
         self.history_back = Button(addDarkness(buttonTemp,100),display.get_width()*0.04,display.get_height()*0.04)
         self.history_back.set_hover_img(buttonTemp)
         #暂停菜单
@@ -132,7 +131,7 @@ class DialogSystem(AbstractDialogSystem):
                     elif buttonEvent == "skip" and not self.showHistory:
                         #淡出
                         self.fadeOut(surface)
-                        self._isPlaying = False
+                        self.stop()
                     elif buttonEvent == "auto" and not self.showHistory:
                         self.ButtonsMananger.autoModeSwitch()
                         self.dialogTxtSystem.autoMode = self.ButtonsMananger.autoMode
@@ -177,7 +176,7 @@ class DialogSystem(AbstractDialogSystem):
                     elif result == "BackToMainMenu":
                         setting.isDisplaying = False
                         self.fadeOut(surface)
-                        self._isPlaying = False
+                        self.stop()
                         break
                     #如果播放玩菜单后发现有东西需要更新
                     if setting.draw(surface,self.events):
@@ -252,14 +251,14 @@ class DialogSystem(AbstractDialogSystem):
         elif self.dialogTxtSystem.needUpdate() or leftClick:
             if self.dialogContent[self.dialogId]["next_dialog_id"] is None or self.dialogContent[self.dialogId]["next_dialog_id"]["target"] is None:
                 self.fadeOut(surface)
-                self._isPlaying = False
+                self.stop()
             elif self.dialogContent[self.dialogId]["next_dialog_id"]["type"] == "default":
                 self.__update_scene(self.dialogContent[self.dialogId]["next_dialog_id"]["target"])
             #如果是需要播放过程动画
             elif self.dialogContent[self.dialogId]["next_dialog_id"]["type"] == "cutscene":
                 self.fadeOut(surface)
-                cutscene(surface,"Assets\movie\{}".format(self.dialogContent[self.dialogId]["next_dialog_id"]["target"]))
-                self._isPlaying = False
+                self.stop()
+                cutscene(surface,os.path.join(self._dynamicBackgroundFilePath,self.dialogContent[self.dialogId]["next_dialog_id"]["target"]))
             #如果是切换场景
             elif self.dialogContent[self.dialogId]["next_dialog_id"]["type"] == "changeScene":
                 self.fadeOut(surface)
@@ -280,45 +279,46 @@ class DialogEditor(AbstractDialogSystem):
         self.fileLocation = "Data/{0}/chapter{1}_dialogs_{2}.yaml".format(self.chapterType,self.chapterId,get_setting("Language")) if self.chapterType == "main_chapter"\
             else "Data/{0}/{1}/chapter{2}_dialogs_{3}.yaml".format(self.chapterType,self.collection_name,self.chapterId,get_setting("Language"))
         #文字
-        self.FONTSIZE = display.get_width()*0.015
+        self.FONTSIZE:int = int(display.get_width()*0.015)
         self.FONT = createFont(self.FONTSIZE)
         #对话框
-        self.dialoguebox = loadImage("Assets/image/UI/dialoguebox.png",(display.get_width()*0.13,display.get_height()*0.65),display.get_width()*0.74,display.get_height()/4)
+        self.dialoguebox = loadImage(os.path.join(DIALOG_UI_PATH,"dialoguebox.png"),(display.get_width()*0.13,display.get_height()*0.65),display.get_width()*0.74,display.get_height()/4)
         self.narrator = SingleLineInputBox(display.get_width()*0.2,self.dialoguebox.y+self.FONTSIZE,self.FONTSIZE,"white")
         self.content = MultipleLinesInputBox(display.get_width()*0.2,display.get_height()*0.73,self.FONTSIZE,"white")
         #将npc立绘系统设置为开发者模式
         self._npcManager.dev_mode = True
         #加载容器
         container_width = int(display.get_width()*0.2)
-        self.UIContainerRightImage = loadImg("Assets/image/UI/container.png",(container_width,display.get_height()))
+        self.UIContainerRightImage = loadImg(os.path.join(DIALOG_UI_PATH,"container.png"),(container_width,display.get_height()))
         #背景容器
         self.UIContainerRight_bg = SurfaceContainerWithScrollbar(
-            None, 0, int(display.get_height()*0.1), int(container_width*0.95), int(display.get_height()*0.8), "vertical"
+            None, int(container_width*0.075), int(display.get_height()*0.1), int(container_width*0.85), int(display.get_height()*0.85), "vertical"
             )
         self.UIContainerRight_bg.set_scroll_bar_pos("right")
         #加载背景图片
-        self.background_deselect = loadImg("Assets/image/UI/deselect.png")
+        self.background_deselect = loadImg(os.path.join(DIALOG_UI_PATH,"deselect.png"))
         self.UIContainerRight_bg.set("current_select",None)
-        for imgPath in glob("Assets/image/dialog_background/*"):
+        for imgPath in glob(r"Assets/image/dialog_background/*"):
             self.UIContainerRight_bg.set(os.path.basename(imgPath),loadImg(imgPath,(container_width*0.8,None)))
-        self.UIContainerRight_bg.panding = container_width*0.1
+        self.UIContainerRight_bg.distance_between_item = int(display.get_height()*0.02)
         self.__current_select_bg_name = None
         self.__current_select_bg_copy = None
         #npc立绘容器
         self.UIContainerRight_npc = SurfaceContainerWithScrollbar(
-            None, 0, int(display.get_height()*0.1), int(container_width*0.95), int(display.get_height()*0.8), "vertical"
+            None, int(container_width*0.075), int(display.get_height()*0.1), int(container_width*0.85), int(display.get_height()*0.85), "vertical"
             )
         self.UIContainerRight_npc.set_scroll_bar_pos("right")
         #加载npc立绘
-        for imgPath in glob("Assets/image/npc/*"):
+        for imgPath in glob(r"Assets/image/npc/*"):
             self.UIContainerRight_npc.set(os.path.basename(imgPath),loadImg(imgPath,(container_width*0.8,None)))
         self.UIContainerRight_npc.hidden = True
+        self.UIContainerRight_npc.distance_between_item = 0
         #从配置文件中加载数据
         self.__loadDialogData(part)
         #容器按钮
         button_width = int(display.get_width()*0.04)
         self.UIContainerRightButton = loadDynamicImage(
-            "Assets/image/UI/container_button.png",
+            os.path.join(DIALOG_UI_PATH,"container_button.png"),
             (display.get_width()-button_width,display.get_height()*0.4),
             (display.get_width()-button_width-container_width,display.get_height()*0.4),
             (container_width/10,0),button_width,int(display.get_height()*0.2)
@@ -326,24 +326,26 @@ class DialogEditor(AbstractDialogSystem):
         self.UIContainerRightButton.rotate(90)
         #UI按钮
         CONFIG = get_lang("DialogCreator")
-        button_width = int(display.get_width()*0.05)
         button_y = int(display.get_height()*0.03)
         #控制容器转换的按钮
         self.button_select_background = ButtonWithFadeInOut(
-            "Assets/image/UI/menu.png",CONFIG["background"],"black",100,button_width/3,button_y*2,button_width/3
+            os.path.join(DIALOG_UI_PATH,"menu.png"),CONFIG["background"],"black",100,0,button_y*2,button_width/2
             )
         self.button_select_npc = ButtonWithFadeInOut(
-            "Assets/image/UI/menu.png",CONFIG["npc"],"black",100,button_width/2+self.button_select_background.get_width(),button_y*2,button_width/3
+            os.path.join(DIALOG_UI_PATH,"menu.png"),CONFIG["npc"],"black",100,0,button_y*2,button_width/2
             )
+        panding:int = int((container_width-self.button_select_background.get_width()-self.button_select_npc.get_width())/3)
+        self.button_select_background.set_left(panding)
+        self.button_select_npc.set_left(self.button_select_background.get_right()+panding)
         #页面右上方的一排按钮
         self.buttonsUI = {
-            "save": ButtonWithDes("Assets/image/UI/save.png",button_width*7.25,button_y,button_width,button_width,get_lang("Global","save")),
-            "reload": ButtonWithDes("Assets/image/UI/reload.png",button_width*6,button_y,button_width,button_width,CONFIG["reload"]),
-            "add": ButtonWithDes("Assets/image/UI/add.png",button_width*4.75,button_y,button_width,button_width,CONFIG["add"]),
-            "next": ButtonWithDes("Assets/image/UI/dialog_skip.png",button_width*4.75,button_y,button_width,button_width,CONFIG["next"]),
-            "previous": ButtonWithDes("Assets/image/UI/previous.png",button_width*3.5,button_y,button_width,button_width,CONFIG["previous"]),
-            "delete": ButtonWithDes("Assets/image/UI/delete.png",button_width*2.25,button_y,button_width,button_width,CONFIG["delete"]),
-            "back": ButtonWithDes("Assets/image/UI/back.png",button_width,button_y,button_width,button_width,CONFIG["back"])
+            "save": ButtonWithDes(os.path.join(DIALOG_UI_PATH,"save.png"),button_width*7.25,button_y,button_width,button_width,get_lang("Global","save")),
+            "reload": ButtonWithDes(os.path.join(DIALOG_UI_PATH,"reload.png"),button_width*6,button_y,button_width,button_width,CONFIG["reload"]),
+            "add": ButtonWithDes(os.path.join(DIALOG_UI_PATH,"add.png"),button_width*4.75,button_y,button_width,button_width,CONFIG["add"]),
+            "next": ButtonWithDes(os.path.join(DIALOG_UI_PATH,"dialog_skip.png"),button_width*4.75,button_y,button_width,button_width,CONFIG["next"]),
+            "previous": ButtonWithDes(os.path.join(DIALOG_UI_PATH,"previous.png"),button_width*3.5,button_y,button_width,button_width,CONFIG["previous"]),
+            "delete": ButtonWithDes(os.path.join(DIALOG_UI_PATH,"delete.png"),button_width*2.25,button_y,button_width,button_width,CONFIG["delete"]),
+            "back": ButtonWithDes(os.path.join(DIALOG_UI_PATH,"back.png"),button_width,button_y,button_width,button_width,CONFIG["back"])
         }
         self.please_enter_content = CONFIG["please_enter_content"]
         self.please_enter_name = CONFIG["please_enter_name"]
@@ -353,6 +355,11 @@ class DialogEditor(AbstractDialogSystem):
         surfaceTmp.blit(self.removeNpcButton,(self.removeNpcButton.get_width()*0.1,0))
         self.removeNpcButton = surfaceTmp
         self.smart_add_mode = False
+        #未保存离开时的警告
+        self.__no_save_warning = LeaveWithoutSavingWarning(
+            os.path.join(DIALOG_UI_PATH,"container.png"),0,0,display.get_width()/2,display.get_height()/4
+            )
+        self.__no_save_warning.set_center(display.get_width()/2,display.get_height()/2)
     @property
     def part(self) -> str: return self.parts[self.partId]
     #更新背景选项栏
@@ -411,22 +418,29 @@ class DialogEditor(AbstractDialogSystem):
                 self.dialogData_default = None
         #更新场景
         self.__update_scene(self.dialogId)
-    #保存数据
-    def __save(self) -> None:
-        self.dialogData[self.part][self.dialogId]["narrator"] = self.narrator.get_text()
-        self.dialogData[self.part][self.dialogId]["content"] = self.content.get_text()
+    #分离需要保存的数据
+    def __slipt_the_stuff_need_save(self) -> dict:
+        data_need_save:dict = deepcopy(self.dialogData)
+        data_need_save[self.part][self.dialogId]["narrator"] = self.narrator.get_text()
+        data_need_save[self.part][self.dialogId]["content"] = self.content.get_text()
         if not self.isDefault:
             #移除掉相似的内容
             for part in self.dialogData_default:
                 for dialogId,defaultDialogData in self.dialogData_default[part].items():
-                    if dialogId in self.dialogData[part]:
+                    if dialogId in data_need_save[part]:
                         for dataType in defaultDialogData:
-                            if self.dialogData[part][dialogId][dataType] == defaultDialogData[dataType]:
-                                del self.dialogData[part][dialogId][dataType]
-                        if len(self.dialogData[part][dialogId]) == 0: del self.dialogData[part][dialogId]
+                            if data_need_save[part][dialogId][dataType] == defaultDialogData[dataType]:
+                                del data_need_save[part][dialogId][dataType]
+                        if len(data_need_save[part][dialogId]) == 0: del data_need_save[part][dialogId]
+        return data_need_save
+    #检查是否有任何改动
+    def __no_changes_were_made(self) -> bool:
+        return loadConfig(self.fileLocation,"dialogs") == self.__slipt_the_stuff_need_save()
+    #保存数据
+    def __save(self) -> None:
         #读取原始数据
         original_data:dict = loadConfig(self.fileLocation)
-        original_data["dialogs"] = self.dialogData
+        original_data["dialogs"] = self.__slipt_the_stuff_need_save()
         #保存数据
         saveConfig(self.fileLocation,original_data)
         #重新加载self.dialogData以确保准确性
@@ -553,12 +567,16 @@ class DialogEditor(AbstractDialogSystem):
         for event in self.events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    if (self.UIContainerRightButton.is_hover()):
+                    if self.UIContainerRightButton.is_hover():
                         self.UIContainerRightButton.switch()
                         self.UIContainerRightButton.flip(True,False)
                     #退出
                     elif buttonHovered == "back":
-                        self._isPlaying = False
+                        if self.__no_changes_were_made() is True:
+                            self.stop()
+                            break
+                        else:
+                            self.__no_save_warning.hidden = False
                     elif buttonHovered == "previous":
                         lastId = self.__get_last_id()
                         if lastId is not None:
@@ -620,6 +638,7 @@ class DialogEditor(AbstractDialogSystem):
                         self.dialogData[self.part][self.dialogId]["characters_img"].remove(self._npcManager.npcGetClick)
                         self._npcManager.update(self.dialogData[self.part][self.dialogId]["characters_img"])
                         self._npcManager.npcGetClick = None
+        
         #画上右侧菜单的按钮
         self.UIContainerRightButton.draw(surface)
         #画上右侧菜单
@@ -627,6 +646,8 @@ class DialogEditor(AbstractDialogSystem):
             surface.blit(self.UIContainerRightImage,(self.UIContainerRightButton.right,0))
             self.UIContainerRight_bg.display(surface,(self.UIContainerRightButton.right,0),self.events)
             self.UIContainerRight_npc.display(surface,(self.UIContainerRightButton.right,0),self.events)
+            #self.UIContainerRight_bg.draw_outline(surface,(self.UIContainerRightButton.right,0))
+            #self.UIContainerRight_npc.draw_outline(surface,(self.UIContainerRightButton.right,0))
             #检测按钮
             if isHover(self.button_select_background,local_x=self.UIContainerRightButton.right) and leftClick is True:
                 self.UIContainerRight_bg.hidden = False
@@ -658,3 +679,17 @@ class DialogEditor(AbstractDialogSystem):
                         if len(self.dialogData[self.part][self.dialogId]["characters_img"]) < 2:
                             self.dialogData[self.part][self.dialogId]["characters_img"].append(imgName)
                             self._npcManager.update(self.dialogData[self.part][self.dialogId]["characters_img"])
+        
+        #未保存离开时的警告
+        self.__no_save_warning.draw(surface)
+        if leftClick is True and self.__no_save_warning.button_hovered != "":
+            #保存并离开
+            if self.__no_save_warning.button_hovered == "save":
+                self.__save()
+                self.stop()
+            #取消
+            elif self.__no_save_warning.button_hovered == "cancel":
+                self.__no_save_warning.hidden = True
+            #不保存并离开
+            elif self.__no_save_warning.button_hovered == "dont_save":
+                self.stop()

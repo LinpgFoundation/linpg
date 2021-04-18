@@ -2,6 +2,8 @@
     "Dialog": {
         "auto": "自動",
         "choice": "選項",
+        "leave_without_save1": "你還沒有保存你的修改!",
+        "leave_without_save2": "請問你想要保存你的修改嗎?",
         "skip": "跳過"
     },
     "DialogCreator": {
@@ -19,9 +21,13 @@
     },
     "Global": {
         "back": "返回",
+        "cancel": "取消",
+        "dont_save": "不要保存",
         "process_has_been_saved": "進度已保存",
-        "save": "保存"
+        "save": "保存",
+        "warning": "警告"
     },
+    "Language": "繁體中文",
     "Numbers": [
         "零",
         "一",

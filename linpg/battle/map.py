@@ -290,7 +290,8 @@ class MapObject:
             for x in range(guess_x-1,guess_x+4):
                 posTupleTemp = self.calPosInMap(x,y)
                 if lenUnitW<mouse_x-posTupleTemp[0]-self.block_width*0.05<lenUnitW*3 and 0<mouse_y-posTupleTemp[1]<lenUnitH:
-                    block_get_click = {"x":x,"y":y}
+                    if 0 <= x < self.column and 0 <= y < self.row:
+                        block_get_click = {"x":x,"y":y}
                     break
         return block_get_click
     #计算方块被画出的位置

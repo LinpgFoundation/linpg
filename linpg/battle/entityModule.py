@@ -145,12 +145,13 @@ class EntitySoundManager(AbstractEntitySoundManager):
     def play(self, characterType:str, soundType:str) -> None:
         if characterType in self._sounds_dict and soundType in self._sounds_dict[characterType]:
             sound_list = self._sounds_dict[characterType][soundType]
-            if len(sound_list) > 1:
-                sound = sound_list[randomInt(0,len(sound_list)-1)]
-            else:
-                sound = sound_list[0]
-            sound.set_volume(get_setting("Sound","sound_effects")/100.0)
-            pygame.mixer.Channel(self._channel_id).play(sound)
+            if len(sound_list) > 0:
+                if len(sound_list) > 1:
+                    sound = sound_list[randomInt(0,len(sound_list)-1)]
+                else:
+                    sound = sound_list[0]
+                sound.set_volume(get_setting("Sound","sound_effects")/100.0)
+                pygame.mixer.Channel(self._channel_id).play(sound)
 
 #射击音效 -- 频道2
 class AttackingSoundManager(AbstractEntitySoundManager):

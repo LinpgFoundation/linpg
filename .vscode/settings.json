@@ -30,6 +30,7 @@
         "pyproject",
         "sangvis",
         "setuptools",
+        "sfpsp",
         "surfarray",
         "swapaxes",
         "yudonglin"

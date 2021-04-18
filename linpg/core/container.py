@@ -219,7 +219,7 @@ class SurfaceContainerWithScrollbar(AbstractImage):
                                 new_width = self._width
                             subsurface_rect = pygame.Rect(0,crop_height,new_width,new_height)
                             surface.blit(item.subsurface(subsurface_rect),(current_x,current_y+crop_height))
-                            if isHoverPygameObject(subsurface_rect,off_set_x=current_x,off_set_y=current_y+crop_height):
+                            if isHoverPygameObject(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
                                 self.__current_hovered_item = key
                         #换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line-1:
@@ -252,7 +252,7 @@ class SurfaceContainerWithScrollbar(AbstractImage):
                                 new_height = self._height
                             subsurface_rect = pygame.Rect(crop_width,0,new_width,new_height)
                             surface.blit(item.subsurface(subsurface_rect),(current_x+crop_width,current_y))
-                            if isHoverPygameObject(subsurface_rect,off_set_x=current_x+crop_width,off_set_y=current_y):
+                            if isHoverPygameObject(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
                                 self.__current_hovered_item = key
                         #换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line-1:

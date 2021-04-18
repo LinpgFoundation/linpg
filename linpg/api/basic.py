@@ -204,12 +204,14 @@ def natural_sort(l:list) -> list:
 #是否触碰pygame类
 def isHoverPygameObject(imgObject:object, objectPos:Union[tuple,list]=(0,0), off_set_x:Union[int,float]=0, off_set_y:Union[int,float]=0) -> bool:
     mouse_x,mouse_y = pygame.mouse.get_pos()
-    #如果是pygame的面
+    #如果是pygame的Surface类
     if isinstance(imgObject,pygame.Surface):
         return True if 0 < mouse_x-off_set_x-objectPos[0] < imgObject.get_width() and 0 < mouse_y-off_set_y-objectPos[1] < imgObject.get_height()\
             else False
+    #如果是Rect类
     elif isinstance(imgObject,pygame.Rect):
-        return True if imgObject.x < mouse_x-off_set_x < imgObject.right and imgObject.y < mouse_y-off_set_y < imgObject.bottom else False
+        return True if 0 < mouse_x-off_set_x-imgObject.x < imgObject.width and 0 < mouse_y-off_set_y-imgObject.y < imgObject.height\
+            else False
     else:
         throwException("error","Unable to check current object: {0} (type:{1})".format(imgObject,type(imgObject)))
 

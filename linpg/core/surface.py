@@ -269,7 +269,7 @@ class ProgressBarSurface(AbstractImage):
     def light_copy(self): return ProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #展示
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        pos = (self.x+offSet[0],self.y+offSet[1])
+        pos = add_pos(self.pos,offSet)
         surface.blit(resizeImg(self.img2,self.size),pos)
         if self._current_percentage > 0:
             imgOnTop = resizeImg(self.img,self.size)
@@ -298,7 +298,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
             self._percentage_to_be = value*self.accuracy
             self.__perecent_update_each_time = (self._percentage_to_be-self._current_percentage)/self.__total_update_intervals
         else:
-            throwException("error","The percentage must be <= 1 and >= 0!")
+            throwException("error","The percentage must be <= 1 and >= 0, not {}!".format(value))
     def copy(self): return DynamicProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return DynamicProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #检查并更新百分比
@@ -460,9 +460,9 @@ class DialogBox(AbstractDialog,GameObject2d):
         self.narrator_icon = None
         self.narrator_x = fontSize*3
         self.narrator_y = fontSize/2
-        self.updated = False
-        self.__drew = False
-        self.__flipped = False
+        self.updated:bool = False
+        self.__drew:bool = False
+        self.__flipped:bool = False
     def get_width(self) -> int: return self.dialoguebox.get_width()
     def get_height(self)-> int:  return self.dialoguebox.get_height()
     def set_size(self, width:Union[int,float,None], height:Union[int,float,None]) -> None:

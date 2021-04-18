@@ -120,8 +120,9 @@ class DialogButtons:
 
 #未保存离开时的警告
 class LeaveWithoutSavingWarning(AbstractImage):
-    def __init__(self, img: any, font_size: int, x: int, y: int, width: int, height: int):
+    def __init__(self, img: any, x: int, y: int, width: int, height: int):
         super().__init__(StaticImageSurface(img,0,0), x, y, width, height)
+        font_size = int(height/10)
         #警告-标题
         self.__warning_title = TextSurface(fontRender(get_lang("Global","warning"),"white",font_size),0,font_size)
         self.__warning_title.set_centerx(self._width/2)
@@ -140,26 +141,43 @@ class LeaveWithoutSavingWarning(AbstractImage):
         self.dont_save_button = ButtonWithFadeInOut(os.path.join(DIALOG_UI_PATH,"menu.png"),get_lang("Global","dont_save"),"black",200,0,0,font_size*2)
         self.dont_save_button.set_bottom(self._height*0.9)
         #计算间距
-        panding_on_side:int = int(self._width*0.1)
-        panding_between_button:int = int(
-            (self._width-panding_on_side*2-self.save_button.get_width()-self.cancel_button.get_width()-self.dont_save_button.get_width())/2
-        )
+        panding:int = int((self._width-self.save_button.get_width()-self.cancel_button.get_width()-self.dont_save_button.get_width())/4)
         #设置x轴坐标
-        self.save_button.set_left(panding_on_side)
-        self.cancel_button.set_left(self.save_button.get_right()+panding_between_button)
-        self.dont_save_button.set_left(self.cancel_button.get_right()+panding_between_button)
+        self.save_button.set_left(panding)
+        self.cancel_button.set_left(self.save_button.get_right()+panding)
+        self.dont_save_button.set_left(self.cancel_button.get_right()+panding)
         #默认隐藏
         self.hidden:bool = True
+        #触碰的按钮
+        self.__button_hovered:int = 0
+    @property
+    def button_hovered(self) -> str:
+        if self.__button_hovered == 1:
+            return "save"
+        elif self.__button_hovered == 2:
+            return "cancel"
+        elif self.__button_hovered == 3:
+            return "dont_save"
+        else:
+            return ""
     def display(self, surface: pygame.Surface, offSet:tuple=(0,0)) -> None:
+        self.__button_hovered = 0
         if not self.hidden:
+            pos = add_pos(self.pos,offSet)
             #画出背景
             self.img.set_size(self._width,self._height)
-            self.img.display(surface,add_pos(self.pos,offSet))
+            self.img.display(surface,pos)
             #画出内容
-            self.__warning_title.display(surface,add_pos(self.pos,offSet))
-            self.__text_1.display(surface,add_pos(self.pos,offSet))
-            self.__text_2.display(surface,add_pos(self.pos,offSet))
-            #按钮
-            self.save_button.display(surface,add_pos(self.pos,offSet))
-            self.cancel_button.display(surface,add_pos(self.pos,offSet))
-            self.dont_save_button.display(surface,add_pos(self.pos,offSet))
+            self.__warning_title.display(surface,pos)
+            self.__text_1.display(surface,pos)
+            self.__text_2.display(surface,pos)
+            """按钮"""
+            #保存
+            if isHover(self.save_button, local_x=pos[0], local_y=pos[1]): self.__button_hovered = 1
+            self.save_button.display(surface,pos)
+            #取消
+            if isHover(self.cancel_button, local_x=pos[0], local_y=pos[1]): self.__button_hovered = 2
+            self.cancel_button.display(surface,pos)
+            #不要保存
+            if isHover(self.dont_save_button, local_x=pos[0], local_y=pos[1]): self.__button_hovered = 3
+            self.dont_save_button.display(surface,pos)

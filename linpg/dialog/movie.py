@@ -8,7 +8,7 @@ def getAudioFromVideo(moviePath:str, audioType:str="mp3") -> str:
     #如果没有Cache文件夹，则创建一个
     if not os.path.exists("Cache"): os.makedirs("Cache")
     #获取路径
-    outPutPath:str = "Cache/{0}.{1}".format(os.path.basename(moviePath).replace(".","_"),audioType)
+    outPutPath:str = os.path.join("Cache","{0}.{1}".format(os.path.basename(moviePath).replace(".","_"),audioType))
     #如果路径已经存在，则直接返回路径
     if os.path.exists(outPutPath): return outPutPath
     #把视频载入到流容器中
@@ -39,11 +39,16 @@ def loadAudioAsSound(moviePath:str) -> object:
     if not get_setting("KeepVedioCache"): os.remove(path)
     return PygameAudio
 
-def loadAudioAsMusic(moviePath:str) -> None:
+def loadAudioAsMusic(moviePath:str) -> bool:
     pygame.mixer.music.unload()
-    path = getAudioFromVideo(moviePath)
-    pygame.mixer.music.load(path)
-    if not get_setting("KeepVedioCache"): os.remove(path)
+    try:
+        path = getAudioFromVideo(moviePath)
+        pygame.mixer.music.load(path)
+        if not get_setting("KeepVedioCache"): os.remove(path)
+        return True
+    except:
+        throwException("warning", "Cannot load music from {}!\nIf this vedio has no sound, then just ignore this warning.".format(moviePath))
+        return False
 
 #视频模块接口，不能实例化
 class AbstractVedio(threading.Thread):
@@ -53,8 +58,8 @@ class AbstractVedio(threading.Thread):
         self._video_container = av.open(self._path,mode='r')
         self._video_stream = self._video_container.streams.video[0]
         self._video_stream.thread_type = 'AUTO'
-        self._audio_stream = self._video_container.streams.audio[0]
-        self._audio_stream.thread_type = 'AUTO'
+        #self._audio_stream = self._video_container.streams.audio[0]
+        #self._audio_stream.thread_type = 'AUTO'
         self._frameRate = round(self._video_stream.average_rate)
         self._frameQueue = queue.Queue(maxsize=self._frameRate)
         self._stopped:bool = False
@@ -83,7 +88,8 @@ class AbstractVedio(threading.Thread):
     #停止
     def stop(self) -> None: self._stopped = True
     #把画面画到屏幕上
-    def draw(self, surface:pygame.Surface) -> None: pygame.surfarray.blit_array(surface,self._frameQueue.get())
+    def draw(self, surface:pygame.Surface) -> None:
+        pygame.surfarray.blit_array(surface,self._frameQueue.get())
 
 #视频片段展示模块--灵活，但不能保证帧数和音乐同步
 class VedioFrame(AbstractVedio):
@@ -138,15 +144,17 @@ class VedioFrame(AbstractVedio):
 class VedioPlayer(AbstractVedio):
     def __init__(self, path:str, width:int, height:int):
         super().__init__(path,width,height)
-        self.__allowFrameDelay = 10
-        loadAudioAsMusic(path)
+        self.__allowFrameDelay:int = 10
+        self.__bgm_status:bool = loadAudioAsMusic(path)
     #开始执行线程
     def run(self) -> None:
-        pygame.mixer.music.play()
+        if self.__bgm_status is True: pygame.mixer.music.play()
         for frame in self._video_container.decode(self._video_stream):
-            if self._stopped:
-                break
+            #如果需要跳出
+            if self._stopped: break
+            #处理当前帧
             self._processFrame(frame)
+            #确保匀速播放
             if not int(pygame.mixer.music.get_pos()/1000*self._frameRate)-self.get_frameIndex() >= self.__allowFrameDelay:
                 self._clock.tick(self._frameRate)
         pygame.mixer.music.unload()
@@ -166,7 +174,7 @@ def cutscene(surface:pygame.Surface, videoPath:str) -> None:
         int(surface.get_height()*0.06)
         )
     #生成黑色帘幕
-    black_bg:pygame.Surface = pygame.Surface((surface_size[0],surface_size[1]),flags=pygame.SRCALPHA).convert_alpha()
+    black_bg:pygame.Surface = pygame.Surface(surface_size,flags=pygame.SRCALPHA).convert_alpha()
     pygame.draw.rect(black_bg,(0,0,0),(0,0,surface_size[0],surface_size[1]))
     black_bg.set_alpha(0)
     #进度条
@@ -176,7 +184,7 @@ def cutscene(surface:pygame.Surface, videoPath:str) -> None:
     VIDEO:object = VedioPlayer(videoPath,surface_size[0],surface_size[1])
     VIDEO.start()
     #播放主循环
-    while is_playing and VIDEO.is_alive():
+    while is_playing is True and VIDEO.is_alive():
         VIDEO.draw(surface)
         skip_button.draw(surface)
         white_progress_bar.percentage = VIDEO.get_percentagePlayed()

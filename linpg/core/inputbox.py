@@ -312,7 +312,10 @@ class Console(SingleLineInputBox):
         self.hidden:bool = True
         self.textHistory:list = []
         self.__backward_id:int = 1
-        self.__events:dict = { "dev": True if try_get_setting("DeveloperMode") is True else False }
+        self.__events:dict = {
+            "cheat": False,
+            "dev": True if try_get_setting("DeveloperMode") is True else False
+            }
         self.txtOutput:list = []
     def get_events(self, key:Union[int,str]) -> any:
         try:

@@ -1,5 +1,6 @@
 # cython: language_level=3
 from .entityModule import *
+from collections import deque
 
 #储存角色图片的常量
 _CHARACTERS_IMAGE_SYS:object = EntityImageManager()
@@ -211,7 +212,7 @@ class Entity(GameObject):
     #设置需要移动的路径
     def move_follow(self, path:Union[tuple,list]) -> None:
         if isinstance(path,(list,tuple)) and len(path)>0:
-            self.__moving_path = path
+            self.__moving_path = deque(path)
             self.set_action("move")
         else:
             throwException("error","Character cannot move to a invalid path!")
@@ -223,28 +224,28 @@ class Entity(GameObject):
                 self.set_flip(False)
                 if self.x >= self.__moving_path[0][0]:
                     self.x = self.__moving_path[0][0]
-                    self.__moving_path.pop(0)
+                    self.__moving_path.popleft()
                     self.__if_map_need_update = True
             elif self.x > self.__moving_path[0][0]:
-                self.x-=0.05
+                self.x -= 0.05
                 self.set_flip(True)
                 if self.x <= self.__moving_path[0][0]:
                     self.x = self.__moving_path[0][0]
-                    self.__moving_path.pop(0)
+                    self.__moving_path.popleft()
                     self.__if_map_need_update = True
             elif self.y < self.__moving_path[0][1]:
-                self.y+=0.05
+                self.y += 0.05
                 self.set_flip(True)
                 if self.y >= self.__moving_path[0][1]:
                     self.y = self.__moving_path[0][1]
-                    self.__moving_path.pop(0)
+                    self.__moving_path.popleft()
                     self.__if_map_need_update = True
             elif self.y > self.__moving_path[0][1]:
-                self.y-=0.05
+                self.y -= 0.05
                 self.set_flip(False)
                 if self.y <= self.__moving_path[0][1]:
                     self.y = self.__moving_path[0][1]
-                    self.__moving_path.pop(0)
+                    self.__moving_path.popleft()
                     self.__if_map_need_update = True
         else:
             self.__moving_path = None
@@ -421,7 +422,7 @@ class Entity(GameObject):
         yTemp -= MapClass.block_width*0.2
         self.__hp_bar.set_size(MapClass.block_width/2,MapClass.block_width/10)
         self.__hp_bar.set_pos(xTemp,yTemp)
-        if not self.dying:
+        if self.dying is False:
             self.__hp_bar.set_percentage(self.__current_hp/self.__max_hp)
             self.__hp_bar.draw(surface,False)
             displayInCenter(

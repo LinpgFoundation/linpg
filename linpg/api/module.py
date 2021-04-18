@@ -15,7 +15,7 @@ class Coordinate:
         self.x = int(x)
         self.y = int(y)
     #检测是否在给定的位置上
-    def on_pos(self, pos:any) -> bool: return is_same_pos(self.get_pos(),pos)
+    def on_pos(self, pos:any) -> bool: return is_same_pos(self.pos,pos)
 
 #游戏对象接口
 class GameObject(Coordinate):

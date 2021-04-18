@@ -21,7 +21,7 @@ class AbstractDialogSystem(SystemWithBackgroundMusic):
         self.auto_save:bool = False
         #背景图片
         self.__backgroundImageFilePath = "Assets/image/dialog_background"
-        self.__dynamicBackgroundFilePath = "Assets/movie"
+        self._dynamicBackgroundFilePath = "Assets/movie"
         self.__backgroundImageName = None
         self.__backgroundImageSurface = self._black_bg.copy()
     #初始化关键参数
@@ -48,15 +48,21 @@ class AbstractDialogSystem(SystemWithBackgroundMusic):
                 if os.path.exists(img_path):
                     self.__backgroundImageSurface = loadImage(img_path,(0,0))
                 #如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
-                elif os.path.exists(os.path.join(self.__dynamicBackgroundFilePath,self.__backgroundImageName)):
-                    try:
-                        self.__backgroundImageSurface = VedioFrame(os.path.join(self.__dynamicBackgroundFilePath,self.__backgroundImageName),display.get_width(),display.get_height())
-                    except BaseException:
-                        throwException("error","Cannot run movie module.")
+                elif os.path.exists(os.path.join(self._dynamicBackgroundFilePath,self.__backgroundImageName)):
+                    self.__backgroundImageSurface = VedioFrame(
+                        os.path.join(self._dynamicBackgroundFilePath,self.__backgroundImageName),display.get_width(),display.get_height()
+                        )
+                    self.__backgroundImageSurface.start()
                 else:
                     throwException("error","Cannot find a background image or video file called '{}'.".format(self.__backgroundImageName))
             else:
                 self.__backgroundImageSurface = self._black_bg.copy()
+    #停止播放
+    def stop(self) -> None:
+        #如果背景是多线程的VedioFrame，则应该退出占用
+        if isinstance(self.__backgroundImageSurface,VedioFrame): self.__backgroundImageSurface.stop()
+        #设置停止播放
+        self._isPlaying = False
     #将背景图片画到surface上
     def display_background_image(self, surface:pygame.Surface) -> None:
         if isinstance(self.__backgroundImageSurface,ImageSurface):

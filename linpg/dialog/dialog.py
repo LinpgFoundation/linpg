@@ -131,7 +131,7 @@ class DialogSystem(AbstractDialogSystem):
                     elif buttonEvent == "skip" and not self.showHistory:
                         #淡出
                         self.fadeOut(surface)
-                        self._isPlaying = False
+                        self.stop()
                     elif buttonEvent == "auto" and not self.showHistory:
                         self.ButtonsMananger.autoModeSwitch()
                         self.dialogTxtSystem.autoMode = self.ButtonsMananger.autoMode
@@ -176,7 +176,7 @@ class DialogSystem(AbstractDialogSystem):
                     elif result == "BackToMainMenu":
                         setting.isDisplaying = False
                         self.fadeOut(surface)
-                        self._isPlaying = False
+                        self.stop()
                         break
                     #如果播放玩菜单后发现有东西需要更新
                     if setting.draw(surface,self.events):
@@ -251,14 +251,14 @@ class DialogSystem(AbstractDialogSystem):
         elif self.dialogTxtSystem.needUpdate() or leftClick:
             if self.dialogContent[self.dialogId]["next_dialog_id"] is None or self.dialogContent[self.dialogId]["next_dialog_id"]["target"] is None:
                 self.fadeOut(surface)
-                self._isPlaying = False
+                self.stop()
             elif self.dialogContent[self.dialogId]["next_dialog_id"]["type"] == "default":
                 self.__update_scene(self.dialogContent[self.dialogId]["next_dialog_id"]["target"])
             #如果是需要播放过程动画
             elif self.dialogContent[self.dialogId]["next_dialog_id"]["type"] == "cutscene":
                 self.fadeOut(surface)
-                cutscene(surface,"Assets\movie\{}".format(self.dialogContent[self.dialogId]["next_dialog_id"]["target"]))
-                self._isPlaying = False
+                self.stop()
+                cutscene(surface,os.path.join(self._dynamicBackgroundFilePath,self.dialogContent[self.dialogId]["next_dialog_id"]["target"]))
             #如果是切换场景
             elif self.dialogContent[self.dialogId]["next_dialog_id"]["type"] == "changeScene":
                 self.fadeOut(surface)
@@ -357,7 +357,7 @@ class DialogEditor(AbstractDialogSystem):
         self.smart_add_mode = False
         #未保存离开时的警告
         self.__no_save_warning = LeaveWithoutSavingWarning(
-            os.path.join(DIALOG_UI_PATH,"container.png"),self.FONTSIZE,0,0,display.get_width()/2,display.get_height()/4
+            os.path.join(DIALOG_UI_PATH,"container.png"),0,0,display.get_width()/2,display.get_height()/4
             )
         self.__no_save_warning.set_center(display.get_width()/2,display.get_height()/2)
     @property
@@ -573,7 +573,7 @@ class DialogEditor(AbstractDialogSystem):
                     #退出
                     elif buttonHovered == "back":
                         if self.__no_changes_were_made() is True:
-                            self._isPlaying = False
+                            self.stop()
                             break
                         else:
                             self.__no_save_warning.hidden = False
@@ -682,20 +682,14 @@ class DialogEditor(AbstractDialogSystem):
         
         #未保存离开时的警告
         self.__no_save_warning.draw(surface)
-        if not self.__no_save_warning.hidden:
+        if leftClick is True and self.__no_save_warning.button_hovered != "":
             #保存并离开
-            if isHover(
-                self.__no_save_warning.save_button, local_x=self.__no_save_warning.x, local_y=self.__no_save_warning.y
-                ) and leftClick is True:
+            if self.__no_save_warning.button_hovered == "save":
                 self.__save()
-                self._isPlaying = False
+                self.stop()
             #取消
-            if isHover(
-                self.__no_save_warning.cancel_button, local_x=self.__no_save_warning.x, local_y=self.__no_save_warning.y
-                ) and leftClick is True:
+            elif self.__no_save_warning.button_hovered == "cancel":
                 self.__no_save_warning.hidden = True
             #不保存并离开
-            if isHover(
-                self.__no_save_warning.dont_save_button, local_x=self.__no_save_warning.x, local_y=self.__no_save_warning.y
-                ) and leftClick is True:
-                self._isPlaying = False
+            elif self.__no_save_warning.button_hovered == "dont_save":
+                self.stop()

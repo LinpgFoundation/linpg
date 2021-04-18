@@ -103,6 +103,7 @@ def reload_DATA() -> None:
             "FPS": 60,
             "Font": "MicrosoftYaHei-2",
             "FontType": "custom",
+            "FullScreen": True,
             "KeepVedioCache": True,
             "Language": locale.getdefaultlocale(),
             "MouseIconWidth": 18,

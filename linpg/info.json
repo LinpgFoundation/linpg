@@ -1,7 +1,7 @@
 {
    "version": 3,
    "revision": 0,
-   "patch": 5,
+   "patch": 6,
    "short_description": "A game engine based on pygame, which aims to make game development easier.",
    "repository_url": "https://github.com/Tigeia-Workshop/linpg",
    "author_email": "yudong9912@gmail.com"

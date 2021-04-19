@@ -23,7 +23,7 @@
         "back": "返回",
         "cancel": "取消",
         "dont_save": "不要保存",
-        "process_has_been_saved": "進度已保存",
+        "progress_has_been_saved": "進度已保存",
         "save": "保存",
         "warning": "警告"
     },

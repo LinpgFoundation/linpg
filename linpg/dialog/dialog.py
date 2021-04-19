@@ -22,7 +22,7 @@ class DialogSystem(AbstractDialogSystem):
         #暂停菜单
         self.pause_menu = PauseMenu()
     #保存数据-子类必须实现
-    def save_process(self): throwException("error","You have to overwrite save_process() before continue!")
+    def save_progress(self): throwException("error","You have to overwrite save_progress() before continue!")
     #读取章节
     def load(self, save_path:str) -> None:
         saveData = loadConfig(save_path)
@@ -30,34 +30,34 @@ class DialogSystem(AbstractDialogSystem):
         self._initialize(
             saveData["chapterType"],
             saveData["chapterId"],
-            saveData["collection_name"],
+            saveData["project_name"],
             saveData["id"],
             saveData["dialog_options"]
             )
         self.part = saveData["type"]
         self.__process_data()
     #新建章节
-    def new(self, chapterType:str, chapterId:int, part:str, collection_name:str=None) -> None:
+    def new(self, chapterType:str, chapterId:int, part:str, project_name:str=None) -> None:
         """章节信息"""
-        self._initialize(chapterType,chapterId,collection_name)
+        self._initialize(chapterType,chapterId,project_name)
         self.part = part
         self.__process_data()
     #加载章节信息
     def __process_data(self) -> None:
         #读取目标对话文件的数据
         dialogData = loadConfig("Data/{0}/chapter{1}_dialogs_{2}.yaml".format(self.chapterType,self.chapterId,get_setting("Language"))
-        ) if self.collection_name is None else loadConfig("Data/{0}/{1}/chapter{2}_dialogs_{3}.yaml"
-        .format(self.chapterType,self.collection_name,self.chapterId,get_setting("Language")))
-        default_lang_of_dialog = loadConfig("Data/{0}/info.yaml".format(self.chapterType),"default_lang") if self.collection_name is None\
-            else loadConfig("Data/{0}/{1}/info.yaml".format(self.chapterType,self.collection_name),"default_lang")
+        ) if self.project_name is None else loadConfig("Data/{0}/{1}/chapter{2}_dialogs_{3}.yaml"
+        .format(self.chapterType,self.project_name,self.chapterId,get_setting("Language")))
+        default_lang_of_dialog = loadConfig("Data/{0}/info.yaml".format(self.chapterType),"default_lang") if self.project_name is None\
+            else loadConfig("Data/{0}/{1}/info.yaml".format(self.chapterType,self.project_name),"default_lang")
         #如果该dialog文件是另一个语言dialog文件的子类
         if default_lang_of_dialog != get_setting("Language"):
-            if self.collection_name is None:
+            if self.project_name is None:
                 self.dialogContent = loadConfig("Data/{0}/chapter{1}_dialogs_{2}.yaml"
                 .format(self.chapterType,self.chapterId,default_lang_of_dialog),"dialogs")[self.part]
             else:
                 self.dialogContent = loadConfig("Data/{0}/{1}/chapter{2}_dialogs_{3}.yaml"
-                .format(self.chapterType,self.collection_name,self.chapterId,default_lang_of_dialog),"dialogs")[self.part]
+                .format(self.chapterType,self.project_name,self.chapterId,default_lang_of_dialog),"dialogs")[self.part]
             for key,currentDialog in dialogData["dialogs"][self.part].items():
                 if key in self.dialogContent:
                     for key2,dataNeedReplace in currentDialog.items():
@@ -88,7 +88,7 @@ class DialogSystem(AbstractDialogSystem):
             #切换dialogId
             self.dialogId = theNextDialogId
             #自动保存
-            if self.auto_save: self.save_process()
+            if self.auto_save: self.save_progress()
         else:
             throwException("error","The dialog id {} does not exist!".format(theNextDialogId))
     #更新音量
@@ -158,10 +158,10 @@ class DialogSystem(AbstractDialogSystem):
                     else:
                         pass
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                process_saved_text = ImageSurface(
-                    self.dialogTxtSystem.FONT.render(get_lang("Global","process_has_been_saved"),get_fontMode(),(255, 255, 255)),0,0
+                progress_saved_text = ImageSurface(
+                    self.dialogTxtSystem.FONT.render(get_lang("Global","progress_has_been_saved"),get_fontMode(),(255, 255, 255)),0,0
                     )
-                process_saved_text.set_alpha(0)
+                progress_saved_text.set_alpha(0)
                 while True:
                     self._update_event()
                     result = self.pause_menu.draw(surface,self.events)
@@ -169,8 +169,8 @@ class DialogSystem(AbstractDialogSystem):
                         setting.isDisplaying = False
                         break
                     elif result == "Save":
-                        self.save_process()
-                        process_saved_text.set_alpha(255)
+                        self.save_progress()
+                        progress_saved_text.set_alpha(255)
                     elif result == "Setting":
                         setting.isDisplaying = True
                     elif result == "BackToMainMenu":
@@ -181,10 +181,10 @@ class DialogSystem(AbstractDialogSystem):
                     #如果播放玩菜单后发现有东西需要更新
                     if setting.draw(surface,self.events):
                         self.__update_sound_volume()
-                    process_saved_text.drawOnTheCenterOf(surface)
-                    process_saved_text.fade_out(5)
+                    progress_saved_text.drawOnTheCenterOf(surface)
+                    progress_saved_text.fade_out(5)
                     display.flip()
-                del process_saved_text
+                del progress_saved_text
                 self.pause_menu.screenshot = None
         #显示选项
         if self.dialogTxtSystem.is_all_played() and self.dialogContent[self.dialogId]["next_dialog_id"] is not None and self.dialogContent[self.dialogId]["next_dialog_id"]["type"] == "option":
@@ -272,12 +272,12 @@ class DialogSystem(AbstractDialogSystem):
 
 #对话制作器
 class DialogEditor(AbstractDialogSystem):
-    def __init__(self, chapterType:str, chapterId:int, part:str=None, collection_name:str=None):
+    def __init__(self, chapterType:str, chapterId:int, part:str=None, project_name:str=None):
         super().__init__()
-        self._initialize(chapterType,chapterId,collection_name)
+        self._initialize(chapterType,chapterId,project_name)
         #设定初始化
         self.fileLocation = "Data/{0}/chapter{1}_dialogs_{2}.yaml".format(self.chapterType,self.chapterId,get_setting("Language")) if self.chapterType == "main_chapter"\
-            else "Data/{0}/{1}/chapter{2}_dialogs_{3}.yaml".format(self.chapterType,self.collection_name,self.chapterId,get_setting("Language"))
+            else "Data/{0}/{1}/chapter{2}_dialogs_{3}.yaml".format(self.chapterType,self.project_name,self.chapterId,get_setting("Language"))
         #文字
         self.FONTSIZE:int = int(display.get_width()*0.015)
         self.FONT = createFont(self.FONTSIZE)
@@ -394,8 +394,8 @@ class DialogEditor(AbstractDialogSystem):
             self.dialogData_default = None
         else:
             self.partId = 0 if part is None else self.parts.index(part)
-            default_lang_of_dialog = loadConfig("Data/{0}/info.yaml".format(self.chapterType),"default_lang") if self.collection_name is None\
-            else loadConfig("Data/{0}/{1}/info.yaml".format(self.chapterType,self.collection_name),"default_lang")
+            default_lang_of_dialog = loadConfig("Data/{0}/info.yaml".format(self.chapterType),"default_lang") if self.project_name is None\
+            else loadConfig("Data/{0}/{1}/info.yaml".format(self.chapterType,self.project_name),"default_lang")
             #如果不是默认主语言
             if default_lang_of_dialog != get_setting("Language"):
                 self.isDefault = False
@@ -403,7 +403,7 @@ class DialogEditor(AbstractDialogSystem):
                 self.dialogData_default = loadConfig("Data/{0}/chapter{1}_dialogs_{2}.yaml"
                 .format(self.chapterType,self.chapterId,default_lang_of_dialog),"dialogs") if self.chapterType == "main_chapter"\
                     else loadConfig("Data/{0}/{1}/chapter{2}_dialogs_{3}.yaml"
-                    .format(self.chapterType,self.collection_name,self.chapterId,default_lang_of_dialog),"dialogs")
+                    .format(self.chapterType,self.project_name,self.chapterId,default_lang_of_dialog),"dialogs")
                 #填入未被填入的数据
                 for part in self.dialogData_default:
                     for key,DIALOG_DATA_TEMP in self.dialogData_default[part].items():

@@ -25,7 +25,7 @@ class AbstractDialogSystem(SystemWithBackgroundMusic):
         self.__backgroundImageName = None
         self.__backgroundImageSurface = self._black_bg.copy()
     #初始化关键参数
-    def _initialize(self, chapterType:str, chapterId:int, collection_name:str, dialogId:Union[str,int]="head", dialog_options:dict={}) -> None:
+    def _initialize(self, chapterType:str, chapterId:int, project_name:str, dialogId:Union[str,int]="head", dialog_options:dict={}) -> None:
         #类型
         self.chapterType = chapterType
         #章节id
@@ -35,7 +35,7 @@ class AbstractDialogSystem(SystemWithBackgroundMusic):
         #玩家做出的选项
         self.dialog_options = dialog_options
         #合集名称-用于dlc和创意工坊
-        self.collection_name = collection_name
+        self.project_name = project_name
     #更新背景图片
     def _update_background_image(self, image_name:str) -> None:
         if self.__backgroundImageName != image_name:

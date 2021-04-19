@@ -3,7 +3,7 @@ from .ui import *
 
 #战斗系统接口，请勿实例化
 class AbstractBattleSystem(SystemWithBackgroundMusic):
-    def __init__(self, chapterType:str, chapterId:int, collection_name:str) -> None:
+    def __init__(self, chapterType:str, chapterId:int, project_name:str) -> None:
         super().__init__()
         #用于判断是否移动屏幕的参数
         self.__mouse_move_temp_x = -1
@@ -24,7 +24,7 @@ class AbstractBattleSystem(SystemWithBackgroundMusic):
         #章节名和种类
         self.chapterId = chapterId
         self.chapterType = chapterType
-        self.collection_name = collection_name
+        self.project_name = project_name
         #方格标准尺寸
         self._standard_block_width:int = int(display.get_width()/10)
         self._standard_block_height:int = int(display.get_height()/10)

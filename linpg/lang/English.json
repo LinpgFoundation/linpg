@@ -23,7 +23,7 @@
         "back": "Back",
         "cancel": "Cancel",
         "dont_save": "Don't Save",
-        "process_has_been_saved": "The process has been saved.",
+        "progress_has_been_saved": "The progress has been saved.",
         "save": "Save",
         "warning": "Warning"
     },

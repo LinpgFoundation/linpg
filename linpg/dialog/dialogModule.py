@@ -2,7 +2,7 @@
 from .ui import *
 
 #视觉小说系统接口
-class AbstractDialogSystem(SystemWithBackgroundMusic):
+class AbstractDialogSystem(AbstractGameSystem):
     def __init__(self):
         super().__init__()
         #加载对话的背景图片模块
@@ -32,26 +32,21 @@ class AbstractDialogSystem(SystemWithBackgroundMusic):
     #获取对话文件所在的具体路径
     def get_dialog_file_location(self, lang:str) -> str:
         return os.path.join(
-            self._dialog_folder_path, self.chapterType, "chapter{0}_dialogs_{1}.yaml".format(self.chapterId, lang)
-            ) if self.project_name is None else os.path.join(
-                self._dialog_folder_path, self.chapterType, self.project_name, "chapter{0}_dialogs_{1}.yaml".format(self.chapterId, lang)
+            self._dialog_folder_path, self._chapter_type, "chapter{0}_dialogs_{1}.yaml".format(self._chapter_id, lang)
+            ) if self._project_name is None else os.path.join(
+                self._dialog_folder_path, self._chapter_type, self._project_name, "chapter{0}_dialogs_{1}.yaml".format(self._chapter_id, lang)
                 )
     #获取对话文件的主语言
     def get_default_lang(self) -> str:
-        return loadConfig(os.path.join(self._dialog_folder_path,self.chapterType,"info.yaml"),"default_lang") if self.project_name is None\
-            else loadConfig(os.path.join(self._dialog_folder_path,self.chapterType,self.project_name,"info.yaml"),"default_lang")
+        return loadConfig(os.path.join(self._dialog_folder_path,self._chapter_type,"info.yaml"),"default_lang") if self._project_name is None\
+            else loadConfig(os.path.join(self._dialog_folder_path,self._chapter_type,self._project_name,"info.yaml"),"default_lang")
     #初始化关键参数
-    def _initialize(self, chapterType:str, chapterId:int, project_name:str, dialogId:Union[str,int]="head", dialog_options:dict={}) -> None:
-        #类型
-        self.chapterType = chapterType
-        #章节id
-        self.chapterId = chapterId
+    def _initialize(self, chapterType:str, chapterId:int, projectName:str, dialogId:Union[str,int]="head", dialog_options:dict={}) -> None:
+        super()._initialize(chapterType,chapterId,projectName)
         #对白id
-        self.dialogId = dialogId
+        self._dialog_id = dialogId
         #玩家做出的选项
         self.dialog_options = dialog_options
-        #合集名称-用于dlc和创意工坊
-        self.project_name = project_name
     #更新背景图片
     def _update_background_image(self, image_name:str) -> None:
         if self.__background_image_name != image_name:
@@ -78,7 +73,7 @@ class AbstractDialogSystem(SystemWithBackgroundMusic):
         #如果背景是多线程的VedioFrame，则应该退出占用
         if isinstance(self.__background_image_surface,VedioFrame): self.__background_image_surface.stop()
         #设置停止播放
-        self._isPlaying = False
+        super().stop()
     #将背景图片画到surface上
     def display_background_image(self, surface:pygame.Surface) -> None:
         if isinstance(self.__background_image_surface,ImageSurface):
@@ -89,7 +84,7 @@ class AbstractDialogSystem(SystemWithBackgroundMusic):
         #更新事件
         self._update_event()
         #检测章节是否初始化
-        if self.chapterId is None: raise throwException("error","The dialog has not been initialized!")
+        if self._chapter_id is None: raise throwException("error","The dialog has not been initialized!")
         #展示背景图片和npc立绘
         self.display_background_image(surface)
         self._npc_manager.draw(surface)

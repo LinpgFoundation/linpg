@@ -42,7 +42,7 @@ if __name__ == '__main__':
 
     """编译python文件"""
     for folder_name in glob.glob(r"linpg/*"):
-        if os.path.isdir(folder_name):
+        if os.path.isdir(folder_name) and "__pyinstaller" not in folder_name:
             #生成pyd文件
             for path in glob.glob(os.path.join(folder_name,"*")):
                 if "__pycache__" not in path:

@@ -18,25 +18,25 @@ class PauseMenu:
         self.white_bg.set_alpha(50)
         #按钮-继续
         self.button_resume = fontRenderPro(
-            get_lang("MainMenu","menu_main")["0_continue"],
+            get_lang("Global","resume"),
             "white",
             (surface.get_width()*0.1,surface.get_height()*0.4,surface.get_width()/38)
         )
         #按钮-保存游戏
         self.button_save = fontRenderPro(
-            get_lang("SaveGame"),
+            get_lang("Global","save_current_progress"),
             "white",
             (surface.get_width()*0.1,surface.get_height()*0.5,surface.get_width()/38)
         )
         #按钮-设置
         self.button_setting = fontRenderPro(
-            get_lang("MainMenu","menu_main")["5_setting"],
+            get_lang("OptionMenu","option_menu"),
             "white",
             (surface.get_width()*0.1,surface.get_height()*0.6,surface.get_width()/38)
         )
         #按钮-返回
         self.button_back = fontRenderPro(
-            get_lang("DialogCreator","back"),
+            get_lang("Global","back"),
             "white",
             (surface.get_width()*0.1,surface.get_height()*0.7,surface.get_width()/38)
         )
@@ -106,7 +106,7 @@ class SettingContoller:
         self.fontSizeBig = round(size[0]/50*1.5)
         self.normalFont = createFont(self.FONTSIZE)
         self.bigFont = createFont(self.fontSizeBig)
-        langTxt = get_lang("SettingUI")
+        langTxt = get_lang("OptionMenu")
         self.settingTitleTxt = self.bigFont.render(langTxt["setting"],True,(255, 255, 255))
         self.settingTitleTxt_x = int(self.baseImgX+(self.baseImgWidth-self.settingTitleTxt.get_width())/2)
         self.settingTitleTxt_y = self.baseImgY+self.baseImgHeight*0.05

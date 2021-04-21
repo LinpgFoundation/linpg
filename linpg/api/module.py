@@ -121,11 +121,12 @@ class SystemObject:
         #输入事件
         self.__events = None
         #判定用于判定是否还在播放的参数
-        self._isPlaying = True
+        self.__is_playing = True
     #是否正在播放
     @property
-    def isPlaying(self) -> bool: return self._isPlaying
-    def is_playing(self) -> bool: return self._isPlaying
+    def isPlaying(self) -> bool: return self.__is_playing
+    def is_playing(self) -> bool: return self.__is_playing
+    def stop(self) -> None: self.__is_playing = False
     #获取输入事件
     @property
     def events(self): return self.__events
@@ -189,6 +190,61 @@ class SystemWithBackgroundMusic(SystemObject):
     def unload_bgm(self) -> None:
         self.__bgm_path = None
         pygame.mixer.music.unload()
+
+#游戏模块接口
+class AbstractGameSystem(SystemWithBackgroundMusic):
+    def __init__(self):
+        super().__init__()
+        #参数
+        self._chapter_type:str = ""
+        self._chapter_id:int = 0
+        self._project_name = None
+        #储存进度存档的文件夹的路径
+        self.folder_for_save_file:str = "Save"
+        #存档文件的名称
+        self.name_for_save_file:str = "save.yaml"
+        #是否已经初始化
+        self.__initialized:bool = False
+    #正在读取的文件
+    @property
+    def file_path(self) -> str: return os.path.join(self.folder_for_save_file,self.name_for_save_file)
+    #是否初始化
+    @property
+    def isInitialized(self) -> bool: return self.__initialized
+    def is_initialized(self) -> bool: return self.__initialized
+    #初始化关键参数
+    def _initialize(self, chapterType:str, chapterId:int, projectName:str) -> None:
+        #类型
+        self._chapter_type = chapterType
+        #章节id
+        self._chapter_id = chapterId
+        #合集名称-用于dlc和创意工坊
+        self._project_name = projectName
+        #初始化完成
+        self.__initialized = True
+    #获取本模块的信息
+    @property
+    def data_of_parent_game_system(self) -> dict: return {
+        "chapter_type": self._chapter_type,
+        "chapter_id": self._chapter_id,
+        "project_name": self._project_name
+        }
+    def get_data_of_parent_game_system(self) -> dict: return {
+        "chapter_type": self._chapter_type,
+        "chapter_id": self._chapter_id,
+        "project_name": self._project_name
+        }
+    #获取需要保存的数据 - 子类必须实现
+    def _get_data_need_to_save(self) -> dict: throwException("error","The child class does not implement _get_data_need_to_save() function!")
+    #保存进度
+    def save_progress(self) -> None:
+        #确保储存进度存档的文件夹存在
+        if not os.path.exists(self.folder_for_save_file): os.makedirs(self.folder_for_save_file)
+        #存档数据
+        save_thread = SaveDataThread(self.file_path,self._get_data_need_to_save())
+        save_thread.start()
+        save_thread.join()
+        del save_thread
 
 #音效管理模块接口
 class AbstractSoundManager:

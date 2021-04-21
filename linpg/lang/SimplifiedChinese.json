@@ -24,7 +24,9 @@
         "cancel": "取消",
         "dont_save": "不要保存",
         "progress_has_been_saved": "进度已保存",
+        "resume": "继续游戏",
         "save": "保存",
+        "save_current_progress": "保存当前进度",
         "warning": "警告"
     },
     "Language": "简体中文",
@@ -50,5 +52,16 @@
         "十八",
         "十九",
         "二十"
-    ]
+    ],
+    "OptionMenu": {
+        "background_music": "背景音乐",
+        "cancel": "取消",
+        "confirm": "应用",
+        "currentLang": "简体中文",
+        "language": "语言",
+        "option_menu": "选项菜单",
+        "setting": "设置",
+        "sound_effects": "音效",
+        "sound_environment": "环境声效"
+    }
 }

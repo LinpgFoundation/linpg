@@ -24,7 +24,9 @@
         "cancel": "Cancel",
         "dont_save": "Don't Save",
         "progress_has_been_saved": "The progress has been saved.",
+        "resume": "Resume",
         "save": "Save",
+        "save_current_progress": "Save Current Progress",
         "warning": "Warning"
     },
     "Language": "English",
@@ -50,5 +52,16 @@
         "Eighteen",
         "Nineteen",
         "Twenty"
-    ]
+    ],
+    "OptionMenu": {
+        "background_music": "Background Music",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "currentLang": "English",
+        "language": "Language",
+        "option_menu": "Option Menu",
+        "setting": "Setting",
+        "sound_effects": "Sound Effects",
+        "sound_environment": "Environmental Sounds"
+    }
 }

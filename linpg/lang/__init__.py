@@ -6,7 +6,7 @@ from ..config import *
 _LINPG_LANG:dict = None
 
 #整理语言文件
-#organizeConfigInFolder(os.path.join(os.path.dirname(__file__),"*.json"))
+organizeConfigInFolder(os.path.join(os.path.dirname(__file__),"*.json"))
 
 #重新加载语言配置文件
 def reload_lang() -> None:

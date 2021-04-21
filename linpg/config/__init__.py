@@ -1,5 +1,9 @@
 # cython: language_level=3
+#python库
+import os, json
 from copy import deepcopy
+from datetime import datetime
+from glob import glob
 #尝试导入yaml库
 YAML_INITIALIZED:bool = False
 try:
@@ -7,10 +11,32 @@ try:
     YAML_INITIALIZED = True
 except:
     pass
-#导入json库
-import json
-#导入basic模块
-from .basic import *
+
+#抛出引擎内的异常
+def throwException(exception_type:str, info:str) -> None:
+    exception_type_lower:str = exception_type.lower()
+    if exception_type_lower == "error":
+        #生成错误报告
+        if not os.path.exists("crash_reports"): os.mkdir("crash_reports")
+        with open(os.path.join("crash_reports","crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
+            f.write("Error Message From Linpg: {}".format(info))
+        #打印出错误
+        raise Exception('LinpgEngine-Error: {}'.format(info))
+    elif exception_type_lower == "warning":
+        #只在开发者模式开启时显示警告
+        if get_setting("DeveloperMode") is True:
+            #生成错误报告
+            if not os.path.exists("crash_reports"): os.mkdir("crash_reports")
+            with open(os.path.join("crash_reports","crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
+                f.write("Warning Message From Linpg: {}".format(info))
+            #打印出警告
+            print("LinpgEngine-Warning: {}".format(info))
+        else:
+            pass
+    elif exception_type_lower == "info":
+        print('LinpgEngine-Info: {}'.format(info))
+    else:
+        throwException("error","Hey, the exception_type '{}' is not acceptable!".format(exception_type))
 
 #配置文件加载
 def loadConfig(path:str, key:str=None) -> any:
@@ -18,10 +44,10 @@ def loadConfig(path:str, key:str=None) -> any:
     if not os.path.exists(path): throwException("error","Cannot find file on path: {}".format(path))
     #按照类型加载配置文件
     if path.endswith(".yaml"):
-        if YAML_INITIALIZED:
+        if YAML_INITIALIZED is True:
             try:
                 #尝试使用默认模式加载yaml配置文件
-                with open(path, "r", encoding='utf-8') as f: Data = yaml.load(f.read(),Loader=yaml.FullLoader)
+                with open(path, "r", encoding='utf-8') as f: Data = yaml.load(f.read(), Loader=yaml.FullLoader)
             except yaml.constructor.ConstructorError:
                 throwException("warning","Encounter a fatal error while loading the yaml file in path:\n'{}'\n\
                     One possible reason is that at least one numpy array exists inside the yaml file.\n\
@@ -34,7 +60,7 @@ def loadConfig(path:str, key:str=None) -> any:
         #使用json模块加载配置文件
         with open(path, "r", encoding='utf-8') as f: Data = json.load(f)
     else:
-        throwException("error","Linpg cannot load this kind of config, and can only load json and yaml (if pyyaml is installed).")
+        throwException("error","Linpg can only load json and yaml (if pyyaml is installed).")
     #返回配置文件中的数据
     return Data if key is None else Data[key]
 
@@ -57,73 +83,59 @@ def organizeConfigInFolder(pathname:str) -> None:
         data = loadConfig(configFilePath)
         saveConfig(configFilePath,data)
 
+#整理当前文件夹中的配置文件
+#organizeConfigInFolder(os.path.join(os.path.dirname(__file__),"*.json"))
+
 #初始化储存设置配置文件的变量
-_LINPG_DATA:dict = None
+_LINPG_SETTING:dict = None
 
 #在不确定的情况下尝试获取设置配置文件
 def try_get_setting(key:str, key2:str=None) -> any:
-    if key in _LINPG_DATA:
+    if key in _LINPG_SETTING:
         if key2 is None:
-            return deepcopy(_LINPG_DATA[key])
-        elif key2 in _LINPG_DATA[key]:
-            return deepcopy(_LINPG_DATA[key][key2])
+            return deepcopy(_LINPG_SETTING[key])
+        elif key2 in _LINPG_SETTING[key]:
+            return deepcopy(_LINPG_SETTING[key][key2])
     return None
 
 #获取设置配置文件
 def get_setting(key:str=None, key2:str=None) -> any:
     if key is None:
-        return deepcopy(_LINPG_DATA)
+        return deepcopy(_LINPG_SETTING)
     elif key2 is None:
-        return deepcopy(_LINPG_DATA[key])
+        return deepcopy(_LINPG_SETTING[key])
     else:
-        return deepcopy(_LINPG_DATA[key][key2])
+        return deepcopy(_LINPG_SETTING[key][key2])
 
 #修改设置参数
 def set_setting(key:str, key2:str=None, value:any=None) -> None:
     if value is not None:
         if key2 is None:
-            _LINPG_DATA[key] = value
+            _LINPG_SETTING[key] = value
         else:
-            _LINPG_DATA[key][key2] = value
+            _LINPG_SETTING[key][key2] = value
 
 #保存设置参数
-def save_setting() -> None: saveConfig("Save/setting.yaml",_LINPG_DATA)
+def save_setting() -> None: saveConfig("Save/setting.yaml",_LINPG_SETTING)
 
 #重新加载设置配置文件，请勿在引擎外调用，重置配置文件请用reload_setting()
-def reload_DATA() -> None:
-    global _LINPG_DATA
+def reload_setting() -> None:
+    global _LINPG_SETTING
     #如果配置文件setting.yaml存在
-    if os.path.exists("Save/setting.yaml"): _LINPG_DATA = loadConfig("Save/setting.yaml")
+    if os.path.exists("Save/setting.yaml"): _LINPG_SETTING = loadConfig("Save/setting.yaml")
     #如果不存在就创建一个
     else:
         #导入local,查看默认语言
         import locale
-        _LINPG_DATA = {
-            "Antialias": True,
-            "FPS": 60,
-            "Font": "MicrosoftYaHei-2",
-            "FontType": "custom",
-            "FullScreen": True,
-            "KeepVedioCache": True,
-            "Language": locale.getdefaultlocale(),
-            "MouseIconWidth": 18,
-            "MouseMoveSpeed": 30,
-            "ReadingSpeed": 0.5,
-            "Screen_size": 120,
-            "Sound":{
-                "background_music": 100,
-                "sound_effects": 100,
-                "sound_environment": 100,
-            }
-        }
-        _LINPG_DATA["Language"] = "SimplifiedChinese" if _LINPG_DATA["Language"][0] == "zh_CN" else "English"
+        _LINPG_SETTING = loadConfig(os.path.join(os.path.dirname(__file__),"setting.json"))
+        _LINPG_SETTING["Language"] = "SimplifiedChinese" if locale.getdefaultlocale()[0] == "zh_CN" else "English"
         #别忘了看看Save文件夹是不是都不存在
         if not os.path.exists("Save"): os.makedirs("Save")
         #保存设置
         save_setting()
 
 #加载设置配置文件
-reload_DATA()
+reload_setting()
 
 """全局数据"""
 _LINPG_GLOBAL_DATA:dict = {}
@@ -147,7 +159,7 @@ def remove_glob_value(key:str) -> None:
     del _LINPG_GLOBAL_DATA[key]
 
 """版本信息"""
-_SETUP_INFO:dict = loadConfig(os.path.join(os.path.dirname(__file__),"../info.json"))
+_SETUP_INFO:dict = loadConfig(os.path.join(os.path.dirname(__file__),"info.json"))
 #获取当前版本号
 def get_current_version() -> str: return "{0}.{1}.{2}".format(_SETUP_INFO["version"],_SETUP_INFO["revision"],_SETUP_INFO["patch"])
 #获取作者邮箱

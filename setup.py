@@ -14,7 +14,7 @@ try:
 except:
     import json
     info_json_path:str = "info.json"
-    if not os.path.exists(info_json_path): info_json_path = os.path.join("src","linpg","info.json")
+    if not os.path.exists(info_json_path): info_json_path = os.path.join("src","linpg","config","info.json")
     with open(info_json_path, "r", encoding='utf-8') as f:
         Data = json.load(f)
         INFO = {

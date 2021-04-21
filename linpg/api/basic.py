@@ -1,18 +1,11 @@
 # cython: language_level=3
 from __future__ import annotations
 #python本体库
-import os, random, re
-from datetime import datetime
-from glob import glob
-from typing import Union
+import random, re
 #额外库
 import numpy, pygame
 from pygame.locals import *
-
-"""
-结构:
-basic -> config -> controller -> lang -> module -> font -> surface -> ui -> inputbox -> function
-"""
+from ..lang import *
 
 #初始化pygame
 pygame.init()
@@ -172,28 +165,6 @@ def subtract_pos(pos1:any, pos2:any) -> tuple:
     pos1:tuple = convert_pos(pos1)
     pos2:tuple = convert_pos(pos2)
     return pos1[0]-pos2[0],pos1[1]-pos2[1]
-
-#抛出引擎内的异常
-def throwException(exception_type:str, info:str) -> None:
-    exception_type_lower:str = exception_type.lower()
-    if exception_type_lower == "error":
-        #生成错误报告
-        if not os.path.exists("crash_reports"): os.mkdir("crash_reports")
-        with open(os.path.join("crash_reports","crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
-            f.write("Error Message From Linpg: {}".format(info))
-        #打印出错误
-        raise Exception('LinpgEngine-Error: {}'.format(info))
-    elif exception_type_lower == "warning":
-        #生成错误报告
-        if not os.path.exists("crash_reports"): os.mkdir("crash_reports")
-        with open(os.path.join("crash_reports","crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
-            f.write("Warning Message From Linpg: {}".format(info))
-        #打印出警告
-        print("LinpgEngine-Warning: {}".format(info))
-    elif exception_type_lower == "info":
-        print('LinpgEngine-Info: {}'.format(info))
-    else:
-        throwException("error","Hey, the exception_type '{}' is not acceptable!".format(exception_type))
 
 #多段数字字符串排序 - by Jeff Atwood
 def natural_sort(l:list) -> list:

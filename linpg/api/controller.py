@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .config import *
+from .basic import *
 
 #手柄控制组件
 class SingleJoystick:
@@ -96,8 +96,8 @@ class DisplayController:
     def set_caption(self, title:any): pygame.display.set_caption(title)
     #设置窗口图标
     def set_icon(self, path:str): pygame.display.set_icon(pygame.image.load(os.path.join(path)))
-    def get_width(self) -> int: return int(get_setting("Screen_size")*self.__standard_width_unit)
-    def get_height(self) -> int: return int(get_setting("Screen_size")*self.__standard_height_unit)
+    def get_width(self) -> int: return int(get_setting("ScreenSize")*self.__standard_width_unit)
+    def get_height(self) -> int: return int(get_setting("ScreenSize")*self.__standard_height_unit)
     def get_size(self) -> tuple: return self.get_width(),self.get_height()
     #初始化屏幕
     def init_screen(self, flags:any) -> any:

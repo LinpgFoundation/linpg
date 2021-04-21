@@ -1,6 +1,6 @@
 # cython: language_level=3
 import threading
-from .lang import *
+from .controller import *
 
 #坐标类
 class Coordinate:

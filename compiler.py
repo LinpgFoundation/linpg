@@ -34,25 +34,30 @@ if __name__ == '__main__':
     #如果上一次编译的文件夹还存在，则删除
     if os.path.exists("linpgdev"): shutil.rmtree("linpgdev")
 
-    """编译python文件"""
-    for the_folder in glob.glob(r"linpg/*"):
-        if os.path.isdir(the_folder) and "__pyinstaller" not in the_folder:
-            #生成pyd文件
-            for path in glob.glob('{}/*.py'.format(the_folder)):
-                setup(ext_modules=cythonize(path,show_all_warnings=True,annotate=True))
-                #删除c文件
-                if not keep_c_files: os.remove(path.replace(".py",".c"))
-                #删除html文件
-                if not keep_html_files: os.remove(path.replace(".py",".html"))
-
-    """把不需要编译的文件拷贝到linpgdev/linpg中,等待复制"""
-    #重要的本体文件
+    #不需要编译的本体文件
     files_for_setup = [
-        "linpg/info.json",
         "linpg/__init__.py",
-        "linpg/lang",
         "linpg/__pyinstaller"
         ]
+
+    """编译python文件"""
+    for folder_name in glob.glob(r"linpg/*"):
+        if os.path.isdir(folder_name):
+            #生成pyd文件
+            for path in glob.glob(os.path.join(folder_name,"*")):
+                if "__pycache__" not in path:
+                    #如果是需要编译的py文件
+                    if path.endswith(".py"):
+                        setup(ext_modules=cythonize(path,show_all_warnings=True,annotate=True))
+                        #删除c文件
+                        if not keep_c_files: os.remove(path.replace(".py",".c"))
+                        #删除html文件
+                        if not keep_html_files: os.remove(path.replace(".py",".html"))
+                    #如果是文本文件
+                    else:
+                        files_for_setup.append(path)
+
+    """把不需要编译的文件拷贝到linpgdev/linpg中,等待复制"""
     for the_file in files_for_setup:
         #如果是文件夹
         if os.path.isdir(the_file):

@@ -26,6 +26,7 @@ class AbstractImage(Shape):
     def __init__(self, img:any, x:Union[int,float], y:Union[int,float], width:any, height:any):
         super().__init__(x,y,0,0)
         self.img = img
+        self.hidden:bool = False
         self._width = width
         self._height = height
     #透明度

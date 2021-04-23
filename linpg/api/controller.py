@@ -30,6 +30,9 @@ class SingleJoystick:
     def get_axis(self,buttonId) -> float:
         return self.inputController.get_axis(buttonId) if self.inputController is not None and self.inputController.get_init() else 0.0
 
+#输入事件
+_INPUT_EVENTS = None
+
 #输入管理组件
 class GameController:
     def __init__(self, mouse_icon_width:Union[int,float], speed:Union[int,float], custom:bool=False):
@@ -82,16 +85,10 @@ class DisplayController:
     def flip(self, pump:bool=False) -> None:
         self.__clock.tick(self.fps)
         controller.draw()
-        if pump: pygame.event.pump()
+        if pump is True: pygame.event.pump()
+        #global INPUT_EVENTS
+        #INPUT_EVENTS = pygame.event.get()
         pygame.display.flip()
-    def update(self, rectangle=None, pump:bool=False):
-        self.__clock.tick(self.fps)
-        controller.draw()
-        if pump == True: pygame.event.pump()
-        if rectangle is None:
-            pygame.display.flip()
-        else:
-            pygame.display.update(rectangle)
     #设置窗口标题
     def set_caption(self, title:any): pygame.display.set_caption(title)
     #设置窗口图标

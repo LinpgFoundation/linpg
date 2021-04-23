@@ -100,20 +100,23 @@ class GameObject2point5d(GameObject):
             return self.z < other.z
         else:
             return self.y+self.x < other.y+other.x
-    #获取坐标
-    @property
-    def pos(self) -> tuple: return self.x,self.y,self.z
-    def get_pos(self) -> tuple: return self.x,self.y,self.z
     #设置坐标
-    def set_pos(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]) -> None:
+    def set_pos(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]=None) -> None:
         super().set_pos(x,y)
-        self.z = round(z)
+        if z is not None: self.z = round(z)
 
 #3d游戏对象接口
 class GameObject3d(GameObject2point5d):
     def __init__(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]):
         super().__init__(x,y,z)
     def __lt__(self,other) -> bool: return self.y+self.x+self.z < other.y+other.x+other.z
+    #获取坐标
+    @property
+    def pos(self) -> tuple: return self.x,self.y,self.z
+    def get_pos(self) -> tuple: return self.x,self.y,self.z
+    #设置坐标
+    def set_pos(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]) -> None:
+        super().set_pos(x,y,z)
 
 #系统模块接口
 class SystemObject:
@@ -121,7 +124,7 @@ class SystemObject:
         #输入事件
         self.__events = None
         #判定用于判定是否还在播放的参数
-        self.__is_playing = True
+        self.__is_playing:bool = True
     #是否正在播放
     @property
     def isPlaying(self) -> bool: return self.__is_playing
@@ -261,17 +264,18 @@ class SoundManagement(AbstractSoundManager):
         super().__init__(channel_id)
         self.sound_id = 0
         self.__sounds_list = []
+    #添加音乐
     def add(self, path:str) -> None: self.__sounds_list.append(pygame.mixer.Sound(path))
-    def play(self, sound_id:int=None) -> None:
-        if len(self.__sounds_list)>0 and not pygame.mixer.Channel(self._channel_id).get_busy():
-            if sound_id is None:
-                self.sound_id = randomInt(0,len(self.__sounds_list)-1)
-            else:
-                self.sound_id = sound_id
+    #播放音乐
+    def play(self, sound_id:int=-1) -> None:
+        if len(self.__sounds_list) > 0 and not pygame.mixer.Channel(self._channel_id).get_busy():
+            self.sound_id = randomInt(0,len(self.__sounds_list)-1) if sound_id < 0 else sound_id
             pygame.mixer.Channel(self._channel_id).play(self.__sounds_list[self.sound_id])
-    #停止音乐
+    #停止播放
     def stop(self) -> None: pygame.mixer.Channel(self._channel_id).stop()
     #获取音量
+    @property
+    def volume(self) -> float: return self.get_volume()
     def get_volume(self) -> float: return self.__sounds_list[0].get_volume()
     #设置音量
     def set_volume(self, volume:Union[float,int]) -> None:
@@ -282,26 +286,26 @@ class SoundManagement(AbstractSoundManager):
 class SaveDataThread(threading.Thread):
     def __init__(self, path:str, data:dict):
         super().__init__()
-        self.path = path
-        self.data = data
+        self.path:str = path
+        self.data:dict = data
     def run(self) -> None:
         saveConfig(self.path,self.data)
         del self.data,self.path
 
 #需要被打印的物品
-class ItemNeedBlit:
+class ItemNeedBlit(GameObject):
     def __init__(self, image:object, weight:Union[int,float], pos:Union[tuple,list], offSet:Union[tuple,list]=(0,0)):
+        super().__init__(pos[0],pos[1])
         self.image = image
-        self.weight = weight
-        self.pos = pos
+        self.z = weight
         self.offSet = offSet
-    def __lt__(self,o:object) -> bool: return self.weight < o.weight
-    def blit(self, surface:pygame.Surface) -> None:
+    def __lt__(self, o:object) -> bool: return self.z < o.z
+    def draw(self, surface:pygame.Surface) -> None:
         if isinstance(self.image,pygame.Surface):
             if self.offSet is None:
                 surface.blit(self.image,self.pos)
             else:
-                surface.blit(self.image,(self.pos[0]+self.offSet[0],self.pos[1]+self.offSet[1]))
+                surface.blit(self.image,add_pos(self.pos,self.offSet))
         else:
             if self.offSet is not None:
                 self.image.display(surface,self.offSet)

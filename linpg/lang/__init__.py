@@ -3,10 +3,10 @@ from typing import Union
 from ..config import *
 
 #语言配置文件
-_LINPG_LANG:dict = None
+_LINPG_LANG:dict = {}
 
 #整理语言文件
-organizeConfigInFolder(os.path.join(os.path.dirname(__file__),"*.json"))
+#organizeConfigInFolder(os.path.join(os.path.dirname(__file__),"*.json"))
 
 #重新加载语言配置文件
 def reload_lang() -> None:
@@ -14,7 +14,7 @@ def reload_lang() -> None:
     try:
         _LINPG_LANG = {
             **loadConfig(os.path.join(os.path.dirname(__file__),"{}.json".format(get_setting("Language")))),
-            **loadConfig("Lang/{}.yaml".format(get_setting("Language")))
+            **loadConfig(os.path.join("Lang","{}.yaml".format(get_setting("Language"))))
             }
     except:
         throwException("warning", "Linpg cannot load additional language file.")
@@ -30,7 +30,7 @@ def get_lang(key:str, key2:str=None) -> any:
             return deepcopy(_LINPG_LANG[key])
         except KeyError:
             throwException(
-                "Warning",
+                "warning",
                 'Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'
                 .format(key)
                 )
@@ -40,7 +40,7 @@ def get_lang(key:str, key2:str=None) -> any:
             return deepcopy(_LINPG_LANG[key][key2])
         except KeyError:
             throwException(
-                "Warning",
+                "warning",
                 'Getting "KeyError" while trying to get {} from {} category!\nPlease check your code or report this bug to the developer!'
                 .format(key2,key)
             )

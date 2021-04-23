@@ -160,21 +160,23 @@ class DialogSystem(AbstractDialogSystem):
                     self._update_event()
                     result = self.pause_menu.draw(surface,self.events)
                     if result == "Break":
-                        setting.isDisplaying = False
+                        get_option_menu().hidden = True
                         break
                     elif result == "Save":
                         self.save_progress()
                         progress_saved_text.set_alpha(255)
                     elif result == "Setting":
-                        setting.isDisplaying = True
+                        get_option_menu().hidden = False
                     elif result == "BackToMainMenu":
-                        setting.isDisplaying = False
+                        get_option_menu().hidden = True
                         self.fadeOut(surface)
                         self.stop()
                         break
                     #如果播放玩菜单后发现有东西需要更新
-                    if setting.draw(surface,self.events):
+                    get_option_menu().draw(surface)
+                    if get_option_menu().need_update is True:
                         self.__update_sound_volume()
+                        get_option_menu().need_update = False
                     progress_saved_text.drawOnTheCenterOf(surface)
                     progress_saved_text.fade_out(5)
                     display.flip()

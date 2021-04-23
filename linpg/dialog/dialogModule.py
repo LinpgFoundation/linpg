@@ -280,8 +280,10 @@ class DialogContent(AbstractDialog):
             self.__textPlayingSound = pygame.mixer.Sound("Assets/sound/ui/dialog_words_playing.ogg")
         except FileNotFoundError:
             self.__textPlayingSound = None
-            throwException("warning","Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!")
-            print("As a result, the text playing sound will be disabled.")
+            throwException(
+                "warning",
+                "Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!\nAs a result, the text playing sound will be disabled."
+                )
         self.READINGSPEED = get_setting("ReadingSpeed")
         self.dialoguebox_max_height = None
         #鼠标图标

@@ -22,7 +22,8 @@ class FontGenerator:
     def update(self, size:int, ifBold:bool=False, ifItalic:bool=False) -> None:
         self.__SIZE = size
         self.__FONT = createFont(size,ifBold,ifItalic)
-    def render(self, txt:any, color:Union[tuple,list,str]):
+    def render(self, txt:any, color:Union[tuple,str,list]):
+        global _LINPG_MODE
         if self.__SIZE is not None:
             return self.__FONT.render(txt, _LINPG_MODE, findColorRGBA(color))
         else:
@@ -85,9 +86,8 @@ def standard_font_render(fonType:str, txt:str, color:str) -> pygame.Surface:
     else:
         throwException("error","Standard font type must be 'small', 'medium', or 'big'!")
 
-#重新获取设置信息
-def reload_setting() -> None:
-    reload_DATA()
+#重新获取文字信息
+def reload_font_setting() -> None:
     global _LINPG_FONT
     global _LINPG_FONTTYPE
     global _LINPG_MODE
@@ -99,68 +99,65 @@ def reload_setting() -> None:
 def createFont(size:Union[int,float], ifBold:bool=False, ifItalic:bool=False) -> object:
     global _LINPG_FONT
     global _LINPG_FONTTYPE
-    global _LINPG_MODE
+    #int化文字尺寸
+    font_size:int = max(int(size),1)
     #检测pygame的font模块是否已经初始化
-    font_size:int = int(size)
     if not pygame.font.get_init(): pygame.font.init()
     #根据类型处理
     if _LINPG_FONTTYPE == "default":
         return pygame.font.SysFont(_LINPG_FONT,font_size,ifBold,ifItalic)
     elif _LINPG_FONTTYPE == "custom":
-        font_path:str = "Assets/font/{}.ttf".format(_LINPG_FONT)
+        font_path:str = os.path.join("Assets","font","{}.ttf".format(_LINPG_FONT))
         if os.path.exists(font_path):
-            normal_font = pygame.font.Font("Assets/font/{}.ttf".format(_LINPG_FONT),font_size)
+            normal_font = pygame.font.Font(font_path,font_size)
         else:
             throwException("warning", "Cannot find the {}.ttf file, the engine's font has been change to default.".format(_LINPG_FONT))
             _LINPG_FONT = "arial"
             _LINPG_FONTTYPE = "default"
             return pygame.font.SysFont(_LINPG_FONT,font_size,ifBold,ifItalic)
-        if ifBold:
-            normal_font.set_bold(ifBold)
-        if ifItalic:
-            normal_font.set_italic(ifItalic)
+        if ifBold is True: normal_font.set_bold(ifBold)
+        if ifItalic is True: normal_font.set_italic(ifItalic)
         return normal_font
     else:
         throwException("error","FontType option in setting file is incorrect!")
 
 #创建FreeType字体
 def createFreeTypeFont(size:Union[float,int], ifBold:bool=False, ifItalic:bool=False) -> any:
+    global _LINPG_FONT
+    global _LINPG_FONTTYPE
+    #int化文字尺寸
+    font_size:int = max(int(size),1)
+    #检测pygame的font模块是否已经初始化
+    if not pygame.freetype.get_init(): pygame.freetype.init()
+    #根据类型处理
     if _LINPG_FONTTYPE == "default":
-        try:
-            return pygame.freetype.SysFont(_LINPG_FONT,int(size),ifBold,ifItalic)
-        except BaseException:
-            pygame.freetype.init()
-            return pygame.freetype.SysFont(_LINPG_FONT,int(size),ifBold,ifItalic)
+        return pygame.freetype.SysFont(_LINPG_FONT,font_size,ifBold,ifItalic)
     elif _LINPG_FONTTYPE == "custom":
-        try:
-            normal_font = pygame.freetype.Font("Assets/font/{}.ttf".format(_LINPG_FONT),int(size))
-        #如果文字没有初始化
-        except BaseException:
-            pygame.freetype.init()
-            normal_font = pygame.freetype.Font("Assets/font/{}.ttf".format(_LINPG_FONT),int(size))
-        #是否加粗
-        if ifBold is True: normal_font.set_bold(ifBold)
-        #是否斜体
-        if ifItalic is True: normal_font.set_italic(ifItalic)
+        font_path:str = os.path.join("Assets","font","{}.ttf".format(_LINPG_FONT))
+        if os.path.exists(font_path):
+            normal_font = pygame.freetype.Font(font_path,font_size)
+        else:
+            throwException("warning", "Cannot find the {}.ttf file, the engine's font has been change to default.".format(_LINPG_FONT))
+            _LINPG_FONT = "arial"
+            _LINPG_FONTTYPE = "default"
+            return pygame.freetype.SysFont(_LINPG_FONT,font_size,ifBold,ifItalic)
+        if ifBold is True: normal_font.set_bold(True)
+        if ifItalic is True: normal_font.set_italic(True)
         return normal_font
     else:
         throwException("error","FontType option in setting file is incorrect!")
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
-def fontRender(txt:any, color:any, size:int, ifBold:bool=False, ifItalic:bool=False) -> pygame.Surface:
-    _LINPG_LAST_FONT.check_for_update(size,ifBold,ifItalic)
-    if isinstance(color,str):
-        text_out = _LINPG_LAST_FONT.render(txt, findColorRGBA(color))
-    else:
-        text_out = _LINPG_LAST_FONT.render(txt, color)
-    return text_out
+def fontRender(txt:any, color:Union[tuple,str,list], size:int, ifBold:bool=False, ifItalic:bool=False) -> pygame.Surface:
+    _LINPG_LAST_FONT.check_for_update(size, ifBold, ifItalic)
+    return _LINPG_LAST_FONT.render(txt, findColorRGBA(color)) if isinstance(color,str) else _LINPG_LAST_FONT.render(txt, color)
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
-def fontRenderWithoutBound(txt:any, color:Union[tuple,list,str], size:int, ifBold:bool=False, ifItalic:bool=False) -> pygame.Surface:
+def fontRenderWithoutBound(txt:any, color:Union[tuple,str,list], size:int, ifBold:bool=False, ifItalic:bool=False) -> pygame.Surface:
     return copeBounding(fontRender(txt,color,size,ifBold,ifItalic))
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
-def freeTypeRender(txt:any, color:Union[tuple,list,str], size:int, ifBold:bool=False, ifItalic:bool=False) -> pygame.Surface:
+def freeTypeRender(txt:any, color:Union[tuple,str,list], size:int, ifBold:bool=False, ifItalic:bool=False) -> pygame.Surface:
     normal_font = createFreeTypeFont(size,ifBold,ifItalic)
     if isinstance(color,str):
         text_out = normal_font.render(txt, _LINPG_MODE, findColorRGBA(color))
@@ -191,8 +188,6 @@ class DynamicTextSurface(TextSurface):
     def __init__(self, n:pygame.Surface, b:pygame.Surface, x:Union[int,float], y:Union[int,float]):
         super().__init__(n,x,y)
         self.big_font_surface = b
-        self.b_x = x - (self.big_font_surface.get_width()-self.font_surface.get_width())/2
-        self.b_y = y - (self.big_font_surface.get_height()-self.font_surface.get_height())/2
     #设置透明度
     def set_alpha(self, value:int) -> None:
         super().set_alpha(value)
@@ -200,17 +195,21 @@ class DynamicTextSurface(TextSurface):
     #画出
     def display(self, surface:pygame.Surface, offSet:tuple=(0,0)) -> None:
         mouse_pos = pygame.mouse.get_pos()
-        if self.is_hover(add_pos(mouse_pos,offSet)):
-            surface.blit(self.big_font_surface,(self.b_x+offSet[0],self.b_y+offSet[1]))
+        if self.is_hover(subtract_pos(mouse_pos,offSet)):
+            surface.blit(self.big_font_surface,(
+                int(self.x-(self.big_font_surface.get_width()-self.font_surface.get_width())/2+offSet[0]),
+                int(self.y-(self.big_font_surface.get_height()-self.font_surface.get_height())/2+offSet[1])
+                )
+                )
         else:
             surface.blit(self.font_surface,add_pos(self.pos,offSet))
 
 #高级文字制作模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
-def fontRenderPro(txt:any, color:Union[tuple,list,str], pos:tuple, size:int=50, ifBold:bool=False, ifItalic:bool=False) -> DynamicTextSurface:
+def fontRenderPro(txt:any, color:Union[tuple,str,list], pos:tuple, size:int=50, ifBold:bool=False, ifItalic:bool=False) -> DynamicTextSurface:
     return DynamicTextSurface(fontRender(txt,color,size,ifBold,ifItalic),fontRender(txt,color,size*1.5,ifBold,ifItalic),pos[0],pos[1])
 
 #给定一个颜色的名字，返回对应的RGB列表
-def findColorRGBA(color:Union[tuple,list,str]) -> tuple:
+def findColorRGBA(color:Union[tuple,str,list]) -> tuple:
     if isinstance(color,(tuple,list)):
         return color
     elif isinstance(color,(str)):
@@ -224,5 +223,7 @@ def findColorRGBA(color:Union[tuple,list,str]) -> tuple:
             except BaseException:
                 throwException("error","This color is currently not available!")
     else:
-        throwException("error",
-        "The color has to be a string, tuple or list! As a result, {0} (type:{1}) is not acceptable!".format(color,type(color)))
+        throwException(
+            "error",
+            "The color has to be a string, tuple or list! As a result, {0} (type:{1}) is not acceptable!".format(color,type(color))
+            )

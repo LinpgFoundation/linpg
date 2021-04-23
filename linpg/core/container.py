@@ -6,7 +6,6 @@ class GameObjectContainer(AbstractImage):
     def __init__(self, bg_img:Union[str,pygame.Surface,None], x:Union[int,float], y:Union[int,float], width:Union[int,float], height:Union[int,float]):
         if bg_img is not None: bg_img = StaticImageSurface(bg_img,0,0,width,height)
         super().__init__(bg_img,x,y,width,height) 
-        self.hidden:bool = False
         self.items:list = []
     #新增一个物品
     def append(self, new_item:GameObject) -> None: self.items.append(new_item)
@@ -41,7 +40,6 @@ class SurfaceContainerWithScrollbar(AbstractImage):
         self.__local_y:int = 0
         self.panding:int = 0
         self.__items_dict:dict = {}
-        self.hidden:bool = False
         self.distance_between_item:int = 20
         self.move_speed:int = 20
         self.button_tickness = 20

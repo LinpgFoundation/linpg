@@ -120,7 +120,7 @@ class StaticImageSurface(AbstractImage):
             ),line_width)
     #是否被鼠标触碰
     def is_hover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
-        if mouse_pos == (-1,-1): mouse_pos = pygame.mouse.get_pos()
+        if mouse_pos == (-1,-1): mouse_pos = controller.get_mouse_pos()
         if self.img is not None:
             return 0 < mouse_pos[0]-self.x-self.__local_x < self.img.get_width() and 0 < mouse_pos[1]-self.y-self.__local_y < self.img.get_height()
         else:
@@ -385,7 +385,7 @@ class ButtonWithDes(Button):
     def get_height(self) -> int: return self._height
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
         super().display(surface, offSet)
-        if self._hoverEventTriggered: surface.blit(self.des_surface,pygame.mouse.get_pos())
+        if self._hoverEventTriggered: surface.blit(self.des_surface,controller.get_mouse_pos())
 
 class ButtonWithFadeInOut(Button):
     def __init__(self, path:str, txt:str, txt_color:any, alphaWhenNotHover:int, x:Union[int,float], y:Union[int,float], height:Union[int,float]):

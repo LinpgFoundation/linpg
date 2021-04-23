@@ -88,7 +88,7 @@ class AbstractBattleSystem(AbstractGameSystem):
         if event.key == pygame.K_RIGHT: self.__pressKeyToMove["right"] = False
     #根据鼠标移动屏幕
     def _check_right_click_move(self, mouse_x:int, mouse_y:int) -> None:
-        if pygame.mouse.get_pressed()[2]:
+        if controller.mouse_get_press(2):
             if self.__mouse_move_temp_x == -1 and self.__mouse_move_temp_y == -1:
                 self.__mouse_move_temp_x = mouse_x
                 self.__mouse_move_temp_y = mouse_y

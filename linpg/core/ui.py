@@ -10,6 +10,7 @@ class PauseMenu:
         self.button_setting = None
         self.button_back = None
         self.screenshot = None
+        self.hidden:bool = True
     def __initial(self, surface:pygame.Surface) -> None:
         width,height = display.get_size()
         surfaceTmp = pygame.Surface((width,height),flags=pygame.SRCALPHA).convert_alpha()
@@ -40,35 +41,41 @@ class PauseMenu:
             "white",
             (surface.get_width()*0.1,surface.get_height()*0.7,surface.get_width()/38)
         )
-    def draw(self, surface:pygame.Surface, pygame_events=pygame.event.get()) -> str:
-        #展示原先的背景
-        if self.screenshot is None:
-            self.screenshot = surface.copy()
-        surface.blit(self.screenshot,(0,0))
-        #展示暂停菜单的背景层
-        if self.white_bg is None:
-            self.__initial(surface)
-        self.white_bg.draw(surface)
-        #展示按钮
-        self.button_resume.draw(surface)
-        self.button_save.draw(surface)
-        self.button_setting.draw(surface)
-        self.button_back.draw(surface)
-        #判定按键
-        for event in pygame_events:
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                return "Break"
-            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                #判定按钮
-                if self.button_resume.is_hover():
-                    return "Break"
-                elif self.button_save.is_hover():
-                    return "Save"
-                elif self.button_setting.is_hover():
-                    return "Setting"
-                elif self.button_back.is_hover():
-                    set_glob_value("BackToMainMenu",True)
-                    return "BackToMainMenu"
+    def draw(self, surface:pygame.Surface) -> None:
+        if not self.hidden:
+            #展示原先的背景
+            if self.screenshot is None: self.screenshot = surface.copy()
+            #画出原先的背景
+            surface.blit(self.screenshot,(0,0))
+            #展示暂停菜单的背景层
+            if self.white_bg is None:
+                self.__initial(surface)
+            self.white_bg.draw(surface)
+            #展示按钮
+            self.button_resume.draw(surface)
+            self.button_save.draw(surface)
+            self.button_setting.draw(surface)
+            self.button_back.draw(surface)
+    #被点击的按钮
+    @property
+    def button_clicked(self) -> str: return self.get_button_clicked()
+    def get_button_clicked(self) -> str:
+        if not self.hidden:
+            #判定按键
+            for event in controller.events:
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    return "break"
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    #判定按钮
+                    if self.button_resume.is_hover():
+                        return "break"
+                    elif self.button_save.is_hover():
+                        return "save"
+                    elif self.button_setting.is_hover():
+                        return "option_menu"
+                    elif self.button_back.is_hover():
+                        set_glob_value("BackToMainMenu",True)
+                        return "back_to_mainMenu"
         return ""
 
 #设置UI
@@ -101,19 +108,20 @@ class OptionMenu(AbstractImage):
         self.bar_img2 = self.bar_img1.light_copy()
         self.bar_img3 = self.bar_img2.light_copy()
         self.bar_x = int(self.x+(width-self.bar_width)/2)
+        edge_panding = height*0.05
         self.bar_y0 = self.y + self.__item_height*4
-        self.bar_y1 = self.y + self.__item_height*7.5
-        self.bar_y2 = self.y + self.__item_height*11
-        self.bar_y3 = self.y + self.__item_height*14.5
+        self.bar_y1 = self.y + self.__item_height*8
+        self.bar_y2 = self.y + self.__item_height*12
+        self.bar_y3 = self.y + self.__item_height*16
         #音量数值
         self.soundVolume_background_music = 0
         self.soundVolume_sound_effects = 0
         self.soundVolume_sound_environment = 0
-        self.__update_sound()
+        self.__reload_sound_volume()
         #设置UI中的文字
         langTxt = get_lang("OptionMenu")
         self.__NORMAL_FONT = createFont(self.__item_height)
-        self.settingTitleTxt = TextSurface(fontRender(langTxt["setting"],"white",self.__item_height*1.5),0,height*0.1)
+        self.settingTitleTxt = TextSurface(fontRender(langTxt["setting"],"white",self.__item_height*1.5),0,edge_panding)
         self.settingTitleTxt.set_centerx(width/2)
         #语言
         self.languageTxt = fontRender(langTxt["language"]+": "+langTxt["currentLang"],"white",self.__item_height)
@@ -123,18 +131,19 @@ class OptionMenu(AbstractImage):
         self.soundEffectsTxt = langTxt["sound_effects"]
         #环境声效
         self.soundEnvironmentTxt = langTxt["sound_environment"]
-        button_y:int = int(height*0.9-self.__item_height*1.5)
         #确认
-        self.__confirm_button = fontRenderPro(langTxt["confirm"],"white",(0,button_y),self.__item_height)
+        self.__confirm_button = fontRenderPro(langTxt["confirm"],"white",(0,0),self.__item_height)
+        self.__confirm_button.set_bottom(height-edge_panding)
         #取消
-        self.__cancel_button = fontRenderPro(langTxt["cancel"],"white",(0,button_y),self.__item_height)
+        self.__cancel_button = fontRenderPro(langTxt["cancel"],"white",(0,0),self.__item_height)
+        self.__cancel_button.set_bottom(height-edge_panding)
         #按钮位置
         panding:int = int((width-self.__confirm_button.get_width()-self.__cancel_button.get_width())/3)
         self.__confirm_button.set_left(panding)
         self.__cancel_button.set_left(self.__confirm_button.right+panding)
         self.need_update:bool = False
     #更新音乐
-    def __update_sound(self):
+    def __reload_sound_volume(self):
         self.soundVolume_background_music = keepInRange(get_setting("Sound","background_music"),0,100)
         self.soundVolume_sound_effects = keepInRange(get_setting("Sound","sound_effects"),0,100)
         self.soundVolume_sound_environment = keepInRange(get_setting("Sound","sound_environment"),0,100)
@@ -148,7 +157,7 @@ class OptionMenu(AbstractImage):
             #背景音乐
             surface.blit(self.__NORMAL_FONT.render(
                 self.backgroundMusicTxt+": "+str(self.soundVolume_background_music),True,(255,255,255)),
-                (self.bar_x,self.bar_y1-self.__item_height*1.5)
+                (self.bar_x,self.bar_y1-self.__item_height*1.6)
             )
             self.bar_img1.set_pos(self.bar_x,self.bar_y1)
             self.bar_img1.set_percentage(self.soundVolume_background_music/100)
@@ -161,7 +170,7 @@ class OptionMenu(AbstractImage):
             #音效
             surface.blit(self.__NORMAL_FONT.render(
                 self.soundEffectsTxt+": "+str(self.soundVolume_sound_effects),True,(255, 255, 255)),
-                (self.bar_x,self.bar_y2-self.__item_height*1.5)
+                (self.bar_x,self.bar_y2-self.__item_height*1.6)
             )
             self.bar_img2.set_pos(self.bar_x,self.bar_y2)
             self.bar_img2.set_percentage(self.soundVolume_sound_effects/100)
@@ -174,7 +183,7 @@ class OptionMenu(AbstractImage):
             #环境声
             surface.blit(self.__NORMAL_FONT.render(
                 self.soundEnvironmentTxt+": "+str(self.soundVolume_sound_environment),True,(255, 255, 255)),
-                (self.bar_x,self.bar_y3-self.__item_height*1.5)
+                (self.bar_x,self.bar_y3-self.__item_height*1.6)
             )
             self.bar_img3.set_pos(self.bar_x,self.bar_y3)
             self.bar_img3.set_percentage(self.soundVolume_sound_environment/100)
@@ -188,9 +197,9 @@ class OptionMenu(AbstractImage):
             self.__confirm_button.display(surface,self.pos)
             self.__cancel_button.display(surface,self.pos)
             #按键的判定按钮
-            if pygame.mouse.get_pressed()[0]:
+            if controller.mouse_get_press(0):
                 #获取鼠标坐标
-                mouse_x,mouse_y=pygame.mouse.get_pos()
+                mouse_x,mouse_y=controller.get_mouse_pos()
                 #判定划动条
                 if 0 <= mouse_x-self.bar_x <= self.bar_width:
                     #如果碰到背景音乐的音量条
@@ -203,7 +212,7 @@ class OptionMenu(AbstractImage):
                     elif -self.__item_height/2<mouse_y-self.bar_y3<self.__item_height*1.5:
                         self.soundVolume_sound_environment = round(100*(mouse_x-self.bar_x)/self.bar_width)
                 if self.__cancel_button.is_hover((mouse_x-self.x,mouse_y-self.y)):
-                    self.__update_sound()
+                    self.__reload_sound_volume()
                     self.hidden = True
                 elif self.__confirm_button.is_hover((mouse_x-self.x,mouse_y-self.y)):
                     set_setting("Sound","background_music",self.soundVolume_background_music)

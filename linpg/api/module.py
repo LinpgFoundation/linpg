@@ -76,7 +76,7 @@ class GameObject2d(GameObject):
         self.set_centery(centery)
     #是否被鼠标触碰
     def is_hover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
-        if mouse_pos == (-1,-1): mouse_pos = pygame.mouse.get_pos()
+        if mouse_pos == (-1,-1): mouse_pos = controller.get_mouse_pos()
         return 0 < mouse_pos[0]-self.x < self.get_width() and 0 < mouse_pos[1]-self.y < self.get_height()
     #将图片直接画到surface上
     def draw(self, surface:pygame.Surface) -> None: self.display(surface)
@@ -121,8 +121,6 @@ class GameObject3d(GameObject2point5d):
 #系统模块接口
 class SystemObject:
     def __init__(self):
-        #输入事件
-        self.__events = None
         #判定用于判定是否还在播放的参数
         self.__is_playing:bool = True
     #是否正在播放
@@ -130,12 +128,6 @@ class SystemObject:
     def isPlaying(self) -> bool: return self.__is_playing
     def is_playing(self) -> bool: return self.__is_playing
     def stop(self) -> None: self.__is_playing = False
-    #获取输入事件
-    @property
-    def events(self): return self.__events
-    def get_events(self): return self.__events
-    #更新输入事件
-    def _update_event(self) -> None: self.__events = pygame.event.get()
 
 #拥有背景音乐的系统模块接口
 class SystemWithBackgroundMusic(SystemObject):
@@ -293,24 +285,16 @@ class SaveDataThread(threading.Thread):
         del self.data,self.path
 
 #需要被打印的物品
-class ItemNeedBlit(GameObject):
-    def __init__(self, image:object, weight:Union[int,float], pos:Union[tuple,list], offSet:Union[tuple,list]=(0,0)):
-        super().__init__(pos[0],pos[1])
+class ItemNeedBlit(GameObject2point5d):
+    def __init__(self, image:object, weight:Union[int,float], pos:Union[tuple,list], offSet:Union[tuple,list]):
+        super().__init__(pos[0],pos[1],weight)
         self.image = image
-        self.z = weight
         self.offSet = offSet
-    def __lt__(self, o:object) -> bool: return self.z < o.z
     def draw(self, surface:pygame.Surface) -> None:
         if isinstance(self.image,pygame.Surface):
-            if self.offSet is None:
-                surface.blit(self.image,self.pos)
-            else:
-                surface.blit(self.image,add_pos(self.pos,self.offSet))
+            surface.blit(self.image,add_pos(self.pos,self.offSet))
         else:
-            if self.offSet is not None:
+            try:
                 self.image.display(surface,self.offSet)
-            else:
-                try:
-                    self.image.draw(surface)
-                except:
-                    self.image.display(surface)
+            except:
+                self.image.draw(surface)

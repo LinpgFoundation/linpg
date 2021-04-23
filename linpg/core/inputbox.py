@@ -104,9 +104,9 @@ class SingleLineInputBox(AbstractInputBox):
             self._add_char(tkinter.Tk().clipboard_get())
             return True
         return False
-    def draw(self, screen:pygame.Surface, pygame_events:any=pygame.event.get()) -> None:
-        mouse_x,mouse_y = pygame.mouse.get_pos()
-        for event in pygame_events:
+    def draw(self, screen:pygame.Surface) -> None:
+        mouse_x,mouse_y = controller.get_mouse_pos()
+        for event in controller.events:
             if self.active:
                 if event.type == pygame.KEYDOWN:
                     if self._keyDownEvents(event):
@@ -132,7 +132,7 @@ class SingleLineInputBox(AbstractInputBox):
         if self.active:
             pygame.draw.rect(screen, self.color, self.input_box, 2)
             #画出 “|” 符号
-            if int(time.time()%2)==0 or len(pygame_events)>0:
+            if int(time.time()%2)==0 or len(controller.events)>0:
                 screen.blit(self._holder, (self.x+self.FONTSIZE*0.25+self.FONT.size(self._text[:self.holderIndex])[0], self.y))
 
 #多行输入框
@@ -241,9 +241,9 @@ class MultipleLinesInputBox(AbstractInputBox):
             self.holderIndex = i
         else:
             self.holderIndex = i-1
-    def draw(self, screen:pygame.Surface, pygame_events:any=pygame.event.get()) -> bool:
-        mouse_x,mouse_y = pygame.mouse.get_pos()
-        for event in pygame_events:
+    def draw(self, screen:pygame.Surface) -> bool:
+        mouse_x,mouse_y = controller.get_mouse_pos()
+        for event in controller.events:
             if self.active:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_BACKSPACE:
@@ -298,7 +298,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             # 画出输入框
             pygame.draw.rect(screen, self.color, self.input_box, 2)
             #画出 “|” 符号
-            if int(time.time()%2)==0 or len(pygame_events)>0:
+            if int(time.time()%2)==0 or len(controller.events)>0:
                 screen.blit(self._holder, (self.x+self.FONTSIZE*0.1+self.FONT.size(self._text[self.lineId][:self.holderIndex])[0], self.y+self.lineId*self.deafult_height))
 
 #控制台
@@ -391,16 +391,16 @@ class Console(SingleLineInputBox):
             self.color = self.color_active if self.active else self.color_inactive
             return True
         return False
-    def draw(self, screen:pygame.Surface, pygame_events=pygame.event.get()) -> None:
+    def draw(self, screen:pygame.Surface) -> None:
         if self.hidden is True:
-            for event in pygame_events:
+            for event in controller.events:
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_BACKQUOTE:
                     self.hidden = False
                     break
         elif not self.hidden:
-            for event in pygame_events:
+            for event in controller.events:
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    mouse_x,mouse_y = pygame.mouse.get_pos()
+                    mouse_x,mouse_y = controller.get_mouse_pos()
                     if self.x <= mouse_x <= self.x+self.input_box.w and self.y <= mouse_y <= self.y+self.input_box.h:
                         self.active = not self.active
                         # Change the current color of the input box.
@@ -427,7 +427,7 @@ class Console(SingleLineInputBox):
             #画出输入框
             pygame.draw.rect(screen, self.color, self.input_box, 2)
             #画出 “|” 符号
-            if int(time.time()%2)==0 or len(pygame_events)>0:
+            if int(time.time()%2)==0 or len(controller.events)>0:
                 screen.blit(self._holder, (self.x+self.FONTSIZE*0.25+self.FONT.size(self._text[:self.holderIndex])[0], self.y))
 
 #初始化控制台模块

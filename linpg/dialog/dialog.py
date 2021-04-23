@@ -95,7 +95,7 @@ class DialogSystem(AbstractDialogSystem):
             self.display_background_image(surface)
             self._black_bg.set_alpha(i)
             self._black_bg.draw(surface)
-            pygame.display.flip()
+            display.flip()
         #重设black_bg的alpha值以便下一次使用
         self._black_bg.set_alpha(255)
     #淡出
@@ -105,7 +105,7 @@ class DialogSystem(AbstractDialogSystem):
         for i in range(0,255,5):
             self._black_bg.set_alpha(i)
             self._black_bg.draw(surface)
-            pygame.display.flip()
+            display.flip()
     def draw(self, surface:pygame.Surface) -> None:
         super().draw(surface)
         #显示对话框和对应文字
@@ -116,7 +116,7 @@ class DialogSystem(AbstractDialogSystem):
         buttonEvent = self._buttons_mananger.draw(surface,self._dialog_txt_system.isHidden)
         #按键判定
         leftClick = False
-        for event in self.events:
+        for event in controller.events:
             if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.JOYBUTTONDOWN:
                 if event.button == 1 or controller.joystick.get_button(0) == 1:
                     if buttonEvent == "hide" and not self._is_showing_history:
@@ -129,11 +129,11 @@ class DialogSystem(AbstractDialogSystem):
                     elif buttonEvent == "auto" and not self._is_showing_history:
                         self._buttons_mananger.autoModeSwitch()
                         self._dialog_txt_system.autoMode = self._buttons_mananger.autoMode
-                    elif buttonEvent == "history" and not self._is_showing_history:
-                        self._is_showing_history = True
-                    elif self.history_back.is_hover() and self._is_showing_history:
+                    elif self.history_back.is_hover() and self._is_showing_history is True:
                         self._is_showing_history = False
                         self._history_surface = None
+                    elif buttonEvent == "history" and not self._is_showing_history:
+                        self._is_showing_history = True
                     #如果所有行都没有播出，则播出所有行
                     elif not self._dialog_txt_system.is_all_played():
                         self._dialog_txt_system.play_all()
@@ -156,30 +156,33 @@ class DialogSystem(AbstractDialogSystem):
                     self._dialog_txt_system.FONT.render(get_lang("Global","progress_has_been_saved"),get_fontMode(),(255, 255, 255)),0,0
                     )
                 progress_saved_text.set_alpha(0)
-                while True:
-                    self._update_event()
-                    result = self.pause_menu.draw(surface,self.events)
-                    if result == "Break":
+                self.pause_menu.hidden = False
+                display.flip()
+                while not self.pause_menu.hidden:
+                    display.flip()
+                    self.pause_menu.draw(surface)
+                    result = self.pause_menu.get_button_clicked()
+                    if result == "break":
                         get_option_menu().hidden = True
-                        break
-                    elif result == "Save":
+                        self.pause_menu.hidden = True
+                    elif result == "save":
                         self.save_progress()
                         progress_saved_text.set_alpha(255)
-                    elif result == "Setting":
+                    elif result == "option_menu":
                         get_option_menu().hidden = False
-                    elif result == "BackToMainMenu":
+                    elif result == "back_to_mainMenu":
                         get_option_menu().hidden = True
                         self.fadeOut(surface)
+                        self.pause_menu.hidden = True
                         self.stop()
-                        break
-                    #如果播放玩菜单后发现有东西需要更新
+                    #展示设置UI
                     get_option_menu().draw(surface)
+                    #更新音量
                     if get_option_menu().need_update is True:
                         self.__update_sound_volume()
                         get_option_menu().need_update = False
                     progress_saved_text.drawOnTheCenterOf(surface)
                     progress_saved_text.fade_out(5)
-                    display.flip()
                 del progress_saved_text
                 self.pause_menu.screenshot = None
         #显示选项
@@ -193,8 +196,8 @@ class DialogSystem(AbstractDialogSystem):
                 optionBox_width = int(option_txt.get_width()+display.get_width()*0.05) 
                 optionBox_x = (display.get_width()-optionBox_width)/2
                 optionBox_y = (i+1)*2*display.get_width()*0.03+optionBox_y_base
-                mouse_x,mouse_y = pygame.mouse.get_pos()
-                if 0<mouse_x-optionBox_x<optionBox_width and 0<mouse_y-optionBox_y<optionBox_height:
+                mouse_x,mouse_y = controller.get_mouse_pos()
+                if 0 < mouse_x-optionBox_x < optionBox_width and 0 < mouse_y-optionBox_y < optionBox_height:
                     self._option_box_selected_surface.set_size(optionBox_width,optionBox_height)
                     self._option_box_selected_surface.set_pos(optionBox_x,optionBox_y)
                     self._option_box_selected_surface.draw(surface)
@@ -263,8 +266,6 @@ class DialogSystem(AbstractDialogSystem):
                 self.__update_scene(self.dialogContent[self._dialog_id]["next_dialog_id"]["target"])
                 self._dialog_txt_system.resetDialogueboxData()
                 self.fadeIn(surface)
-        #刷新控制器，并展示自定义鼠标（如果存在）
-        controller.draw(surface)
 
 #对话制作器
 class DialogEditor(AbstractDialogSystem):
@@ -501,9 +502,8 @@ class DialogEditor(AbstractDialogSystem):
                     #等待玩家选择一个选项
                     while True:
                         surface.blit(screenshot,(0,0))
-                        self._update_event()
                         leftClick = False
-                        for event in self.events:
+                        for event in controller.events:
                             if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.JOYBUTTONDOWN:
                                 leftClick = True
                                 break
@@ -513,8 +513,8 @@ class DialogEditor(AbstractDialogSystem):
                             option_button_width = int(option_txt.get_width()+surface.get_width()*0.05)
                             option_button_x = int((surface.get_width()-option_button_width)/2)
                             option_button_y = int((i+1)*2*surface.get_width()*0.03+optionBox_y_base)
-                            mouse_x,mouse_y = pygame.mouse.get_pos()
-                            if 0<mouse_x-option_button_x<option_button_width and 0<mouse_y-option_button_y<option_button_height:
+                            mouse_x,mouse_y = controller.get_mouse_pos()
+                            if 0 < mouse_x-option_button_x < option_button_width and 0 < mouse_y-option_button_y < option_button_height:
                                 self._option_box_selected_surface.set_size(option_button_width,option_button_height)
                                 self._option_box_selected_surface.set_pos(option_button_x,option_button_y)
                                 self._option_box_selected_surface.draw(surface)
@@ -531,10 +531,10 @@ class DialogEditor(AbstractDialogSystem):
         super().draw(surface)
         #画上对话框
         self._dialogue_box_image.draw(surface)
-        if self._npc_manager.npc_get_click is not None: surface.blit(self.removeNpcButton,pygame.mouse.get_pos())
-        self.narrator.draw(surface,self.events)
+        if self._npc_manager.npc_get_click is not None: surface.blit(self.removeNpcButton,controller.get_mouse_pos())
+        self.narrator.draw(surface)
         if self.narrator.needSave: self.dialogData[self.part][self._dialog_id]["narrator"] = self.narrator.get_text()
-        self.content.draw(surface,self.events)
+        self.content.draw(surface)
         if self.content.needSave:
             self.dialogData[self.part][self._dialog_id]["content"] = self.content.get_text()
         #初始化数值
@@ -551,7 +551,7 @@ class DialogEditor(AbstractDialogSystem):
                     buttonHovered = button
                 self.buttonsUI[button].draw(surface)
         leftClick:bool = False
-        for event in self.events:
+        for event in controller.events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     if self.UIContainerRightButton.is_hover():
@@ -631,8 +631,8 @@ class DialogEditor(AbstractDialogSystem):
         #画上右侧菜单
         if self.UIContainerRightButton.right < display.get_width():
             surface.blit(self.UIContainerRightImage,(self.UIContainerRightButton.right,0))
-            self.UIContainerRight_bg.display(surface,(self.UIContainerRightButton.right,0),self.events)
-            self.UIContainerRight_npc.display(surface,(self.UIContainerRightButton.right,0),self.events)
+            self.UIContainerRight_bg.display(surface,(self.UIContainerRightButton.right,0))
+            self.UIContainerRight_npc.display(surface,(self.UIContainerRightButton.right,0))
             #self.UIContainerRight_bg.draw_outline(surface,(self.UIContainerRightButton.right,0))
             #self.UIContainerRight_npc.draw_outline(surface,(self.UIContainerRightButton.right,0))
             #检测按钮

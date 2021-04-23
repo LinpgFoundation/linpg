@@ -81,8 +81,6 @@ class AbstractDialogSystem(AbstractGameSystem):
         self.__background_image_surface.draw(surface)
     #把基础内容画到surface上
     def draw(self, surface:pygame.Surface) -> None:
-        #更新事件
-        self._update_event()
         #检测章节是否初始化
         if self._chapter_id is None: raise throwException("error","The dialog has not been initialized!")
         #展示背景图片和npc立绘

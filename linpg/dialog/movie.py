@@ -189,14 +189,9 @@ def cutscene(surface:pygame.Surface, videoPath:str) -> None:
         skip_button.draw(surface)
         white_progress_bar.percentage = VIDEO.get_percentagePlayed()
         white_progress_bar.draw(surface)
-        events_of_mouse_click = pygame.event.get(pygame.MOUSEBUTTONDOWN)
-        if len(events_of_mouse_click) > 0:
-            for event in events_of_mouse_click:
-                if event.button == 1:
-                    if skip_button.is_hover() and not is_skip:
-                        is_skip = True
-                        pygame.mixer.music.fadeout(5000)
-                    break
+        if skip_button.is_hover() and controller.mouse_get_press(0) and not is_skip:
+            is_skip = True
+            pygame.mixer.music.fadeout(5000)
         if is_skip is True:
             temp_alpha:int = black_bg.get_alpha()
             if temp_alpha < 255:
@@ -205,4 +200,4 @@ def cutscene(surface:pygame.Surface, videoPath:str) -> None:
                 is_playing = False
                 VIDEO.stop()
             surface.blit(black_bg,(0,0))
-        pygame.display.flip()
+        display.flip()

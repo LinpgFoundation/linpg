@@ -194,12 +194,12 @@ class DynamicTextSurface(TextSurface):
         self.big_font_surface.set_alpha(value)
     #画出
     def display(self, surface:pygame.Surface, offSet:tuple=(0,0)) -> None:
-        mouse_pos = pygame.mouse.get_pos()
+        mouse_pos = controller.get_mouse_pos()
         if self.is_hover(subtract_pos(mouse_pos,offSet)):
-            surface.blit(self.big_font_surface,(
-                int(self.x-(self.big_font_surface.get_width()-self.font_surface.get_width())/2+offSet[0]),
-                int(self.y-(self.big_font_surface.get_height()-self.font_surface.get_height())/2+offSet[1])
-                )
+            surface.blit(
+                self.big_font_surface,
+                (int(self.x-(self.big_font_surface.get_width()-self.font_surface.get_width())/2+offSet[0]),
+                int(self.y-(self.big_font_surface.get_height()-self.font_surface.get_height())/2+offSet[1]))
                 )
         else:
             surface.blit(self.font_surface,add_pos(self.pos,offSet))

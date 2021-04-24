@@ -1,0 +1,19 @@
+{
+    "Antialias": true,
+    "DeveloperMode": false,
+    "FPS": 60,
+    "Font": "MicrosoftYaHei-2",
+    "FontType": "custom",
+    "FullScreen": true,
+    "KeepVedioCache": true,
+    "Language": null,
+    "MouseIconWidth": 18,
+    "MouseMoveSpeed": 30,
+    "ReadingSpeed": 0.5,
+    "ScreenSize": 120,
+    "Sound": {
+        "background_music": 100,
+        "sound_effects": 100,
+        "sound_environment": 100
+    }
+}

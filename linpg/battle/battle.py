@@ -2,9 +2,10 @@
 from .ui import *
 
 #战斗系统接口，请勿实例化
-class AbstractBattleSystem(SystemWithBackgroundMusic):
-    def __init__(self, chapterType:str, chapterId:int, collection_name:str) -> None:
+class AbstractBattleSystem(AbstractGameSystem):
+    def __init__(self, chapterType:str, chapterId:int, projectName:str) -> None:
         super().__init__()
+        self._initialize(chapterType,chapterId,projectName)
         #用于判断是否移动屏幕的参数
         self.__mouse_move_temp_x = -1
         self.__mouse_move_temp_y = -1
@@ -21,16 +22,16 @@ class AbstractBattleSystem(SystemWithBackgroundMusic):
         self.MAP = None
         #对话数据
         self.dialogData = None
-        #章节名和种类
-        self.chapterId = chapterId
-        self.chapterType = chapterType
-        self.collection_name = collection_name
         #方格标准尺寸
         self._standard_block_width:int = int(display.get_width()/10)
         self._standard_block_height:int = int(display.get_height()/10)
         #缩进
         self.zoomIn = 100
         self.zoomIntoBe = 100
+    #获取对话文件所在的具体路径
+    def get_map_file_location(self) -> str:
+        return os.path.join("Data",self._chapter_type,"chapter{}_map.yaml".format(self._chapter_id)) if self._project_name is None\
+            else os.path.join("Data",self._chapter_type,self._project_name,"chapter{}_map.yaml".format(self._chapter_id))
     #初始化地图
     def _create_map(self, map_data:dict) -> None:
         self.MAP = MapObject(map_data,self._standard_block_width,self._standard_block_height)
@@ -87,7 +88,7 @@ class AbstractBattleSystem(SystemWithBackgroundMusic):
         if event.key == pygame.K_RIGHT: self.__pressKeyToMove["right"] = False
     #根据鼠标移动屏幕
     def _check_right_click_move(self, mouse_x:int, mouse_y:int) -> None:
-        if pygame.mouse.get_pressed()[2]:
+        if controller.mouse_get_press(2):
             if self.__mouse_move_temp_x == -1 and self.__mouse_move_temp_y == -1:
                 self.__mouse_move_temp_x = mouse_x
                 self.__mouse_move_temp_y = mouse_y

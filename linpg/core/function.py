@@ -44,7 +44,7 @@ def getSingleColorSurface(color,size=None) -> ImageSurface:
 
 #检测图片是否被点击
 def isHover(imgObject:object, objectPos:Union[tuple,list]=(0,0), local_x:Union[int,float]=0, local_y:Union[int,float]=0) -> bool:
-    mouse_x,mouse_y = pygame.mouse.get_pos()
+    mouse_x,mouse_y = controller.get_mouse_pos()
     #如果是Linpg引擎的GameObject2d类(所有2d物品的父类)
     if isinstance(imgObject,GameObject2d):
         return imgObject.is_hover((mouse_x-local_x,mouse_y-local_y))

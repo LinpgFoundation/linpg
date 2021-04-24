@@ -1,1 +1,3 @@
-def get_hook_dirs(): return __path__
+import os
+
+def get_hook_dirs() -> list: return [os.path.dirname(__file__)]

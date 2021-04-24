@@ -6,7 +6,6 @@ class GameObjectContainer(AbstractImage):
     def __init__(self, bg_img:Union[str,pygame.Surface,None], x:Union[int,float], y:Union[int,float], width:Union[int,float], height:Union[int,float]):
         if bg_img is not None: bg_img = StaticImageSurface(bg_img,0,0,width,height)
         super().__init__(bg_img,x,y,width,height) 
-        self.hidden:bool = False
         self.items:list = []
     #新增一个物品
     def append(self, new_item:GameObject) -> None: self.items.append(new_item)
@@ -41,7 +40,6 @@ class SurfaceContainerWithScrollbar(AbstractImage):
         self.__local_y:int = 0
         self.panding:int = 0
         self.__items_dict:dict = {}
-        self.hidden:bool = False
         self.distance_between_item:int = 20
         self.move_speed:int = 20
         self.button_tickness = 20
@@ -175,7 +173,7 @@ class SurfaceContainerWithScrollbar(AbstractImage):
     def get_item_per_line(self) -> int: return self.__item_per_line
     def set_item_per_line(self, value:int) -> None: self.__item_per_line = int(value)
     #把素材画到屏幕上
-    def display(self, surface:pygame.Surface, off_set:tuple=(0,0), pygame_events:any=None) -> None:
+    def display(self, surface:pygame.Surface, off_set:tuple=(0,0)) -> None:
         self.__current_hovered_item = None
         if not self.hidden:
             """画出"""
@@ -273,13 +271,11 @@ class SurfaceContainerWithScrollbar(AbstractImage):
                 self.__total_height = self._height
             """处理事件"""
             #获取鼠标坐标
-            mouse_pos:tuple = pygame.mouse.get_pos()
+            mouse_pos:tuple = controller.get_mouse_pos()
             if self.is_hover(subtract_pos(mouse_pos,off_set)):
                 if not self.__mode and self.__total_height > self._height or self.__mode is True and self.__total_width > self._width:
-                    #获取pygame事件
-                    if pygame_events is None: pygame_events = pygame.event.get()
                     #查看与鼠标有关的事件
-                    for event in pygame_events:
+                    for event in controller.events:
                         if event.type == pygame.MOUSEBUTTONDOWN:
                             if event.button == 1:
                                 scroll_bar_rect = self.__get_scroll_bar_rect(off_set[0],off_set[1])
@@ -288,10 +284,10 @@ class SurfaceContainerWithScrollbar(AbstractImage):
                                     if isHoverPygameObject(scroll_button_rect):
                                         if not self.__is_holding_scroll_button:
                                             self.__is_holding_scroll_button = True
-                                            self.__mouse_x_last,self.__mouse_y_last = pygame.mouse.get_pos()
+                                            self.__mouse_x_last,self.__mouse_y_last = controller.get_mouse_pos()
                                     else:
                                         self.__is_holding_scroll_button = True
-                                        self.__mouse_x_last,self.__mouse_y_last = pygame.mouse.get_pos()
+                                        self.__mouse_x_last,self.__mouse_y_last = controller.get_mouse_pos()
                                         if not self.__mode:
                                             self.__local_y = int(
                                                 (self.y-mouse_pos[1]+scroll_button_rect.height/2)/scroll_bar_rect.height*self.__total_height
@@ -318,7 +314,7 @@ class SurfaceContainerWithScrollbar(AbstractImage):
                 self.__is_holding_scroll_button = False
             #调整本地坐标
             if self.__is_holding_scroll_button is True:
-                mouse_x,mouse_y = pygame.mouse.get_pos()
+                mouse_x,mouse_y = controller.get_mouse_pos()
                 if not self.__mode:
                     self.__local_y += (self.__mouse_y_last-mouse_y)*(self.__total_height/self.height)
                     self.__mouse_y_last = mouse_y

@@ -2,81 +2,90 @@
 from .ui import *
 
 #视觉小说系统接口
-class AbstractDialogSystem(SystemWithBackgroundMusic):
+class AbstractDialogSystem(AbstractGameSystem):
     def __init__(self):
         super().__init__()
         #加载对话的背景图片模块
-        self._npcManager = NpcImageManager()
+        self._npc_manager = NpcImageManager()
         #黑色Void帘幕
         self._black_bg = getSingleColorSurface("black")
         #选项栏
-        self._optionBox = StaticImageSurface(os.path.join(DIALOG_UI_PATH,"option.png"),0,0)
+        self._option_box_surface = StaticImageSurface(os.path.join(DIALOG_UI_PATH,"option.png"),0,0)
         #选项栏-选中
         try:
-            self.optionBoxSelected = StaticImageSurface(os.path.join(DIALOG_UI_PATH,"option_selected.png"),0,0)
+            self._option_box_selected_surface = StaticImageSurface(os.path.join(DIALOG_UI_PATH,"option_selected.png"),0,0)
         except:
             throwException("warning","Cannot find 'option_selected.png' in 'UI' file, 'option.png' will be loaded instead.")
-            self.optionBoxSelected = self._optionBox.light_copy()
+            self._option_box_selected_surface = self._option_box_surface.light_copy()
+        #对话文件路径
+        self._dialog_folder_path:str = "Data"
+        #背景音乐路径
+        self._background_music_folder_path:str = "Assets/music"
+        #背景图片路径
+        self._background_image_folder_path:str = "Assets/image/dialog_background"
+        self._dynamic_background_folder_path:str = "Assets/movie"
+        #背景图片
+        self.__background_image_name = None
+        self.__background_image_surface = self._black_bg.copy()
         #是否开启自动保存
         self.auto_save:bool = False
-        #背景图片
-        self.__backgroundImageFilePath = "Assets/image/dialog_background"
-        self._dynamicBackgroundFilePath = "Assets/movie"
-        self.__backgroundImageName = None
-        self.__backgroundImageSurface = self._black_bg.copy()
+    #获取对话文件所在的具体路径
+    def get_dialog_file_location(self, lang:str) -> str:
+        return os.path.join(
+            self._dialog_folder_path, self._chapter_type, "chapter{0}_dialogs_{1}.yaml".format(self._chapter_id, lang)
+            ) if self._project_name is None else os.path.join(
+                self._dialog_folder_path, self._chapter_type, self._project_name, "chapter{0}_dialogs_{1}.yaml".format(self._chapter_id, lang)
+                )
+    #获取对话文件的主语言
+    def get_default_lang(self) -> str:
+        return loadConfig(os.path.join(self._dialog_folder_path,self._chapter_type,"info.yaml"),"default_lang") if self._project_name is None\
+            else loadConfig(os.path.join(self._dialog_folder_path,self._chapter_type,self._project_name,"info.yaml"),"default_lang")
     #初始化关键参数
-    def _initialize(self, chapterType:str, chapterId:int, collection_name:str, dialogId:Union[str,int]="head", dialog_options:dict={}) -> None:
-        #类型
-        self.chapterType = chapterType
-        #章节id
-        self.chapterId = chapterId
+    def _initialize(self, chapterType:str, chapterId:int, projectName:str, dialogId:Union[str,int]="head", dialog_options:dict={}) -> None:
+        super()._initialize(chapterType,chapterId,projectName)
         #对白id
-        self.dialogId = dialogId
+        self._dialog_id = dialogId
         #玩家做出的选项
         self.dialog_options = dialog_options
-        #合集名称-用于dlc和创意工坊
-        self.collection_name = collection_name
     #更新背景图片
     def _update_background_image(self, image_name:str) -> None:
-        if self.__backgroundImageName != image_name:
+        if self.__background_image_name != image_name:
             #更新背景的名称
-            self.__backgroundImageName = image_name
+            self.__background_image_name = image_name
             #更新背景的图片数据
-            if self.__backgroundImageName is not None:
+            if self.__background_image_name is not None:
                 #尝试加载图片式的背景
-                img_path = os.path.join(self.__backgroundImageFilePath,self.__backgroundImageName)
+                img_path = os.path.join(self._background_image_folder_path,self.__background_image_name)
                 if os.path.exists(img_path):
-                    self.__backgroundImageSurface = loadImage(img_path,(0,0))
+                    self.__background_image_surface = loadImage(img_path,(0,0))
                 #如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
-                elif os.path.exists(os.path.join(self._dynamicBackgroundFilePath,self.__backgroundImageName)):
-                    self.__backgroundImageSurface = VedioFrame(
-                        os.path.join(self._dynamicBackgroundFilePath,self.__backgroundImageName),display.get_width(),display.get_height()
+                elif os.path.exists(os.path.join(self._dynamic_background_folder_path,self.__background_image_name)):
+                    self.__background_image_surface = VedioFrame(
+                        os.path.join(self._dynamic_background_folder_path,self.__background_image_name),display.get_width(),display.get_height()
                         )
-                    self.__backgroundImageSurface.start()
+                    self.__background_image_surface.start()
                 else:
-                    throwException("error","Cannot find a background image or video file called '{}'.".format(self.__backgroundImageName))
+                    throwException("error","Cannot find a background image or video file called '{}'.".format(self.__background_image_name))
             else:
-                self.__backgroundImageSurface = self._black_bg.copy()
+                self.__background_image_surface = self._black_bg.copy()
     #停止播放
     def stop(self) -> None:
         #如果背景是多线程的VedioFrame，则应该退出占用
-        if isinstance(self.__backgroundImageSurface,VedioFrame): self.__backgroundImageSurface.stop()
+        if isinstance(self.__background_image_surface,VedioFrame): self.__background_image_surface.stop()
         #设置停止播放
-        self._isPlaying = False
+        super().stop()
     #将背景图片画到surface上
     def display_background_image(self, surface:pygame.Surface) -> None:
-        if isinstance(self.__backgroundImageSurface,ImageSurface):
-            self.__backgroundImageSurface.set_size(surface.get_width(),surface.get_height())
-        self.__backgroundImageSurface.draw(surface)
+        if isinstance(self.__background_image_surface,ImageSurface):
+            self.__background_image_surface.set_size(surface.get_width(),surface.get_height())
+        self.__background_image_surface.draw(surface)
     #把基础内容画到surface上
     def draw(self, surface:pygame.Surface) -> None:
-        #更新事件
-        self._update_event()
         #检测章节是否初始化
-        if self.chapterId is None: raise throwException("error","The dialog has not been initialized!")
+        if self._chapter_id is None: raise throwException("error","The dialog has not been initialized!")
         #展示背景图片和npc立绘
         self.display_background_image(surface)
-        self._npcManager.draw(surface)
+        self._npc_manager.draw(surface)
 
 #npc立绘系统
 class NpcImageManager:
@@ -103,10 +112,11 @@ class NpcImageManager:
         self.__NPC_IMAGE_DATABASE:object = NpcImageDatabase()
         self.__move_x:int = 0
         self.dev_mode:bool = False
-        self.npcGetClick = None
+        self.npc_get_click = None
+        self.image_folder_path:str = "Assets/image/npc"
     #确保角色存在
     def __ensure_the_existence_of(self, name:str) -> None:
-        if name not in self.__npcImageDict: self.__loadNpc(os.path.join("Assets/image/npc",name))
+        if name not in self.__npcImageDict: self.__loadNpc(os.path.join(self.image_folder_path,name))
     #加载角色
     def __loadNpc(self, path:str) -> None:
         name = os.path.basename(path)
@@ -140,7 +150,7 @@ class NpcImageManager:
             #如果是开发模式
             if self.dev_mode is True and isHover(img,(x,y)):
                 img.draw_outline(surface)
-                self.npcGetClick = name
+                self.npc_get_click = name
     def draw(self, surface:pygame.Surface) -> None:
         window_x = surface.get_width()
         window_y = surface.get_height()
@@ -157,7 +167,7 @@ class NpcImageManager:
         else:
             x_moved_forNpcThisRound = 0
         #初始化被选择的角色名字
-        self.npcGetClick = None
+        self.npc_get_click = None
         #画上上一幕的立绘
         if len(self.__npcLastRound) == 0:
             #前后都无立绘，那干嘛要显示东西
@@ -268,8 +278,10 @@ class DialogContent(AbstractDialog):
             self.__textPlayingSound = pygame.mixer.Sound("Assets/sound/ui/dialog_words_playing.ogg")
         except FileNotFoundError:
             self.__textPlayingSound = None
-            throwException("warning","Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!")
-            print("As a result, the text playing sound will be disabled.")
+            throwException(
+                "warning",
+                "Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!\nAs a result, the text playing sound will be disabled."
+                )
         self.READINGSPEED = get_setting("ReadingSpeed")
         self.dialoguebox_max_height = None
         #鼠标图标

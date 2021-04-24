@@ -24,14 +24,20 @@ class MapObject:
         self.__MapData = numpy.asarray(self.__MapData)
         #使用numpy的shape决定self.row和self.column
         self.row,self.column = self.__MapData.shape
+        #装饰物
+        self.__decorations:numpy.ndarray = None
         self.load_decorations(mapDataDic["decoration"])
+        #加载环境
         self.load_env_img((perBlockWidth,perBlockHeight))
-        self.__LightArea = []
+        #处于光处的区域
+        self.__light_area:numpy.ndarray = None
+        #地图surface尺寸
         self.surface_width = int(perBlockWidth*0.9*((self.row+self.column+1)/2))
         self.surface_height = int(perBlockWidth*0.45*((self.row+self.column+1)/2)+perBlockWidth)
+        #本地坐标
         self.__local_x = mapDataDic["local_x"]
         self.__local_y = mapDataDic["local_y"]
-        self.__needUpdateMapSurface = True
+        self.__needUpdateMapSurface:bool = True
         self.__block_on_surface = None
         self.__debug_win = None
     @property
@@ -69,22 +75,22 @@ class MapObject:
         self.__debug_win.present()
     #加载装饰物
     def load_decorations(self, decorationData:dict) -> None:
-        self.__decorations = []
+        decorations:list = []
         for decorationType,itemsThatType in decorationData.items():
             for itemData in itemsThatType.values():
                 if decorationType == "campfire":
-                    self.__decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,decorationType))
-                    self.__decorations[-1].imgId = randomInt(0,9)
-                    self.__decorations[-1].range = itemData["range"]
-                    self.__decorations[-1].alpha = 255
+                    decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,decorationType))
+                    decorations[-1].imgId = randomInt(0,9)
+                    decorations[-1].range = itemData["range"]
+                    decorations[-1].alpha = 255
                 elif decorationType == "chest":
-                    self.__decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,decorationType))
-                    self.__decorations[-1].items = itemData["items"] if "items" in itemData else []
+                    decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,decorationType))
+                    decorations[-1].items = itemData["items"] if "items" in itemData else []
                     #是否箱子有白名单（只能被特定角色拾取）
-                    self.__decorations[-1].whitelist = itemData["whitelist"] if "whitelist" in itemData else None
+                    decorations[-1].whitelist = itemData["whitelist"] if "whitelist" in itemData else None
                 else:
-                    self.__decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,itemData["image"]))
-        self.__decorations = numpy.sort(numpy.asarray(self.__decorations))
+                    decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,itemData["image"]))
+        self.__decorations = numpy.sort(numpy.asarray(decorations))
     #根据index寻找装饰物
     def find_decoration_with_id(self, index:int) -> DecorationObject: return self.__decorations[index]
     #根据坐标寻找装饰物
@@ -120,7 +126,7 @@ class MapObject:
     def getPos(self) -> tuple: return self.__local_x,self.__local_y
     def getPos_x(self) -> float: return self.__local_x
     def getPos_y(self) -> float: return self.__local_y
-    def isAtNight(self) -> int: return self.__darkMode
+    def isAtNight(self) -> bool: return self.__darkMode
     #设置local坐标
     def setPos(self, x:int, y:int) -> None:
         self.setPos_x(x)
@@ -336,19 +342,20 @@ class MapObject:
                         for x in range(int(item.x-item.range+(y-item.y)+1),int(item.x+item.range-(y-item.y))):
                             if [x,y] not in lightArea:
                                 lightArea.append([x,y])
-        self.__LightArea = numpy.asarray(lightArea,dtype=numpy.int8)
+        self.__light_area = numpy.asarray(lightArea,dtype=numpy.int8)
         self.__needUpdateMapSurface = True
         self.__block_on_surface = None
     #计算在地图中的位置
-    def calPosInMap(self, x:float, y:float) -> tuple:
+    def calPosInMap(self, x:Union[int,float], y:Union[int,float]) -> tuple:
         widthTmp:float = self.block_width*0.43
         return round((x-y)*widthTmp+self.__local_x+self.row*widthTmp),round((y+x)*self.block_width*0.22+self.__local_y+self.block_width*0.4)
-    def calAbsPosInMap(self, x:float, y:float) -> tuple:
+    def calAbsPosInMap(self, x:Union[int,float], y:Union[int,float]) -> tuple:
         widthTmp:float = self.block_width*0.43
         return round((x-y)*widthTmp+self.row*widthTmp),round((y+x)*self.block_width*0.22+self.block_width*0.4)
     #查看角色是否在光亮范围内
     def inLightArea(self, entity:object) -> bool: return self.isPosInLightArea(entity.x,entity.y)
-    def isPosInLightArea(self, x:float, y:float) -> bool: return True if not self.__darkMode else numpy.any(numpy.equal(self.__LightArea,[int(x),int(y)]).all(1))
+    def isPosInLightArea(self, x:Union[int,float], y:Union[int,float]) -> bool:
+        return True if not self.__darkMode else numpy.any(numpy.equal(self.__light_area,[int(x),int(y)]).all(1))
     #以下是A星寻路功能
     def findPath(self, startPosition:any, endPosition:any, friendData:dict, enemyData:dict, routeLen:int=-1, ignoreEnemyCharacters:list=[]) -> list:
         #检测起点

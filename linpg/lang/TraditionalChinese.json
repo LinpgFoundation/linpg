@@ -23,8 +23,10 @@
         "back": "返回",
         "cancel": "取消",
         "dont_save": "不要保存",
-        "process_has_been_saved": "進度已保存",
+        "progress_has_been_saved": "進度已保存",
+        "resume": "繼續遊戲",
         "save": "保存",
+        "save_current_progress": "保存當前進度",
         "warning": "警告"
     },
     "Language": "繁體中文",
@@ -50,5 +52,16 @@
         "十八",
         "十九",
         "二十"
-    ]
+    ],
+    "OptionMenu": {
+        "background_music": "背景音樂",
+        "cancel": "取消",
+        "confirm": "應用",
+        "currentLang": "簡體中文",
+        "language": "語言",
+        "option_menu": "選項菜單",
+        "setting": "設置",
+        "sound_effects": "音效",
+        "sound_environment": "環境聲效"
+    }
 }

@@ -1,7 +1,6 @@
 # cython: language_level=3
-from pygame import Rect
 from pygame._sdl2 import Renderer, Window, messagebox
-from ..api.font import findColorRGBA, glob
+from .font import *
 
 #提示窗口
 class Message:
@@ -43,9 +42,53 @@ class RenderedWindow:
     def present(self) -> None: self.__win.present()
     def draw_rect(self,rect_pos,color) -> None:
         self.__win.draw_color = findColorRGBA(color)
-        self.__win.draw_rect(Rect(rect_pos))
+        self.__win.draw_rect(pygame.Rect(rect_pos))
     def fill_rect(self,rect_pos,color) -> None:
         self.__win.draw_color = findColorRGBA(color)
-        self.__win.fill_rect(Rect(rect_pos))
+        self.__win.fill_rect(pygame.Rect(rect_pos))
     def fill(self,color) -> None:
         self.fill_rect((0,0,self.__size[0],self.__size[1]),color)
+
+#优化中文文档
+def optimizeCNContent(filePath:str) -> None:
+    #读取原文件的数据
+    with open(filePath, "r", encoding='utf-8') as f:
+        file_lines = f.readlines()
+    #优化字符串
+    for i in range(len(file_lines)):
+        #如果字符串不为空
+        if len(file_lines[i]) > 1:
+            #替换字符
+            file_lines[i] = file_lines[i]\
+                .replace("。。。","... ")\
+                .replace("。",". ")\
+                .replace("？？：","??: ")\
+                .replace("？？","?? ")\
+                .replace("？","? ")\
+                .replace("！！","!! ")\
+                .replace("！","! ")\
+                .replace("：",": ")\
+                .replace("，",", ")\
+                .replace("“",'"')\
+                .replace("”",'"')\
+                .replace("‘","'")\
+                .replace("’","'")\
+                .replace("（"," (")\
+                .replace("）",") ")\
+                .replace("  "," ")
+            #移除末尾的空格
+            try:
+                while file_lines[i][-2] == " ":
+                    file_lines[i] = file_lines[i][:-2]+"\n"
+            except:
+                pass
+    #删除原始文件
+    os.remove(filePath)
+    #创建并写入新数据
+    with open(filePath, "w", encoding='utf-8') as f:
+        f.writelines(file_lines)
+
+#优化文件夹中特定文件的中文字符串
+def optimizeCNContenInFolder(pathname:str) -> None:
+    for configFilePath in glob(pathname):
+        optimizeCNContent(configFilePath)

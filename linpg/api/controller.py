@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .config import *
+from .basic import *
 
 #手柄控制组件
 class SingleJoystick:
@@ -34,15 +34,21 @@ class SingleJoystick:
 class GameController:
     def __init__(self, mouse_icon_width:Union[int,float], speed:Union[int,float], custom:bool=False):
         self.joystick = SingleJoystick()
-        if custom:
+        if custom is True:
             pygame.mouse.set_visible(False)
-            self.iconImg = pygame.transform.scale(pygame.image.load(os.path.join("Assets/image/UI/","mouse_icon.png")).convert_alpha(),(int(mouse_icon_width),int(mouse_icon_width*1.3)))
+            self.iconImg = loadImg(os.path.join("Assets/image/UI","mouse_icon.png")),(int(mouse_icon_width),int(mouse_icon_width*1.3))
         else:
             self.iconImg = None
-        self.mouse_x,self.mouse_y = pygame.mouse.get_pos()
+        #鼠标位置
+        self.mouse_x:int = 0
+        self.mouse_y:int = 0
         self.movingSpeed = speed
+        #输入事件
+        self.__INPUT_EVENTS:list = None
     def draw(self, screen:pygame.Surface=None):
+        #更新输入事件
         self.joystick.update_device()
+        self.__INPUT_EVENTS = pygame.event.get()
         self.mouse_x,self.mouse_y = pygame.mouse.get_pos()
         if self.joystick.inputController is not None:
             if self.joystick.get_axis(0)>0.1 or self.joystick.get_axis(0)<-0.1:
@@ -52,13 +58,20 @@ class GameController:
             pygame.mouse.set_pos((self.mouse_x,self.mouse_y))
         if self.iconImg is not None and screen is not None:
             screen.blit(self.iconImg,(self.mouse_x,self.mouse_y))
-    def get_event(self, pygame_events=pygame.event.get()):
-        for event in pygame_events:
+    #获取输入事件
+    @property
+    def events(self): return self.__INPUT_EVENTS
+    def get_events(self): return self.__INPUT_EVENTS
+    #获取单个事件
+    def get_event(self):
+        for event in self.__INPUT_EVENTS:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 or\
                 event.type == pygame.JOYBUTTONDOWN and self.joystick.get_button(0) == True: return "comfirm"
         return None
     #返回鼠标的坐标
-    def get_pos(self): return self.mouse_x,self.mouse_y
+    def get_mouse_pos(self) -> tuple: return self.mouse_x,self.mouse_y
+    #是否鼠标按钮被点击
+    def mouse_get_press(self, button_id:int) -> bool: return pygame.mouse.get_pressed()[button_id]
 
 #控制器输入组件初始化
 controller:GameController = GameController(get_setting("MouseIconWidth"),get_setting("MouseMoveSpeed"))
@@ -79,25 +92,16 @@ class DisplayController:
     @property
     def sfpsp(self) -> float: return self.__standard_fps/self.__fps
     #更新
-    def flip(self, pump:bool=False) -> None:
+    def flip(self) -> None:
         self.__clock.tick(self.fps)
-        controller.draw()
-        if pump: pygame.event.pump()
         pygame.display.flip()
-    def update(self, rectangle=None, pump:bool=False):
-        self.__clock.tick(self.fps)
         controller.draw()
-        if pump == True: pygame.event.pump()
-        if rectangle is None:
-            pygame.display.flip()
-        else:
-            pygame.display.update(rectangle)
     #设置窗口标题
     def set_caption(self, title:any): pygame.display.set_caption(title)
     #设置窗口图标
     def set_icon(self, path:str): pygame.display.set_icon(pygame.image.load(os.path.join(path)))
-    def get_width(self) -> int: return int(get_setting("Screen_size")*self.__standard_width_unit)
-    def get_height(self) -> int: return int(get_setting("Screen_size")*self.__standard_height_unit)
+    def get_width(self) -> int: return int(get_setting("ScreenSize")*self.__standard_width_unit)
+    def get_height(self) -> int: return int(get_setting("ScreenSize")*self.__standard_height_unit)
     def get_size(self) -> tuple: return self.get_width(),self.get_height()
     #初始化屏幕
     def init_screen(self, flags:any) -> any:

@@ -43,7 +43,7 @@ class StaticImageSurface(AbstractImage):
         self.img_original = loadImg(path_or_surface)
         self.__local_x = 0
         self.__local_y = 0
-        self.__isFlipped:bool = False
+        self.__is_flipped:bool = False
         self.__needUpdate:bool = True if self._width is not None and self._height is not None else False
         self.__crop_rect:object = None
     #透明度
@@ -101,18 +101,18 @@ class StaticImageSurface(AbstractImage):
         self.__needUpdate = False
     #反转原图，并打上已反转的标记
     def flip(self) -> None:
-        self.__isFlipped = not self.__isFlipped
+        self.__is_flipped = not self.__is_flipped
         self.flip_original()
     #反转原图
     def flip_original(self) -> None:
-        self.img_original = pygame.transform.flip(self.img_original,True,False)
+        self.img_original = flipImg(self.img_original,True,False)
         self.__needUpdate = True
     #如果不处于反转状态，则反转
     def flip_if_not(self) -> None:
-        if not self.__isFlipped: self.flip()
+        if not self.__is_flipped: self.flip()
     #反转回正常状态
     def flip_back_to_normal(self) -> None:
-        if self.__isFlipped: self.flip()
+        if self.__is_flipped: self.flip()
     #画出轮廓
     def draw_outline(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0), color:str="red", line_width:int=2) -> None:
         pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect(
@@ -177,7 +177,7 @@ class ImageSurface(AbstractImage):
     #旋转
     def rotate(self, angle:int) -> None: self.img = pygame.transform.rotate(self.img,angle)
     #反转
-    def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = pygame.transform.flip(self.img,vertical,horizontal)
+    def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = flipImg(self.img,vertical,horizontal)
     #淡出
     def fade_out(self, speed:int) -> None:
         alphaTmp = self.get_alpha()
@@ -520,5 +520,5 @@ class DialogBox(AbstractDialog,GameObject2d):
         self.content = []
         self.__surface = self.dialoguebox.copy()
     def flip(self) -> None:
-        self.dialoguebox = pygame.transform.flip(self.dialoguebox,True,False)
+        self.dialoguebox = flipImg(self.dialoguebox,True,False)
         self.__flipped = not self.__flipped

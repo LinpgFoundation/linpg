@@ -5,18 +5,14 @@ from .character import *
 class WeatherSystem:
     def  __init__(self, weather:str, window_x:int, window_y:int, entityNum:int=50):
         self.name = 0
-        self.img_list = [loadImg(imgPath) for imgPath in glob("Assets/image/environment/{}/*.png".format(weather))]
-        items = []
-        i:int
-        for i in range(entityNum):
-            items.append(Snow(
+        self.img_list = [loadImg(imgPath) for imgPath in glob(os.path.join("Assets/image/environment",weather,"*.png"))]
+        self.__items:tuple = tuple([Snow(
                 imgId = randomInt(0,len(self.img_list)-1),
                 size = randomInt(5,10),
                 speed = randomInt(1,4),
                 x = randomInt(1,window_x*1.5),
                 y = randomInt(1,window_y)
-                ))
-        self.__items:tuple = tuple(items)
+                ) for i in range(entityNum)])
     def draw(self, surface:pygame.Surface, perBlockWidth:Union[int,float]) -> None:
         speed_unit:int = int(perBlockWidth/15)
         for item in self.__items:

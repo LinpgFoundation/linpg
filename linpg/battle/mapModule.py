@@ -47,7 +47,7 @@ class EnvImagesManagement:
             throwException("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__ENV_IMAGE_PATH))
     #加载场景装饰物图片
     def __add_decoration_image(self, decorationType:str, fileName:str) -> None:
-        imgPath:str = os.path.join(self.__DECORATION_IMAGE_PATH,"{}.png".format(fileName))
+        imgPath:str = os.path.join(self.__DECORATION_IMAGE_PATH, "{}.png".format(fileName))
         #常规装饰物
         if os.path.exists(imgPath):
             #如果是未被加载过的类型
@@ -107,10 +107,8 @@ class EnvImagesManagement:
     def get_decoration_num(self, decorationType:str) -> int: return len(self.__DECORATION_IMAGE_DICT[decorationType])
     #新图层
     def new_surface(self, screen_size:tuple, map_size:tuple) -> None:
-        if self.__BACKGROUND_IMAGE is not None:
-            self.__BACKGROUND_SURFACE = resizeImg(self.__BACKGROUND_IMAGE,screen_size)
-        else:
-            self.__BACKGROUND_SURFACE = pygame.Surface(screen_size).convert()
+        self.__BACKGROUND_SURFACE = resizeImg(self.__BACKGROUND_IMAGE,screen_size) if self.__BACKGROUND_IMAGE is not None \
+            else pygame.Surface(screen_size).convert()
         if self.__MAP_SURFACE is not None:
             self.__MAP_SURFACE.fill((0,0,0,0))
         else:

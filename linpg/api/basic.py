@@ -79,6 +79,10 @@ def resizeImg(img:pygame.Surface, size:Union[tuple,list]=(None,None)) -> pygame.
         throwException("error","Both width and height must be positive interger!")
     return img
 
+#翻转图片
+def flipImg(img:pygame.Surface, horizontal:bool, vertical:bool) -> pygame.Surface:
+    return pygame.transform.flip(img, horizontal, vertical)
+
 #增加图片暗度
 def addDarkness(img:pygame.Surface, value:int) -> pygame.Surface:
     newImg:pygame.Surface = img.copy()

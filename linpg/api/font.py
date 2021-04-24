@@ -1,7 +1,7 @@
 # cython: language_level=3
 import pygame.freetype
 from pygame.colordict import THECOLORS
-from .module import *
+from .system import *
 
 #初始化字体的配置文件
 _LINPG_FONT:str = get_setting("Font")

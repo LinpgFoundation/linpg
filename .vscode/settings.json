@@ -26,6 +26,7 @@
         "maxsize",
         "ndarray",
         "numpy",
+        "pyglet",
         "pyinstaller",
         "pyproject",
         "sangvis",

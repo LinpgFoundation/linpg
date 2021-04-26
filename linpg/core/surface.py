@@ -24,16 +24,17 @@ class Shape(GameObject2d):
 #图形接口
 class AbstractImage(Shape):
     def __init__(self, img:any, x:Union[int,float], y:Union[int,float], width:any, height:any):
-        super().__init__(x,y,0,0)
+        super().__init__(x, y, width, height)
         self.img = img
         self.hidden:bool = False
-        self._width = width
-        self._height = height
     #透明度
     @property
     def alpha(self) -> int: return self.get_alpha()
     def get_alpha(self) -> int: return self.img.get_alpha()
     def set_alpha(self, value:int) -> None: self.img.set_alpha(value)
+    #获取图片
+    def get_image_pointer(self) -> any: return self.img
+    def get_image_copy(self) -> any: return self.img.copy()
 
 #用于静态图片的surface
 class StaticImageSurface(AbstractImage):
@@ -161,7 +162,7 @@ class ImageSurface(AbstractImage):
             self._height = self._width/self.img.get_width()*self.img.get_height()
     #返回一个复制
     def copy(self) -> None:
-        replica = ImageSurface(self.img.copy(),self.x,self.y,self._width,self._height,self.description)
+        replica = ImageSurface(self.get_image_copy(),self.x,self.y,self._width,self._height,self.description)
         self.img.set_alpha(255)
         replica.xTogo = self.xTogo
         replica.yTogo = self.yTogo
@@ -226,177 +227,6 @@ class DynamicImageSurface(ImageSurface):
     def switch(self) -> None: self.__towardTargetPos = not self.__towardTargetPos
     def ifToward(self) -> bool: return self.__towardTargetPos
 
-#进度条
-class ProgressBar(AbstractImage):
-    def __init__(self, x:Union[int,float], y:Union[int,float], max_width:Union[int,float], height:Union[int,float], color:any):
-        super().__init__(None,x,y,max_width,height)
-        self.percentage = 0
-        self.color = findColorRGBA(color)
-    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        pygame.draw.rect(surface,self.color,pygame.Rect(add_pos(self.pos,offSet),(int(self._width*self.percentage),self._height)))
-
-#进度条Surface
-class ProgressBarSurface(AbstractImage):
-    def __init__(self, imgOnTop:pygame.Surface, imgOnBottom:pygame.Surface, x:Union[int,float], y:Union[int,float],
-        max_width:Union[int,float], height:Union[int,float], mode:str="horizontal"):
-        if imgOnTop is not None: imgOnTop = imgLoadFunction(imgOnTop,True)
-        super().__init__(imgOnTop,x,y,max_width,height)
-        self.img2 = imgLoadFunction(imgOnBottom,True) if imgOnBottom is not None else None
-        self._current_percentage = 0
-        self._mode:bool = True
-        self.set_mode(mode)
-    #百分比
-    @property
-    def percentage(self) -> float: return self._current_percentage
-    def get_percentage(self) -> float: return self._current_percentage
-    def set_percentage(self, value:float) -> None:
-        if 0 <= value <= 1:
-            self._current_percentage = value
-        else:
-            throwException("error","The percentage must be <= 1 and >= 0!")
-    #模式
-    @property
-    def mode(self) -> str: return self.get_mode()
-    def get_mode(self) -> str: return "horizontal" if self._mode else "vertical"
-    def set_mode(self, mode:str) -> None:
-        if mode == "horizontal":
-            self._mode = True
-        elif mode == "vertical":
-            self._mode = False
-        else:
-            throwException("error","Mode '{}' is not supported!".format(mode))
-    #克隆
-    def copy(self): return ProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
-    def light_copy(self): return ProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
-    #展示
-    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        pos = add_pos(self.pos,offSet)
-        surface.blit(resizeImg(self.img2,self.size),pos)
-        if self._current_percentage > 0:
-            imgOnTop = resizeImg(self.img,self.size)
-            if self._mode:
-                surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage),self._height)),pos)
-            else:
-                surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage))),pos)
-
-#动态进度条Surface
-class DynamicProgressBarSurface(ProgressBarSurface):
-    def __init__(self, imgOnTop:pygame.Surface, imgOnBottom:pygame.Surface, x:Union[int,float], y:Union[int,float],
-        max_width:Union[int,float], height:Union[int,float], mode:str="horizontal"):
-        super().__init__(imgOnTop,imgOnBottom,x,y,max_width,height,mode)
-        self._percentage_to_be = 0
-        self.__perecent_update_each_time = 0
-        self.__total_update_intervals = 10
-    #数据准确度
-    @property
-    def accuracy(self) -> int: return self.__total_update_intervals*100
-    #百分比
-    @property
-    def percentage(self) -> float: return self._percentage_to_be/self.accuracy
-    def get_percentage(self) -> float: return self._percentage_to_be/self.accuracy
-    def set_percentage(self, value:float) -> None:
-        if 0 <= value <= 1:
-            self._percentage_to_be = value*self.accuracy
-            self.__perecent_update_each_time = (self._percentage_to_be-self._current_percentage)/self.__total_update_intervals
-        else:
-            throwException("error","The percentage must be <= 1 and >= 0, not {}!".format(value))
-    def copy(self): return DynamicProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
-    def light_copy(self): return DynamicProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
-    #检查并更新百分比
-    def _check_and_update_percentage(self) -> None:
-        if self._current_percentage < self._percentage_to_be and self.__perecent_update_each_time > 0 or\
-            self._current_percentage > self._percentage_to_be and self.__perecent_update_each_time < 0:
-            self._current_percentage += self.__perecent_update_each_time
-    #展示
-    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        pos:tuple = add_pos(self.pos,offSet)
-        surface.blit(resizeImg(self.img2,self.size),pos)
-        self._check_and_update_percentage()
-        if self._current_percentage > 0:
-            imgOnTop = resizeImg(self.img,self.size)
-            if self._mode:
-                if self._current_percentage < self._percentage_to_be:
-                    img2 = cropImg(imgOnTop,size=(int(self._width*self._percentage_to_be/self.accuracy),self._height))
-                    img2.set_alpha(100)
-                    surface.blit(img2,pos)
-                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),pos)
-                else:
-                    if self._current_percentage > self._percentage_to_be:
-                        img2 = cropImg(imgOnTop,size=(int(self._width*self._current_percentage/self.accuracy),self._height))
-                        img2.set_alpha(100)
-                        surface.blit(img2,pos)
-                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._percentage_to_be/self.accuracy),self._height)),pos)
-            else:
-                if self._current_percentage < self._percentage_to_be:
-                    img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._percentage_to_be/self.accuracy)))
-                    img2.set_alpha(100)
-                    surface.blit(img2,pos)
-                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),pos)
-                else:
-                    if self._current_percentage > self._percentage_to_be:
-                        img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._current_percentage/self.accuracy)))
-                        img2.set_alpha(100)
-                        surface.blit(img2,pos)
-                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._percentage_to_be/self.accuracy))),pos)
-
-#按钮
-class Button(GameObject2d):
-    def __init__(self, path:Union[str,pygame.Surface], x:Union[int,float], y:Union[int,float]):
-        super().__init__(x,y)
-        self.img = loadImg(path)
-        self.img2 = None
-        self._hoverEventTriggered = False
-    def get_width(self) -> int: return self.img.get_width()
-    def get_height(self) -> int: return self.img.get_height()
-    def set_hover_img(self, img:pygame.Surface) -> None: self.img2 = img
-    def is_hover(self, mouse_pos:Union[tuple, list]=(-1,-1)) -> bool:
-        if not super().is_hover(mouse_pos):
-            if self.img2 is not None and self._hoverEventTriggered:
-                tempSurface = self.img
-                self.img = self.img2
-                self.img2 = tempSurface
-                self._hoverEventTriggered = False
-            return False
-        else:
-            if self.img2 is not None and not self._hoverEventTriggered:
-                tempSurface = self.img
-                self.img = self.img2
-                self.img2 = tempSurface
-                self._hoverEventTriggered = True
-            return True
-    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None: surface.blit(self.img,add_pos(self.pos,offSet))
-
-class ButtonWithDes(Button):
-    def __init__(self, path:str, x:Union[int,float], y:Union[int,float], width:Union[int,float], height:Union[int,float], des:str):
-        super().__init__(path,x,y)
-        width = int(width)
-        height = int(height)
-        self.img = resizeImg(self.img,(width,height))
-        self.set_hover_img(self.img.copy())
-        self.img.set_alpha(150)
-        self._width = width
-        self._height = height
-        self.des = des
-        self.des_font_surface = fontRenderWithoutBound(des,"black",self._height*0.4)
-        self.des_surface = pygame.Surface((self.des_font_surface.get_width()*1.2,self._height*0.6),flags=pygame.SRCALPHA).convert_alpha()
-        pygame.draw.rect(self.des_surface,(255,255,255),(0,0, self.des_surface.get_width(),self.des_surface.get_height()))
-        self.des_surface.blit(self.des_font_surface,(self.des_font_surface.get_width()*0.1,self._height*0.1))
-    def get_width(self) -> int: return self._width
-    def get_height(self) -> int: return self._height
-    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        super().display(surface, offSet)
-        if self._hoverEventTriggered: surface.blit(self.des_surface,controller.get_mouse_pos())
-
-class ButtonWithFadeInOut(Button):
-    def __init__(self, path:str, txt:str, txt_color:any, alphaWhenNotHover:int, x:Union[int,float], y:Union[int,float], height:Union[int,float]):
-        super().__init__(path,x,y)
-        txtSurface = fontRenderWithoutBound(txt,txt_color,height*0.6)
-        padding = int((height-txtSurface.get_height())/2)
-        self.img = resizeImg(self.img,(txtSurface.get_width()+padding*2,height))
-        self.img.blit(txtSurface,(padding,padding))
-        self.set_hover_img(self.img.copy())
-        self.img.set_alpha(alphaWhenNotHover)
-
 #gif图片管理
 class GifObject(AbstractImage):
     def __init__(self,imgList:Union[tuple,list], x:Union[int,float], y:Union[int,float], width:Union[int,float], height:Union[int,float], updateGap:int):
@@ -419,106 +249,3 @@ class GifObject(AbstractImage):
             if self.imgId >= len(self.img): self.imgId = 0
         else:
             self.countDown += 1
-
-#对话框基础模块
-class AbstractDialog:
-    def __init__(self, img:pygame.Surface, fontSize:Union[int,float]):
-        self.dialoguebox = img
-        self.FONTSIZE = int(fontSize)
-        self.FONT = createFont(self.FONTSIZE)
-        self.content = []
-        self.narrator = None
-        self.textIndex = None
-        self.displayedLine = None
-    def update(self, txt:list, narrator:str) -> None:
-        self.textIndex = 0
-        self.displayedLine = 0
-        self.content = txt
-        self.narrator = narrator
-    #是否所有内容均已展出
-    def is_all_played(self) -> bool:
-        #如果self.content是空的，也就是说没有任何内容，那么应当视为所有内容都被播放了
-        if len(self.content) == 0:
-            return True
-        else:
-            return self.displayedLine >= len(self.content)-1 and self.textIndex >= len(self.content[self.displayedLine])-1
-    #立刻播出所有内容
-    def play_all(self) -> None:
-        if not self.is_all_played():
-            self.displayedLine = len(self.content)-1
-            self.textIndex = len(self.content[self.displayedLine])-1
-
-#对话框和对话框内容
-class DialogBox(AbstractDialog,GameObject2d):
-    def __init__(self, imgPath:str, width:Union[int,float], height:Union[int,float], x:Union[int,float], y:Union[int,float], fontSize:int):
-        AbstractDialog.__init__(self,loadImg(imgPath,(width,height)),fontSize)
-        GameObject2d.__init__(self,x,y)
-        self.__surface = None
-        self.deafult_x = x
-        self.deafult_y = y
-        self.txt_x = fontSize
-        self.txt_y = fontSize*2
-        self.narrator_icon = None
-        self.narrator_x = fontSize*3
-        self.narrator_y = fontSize/2
-        self.updated:bool = False
-        self.__drew:bool = False
-        self.__flipped:bool = False
-    def get_width(self) -> int: return self.dialoguebox.get_width()
-    def get_height(self)-> int:  return self.dialoguebox.get_height()
-    def set_size(self, width:Union[int,float,None], height:Union[int,float,None]) -> None:
-        self.dialoguebox = resizeImg(self.dialoguebox,(width,height))
-    def draw(self, surface:pygame.Surface, characterInfoBoardUI:object=None):
-        #如果对话框需要继续更新
-        if not self.__drew:
-            self.__surface = self.dialoguebox.copy()
-            if self.__flipped is True:
-                #讲述人名称
-                if self.narrator is not None:
-                    self.__surface.blit(self.FONT.render(self.narrator,get_fontMode(),(255,255,255)),(self.get_width()*0.6+self.narrator_x,self.narrator_y))
-                #角色图标
-                if self.narrator_icon is not None and characterInfoBoardUI is not None:
-                    self.__surface.blit(characterInfoBoardUI.characterIconImages[self.narrator_icon],(self.get_width()-self.txt_x,self.txt_y))
-                x = self.txt_x
-            else:
-                #讲述人名称
-                if self.narrator is not None:
-                    self.__surface.blit(self.FONT.render(self.narrator,get_fontMode(),(255,255,255)),(self.narrator_x,self.narrator_y))
-                #角色图标
-                if self.narrator_icon is not None and characterInfoBoardUI is not None:
-                    img = characterInfoBoardUI.characterIconImages[self.narrator_icon]
-                    self.__surface.blit(img,(self.txt_x,self.txt_y))
-                    x = self.txt_x+img.get_width() + self.FONTSIZE
-                else:
-                    x = self.txt_x
-            y = self.txt_y
-            if len(self.content)>0:
-                #已经播放的行
-                for i in range(self.displayedLine):
-                    self.__surface.blit(self.FONT.render(self.content[i],get_fontMode(),(255,255,255)),(x,y))
-                    y += self.FONTSIZE*1.2
-                #正在播放的行
-                self.__surface.blit(self.FONT.render(self.content[self.displayedLine][:self.textIndex],get_fontMode(),(255,255,255)),(x,y))
-                if self.textIndex < len(self.content[self.displayedLine]):
-                    self.textIndex += 1
-                elif self.displayedLine < len(self.content)-1:
-                    self.displayedLine += 1
-                    self.textIndex = 0
-                elif self.textIndex >= len(self.content[self.displayedLine]):
-                    self.__drew = True
-        surface.blit(self.__surface,(self.x,self.y))
-    def update(self, txt:list, narrator:str, narrator_icon:str=None) -> None:
-        super().update(txt,narrator)
-        self.updated = True
-        self.__drew = False
-        self.narrator_icon = narrator_icon
-    def reset(self) -> None:
-        self.x = self.deafult_x
-        self.y = self.deafult_y
-        self.updated = False
-        #刷新对话框surface防止上一段的对话还残留在surface上
-        self.content = []
-        self.__surface = self.dialoguebox.copy()
-    def flip(self) -> None:
-        self.dialoguebox = flipImg(self.dialoguebox,True,False)
-        self.__flipped = not self.__flipped

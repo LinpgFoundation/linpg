@@ -44,7 +44,7 @@ class GameController:
         self.mouse_y:int = 0
         self.movingSpeed = speed
         #输入事件
-        self.__INPUT_EVENTS:list = None
+        self.__INPUT_EVENTS:list = pygame.event.get()
     def draw(self, screen:pygame.Surface=None):
         #更新输入事件
         self.joystick.update_device()

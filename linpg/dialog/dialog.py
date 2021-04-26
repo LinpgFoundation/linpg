@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .dialogModule import *
+from .module import *
 
 #视觉小说系统模块
 class DialogSystem(AbstractDialogSystem):
@@ -16,9 +16,11 @@ class DialogSystem(AbstractDialogSystem):
         self._history_surface = None
         self._history_surface_local_y = 0
         #展示历史界面-返回按钮
-        buttonTemp = loadImg(os.path.join(DIALOG_UI_PATH,"back.png"),(display.get_width()*0.03,display.get_height()*0.04))
-        self.history_back = Button(addDarkness(buttonTemp,100),display.get_width()*0.04,display.get_height()*0.04)
-        self.history_back.set_hover_img(buttonTemp)
+        self.history_back = loadButton(
+            os.path.join(DIALOG_UI_PATH,"back.png"),
+            (display.get_width()*0.04,display.get_height()*0.04),
+            (display.get_width()*0.03,display.get_height()*0.04), 150
+        )
         #暂停菜单
         self.pause_menu = PauseMenu()
     #返回需要保存数据
@@ -312,7 +314,7 @@ class DialogEditor(AbstractDialogSystem):
         #从配置文件中加载数据
         self.__loadDialogData(part)
         #容器按钮
-        button_width = int(display.get_width()*0.04)
+        button_width:int = int(display.get_width()*0.04)
         self.UIContainerRightButton = loadDynamicImage(
             os.path.join(DIALOG_UI_PATH,"container_button.png"),
             (display.get_width()-button_width,display.get_height()*0.4),
@@ -324,24 +326,39 @@ class DialogEditor(AbstractDialogSystem):
         CONFIG = get_lang("DialogCreator")
         button_y = int(display.get_height()*0.03)
         #控制容器转换的按钮
-        self.button_select_background = ButtonWithFadeInOut(
-            os.path.join(DIALOG_UI_PATH,"menu.png"),CONFIG["background"],"black",100,0,button_y*2,button_width/2
+        self.button_select_background = loadButtonWithTextInCenter(
+            os.path.join(DIALOG_UI_PATH, "menu.png"), CONFIG["background"], "black", button_width/2, (0, button_y*2), 150
             )
-        self.button_select_npc = ButtonWithFadeInOut(
-            os.path.join(DIALOG_UI_PATH,"menu.png"),CONFIG["npc"],"black",100,0,button_y*2,button_width/2
-            )
+        self.button_select_npc = loadButtonWithTextInCenter(
+            os.path.join(DIALOG_UI_PATH, "menu.png"), CONFIG["npc"], "black", button_width/2, (0, button_y*2), 150
+        )
         panding:int = int((container_width-self.button_select_background.get_width()-self.button_select_npc.get_width())/3)
         self.button_select_background.set_left(panding)
         self.button_select_npc.set_left(self.button_select_background.get_right()+panding)
+        button_size:tuple = (button_width,button_width)
         #页面右上方的一排按钮
         self.buttonsUI = {
-            "save": ButtonWithDes(os.path.join(DIALOG_UI_PATH,"save.png"),button_width*7.25,button_y,button_width,button_width,get_lang("Global","save")),
-            "reload": ButtonWithDes(os.path.join(DIALOG_UI_PATH,"reload.png"),button_width*6,button_y,button_width,button_width,CONFIG["reload"]),
-            "add": ButtonWithDes(os.path.join(DIALOG_UI_PATH,"add.png"),button_width*4.75,button_y,button_width,button_width,CONFIG["add"]),
-            "next": ButtonWithDes(os.path.join(DIALOG_UI_PATH,"dialog_skip.png"),button_width*4.75,button_y,button_width,button_width,CONFIG["next"]),
-            "previous": ButtonWithDes(os.path.join(DIALOG_UI_PATH,"previous.png"),button_width*3.5,button_y,button_width,button_width,CONFIG["previous"]),
-            "delete": ButtonWithDes(os.path.join(DIALOG_UI_PATH,"delete.png"),button_width*2.25,button_y,button_width,button_width,CONFIG["delete"]),
-            "back": ButtonWithDes(os.path.join(DIALOG_UI_PATH,"back.png"),button_width,button_y,button_width,button_width,CONFIG["back"])
+            "save": loadButtonWithDes(
+                os.path.join(DIALOG_UI_PATH, "save.png"), get_lang("Global", "save"), (button_width*7.25, button_y), button_size, 150
+                ),
+            "reload": loadButtonWithDes(
+                os.path.join(DIALOG_UI_PATH, "reload.png"), CONFIG["reload"], (button_width*6, button_y), button_size, 150
+            ),
+            "add": loadButtonWithDes(
+                os.path.join(DIALOG_UI_PATH, "add.png"), CONFIG["add"], (button_width*4.75, button_y), button_size, 150
+            ),
+            "next": loadButtonWithDes(
+                os.path.join(DIALOG_UI_PATH, "dialog_skip.png"), CONFIG["next"], (button_width*4.75, button_y), button_size, 150
+            ),
+            "previous": loadButtonWithDes(
+                os.path.join(DIALOG_UI_PATH, "previous.png"), CONFIG["previous"], (button_width*3.5, button_y), button_size, 150
+            ),
+            "delete": loadButtonWithDes(
+                os.path.join(DIALOG_UI_PATH, "delete.png"), CONFIG["delete"], (button_width*2.25, button_y), button_size, 150
+            ),
+            "back": loadButtonWithDes(
+                os.path.join(DIALOG_UI_PATH, "back.png"), CONFIG["back"], (button_width, button_y), button_size, 150
+            )
         }
         self.please_enter_content = CONFIG["please_enter_content"]
         self.please_enter_name = CONFIG["please_enter_name"]

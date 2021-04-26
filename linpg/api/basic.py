@@ -30,11 +30,11 @@ def imgLoadFunction(path:Union[str,pygame.Surface], ifConvertAlpha:bool) -> pyga
         throwException("error","The path '{}' has to be a string or at least a pygame.Surface!".format(path))
 
 #图片加载模块：接收图片路径,长,高,返回对应图片
-def loadImg(path:Union[str,pygame.Surface], size:Union[tuple,list]=tuple(), setAlpha:int=255, ifConvertAlpha:bool=True) -> pygame.Surface:
+def loadImg(path:Union[str,pygame.Surface], size:Union[tuple,list]=tuple(), alpha:int=255, ifConvertAlpha:bool=True) -> pygame.Surface:
     #加载图片
     img = imgLoadFunction(path,ifConvertAlpha)
     #根据参数编辑图片
-    if setAlpha != 255: img.set_alpha(setAlpha)
+    if alpha != 255: img.set_alpha(alpha)
     #如果没有给size,则直接返回Surface
     return img if len(size) == 0 else resizeImg(img,size)
 
@@ -159,16 +159,24 @@ def convert_pos(pos:Union[list,tuple,dict,object,pygame.Rect,numpy.ndarray]) -> 
 def is_same_pos(pos1:any, pos2:any) -> bool: return convert_pos(pos1) == convert_pos(pos2)
 
 #相加2个坐标
-def add_pos(pos1:any, pos2:any) -> tuple:
-    pos1:tuple = convert_pos(pos1)
-    pos2:tuple = convert_pos(pos2)
-    return pos1[0]+pos2[0],pos1[1]+pos2[1]
+def add_pos(*potions:any) -> tuple:
+    x = 0
+    y = 0
+    for pos in potions:
+        convetred_pos = convert_pos(pos)
+        x += convetred_pos[0]
+        y += convetred_pos[0]
+    return x,y
 
 #相减2个坐标
-def subtract_pos(pos1:any, pos2:any) -> tuple:
-    pos1:tuple = convert_pos(pos1)
-    pos2:tuple = convert_pos(pos2)
-    return pos1[0]-pos2[0],pos1[1]-pos2[1]
+def subtract_pos(*potions:any) -> tuple:
+    x = 0
+    y = 0
+    for pos in potions:
+        convetred_pos = convert_pos(pos)
+        x += convetred_pos[0]
+        y += convetred_pos[0]
+    return x,y
 
 #多段数字字符串排序 - by Jeff Atwood
 def natural_sort(l:list) -> list:

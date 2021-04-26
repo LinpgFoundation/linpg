@@ -33,6 +33,42 @@ def loadGif(img_list_or_path:Union[list,tuple,str], position:tuple, size:tuple, 
         imgList = img_list_or_path
     return GifObject(numpy.asarray(imgList),position[0],position[1],size[0],size[1],updateGap)
 
+#加载按钮
+def loadButton(path:Union[str,pygame.Surface], position:tuple, size:tuple, alpha_when_not_hover:int=255) -> Button:
+    if alpha_when_not_hover < 255:
+        fading_button = Button(
+            loadImg(path, alpha=alpha_when_not_hover), position[0], position[1], size[0], size[1]
+            )
+        img2 = fading_button.get_image_copy()
+        img2.set_alpha(255)
+        fading_button.set_hover_img(img2)
+        return fading_button
+    else:
+        return Button(loadImg(path), position[0], position[1], size[0], size[1])
+
+#加载按钮
+def loadButtonWithDes(
+    path:Union[str,pygame.Surface], description:str, position:tuple, size:tuple, alpha_when_not_hover:int=255
+    ) -> ButtonWithDes:
+    if alpha_when_not_hover < 255:
+        fading_button = ButtonWithDes(loadImg(path, alpha=alpha_when_not_hover), description, position[0], position[1], size[0], size[1])
+        img2 = fading_button.get_image_copy()
+        img2.set_alpha(255)
+        fading_button.set_hover_img(img2)
+        return fading_button
+    else:
+        return ButtonWithDes(loadImg(path), description, position[0], position[1], size[0], size[1])
+
+#加载中间有文字按钮
+def loadButtonWithTextInCenter(
+    path:Union[str,pygame.Surface], txt:any, font_color:any, font_size:int, position:tuple, alpha_when_not_hover:int=255
+    ) -> Button:
+    txt_surface = fontRenderWithoutBound(txt, findColorRGBA(font_color), font_size)
+    panding:int = int(txt_surface.get_height()*0.2)
+    img = loadImg(path, size=(txt_surface.get_width()+panding*2,txt_surface.get_height()+panding*2))
+    img.blit(txt_surface,(panding,panding))
+    return loadButton(img, position, img.get_size(), alpha_when_not_hover)
+
 #获取特定颜色的表面
 def getSingleColorSurface(color,size=None) -> ImageSurface:
     #如果size是none，则使用屏幕的尺寸

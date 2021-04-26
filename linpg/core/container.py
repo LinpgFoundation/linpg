@@ -1,11 +1,11 @@
 # cython: language_level=3
-from .surface import *
+from .button import *
 
 #用于储存游戏对象的容器，类似html的div
 class GameObjectContainer(AbstractImage):
     def __init__(self, bg_img:Union[str,pygame.Surface,None], x:Union[int,float], y:Union[int,float], width:Union[int,float], height:Union[int,float]):
         if bg_img is not None: bg_img = StaticImageSurface(bg_img,0,0,width,height)
-        super().__init__(bg_img,x,y,width,height) 
+        super().__init__(bg_img,x,y,width,height)
         self.items:list = []
     #新增一个物品
     def append(self, new_item:GameObject) -> None: self.items.append(new_item)

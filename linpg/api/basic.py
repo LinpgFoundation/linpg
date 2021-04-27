@@ -159,23 +159,22 @@ def convert_pos(pos:Union[list,tuple,dict,object,pygame.Rect,numpy.ndarray]) -> 
 def is_same_pos(pos1:any, pos2:any) -> bool: return convert_pos(pos1) == convert_pos(pos2)
 
 #相加2个坐标
-def add_pos(*potions:any) -> tuple:
+def add_pos(*positions:any) -> tuple:
     x = 0
     y = 0
-    for pos in potions:
+    for pos in positions:
         convetred_pos = convert_pos(pos)
         x += convetred_pos[0]
-        y += convetred_pos[0]
+        y += convetred_pos[1]
     return x,y
 
 #相减2个坐标
-def subtract_pos(*potions:any) -> tuple:
-    x = 0
-    y = 0
-    for pos in potions:
+def subtract_pos(position,*positions:any) -> tuple:
+    x,y = convert_pos(position)
+    for pos in positions:
         convetred_pos = convert_pos(pos)
-        x += convetred_pos[0]
-        y += convetred_pos[0]
+        x -= convetred_pos[0]
+        y -= convetred_pos[1]
     return x,y
 
 #多段数字字符串排序 - by Jeff Atwood

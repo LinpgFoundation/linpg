@@ -3,7 +3,7 @@ from ..api import *
 
 #与pygame.Rect类似的形状类
 class Shape(GameObject2d):
-    def __init__(self, left:Union[int,float], top:Union[int,float], width:Union[int,float], height:Union[int,float]):
+    def __init__(self, left:Union[int,float], top:Union[int,float], width:int, height:int):
         super().__init__(left,top)
         self._width = int(width)
         self._height = int(height)
@@ -23,7 +23,7 @@ class Shape(GameObject2d):
 
 #图形接口
 class AbstractImage(Shape):
-    def __init__(self, img:any, x:Union[int,float], y:Union[int,float], width:any, height:any):
+    def __init__(self, img:any, x:Union[int,float], y:Union[int,float], width:int, height:int):
         super().__init__(x, y, width, height)
         self.img = img
         self.hidden:bool = False
@@ -36,16 +36,32 @@ class AbstractImage(Shape):
     def get_image_pointer(self) -> any: return self.img
     def get_image_copy(self) -> any: return self.img.copy()
 
+#有本地坐标的图形接口
+class AbstractImageWithLocalPos(AbstractImage):
+    def __init__(self, img: any, x:Union[int, float], y:Union[int, float], width:int, height:int):
+        super().__init__(img, x, y, width, height)
+        self._local_x:int = 0
+        self._local_y:int = 0
+    #本地坐标
+    @property
+    def local_pos(self) -> tuple: return self._local_x,self._local_y
+    def get_local_pos(self) -> tuple: return self._local_x,self._local_y
+    def set_local_pos(self, local_x:int, local_y:int) -> None:
+        self._local_x = int(local_x)
+        self._local_y = int(local_y)
+    #绝对的本地坐标
+    @property
+    def abs_pos(self) -> tuple: return self.x+self._local_x,self.y+self._local_y
+    def get_abs_pos(self) -> tuple: return self.x+self._local_x,self.y+self._local_y
+
 #用于静态图片的surface
-class StaticImageSurface(AbstractImage):
-    def __init__(self, path_or_surface:Union[str,pygame.Surface], x:any, y:any, width:any=None, height:any=None):
+class StaticImageSurface(AbstractImageWithLocalPos):
+    def __init__(self, img:Union[str,pygame.Surface], x:Union[int,float], y:Union[int,float], width:int=-1, height:int=-1):
         super().__init__(None,x,y,width,height)
         self._alpha:int = 255
-        self.img_original = loadImg(path_or_surface)
-        self.__local_x = 0
-        self.__local_y = 0
+        self.img_original = loadImg(img)
         self.__is_flipped:bool = False
-        self.__needUpdate:bool = True if self._width is not None and self._height is not None else False
+        self.__needUpdate:bool = True if self._width >= 0 and self._height >= 0 else False
         self.__crop_rect:object = None
     #透明度
     def get_alpha(self) -> int: return self._alpha
@@ -94,9 +110,8 @@ class StaticImageSurface(AbstractImage):
             new_y:int = max(rect.y,self.__crop_rect.y)
             rect = Shape(new_x,new_y,min(rect.right,self.__crop_rect.right)-new_x,min(rect.bottom,self.__crop_rect.bottom)-new_y)
         self.img = getSurface(rect.size,pygame.SRCALPHA).convert_alpha()
-        self.__local_x = rect.x
-        self.__local_y = rect.y
-        self.img.blit(imgTmp,(-self.__local_x,-self.__local_y))
+        self.set_local_pos(rect.x,rect.y)
+        self.img.blit(imgTmp,(-self._local_x,-self._local_y))
         if self._alpha != 255:
             self.img.set_alpha(self._alpha)
         self.__needUpdate = False
@@ -116,18 +131,14 @@ class StaticImageSurface(AbstractImage):
         if self.__is_flipped: self.flip()
     #画出轮廓
     def draw_outline(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0), color:str="red", line_width:int=2) -> None:
-        pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect(
-            (self.x+self.__local_x+offSet[0],self.y+self.__local_y+offSet[1]),self.img.get_size()
-            ),line_width)
+        pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect(add_pos(self.abs_pos,offSet),self.img.get_size()),line_width)
     #是否被鼠标触碰
     def is_hover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
         if mouse_pos == (-1,-1): mouse_pos = controller.get_mouse_pos()
         if self.img is not None:
-            return 0 < mouse_pos[0]-self.x-self.__local_x < self.img.get_width() and 0 < mouse_pos[1]-self.y-self.__local_y < self.img.get_height()
+            return 0 < mouse_pos[0]-self.x-self._local_x < self.img.get_width() and 0 < mouse_pos[1]-self.y-self._local_y < self.img.get_height()
         else:
             return False
-    #返回local坐标
-    def get_local_pos(self) -> tuple: return self.x+self.__local_x,self.y+self.__local_y
     #返回一个复制品
     def copy(self): return StaticImageSurface(self.img_original.copy(),self.x,self.y,self._width,self._height)
     #返回一个浅复制品
@@ -144,29 +155,23 @@ class StaticImageSurface(AbstractImage):
         #如果图片需要更新，则先更新
         if self.__needUpdate: self._update_img()
         #将已经处理好的图片画在给定的图层上
-        surface.blit(self.img,(self.x+self.__local_x+offSet[0], self.y+self.__local_y+offSet[1]))
+        surface.blit(self.img,(self.x+self._local_x+offSet[0], self.y+self._local_y+offSet[1]))
 
 #高级图形类
 class ImageSurface(AbstractImage):
-    def __init__(self, img:pygame.Surface, x:Union[int,float], y:Union[int,float], width:any=None, height:any=None, description:str="Default"):
+    def __init__(self, img:pygame.Surface, x:Union[int,float], y:Union[int,float], width:int=-1, height:int=-1, description:str="Default"):
         super().__init__(img,x,y,width,height)
-        self.xTogo = x
-        self.yTogo = y
-        self.items = []
         self.description = description
-        if self._width is None and self._height is None:
+        if self._width < 0 and self._height < 0:
             self._width,self._height = self.img.get_size()
-        elif self._width is None and self._height is not None:
+        elif self._width < 0 and self._height >= 0:
             self._width = self._height/self.img.get_height()*self.img.get_width()
-        elif self._width is not None and self._height is None:
+        elif self._width >= 0 and self._height < 0:
             self._height = self._width/self.img.get_width()*self.img.get_height()
     #返回一个复制
     def copy(self) -> None:
         replica = ImageSurface(self.get_image_copy(),self.x,self.y,self._width,self._height,self.description)
         self.img.set_alpha(255)
-        replica.xTogo = self.xTogo
-        replica.yTogo = self.yTogo
-        replica.items = self.items.copy()
         return replica
     #更新图片
     def update(self, img_path:Union[str,pygame.Surface], ifConvertAlpha:bool=True) -> None:
@@ -187,7 +192,7 @@ class ImageSurface(AbstractImage):
 #需要移动的动态图片
 class DynamicImageSurface(ImageSurface):
     def __init__(self, img:pygame.Surface, x:Union[int,float], y:Union[int,float], target_x:Union[int,float], target_y:Union[int,float],
-        moveSpeed_x:Union[int,float], moveSpeed_y:Union[int,float], width:any=None, height:any=None, description:str="Default"):
+        moveSpeed_x:Union[int,float], moveSpeed_y:Union[int,float], width:int=-1, height:int=-1, description:str="Default"):
         super().__init__(img,x,y,width,height,description)
         self.default_x = x
         self.default_y = y
@@ -195,10 +200,20 @@ class DynamicImageSurface(ImageSurface):
         self.target_y = target_y
         self.moveSpeed_x = moveSpeed_x
         self.moveSpeed_y = moveSpeed_y
-        self.__towardTargetPos = False
+        self.__is_moving_toward_target:bool = False
+    #控制
+    def switch(self) -> None: self.__is_moving_toward_target = not self.__is_moving_toward_target
+    def move_toward(self) -> None: self.__is_moving_toward_target = True
+    def move_back(self) -> None: self.__is_moving_toward_target = False
+    #移动状态
+    def is_moving_toward_target(self) -> bool: return self.__is_moving_toward_target
+    def has_reached_target(self) -> bool:
+        return self.x == self.target_x and self.y == self.target_y if self.__is_moving_toward_target is True \
+            else self.x == self.default_x and self.y == self.default_y
+    #画出
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
         super().display(surface,offSet)
-        if self.__towardTargetPos is True:
+        if self.__is_moving_toward_target is True:
             if self.default_x < self.target_x:
                 if self.x < self.target_x: self.x += self.moveSpeed_x
                 if self.x > self.target_x: self.x = self.target_x
@@ -224,12 +239,10 @@ class DynamicImageSurface(ImageSurface):
             elif self.default_y > self.target_y:
                 if self.y < self.default_y: self.y += self.moveSpeed_y
                 if self.y > self.default_y: self.y = self.default_y
-    def switch(self) -> None: self.__towardTargetPos = not self.__towardTargetPos
-    def ifToward(self) -> bool: return self.__towardTargetPos
 
 #gif图片管理
 class GifObject(AbstractImage):
-    def __init__(self,imgList:Union[tuple,list], x:Union[int,float], y:Union[int,float], width:Union[int,float], height:Union[int,float], updateGap:int):
+    def __init__(self,imgList:numpy.ndarray, x:Union[int,float], y:Union[int,float], width:int, height:int, updateGap:int):
         super().__init__(imgList,x,y,width,height)
         self.imgId = 0
         self.updateGap = updateGap

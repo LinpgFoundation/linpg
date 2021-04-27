@@ -3,7 +3,7 @@ from .button import *
 
 #用于储存游戏对象的容器，类似html的div
 class GameObjectContainer(AbstractImage):
-    def __init__(self, bg_img:Union[str,pygame.Surface,None], x:Union[int,float], y:Union[int,float], width:Union[int,float], height:Union[int,float]):
+    def __init__(self, bg_img:Union[str,pygame.Surface,None], x:Union[int,float], y:Union[int,float], width:int, height:int):
         if bg_img is not None: bg_img = StaticImageSurface(bg_img,0,0,width,height)
         super().__init__(bg_img,x,y,width,height)
         self.items:list = []
@@ -31,13 +31,10 @@ class GameObjectContainer(AbstractImage):
                 item.display(surface,add_pos(self.pos,offSet))
 
 #带有滚动条的Surface容器
-class SurfaceContainerWithScrollbar(AbstractImage):
-    def __init__(self, img:Union[str,pygame.Surface,None], x:Union[int,float], y:Union[int,float], width:Union[int,float], height:Union[int,float],
-    mode:str="horizontal"):
+class SurfaceContainerWithScrollbar(AbstractImageWithLocalPos):
+    def __init__(self, img:Union[str,pygame.Surface,None], x:Union[int,float], y:Union[int,float], width:int, height:int, mode:str="horizontal"):
         if img is not None: img = loadImg(img,(width,height))
         super().__init__(img,x,y,width,height)
-        self.__local_x:int = 0
-        self.__local_y:int = 0
         self.panding:int = 0
         self.__items_dict:dict = {}
         self.distance_between_item:int = 20
@@ -53,8 +50,6 @@ class SurfaceContainerWithScrollbar(AbstractImage):
         self.__scroll_bar_pos:bool = True
         self.__current_hovered_item:any = None
         self.__item_per_line:int = 1
-    #获取本地坐标
-    def get_local_pos(self) -> tuple: return self.__local_x,self.__local_y
     #模式
     @property
     def mode(self) -> str: return self.get_mode()
@@ -68,8 +63,7 @@ class SurfaceContainerWithScrollbar(AbstractImage):
             throwException("error","Mode '{}' is not supported!".format(mode))
     def switch_mode(self) -> None:
         self.__mode = not self.__mode
-        self.__local_x = 0
-        self.__local_y = 0
+        self.set_local_pos(0,0)
         self.clear()
     #滚动条位置
     @property
@@ -124,26 +118,26 @@ class SurfaceContainerWithScrollbar(AbstractImage):
         if not self.__mode:
             if self.__total_height > self._height:
                 return pygame.Rect(
-                    int(self.x+self.__local_x+off_set_x),
-                    int(self.y-self._height*self.__local_y/self.__total_height+off_set_y),
+                    int(self.x+self._local_x+off_set_x),
+                    int(self.y-self._height*self._local_y/self.__total_height+off_set_y),
                     self.button_tickness,
                     int(self._height*self._height/self.__total_height)
                     ) if self.__scroll_bar_pos is True else pygame.Rect(
-                        int(self.x+self.__local_x+self._width-self.button_tickness+off_set_x),
-                        int(self.y-self._height*self.__local_y/self.__total_height+off_set_y),
+                        int(self.x+self._local_x+self._width-self.button_tickness+off_set_x),
+                        int(self.y-self._height*self._local_y/self.__total_height+off_set_y),
                         self.button_tickness,
                         int(self._height*self._height/self.__total_height)
                         )
         else:
             if self.__total_width > self._width:
                 return pygame.Rect(
-                    int(self.x-self._width*self.__local_x/self.__total_width+off_set_x),
-                    int(self.y+self.__local_y+off_set_y),
+                    int(self.x-self._width*self._local_x/self.__total_width+off_set_x),
+                    int(self.y+self._local_y+off_set_y),
                     int(self._width*self._width/self.__total_width),
                     self.button_tickness
                     ) if self.__scroll_bar_pos is True else pygame.Rect(
-                        int(self.x-self._width*self.__local_x/self.__total_width+off_set_x),
-                        int(self.y+self.__local_y+self._height-self.button_tickness+off_set_y),
+                        int(self.x-self._width*self._local_x/self.__total_width+off_set_x),
+                        int(self.y+self._local_y+self._height-self.button_tickness+off_set_y),
                         int(self._width*self._width/self.__total_width),
                         self.button_tickness
                         )
@@ -153,17 +147,17 @@ class SurfaceContainerWithScrollbar(AbstractImage):
         if not self.__mode:
             if self.__total_height > self._height:
                 return pygame.Rect(
-                    int(self.x+self.__local_x+off_set_x), int(self.y+off_set_y), self.button_tickness, self._height
+                    int(self.x+self._local_x+off_set_x), int(self.y+off_set_y), self.button_tickness, self._height
                     ) if self.__scroll_bar_pos is True else pygame.Rect(
-                        int(self.x+self.__local_x+self._width-self.button_tickness+off_set_x), int(self.y+off_set_y),
+                        int(self.x+self._local_x+self._width-self.button_tickness+off_set_x), int(self.y+off_set_y),
                         self.button_tickness, self._height
                         )
         else:
             if self.__total_width > self._width:
                 return pygame.Rect(
-                    int(self.x+off_set_x), int(self.y+self.__local_y+off_set_y), self._width, self.button_tickness
+                    int(self.x+off_set_x), int(self.y+self._local_y+off_set_y), self._width, self.button_tickness
                     ) if self.__scroll_bar_pos is True else pygame.Rect(
-                        int(self.x+off_set_x), int(self.y+self.__local_y+self._height-self.button_tickness+off_set_y),
+                        int(self.x+off_set_x), int(self.y+self._local_y+self._height-self.button_tickness+off_set_y),
                         self._width, self.button_tickness
                         )
         return None
@@ -180,8 +174,8 @@ class SurfaceContainerWithScrollbar(AbstractImage):
             #如果有背景图片，则画出
             if self.img is not None: surface.blit(self.img,add_pos(self.pos,off_set))
             #计算出基础坐标
-            current_x:int = int(self.x+self.__local_x+off_set[0])
-            current_y:int = int(self.y+self.__local_y+off_set[1])
+            current_x:int = int(self.x+self._local_x+off_set[0])
+            current_y:int = int(self.y+self._local_y+off_set[1])
             if not self.__mode:
                 current_x += self.panding
             else:
@@ -222,7 +216,7 @@ class SurfaceContainerWithScrollbar(AbstractImage):
                         #换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line-1:
                             current_y += self.distance_between_item + item.get_height()
-                            current_x = int(self.x+self.__local_x+off_set[0]+self.panding)
+                            current_x = int(self.x+self._local_x+off_set[0]+self.panding)
                             item_has_been_dawn_on_this_line = 0
                         else:
                             current_x += self.distance_between_item + item.get_width()
@@ -255,18 +249,18 @@ class SurfaceContainerWithScrollbar(AbstractImage):
                         #换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line-1:
                             current_x += self.distance_between_item + item.get_width()
-                            current_y = int(self.y+self.__local_y+off_set[1]+self.panding)
+                            current_y = int(self.y+self._local_y+off_set[1]+self.panding)
                             item_has_been_dawn_on_this_line = 0
                         else:
                             current_y += self.distance_between_item + item.get_height()
                             item_has_been_dawn_on_this_line += 1
             #处理总长宽
             if not self.__mode:
-                self.__total_height = int(current_y-self.y-self.__local_y-off_set[1])
+                self.__total_height = int(current_y-self.y-self._local_y-off_set[1])
                 if item_has_been_dawn_on_this_line > 0: self.__total_height += item.get_height()
                 self.__total_width = self._width
             else:
-                self.__total_width = int(current_x-self.x-self.__local_x-off_set[0])
+                self.__total_width = int(current_x-self.x-self._local_x-off_set[0])
                 if item_has_been_dawn_on_this_line > 0: self.__total_width += item.get_width()
                 self.__total_height = self._height
             """处理事件"""
@@ -289,23 +283,23 @@ class SurfaceContainerWithScrollbar(AbstractImage):
                                         self.__is_holding_scroll_button = True
                                         self.__mouse_x_last,self.__mouse_y_last = controller.get_mouse_pos()
                                         if not self.__mode:
-                                            self.__local_y = int(
+                                            self._local_y = int(
                                                 (self.y-mouse_pos[1]+scroll_button_rect.height/2)/scroll_bar_rect.height*self.__total_height
                                             )
                                         else:
-                                            self.__local_x = int(
+                                            self._local_x = int(
                                                 (self.x-mouse_pos[0]+scroll_button_rect.width/2)/scroll_bar_rect.width*self.__total_width
                                             )
                             elif event.button == 4:
                                 if not self.__mode:
-                                    self.__local_y += self.move_speed
+                                    self._local_y += self.move_speed
                                 else:
-                                    self.__local_x -= self.move_speed
+                                    self._local_x -= self.move_speed
                             elif event.button == 5:
                                 if not self.__mode:
-                                    self.__local_y -= self.move_speed
+                                    self._local_y -= self.move_speed
                                 else:
-                                    self.__local_x += self.move_speed
+                                    self._local_x += self.move_speed
                         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
                             self.__is_holding_scroll_button = False
                 else:
@@ -316,24 +310,24 @@ class SurfaceContainerWithScrollbar(AbstractImage):
             if self.__is_holding_scroll_button is True:
                 mouse_x,mouse_y = controller.get_mouse_pos()
                 if not self.__mode:
-                    self.__local_y += (self.__mouse_y_last-mouse_y)*(self.__total_height/self.height)
+                    self._local_y += (self.__mouse_y_last-mouse_y)*(self.__total_height/self.height)
                     self.__mouse_y_last = mouse_y
                 else:
-                    self.__local_x += (self.__mouse_x_last-mouse_x)*(self.__total_width/self.width)
+                    self._local_x += (self.__mouse_x_last-mouse_x)*(self.__total_width/self.width)
                     self.__mouse_x_last = mouse_x
             #防止local坐标越界
             if not self.__mode:
-                if self.__local_y > 0:
-                    self.__local_y = 0
+                if self._local_y > 0:
+                    self._local_y = 0
                 elif self.__total_height > self._height:
                     local_y_max = self._height-self.__total_height
-                    if self.__local_y < local_y_max: self.__local_y = local_y_max
+                    if self._local_y < local_y_max: self._local_y = local_y_max
             else:
-                if self.__local_x > 0:
-                    self.__local_x = 0
+                if self._local_x > 0:
+                    self._local_x = 0
                 elif self.__total_width > self._width:
                     local_x_max = self._width-self.__total_width
-                    if self.__local_x < local_x_max: self.__local_x = local_x_max
+                    if self._local_x < local_x_max: self._local_x = local_x_max
             
             #画出滚动条
             scroll_button_rect = self.__get_scroll_button_rect(off_set[0],off_set[1])

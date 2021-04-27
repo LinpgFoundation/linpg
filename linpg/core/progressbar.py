@@ -3,7 +3,14 @@ from .surface import *
 
 #进度条
 class ProgressBar(AbstractImage):
-    def __init__(self, x:Union[int,float], y:Union[int,float], max_width:Union[int,float], height:Union[int,float], color:any):
+    def __init__(
+        self,
+        x: Union[int, float],
+        y: Union[int, float],
+        max_width: int,
+        height: int,
+        color: any
+        ):
         super().__init__(None,x,y,max_width,height)
         self.percentage = 0
         self.color = findColorRGBA(color)
@@ -12,9 +19,17 @@ class ProgressBar(AbstractImage):
 
 #进度条Surface
 class ProgressBarSurface(AbstractImage):
-    def __init__(self, imgOnTop:pygame.Surface, imgOnBottom:pygame.Surface, x:Union[int,float], y:Union[int,float],
-        max_width:Union[int,float], height:Union[int,float], mode:str="horizontal"):
-        if imgOnTop is not None: imgOnTop = imgLoadFunction(imgOnTop,True)
+    def __init__(
+        self,
+        imgOnTop: pygame.Surface,
+        imgOnBottom: pygame.Surface,
+        x: Union[int, float],
+        y: Union[int, float],
+        max_width: int,
+        height: int,
+        mode: str = "horizontal"
+        ):
+        if imgOnTop is not None: imgOnTop = imgLoadFunction(imgOnTop, True)
         super().__init__(imgOnTop,x,y,max_width,height)
         self.img2 = imgLoadFunction(imgOnBottom,True) if imgOnBottom is not None else None
         self._current_percentage = 0
@@ -54,11 +69,19 @@ class ProgressBarSurface(AbstractImage):
             else:
                 surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage))),pos)
 
-#动态进度条Surface
+# 动态进度条Surface
 class DynamicProgressBarSurface(ProgressBarSurface):
-    def __init__(self, imgOnTop:pygame.Surface, imgOnBottom:pygame.Surface, x:Union[int,float], y:Union[int,float],
-        max_width:Union[int,float], height:Union[int,float], mode:str="horizontal"):
-        super().__init__(imgOnTop,imgOnBottom,x,y,max_width,height,mode)
+    def __init__(
+        self,
+        imgOnTop: pygame.Surface,
+        imgOnBottom: pygame.Surface,
+        x: Union[int, float],
+        y: Union[int, float],
+        max_width: int,
+        height: int,
+        mode: str = "horizontal"
+        ):
+        super().__init__(imgOnTop, imgOnBottom, x, y, max_width, height, mode)
         self._percentage_to_be = 0
         self.__perecent_update_each_time = 0
         self.__total_update_intervals = 10

@@ -174,6 +174,7 @@ class DialogSystem(AbstractDialogSystem):
                         get_option_menu().hidden = False
                     elif result == "back_to_mainMenu":
                         get_option_menu().hidden = True
+                        progress_saved_text.set_alpha(0)
                         self.fadeOut(surface)
                         self.pause_menu.hidden = True
                         self.stop()
@@ -325,12 +326,13 @@ class DialogEditor(AbstractDialogSystem):
         #UI按钮
         CONFIG = get_lang("DialogCreator")
         button_y = int(display.get_height()*0.03)
+        font_size = int(button_width/3)
         #控制容器转换的按钮
         self.button_select_background = loadButtonWithTextInCenter(
-            os.path.join(DIALOG_UI_PATH, "menu.png"), CONFIG["background"], "black", button_width/2, (0, button_y*2), 150
+            os.path.join(DIALOG_UI_PATH, "menu.png"), CONFIG["background"], "black", font_size, (0, button_y*2), 150
             )
         self.button_select_npc = loadButtonWithTextInCenter(
-            os.path.join(DIALOG_UI_PATH, "menu.png"), CONFIG["npc"], "black", button_width/2, (0, button_y*2), 150
+            os.path.join(DIALOG_UI_PATH, "menu.png"), CONFIG["npc"], "black", font_size, (0, button_y*2), 150
         )
         panding:int = int((container_width-self.button_select_background.get_width()-self.button_select_npc.get_width())/3)
         self.button_select_background.set_left(panding)
@@ -342,7 +344,7 @@ class DialogEditor(AbstractDialogSystem):
                 os.path.join(DIALOG_UI_PATH, "save.png"), get_lang("Global", "save"), (button_width*7.25, button_y), button_size, 150
                 ),
             "reload": loadButtonWithDes(
-                os.path.join(DIALOG_UI_PATH, "reload.png"), CONFIG["reload"], (button_width*6, button_y), button_size, 150
+                os.path.join(DIALOG_UI_PATH, "reload.png"), get_lang("Global", "reload_file"), (button_width*6, button_y), button_size, 150
             ),
             "add": loadButtonWithDes(
                 os.path.join(DIALOG_UI_PATH, "add.png"), CONFIG["add"], (button_width*4.75, button_y), button_size, 150

@@ -23,10 +23,12 @@ class ButtonWithDes(Button):
     def __init__(self, img:pygame.Surface, des:str, x:int, y:int, width:int=-1, height:int=-1):
         super().__init__(img, x, y, width, height)
         self.des = des
-        self.des_font_surface = fontRenderWithoutBound(des,"black",self._height*0.4)
-        self.des_surface = pygame.Surface((self.des_font_surface.get_width()*1.2,self._height*0.6),flags=pygame.SRCALPHA).convert_alpha()
-        pygame.draw.rect(self.des_surface,(255,255,255),(0,0, self.des_surface.get_width(),self.des_surface.get_height()))
-        self.des_surface.blit(self.des_font_surface,(self.des_font_surface.get_width()*0.1,self._height*0.1))
+        font_surface = fontRenderWithoutBound(des,"black",self._height*0.5)
+        panding:int = int(font_surface.get_height()/2)
+        self.des_surface = pygame.Surface((font_surface.get_width()+panding*2,font_surface.get_height()+panding*2)).convert_alpha()
+        self.des_surface.fill(findColorRGBA("white"))
+        pygame.draw.rect(self.des_surface,findColorRGBA("black"),(0,0, self.des_surface.get_width(),self.des_surface.get_height()),2)
+        self.des_surface.blit(font_surface,(panding,panding))
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
         super().display(surface, offSet)
         if self._is_hovered is True: surface.blit(self.des_surface, controller.get_mouse_pos())

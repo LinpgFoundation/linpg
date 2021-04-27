@@ -34,7 +34,7 @@ class AbstractDialog:
 
 #对话框和对话框内容
 class DialogBox(AbstractDialog,GameObject2d):
-    def __init__(self, imgPath:str, width:Union[int,float], height:Union[int,float], x:Union[int,float], y:Union[int,float], fontSize:int):
+    def __init__(self, imgPath:str, x:Union[int,float], y:Union[int,float], width:int, height:int, fontSize:int):
         AbstractDialog.__init__(self,loadImg(imgPath,(width,height)),fontSize)
         GameObject2d.__init__(self,x,y)
         self.__surface = None
@@ -220,7 +220,7 @@ class DialogButtons:
 class LeaveWithoutSavingWarning(AbstractImage):
     def __init__(self, img: any, x: int, y: int, width: int, height: int):
         super().__init__(StaticImageSurface(img,0,0), x, y, width, height)
-        font_size = int(height/10)
+        font_size:int = int(height/10)
         #警告-标题
         self.__warning_title = TextSurface(fontRender(get_lang("Global","warning"),"white",font_size),0,font_size)
         self.__warning_title.set_centerx(self._width/2)
@@ -229,19 +229,20 @@ class LeaveWithoutSavingWarning(AbstractImage):
         self.__text_1.set_centerx(self._width/2)
         self.__text_2 = TextSurface(fontRender(get_lang("Dialog","leave_without_save2"),"white",font_size),0,font_size*4)
         self.__text_2.set_centerx(self._width/2)
+        font_size = int(font_size*1.5)
         #保存按钮
         self.save_button = loadButtonWithTextInCenter(
-            os.path.join(DIALOG_UI_PATH,"menu.png"), get_lang("Global","save"), "black", font_size*2, (0,0), 150
+            os.path.join(DIALOG_UI_PATH,"menu.png"), get_lang("Global","save"), "black", font_size, (0,0), 150
             )
         self.save_button.set_bottom(self._height*0.9)
         #取消按钮
         self.cancel_button = loadButtonWithTextInCenter(
-            os.path.join(DIALOG_UI_PATH,"menu.png"), get_lang("Global","cancel"), "black", font_size*2, (0,0), 150
+            os.path.join(DIALOG_UI_PATH,"menu.png"), get_lang("Global","cancel"), "black", font_size, (0,0), 150
             )
         self.cancel_button.set_bottom(self._height*0.9)
         #不要保存按钮
         self.dont_save_button = loadButtonWithTextInCenter(
-            os.path.join(DIALOG_UI_PATH,"menu.png"), get_lang("Global","dont_save"), "black", font_size*2, (0,0), 150
+            os.path.join(DIALOG_UI_PATH,"menu.png"), get_lang("Global","dont_save"), "black", font_size, (0,0), 150
             )
         self.dont_save_button.set_bottom(self._height*0.9)
         #计算间距

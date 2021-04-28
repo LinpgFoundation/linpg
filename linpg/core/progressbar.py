@@ -13,9 +13,10 @@ class ProgressBar(AbstractImage):
         ):
         super().__init__(None,x,y,max_width,height)
         self.percentage = 0
-        self.color = findColorRGBA(color)
-    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        pygame.draw.rect(surface,self.color,pygame.Rect(add_pos(self.pos,offSet),(int(self._width*self.percentage),self._height)))
+        self.color:tuple = findColorRGBA(color)
+    def display(self, surface: pygame.Surface, offSet: Union[tuple, list] = (0, 0)) -> None:
+        if not self.hidden:
+            pygame.draw.rect(surface, self.color, pygame.Rect(add_pos(self.pos, offSet), (int(self._width*self.percentage), self._height)))
 
 #进度条Surface
 class ProgressBarSurface(AbstractImage):
@@ -60,14 +61,15 @@ class ProgressBarSurface(AbstractImage):
     def light_copy(self): return ProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #展示
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        pos = add_pos(self.pos,offSet)
-        surface.blit(resizeImg(self.img2,self.size),pos)
-        if self._current_percentage > 0:
-            imgOnTop = resizeImg(self.img,self.size)
-            if self._mode:
-                surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage),self._height)),pos)
-            else:
-                surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage))),pos)
+        if not self.hidden:
+            pos = add_pos(self.pos, offSet)
+            surface.blit(resizeImg(self.img2,self.size),pos)
+            if self._current_percentage > 0:
+                imgOnTop = resizeImg(self.img,self.size)
+                if self._mode:
+                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage),self._height)),pos)
+                else:
+                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage))),pos)
 
 # 动态进度条Surface
 class DynamicProgressBarSurface(ProgressBarSurface):
@@ -107,32 +109,33 @@ class DynamicProgressBarSurface(ProgressBarSurface):
             self._current_percentage += self.__perecent_update_each_time
     #展示
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        pos:tuple = add_pos(self.pos,offSet)
-        surface.blit(resizeImg(self.img2,self.size),pos)
-        self._check_and_update_percentage()
-        if self._current_percentage > 0:
-            imgOnTop = resizeImg(self.img,self.size)
-            if self._mode:
-                if self._current_percentage < self._percentage_to_be:
-                    img2 = cropImg(imgOnTop,size=(int(self._width*self._percentage_to_be/self.accuracy),self._height))
-                    img2.set_alpha(100)
-                    surface.blit(img2,pos)
-                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),pos)
-                else:
-                    if self._current_percentage > self._percentage_to_be:
-                        img2 = cropImg(imgOnTop,size=(int(self._width*self._current_percentage/self.accuracy),self._height))
+        if not self.hidden:
+            pos:tuple = add_pos(self.pos,offSet)
+            surface.blit(resizeImg(self.img2,self.size),pos)
+            self._check_and_update_percentage()
+            if self._current_percentage > 0:
+                imgOnTop = resizeImg(self.img,self.size)
+                if self._mode:
+                    if self._current_percentage < self._percentage_to_be:
+                        img2 = cropImg(imgOnTop,size=(int(self._width*self._percentage_to_be/self.accuracy),self._height))
                         img2.set_alpha(100)
                         surface.blit(img2,pos)
-                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._percentage_to_be/self.accuracy),self._height)),pos)
-            else:
-                if self._current_percentage < self._percentage_to_be:
-                    img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._percentage_to_be/self.accuracy)))
-                    img2.set_alpha(100)
-                    surface.blit(img2,pos)
-                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),pos)
+                        surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),pos)
+                    else:
+                        if self._current_percentage > self._percentage_to_be:
+                            img2 = cropImg(imgOnTop,size=(int(self._width*self._current_percentage/self.accuracy),self._height))
+                            img2.set_alpha(100)
+                            surface.blit(img2,pos)
+                        surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._percentage_to_be/self.accuracy),self._height)),pos)
                 else:
-                    if self._current_percentage > self._percentage_to_be:
-                        img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._current_percentage/self.accuracy)))
+                    if self._current_percentage < self._percentage_to_be:
+                        img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._percentage_to_be/self.accuracy)))
                         img2.set_alpha(100)
                         surface.blit(img2,pos)
-                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._percentage_to_be/self.accuracy))),pos)
+                        surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),pos)
+                    else:
+                        if self._current_percentage > self._percentage_to_be:
+                            img2 = cropImg(imgOnTop,size=(self._width,int(self._height*self._current_percentage/self.accuracy)))
+                            img2.set_alpha(100)
+                            surface.blit(img2,pos)
+                        surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._percentage_to_be/self.accuracy))),pos)

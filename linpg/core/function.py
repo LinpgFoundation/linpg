@@ -8,7 +8,7 @@ def loadImage(
     position: tuple,
     width: int = -1,
     height: int = -1,
-    description: str = "Default",
+    tag: str = "Default",
     ifConvertAlpha: bool = True
     ) -> ImageSurface:
     return ImageSurface(
@@ -17,7 +17,7 @@ def loadImage(
         position[1],
         width,
         height,
-        description,
+        tag,
     )
 
 # 高级动态图片加载模块：接收图片路径（或者已经载入的图片）,位置:(x,y),长,高,返回对应的图片class
@@ -28,11 +28,11 @@ def loadDynamicImage(
     moveSpeed: tuple = (0, 0),
     width: int = -1,
     height: int = -1,
-    description="Default",
+    tag="Default",
     ifConvertAlpha: bool = True
     ) -> DynamicImageSurface:
     return DynamicImageSurface(imgLoadFunction(path,ifConvertAlpha),position[0],position[1],target_position[0],target_position[1],\
-        moveSpeed[0],moveSpeed[1],width,height,description)
+        moveSpeed[0],moveSpeed[1],width,height,tag)
 
 # 加载GIF格式图片
 def loadGif(
@@ -80,14 +80,14 @@ def loadButton(
 # 加载按钮
 def loadButtonWithDes(
     path: Union[str, pygame.Surface],
-    description: str,
+    tag: str,
     position: tuple,
     size: tuple,
     alpha_when_not_hover: int = 255) -> ButtonWithDes:
     if alpha_when_not_hover < 255:
         fading_button = ButtonWithDes(
             loadImg(path, alpha=alpha_when_not_hover),
-            description,
+            tag,
             position[0],
             position[1],
             size[0],
@@ -99,7 +99,7 @@ def loadButtonWithDes(
         return fading_button
     else:
         return ButtonWithDes(
-            loadImg(path), description, position[0], position[1], size[0], size[1]
+            loadImg(path), tag, position[0], position[1], size[0], size[1]
         )
 
 # 加载中间有文字按钮

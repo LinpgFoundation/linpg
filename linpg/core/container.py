@@ -7,6 +7,7 @@ class GameObjectContainer(AbstractImage):
         if bg_img is not None: bg_img = StaticImageSurface(bg_img,0,0,width,height)
         super().__init__(bg_img,x,y,width,height)
         self.items:list = []
+        self.item_hovered = None
     #新增一个物品
     def append(self, new_item:GameObject) -> None: self.items.append(new_item)
     #移除一个物品
@@ -23,15 +24,17 @@ class GameObjectContainer(AbstractImage):
     #把物品画到surface上
     def draw(self, surface:pygame.Surface) -> None: self.display(surface)
     def display(self, surface:pygame.Surface, offSet:tuple=(0,0)) -> None:
+        self.item_hovered = None
         if not self.hidden:
             #画出背景
             if self.img is not None: self.img.display(surface,add_pos(self.pos,offSet))
             #画出物品
             for item in self.items:
                 item.display(surface,add_pos(self.pos,offSet))
+                if isinstance(item,Button): self.item_hovered = item.tag
 
 #带有滚动条的Surface容器
-class SurfaceContainerWithScrollbar(AbstractImageWithLocalPos):
+class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
     def __init__(self, img:Union[str,pygame.Surface,None], x:Union[int,float], y:Union[int,float], width:int, height:int, mode:str="horizontal"):
         if img is not None: img = loadImg(img,(width,height))
         super().__init__(img,x,y,width,height)

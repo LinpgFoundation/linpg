@@ -200,3 +200,12 @@ def isHoverPygameObject(imgObject:object, objectPos:Union[tuple,list]=(0,0), off
 #检测数值是否越界
 def keepInRange(number:Union[int,float], min_value:Union[int,float], max_value:Union[int,float]) -> Union[int,float]:
     return max(min(max_value, number), min_value)
+
+#转换string形式的百分比
+def convert_percentage(percentage:Union[str, float]) -> float:
+    if isinstance(percentage, str) and percentage.endswith("%"):
+        return float(percentage.strip('%'))/100
+    elif isinstance(percentage, float):
+        return percentage
+    else:
+        throwException("error", '"{}" is not a valid percentage that can be converted'.format(percentage))

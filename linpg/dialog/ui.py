@@ -146,9 +146,9 @@ class DialogButtons:
         self.autoButton.blit(tempButtonTxt,(0,0))
         self.autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"],get_fontMode(),(255, 255, 255)),(0,0))
         self.autoButton = ImageSurface(self.autoButton,window_x*0.8,window_y*0.05)
-        self.autoButton.description = int(self.autoButton.x+self.autoButton.img.get_width()-self.FONTSIZE)
+        self.autoButton.tag = int(self.autoButton.x+self.autoButton.img.get_width()-self.FONTSIZE)
         self.autoButtonHovered = ImageSurface(self.autoButtonHovered,window_x*0.8,window_y*0.05)
-        self.autoButtonHovered.description = int(self.autoButtonHovered.x+self.autoButtonHovered.img.get_width()-self.FONTSIZE)
+        self.autoButtonHovered.tag = int(self.autoButtonHovered.x+self.autoButtonHovered.img.get_width()-self.FONTSIZE)
         #隐藏按钮
         self.hideButton = loadButton(
             os.path.join(DIALOG_UI_PATH,"dialog_hide.png"), (window_x*0.05, window_y*0.05),(self.FONTSIZE,self.FONTSIZE), 150
@@ -179,7 +179,7 @@ class DialogButtons:
                 if self.autoMode:
                     rotatedIcon = pygame.transform.rotate(self.autoIconHovered,self.autoIconDegree)
                     surface.blit(rotatedIcon,(
-                        self.autoButtonHovered.description+self.autoIconHovered.get_width()/2-rotatedIcon.get_width()/2,
+                        self.autoButtonHovered.tag+self.autoIconHovered.get_width()/2-rotatedIcon.get_width()/2,
                         self.autoButtonHovered.y+self.icon_y+self.autoIconHovered.get_height()/2-rotatedIcon.get_height()/2
                         ))
                     if self.autoIconDegree < 180:
@@ -187,14 +187,14 @@ class DialogButtons:
                     else:
                         self.autoIconDegree=0
                 else:
-                    surface.blit(self.autoIconHovered,(self.autoButtonHovered.description,self.autoButtonHovered.y+self.icon_y))
+                    surface.blit(self.autoIconHovered,(self.autoButtonHovered.tag,self.autoButtonHovered.y+self.icon_y))
                 action = "auto"
             else:
                 if self.autoMode:
                     self.autoButtonHovered.draw(surface)
                     rotatedIcon = pygame.transform.rotate(self.autoIconHovered,self.autoIconDegree)
                     surface.blit(rotatedIcon,(
-                        self.autoButtonHovered.description+self.autoIconHovered.get_width()/2-rotatedIcon.get_width()/2,
+                        self.autoButtonHovered.tag+self.autoIconHovered.get_width()/2-rotatedIcon.get_width()/2,
                         self.autoButtonHovered.y+self.icon_y+self.autoIconHovered.get_height()/2-rotatedIcon.get_height()/2
                         ))
                     if self.autoIconDegree < 180:
@@ -203,7 +203,7 @@ class DialogButtons:
                         self.autoIconDegree = 0
                 else:
                     self.autoButton.draw(surface)
-                    surface.blit(self.autoIcon,(self.autoButton.description,self.autoButton.y+self.icon_y))
+                    surface.blit(self.autoIcon,(self.autoButton.tag,self.autoButton.y+self.icon_y))
             if self.hideButton.is_hover():
                 action = "hide"
             elif self.historyButton.is_hover():

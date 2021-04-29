@@ -6,7 +6,7 @@ _CHARACTERS_GET_HURT_IMAGE_DICT:dict = {}
 
 #角色受伤立绘图形模块
 class EntityGetHurtImage(GameObject):
-    def __init__(self, self_type:str, y:Union[int,float], width:Union[int,float]):
+    def __init__(self, self_type:str, y:Union[int,float], width:int):
         super().__init__(None,y)
         self.yToGo = None
         self.width = int(width)

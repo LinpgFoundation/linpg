@@ -3,9 +3,8 @@ from .ui import *
 
 #战斗系统接口，请勿实例化
 class AbstractBattleSystem(AbstractGameSystem):
-    def __init__(self, chapterType:str, chapterId:int, projectName:str) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self._initialize(chapterType,chapterId,projectName)
         #用于判断是否移动屏幕的参数
         self.__mouse_move_temp_x = -1
         self.__mouse_move_temp_y = -1

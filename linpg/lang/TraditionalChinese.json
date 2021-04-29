@@ -16,14 +16,15 @@
         "please_enter_content": "對話內容",
         "please_enter_name": "角色名",
         "previous": "上一個對話",
-        "reload": "重新加載文件",
         "removeNpc": "移除該角色"
     },
     "Global": {
         "back": "返回",
         "cancel": "取消",
+        "delete": " 刪除",
         "dont_save": "不要保存",
         "progress_has_been_saved": "進度已保存",
+        "reload_file": "重新加載文件",
         "resume": "繼續遊戲",
         "save": "保存",
         "save_current_progress": "保存當前進度",

@@ -24,6 +24,7 @@
         "linpgdev",
         "makedirs",
         "maxsize",
+        "mutex",
         "ndarray",
         "numpy",
         "pyglet",

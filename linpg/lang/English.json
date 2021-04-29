@@ -16,14 +16,15 @@
         "please_enter_content": "Content",
         "please_enter_name": "Name",
         "previous": "Previous dialog",
-        "reload": "Reload the file",
         "removeNpc": "Remove this npc"
     },
     "Global": {
         "back": "Back",
         "cancel": "Cancel",
+        "delete": "Delete",
         "dont_save": "Don't Save",
         "progress_has_been_saved": "The progress has been saved.",
+        "reload_file": "Reload the file",
         "resume": "Resume",
         "save": "Save",
         "save_current_progress": "Save Current Progress",

@@ -1,5 +1,5 @@
 # cython: language_level=3
-from ..core import *
+from ..dialog import *
 
 #地图场景模块
 class EnvImagesManagement:

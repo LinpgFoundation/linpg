@@ -1,3 +1,5 @@
 recursive-include src/linpg *.pyd
 recursive-include src/linpg *.json
 recursive-include src/linpg *.py
+recursive-include src/linpg *.md
+recursive-include src/linpg LICENSE

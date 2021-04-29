@@ -67,7 +67,8 @@ if __name__ == '__main__':
     #其他需要复制的解释性文件
     files_for_setup = [
         "README.md",
-        "LICENSE"
+        "LICENSE",
+        "CODE_OF_CONDUCT.md"
         ]
     for the_file in files_for_setup:
         #如果是文件夹

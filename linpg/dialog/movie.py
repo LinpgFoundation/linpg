@@ -89,7 +89,8 @@ class AbstractVedio(threading.Thread):
     def stop(self) -> None: self._stopped = True
     #把画面画到屏幕上
     def draw(self, surface:pygame.Surface) -> None:
-        pygame.surfarray.blit_array(surface,self._frameQueue.get())
+        #如果Queue不是空的
+        if not self._frameQueue.empty(): pygame.surfarray.blit_array(surface,self._frameQueue.get())
 
 #视频片段展示模块--灵活，但不能保证帧数和音乐同步
 class VedioFrame(AbstractVedio):
@@ -124,7 +125,10 @@ class VedioFrame(AbstractVedio):
         self.started = True
         for frame in self._video_container.decode(self._video_stream):
             #如果要中途停止
-            if self._stopped is True: break
+            if self._stopped is True:
+                #清空queue内储存的所有加载完的帧
+                with self._frameQueue.mutex: self._frameQueue.queue.clear()
+                break
             #处理当前Frame
             self._processFrame(frame)
             if self.end_point is not None and self.get_pos() >= self.end_point:
@@ -134,6 +138,8 @@ class VedioFrame(AbstractVedio):
                 else:
                     self.set_pos(self.start_point)
             self._clock.tick(self._frameRate)
+        #确保播放完剩余的帧
+        while not self._frameQueue.empty(): pass
     #把画面画到屏幕上
     def draw(self, surface:pygame.Surface) -> None:
         super().draw(surface)
@@ -151,12 +157,17 @@ class VedioPlayer(AbstractVedio):
         if self.__bgm_status is True: pygame.mixer.music.play()
         for frame in self._video_container.decode(self._video_stream):
             #如果需要跳出
-            if self._stopped: break
+            if self._stopped is True:
+                #清空queue内储存的所有加载完的帧
+                with self._frameQueue.mutex: self._frameQueue.queue.clear()
+                break
             #处理当前帧
             self._processFrame(frame)
             #确保匀速播放
             if not int(pygame.mixer.music.get_pos()/1000*self._frameRate)-self.get_frameIndex() >= self.__allowFrameDelay:
                 self._clock.tick(self._frameRate)
+        #确保播放完剩余的帧
+        while not self._frameQueue.empty(): pass
         pygame.mixer.music.unload()
 
 #过场动画
@@ -184,7 +195,7 @@ def cutscene(surface:pygame.Surface, videoPath:str) -> None:
     VIDEO:object = VedioPlayer(videoPath,surface_size[0],surface_size[1])
     VIDEO.start()
     #播放主循环
-    while is_playing is True and VIDEO.is_alive():
+    while is_playing is True and VIDEO.is_alive() is True:
         VIDEO.draw(surface)
         skip_button.draw(surface)
         white_progress_bar.percentage = VIDEO.get_percentagePlayed()

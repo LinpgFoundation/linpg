@@ -8,7 +8,7 @@ def loadImage(
     position: tuple,
     width: int = -1,
     height: int = -1,
-    tag: str = "Default",
+    tag: str = "default",
     ifConvertAlpha: bool = True
     ) -> ImageSurface:
     return ImageSurface(
@@ -28,7 +28,7 @@ def loadDynamicImage(
     moveSpeed: tuple = (0, 0),
     width: int = -1,
     height: int = -1,
-    tag="Default",
+    tag="default",
     ifConvertAlpha: bool = True
     ) -> DynamicImageSurface:
     return DynamicImageSurface(imgLoadFunction(path,ifConvertAlpha),position[0],position[1],target_position[0],target_position[1],\

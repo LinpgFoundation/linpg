@@ -11,4 +11,7 @@ datas = [
     (os.path.join(LINPG_PATH,'dialog/*'),"linpg/dialog"),
     (os.path.join(LINPG_PATH,'lang/*'),"linpg/lang"),
     (os.path.join(LINPG_PATH,'__init__.py'),'linpg'),
+    (os.path.join(LINPG_PATH,'LICENSE'),'linpg'),
+    (os.path.join(LINPG_PATH,'README.md'),'linpg'),
+    (os.path.join(LINPG_PATH,'CODE_OF_CONDUCT.md'),'linpg'),
     ]

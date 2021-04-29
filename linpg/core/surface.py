@@ -161,7 +161,7 @@ class StaticImageSurface(AdvancedAbstractImage):
 
 #高级图形类
 class ImageSurface(AbstractImage):
-    def __init__(self, img:pygame.Surface, x:Union[int,float], y:Union[int,float], width:int=-1, height:int=-1, tag:str="Default"):
+    def __init__(self, img:pygame.Surface, x:Union[int,float], y:Union[int,float], width:int=-1, height:int=-1, tag:str="default"):
         super().__init__(img,x,y,width,height)
         self.tag = tag
         if self._width < 0 and self._height < 0:
@@ -194,7 +194,7 @@ class ImageSurface(AbstractImage):
 #需要移动的动态图片
 class DynamicImageSurface(ImageSurface):
     def __init__(self, img:pygame.Surface, x:Union[int,float], y:Union[int,float], target_x:Union[int,float], target_y:Union[int,float],
-        moveSpeed_x:Union[int,float], moveSpeed_y:Union[int,float], width:int=-1, height:int=-1, tag:str="Default"):
+        moveSpeed_x:Union[int,float], moveSpeed_y:Union[int,float], width:int=-1, height:int=-1, tag:str="default"):
         super().__init__(img,x,y,width,height,tag)
         self.default_x = x
         self.default_y = y

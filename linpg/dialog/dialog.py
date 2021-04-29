@@ -41,9 +41,9 @@ class DialogSystem(AbstractDialogSystem):
         self.part = saveData["type"]
         self.__process_data()
     #新建章节
-    def new(self, chapterType:str, chapterId:int, part:str, project_name:str=None) -> None:
+    def new(self, chapterType:str, chapterId:int, part:str, projectName:str=None) -> None:
         """章节信息"""
-        self._initialize(chapterType,chapterId,project_name)
+        self._initialize(chapterType,chapterId,projectName)
         self.part = part
         self.__process_data()
     #加载章节信息
@@ -272,10 +272,8 @@ class DialogSystem(AbstractDialogSystem):
 
 #对话制作器
 class DialogEditor(AbstractDialogSystem):
-    def __init__(self, chapterType:str, chapterId:int, part:str=None, project_name:str=None):
-        #初始化
-        super().__init__()
-        self._initialize(chapterType,chapterId,project_name)
+    def load(self, chapterType:str, chapterId:int, part:str=None, projectName:str=None):
+        self._initialize(chapterType,chapterId,projectName)
         self.folder_for_save_file,self.name_for_save_file = os.path.split(self.get_dialog_file_location(get_setting("Language")))
         #文字
         self.FONTSIZE:int = int(display.get_width()*0.015)
@@ -376,7 +374,7 @@ class DialogEditor(AbstractDialogSystem):
             )
         self.__no_save_warning.set_center(display.get_width()/2,display.get_height()/2)
     @property
-    def part(self) -> str: return self.parts[self.partId]
+    def part(self) -> str: return self.parts[self.part_id]
     #返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
         original_data:dict = loadConfig(self.get_dialog_file_location(get_setting("Language")))
@@ -406,18 +404,18 @@ class DialogEditor(AbstractDialogSystem):
         #如果dialogs字典是空的
         if len(self.parts) <= 0:
             default_part_name = "example_dialog"
-            self.partId = 0
+            self.part_id = 0
             self.parts.append(default_part_name)
             self.dialogData[default_part_name] = {}
             self.dialogData[default_part_name]["head"] = self.deafult_dialog_format
-            self.isDefault = True
+            self.is_default = True
             self.dialogData_default = None
         else:
-            self.partId = 0 if part is None else self.parts.index(part)
+            self.part_id = 0 if part is None else self.parts.index(part)
             default_lang_of_dialog:str = self.get_default_lang()
             #如果不是默认主语言
             if default_lang_of_dialog != get_setting("Language"):
-                self.isDefault = False
+                self.is_default = False
                 #读取原始数据
                 self.dialogData_default = loadConfig(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")
                 #填入未被填入的数据
@@ -430,7 +428,7 @@ class DialogEditor(AbstractDialogSystem):
                         else:
                             self.dialogData[part][key] = deepcopy(DIALOG_DATA_TEMP)
             else:
-                self.isDefault = True
+                self.is_default = True
                 self.dialogData_default = None
         #更新场景
         self.__update_scene(self._dialog_id)
@@ -439,7 +437,7 @@ class DialogEditor(AbstractDialogSystem):
         data_need_save:dict = deepcopy(self.dialogData)
         data_need_save[self.part][self._dialog_id]["narrator"] = self.narrator.get_text()
         data_need_save[self.part][self._dialog_id]["content"] = self.content.get_text()
-        if not self.isDefault:
+        if not self.is_default:
             #移除掉相似的内容
             for part in self.dialogData_default:
                 for dialogId,defaultDialogData in self.dialogData_default[part].items():

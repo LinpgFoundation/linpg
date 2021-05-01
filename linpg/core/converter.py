@@ -5,7 +5,7 @@ class Converter:
     def __init__(self) -> None:
         self.__default_pos:int = 0
     #检测尺寸是否合法
-    def __make_sure_size(self, item:dict, key:str, value_in_case_percentage:int):
+    def __make_sure_size(self, item:dict, key:str, value_in_case_percentage:int) -> None:
         if key not in item:
             if "name" in item:
                 throwException("error",'You have to set "{0}" for "{1}".'.format(key, item["name"]))
@@ -27,8 +27,8 @@ class Converter:
                     throwException("error",'The "{0}" for "{1}" needs to an interger instead of "{2}".'.format(key, item["name"], item[key]))
                 else:
                     throwException("error",'The "{0}" needs to an interger instead of "{1}".'.format(key, item[key]))
-    #检测尺寸是否合法
-    def __make_sure_pos(self, item:dict, key:str, value_in_case_center:int, value_in_case_percentage:int):
+    #检测坐标是否合法
+    def __make_sure_pos(self, item:dict, key:str, value_in_case_center:int, value_in_case_percentage:int) -> None:
         if key not in item:
             item[key] = self.__default_pos
         elif not isinstance(item[key], int):
@@ -44,53 +44,83 @@ class Converter:
                         throwException("error",'Cannot convert "{}" because it is not a valid percentage.'.format(item[key]))
             else:
                 throwException("error","Valid value for {0}: {1}.".format(key, item[key]))
-    #生成容器
-    def generate_container(self, data:dict) -> GameObjectContainer:
-        if "src" not in data: data["src"] = None
-        #检查长宽
-        self.__make_sure_size(data, "width", display.get_width())
-        self.__make_sure_size(data, "height", display.get_height())
-        #转换坐标
-        self.__make_sure_pos(data, "x", int((display.get_width()-data["width"])/2), display.get_width())
-        self.__make_sure_pos(data, "y", int((display.get_height()-data["height"])/2), display.get_height())
-        #生成容器
-        container = GameObjectContainer(data["src"],data["x"],data["y"],data["width"],data["height"])
-        if "hidden" in data: container.hidden = data["hidden"]
-        item_of_container:object = None
-        for item in data["items"]:
-            #初始化并生成图层
-            if item["type"] == "text":
-                #字体大小
-                self.__make_sure_size(item, "font_size", container.get_height())
-                #补充可选参数
-                if "color" not in item: item["color"] = "black"
-                if "bold" not in item: item["bold"] = False
-                if "italic" not in item: item["italic"] = False
-                #生成文字图层
-                item_of_container = TextSurface(
-                    fontRenderWithoutBound(item["src"], item["color"], item["font_size"], item["bold"], item["italic"]), 0, 0
-                    )
-            else:
-                #检查长宽
-                self.__make_sure_size(item, "width", container.get_width())
-                self.__make_sure_size(item, "height", container.get_height())
-                #生成图片图层
-                if item["type"] == "image":
-                    item_of_container = loadImage(loadImg(item["src"]),(0,0),item["width"],item["height"])
-                    if "name" in item: item_of_container.tag = item["name"]
-                elif item["type"] == "button":
-                    item_of_container = loadButton(loadImg(item["src"]),(0,0),(item["width"],item["height"]))
-                    if "name" in item:
-                        item_of_container.tag = item["name"]
-                    else:
-                        throwException("error", "You have to set a name for button type.")
-
+    #生成UI
+    def generate_ui(self, data:dict, max_width:int=-1, max_height:int=-1) -> GameObject2d:
+        #如果没有提供最大高度，则默认使用屏幕高度
+        if max_height < 0: max_height = display.get_height()
+        #如果对象是文字
+        if data["type"] == "text":
+            #转换字体大小
+            self.__make_sure_size(data, "font_size", max_height)
+            #补充可选参数
+            if "color" not in data: data["color"] = "black"
+            if "bold" not in data: data["bold"] = False
+            if "italic" not in data: data["italic"] = False
+            #生成文字图层
+            text_t = TextSurface(
+                fontRenderWithoutBound(data["src"], data["color"], data["font_size"], data["bold"], data["italic"]), 0, 0
+                )
             #转换坐标
-            self.__make_sure_pos(item, "x", int((container.get_width()-item_of_container.get_width())/2), container.get_width())
-            self.__make_sure_pos(item, "y", int((container.get_height()-item_of_container.get_height())/2), container.get_height())
-            item_of_container.set_pos(item["x"],item["y"])
-            container.append(item_of_container)
-        return container
-    def load_container_from_config(self, path:str) -> GameObjectContainer: return self.generate_container(loadConfig(path))
+            self.__make_sure_pos(data, "x", int((max_width-text_t.get_width())/2), max_width)
+            self.__make_sure_pos(data, "y", int((max_height-text_t.get_height())/2), max_height)
+            text_t.set_pos(data["x"], data["y"])
+            return text_t
+        else:
+            #如果没有提供最大宽度，则默认使用屏幕宽度
+            if max_width < 0: max_width = display.get_width()
+            #转换尺寸
+            self.__make_sure_size(data, "width", max_width)
+            self.__make_sure_size(data, "height", max_height)
+            #如果对象是容器
+            if data["type"] == "container":
+                #转换坐标
+                self.__make_sure_pos(data, "x", int((max_width-data["width"])/2), max_width)
+                self.__make_sure_pos(data, "y", int((max_height-data["height"])/2), max_height)
+                #生成容器
+                container_t = GameObjectContainer(data["src"],data["x"],data["y"],data["width"],data["height"])
+                #加载数据
+                if "hidden" in data:
+                    container_t.hidden = data["hidden"]
+                if "items" in data:
+                    for each_item in data["items"]:
+                        container_t.append(self.generate_ui(each_item, container_t.get_width(), container_t.get_height()))
+                elif "item" in data:
+                    #警告用户是items而不是item
+                    throwException("warning", 'I think you mean "items" instead of "item", right?\
+                        We will try to load it this time, but please double check ASAP!')
+                    #好吧，我们还是会至少尝试加载
+                    for each_item in data["item"]:
+                        container_t.append(self.generate_ui(each_item, container_t.get_width(), container_t.get_height()))
+                return container_t
+            elif data["type"] == "button":
+                if "alpha_when_not_hover" not in data: data["alpha_when_not_hover"] = 255
+                button_t = loadButtonWithTextInCenter(
+                    loadImg(data["src"]), data["text"]["scr"], data["text"]["color"], data["height"], (0,0), data["alpha_when_not_hover"]
+                    ) if "text" in data else loadButton(
+                        loadImg(data["src"]), (0,0), (data["width"], data["height"]), data["alpha_when_not_hover"]
+                    )
+                if "name" in data:
+                    button_t.tag = data["name"]
+                else:
+                    throwException("error", "You have to set a name for button type.")
+                #转换坐标
+                self.__make_sure_pos(data, "x", int((max_width-button_t.get_width())/2), max_width)
+                self.__make_sure_pos(data, "y", int((max_height-button_t.get_height())/2), max_height)
+                #设置坐标
+                button_t.set_pos(data["x"],data["y"])
+                #返回按钮
+                return button_t
+            elif data["type"] == "image":
+                image_t = loadImage(loadImg(data["src"]),(0,0),data["width"],data["height"])
+                if "name" in data: image_t.tag = data["name"]
+                #转换坐标
+                self.__make_sure_pos(data, "x", int((max_width-image_t.get_width())/2), max_width)
+                self.__make_sure_pos(data, "y", int((max_height-image_t.get_height())/2), max_height)
+                #设置坐标
+                image_t.set_pos(data["x"],data["y"])
+                #返回图片
+                return image_t
+            else:
+                throwException("error", "Current type is not supported")
 
 converter:Converter = Converter()

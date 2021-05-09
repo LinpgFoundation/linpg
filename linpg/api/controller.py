@@ -42,19 +42,22 @@ class GameController:
         #鼠标位置
         self.mouse_x:int = 0
         self.mouse_y:int = 0
-        self.movingSpeed = speed
+        self.mouse_moving_speed:Union[int,float] = speed
+        #是否有确认事件
+        self.__confirm_event:int = -1
         #输入事件
         self.__INPUT_EVENTS:list = pygame.event.get()
     def draw(self, screen:pygame.Surface=None):
         #更新输入事件
         self.joystick.update_device()
         self.__INPUT_EVENTS = pygame.event.get()
+        self.__confirm_event = -1
         self.mouse_x,self.mouse_y = pygame.mouse.get_pos()
         if self.joystick.inputController is not None:
             if self.joystick.get_axis(0)>0.1 or self.joystick.get_axis(0)<-0.1:
-                self.mouse_x += int(self.movingSpeed*round(self.joystick.get_axis(0),1))
+                self.mouse_x += int(self.mouse_moving_speed*round(self.joystick.get_axis(0),1))
             if self.joystick.get_axis(1)>0.1 or self.joystick.get_axis(1)<-0.1:
-                self.mouse_y += int(self.movingSpeed*round(self.joystick.get_axis(1),1))
+                self.mouse_y += int(self.mouse_moving_speed*round(self.joystick.get_axis(1),1))
             pygame.mouse.set_pos((self.mouse_x,self.mouse_y))
         if self.iconImg is not None and screen is not None:
             screen.blit(self.iconImg,(self.mouse_x,self.mouse_y))
@@ -63,11 +66,24 @@ class GameController:
     def events(self): return self.__INPUT_EVENTS
     def get_events(self): return self.__INPUT_EVENTS
     #获取单个事件
-    def get_event(self):
-        for event in self.__INPUT_EVENTS:
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 or\
-                event.type == pygame.JOYBUTTONDOWN and self.joystick.get_button(0) == True: return "comfirm"
-        return None
+    def get_event(self, event_type:str) -> bool:
+        if event_type == "comfirm":
+            if self.__confirm_event == 1:
+                return True
+            elif self.__confirm_event == 0:
+                return False
+            elif self.__confirm_event == -1:
+                for event in self.__INPUT_EVENTS:
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 or \
+                        event.type == pygame.JOYBUTTONDOWN and self.joystick.get_button(0) is True:
+                        self.__confirm_event = 1
+                        return True
+                self.__confirm_event = 0
+            else:
+                throwException("error", "self.__confirm_event in GameController is set to invalid number!")
+        else:
+            throwException("error", 'The event type "{}" is not supported!'.format(event_type))
+        return False
     #返回鼠标的坐标
     def get_mouse_pos(self) -> tuple: return self.mouse_x,self.mouse_y
     #是否鼠标按钮被点击

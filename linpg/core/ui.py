@@ -80,7 +80,7 @@ class PauseMenu:
 
 #设置UI
 class OptionMenu(AbstractImage):
-    def __init__(self, x:int, y:int,width:int, height:int):
+    def __init__(self, x:int, y:int, width:int, height:int):
         self.__ui_image_folder_path:str = "Assets/image/UI"
         #加载设置菜单的背景图片
         baseImgPath:str = os.path.join(self.__ui_image_folder_path,"setting_baseImg.png")
@@ -124,13 +124,13 @@ class OptionMenu(AbstractImage):
         self.settingTitleTxt = TextSurface(fontRender(langTxt["setting"],"white",self.__item_height*1.5),0,edge_panding)
         self.settingTitleTxt.set_centerx(width/2)
         #语言
-        self.languageTxt = fontRender(langTxt["language"]+": "+langTxt["currentLang"],"white",self.__item_height)
+        self.languageTxt = fontRender("{0}: {1}".format(langTxt["language"], langTxt["currentLang"]), "white", self.__item_height)
         #背景音乐
-        self.backgroundMusicTxt = langTxt["background_music"]
+        self.backgroundMusicTxt:str = langTxt["background_music"]
         #音效
-        self.soundEffectsTxt = langTxt["sound_effects"]
+        self.soundEffectsTxt:str = langTxt["sound_effects"]
         #环境声效
-        self.soundEnvironmentTxt = langTxt["sound_environment"]
+        self.soundEnvironmentTxt:str = langTxt["sound_environment"]
         #确认
         self.__confirm_button = fontRenderPro(langTxt["confirm"],"white",(0,0),self.__item_height)
         self.__confirm_button.set_bottom(height-edge_panding)

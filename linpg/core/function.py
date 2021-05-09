@@ -141,7 +141,15 @@ def isHover(
         return isHoverPygameObject(imgObject, objectPos, local_x, local_y)
 
 # 转换pygame的rect类
-def convert_rect(rect: pygame.Rect) -> Shape: return Shape(rect.x, rect.y, rect.width, rect.height)
+def convert_rect(rect: Union[Shape, pygame.Rect]) -> Shape:
+    #确认是pygame.Rect类再转换
+    if isinstance(rect, pygame.Rect):
+        return Shape(rect.x, rect.y, rect.width, rect.height)
+    #如果是Shape类，则没必要转换
+    elif isinstance(rect, Shape):
+        return rect
+    else:
+        throwException("error", 'The rect has to be "pygame.Rect" or at least "linpg.Shape", not "{}".'.format(type(rect)))
 
 # 是否形状一样
 def is_same_shape(rect1: Union[Shape, pygame.Rect], rect2: Union[Shape, pygame.Rect]) -> bool:

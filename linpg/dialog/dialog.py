@@ -311,6 +311,7 @@ class DialogEditor(AbstractDialogSystem):
         self.UIContainerRight_npc.hidden = True
         self.UIContainerRight_npc.distance_between_item = 0
         #从配置文件中加载数据
+        self.parts:list = []
         self.__loadDialogData(part)
         #容器按钮
         button_width:int = int(display.get_width()*0.04)
@@ -373,6 +374,9 @@ class DialogEditor(AbstractDialogSystem):
             os.path.join(DIALOG_UI_PATH,"container.png"),0,0,display.get_width()/2,display.get_height()/4
             )
         self.__no_save_warning.set_center(display.get_width()/2,display.get_height()/2)
+        #切换准备编辑的dialog部分
+        self.dialog_key_select = DropDownSingleChoiceList(None, button_width*9, button_y+font_size, font_size)
+        for i in range(len(self.parts)): self.dialog_key_select.append(self.parts[i])
     @property
     def part(self) -> str: return self.parts[self.part_id]
     #返回需要保存数据
@@ -567,6 +571,16 @@ class DialogEditor(AbstractDialogSystem):
                 if self.buttonsUI[button].is_hover():
                     buttonHovered = button
                 self.buttonsUI[button].draw(surface)
+        #展示出当前可供编辑的dialog章节
+        self.dialog_key_select.draw(surface)
+        #切换当前正在浏览编辑的dialog部分
+        if self.dialog_key_select.get_current_selected_item() != self.part:
+            self.part_id = self.parts.index(self.dialog_key_select.get_current_selected_item())
+            try:
+                self.__update_scene(self._dialog_id)
+            except:
+                self.__update_scene("head")
+        #处理输入事件
         leftClick:bool = False
         for event in controller.events:
             if event.type == pygame.MOUSEBUTTONDOWN:

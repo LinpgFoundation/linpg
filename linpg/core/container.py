@@ -10,6 +10,8 @@ class GameObjectContainer(AbstractImage):
         self.item_hovered = None
     #新增一个物品
     def append(self, new_item:GameObject) -> None: self.items.append(new_item)
+    #获取一个物品
+    def get(self, index:int) -> GameObject: return self.items[index]
     #移除一个物品
     def pop(self, index:int) -> None: self.items.pop(index)
     #清空物品栏
@@ -22,16 +24,108 @@ class GameObjectContainer(AbstractImage):
         super().set_height(value)
         if self.img is not None: self.img.set_height(value)
     #把物品画到surface上
-    def draw(self, surface:pygame.Surface) -> None: self.display(surface)
     def display(self, surface:pygame.Surface, offSet:tuple=(0,0)) -> None:
         self.item_hovered = None
         if not self.hidden:
+            current_abs_pos:tuple = add_pos(self.pos, offSet)
             #画出背景
-            if self.img is not None: self.img.display(surface,add_pos(self.pos,offSet))
+            if self.img is not None: self.img.display(surface, current_abs_pos)
             #画出物品
             for item in self.items:
-                item.display(surface,add_pos(self.pos,offSet))
-                if isinstance(item,Button): self.item_hovered = item.tag
+                item.display(surface, current_abs_pos)
+                if isinstance(item,Button) and item.has_been_hovered():
+                    self.item_hovered = item.tag
+
+#下拉选项菜单
+class DropDownSingleChoiceList(GameObjectContainer):
+    def __init__(self, bg_img: Union[str, pygame.Surface, None], x: Union[int, float], y: Union[int, float], font_size: int, font_color: any="black"):
+        super().__init__(bg_img, x, y, 0, 0)
+        self.chosen_id:int = 0
+        self.__DEFAULT_CONTENT:str = ""
+        self.__font_size:int = int(font_size)
+        self.__block_height:int = int(font_size*1.5)
+        self.__font_color:tuple = findColorRGBA(font_color)
+        self.__FONT = createFont(self.__font_size)
+        self.__fold_choice:bool = True
+        self.outline_thickness:int = 1
+    #重新计算宽度
+    def _update_width(self) -> None:
+        self.set_width(0)
+        for item in self.items:
+            item_width:int = int(self.__FONT.size(item)[0]*1.5)
+            if self.get_width() < item_width: self.set_width(item_width)
+    #更新font的尺寸
+    def update_font_size(self, font_size:int) -> None:
+        self.__font_size = int(font_size)
+        self.__block_height:int = int(font_size*1.5)
+        self.__FONT = createFont(self.__font_size)
+        self._update_width()
+    #更新font的颜色
+    def update_font_color(self, font_color:int) -> None: self.__font_color = findColorRGBA(font_color)
+    #新增一个物品
+    def append(self, new_item:Union[str,int]) -> None:
+        self.items.append(new_item)
+        new_item_width:int = int(self.__FONT.size(new_item)[0]*1.5)
+        if self.get_width() < new_item_width: self.set_width(new_item_width)
+    #获取一个物品
+    def get(self, index:int) -> Union[str,int]: return self.items[index] if len(self.items) > 0 else self.__default_content
+    #获取当前选中的物品
+    def get_current_selected_item(self) -> Union[str,int]: return self.items[self.chosen_id] if len(self.items) > 0 else self.__default_content
+    #获取高度
+    def get_height(self) -> int:
+        return int((len(self.items) + 1) * self.__font_size * 1.5) if not self.__fold_choice else int(self.__font_size * 1.5)
+    #移除一个物品
+    def pop(self, index:int) -> None:
+        super().pop(index)
+        self._update_width()
+    #清空物品栏
+    def clear(self) -> None:
+        super().clear()
+        self._update_width()
+    #把物品画到surface上
+    def display(self, surface:pygame.Surface, offSet:tuple=(0,0)) -> None:
+        if not self.hidden:
+            current_abs_pos:tuple = add_pos(self.pos, offSet)
+            #画出背景
+            if self.img is not None:
+                self.img.display(surface, current_abs_pos)
+            else:
+                pygame.draw.rect(surface, findColorRGBA("white"), pygame.Rect(current_abs_pos,self.size))
+            #列出当前选中的选项
+            current_pos:tuple = current_abs_pos
+            font_surface:pygame.Surface = copeBounding(self.__FONT.render(self.get_current_selected_item(), get_fontMode(), self.__font_color))
+            surface.blit(
+                font_surface,
+                add_pos(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))
+                )
+            rect_of_outline:pygame.Rect = pygame.Rect(current_pos, (self.width, self.__block_height))
+            pygame.draw.rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
+            font_surface = pygame.transform.flip(copeBounding(self.__FONT.render("^", get_fontMode(), self.__font_color)), False, True)
+            surface.blit(
+                font_surface,
+                add_pos(current_pos, (int(self.width-font_surface.get_width()*1.5), int((self.__block_height-font_surface.get_height())/2)))
+                )
+            if controller.get_event("comfirm"):
+                if isHoverPygameObject(rect_of_outline):
+                    self.__fold_choice = not self.__fold_choice
+                elif not self.__fold_choice and not isHoverPygameObject(pygame.Rect(current_abs_pos,self.size)):
+                    self.__fold_choice = True
+            #列出选择
+            if not self.__fold_choice:
+                for i in range(len(self.items)):
+                    current_pos = add_pos(current_abs_pos, (0,(i+1)*self.__block_height))
+                    font_surface = copeBounding(self.__FONT.render(self.items[i], get_fontMode(), self.__font_color))
+                    surface.blit(
+                        font_surface,
+                        add_pos(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))
+                    )
+                    rect_of_outline = pygame.Rect(current_pos, (self.width, self.__block_height))
+                    pygame.draw.rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
+                    if isHoverPygameObject(rect_of_outline) and controller.mouse_get_press(0): self.chosen_id = i
+                    if i != self.chosen_id:
+                        pygame.draw.circle(surface, self.__font_color, add_pos(current_pos,(self.width*0.1, self.__block_height/2)), 3, self.outline_thickness)
+                    else:
+                        pygame.draw.circle(surface, self.__font_color, add_pos(current_pos,(self.width*0.1, self.__block_height/2)), 3)
 
 #带有滚动条的Surface容器
 class SurfaceContainerWithScrollbar(AdvancedAbstractImage):

@@ -17,12 +17,12 @@ class SystemWithBackgroundMusic(AbstractSystem):
     def __init__(self) -> None:
         super().__init__()
         self.__bgm_path = None
-        self.__bgm_volume = 1
-        self.__if_stop_playing_bgm = False
+        self.__bgm_volume:float = 1.0
+        self.__if_stop_playing_bgm:bool = False
     #获取bgm名称（非路径）
     @property
-    def bgm(self) -> str: return os.path.basename(self.__bgm_path)
-    def get_bgm(self) -> str: return os.path.basename(self.__bgm_path)
+    def bgm(self) -> Union[str,None]: self.get_bgm()
+    def get_bgm(self) -> Union[str,None]: return os.path.basename(self.__bgm_path) if self.__bgm_path is not None else None
     #设置bgm路径
     def set_bgm(self, path:Union[str,None], forced:bool=False) -> None:
         if path is None:

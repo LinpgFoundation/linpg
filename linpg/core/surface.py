@@ -104,7 +104,7 @@ class StaticImageSurface(AdvancedAbstractImage):
             throwException("error","You have to input either a None or a Rect, not {}".format(type(rect)))
     #更新图片
     def _update_img(self) -> None:
-        imgTmp = pygame.transform.smoothscale(self.img_original, self.size)
+        imgTmp = smoothscaleImg(self.img_original, self.size)
         rect = imgTmp.get_bounding_rect()
         if self.__crop_rect is not None:
             new_x:int = max(rect.x,self.__crop_rect.x)

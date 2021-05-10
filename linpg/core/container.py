@@ -65,12 +65,14 @@ class DropDownSingleChoiceList(GameObjectContainer):
     #新增一个物品
     def append(self, new_item:Union[str,int]) -> None:
         self.items.append(new_item)
-        new_item_width:int = int(self.__FONT.size(new_item)[0]*1.5)
+        new_item_width:int = int(self.__FONT.size(new_item)[0]*2)
         if self.get_width() < new_item_width: self.set_width(new_item_width)
     #获取一个物品
-    def get(self, index:int) -> Union[str,int]: return self.items[index] if len(self.items) > 0 else self.__default_content
+    def get(self, index:int) -> Union[str,int]: return self.items[index] if len(self.items) > 0 else self.__DEFAULT_CONTENT
     #获取当前选中的物品
-    def get_current_selected_item(self) -> Union[str,int]: return self.items[self.chosen_id] if len(self.items) > 0 else self.__default_content
+    def get_current_selected_item(self) -> Union[str,int]: return self.items[self.chosen_id] if len(self.items) > 0 else self.__DEFAULT_CONTENT
+    #设置当前选中的物品
+    def set_current_selected_item(self, exist_item:Union[str,int]) -> None: self.chosen_id = self.items.index(exist_item)
     #获取高度
     def get_height(self) -> int:
         return int((len(self.items) + 1) * self.__font_size * 1.5) if not self.__fold_choice else int(self.__font_size * 1.5)

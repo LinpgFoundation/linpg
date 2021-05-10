@@ -56,9 +56,6 @@
     ],
     "OptionMenu": {
         "background_music": "背景音樂",
-        "cancel": "取消",
-        "confirm": "應用",
-        "currentLang": "簡體中文",
         "language": "語言",
         "option_menu": "選項菜單",
         "setting": "設置",

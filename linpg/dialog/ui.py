@@ -51,7 +51,7 @@ class DialogBox(AbstractDialog,GameObject2d):
     def get_width(self) -> int: return self.dialoguebox.get_width()
     def get_height(self)-> int:  return self.dialoguebox.get_height()
     def set_size(self, width:Union[int,float,None], height:Union[int,float,None]) -> None:
-        self.dialoguebox = resizeImg(self.dialoguebox,(width,height))
+        self.dialoguebox = smoothscaleImg(self.dialoguebox,(width,height))
     def draw(self, surface:pygame.Surface, characterInfoBoardUI:object=None):
         #如果对话框需要继续更新
         if not self.__drew:

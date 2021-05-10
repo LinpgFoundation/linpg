@@ -340,7 +340,7 @@ class DialogContent(AbstractDialog):
         if self.dialoguebox_y is None:
             self.dialoguebox_y = surface.get_height()*0.65+self.dialoguebox_max_height/2
         #画出对话框图片
-        surface.blit(resizeImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
+        surface.blit(smoothscaleImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
         (surface.get_width()*0.13,self.dialoguebox_y))
         #如果对话框图片还在放大阶段
         if self.dialoguebox_height < self.dialoguebox_max_height:
@@ -354,7 +354,7 @@ class DialogContent(AbstractDialog):
         #画出对话框图片
         if self.dialoguebox_y is not None:
             surface.blit(
-                resizeImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
+                smoothscaleImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
                 (surface.get_width()*0.13,self.dialoguebox_y)
                 )
         if self.dialoguebox_height > 0:

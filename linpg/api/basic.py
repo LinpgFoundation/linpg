@@ -79,6 +79,32 @@ def resizeImg(img:pygame.Surface, size:Union[tuple,list]=(None,None)) -> pygame.
         throwException("error","Both width and height must be positive interger!")
     return img
 
+#精准地缩放尺寸
+def smoothscaleImg(img:pygame.Surface, size:Union[tuple,list]=(None,None)):
+    #转换尺寸
+    if isinstance(size,(list,tuple,numpy.ndarray)):
+        if len(size) == 1:
+            width = size[0]
+            height = None
+        else:
+            width = size[0]
+            height = size[1]
+    elif isinstance(size,(int,float)):
+        width = size
+        height = None
+    else:
+        throwException("error","The size '{}' is not acceptable.".format(size))
+    #编辑图片
+    if height is not None and height >= 0 and width is None:
+        img = pygame.transform.smoothscale(img,(round(height/img.get_height()*img.get_width()), round(height)))
+    elif height is None and width is not None and width >= 0:
+        img = pygame.transform.smoothscale(img,(round(width), round(width/img.get_width()*img.get_height())))
+    elif width >= 0 and height >= 0:
+        img = pygame.transform.smoothscale(img, (round(width), round(height)))
+    elif width < 0 or height < 0:
+        throwException("error","Both width and height must be positive interger!")
+    return img
+
 #翻转图片
 def flipImg(img:pygame.Surface, horizontal:bool, vertical:bool) -> pygame.Surface:
     return pygame.transform.flip(img, horizontal, vertical)

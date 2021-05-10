@@ -377,6 +377,7 @@ class DialogEditor(AbstractDialogSystem):
         #切换准备编辑的dialog部分
         self.dialog_key_select = DropDownSingleChoiceList(None, button_width*9, button_y+font_size, font_size)
         for i in range(len(self.parts)): self.dialog_key_select.append(self.parts[i])
+        self.dialog_key_select.set_current_selected_item(self.part)
     @property
     def part(self) -> str: return self.parts[self.part_id]
     #返回需要保存数据
@@ -395,7 +396,7 @@ class DialogEditor(AbstractDialogSystem):
             self.__current_select_bg_name = image_name
             current_select_bg = self.UIContainerRight_bg.get("current_select")
             self.__current_select_bg_copy = current_select_bg.copy()
-            current_select_bg.blit(resizeImg(self.background_deselect,current_select_bg.get_size()),(0,0))
+            current_select_bg.blit(smoothscaleImg(self.background_deselect,current_select_bg.get_size()),(0,0))
         else:
             self.UIContainerRight_bg.set(self.__current_select_bg_name,self.__current_select_bg_copy)
             self.UIContainerRight_bg.set("current_select",None)

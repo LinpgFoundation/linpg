@@ -56,9 +56,6 @@
     ],
     "OptionMenu": {
         "background_music": "Background Music",
-        "cancel": "Cancel",
-        "confirm": "Confirm",
-        "currentLang": "English",
         "language": "Language",
         "option_menu": "Option Menu",
         "setting": "Setting",

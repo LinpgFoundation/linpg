@@ -188,14 +188,18 @@ class DynamicTextSurface(TextSurface):
     def __init__(self, n:pygame.Surface, b:pygame.Surface, x:Union[int,float], y:Union[int,float]):
         super().__init__(n,x,y)
         self.big_font_surface = b
+        self.__is_hovered:bool = False
     #设置透明度
     def set_alpha(self, value:int) -> None:
         super().set_alpha(value)
         self.big_font_surface.set_alpha(value)
+    #用于检测触碰的快捷
+    def has_been_hovered(self) -> bool: return self.__is_hovered
     #画出
     def display(self, surface:pygame.Surface, offSet:tuple=(0,0)) -> None:
         mouse_pos = controller.get_mouse_pos()
-        if self.is_hover(subtract_pos(mouse_pos,offSet)):
+        self.__is_hovered = self.is_hover(subtract_pos(mouse_pos,offSet))
+        if self.__is_hovered:
             surface.blit(
                 self.big_font_surface,
                 (int(self.x-(self.big_font_surface.get_width()-self.font_surface.get_width())/2+offSet[0]),

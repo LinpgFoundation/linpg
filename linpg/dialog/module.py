@@ -286,8 +286,9 @@ class DialogContent(AbstractDialog):
         self.dialoguebox_max_height = None
         #鼠标图标
         self.mouseImg = loadGif(
-            (loadImg(os.path.join(DIALOG_UI_PATH,"mouse_none.png")),loadImg(os.path.join(DIALOG_UI_PATH,"mouse.png"))),
-            (display.get_width()*0.82,display.get_height()*0.83),(self.FONTSIZE,self.FONTSIZE),50)
+            (os.path.join(DIALOG_UI_PATH,"mouse_none.png"), os.path.join(DIALOG_UI_PATH,"mouse.png")),
+            (display.get_width()*0.82,display.get_height()*0.83),(self.FONTSIZE,self.FONTSIZE), 50
+            )
         self.isHidden = False
         self.readTime = 0
         self.totalLetters = 0
@@ -321,7 +322,7 @@ class DialogContent(AbstractDialog):
     def needUpdate(self) -> bool:
         return True if self.autoMode and self.readTime >= self.totalLetters else False
     #渲染文字
-    def fontRender(self, txt:str, color:tuple) -> pygame.Surface: return self.FONT.render(txt,get_fontMode(),color)
+    def fontRender(self, txt:str, color:tuple) -> pygame.Surface: return self.FONT.render(txt,get_antialias(),color)
     #如果音效还在播放则停止播放文字音效
     def stop_playing_text_sound(self) -> None:
         if pygame.mixer.get_busy() and self.__textPlayingSound is not None: self.__textPlayingSound.stop()

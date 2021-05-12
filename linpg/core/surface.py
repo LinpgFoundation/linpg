@@ -47,8 +47,10 @@ class AdvancedAbstractImage(AbstractImage):
     #透明度
     def get_alpha(self) -> int: return self._alpha
     def set_alpha(self, value:int) -> None:
-        self._alpha = keepInRange(int(value),0,255)
-        if isinstance(self.img, pygame.Surface) and self.img.get_alpha() != self._alpha: super().set_alpha(self._alpha)
+        new_alpha:int = keepInRange(int(value),0,255)
+        if new_alpha != self.get_alpha():
+            self._alpha = new_alpha
+            if isinstance(self.img, pygame.Surface) and self.img.get_alpha() != self._alpha: super().set_alpha(self._alpha)
     #本地坐标
     @property
     def local_pos(self) -> tuple: return self._local_x,self._local_y
@@ -244,19 +246,21 @@ class DynamicImageSurface(ImageSurface):
                     if self.y > self.default_y: self.y = self.default_y
 
 #gif图片管理
-class GifObject(AdvancedAbstractImage):
+class GifSurface(AdvancedAbstractImage):
     def __init__(self,imgList:numpy.ndarray, x:Union[int,float], y:Union[int,float], width:int, height:int, updateGap:int):
         super().__init__(imgList,x,y,width,height)
         self.imgId:int = 0
         self.updateGap:int = max(int(updateGap),0)
         self.countDown:int = 0
+    #当前图片
+    @property
+    def current_image(self) -> StaticImageSurface: return self.img[self.imgId]
     #展示
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)):
         if not self.hidden:
-            img = resizeImg(self.img[self.imgId],self.size)
-            #设置透明度
-            if self._alpha != 255: img.set_alpha(self._alpha)
-            surface.blit(img,add_pos(self.pos,offSet))
+            self.current_image.set_size(self.get_width(), self.get_height())
+            self.current_image.set_alpha(self._alpha)
+            self.current_image.display(surface, add_pos(self.pos,offSet))
             if self.countDown >= self.updateGap:
                 self.countDown = 0
                 self.imgId += 1

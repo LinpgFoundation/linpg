@@ -95,14 +95,14 @@ class DropDownSingleChoiceList(GameObjectContainer):
                 pygame.draw.rect(surface, findColorRGBA("white"), pygame.Rect(current_abs_pos,self.size))
             #列出当前选中的选项
             current_pos:tuple = current_abs_pos
-            font_surface:pygame.Surface = copeBounding(self.__FONT.render(self.get_current_selected_item(), get_fontMode(), self.__font_color))
+            font_surface:pygame.Surface = copeBounding(self.__FONT.render(self.get_current_selected_item(), get_antialias(), self.__font_color))
             surface.blit(
                 font_surface,
                 add_pos(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))
                 )
             rect_of_outline:pygame.Rect = pygame.Rect(current_pos, (self.width, self.__block_height))
             pygame.draw.rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
-            font_surface = pygame.transform.flip(copeBounding(self.__FONT.render("^", get_fontMode(), self.__font_color)), False, True)
+            font_surface = pygame.transform.flip(copeBounding(self.__FONT.render("^", get_antialias(), self.__font_color)), False, True)
             surface.blit(
                 font_surface,
                 add_pos(current_pos, (int(self.width-font_surface.get_width()*1.5), int((self.__block_height-font_surface.get_height())/2)))
@@ -116,7 +116,7 @@ class DropDownSingleChoiceList(GameObjectContainer):
             if not self.__fold_choice:
                 for i in range(len(self.items)):
                     current_pos = add_pos(current_abs_pos, (0,(i+1)*self.__block_height))
-                    font_surface = copeBounding(self.__FONT.render(self.items[i], get_fontMode(), self.__font_color))
+                    font_surface = copeBounding(self.__FONT.render(self.items[i], get_antialias(), self.__font_color))
                     surface.blit(
                         font_surface,
                         add_pos(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))

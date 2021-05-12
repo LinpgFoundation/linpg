@@ -59,7 +59,7 @@ class DialogBox(AbstractDialog,GameObject2d):
             if self.__flipped is True:
                 #讲述人名称
                 if self.narrator is not None:
-                    self.__surface.blit(self.FONT.render(self.narrator,get_fontMode(),(255,255,255)),(self.get_width()*0.6+self.narrator_x,self.narrator_y))
+                    self.__surface.blit(self.FONT.render(self.narrator,get_antialias(),(255,255,255)),(self.get_width()*0.6+self.narrator_x,self.narrator_y))
                 #角色图标
                 if self.narrator_icon is not None and characterInfoBoardUI is not None:
                     self.__surface.blit(characterInfoBoardUI.characterIconImages[self.narrator_icon],(self.get_width()-self.txt_x,self.txt_y))
@@ -67,7 +67,7 @@ class DialogBox(AbstractDialog,GameObject2d):
             else:
                 #讲述人名称
                 if self.narrator is not None:
-                    self.__surface.blit(self.FONT.render(self.narrator,get_fontMode(),(255,255,255)),(self.narrator_x,self.narrator_y))
+                    self.__surface.blit(self.FONT.render(self.narrator,get_antialias(),(255,255,255)),(self.narrator_x,self.narrator_y))
                 #角色图标
                 if self.narrator_icon is not None and characterInfoBoardUI is not None:
                     img = characterInfoBoardUI.characterIconImages[self.narrator_icon]
@@ -79,10 +79,10 @@ class DialogBox(AbstractDialog,GameObject2d):
             if len(self.content)>0:
                 #已经播放的行
                 for i in range(self.displayedLine):
-                    self.__surface.blit(self.FONT.render(self.content[i],get_fontMode(),(255,255,255)),(x,y))
+                    self.__surface.blit(self.FONT.render(self.content[i],get_antialias(),(255,255,255)),(x,y))
                     y += self.FONTSIZE*1.2
                 #正在播放的行
-                self.__surface.blit(self.FONT.render(self.content[self.displayedLine][:self.textIndex],get_fontMode(),(255,255,255)),(x,y))
+                self.__surface.blit(self.FONT.render(self.content[self.displayedLine][:self.textIndex],get_antialias(),(255,255,255)),(x,y))
                 if self.textIndex < len(self.content[self.displayedLine]):
                     self.textIndex += 1
                 elif self.displayedLine < len(self.content)-1:
@@ -118,7 +118,7 @@ class DialogButtons:
         dialog_txt = get_lang("Dialog")
         #生成跳过按钮
         tempButtonIcon = loadImg(os.path.join(DIALOG_UI_PATH,"dialog_skip.png"),(self.FONTSIZE,self.FONTSIZE))
-        tempButtonTxt = self.FONT.render(dialog_txt["skip"],get_fontMode(),(255, 255, 255))
+        tempButtonTxt = self.FONT.render(dialog_txt["skip"],get_antialias(),(255, 255, 255))
         temp_w = tempButtonTxt.get_width()+self.FONTSIZE*1.5
         self.choiceTxt = dialog_txt["choice"]
         self.skipButton = pygame.Surface((temp_w,tempButtonTxt.get_height()),flags=pygame.SRCALPHA).convert_alpha()
@@ -126,7 +126,7 @@ class DialogButtons:
         self.icon_y = (tempButtonTxt.get_height()-tempButtonIcon.get_height())/2
         self.skipButtonHovered.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONTSIZE*0.5,self.icon_y))
         self.skipButtonHovered.blit(tempButtonTxt,(0,0))
-        tempButtonTxt = self.FONT.render(dialog_txt["skip"],get_fontMode(),(105, 105, 105))
+        tempButtonTxt = self.FONT.render(dialog_txt["skip"],get_antialias(),(105, 105, 105))
         tempButtonIcon.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
         self.skipButton.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONTSIZE*0.5,self.icon_y))
         self.skipButton.blit(tempButtonTxt,(0,0))
@@ -139,12 +139,12 @@ class DialogButtons:
         self.autoIconDegree = 0
         self.autoIconDegreeChange = (2**0.5-1)*self.FONTSIZE/45
         self.autoMode:bool = False
-        tempButtonTxt = self.FONT.render(dialog_txt["auto"],get_fontMode(),(105, 105, 105))
+        tempButtonTxt = self.FONT.render(dialog_txt["auto"],get_antialias(),(105, 105, 105))
         temp_w = tempButtonTxt.get_width()+self.FONTSIZE*1.5
         self.autoButton = pygame.Surface((temp_w,tempButtonTxt.get_height()),flags=pygame.SRCALPHA).convert_alpha()
         self.autoButtonHovered = pygame.Surface((temp_w,tempButtonTxt.get_height()),flags=pygame.SRCALPHA).convert_alpha()
         self.autoButton.blit(tempButtonTxt,(0,0))
-        self.autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"],get_fontMode(),(255, 255, 255)),(0,0))
+        self.autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"],get_antialias(),(255, 255, 255)),(0,0))
         self.autoButton = ImageSurface(self.autoButton,window_x*0.8,window_y*0.05)
         self.autoButton.tag = int(self.autoButton.x+self.autoButton.img.get_width()-self.FONTSIZE)
         self.autoButtonHovered = ImageSurface(self.autoButtonHovered,window_x*0.8,window_y*0.05)

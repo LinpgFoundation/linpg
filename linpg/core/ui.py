@@ -125,7 +125,7 @@ class OptionMenu(AbstractImage):
         self.settingTitleTxt.set_centerx(width/2)
         #语言
         self.current_lang = TextSurface(fontRender("{}: ".format(langTxt["language"]), "white", self.__item_height),self.bar_x, self.bar_y0)
-        self.language_choice = DropDownSingleChoiceList(None, self.bar_x+self.current_lang.get_width(), self.bar_y0, self.__item_height)
+        self.language_choice = DropDownSingleChoiceList(None, self.bar_x, self.bar_y0, self.__item_height)
         for lang_choice in get_available_language():
             self.language_choice.append(lang_choice)
         self.language_choice.set_current_selected_item(get_current_language())
@@ -139,7 +139,7 @@ class OptionMenu(AbstractImage):
         self.__back_button = fontRenderPro(get_lang("Global","back"),"white",(0,0),self.__item_height)
         self.__back_button.set_bottom(height-edge_panding)
         self.__back_button.set_centerx(self.width/2)
-        self.need_update:bool = False
+        self.need_update:dict = {}
     #更新语言
     def __update_lang(self, lang:str) -> None:
         #更新语言并保存新的参数到本地
@@ -159,7 +159,10 @@ class OptionMenu(AbstractImage):
         #返回
         self.__back_button = fontRenderPro(get_lang("Global","back"), "white", self.__back_button.pos, self.__item_height)
     def draw(self, surface:pygame.Surface) -> None:
-        self.need_update = False
+        self.need_update = {
+            "volume": False,
+            "language": False
+            }
         if not self.hidden:
             #底部图
             surface.blit(self.img,(self.x,self.y))
@@ -207,34 +210,35 @@ class OptionMenu(AbstractImage):
             self.__back_button.display(surface, self.pos)
             #语言
             self.current_lang.draw(surface)
-            self.language_choice.draw(surface)
+            self.language_choice.display(surface, (self.current_lang.get_width(),0))
             #如果需要，则更新语言
             if self.language_choice.get_current_selected_item() != get_current_language():
                 self.__update_lang(self.language_choice.get_current_selected_item())
+                self.need_update["language"] = True
             #按键的判定按钮
             if controller.mouse_get_press(0):
                 #获取鼠标坐标
                 mouse_x,mouse_y=controller.get_mouse_pos()
                 #判定划动条
-                if 0 <= mouse_x-self.bar_x <= self.bar_width:
+                if 0 <= mouse_x-self.bar_x <= self.bar_width and not self.language_choice.is_hover():
                     #如果碰到背景音乐的音量条
                     if -self.__item_height/2<mouse_y-self.bar_y1<self.__item_height*1.5:
                         self.soundVolume_background_music = round(100*(mouse_x-self.bar_x)/self.bar_width)
                         set_setting("Sound","background_music",self.soundVolume_background_music)
                         pygame.mixer.music.set_volume(self.soundVolume_background_music/100.0)
-                        self.need_update = True
+                        self.need_update["volume"] = True
                     #如果碰到音效的音量条
                     elif -self.__item_height/2<mouse_y-self.bar_y2<self.__item_height*1.5:
                         self.soundVolume_sound_effects = round(100*(mouse_x-self.bar_x)/self.bar_width)
                         set_setting("Sound","sound_effects",self.soundVolume_sound_effects)
-                        self.need_update = True
+                        self.need_update["volume"] = True
                     #如果碰到环境声的音量条
                     elif -self.__item_height/2<mouse_y-self.bar_y3<self.__item_height*1.5:
                         self.soundVolume_sound_environment = round(100*(mouse_x-self.bar_x)/self.bar_width)
                         set_setting("Sound","sound_environment",self.soundVolume_sound_environment)
-                        self.need_update = True
+                        self.need_update["volume"] = True
                     #保存新的参数
-                    if self.need_update is True: save_setting()
+                    if self.need_update["volume"] is True: save_setting()
                     #判定返回按钮 
                     if self.__back_button.has_been_hovered():
                         self.hidden = True

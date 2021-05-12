@@ -16,7 +16,7 @@ class AbstractInputBox(GameObject2d):
         self.txt_color = findColorRGBA(txt_color)
         self.active:bool = False
         self._text = None
-        self._holder = self.FONT.render("|",get_fontMode(),self.txt_color)
+        self._holder = self.FONT.render("|",get_antialias(),self.txt_color)
         self.holderIndex = 0
         self.needSave = False
     def get_width(self) -> int: return self.input_box.w
@@ -127,7 +127,7 @@ class SingleLineInputBox(AbstractInputBox):
                 self._reset_holderIndex(mouse_x)
         # 画出文字
         if self._text is not None and len(self._text) > 0:
-            screen.blit(self.FONT.render(self._text,get_fontMode(),findColorRGBA(self.txt_color)), (self.x+self.FONTSIZE*0.25,self.y))
+            screen.blit(self.FONT.render(self._text,get_antialias(),findColorRGBA(self.txt_color)), (self.x+self.FONTSIZE*0.25,self.y))
         #画出输入框
         if self.active:
             pygame.draw.rect(screen, self.color, self.input_box, 2)
@@ -293,7 +293,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         if self._text is not None:
             for i in range(len(self._text)): 
                 # 画出文字
-                screen.blit(self.FONT.render(self._text[i],get_fontMode(),findColorRGBA(self.txt_color)),(self.x+self.FONTSIZE*0.25,self.y+i*self.deafult_height))
+                screen.blit(self.FONT.render(self._text[i],get_antialias(),findColorRGBA(self.txt_color)),(self.x+self.FONTSIZE*0.25,self.y+i*self.deafult_height))
         if self.active:
             # 画出输入框
             pygame.draw.rect(screen, self.color, self.input_box, 2)
@@ -420,10 +420,10 @@ class Console(SingleLineInputBox):
                             self.set_text()
             #画出输出信息
             for i in range(len(self.txtOutput)):
-                screen.blit(self.FONT.render(self.txtOutput[i],get_fontMode(),self.color),(self.x+self.FONTSIZE*0.25, self.y-(len(self.txtOutput)-i)*self.FONTSIZE*1.5))
+                screen.blit(self.FONT.render(self.txtOutput[i],get_antialias(),self.color),(self.x+self.FONTSIZE*0.25, self.y-(len(self.txtOutput)-i)*self.FONTSIZE*1.5))
             # 画出文字
             if self._text is not None and len(self._text) > 0:
-                screen.blit(self.FONT.render(self._text,get_fontMode(),self.color),(self.x+self.FONTSIZE*0.25, self.y))
+                screen.blit(self.FONT.render(self._text,get_antialias(),self.color),(self.x+self.FONTSIZE*0.25, self.y))
             #画出输入框
             pygame.draw.rect(screen, self.color, self.input_box, 2)
             #画出 “|” 符号

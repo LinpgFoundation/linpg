@@ -155,7 +155,7 @@ class DialogSystem(AbstractDialogSystem):
                         pass
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 progress_saved_text = ImageSurface(
-                    self._dialog_txt_system.FONT.render(get_lang("Global","progress_has_been_saved"),get_fontMode(),(255, 255, 255)),0,0
+                    self._dialog_txt_system.FONT.render(get_lang("Global","progress_has_been_saved"),get_antialias(),(255, 255, 255)),0,0
                     )
                 progress_saved_text.set_alpha(0)
                 self.pause_menu.hidden = False
@@ -531,7 +531,7 @@ class DialogEditor(AbstractDialogSystem):
                                 break
                         for i in range(len(theNext["target"])):
                             button = theNext["target"][i]
-                            option_txt = self.FONT.render(button["txt"],get_fontMode(),findColorRGBA("white"))
+                            option_txt = self.FONT.render(button["txt"],get_antialias(),findColorRGBA("white"))
                             option_button_width = int(option_txt.get_width()+surface.get_width()*0.05)
                             option_button_x = int((surface.get_width()-option_button_width)/2)
                             option_button_y = int((i+1)*2*surface.get_width()*0.03+optionBox_y_base)

@@ -426,14 +426,14 @@ class Entity(GameObject):
             self.__hp_bar.set_percentage(self.__current_hp/self.__max_hp)
             self.__hp_bar.draw(surface,False)
             displayInCenter(
-                _ENTITY_UI_FONT.render("{0}/{1}".format(self.__current_hp,self.__max_hp),get_fontMode(),(0,0,0)),
+                _ENTITY_UI_FONT.render("{0}/{1}".format(self.__current_hp,self.__max_hp),get_antialias(),(0,0,0)),
                 self.__hp_bar,xTemp,yTemp,surface
                 )
         else:
             self.__hp_bar.set_percentage(self.dying/DYING_ROUND_LIMIT)
             self.__hp_bar.draw(surface,True)
             displayInCenter(
-                _ENTITY_UI_FONT.render("{0}/{1}".format(self.dying,DYING_ROUND_LIMIT),get_fontMode(),(0,0,0))
+                _ENTITY_UI_FONT.render("{0}/{1}".format(self.dying,DYING_ROUND_LIMIT),get_antialias(),(0,0,0))
                 ,self.__hp_bar,xTemp,yTemp,surface
                 )
         return xTemp,yTemp

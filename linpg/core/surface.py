@@ -69,14 +69,14 @@ class StaticImageSurface(AdvancedAbstractImage):
         super().__init__(None,x,y,width,height)
         self.img_original = loadImg(img)
         self.__is_flipped:bool = False
-        self.__needUpdate:bool = True if self._width >= 0 and self._height >= 0 else False
+        self.__need_update:bool = True if self._width >= 0 and self._height >= 0 else False
         self.__crop_rect:object = None
     #宽度
     def set_width(self, value:Union[int,float]) -> None:
         value = int(value)
         if self._width != value:
             super().set_width(value)
-            self.__needUpdate = True
+            self.__need_update = True
     def set_width_with_size_locked(self, width:Union[int,float]) -> None:
         height:int = int(width/self.img_original.get_width()*self.img_original.get_height())
         width = int(width)
@@ -86,7 +86,7 @@ class StaticImageSurface(AdvancedAbstractImage):
         value = int(value)
         if self._height != value:
             super().set_height(value)
-            self.__needUpdate = True
+            self.__need_update = True
     def set_height_with_size_locked(self, height:Union[int,float]) -> None:
         width = int(height/self.img_original.get_height()*self.img_original.get_width())
         height = int(height)
@@ -99,14 +99,14 @@ class StaticImageSurface(AdvancedAbstractImage):
         if rect is None or isinstance(rect,(pygame.Rect,Shape)):
             if self.__crop_rect != rect:
                 self.__crop_rect = rect
-                self.__needUpdate = True
+                self.__need_update = True
             else:
                 pass
         else:
             throwException("error","You have to input either a None or a Rect, not {}".format(type(rect)))
     #更新图片
     def _update_img(self) -> None:
-        imgTmp = smoothscaleImg(self.img_original, self.size)
+        imgTmp = smoothscaleImg(self.img_original, self.size) if get_antialias() is True else resizeImg(self.img_original, self.size)
         rect = imgTmp.get_bounding_rect()
         if self.__crop_rect is not None:
             new_x:int = max(rect.x,self.__crop_rect.x)
@@ -117,7 +117,7 @@ class StaticImageSurface(AdvancedAbstractImage):
         self.img.blit(imgTmp,(-self._local_x,-self._local_y))
         if self._alpha != 255:
             self.img.set_alpha(self._alpha)
-        self.__needUpdate = False
+        self.__need_update = False
     #反转原图，并打上已反转的标记
     def flip(self) -> None:
         self.__is_flipped = not self.__is_flipped
@@ -125,7 +125,7 @@ class StaticImageSurface(AdvancedAbstractImage):
     #反转原图
     def flip_original(self) -> None:
         self.img_original = flipImg(self.img_original,True,False)
-        self.__needUpdate = True
+        self.__need_update = True
     #如果不处于反转状态，则反转
     def flip_if_not(self) -> None:
         if not self.__is_flipped: self.flip()
@@ -149,15 +149,15 @@ class StaticImageSurface(AdvancedAbstractImage):
     #加暗度
     def addDarkness(self, value:int) -> None:
         self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_SUB)
-        self.__needUpdate = True
+        self.__need_update = True
     def addBrightness(self, value:int) -> None:
         self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_ADD)
-        self.__needUpdate = True
+        self.__need_update = True
     #展示
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
         if not self.hidden:
             #如果图片需要更新，则先更新
-            if self.__needUpdate: self._update_img()
+            if self.__need_update: self._update_img()
             #将已经处理好的图片画在给定的图层上
             surface.blit(self.img,(self.x+self._local_x+offSet[0], self.y+self._local_y+offSet[1]))
 

@@ -27,7 +27,8 @@ def reload_lang() -> None:
     global _LINPG_LANG_AVAILABLE
     _LINPG_LANG_AVAILABLE.clear()
     for lang_file in glob(os.path.join(os.path.dirname(__file__),"*.json")):
-        _LINPG_LANG_AVAILABLE.append(loadConfig(lang_file, "Language"))
+        if os.path.exists(os.path.join("Lang",os.path.basename(lang_file).replace(".json",".yaml"))):
+            _LINPG_LANG_AVAILABLE.append(loadConfig(lang_file, "Language"))
 
 #引擎初始化时应重新加载语言配置文件
 reload_lang()

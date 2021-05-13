@@ -46,6 +46,12 @@ class DialogSystem(AbstractDialogSystem):
         self._initialize(chapterType,chapterId,projectName)
         self.part = part
         self.__process_data()
+    #更新语言
+    def updated_language(self, surface:pygame.Surface) -> None:
+        super().updated_language()
+        self.pause_menu.initialize(surface)
+        self._buttons_mananger = DialogButtons()
+        self.__process_data()
     #加载章节信息
     def __process_data(self) -> None:
         #读取目标对话文件的数据
@@ -181,9 +187,9 @@ class DialogSystem(AbstractDialogSystem):
                     #展示设置UI
                     get_option_menu().draw(surface)
                     #更新音量
-                    if get_option_menu().need_update is True:
-                        self.__update_sound_volume()
-                        get_option_menu().need_update = False
+                    if get_option_menu().need_update["volume"] is True: self.__update_sound_volume()
+                    if get_option_menu().need_update["language"] is True:
+                        self.updated_language(surface)
                     progress_saved_text.drawOnTheCenterOf(surface)
                     progress_saved_text.fade_out(5)
                 del progress_saved_text

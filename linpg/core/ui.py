@@ -11,7 +11,7 @@ class PauseMenu:
         self.button_back = None
         self.screenshot = None
         self.hidden:bool = True
-    def __initial(self, surface:pygame.Surface) -> None:
+    def initialize(self, surface:pygame.Surface) -> None:
         width,height = display.get_size()
         surfaceTmp = pygame.Surface((width,height),flags=pygame.SRCALPHA).convert_alpha()
         pygame.draw.rect(surfaceTmp,(0,0,0),(0,0,width,height))
@@ -49,7 +49,7 @@ class PauseMenu:
             surface.blit(self.screenshot,(0,0))
             #展示暂停菜单的背景层
             if self.white_bg is None:
-                self.__initial(surface)
+                self.initialize(surface)
             self.white_bg.draw(surface)
             #展示按钮
             self.button_resume.draw(surface)

@@ -36,7 +36,16 @@ def loadImg(path:Union[str,pygame.Surface], size:Union[tuple,list]=tuple(), alph
     #根据参数编辑图片
     if alpha != 255: img.set_alpha(alpha)
     #如果没有给size,则直接返回Surface
-    return img if len(size) == 0 else resizeImg(img,size)
+    return img if len(size) == 0 else smoothscaleImg(img, size)
+
+#快速加载图片
+def quickLoadImg(path:Union[str,pygame.Surface], size:Union[tuple,list]=tuple(), alpha:int=255, ifConvertAlpha:bool=True) -> pygame.Surface:
+    #加载图片
+    img = imgLoadFunction(path,ifConvertAlpha)
+    #根据参数编辑图片
+    if alpha != 255: img.set_alpha(alpha)
+    #如果没有给size,则直接返回Surface
+    return img if len(size) == 0 else resizeImg(img, size)
 
 #加载音效
 def loadSound(path:str, volume:float) -> pygame.mixer.Sound:

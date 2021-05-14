@@ -289,12 +289,11 @@ class DialogContent(AbstractDialog):
             (os.path.join(DIALOG_UI_PATH,"mouse_none.png"), os.path.join(DIALOG_UI_PATH,"mouse.png")),
             (display.get_width()*0.82,display.get_height()*0.83),(self.FONTSIZE,self.FONTSIZE), 50
             )
-        self.isHidden = False
+        self.hidden:bool = False
         self.readTime = 0
         self.totalLetters = 0
         self.autoMode = False
         self.resetDialogueboxData()
-    def hideSwitch(self) -> None: self.isHidden = not self.isHidden
     def update(self, txt:list, narrator:str, forceNotResizeDialoguebox:bool=False) -> None:
         self.totalLetters = 0
         self.readTime = 0
@@ -327,7 +326,7 @@ class DialogContent(AbstractDialog):
     def stop_playing_text_sound(self) -> None:
         if pygame.mixer.get_busy() and self.__textPlayingSound is not None: self.__textPlayingSound.stop()
     def draw(self, surface:pygame.Surface) -> None:
-        if not self.isHidden:
+        if not self.hidden:
             if not self.__fade_out_stage:
                 self.__fadeIn(surface)
             else:

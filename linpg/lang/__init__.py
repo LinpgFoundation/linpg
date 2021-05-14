@@ -15,19 +15,25 @@ _LINPG_LANG_AVAILABLE:list = []
 def reload_lang() -> None:
     #加载语言文件
     global _LINPG_LANG
-    try:
+    if os.path.exists(os.path.join("Lang","{}.yaml".format(get_setting("Language")))):
         _LINPG_LANG = {
             **loadConfig(os.path.join("Lang","{}.yaml".format(get_setting("Language")))),
             **loadConfig(os.path.join(os.path.dirname(__file__),"{}.json".format(get_setting("Language"))))
             }
-    except:
+    elif os.path.exists(os.path.join("Lang","{}.json".format(get_setting("Language")))):
+        _LINPG_LANG = {
+            **loadConfig(os.path.join("Lang","{}.json".format(get_setting("Language")))),
+            **loadConfig(os.path.join(os.path.dirname(__file__),"{}.json".format(get_setting("Language"))))
+            }
+    else:
         throwException("warning", "Linpg cannot load additional language file.")
         _LINPG_LANG = loadConfig(os.path.join(os.path.dirname(__file__),"{}.json".format(get_setting("Language"))))
     #获取本地可用的语言
     global _LINPG_LANG_AVAILABLE
     _LINPG_LANG_AVAILABLE.clear()
     for lang_file in glob(os.path.join(os.path.dirname(__file__),"*.json")):
-        if os.path.exists(os.path.join("Lang",os.path.basename(lang_file).replace(".json",".yaml"))):
+        if os.path.exists(os.path.join("Lang",os.path.basename(lang_file).replace(".json",".yaml"))) or \
+            os.path.exists(os.path.join("Lang",os.path.basename(lang_file))):
             _LINPG_LANG_AVAILABLE.append(loadConfig(lang_file, "Language"))
 
 #引擎初始化时应重新加载语言配置文件

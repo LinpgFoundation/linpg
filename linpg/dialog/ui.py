@@ -110,12 +110,17 @@ class DialogBox(AbstractDialog,GameObject2d):
 #对话系统按钮UI模块
 class DialogButtons:
     def __init__(self):
+        self.__button_hovered:int = 0
+        self.hidden:bool = False
+        self.initialize()
+    #初始化
+    def initialize(self) -> None:
         #从设置中读取信息
         window_x,window_y = display.get_size()
         self.FONTSIZE:int = int(window_x*0.0175)
         self.FONT = createFont(self.FONTSIZE)
         #从语言文件中读取按钮文字
-        dialog_txt = get_lang("Dialog")
+        dialog_txt:dict = get_lang("Dialog")
         #生成跳过按钮
         tempButtonIcon = loadImg(os.path.join(DIALOG_UI_PATH,"dialog_skip.png"),(self.FONTSIZE,self.FONTSIZE))
         tempButtonTxt = self.FONT.render(dialog_txt["skip"],get_antialias(),(255, 255, 255))
@@ -161,17 +166,29 @@ class DialogButtons:
         self.historyButton = loadButton(
             os.path.join(DIALOG_UI_PATH,"dialog_history.png"), (window_x*0.1, window_y*0.05),(self.FONTSIZE,self.FONTSIZE), 150
         )
-    def draw(self, surface: pygame.Surface, isHidden: bool) -> str:
-        if isHidden is True:
+    @property
+    def button_hovered(self) -> str:
+        if self.__button_hovered == 1:
+            return "hide"
+        elif self.__button_hovered == 2:
+            return "skip"
+        elif self.__button_hovered == 3:
+            return "auto"
+        elif self.__button_hovered == 4:
+            return "history"
+        else:
+            return ""
+    def draw(self, surface: pygame.Surface) -> None:
+        self.__button_hovered = 0
+        if self.hidden is True:
             self.showButton.draw(surface)
-            return "hide" if self.showButton.is_hover() else ""
+            if self.showButton.is_hover(): self.__button_hovered = 1
         else:
             self.hideButton.draw(surface)
             self.historyButton.draw(surface)
-            action = ""
             if self.skipButton.is_hover():
                 self.skipButtonHovered.draw(surface)
-                action = "skip"
+                self.__button_hovered = 2
             else:
                 self.skipButton.draw(surface)
             if self.autoButton.is_hover():
@@ -188,7 +205,7 @@ class DialogButtons:
                         self.autoIconDegree=0
                 else:
                     surface.blit(self.autoIconHovered,(self.autoButtonHovered.tag,self.autoButtonHovered.y+self.icon_y))
-                action = "auto"
+                self.__button_hovered = 3
             else:
                 if self.autoMode:
                     self.autoButtonHovered.draw(surface)
@@ -205,10 +222,9 @@ class DialogButtons:
                     self.autoButton.draw(surface)
                     surface.blit(self.autoIcon,(self.autoButton.tag,self.autoButton.y+self.icon_y))
             if self.hideButton.is_hover():
-                action = "hide"
+                self.__button_hovered = 1
             elif self.historyButton.is_hover():
-                action = "history"
-            return action
+                self.__button_hovered = 4
     def autoModeSwitch(self) -> None:
         if not self.autoMode:
             self.autoMode = True

@@ -12,6 +12,11 @@ try:
 except:
     pass
 
+#Linpg本身错误类
+class Error(Exception):
+    def __init__(self, message:str):
+        super().__init__(message)
+
 #抛出引擎内的异常
 def throwException(exception_type:str, info:str) -> None:
     exception_type_lower:str = exception_type.lower()
@@ -21,7 +26,7 @@ def throwException(exception_type:str, info:str) -> None:
         with open(os.path.join("crash_reports","crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
             f.write("Error Message From Linpg: {}".format(info))
         #打印出错误
-        raise Exception('LinpgEngine-Error: {}'.format(info))
+        raise Error('LinpgEngine-Error: {}'.format(info))
     elif exception_type_lower == "warning":
         #只在开发者模式开启时显示警告
         if get_setting("DeveloperMode") is True:

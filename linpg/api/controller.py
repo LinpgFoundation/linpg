@@ -114,8 +114,10 @@ class DisplayController:
         self.__fps:int = max(int(fps),1)
         self.__clock:object = pygame.time.Clock()
         self.__standard_fps:int = 60
-        self.__standard_width_unit:int = 16
-        self.__standard_height_unit:int = 9
+        #默认尺寸
+        self.__screen_scale:int = keepInRange(int(get_setting("ScreenScale")),0,100)
+        self.__standard_width:int = round(1920*self.__screen_scale/100)
+        self.__standard_height:int = round(1080*self.__screen_scale/100)
     #帧数
     @property
     def fps(self) -> int: return self.__fps
@@ -132,9 +134,10 @@ class DisplayController:
     def set_caption(self, title:any): pygame.display.set_caption(title)
     #设置窗口图标
     def set_icon(self, path:str): pygame.display.set_icon(pygame.image.load(os.path.join(path)))
-    def get_width(self) -> int: return int(get_setting("ScreenSize")*self.__standard_width_unit)
-    def get_height(self) -> int: return int(get_setting("ScreenSize")*self.__standard_height_unit)
-    def get_size(self) -> tuple: return self.get_width(),self.get_height()
+    #窗口尺寸
+    def get_width(self) -> int: return self.__standard_width
+    def get_height(self) -> int: return self.__standard_height
+    def get_size(self) -> tuple: return self.__standard_width,self.__standard_height
     #初始化屏幕
     def init_screen(self, flags:any) -> any:
         return pygame.display.set_mode(self.get_size(),flags)

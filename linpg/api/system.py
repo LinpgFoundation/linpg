@@ -107,11 +107,7 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
         self.__initialized = True
     #获取本模块的信息
     @property
-    def data_of_parent_game_system(self) -> dict: return {
-        "chapter_type": self._chapter_type,
-        "chapter_id": self._chapter_id,
-        "project_name": self._project_name
-        }
+    def data_of_parent_game_system(self) -> dict: return self.get_data_of_parent_game_system()
     def get_data_of_parent_game_system(self) -> dict: return {
         "chapter_type": self._chapter_type,
         "chapter_id": self._chapter_id,

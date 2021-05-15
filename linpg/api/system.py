@@ -6,23 +6,28 @@ class AbstractSystem:
     def __init__(self):
         #判定用于判定是否还在播放的参数
         self.__is_playing:bool = True
+        self._language_when_initialize:str = get_current_language()
     #是否正在播放
     @property
     def isPlaying(self) -> bool: return self.__is_playing
     def is_playing(self) -> bool: return self.__is_playing
     def stop(self) -> None: self.__is_playing = False
+    #是否本体语言和当前一致
+    def language_need_update(self) -> bool: return self._language_when_initialize != get_current_language()
+    #更新语言
+    def updated_language(self) -> None: self._language_when_initialize = get_current_language()
 
 #拥有背景音乐的系统模块接口
 class SystemWithBackgroundMusic(AbstractSystem):
     def __init__(self) -> None:
         super().__init__()
         self.__bgm_path = None
-        self.__bgm_volume = 1
-        self.__if_stop_playing_bgm = False
+        self.__bgm_volume:float = 1.0
+        self.__if_stop_playing_bgm:bool = False
     #获取bgm名称（非路径）
     @property
-    def bgm(self) -> str: return os.path.basename(self.__bgm_path)
-    def get_bgm(self) -> str: return os.path.basename(self.__bgm_path)
+    def bgm(self) -> Union[str,None]: self.get_bgm()
+    def get_bgm(self) -> Union[str,None]: return os.path.basename(self.__bgm_path) if self.__bgm_path is not None else None
     #设置bgm路径
     def set_bgm(self, path:Union[str,None], forced:bool=False) -> None:
         if path is None:
@@ -102,11 +107,7 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
         self.__initialized = True
     #获取本模块的信息
     @property
-    def data_of_parent_game_system(self) -> dict: return {
-        "chapter_type": self._chapter_type,
-        "chapter_id": self._chapter_id,
-        "project_name": self._project_name
-        }
+    def data_of_parent_game_system(self) -> dict: return self.get_data_of_parent_game_system()
     def get_data_of_parent_game_system(self) -> dict: return {
         "chapter_type": self._chapter_type,
         "chapter_id": self._chapter_id,

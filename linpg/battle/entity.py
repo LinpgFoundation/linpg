@@ -94,7 +94,10 @@ class Entity(GameObject):
     def is_idle(self) -> bool: return self.__current_action == self.idle_action
     #获取角色特定动作的图片播放ID
     def get_imgId(self, action:str) -> int:
-        action_dict:dict = self.__imgId_dict[action]
+        try:
+            action_dict:dict = self.__imgId_dict[action]
+        except KeyError:
+            throwException("error", 'Action "{}" is invalid!'.format(action))
         return action_dict["imgId"] if action_dict is not None else -1
     #获取角色特定动作的图片总数量
     def get_imgNum(self, action:str) -> int: return _CHARACTERS_IMAGE_SYS.get_img_num(self.type,action)
@@ -374,6 +377,7 @@ class Entity(GameObject):
         if console.get_events("dev"): img_of_char.draw_outline(surface)
     #把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
     def draw(self, surface:pygame.Surface, MapClass:object) -> None:
+
         self.__blit_entity_img(surface,MapClass,alpha=self.get_imgAlpaha(self.__current_action))
         #计算imgId
         self.draw_nothing()
@@ -426,14 +430,14 @@ class Entity(GameObject):
             self.__hp_bar.set_percentage(self.__current_hp/self.__max_hp)
             self.__hp_bar.draw(surface,False)
             displayInCenter(
-                _ENTITY_UI_FONT.render("{0}/{1}".format(self.__current_hp,self.__max_hp),get_fontMode(),(0,0,0)),
+                _ENTITY_UI_FONT.render("{0}/{1}".format(self.__current_hp,self.__max_hp),get_antialias(),(0,0,0)),
                 self.__hp_bar,xTemp,yTemp,surface
                 )
         else:
             self.__hp_bar.set_percentage(self.dying/DYING_ROUND_LIMIT)
             self.__hp_bar.draw(surface,True)
             displayInCenter(
-                _ENTITY_UI_FONT.render("{0}/{1}".format(self.dying,DYING_ROUND_LIMIT),get_fontMode(),(0,0,0))
+                _ENTITY_UI_FONT.render("{0}/{1}".format(self.dying,DYING_ROUND_LIMIT),get_antialias(),(0,0,0))
                 ,self.__hp_bar,xTemp,yTemp,surface
                 )
         return xTemp,yTemp

@@ -10,7 +10,7 @@
     "MouseIconWidth": 18,
     "MouseMoveSpeed": 30,
     "ReadingSpeed": 0.5,
-    "ScreenSize": 120,
+    "ScreenScale": 100,
     "Sound": {
         "background_music": 100,
         "sound_effects": 100,

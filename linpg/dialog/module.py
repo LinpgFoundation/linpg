@@ -286,14 +286,14 @@ class DialogContent(AbstractDialog):
         self.dialoguebox_max_height = None
         #鼠标图标
         self.mouseImg = loadGif(
-            (loadImg(os.path.join(DIALOG_UI_PATH,"mouse_none.png")),loadImg(os.path.join(DIALOG_UI_PATH,"mouse.png"))),
-            (display.get_width()*0.82,display.get_height()*0.83),(self.FONTSIZE,self.FONTSIZE),50)
-        self.isHidden = False
+            (os.path.join(DIALOG_UI_PATH,"mouse_none.png"), os.path.join(DIALOG_UI_PATH,"mouse.png")),
+            (display.get_width()*0.82,display.get_height()*0.83),(self.FONTSIZE,self.FONTSIZE), 50
+            )
+        self.hidden:bool = False
         self.readTime = 0
         self.totalLetters = 0
         self.autoMode = False
         self.resetDialogueboxData()
-    def hideSwitch(self) -> None: self.isHidden = not self.isHidden
     def update(self, txt:list, narrator:str, forceNotResizeDialoguebox:bool=False) -> None:
         self.totalLetters = 0
         self.readTime = 0
@@ -321,12 +321,12 @@ class DialogContent(AbstractDialog):
     def needUpdate(self) -> bool:
         return True if self.autoMode and self.readTime >= self.totalLetters else False
     #渲染文字
-    def fontRender(self, txt:str, color:tuple) -> pygame.Surface: return self.FONT.render(txt,get_fontMode(),color)
+    def fontRender(self, txt:str, color:tuple) -> pygame.Surface: return self.FONT.render(txt,get_antialias(),color)
     #如果音效还在播放则停止播放文字音效
     def stop_playing_text_sound(self) -> None:
         if pygame.mixer.get_busy() and self.__textPlayingSound is not None: self.__textPlayingSound.stop()
     def draw(self, surface:pygame.Surface) -> None:
-        if not self.isHidden:
+        if not self.hidden:
             if not self.__fade_out_stage:
                 self.__fadeIn(surface)
             else:
@@ -340,7 +340,7 @@ class DialogContent(AbstractDialog):
         if self.dialoguebox_y is None:
             self.dialoguebox_y = surface.get_height()*0.65+self.dialoguebox_max_height/2
         #画出对话框图片
-        surface.blit(resizeImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
+        surface.blit(smoothscaleImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
         (surface.get_width()*0.13,self.dialoguebox_y))
         #如果对话框图片还在放大阶段
         if self.dialoguebox_height < self.dialoguebox_max_height:
@@ -354,7 +354,7 @@ class DialogContent(AbstractDialog):
         #画出对话框图片
         if self.dialoguebox_y is not None:
             surface.blit(
-                resizeImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
+                smoothscaleImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
                 (surface.get_width()*0.13,self.dialoguebox_y)
                 )
         if self.dialoguebox_height > 0:

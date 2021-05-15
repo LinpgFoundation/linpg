@@ -12,6 +12,11 @@ try:
 except:
     pass
 
+#Linpg本身错误类
+class Error(Exception):
+    def __init__(self, message:str):
+        super().__init__(message)
+
 #抛出引擎内的异常
 def throwException(exception_type:str, info:str) -> None:
     exception_type_lower:str = exception_type.lower()
@@ -21,7 +26,7 @@ def throwException(exception_type:str, info:str) -> None:
         with open(os.path.join("crash_reports","crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
             f.write("Error Message From Linpg: {}".format(info))
         #打印出错误
-        raise Exception('LinpgEngine-Error: {}'.format(info))
+        raise Error('LinpgEngine-Error: {}'.format(info))
     elif exception_type_lower == "warning":
         #只在开发者模式开启时显示警告
         if get_setting("DeveloperMode") is True:
@@ -118,6 +123,11 @@ def set_setting(key:str, key2:str=None, value:any=None) -> None:
 #保存设置参数
 def save_setting() -> None: saveConfig("Save/setting.yaml",_LINPG_SETTING)
 
+#修改设置参数并保存
+def set_and_save_setting(key:str, key2:str=None, value:any=None) -> None:
+    set_setting(key, key2, value)
+    save_setting()
+
 #重新加载设置配置文件，请勿在引擎外调用，重置配置文件请用reload_setting()
 def reload_setting() -> None:
     global _LINPG_SETTING
@@ -136,6 +146,25 @@ def reload_setting() -> None:
 
 #加载设置配置文件
 reload_setting()
+
+"""重要参数"""
+#获取抗锯齿参数
+def get_antialias() -> bool: return True if _LINPG_SETTING["Antialias"] is True else False
+
+#获取文字信息
+def get_font() -> str: return _LINPG_SETTING["Font"]
+
+#设置文字信息
+def set_font(value:str) -> None: _LINPG_SETTING["Font"] = value
+
+#获取文字类型
+def get_font_type() -> str: return _LINPG_SETTING["FontType"]
+
+#设置文字类型
+def set_font_type(value:str) -> None: _LINPG_SETTING["FontType"] = value
+
+#获取文字的具体信息
+def get_font_details() -> tuple: return get_font(), get_font_type(), get_antialias()
 
 """全局数据"""
 _LINPG_GLOBAL_DATA:dict = {}

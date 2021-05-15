@@ -23,6 +23,7 @@
         "cancel": "Cancel",
         "delete": "Delete",
         "dont_save": "Don't Save",
+        "no_translation": "Translation is not available",
         "progress_has_been_saved": "The progress has been saved.",
         "reload_file": "Reload the file",
         "resume": "Resume",
@@ -56,9 +57,6 @@
     ],
     "OptionMenu": {
         "background_music": "Background Music",
-        "cancel": "Cancel",
-        "confirm": "Confirm",
-        "currentLang": "English",
         "language": "Language",
         "option_menu": "Option Menu",
         "setting": "Setting",

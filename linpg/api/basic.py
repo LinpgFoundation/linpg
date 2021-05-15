@@ -1,7 +1,7 @@
 # cython: language_level=3
-from __future__ import annotations
 #python本体库
 import random, re
+from typing import List
 #额外库
 import numpy, pygame
 from pygame.locals import *
@@ -36,7 +36,16 @@ def loadImg(path:Union[str,pygame.Surface], size:Union[tuple,list]=tuple(), alph
     #根据参数编辑图片
     if alpha != 255: img.set_alpha(alpha)
     #如果没有给size,则直接返回Surface
-    return img if len(size) == 0 else resizeImg(img,size)
+    return img if len(size) == 0 else smoothscaleImg(img, size)
+
+#快速加载图片
+def quickLoadImg(path:Union[str,pygame.Surface], size:Union[tuple,list]=tuple(), alpha:int=255, ifConvertAlpha:bool=True) -> pygame.Surface:
+    #加载图片
+    img = imgLoadFunction(path,ifConvertAlpha)
+    #根据参数编辑图片
+    if alpha != 255: img.set_alpha(alpha)
+    #如果没有给size,则直接返回Surface
+    return img if len(size) == 0 else resizeImg(img, size)
 
 #加载音效
 def loadSound(path:str, volume:float) -> pygame.mixer.Sound:
@@ -45,7 +54,7 @@ def loadSound(path:str, volume:float) -> pygame.mixer.Sound:
     return soundTmp
 
 #加载路径下的所有图片，储存到一个list当中，然后返回
-def loadAllImgInFile(pathRule:str, width:any=None, height:any=None) -> list[pygame.Surface]:
+def loadAllImgInFile(pathRule:str, width:any=None, height:any=None) -> List[pygame.Surface]:
     return [loadImg(imgPath,(width,height)) for imgPath in glob(pathRule)]
 
 #获取Surface
@@ -75,6 +84,32 @@ def resizeImg(img:pygame.Surface, size:Union[tuple,list]=(None,None)) -> pygame.
         img = pygame.transform.scale(img,(round(width), round(width/img.get_width()*img.get_height())))
     elif width >= 0 and height >= 0:
         img = pygame.transform.scale(img, (round(width), round(height)))
+    elif width < 0 or height < 0:
+        throwException("error","Both width and height must be positive interger!")
+    return img
+
+#精准地缩放尺寸
+def smoothscaleImg(img:pygame.Surface, size:Union[tuple,list]=(None,None)):
+    #转换尺寸
+    if isinstance(size,(list,tuple,numpy.ndarray)):
+        if len(size) == 1:
+            width = size[0]
+            height = None
+        else:
+            width = size[0]
+            height = size[1]
+    elif isinstance(size,(int,float)):
+        width = size
+        height = None
+    else:
+        throwException("error","The size '{}' is not acceptable.".format(size))
+    #编辑图片
+    if height is not None and height >= 0 and width is None:
+        img = pygame.transform.smoothscale(img,(round(height/img.get_height()*img.get_width()), round(height)))
+    elif height is None and width is not None and width >= 0:
+        img = pygame.transform.smoothscale(img,(round(width), round(width/img.get_width()*img.get_height())))
+    elif width >= 0 and height >= 0:
+        img = pygame.transform.smoothscale(img, (round(width), round(height)))
     elif width < 0 or height < 0:
         throwException("error","Both width and height must be positive interger!")
     return img

@@ -24,7 +24,7 @@ if input("Do you want to package and upload the lastest build (Y/n):") == "Y":
     os.system("python -m build --no-isolation")
 
     #升级twine
-    os.system("python -m pip install --user --upgrade twine")
+    os.system("python -m pip install --upgrade twine")
 
     #用twine上传文件
     os.system("twine upload dist/*")

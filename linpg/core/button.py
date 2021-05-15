@@ -9,12 +9,13 @@ class Button(AbstractImage):
         super().__init__(img, x, y, width, height)
         #self.img是未被触碰时的默认图片，img2是被鼠标触碰时展示的图片
         self.img2 = None
-        self._is_hovered:bool = False
+        self.__is_hovered:bool = False
     def set_hover_img(self, img:pygame.Surface) -> None: self.img2 = img
+    def has_been_hovered(self) -> bool: return self.__is_hovered
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        self._is_hovered = self.is_hover(subtract_pos(controller.get_mouse_pos(), offSet))
+        self.__is_hovered = self.is_hover(subtract_pos(controller.get_mouse_pos(), offSet))
         surface.blit(resizeImg(
-            self.img2 if self._is_hovered is True and self.img2 is not None else self.img,
+            self.img2 if self.__is_hovered is True and self.img2 is not None else self.img,
             self.size), add_pos(self.pos, offSet)
             )
 
@@ -31,5 +32,5 @@ class ButtonWithDes(Button):
         self.des_surface.blit(font_surface,(panding,panding))
     def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
         super().display(surface, offSet)
-        if self._is_hovered is True: surface.blit(self.des_surface, controller.get_mouse_pos())
+        if self.has_been_hovered(): surface.blit(self.des_surface, controller.get_mouse_pos())
 

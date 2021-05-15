@@ -42,36 +42,68 @@ class GameController:
         #鼠标位置
         self.mouse_x:int = 0
         self.mouse_y:int = 0
-        self.movingSpeed = speed
+        self.mouse_moving_speed:Union[int,float] = speed
         #输入事件
         self.__INPUT_EVENTS:list = pygame.event.get()
-    def draw(self, screen:pygame.Surface=None):
-        #更新输入事件
+        """常见事件"""
+        #是否有确认事件
+        self.__confirm_event:int = 0
+        #是否有返回事件
+        self.__back_event:int = 0
+    #更新输入事件
+    def __update_input_events(self) -> None:
         self.joystick.update_device()
         self.__INPUT_EVENTS = pygame.event.get()
+        #重设用于判断常见事件的参数
+        self.__confirm_event = 0
+        self.__back_event = 0
+        for event in self.__INPUT_EVENTS:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 or \
+                event.type == pygame.JOYBUTTONDOWN and self.joystick.get_button(0) is True:
+                self.__confirm_event = 1
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                self.__back_event = 1
+        #更新鼠标坐标
         self.mouse_x,self.mouse_y = pygame.mouse.get_pos()
-        if self.joystick.inputController is not None:
-            if self.joystick.get_axis(0)>0.1 or self.joystick.get_axis(0)<-0.1:
-                self.mouse_x += int(self.movingSpeed*round(self.joystick.get_axis(0),1))
-            if self.joystick.get_axis(1)>0.1 or self.joystick.get_axis(1)<-0.1:
-                self.mouse_y += int(self.movingSpeed*round(self.joystick.get_axis(1),1))
-            pygame.mouse.set_pos((self.mouse_x,self.mouse_y))
-        if self.iconImg is not None and screen is not None:
-            screen.blit(self.iconImg,(self.mouse_x,self.mouse_y))
     #获取输入事件
     @property
     def events(self): return self.__INPUT_EVENTS
     def get_events(self): return self.__INPUT_EVENTS
     #获取单个事件
-    def get_event(self):
-        for event in self.__INPUT_EVENTS:
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 or\
-                event.type == pygame.JOYBUTTONDOWN and self.joystick.get_button(0) == True: return "comfirm"
-        return None
+    def get_event(self, event_type:str) -> bool:
+        if event_type == "comfirm":
+            if self.__confirm_event == 1:
+                return True
+            elif self.__confirm_event == 0:
+                return False
+            else:
+                throwException("error", "self.__confirm_event in GameController is set to invalid number!")
+        elif event_type == "back":
+            if self.__back_event == 1:
+                return True
+            elif self.__back_event == 0:
+                return False
+            else:
+                throwException("error", "self.__back_event in GameController is set to invalid number!")
+        else:
+            throwException("error", 'The event type "{}" is not supported!'.format(event_type))
+        return False
     #返回鼠标的坐标
     def get_mouse_pos(self) -> tuple: return self.mouse_x,self.mouse_y
     #是否鼠标按钮被点击
     def mouse_get_press(self, button_id:int) -> bool: return pygame.mouse.get_pressed()[button_id]
+    #画出，实际上相当于更新
+    def draw(self, screen:pygame.Surface=None):
+        #更新输入事件
+        self.__update_input_events()
+        if self.joystick.inputController is not None:
+            if self.joystick.get_axis(0)>0.1 or self.joystick.get_axis(0)<-0.1:
+                self.mouse_x += int(self.mouse_moving_speed*round(self.joystick.get_axis(0),1))
+            if self.joystick.get_axis(1)>0.1 or self.joystick.get_axis(1)<-0.1:
+                self.mouse_y += int(self.mouse_moving_speed*round(self.joystick.get_axis(1),1))
+            pygame.mouse.set_pos((self.mouse_x,self.mouse_y))
+        if self.iconImg is not None and screen is not None:
+            screen.blit(self.iconImg,(self.mouse_x,self.mouse_y))
 
 #控制器输入组件初始化
 controller:GameController = GameController(get_setting("MouseIconWidth"),get_setting("MouseMoveSpeed"))
@@ -82,8 +114,10 @@ class DisplayController:
         self.__fps:int = max(int(fps),1)
         self.__clock:object = pygame.time.Clock()
         self.__standard_fps:int = 60
-        self.__standard_width_unit:int = 16
-        self.__standard_height_unit:int = 9
+        #默认尺寸
+        self.__screen_scale:int = keepInRange(int(get_setting("ScreenScale")),0,100)
+        self.__standard_width:int = round(1920*self.__screen_scale/100)
+        self.__standard_height:int = round(1080*self.__screen_scale/100)
     #帧数
     @property
     def fps(self) -> int: return self.__fps
@@ -100,9 +134,10 @@ class DisplayController:
     def set_caption(self, title:any): pygame.display.set_caption(title)
     #设置窗口图标
     def set_icon(self, path:str): pygame.display.set_icon(pygame.image.load(os.path.join(path)))
-    def get_width(self) -> int: return int(get_setting("ScreenSize")*self.__standard_width_unit)
-    def get_height(self) -> int: return int(get_setting("ScreenSize")*self.__standard_height_unit)
-    def get_size(self) -> tuple: return self.get_width(),self.get_height()
+    #窗口尺寸
+    def get_width(self) -> int: return self.__standard_width
+    def get_height(self) -> int: return self.__standard_height
+    def get_size(self) -> tuple: return self.__standard_width,self.__standard_height
     #初始化屏幕
     def init_screen(self, flags:any) -> any:
         return pygame.display.set_mode(self.get_size(),flags)

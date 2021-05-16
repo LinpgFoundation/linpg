@@ -14,7 +14,7 @@ class EnvImagesManagement:
         self.__DECORATION_IMAGE_DICT_DARK:dict = None if not darkMode else {}
         #背景图片
         self.__BACKGROUND_IMAGE_PATH:str = "Assets/image/dialog_background"
-        self.__BACKGROUND_IMAGE:pygame.Surface =\
+        self.__BACKGROUND_IMAGE:ImageSurface =\
             pygame.image.load(os.path.join(self.__BACKGROUND_IMAGE_PATH,bgImgName)).convert() if bgImgName is not None else None
         #背景图层
         self.__BACKGROUND_SURFACE = None
@@ -37,12 +37,12 @@ class EnvImagesManagement:
     def __add_evn_image(self, fileName:str) -> None:
         imgPath:str = os.path.join(self.__ENV_IMAGE_PATH,"{}.png".format(fileName))
         if os.path.exists(imgPath):
-            self.__ENV_IMAGE_DICT[fileName] = StaticImageSurface(imgPath,0,0)
+            self.__ENV_IMAGE_DICT[fileName] = StaticImage(imgPath,0,0)
             self.__ENV_IMAGE_DICT[fileName].set_width_with_size_locked(self.__BLOCK_WIDTH)
             #如果是夜战模式
             if self.__ENV_IMAGE_DICT_DARK is not None:
                 self.__ENV_IMAGE_DICT_DARK[fileName] = self.__ENV_IMAGE_DICT[fileName].copy()
-                self.__ENV_IMAGE_DICT_DARK[fileName].addDarkness(self.__DARKNESS)
+                self.__ENV_IMAGE_DICT_DARK[fileName].add_darkness(self.__DARKNESS)
         else:
             throwException("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__ENV_IMAGE_PATH))
     #加载场景装饰物图片
@@ -56,24 +56,24 @@ class EnvImagesManagement:
             #最后确认一下是不是需要加载
             if fileName not in self.__DECORATION_IMAGE_DICT[decorationType]:
                 #生成图片
-                self.__DECORATION_IMAGE_DICT[decorationType][fileName] = StaticImageSurface(imgPath,0,0)
+                self.__DECORATION_IMAGE_DICT[decorationType][fileName] = StaticImage(imgPath,0,0)
                 #如果是夜战模式
                 if self.__DECORATION_IMAGE_DICT_DARK is not None:
                     if decorationType not in self.__DECORATION_IMAGE_DICT_DARK:
                         self.__DECORATION_IMAGE_DICT_DARK[decorationType] = {}
                     self.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName] = self.__DECORATION_IMAGE_DICT[decorationType][fileName].copy()
-                    self.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName].addDarkness(self.__DARKNESS)
+                    self.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName].add_darkness(self.__DARKNESS)
         #类Gif形式，decorationType应该与fileName一致
         elif decorationType not in self.__DECORATION_IMAGE_DICT:
             imgPath = os.path.join(self.__DECORATION_IMAGE_PATH,decorationType)
             if os.path.exists(imgPath):
                 self.__DECORATION_IMAGE_DICT[decorationType] = [
-                    StaticImageSurface(img_id,0,0) for img_id in natural_sort(glob(os.path.join(imgPath,"*.png")))
+                    StaticImage(img_id,0,0) for img_id in natural_sort(glob(os.path.join(imgPath,"*.png")))
                     ]
                 if self.__DECORATION_IMAGE_DICT_DARK is not None:
                     self.__DECORATION_IMAGE_DICT_DARK[decorationType] = {}
                     self.__DECORATION_IMAGE_DICT_DARK[decorationType][decorationType] = self.__DECORATION_IMAGE_DICT[decorationType][-1].copy()
-                    self.__DECORATION_IMAGE_DICT_DARK[decorationType][decorationType].addDarkness(self.__DARKNESS)
+                    self.__DECORATION_IMAGE_DICT_DARK[decorationType][decorationType].add_darkness(self.__DARKNESS)
             else:
                 throwException("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__DECORATION_IMAGE_PATH))
     #获取方块尺寸
@@ -88,7 +88,7 @@ class EnvImagesManagement:
         #如果是黑夜模式，则应该调整黑夜模式下的地图方块尺寸
         if self.__ENV_IMAGE_DICT_DARK is not None:
             for key in self.__ENV_IMAGE_DICT_DARK: self.__ENV_IMAGE_DICT_DARK[key].set_width_with_size_locked(self.__BLOCK_WIDTH)
-    def get_env_image(self, key:str, darkMode:bool) -> StaticImageSurface:
+    def get_env_image(self, key:str, darkMode:bool) -> StaticImage:
         try:
             return self.__ENV_IMAGE_DICT_DARK[key] if darkMode is True else self.__ENV_IMAGE_DICT[key]
         except BaseException:
@@ -107,16 +107,16 @@ class EnvImagesManagement:
     def get_decoration_num(self, decorationType:str) -> int: return len(self.__DECORATION_IMAGE_DICT[decorationType])
     #新图层
     def new_surface(self, screen_size:tuple, map_size:tuple) -> None:
-        self.__BACKGROUND_SURFACE = resizeImg(self.__BACKGROUND_IMAGE,screen_size) if self.__BACKGROUND_IMAGE is not None \
-            else pygame.Surface(screen_size).convert()
+        self.__BACKGROUND_SURFACE = resize_img(self.__BACKGROUND_IMAGE,screen_size) if self.__BACKGROUND_IMAGE is not None \
+            else new_surface(screen_size).convert()
         if self.__MAP_SURFACE is not None:
             self.__MAP_SURFACE.fill((0,0,0,0))
         else:
-            self.__MAP_SURFACE = pygame.Surface(map_size,flags=pygame.SRCALPHA).convert_alpha()
+            self.__MAP_SURFACE = new_transparent_surface(map_size)
     #获取图层
-    def get_surface(self) -> pygame.Surface: return self.__MAP_SURFACE
+    def get_surface(self) -> ImageSurface: return self.__MAP_SURFACE
     #画出地图
-    def display_background_surface(self, screen:pygame.Surface, pos:tuple) -> None:
+    def display_background_surface(self, screen:ImageSurface, pos:tuple) -> None:
         screen.blits((
             (self.__BACKGROUND_SURFACE,(0,0)),
             (self.__MAP_SURFACE,pos)

@@ -1,19 +1,14 @@
 # cython: language_level=3
+from .typing import *
 #python本体库
 import random, re
 from typing import List
-#额外库
-import numpy, pygame
-from pygame.locals import *
-from ..lang import *
-
-#初始化pygame
-pygame.init()
+import numpy
 
 """加载"""
 #识别图片模块，用于引擎内加载图片，十分不建议在本文件外调用
-def imgLoadFunction(path:Union[str,pygame.Surface], ifConvertAlpha:bool) -> pygame.Surface:
-    if isinstance(path,pygame.Surface):
+def imgLoadFunction(path:Union[str,ImageSurface], ifConvertAlpha:bool) -> ImageSurface:
+    if isinstance(path,ImageSurface):
         return path
     elif isinstance(path,str):
         if not ifConvertAlpha:
@@ -27,45 +22,47 @@ def imgLoadFunction(path:Union[str,pygame.Surface], ifConvertAlpha:bool) -> pyga
             except:
                 throwException("error",'Cannot load image from path: {}'.format(path))
     else:
-        throwException("error","The path '{}' has to be a string or at least a pygame.Surface!".format(path))
+        throwException("error","The path '{}' has to be a string or at least a ImageSurface!".format(path))
 
 #图片加载模块：接收图片路径,长,高,返回对应图片
-def loadImg(path:Union[str,pygame.Surface], size:Union[tuple,list]=tuple(), alpha:int=255, ifConvertAlpha:bool=True) -> pygame.Surface:
+def load_img(path:Union[str,ImageSurface], size:Union[tuple,list]=tuple(), alpha:int=255, ifConvertAlpha:bool=True) -> ImageSurface:
     #加载图片
     img = imgLoadFunction(path,ifConvertAlpha)
     #根据参数编辑图片
     if alpha != 255: img.set_alpha(alpha)
     #如果没有给size,则直接返回Surface
-    return img if len(size) == 0 else smoothscaleImg(img, size)
+    return img if len(size) == 0 else smoothly_resize_img(img, size)
 
 #快速加载图片
-def quickLoadImg(path:Union[str,pygame.Surface], size:Union[tuple,list]=tuple(), alpha:int=255, ifConvertAlpha:bool=True) -> pygame.Surface:
+def quickly_load_img(path:Union[str,ImageSurface], size:Union[tuple,list]=tuple()) -> ImageSurface:
     #加载图片
-    img = imgLoadFunction(path,ifConvertAlpha)
-    #根据参数编辑图片
-    if alpha != 255: img.set_alpha(alpha)
+    img = imgLoadFunction(path)
     #如果没有给size,则直接返回Surface
-    return img if len(size) == 0 else resizeImg(img, size)
+    return img if len(size) == 0 else resize_img(img, size)
 
 #加载音效
-def loadSound(path:str, volume:float) -> pygame.mixer.Sound:
+def load_sound(path:str, volume:float=1.0) -> pygame.mixer.Sound:
     soundTmp:object = pygame.mixer.Sound(path)
-    soundTmp.set_volume(volume)
+    if volume != 1.0: soundTmp.set_volume(volume)
     return soundTmp
 
 #加载路径下的所有图片，储存到一个list当中，然后返回
-def loadAllImgInFile(pathRule:str, width:any=None, height:any=None) -> List[pygame.Surface]:
-    return [loadImg(imgPath,(width,height)) for imgPath in glob(pathRule)]
+def load_img_in_folder(pathRule:str, size:Union[tuple,list]=tuple()) -> List[ImageSurface]:
+    return [load_img(imgPath, size) for imgPath in glob(pathRule)]
 
 #获取Surface
-def getSurface(size:Union[tuple,list], surface_flags:any=None) -> pygame.Surface:
-    return pygame.Surface(size,flags=surface_flags) if surface_flags is not None else pygame.Surface(size)
+def new_surface(size:Union[tuple,list], surface_flags:any=None) -> ImageSurface:
+    return pygame.Surface(size, flags=surface_flags) if surface_flags is not None else pygame.Surface(size)
+
+#获取透明的Surface
+def new_transparent_surface(size:Union[tuple,list]) -> ImageSurface:
+    return new_surface(size, pygame.SRCALPHA).convert_alpha()
 
 """处理"""
 #重新编辑尺寸
-def resizeImg(img:pygame.Surface, size:Union[tuple,list]=(None,None)) -> pygame.Surface:
+def resize_img(img:ImageSurface, size:Union[tuple,list]=(None,None)) -> ImageSurface:
     #转换尺寸
-    if isinstance(size,(list,tuple,numpy.ndarray)):
+    if isinstance(size,(list,tuple)):
         if len(size) == 1:
             width = size[0]
             height = None
@@ -89,9 +86,9 @@ def resizeImg(img:pygame.Surface, size:Union[tuple,list]=(None,None)) -> pygame.
     return img
 
 #精准地缩放尺寸
-def smoothscaleImg(img:pygame.Surface, size:Union[tuple,list]=(None,None)):
+def smoothly_resize_img(img:ImageSurface, size:Union[tuple,list]=(None,None)):
     #转换尺寸
-    if isinstance(size,(list,tuple,numpy.ndarray)):
+    if isinstance(size,(list,tuple)):
         if len(size) == 1:
             width = size[0]
             height = None
@@ -115,53 +112,53 @@ def smoothscaleImg(img:pygame.Surface, size:Union[tuple,list]=(None,None)):
     return img
 
 #翻转图片
-def flipImg(img:pygame.Surface, horizontal:bool, vertical:bool) -> pygame.Surface:
+def flip_img(img:ImageSurface, horizontal:bool, vertical:bool) -> ImageSurface:
     return pygame.transform.flip(img, horizontal, vertical)
 
 #增加图片暗度
-def addDarkness(img:pygame.Surface, value:int) -> pygame.Surface:
-    newImg:pygame.Surface = img.copy()
+def add_darkness(img:ImageSurface, value:int) -> ImageSurface:
+    newImg:ImageSurface = img.copy()
     newImg.fill((value, value, value),special_flags=pygame.BLEND_RGB_SUB) 
     return newImg
 
 #减少图片暗度
-def removeDarkness(img:pygame.Surface, value:int) -> pygame.Surface:
-    newImg:pygame.Surface = img.copy()
+def subtract_darkness(img:ImageSurface, value:int) -> ImageSurface:
+    newImg:ImageSurface = img.copy()
     newImg.fill((value, value, value),special_flags=pygame.BLEND_RGB_ADD)
     return newImg
 
 #调整图片亮度
-def changeDarkness(surface:pygame.Surface, value:int) -> pygame.Surface:
+def change_darkness(surface:ImageSurface, value:int) -> ImageSurface:
     if value == 0:
         return surface
     if value > 0:
-        return addDarkness(surface,value)
+        return add_darkness(surface,value)
     else:
-        return removeDarkness(surface,abs(value))
+        return subtract_darkness(surface,abs(value))
 
 #按照给定的位置对图片进行剪裁
-def cropImg(img:pygame.Surface, pos:Union[tuple,list]=(0,0),size:Union[tuple,list]=(0,0)) -> pygame.Surface:
+def crop_img(img:ImageSurface, pos:Union[tuple,list]=(0,0),size:Union[tuple,list]=(0,0)) -> ImageSurface:
     if isinstance(pos,pygame.Rect):
-        cropped = getSurface(pos.size,pygame.SRCALPHA).convert_alpha()
+        cropped = new_transparent_surface(pos.size)
         cropped.blit(img,(-pos.x,-pos.y))
     else:
-        cropped = getSurface((round(size[0]),round(size[1])),pygame.SRCALPHA).convert_alpha()
+        cropped = new_transparent_surface((round(size[0]),round(size[1])))
         cropped.blit(img,(-pos[0],-pos[1]))
     return cropped
 
 #移除掉图片周围的透明像素
-def copeBounding(img:pygame.Surface) -> pygame.Surface: return cropImg(img,img.get_bounding_rect())
+def cope_bounding(img:ImageSurface) -> ImageSurface: return crop_img(img,img.get_bounding_rect())
 
 """展示"""
 #中心展示模块1：接受两个item和item2的x和y，将item1展示在item2的中心位置,但不展示item2：
-def displayInCenter(item1:pygame.Surface, item2:pygame.Surface, x:Union[int,float], y:Union[int,float], screen:pygame.Surface,
+def display_in_center(item1:ImageSurface, item2:ImageSurface, x:Union[int,float], y:Union[int,float], screen:ImageSurface,
     off_set_x:Union[int,float] = 0, off_set_y:Union[int,float] = 0) -> None:
     added_x = (item2.get_width()-item1.get_width())/2
     added_y = (item2.get_height()-item1.get_height())/2
     screen.blit(item1,(x+added_x+off_set_x,y+added_y+off_set_y))
 
 #中心展示模块2：接受两个item和item2的x和y，展示item2后，将item1展示在item2的中心位置：
-def displayWithInCenter(item1:pygame.Surface, item2:pygame.Surface, x:Union[int,float], y:Union[int,float], screen:pygame.Surface,
+def display_within_center(item1:ImageSurface, item2:ImageSurface, x:Union[int,float], y:Union[int,float], screen:ImageSurface,
     off_set_x:Union[int,float] = 0, off_set_y:Union[int,float] = 0) -> None:
     added_x = (item2.get_width()-item1.get_width())/2
     added_y = (item2.get_height()-item1.get_height())/2
@@ -170,15 +167,15 @@ def displayWithInCenter(item1:pygame.Surface, item2:pygame.Surface, x:Union[int,
 
 """其他"""
 #字典合并
-def dicMerge(dict1:dict, dict2:dict) -> dict: return {**dict1, **dict2}
+def merge_dict(dict1:dict, dict2:dict) -> dict: return {**dict1, **dict2}
 
 #关闭背景音乐
-def unloadBackgroundMusic() -> None:
+def unload_all_music() -> None:
     pygame.mixer.music.unload()
     pygame.mixer.stop()
 
 #随机数
-def randomInt(start:int, end:int) -> int: return random.randint(start,end)
+def get_random_int(start:int, end:int) -> int: return random.randint(start, end)
 
 #转换坐标
 def convert_pos(pos:Union[list,tuple,dict,object,pygame.Rect,numpy.ndarray]) -> tuple:
@@ -204,7 +201,7 @@ def add_pos(*positions:any) -> tuple:
     return x,y
 
 #相减2个坐标
-def subtract_pos(position,*positions:any) -> tuple:
+def subtract_pos(position:any, *positions:any) -> tuple:
     x,y = convert_pos(position)
     for pos in positions:
         convetred_pos = convert_pos(pos)
@@ -219,10 +216,10 @@ def natural_sort(l:list) -> list:
     return sorted(l, key = alphanum_key)
 
 #是否触碰pygame类
-def isHoverPygameObject(imgObject:object, objectPos:Union[tuple,list]=(0,0), off_set_x:Union[int,float]=0, off_set_y:Union[int,float]=0) -> bool:
+def is_hover_pygame_object(imgObject:object, objectPos:Union[tuple,list]=(0,0), off_set_x:Union[int,float]=0, off_set_y:Union[int,float]=0) -> bool:
     mouse_x,mouse_y = pygame.mouse.get_pos()
     #如果是pygame的Surface类
-    if isinstance(imgObject,pygame.Surface):
+    if isinstance(imgObject,ImageSurface):
         return True if 0 < mouse_x-off_set_x-objectPos[0] < imgObject.get_width() and 0 < mouse_y-off_set_y-objectPos[1] < imgObject.get_height()\
             else False
     #如果是Rect类
@@ -233,11 +230,11 @@ def isHoverPygameObject(imgObject:object, objectPos:Union[tuple,list]=(0,0), off
         throwException("error","Unable to check current object: {0} (type:{1})".format(imgObject,type(imgObject)))
 
 #检测数值是否越界
-def keepInRange(number:Union[int,float], min_value:Union[int,float], max_value:Union[int,float]) -> Union[int,float]:
+def keep_in_range(number:Union[int,float], min_value:Union[int,float], max_value:Union[int,float]) -> Union[int,float]:
     return max(min(max_value, number), min_value)
 
 #转换string形式的百分比
-def convert_percentage(percentage:Union[str, float]) -> float:
+def convert_percentage(percentage:Union[str,float]) -> float:
     if isinstance(percentage, str) and percentage.endswith("%"):
         return float(percentage.strip('%'))/100
     elif isinstance(percentage, float):

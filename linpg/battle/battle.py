@@ -37,15 +37,15 @@ class AbstractBattleSystem(AbstractGameSystem):
     #计算光亮区域 并初始化地图
     def _calculate_darkness(self) -> None: self.MAP.calculate_darkness(self.alliances_data)
     #展示地图
-    def _display_map(self, screen:pygame.Surface) -> None:
+    def _display_map(self, screen:ImageSurface) -> None:
         self._check_if_move_screen()
         self._move_screen()
         self.screen_to_move_x,self.screen_to_move_y = self.MAP.display_map(screen,self.screen_to_move_x,self.screen_to_move_y)
     #展示场景装饰物
-    def _display_decoration(self, screen:pygame.Surface) -> None:
+    def _display_decoration(self, screen:ImageSurface) -> None:
         self.MAP.display_decoration(screen,self.alliances_data,self.enemies_data)
     #展示天气
-    def _display_weather(self, screen:pygame.Surface) -> None:
+    def _display_weather(self, screen:ImageSurface) -> None:
         if self.weatherController is not None: self.weatherController.draw(screen,self.MAP.block_width)
     #初始化角色加载器
     def _initial_characters_loader(self, alliancesData:dict, enemiesData:dict, mode:str="default") -> None:

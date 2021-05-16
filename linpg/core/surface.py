@@ -18,8 +18,8 @@ class Shape(GameObject2d):
         self.set_width(width)
         self.set_height(height)
     #画出轮廓
-    def draw_outline(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0), color:str="red", line_width:int=2) -> None:
-        pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect(add_pos(self.pos,offSet),self.size),line_width)
+    def draw_outline(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0), color:str="red", line_width:int=2) -> None:
+        pygame.draw.rect(surface,get_color_rbga(color),pygame.Rect(add_pos(self.pos,offSet),self.size),line_width)
 
 #图形接口
 class AbstractImage(Shape):
@@ -47,10 +47,10 @@ class AdvancedAbstractImage(AbstractImage):
     #透明度
     def get_alpha(self) -> int: return self._alpha
     def set_alpha(self, value:int) -> None:
-        new_alpha:int = keepInRange(int(value),0,255)
+        new_alpha:int = keep_in_range(int(value),0,255)
         if new_alpha != self.get_alpha():
             self._alpha = new_alpha
-            if isinstance(self.img, pygame.Surface) and self.img.get_alpha() != self._alpha: super().set_alpha(self._alpha)
+            if isinstance(self.img, ImageSurface) and self.img.get_alpha() != self._alpha: super().set_alpha(self._alpha)
     #本地坐标
     @property
     def local_pos(self) -> tuple: return self._local_x,self._local_y
@@ -64,13 +64,14 @@ class AdvancedAbstractImage(AbstractImage):
     def get_abs_pos(self) -> tuple: return self.x+self._local_x,self.y+self._local_y
 
 #用于静态图片的surface
-class StaticImageSurface(AdvancedAbstractImage):
-    def __init__(self, img:Union[str,pygame.Surface], x:Union[int,float], y:Union[int,float], width:int=-1, height:int=-1):
+class StaticImage(AdvancedAbstractImage):
+    def __init__(self, img:Union[str,ImageSurface], x:Union[int,float], y:Union[int,float], width:int=-1, height:int=-1, tag:str="default"):
         super().__init__(None,x,y,width,height)
-        self.img_original = loadImg(img)
+        self.img_original = load_img(img)
         self.__is_flipped:bool = False
         self.__need_update:bool = True if self._width >= 0 and self._height >= 0 else False
         self.__crop_rect:object = None
+        self.tag = tag
     #宽度
     def set_width(self, value:Union[int,float]) -> None:
         value = int(value)
@@ -106,13 +107,13 @@ class StaticImageSurface(AdvancedAbstractImage):
             throwException("error","You have to input either a None or a Rect, not {}".format(type(rect)))
     #更新图片
     def _update_img(self) -> None:
-        imgTmp = smoothscaleImg(self.img_original, self.size) if get_antialias() is True else resizeImg(self.img_original, self.size)
+        imgTmp = smoothly_resize_img(self.img_original, self.size) if get_antialias() is True else resize_img(self.img_original, self.size)
         rect = imgTmp.get_bounding_rect()
         if self.__crop_rect is not None:
             new_x:int = max(rect.x,self.__crop_rect.x)
             new_y:int = max(rect.y,self.__crop_rect.y)
             rect = Shape(new_x,new_y,min(rect.right,self.__crop_rect.right)-new_x,min(rect.bottom,self.__crop_rect.bottom)-new_y)
-        self.img = getSurface(rect.size,pygame.SRCALPHA).convert_alpha()
+        self.img = new_transparent_surface(rect.size)
         self.set_local_pos(rect.x,rect.y)
         self.img.blit(imgTmp,(-self._local_x,-self._local_y))
         if self._alpha != 255:
@@ -124,7 +125,7 @@ class StaticImageSurface(AdvancedAbstractImage):
         self.flip_original()
     #反转原图
     def flip_original(self) -> None:
-        self.img_original = flipImg(self.img_original,True,False)
+        self.img_original = flip_img(self.img_original,True,False)
         self.__need_update = True
     #如果不处于反转状态，则反转
     def flip_if_not(self) -> None:
@@ -133,8 +134,8 @@ class StaticImageSurface(AdvancedAbstractImage):
     def flip_back_to_normal(self) -> None:
         if self.__is_flipped: self.flip()
     #画出轮廓
-    def draw_outline(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0), color:any="red", line_width:int=2) -> None:
-        pygame.draw.rect(surface,findColorRGBA(color),pygame.Rect(add_pos(self.abs_pos,offSet),self.img.get_size()),line_width)
+    def draw_outline(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0), color:any="red", line_width:int=2) -> None:
+        pygame.draw.rect(surface,get_color_rbga(color),pygame.Rect(add_pos(self.abs_pos,offSet),self.img.get_size()),line_width)
     #是否被鼠标触碰
     def is_hover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
         if mouse_pos == (-1,-1): mouse_pos = controller.get_mouse_pos()
@@ -143,18 +144,18 @@ class StaticImageSurface(AdvancedAbstractImage):
         else:
             return False
     #返回一个复制品
-    def copy(self): return StaticImageSurface(self.img_original.copy(),self.x,self.y,self._width,self._height)
+    def copy(self): return StaticImage(self.img_original.copy(),self.x,self.y,self._width,self._height)
     #返回一个浅复制品
-    def light_copy(self): return StaticImageSurface(self.img_original,self.x,self.y,self._width,self._height)
+    def light_copy(self): return StaticImage(self.img_original,self.x,self.y,self._width,self._height)
     #加暗度
-    def addDarkness(self, value:int) -> None:
+    def add_darkness(self, value:int) -> None:
         self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_SUB)
         self.__need_update = True
-    def addBrightness(self, value:int) -> None:
+    def subtract_darkness(self, value:int) -> None:
         self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_ADD)
         self.__need_update = True
     #展示
-    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
+    def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
         if not self.hidden:
             #如果图片需要更新，则先更新
             if self.__need_update: self._update_img()
@@ -162,8 +163,8 @@ class StaticImageSurface(AdvancedAbstractImage):
             surface.blit(self.img,(self.x+self._local_x+offSet[0], self.y+self._local_y+offSet[1]))
 
 #高级图形类
-class ImageSurface(AbstractImage):
-    def __init__(self, img:pygame.Surface, x:Union[int,float], y:Union[int,float], width:int=-1, height:int=-1, tag:str="default"):
+class Image(AbstractImage):
+    def __init__(self, img:ImageSurface, x:Union[int,float], y:Union[int,float], width:int=-1, height:int=-1, tag:str="default"):
         super().__init__(img,x,y,width,height)
         self.tag = tag
         if self._width < 0 and self._height < 0:
@@ -174,28 +175,28 @@ class ImageSurface(AbstractImage):
             self._height = self._width/self.img.get_width()*self.img.get_height()
     #返回一个复制
     def copy(self) -> None:
-        replica = ImageSurface(self.get_image_copy(),self.x,self.y,self._width,self._height,self.tag)
+        replica = Image(self.get_image_copy(),self.x,self.y,self._width,self._height,self.tag)
         self.img.set_alpha(255)
         return replica
     #更新图片
-    def update(self, img_path:Union[str,pygame.Surface], ifConvertAlpha:bool=True) -> None:
+    def update(self, img_path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> None:
         self.img = imgLoadFunction(img_path,ifConvertAlpha)
-    def drawOnTheCenterOf(self, surface:pygame.Surface) -> None:
-        surface.blit(resizeImg(self.img,self.size),((surface.get_width()-self._width)/2,(surface.get_height()-self._height)/2))
-    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
-        if not self.hidden: surface.blit(resizeImg(self.img,self.size),add_pos(self.pos,offSet))
+    def drawOnTheCenterOf(self, surface:ImageSurface) -> None:
+        surface.blit(resize_img(self.img,self.size),((surface.get_width()-self._width)/2,(surface.get_height()-self._height)/2))
+    def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
+        if not self.hidden: surface.blit(resize_img(self.img,self.size),add_pos(self.pos,offSet))
     #旋转
     def rotate(self, angle:int) -> None: self.img = pygame.transform.rotate(self.img,angle)
     #反转
-    def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = flipImg(self.img,vertical,horizontal)
+    def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = flip_img(self.img,vertical,horizontal)
     #淡出
     def fade_out(self, speed:int) -> None:
         alphaTmp = self.get_alpha()
         if alphaTmp > 0: self.set_alpha(alphaTmp-speed)
 
 #需要移动的动态图片
-class DynamicImageSurface(ImageSurface):
-    def __init__(self, img:pygame.Surface, x:Union[int,float], y:Union[int,float], target_x:Union[int,float], target_y:Union[int,float],
+class DynamicImage(Image):
+    def __init__(self, img:ImageSurface, x:Union[int,float], y:Union[int,float], target_x:Union[int,float], target_y:Union[int,float],
         moveSpeed_x:Union[int,float], moveSpeed_y:Union[int,float], width:int=-1, height:int=-1, tag:str="default"):
         super().__init__(img,x,y,width,height,tag)
         self.default_x = x
@@ -215,7 +216,7 @@ class DynamicImageSurface(ImageSurface):
         return self.x == self.target_x and self.y == self.target_y if self.__is_moving_toward_target is True \
             else self.x == self.default_x and self.y == self.default_y
     #画出
-    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)) -> None:
+    def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
         if not self.hidden:
             super().display(surface,offSet)
             if self.__is_moving_toward_target is True:
@@ -254,9 +255,9 @@ class GifSurface(AdvancedAbstractImage):
         self.countDown:int = 0
     #当前图片
     @property
-    def current_image(self) -> StaticImageSurface: return self.img[self.imgId]
+    def current_image(self) -> StaticImage: return self.img[self.imgId]
     #展示
-    def display(self, surface:pygame.Surface, offSet:Union[tuple,list]=(0,0)):
+    def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)):
         if not self.hidden:
             self.current_image.set_size(self.get_width(), self.get_height())
             self.current_image.set_alpha(self._alpha)

@@ -59,7 +59,7 @@ class FriendlyCharacter(Entity):
         if self.dying is not False:
             self.dying = False
             self._if_play_action_in_reversing = True
-    def drawUI(self, surface:pygame.Surface, MapClass:object) -> None:
+    def drawUI(self, surface:ImageSurface, MapClass:object) -> None:
         blit_pos = super().drawUI(surface,MapClass)
         #展示被察觉的程度
         if self._detection > 0:
@@ -114,7 +114,7 @@ class HostileCharacter(Entity):
     @property
     def is_alert(self) -> bool: return self._vigilance >= 100
     #画UI - 列如血条
-    def drawUI(self, surface:pygame.Surface, MapClass:object) -> None:
+    def drawUI(self, surface:ImageSurface, MapClass:object) -> None:
         blit_pos = super().drawUI(surface,MapClass)
         #展示警觉的程度
         if self._vigilance > 0:

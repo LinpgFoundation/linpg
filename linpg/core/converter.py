@@ -58,7 +58,7 @@ class Converter:
             if "italic" not in data: data["italic"] = False
             #生成文字图层
             text_t = TextSurface(
-                fontRenderWithoutBound(data["src"], data["color"], data["font_size"], data["bold"], data["italic"]), 0, 0
+                render_font_without_bounding(data["src"], data["color"], data["font_size"], data["bold"], data["italic"]), 0, 0
                 )
             #转换坐标
             self.__make_sure_pos(data, "x", int((max_width-text_t.get_width())/2), max_width)
@@ -94,10 +94,10 @@ class Converter:
                 return container_t
             elif data["type"] == "button":
                 if "alpha_when_not_hover" not in data: data["alpha_when_not_hover"] = 255
-                button_t = loadButtonWithTextInCenter(
-                    loadImg(data["src"]), data["text"]["scr"], data["text"]["color"], data["height"], (0,0), data["alpha_when_not_hover"]
-                    ) if "text" in data else loadButton(
-                        loadImg(data["src"]), (0,0), (data["width"], data["height"]), data["alpha_when_not_hover"]
+                button_t = load_button_with_text_in_center(
+                    load_img(data["src"]), data["text"]["scr"], data["text"]["color"], data["height"], (0,0), data["alpha_when_not_hover"]
+                    ) if "text" in data else load_button(
+                        load_img(data["src"]), (0,0), (data["width"], data["height"]), data["alpha_when_not_hover"]
                     )
                 if "name" in data:
                     button_t.tag = data["name"]
@@ -111,7 +111,7 @@ class Converter:
                 #返回按钮
                 return button_t
             elif data["type"] == "image":
-                image_t = loadImage(loadImg(data["src"]),(0,0),data["width"],data["height"])
+                image_t = load_image(load_img(data["src"]),(0,0),data["width"],data["height"])
                 if "name" in data: image_t.tag = data["name"]
                 #转换坐标
                 self.__make_sure_pos(data, "x", int((max_width-image_t.get_width())/2), max_width)

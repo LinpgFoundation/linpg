@@ -7,7 +7,7 @@ _CHARACTERS_IMAGE_SYS:object = EntityImageManager()
 #储存角色音效的常量
 _CHARACTERS_SOUND_SYSTEM:object = EntitySoundManager(5)
 #角色UI的文字数据
-_ENTITY_UI_FONT:object = createFont(display.get_width()/192)
+_ENTITY_UI_FONT:object = create_font(display.get_width()/192)
 
 #濒死回合限制
 DYING_ROUND_LIMIT:int = 3
@@ -168,19 +168,19 @@ class Entity(GameObject):
             if self.__current_recoverable_armor > 0:
                 #如果伤害大于护甲值,则以护甲值为最大护甲将承受的伤害
                 if damage > self.__current_recoverable_armor:
-                    damage_take_by_armor = randomInt(0,self.__current_recoverable_armor)
+                    damage_take_by_armor = get_random_int(0,self.__current_recoverable_armor)
                 #如果伤害小于护甲值,则以伤害为最大护甲将承受的伤害
                 else:
-                    damage_take_by_armor = randomInt(0,damage)
+                    damage_take_by_armor = get_random_int(0,damage)
                 self.__current_recoverable_armor -= damage_take_by_armor
                 damage -= damage_take_by_armor
             #如果有不可再生的护甲
             if self.__irrecoverable_armor > 0 and damage > 0:
                 if damage > self.__irrecoverable_armor:
-                    damage_take_by_armor = randomInt(0,self.__irrecoverable_armor)
+                    damage_take_by_armor = get_random_int(0,self.__irrecoverable_armor)
                 #如果伤害小于护甲值,则以伤害为最大护甲将承受的伤害
                 else:
-                    damage_take_by_armor = randomInt(0,damage)
+                    damage_take_by_armor = get_random_int(0,damage)
                 self.__irrecoverable_armor -= damage_take_by_armor
                 damage -= damage_take_by_armor
             #如果还有伤害,则扣除血量
@@ -196,7 +196,7 @@ class Entity(GameObject):
             throwException("error","You cannot do a negative damage")
     #攻击另一个Entity
     def attack(self, another_entity:object) -> int:
-        damage = randomInt(self.min_damage,self.max_damage)
+        damage = get_random_int(self.min_damage,self.max_damage)
         another_entity.decreaseHp(damage)
         return damage
     #回复可再生护甲
@@ -354,7 +354,7 @@ class Entity(GameObject):
             self.set_flip(False)
     """画出角色"""
     #角色画到surface上
-    def __blit_entity_img(self, surface:pygame.Surface, MapClass:object, action:str=None, pos:any=None, alpha:int=155) -> None:
+    def __blit_entity_img(self, surface:ImageSurface, MapClass:object, action:str=None, pos:any=None, alpha:int=155) -> None:
         #如果没有指定action,则默认使用当前的动作
         if action is None: action = self.__current_action
         #调整小人图片的尺寸
@@ -376,7 +376,7 @@ class Entity(GameObject):
         #如果是开发者模式，则开启轮廓
         if console.get_events("dev"): img_of_char.draw_outline(surface)
     #把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
-    def draw(self, surface:pygame.Surface, MapClass:object) -> None:
+    def draw(self, surface:ImageSurface, MapClass:object) -> None:
 
         self.__blit_entity_img(surface,MapClass,alpha=self.get_imgAlpaha(self.__current_action))
         #计算imgId
@@ -407,7 +407,7 @@ class Entity(GameObject):
             else:
                 self._if_play_action_in_reversing = False
                 self.set_action()
-    def draw_custom(self, action:str, pos:any, surface:pygame.Surface, MapClass:object, isContinue:bool=True) -> bool:
+    def draw_custom(self, action:str, pos:any, surface:ImageSurface, MapClass:object, isContinue:bool=True) -> bool:
         self.__blit_entity_img(surface,MapClass,action,pos)
         #调整id，并返回对应的bool状态
         if self.__imgId_dict[action]["imgId"] < self.get_imgNum(action)-1:
@@ -419,7 +419,7 @@ class Entity(GameObject):
                 return True
             else:
                 return False
-    def drawUI(self, surface:pygame.Surface, MapClass:object) -> tuple:
+    def drawUI(self, surface:ImageSurface, MapClass:object) -> tuple:
         #把角色图片画到屏幕上
         xTemp,yTemp = MapClass.calPosInMap(self.x,self.y)
         xTemp += MapClass.block_width*0.25
@@ -429,14 +429,14 @@ class Entity(GameObject):
         if self.dying is False:
             self.__hp_bar.set_percentage(self.__current_hp/self.__max_hp)
             self.__hp_bar.draw(surface,False)
-            displayInCenter(
+            display_in_center(
                 _ENTITY_UI_FONT.render("{0}/{1}".format(self.__current_hp,self.__max_hp),get_antialias(),(0,0,0)),
                 self.__hp_bar,xTemp,yTemp,surface
                 )
         else:
             self.__hp_bar.set_percentage(self.dying/DYING_ROUND_LIMIT)
             self.__hp_bar.draw(surface,True)
-            displayInCenter(
+            display_in_center(
                 _ENTITY_UI_FONT.render("{0}/{1}".format(self.dying,DYING_ROUND_LIMIT),get_antialias(),(0,0,0))
                 ,self.__hp_bar,xTemp,yTemp,surface
                 )

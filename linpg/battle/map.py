@@ -80,7 +80,7 @@ class MapObject:
             for itemData in itemsThatType.values():
                 if decorationType == "campfire":
                     decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,decorationType))
-                    decorations[-1].imgId = randomInt(0,9)
+                    decorations[-1].imgId = get_random_int(0,9)
                     decorations[-1].range = itemData["range"]
                     decorations[-1].alpha = 255
                 elif decorationType == "chest":
@@ -143,7 +143,7 @@ class MapObject:
     def addPos_x(self, value:float) -> None: self.setPos_x(self.__local_x+value)
     def addPos_y(self, value:float) -> None: self.setPos_y(self.__local_y+value)
     #把地图画到屏幕上
-    def display_map(self, screen:pygame.Surface, screen_to_move_x:int=0, screen_to_move_y:int=0) -> tuple:
+    def display_map(self, screen:ImageSurface, screen_to_move_x:int=0, screen_to_move_y:int=0) -> tuple:
         #检测屏幕是不是移到了不移到的地方
         if self.__local_x < screen.get_width()-self.surface_width:
             self.__local_x = screen.get_width()-self.surface_width
@@ -201,7 +201,7 @@ class MapObject:
             if self.calPosInMap(0,y+1)[1] >= window_size[1]:
                 break
     #把装饰物画到屏幕上
-    def display_decoration(self, screen:pygame.Surface, alliances_data:dict={}, enemies_data:dict={}) -> None:
+    def display_decoration(self, screen:ImageSurface, alliances_data:dict={}, enemies_data:dict={}) -> None:
         thePosInMap:tuple
         #检测角色所占据的装饰物（即需要透明化，方便玩家看到角色）
         charactersPos:list = []

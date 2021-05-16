@@ -5,23 +5,23 @@ from .character import *
 class WeatherSystem:
     def  __init__(self, weather:str, window_x:int, window_y:int, entityNum:int=50):
         self.name = 0
-        self.img_list = [loadImg(imgPath) for imgPath in glob(os.path.join("Assets/image/environment",weather,"*.png"))]
+        self.img_list = [load_img(imgPath) for imgPath in glob(os.path.join("Assets/image/environment",weather,"*.png"))]
         self.__items:tuple = tuple([Snow(
-                imgId = randomInt(0,len(self.img_list)-1),
-                size = randomInt(5,10),
-                speed = randomInt(1,4),
-                x = randomInt(1,window_x*1.5),
-                y = randomInt(1,window_y)
+                imgId = get_random_int(0,len(self.img_list)-1),
+                size = get_random_int(5,10),
+                speed = get_random_int(1,4),
+                x = get_random_int(1,window_x*1.5),
+                y = get_random_int(1,window_y)
                 ) for i in range(entityNum)])
-    def draw(self, surface:pygame.Surface, perBlockWidth:Union[int,float]) -> None:
+    def draw(self, surface:ImageSurface, perBlockWidth:Union[int,float]) -> None:
         speed_unit:int = int(perBlockWidth/15)
         for item in self.__items:
             if 0 <= item.x < surface.get_width() and 0 <= item.y < surface.get_height():
-                surface.blit(resizeImg(self.img_list[item.imgId],(perBlockWidth/item.size,perBlockWidth/item.size)),item.pos)
+                surface.blit(resize_img(self.img_list[item.imgId],(perBlockWidth/item.size,perBlockWidth/item.size)),item.pos)
             item.move(speed_unit)
             if item.x <= 0 or item.y >= surface.get_height():
-                item.y = randomInt(-50,0)
-                item.x = randomInt(0,surface.get_width()*2)
+                item.y = get_random_int(-50,0)
+                item.x = get_random_int(0,surface.get_width()*2)
 
 #雪花片
 class Snow(GameObject):

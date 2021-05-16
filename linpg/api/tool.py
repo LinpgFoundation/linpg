@@ -41,16 +41,16 @@ class RenderedWindow:
     def clear(self) -> None: self.__win.clear()
     def present(self) -> None: self.__win.present()
     def draw_rect(self,rect_pos,color) -> None:
-        self.__win.draw_color = findColorRGBA(color)
+        self.__win.draw_color = get_color_rbga(color)
         self.__win.draw_rect(pygame.Rect(rect_pos))
     def fill_rect(self,rect_pos,color) -> None:
-        self.__win.draw_color = findColorRGBA(color)
+        self.__win.draw_color = get_color_rbga(color)
         self.__win.fill_rect(pygame.Rect(rect_pos))
     def fill(self,color) -> None:
         self.fill_rect((0,0,self.__size[0],self.__size[1]),color)
 
 #优化中文文档
-def optimizeCNContent(filePath:str) -> None:
+def optimize_cn_content(filePath:str) -> None:
     #读取原文件的数据
     with open(filePath, "r", encoding='utf-8') as f:
         file_lines = f.readlines()
@@ -89,6 +89,6 @@ def optimizeCNContent(filePath:str) -> None:
         f.writelines(file_lines)
 
 #优化文件夹中特定文件的中文字符串
-def optimizeCNContenInFolder(pathname:str) -> None:
+def optimize_cn_content_in_folder(pathname:str) -> None:
     for configFilePath in glob(pathname):
-        optimizeCNContent(configFilePath)
+        optimize_cn_content(configFilePath)

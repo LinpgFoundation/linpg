@@ -6,10 +6,10 @@ DIALOG_UI_PATH:str = "Assets/image/UI"
 
 #对话框基础模块
 class AbstractDialog:
-    def __init__(self, img:pygame.Surface, fontSize:Union[int,float]):
+    def __init__(self, img:ImageSurface, fontSize:Union[int,float]):
         self.dialoguebox = img
         self.FONTSIZE = int(fontSize)
-        self.FONT = createFont(self.FONTSIZE)
+        self.FONT = create_font(self.FONTSIZE)
         self.content = []
         self.narrator = None
         self.textIndex = None
@@ -35,7 +35,7 @@ class AbstractDialog:
 #对话框和对话框内容
 class DialogBox(AbstractDialog,GameObject2d):
     def __init__(self, imgPath:str, x:Union[int,float], y:Union[int,float], width:int, height:int, fontSize:int):
-        AbstractDialog.__init__(self,loadImg(imgPath,(width,height)),fontSize)
+        AbstractDialog.__init__(self,load_img(imgPath,(width,height)),fontSize)
         GameObject2d.__init__(self,x,y)
         self.__surface = None
         self.deafult_x = x
@@ -51,8 +51,8 @@ class DialogBox(AbstractDialog,GameObject2d):
     def get_width(self) -> int: return self.dialoguebox.get_width()
     def get_height(self)-> int:  return self.dialoguebox.get_height()
     def set_size(self, width:Union[int,float,None], height:Union[int,float,None]) -> None:
-        self.dialoguebox = smoothscaleImg(self.dialoguebox,(width,height))
-    def draw(self, surface:pygame.Surface, characterInfoBoardUI:object=None):
+        self.dialoguebox = smoothly_resize_img(self.dialoguebox,(width,height))
+    def draw(self, surface:ImageSurface, characterInfoBoardUI:object=None):
         #如果对话框需要继续更新
         if not self.__drew:
             self.__surface = self.dialoguebox.copy()
@@ -104,7 +104,7 @@ class DialogBox(AbstractDialog,GameObject2d):
         self.content = []
         self.__surface = self.dialoguebox.copy()
     def flip(self) -> None:
-        self.dialoguebox = flipImg(self.dialoguebox,True,False)
+        self.dialoguebox = flip_img(self.dialoguebox,True,False)
         self.__flipped = not self.__flipped
 
 #对话系统按钮UI模块
@@ -118,16 +118,16 @@ class DialogButtons:
         #从设置中读取信息
         window_x,window_y = display.get_size()
         self.FONTSIZE:int = int(window_x*0.0175)
-        self.FONT = createFont(self.FONTSIZE)
+        self.FONT = create_font(self.FONTSIZE)
         #从语言文件中读取按钮文字
         dialog_txt:dict = get_lang("Dialog")
         #生成跳过按钮
-        tempButtonIcon = loadImg(os.path.join(DIALOG_UI_PATH,"dialog_skip.png"),(self.FONTSIZE,self.FONTSIZE))
+        tempButtonIcon = load_img(os.path.join(DIALOG_UI_PATH,"dialog_skip.png"),(self.FONTSIZE,self.FONTSIZE))
         tempButtonTxt = self.FONT.render(dialog_txt["skip"],get_antialias(),(255, 255, 255))
         temp_w = tempButtonTxt.get_width()+self.FONTSIZE*1.5
         self.choiceTxt = dialog_txt["choice"]
-        self.skipButton = pygame.Surface((temp_w,tempButtonTxt.get_height()),flags=pygame.SRCALPHA).convert_alpha()
-        self.skipButtonHovered = pygame.Surface((temp_w,tempButtonTxt.get_height()),flags=pygame.SRCALPHA).convert_alpha()
+        self.skipButton = new_transparent_surface((temp_w,tempButtonTxt.get_height()))
+        self.skipButtonHovered = new_transparent_surface((temp_w,tempButtonTxt.get_height()))
         self.icon_y = (tempButtonTxt.get_height()-tempButtonIcon.get_height())/2
         self.skipButtonHovered.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONTSIZE*0.5,self.icon_y))
         self.skipButtonHovered.blit(tempButtonTxt,(0,0))
@@ -135,10 +135,10 @@ class DialogButtons:
         tempButtonIcon.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
         self.skipButton.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONTSIZE*0.5,self.icon_y))
         self.skipButton.blit(tempButtonTxt,(0,0))
-        self.skipButton = ImageSurface(self.skipButton,window_x*0.9,window_y*0.05)
-        self.skipButtonHovered = ImageSurface(self.skipButtonHovered,window_x*0.9,window_y*0.05)
+        self.skipButton = Image(self.skipButton,window_x*0.9,window_y*0.05)
+        self.skipButtonHovered = Image(self.skipButtonHovered,window_x*0.9,window_y*0.05)
         #生成自动播放按钮
-        self.autoIconHovered = loadImg(os.path.join(DIALOG_UI_PATH,"dialog_auto.png"),(self.FONTSIZE,self.FONTSIZE))
+        self.autoIconHovered = load_img(os.path.join(DIALOG_UI_PATH,"dialog_auto.png"),(self.FONTSIZE,self.FONTSIZE))
         self.autoIcon = self.autoIconHovered.copy()
         self.autoIcon.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
         self.autoIconDegree = 0
@@ -146,24 +146,24 @@ class DialogButtons:
         self.autoMode:bool = False
         tempButtonTxt = self.FONT.render(dialog_txt["auto"],get_antialias(),(105, 105, 105))
         temp_w = tempButtonTxt.get_width()+self.FONTSIZE*1.5
-        self.autoButton = pygame.Surface((temp_w,tempButtonTxt.get_height()),flags=pygame.SRCALPHA).convert_alpha()
-        self.autoButtonHovered = pygame.Surface((temp_w,tempButtonTxt.get_height()),flags=pygame.SRCALPHA).convert_alpha()
+        self.autoButton = new_transparent_surface((temp_w,tempButtonTxt.get_height()))
+        self.autoButtonHovered = new_transparent_surface((temp_w,tempButtonTxt.get_height()))
         self.autoButton.blit(tempButtonTxt,(0,0))
         self.autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"],get_antialias(),(255, 255, 255)),(0,0))
-        self.autoButton = ImageSurface(self.autoButton,window_x*0.8,window_y*0.05)
+        self.autoButton = Image(self.autoButton,window_x*0.8,window_y*0.05)
         self.autoButton.tag = int(self.autoButton.x+self.autoButton.img.get_width()-self.FONTSIZE)
-        self.autoButtonHovered = ImageSurface(self.autoButtonHovered,window_x*0.8,window_y*0.05)
+        self.autoButtonHovered = Image(self.autoButtonHovered,window_x*0.8,window_y*0.05)
         self.autoButtonHovered.tag = int(self.autoButtonHovered.x+self.autoButtonHovered.img.get_width()-self.FONTSIZE)
         #隐藏按钮
-        self.hideButton = loadButton(
+        self.hideButton = load_button(
             os.path.join(DIALOG_UI_PATH,"dialog_hide.png"), (window_x*0.05, window_y*0.05),(self.FONTSIZE,self.FONTSIZE), 150
             )
         #取消隐藏按钮
-        self.showButton = loadButton(
+        self.showButton = load_button(
             os.path.join(DIALOG_UI_PATH,"dialog_show.png"), (window_x*0.05, window_y*0.05),(self.FONTSIZE,self.FONTSIZE), 150
         )
         #历史回溯按钮
-        self.historyButton = loadButton(
+        self.historyButton = load_button(
             os.path.join(DIALOG_UI_PATH,"dialog_history.png"), (window_x*0.1, window_y*0.05),(self.FONTSIZE,self.FONTSIZE), 150
         )
     @property
@@ -178,7 +178,7 @@ class DialogButtons:
             return "history"
         else:
             return ""
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: ImageSurface) -> None:
         self.__button_hovered = 0
         if self.hidden is True:
             self.showButton.draw(surface)
@@ -235,29 +235,29 @@ class DialogButtons:
 #未保存离开时的警告
 class LeaveWithoutSavingWarning(AbstractImage):
     def __init__(self, img: any, x: int, y: int, width: int, height: int):
-        super().__init__(StaticImageSurface(img,0,0), x, y, width, height)
+        super().__init__(StaticImage(img,0,0), x, y, width, height)
         font_size:int = int(height/10)
         #警告-标题
-        self.__warning_title = TextSurface(fontRender(get_lang("Global","warning"),"white",font_size),0,font_size)
+        self.__warning_title = TextSurface(render_font(get_lang("Global","warning"),"white",font_size),0,font_size)
         self.__warning_title.set_centerx(self._width/2)
         #内容
-        self.__text_1 = TextSurface(fontRender(get_lang("Dialog","leave_without_save1"),"white",font_size),0,font_size*2.5)
+        self.__text_1 = TextSurface(render_font(get_lang("Dialog","leave_without_save1"),"white",font_size),0,font_size*2.5)
         self.__text_1.set_centerx(self._width/2)
-        self.__text_2 = TextSurface(fontRender(get_lang("Dialog","leave_without_save2"),"white",font_size),0,font_size*4)
+        self.__text_2 = TextSurface(render_font(get_lang("Dialog","leave_without_save2"),"white",font_size),0,font_size*4)
         self.__text_2.set_centerx(self._width/2)
         font_size = int(font_size*1.5)
         #保存按钮
-        self.save_button = loadButtonWithTextInCenter(
+        self.save_button = load_button_with_text_in_center(
             os.path.join(DIALOG_UI_PATH,"menu.png"), get_lang("Global","save"), "black", font_size, (0,0), 150
             )
         self.save_button.set_bottom(self._height*0.9)
         #取消按钮
-        self.cancel_button = loadButtonWithTextInCenter(
+        self.cancel_button = load_button_with_text_in_center(
             os.path.join(DIALOG_UI_PATH,"menu.png"), get_lang("Global","cancel"), "black", font_size, (0,0), 150
             )
         self.cancel_button.set_bottom(self._height*0.9)
         #不要保存按钮
-        self.dont_save_button = loadButtonWithTextInCenter(
+        self.dont_save_button = load_button_with_text_in_center(
             os.path.join(DIALOG_UI_PATH,"menu.png"), get_lang("Global","dont_save"), "black", font_size, (0,0), 150
             )
         self.dont_save_button.set_bottom(self._height*0.9)
@@ -281,7 +281,7 @@ class LeaveWithoutSavingWarning(AbstractImage):
             return "dont_save"
         else:
             return ""
-    def display(self, surface: pygame.Surface, offSet:tuple=(0,0)) -> None:
+    def display(self, surface: ImageSurface, offSet:tuple=(0,0)) -> None:
         self.__button_hovered = 0
         if not self.hidden:
             pos = add_pos(self.pos,offSet)
@@ -294,11 +294,11 @@ class LeaveWithoutSavingWarning(AbstractImage):
             self.__text_2.display(surface,pos)
             """按钮"""
             #保存
-            if isHover(self.save_button, local_x=pos[0], local_y=pos[1]): self.__button_hovered = 1
+            if is_hover(self.save_button, local_x=pos[0], local_y=pos[1]): self.__button_hovered = 1
             self.save_button.display(surface,pos)
             #取消
-            if isHover(self.cancel_button, local_x=pos[0], local_y=pos[1]): self.__button_hovered = 2
+            if is_hover(self.cancel_button, local_x=pos[0], local_y=pos[1]): self.__button_hovered = 2
             self.cancel_button.display(surface,pos)
             #不要保存
-            if isHover(self.dont_save_button, local_x=pos[0], local_y=pos[1]): self.__button_hovered = 3
+            if is_hover(self.dont_save_button, local_x=pos[0], local_y=pos[1]): self.__button_hovered = 3
             self.dont_save_button.display(surface,pos)

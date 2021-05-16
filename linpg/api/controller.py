@@ -36,7 +36,7 @@ class GameController:
         self.joystick = SingleJoystick()
         if custom is True:
             pygame.mouse.set_visible(False)
-            self.iconImg = loadImg(os.path.join("Assets/image/UI","mouse_icon.png")),(int(mouse_icon_width),int(mouse_icon_width*1.3))
+            self.iconImg = load_img(os.path.join("Assets/image/UI","mouse_icon.png")),(int(mouse_icon_width),int(mouse_icon_width*1.3))
         else:
             self.iconImg = None
         #鼠标位置
@@ -93,7 +93,7 @@ class GameController:
     #是否鼠标按钮被点击
     def mouse_get_press(self, button_id:int) -> bool: return pygame.mouse.get_pressed()[button_id]
     #画出，实际上相当于更新
-    def draw(self, screen:pygame.Surface=None):
+    def draw(self, screen:ImageSurface=None):
         #更新输入事件
         self.__update_input_events()
         if self.joystick.inputController is not None:
@@ -115,7 +115,7 @@ class DisplayController:
         self.__clock:object = pygame.time.Clock()
         self.__standard_fps:int = 60
         #默认尺寸
-        self.__screen_scale:int = keepInRange(int(get_setting("ScreenScale")),0,100)
+        self.__screen_scale:int = keep_in_range(int(get_setting("ScreenScale")),0,100)
         self.__standard_width:int = round(1920*self.__screen_scale/100)
         self.__standard_height:int = round(1080*self.__screen_scale/100)
     #帧数

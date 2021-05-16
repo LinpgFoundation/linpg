@@ -8,12 +8,12 @@ class AbstractDialogSystem(AbstractGameSystem):
         #加载对话的背景图片模块
         self._npc_manager = NpcImageManager()
         #黑色Void帘幕
-        self._black_bg = getSingleColorSurface("black")
+        self._black_bg = get_single_color_surface("black")
         #选项栏
-        self._option_box_surface = StaticImageSurface(os.path.join(DIALOG_UI_PATH,"option.png"),0,0)
+        self._option_box_surface = StaticImage(os.path.join(DIALOG_UI_PATH,"option.png"),0,0)
         #选项栏-选中
         try:
-            self._option_box_selected_surface = StaticImageSurface(os.path.join(DIALOG_UI_PATH,"option_selected.png"),0,0)
+            self._option_box_selected_surface = StaticImage(os.path.join(DIALOG_UI_PATH,"option_selected.png"),0,0)
         except:
             throwException("warning","Cannot find 'option_selected.png' in 'UI' file, 'option.png' will be loaded instead.")
             self._option_box_selected_surface = self._option_box_surface.light_copy()
@@ -57,10 +57,10 @@ class AbstractDialogSystem(AbstractGameSystem):
                 #尝试加载图片式的背景
                 img_path = os.path.join(self._background_image_folder_path,self.__background_image_name)
                 if os.path.exists(img_path):
-                    self.__background_image_surface = loadImage(img_path,(0,0))
+                    self.__background_image_surface = load_static_image(img_path,(0,0))
                 #如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
                 elif os.path.exists(os.path.join(self._dynamic_background_folder_path,self.__background_image_name)):
-                    self.__background_image_surface = VedioFrame(
+                    self.__background_image_surface = VedioSurface(
                         os.path.join(self._dynamic_background_folder_path,self.__background_image_name),display.get_width(),display.get_height()
                         )
                     self.__background_image_surface.start()
@@ -70,17 +70,17 @@ class AbstractDialogSystem(AbstractGameSystem):
                 self.__background_image_surface = self._black_bg.copy()
     #停止播放
     def stop(self) -> None:
-        #如果背景是多线程的VedioFrame，则应该退出占用
-        if isinstance(self.__background_image_surface,VedioFrame): self.__background_image_surface.stop()
+        #如果背景是多线程的VedioSurface，则应该退出占用
+        if isinstance(self.__background_image_surface,VedioSurface): self.__background_image_surface.stop()
         #设置停止播放
         super().stop()
     #将背景图片画到surface上
-    def display_background_image(self, surface:pygame.Surface) -> None:
-        if isinstance(self.__background_image_surface,ImageSurface):
-            self.__background_image_surface.set_size(surface.get_width(),surface.get_height())
+    def display_background_image(self, surface:ImageSurface) -> None:
+        if isinstance(self.__background_image_surface, Shape):
+            self.__background_image_surface.set_size(surface.get_width(), surface.get_height())
         self.__background_image_surface.draw(surface)
     #把基础内容画到surface上
-    def draw(self, surface:pygame.Surface) -> None:
+    def draw(self, surface:ImageSurface) -> None:
         #检测章节是否初始化
         if self._chapter_id is None: raise throwException("error","The dialog has not been initialized!")
         #展示背景图片和npc立绘
@@ -101,11 +101,11 @@ class NpcImageManager:
         self.__img_width:int = int(display.get_width()/2)
         try:
             self.__communication_surface_rect:object = Shape(int(self.__img_width*0.25),0,int(self.__img_width*0.5),int(self.__img_width*0.56))
-            self.__communication = StaticImageSurface(
+            self.__communication = StaticImage(
                 os.path.join(DIALOG_UI_PATH,"communication.png"),0,0,self.__communication_surface_rect.width,self.__communication_surface_rect.height
                 )
             self.__communication_dark = self.__communication.copy()
-            self.__communication_dark.addDarkness(self.__darkness)
+            self.__communication_dark.add_darkness(self.__darkness)
         except:
             self.__communication = None
             self.__communication_dark = None
@@ -121,12 +121,12 @@ class NpcImageManager:
     def __loadNpc(self, path:str) -> None:
         name = os.path.basename(path)
         self.__npcImageDict[name] = {}
-        self.__npcImageDict[name]["normal"] = StaticImageSurface(path,0,0,self.__img_width,self.__img_width)
+        self.__npcImageDict[name]["normal"] = StaticImage(path,0,0,self.__img_width,self.__img_width)
         #生成深色图片
         self.__npcImageDict[name]["dark"] = self.__npcImageDict[name]["normal"].copy()
-        self.__npcImageDict[name]["dark"].addDarkness(self.__darkness)
+        self.__npcImageDict[name]["dark"].add_darkness(self.__darkness)
     #画出角色
-    def __displayNpc(self, name:str, x:Union[int,float], y:Union[int,float], alpha:int, surface:pygame.Surface) -> None:
+    def __displayNpc(self, name:str, x:Union[int,float], y:Union[int,float], alpha:int, surface:ImageSurface) -> None:
         if alpha > 0:
             nameTemp = name.replace("<c>","").replace("<d>","")
             self.__ensure_the_existence_of(nameTemp)
@@ -148,10 +148,10 @@ class NpcImageManager:
                 img.set_crop_rect(None)
                 img.draw(surface)
             #如果是开发模式
-            if self.dev_mode is True and isHover(img,(x,y)):
+            if self.dev_mode is True and is_hover(img,(x,y)):
                 img.draw_outline(surface)
                 self.npc_get_click = name
-    def draw(self, surface:pygame.Surface) -> None:
+    def draw(self, surface:ImageSurface) -> None:
         window_x = surface.get_width()
         window_y = surface.get_height()
         npcImg_y = window_y-window_x/2
@@ -273,9 +273,9 @@ class NpcImageManager:
 #对话框和对话框内容
 class DialogContent(AbstractDialog):
     def __init__(self, fontSize:int):
-        super().__init__(loadImg(os.path.join(DIALOG_UI_PATH,"dialoguebox.png")),fontSize)
+        super().__init__(load_img(os.path.join(DIALOG_UI_PATH,"dialoguebox.png")),fontSize)
         try:
-            self.__textPlayingSound = pygame.mixer.Sound("Assets/sound/ui/dialog_words_playing.ogg")
+            self.__textPlayingSound = load_sound("Assets/sound/ui/dialog_words_playing.ogg")
         except FileNotFoundError:
             self.__textPlayingSound = None
             throwException(
@@ -285,7 +285,7 @@ class DialogContent(AbstractDialog):
         self.READINGSPEED = get_setting("ReadingSpeed")
         self.dialoguebox_max_height = None
         #鼠标图标
-        self.mouseImg = loadGif(
+        self.mouseImg = load_gif(
             (os.path.join(DIALOG_UI_PATH,"mouse_none.png"), os.path.join(DIALOG_UI_PATH,"mouse.png")),
             (display.get_width()*0.82,display.get_height()*0.83),(self.FONTSIZE,self.FONTSIZE), 50
             )
@@ -321,18 +321,18 @@ class DialogContent(AbstractDialog):
     def needUpdate(self) -> bool:
         return True if self.autoMode and self.readTime >= self.totalLetters else False
     #渲染文字
-    def fontRender(self, txt:str, color:tuple) -> pygame.Surface: return self.FONT.render(txt,get_antialias(),color)
+    def render_font(self, txt:str, color:tuple) -> ImageSurface: return self.FONT.render(txt,get_antialias(),color)
     #如果音效还在播放则停止播放文字音效
     def stop_playing_text_sound(self) -> None:
         if pygame.mixer.get_busy() and self.__textPlayingSound is not None: self.__textPlayingSound.stop()
-    def draw(self, surface:pygame.Surface) -> None:
+    def draw(self, surface:ImageSurface) -> None:
         if not self.hidden:
             if not self.__fade_out_stage:
                 self.__fadeIn(surface)
             else:
                 self.__fadeOut(surface)
     #渐入
-    def __fadeIn(self, surface:pygame.Surface) -> None:
+    def __fadeIn(self, surface:ImageSurface) -> None:
         #如果对话框图片的最高高度没有被设置，则根据屏幕大小设置一个
         if self.dialoguebox_max_height is None:
             self.dialoguebox_max_height = surface.get_height()/4
@@ -340,7 +340,7 @@ class DialogContent(AbstractDialog):
         if self.dialoguebox_y is None:
             self.dialoguebox_y = surface.get_height()*0.65+self.dialoguebox_max_height/2
         #画出对话框图片
-        surface.blit(smoothscaleImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
+        surface.blit(smoothly_resize_img(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
         (surface.get_width()*0.13,self.dialoguebox_y))
         #如果对话框图片还在放大阶段
         if self.dialoguebox_height < self.dialoguebox_max_height:
@@ -350,11 +350,11 @@ class DialogContent(AbstractDialog):
         else:
             self.__blit_txt(surface)
     #淡出
-    def __fadeOut(self, surface:pygame.Surface) -> None:
+    def __fadeOut(self, surface:ImageSurface) -> None:
         #画出对话框图片
         if self.dialoguebox_y is not None:
             surface.blit(
-                smoothscaleImg(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
+                smoothly_resize_img(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
                 (surface.get_width()*0.13,self.dialoguebox_y)
                 )
         if self.dialoguebox_height > 0:
@@ -363,20 +363,20 @@ class DialogContent(AbstractDialog):
         else:
             self.resetDialogueboxData()
     #将文字画到屏幕上
-    def __blit_txt(self, surface:pygame.Surface) -> None:
+    def __blit_txt(self, surface:ImageSurface) -> None:
         x:int = int(surface.get_width()*0.2)
         y:int = int(surface.get_height()*0.73)
         #写上当前讲话人的名字
         if self.narrator is not None:
-            surface.blit(self.fontRender(self.narrator,(255, 255, 255)),(x,self.dialoguebox_y+self.FONTSIZE))
+            surface.blit(self.render_font(self.narrator,(255, 255, 255)),(x,self.dialoguebox_y+self.FONTSIZE))
         #画出鼠标gif
         self.mouseImg.draw(surface)
         #对话框已播放的内容
         for i in range(self.displayedLine):
-            surface.blit(self.fontRender(self.content[i],(255, 255, 255)),(x,y+self.FONTSIZE*1.5*i))
+            surface.blit(self.render_font(self.content[i],(255, 255, 255)),(x,y+self.FONTSIZE*1.5*i))
         #对话框正在播放的内容
         surface.blit(
-            self.fontRender(self.content[self.displayedLine][:self.textIndex],(255, 255, 255)),
+            self.render_font(self.content[self.displayedLine][:self.textIndex],(255, 255, 255)),
             (x,y+self.FONTSIZE*1.5*self.displayedLine)
             )
         #如果当前行的字符还没有完全播出

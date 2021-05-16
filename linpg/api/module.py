@@ -79,12 +79,12 @@ class GameObject2d(GameObject):
         if mouse_pos == (-1,-1): mouse_pos = controller.get_mouse_pos()
         return 0 < mouse_pos[0]-self.x < self.get_width() and 0 < mouse_pos[1]-self.y < self.get_height()
     #将图片直接画到surface上
-    def draw(self, surface:pygame.Surface) -> None: self.display(surface)
+    def draw(self, surface:ImageSurface) -> None: self.display(surface)
     #根据offSet将图片展示到surface的对应位置上 - 子类必须实现
-    def display(self, surface:pygame.Surface, offSet:tuple=(0,0)) -> None:
+    def display(self, surface:ImageSurface, offSet:tuple=(0,0)) -> None:
         throwException("error","The child class does not implement display() function!")
     #忽略现有坐标，将图片画到surface的指定位置上，不推荐使用
-    def blit(self, surface:pygame.Surface, pos:tuple) -> None: 
+    def blit(self, surface:ImageSurface, pos:tuple) -> None: 
         old_pos = self.get_pos()
         self.set_pos(pos)
         self.draw(surface)
@@ -129,7 +129,7 @@ class SaveDataThread(threading.Thread):
         del self.data,self.path
 
 #将来用来兼容pygame和pyglet图层的模块
-class ImageSurface(pygame.Surface):
+class Image(ImageSurface):
     def __init__(self, size, flag):
         super().__init__(size, flag)
         self.type = "pygame"
@@ -140,8 +140,8 @@ class ItemNeedBlit(GameObject2point5d):
         super().__init__(pos[0],pos[1],weight)
         self.image = image
         self.offSet = offSet
-    def draw(self, surface:pygame.Surface) -> None:
-        if isinstance(self.image,pygame.Surface):
+    def draw(self, surface:ImageSurface) -> None:
+        if isinstance(self.image, pygame.Surface):
             surface.blit(self.image,add_pos(self.pos,self.offSet))
         else:
             try:

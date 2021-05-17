@@ -18,7 +18,7 @@ class Error(Exception):
         super().__init__(message)
 
 #抛出引擎内的异常
-def throwException(exception_type:str, info:str) -> None:
+def throw_exception(exception_type:str, info:str) -> None:
     exception_type_lower:str = exception_type.lower()
     if exception_type_lower == "error":
         #生成错误报告
@@ -41,12 +41,12 @@ def throwException(exception_type:str, info:str) -> None:
     elif exception_type_lower == "info":
         print('LinpgEngine-Info: {}'.format(info))
     else:
-        throwException("error","Hey, the exception_type '{}' is not acceptable!".format(exception_type))
+        throw_exception("error","Hey, the exception_type '{}' is not acceptable!".format(exception_type))
 
 #配置文件加载
-def loadConfig(path:str, key:str=None) -> any:
+def load_config(path:str, key:str=None) -> any:
     #检测配置文件是否存在
-    if not os.path.exists(path): throwException("error","Cannot find file on path: {}".format(path))
+    if not os.path.exists(path): throw_exception("error","Cannot find file on path: {}".format(path))
     #按照类型加载配置文件
     if path.endswith(".yaml"):
         if YAML_INITIALIZED is True:
@@ -54,42 +54,42 @@ def loadConfig(path:str, key:str=None) -> any:
                 #尝试使用默认模式加载yaml配置文件
                 with open(path, "r", encoding='utf-8') as f: Data = yaml.load(f.read(), Loader=yaml.FullLoader)
             except yaml.constructor.ConstructorError:
-                throwException("warning","Encounter a fatal error while loading the yaml file in path:\n'{}'\n\
+                throw_exception("warning","Encounter a fatal error while loading the yaml file in path:\n'{}'\n\
                     One possible reason is that at least one numpy array exists inside the yaml file.\n\
                     The program will try to load the data using yaml.UnsafeLoader.".format(path))
                 #使用安全模式加载yaml配置文件
                 with open(path, "r", encoding='utf-8') as f: Data = yaml.load(f.read(), Loader=yaml.UnsafeLoader)
         else:
-            throwException("error","You cannot load .yaml file because yaml is not imported successfully.")
+            throw_exception("error","You cannot load .yaml file because yaml is not imported successfully.")
     elif path.endswith(".json"):
         #使用json模块加载配置文件
         with open(path, "r", encoding='utf-8') as f: Data = json.load(f)
     else:
-        throwException("error","Linpg can only load json and yaml (if pyyaml is installed).")
+        throw_exception("error","Linpg can only load json and yaml (if pyyaml is installed).")
     #返回配置文件中的数据
     return Data if key is None else Data[key]
 
 #配置文件保存
-def saveConfig(path:str, data:any) -> None:
+def save_config(path:str, data:any) -> None:
     with open(path, "w", encoding='utf-8') as f:
         if path.endswith(".yaml"):
             if YAML_INITIALIZED:
                 yaml.dump(data, f, allow_unicode=True)
             else:
-                throwException("error","You cannot save .yaml file because yaml is not imported successfully.")
+                throw_exception("error","You cannot save .yaml file because yaml is not imported successfully.")
         elif path.endswith(".json"):
             json.dump(data, f, indent=4, ensure_ascii=False, sort_keys=True)
         else:
-            throwException("error","Linpg cannot save this kind of config, and can only save json and yaml (if pyyaml is installed).")
+            throw_exception("error","Linpg cannot save this kind of config, and can only save json and yaml (if pyyaml is installed).")
 
 #整理配置文件（读取了再存）
-def organizeConfigInFolder(pathname:str) -> None:
+def organize_config_in_folder(pathname:str) -> None:
     for configFilePath in glob(pathname):
-        data = loadConfig(configFilePath)
-        saveConfig(configFilePath,data)
+        data = load_config(configFilePath)
+        save_config(configFilePath,data)
 
 #整理当前文件夹中的配置文件
-#organizeConfigInFolder(os.path.join(os.path.dirname(__file__),"*.json"))
+#organize_config_in_folder(os.path.join(os.path.dirname(__file__),"*.json"))
 
 #初始化储存设置配置文件的变量
 _LINPG_SETTING:dict = None
@@ -121,7 +121,7 @@ def set_setting(key:str, key2:str=None, value:any=None) -> None:
             _LINPG_SETTING[key][key2] = value
 
 #保存设置参数
-def save_setting() -> None: saveConfig("Save/setting.yaml",_LINPG_SETTING)
+def save_setting() -> None: save_config("Save/setting.yaml",_LINPG_SETTING)
 
 #修改设置参数并保存
 def set_and_save_setting(key:str, key2:str=None, value:any=None) -> None:
@@ -132,12 +132,12 @@ def set_and_save_setting(key:str, key2:str=None, value:any=None) -> None:
 def reload_setting() -> None:
     global _LINPG_SETTING
     #如果配置文件setting.yaml存在
-    if os.path.exists("Save/setting.yaml"): _LINPG_SETTING = loadConfig("Save/setting.yaml")
+    if os.path.exists("Save/setting.yaml"): _LINPG_SETTING = load_config("Save/setting.yaml")
     #如果不存在就创建一个
     else:
         #导入local,查看默认语言
         import locale
-        _LINPG_SETTING = loadConfig(os.path.join(os.path.dirname(__file__),"setting.json"))
+        _LINPG_SETTING = load_config(os.path.join(os.path.dirname(__file__),"setting.json"))
         _LINPG_SETTING["Language"] = "SimplifiedChinese" if locale.getdefaultlocale()[0] == "zh_CN" else "English"
         #别忘了看看Save文件夹是不是都不存在
         if not os.path.exists("Save"): os.makedirs("Save")
@@ -188,7 +188,7 @@ def remove_glob_value(key:str) -> None:
     del _LINPG_GLOBAL_DATA[key]
 
 """版本信息"""
-_SETUP_INFO:dict = loadConfig(os.path.join(os.path.dirname(__file__),"info.json"))
+_SETUP_INFO:dict = load_config(os.path.join(os.path.dirname(__file__),"info.json"))
 #获取当前版本号
 def get_current_version() -> str: return "{0}.{1}.{2}".format(_SETUP_INFO["version"],_SETUP_INFO["revision"],_SETUP_INFO["patch"])
 #获取作者邮箱

@@ -84,7 +84,7 @@ def load_gif(
     elif isinstance(img_list_or_path, (tuple, list)):
         for image_path in img_list_or_path: imgList.append(StaticImage(image_path,0,0,size[0], size[1]))
     else:
-        throwException("error", 'Invalid input for "img_list_or_path": {}'.format(img_list_or_path))
+        throw_exception("error", 'Invalid input for "img_list_or_path": {}'.format(img_list_or_path))
     return GifSurface(numpy.asarray(imgList), position[0], position[1], size[0], size[1], updateGap)
 
 # 加载按钮
@@ -181,7 +181,7 @@ def convert_to_shape(rect: Union[Shape, pygame.Rect]) -> Shape:
     elif isinstance(rect, Shape):
         return rect
     else:
-        throwException("error", 'The rect has to be "pygame.Rect" or at least "linpg.Shape", not "{}".'.format(type(rect)))
+        throw_exception("error", 'The rect has to be "pygame.Rect" or at least "linpg.Shape", not "{}".'.format(type(rect)))
 
 # 转换linpg引擎的shape类至pygame的rect类
 def convert_to_rect(shape: Union[Shape, pygame.Rect]) -> pygame.Rect:
@@ -192,7 +192,7 @@ def convert_to_rect(shape: Union[Shape, pygame.Rect]) -> pygame.Rect:
     elif isinstance(shape, Shape):
         return pygame.Rect(shape.left, shape.top, shape.width, shape.height)
     else:
-        throwException("error", 'The shape has to be "linpg.Shape" or at least "pygame.Rect", not "{}".'.format(type(shape)))
+        throw_exception("error", 'The shape has to be "linpg.Shape" or at least "pygame.Rect", not "{}".'.format(type(shape)))
 
 # 是否形状一样
 def is_same_shape(rect1: Union[Shape, pygame.Rect], rect2: Union[Shape, pygame.Rect]) -> bool:

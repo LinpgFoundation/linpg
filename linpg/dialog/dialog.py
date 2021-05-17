@@ -29,7 +29,7 @@ class DialogSystem(AbstractDialogSystem):
         )
     #读取章节
     def load(self, save_path:str) -> None:
-        saveData = loadConfig(save_path)
+        saveData = load_config(save_path)
         """章节信息"""
         self._initialize(
             saveData["chapter_type"],
@@ -58,10 +58,10 @@ class DialogSystem(AbstractDialogSystem):
         default_lang_of_dialog:str = self.get_default_lang()
         #读取目标对话文件的数据
         if os.path.exists(self.get_dialog_file_location(get_setting("Language"))):
-            currentDialogData = loadConfig(self.get_dialog_file_location(get_setting("Language")),"dialogs")[self.part]
+            currentDialogData = load_config(self.get_dialog_file_location(get_setting("Language")),"dialogs")[self.part]
             #如果该dialog文件是另一个语言dialog文件的子类
             if default_lang_of_dialog != get_setting("Language"):
-                self.dialogContent = loadConfig(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")[self.part]
+                self.dialogContent = load_config(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")[self.part]
                 for key,currentDialog in currentDialogData.items():
                     if key in self.dialogContent:
                         for key2,dataNeedReplace in currentDialog.items():
@@ -72,9 +72,9 @@ class DialogSystem(AbstractDialogSystem):
             else:
                 self.dialogContent = currentDialogData
         else:
-            self.dialogContent = loadConfig(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")[self.part]
+            self.dialogContent = load_config(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")[self.part]
         #确认
-        if len(self.dialogContent) == 0 or "head" not in self.dialogContent: throwException("error","You need to set up a head for the dialog.")
+        if len(self.dialogContent) == 0 or "head" not in self.dialogContent: throw_exception("error","You need to set up a head for the dialog.")
         #将数据载入刚初始化的模块中
         self.__update_scene(self._dialog_id)
         self._dialog_txt_system.resetDialogueboxData()
@@ -97,7 +97,7 @@ class DialogSystem(AbstractDialogSystem):
             #自动保存
             if self.auto_save: self.save_progress()
         else:
-            throwException("error","The dialog id {} does not exist!".format(theNextDialogId))
+            throw_exception("error","The dialog id {} does not exist!".format(theNextDialogId))
     #更新音量
     def __update_sound_volume(self) -> None:
         self.set_bgm_volume(get_setting("Sound","background_music")/100)
@@ -397,7 +397,7 @@ class DialogEditor(AbstractDialogSystem):
     def part(self) -> str: return self.parts[self.part_id]
     #返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
-        original_data:dict = loadConfig(
+        original_data:dict = load_config(
             self.get_dialog_file_location(get_setting("Language"))
             ) if os.path.exists(self.get_dialog_file_location(get_setting("Language"))) else {}
         original_data["dialogs"] = self.__slipt_the_stuff_need_save()
@@ -421,7 +421,7 @@ class DialogEditor(AbstractDialogSystem):
             self.__current_select_bg_copy = None
     #读取章节信息
     def __loadDialogData(self, part:str) -> None:
-        self.dialogData = loadConfig(
+        self.dialogData = load_config(
             self.get_dialog_file_location(get_setting("Language")),"dialogs"
             ) if os.path.exists(self.get_dialog_file_location(get_setting("Language"))) else {}
         self.parts = list(self.dialogData.keys())
@@ -433,7 +433,7 @@ class DialogEditor(AbstractDialogSystem):
             if default_lang_of_dialog != get_setting("Language"):
                 self.is_default = False
                 #读取原始数据
-                self.dialogData_default = loadConfig(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")
+                self.dialogData_default = load_config(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")
                 self.dialogData = deepcopy(self.dialogData_default)
                 self.parts = list(self.dialogData.keys())
             #如果不是默认主语言，则尝试加载主语言后仍然为空或是默认语言且为空
@@ -461,7 +461,7 @@ class DialogEditor(AbstractDialogSystem):
             if default_lang_of_dialog != get_setting("Language"):
                 self.is_default = False
                 #读取原始数据
-                self.dialogData_default = loadConfig(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")
+                self.dialogData_default = load_config(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")
                 #填入未被填入的数据
                 for part in self.dialogData_default:
                     for key,DIALOG_DATA_TEMP in self.dialogData_default[part].items():
@@ -493,7 +493,7 @@ class DialogEditor(AbstractDialogSystem):
         return data_need_save
     #检查是否有任何改动
     def __no_changes_were_made(self) -> bool:
-        return loadConfig(self.get_dialog_file_location(get_setting("Language")),"dialogs") == self.__slipt_the_stuff_need_save()
+        return load_config(self.get_dialog_file_location(get_setting("Language")),"dialogs") == self.__slipt_the_stuff_need_save()
     #更新场景
     def __update_scene(self, theNextDialogId:Union[str,int]) -> None:
         if theNextDialogId in self.dialogData[self.part]:
@@ -507,7 +507,7 @@ class DialogEditor(AbstractDialogSystem):
         elif self.smart_add_mode:
             self.__add_dialog(theNextDialogId)
         else:
-            throwException("error","Cannot find the dialog with id '{}' in the data dictionary.".format(theNextDialogId))
+            throw_exception("error","Cannot find the dialog with id '{}' in the data dictionary.".format(theNextDialogId))
     #添加新的对话
     def __add_dialog(self, dialogId:Union[str,int]) -> None:
         self.dialogData[self.part][dialogId] = {
@@ -640,7 +640,7 @@ class DialogEditor(AbstractDialogSystem):
                         if lastId is not None:
                             self.__update_scene(lastId)
                         else:
-                            throwException("warning", "There is no last dialog id.")
+                            throw_exception("warning", "There is no last dialog id.")
                     elif buttonHovered == "delete":
                         lastId = self.__get_last_id()
                         nextId = self.__get_next_id(surface)
@@ -654,7 +654,7 @@ class DialogEditor(AbstractDialogSystem):
                                         break
                             else:
                                 #如果当前next_dialog_id的类型不支持的话，报错
-                                throwException("error","Cannot recognize next_dialog_id type: {}, please fix it".format(self.dialogData[self.part][lastId]["next_dialog_id"]["type"]))
+                                throw_exception("error","Cannot recognize next_dialog_id type: {}, please fix it".format(self.dialogData[self.part][lastId]["next_dialog_id"]["type"]))
                             #修改下一个对白配置文件中的"last_dialog_id"的参数
                             if nextId is not None:
                                 if "last_dialog_id" in self.dialogData[self.part][nextId] and self.dialogData[self.part][nextId]["last_dialog_id"] is not None:
@@ -665,13 +665,13 @@ class DialogEditor(AbstractDialogSystem):
                             self.__update_scene(lastId)
                             del self.dialogData[self.part][needDeleteId]
                         else:
-                            throwException("warning", "There is no last dialog id.")
+                            throw_exception("warning", "There is no last dialog id.")
                     elif buttonHovered == "next":
                         nextId = self.__get_next_id(surface)
                         if nextId is not None:
                             self.__update_scene(nextId)
                         else:
-                            throwException("warning", "There is no next dialog id.")
+                            throw_exception("warning", "There is no next dialog id.")
                     elif buttonHovered == "add":
                         nextId=1
                         while nextId in self.dialogData[self.part]:

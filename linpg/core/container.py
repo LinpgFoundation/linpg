@@ -107,7 +107,7 @@ class DropDownSingleChoiceList(GameObjectContainer):
                 font_surface,
                 add_pos(current_pos, (int(self.width-font_surface.get_width()*1.5), int((self.__block_height-font_surface.get_height())/2)))
                 )
-            if controller.get_event("comfirm"):
+            if controller.get_event("confirm"):
                 if is_hover_pygame_object(rect_of_outline):
                     self.__fold_choice = not self.__fold_choice
                 elif not self.__fold_choice and not is_hover_pygame_object(pygame.Rect(current_abs_pos,self.size)):
@@ -159,7 +159,7 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
         elif mode == "vertical":
             self.__mode = False
         else:
-            throwException("error","Mode '{}' is not supported!".format(mode))
+            throw_exception("error","Mode '{}' is not supported!".format(mode))
     def switch_mode(self) -> None:
         self.__mode = not self.__mode
         self.set_local_pos(0,0)
@@ -177,24 +177,24 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
             if not self.__mode:
                 self.__scroll_bar_pos = True
             else:
-                throwException("error","You cannot put the scroll bar on the left during horizontal mode!")
+                throw_exception("error","You cannot put the scroll bar on the left during horizontal mode!")
         elif pos == "right":
             if not self.__mode:
                 self.__scroll_bar_pos = False
             else:
-                throwException("error","You cannot put the scroll bar on the right during horizontal mode!")
+                throw_exception("error","You cannot put the scroll bar on the right during horizontal mode!")
         elif pos == "top":
             if self.__mode is True:
                 self.__scroll_bar_pos = True
             else:
-                throwException("error","You cannot put the scroll bar on the top during vertical mode!")
+                throw_exception("error","You cannot put the scroll bar on the top during vertical mode!")
         elif pos == "bottom":
             if self.__mode is True:
                 self.__scroll_bar_pos = False
             else:
-                throwException("error","You cannot put the scroll bar on the bottom during vertical mode!")
+                throw_exception("error","You cannot put the scroll bar on the bottom during vertical mode!")
         else:
-            throwException("error",'Scroll bar position "{}" is not supported! Try sth like "right" or "bottom" instead.'.format(pos))
+            throw_exception("error",'Scroll bar position "{}" is not supported! Try sth like "right" or "bottom" instead.'.format(pos))
     #添加一个物品
     def set(self, key:Union[str,int], value:Union[AbstractImage,ImageSurface,None]) -> None: self.__items_dict[key] = value
     #获取一个物品

@@ -44,7 +44,7 @@ class ProgressBarSurface(AbstractImage):
         if 0 <= value <= 1:
             self._current_percentage = value
         else:
-            throwException("error","The percentage must be <= 1 and >= 0!")
+            throw_exception("error","The percentage must be <= 1 and >= 0!")
     #模式
     @property
     def mode(self) -> str: return self.get_mode()
@@ -55,7 +55,7 @@ class ProgressBarSurface(AbstractImage):
         elif mode == "vertical":
             self._mode = False
         else:
-            throwException("error","Mode '{}' is not supported!".format(mode))
+            throw_exception("error","Mode '{}' is not supported!".format(mode))
     #克隆
     def copy(self): return ProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return ProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
@@ -99,7 +99,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
             self._percentage_to_be = value*self.accuracy
             self.__perecent_update_each_time = (self._percentage_to_be-self._current_percentage)/self.__total_update_intervals
         else:
-            throwException("error","The percentage must be <= 1 and >= 0, not {}!".format(value))
+            throw_exception("error","The percentage must be <= 1 and >= 0, not {}!".format(value))
     def copy(self): return DynamicProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return DynamicProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #检查并更新百分比

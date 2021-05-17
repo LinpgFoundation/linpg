@@ -104,7 +104,7 @@ class StaticImage(AdvancedAbstractImage):
             else:
                 pass
         else:
-            throwException("error","You have to input either a None or a Rect, not {}".format(type(rect)))
+            throw_exception("error","You have to input either a None or a Rect, not {}".format(type(rect)))
     #更新图片
     def _update_img(self) -> None:
         imgTmp = smoothly_resize_img(self.img_original, self.size) if get_antialias() is True else resize_img(self.img_original, self.size)
@@ -186,7 +186,7 @@ class Image(AbstractImage):
     def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
         if not self.hidden: surface.blit(resize_img(self.img,self.size),add_pos(self.pos,offSet))
     #旋转
-    def rotate(self, angle:int) -> None: self.img = pygame.transform.rotate(self.img,angle)
+    def rotate(self, angle:int) -> None: self.img = rotate_img(self.img, angle)
     #反转
     def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = flip_img(self.img,vertical,horizontal)
     #淡出

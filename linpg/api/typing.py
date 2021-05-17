@@ -10,3 +10,12 @@ pygame.init()
 from ..lang import *
 
 ImageSurface = pygame.Surface
+
+#指向pygame事件的指针
+KEY_DOWN = pygame.KEYDOWN
+KEY_UP = pygame.KEYUP
+KEY_ESCAPE = pygame.K_ESCAPE
+KEY_SPACE = pygame.K_SPACE
+KEY_BACKSPACE = pygame.K_BACKSPACE
+MOUSE_BUTTON_DOWN = pygame.MOUSEBUTTONDOWN
+MOUSE_BUTTON_UP = pygame.MOUSEBUTTONUP

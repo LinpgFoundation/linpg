@@ -44,7 +44,7 @@ class EnvImagesManagement:
                 self.__ENV_IMAGE_DICT_DARK[fileName] = self.__ENV_IMAGE_DICT[fileName].copy()
                 self.__ENV_IMAGE_DICT_DARK[fileName].add_darkness(self.__DARKNESS)
         else:
-            throwException("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__ENV_IMAGE_PATH))
+            throw_exception("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__ENV_IMAGE_PATH))
     #加载场景装饰物图片
     def __add_decoration_image(self, decorationType:str, fileName:str) -> None:
         imgPath:str = os.path.join(self.__DECORATION_IMAGE_PATH, "{}.png".format(fileName))
@@ -75,7 +75,7 @@ class EnvImagesManagement:
                     self.__DECORATION_IMAGE_DICT_DARK[decorationType][decorationType] = self.__DECORATION_IMAGE_DICT[decorationType][-1].copy()
                     self.__DECORATION_IMAGE_DICT_DARK[decorationType][decorationType].add_darkness(self.__DARKNESS)
             else:
-                throwException("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__DECORATION_IMAGE_PATH))
+                throw_exception("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__DECORATION_IMAGE_PATH))
     #获取方块尺寸
     def get_block_width(self) -> int: return self.__BLOCK_WIDTH
     def get_block_height(self) -> int: return self.__BLOCK_HEIGHT
@@ -92,7 +92,7 @@ class EnvImagesManagement:
         try:
             return self.__ENV_IMAGE_DICT_DARK[key] if darkMode is True else self.__ENV_IMAGE_DICT[key]
         except BaseException:
-            throwException("warning","Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(key))
+            throw_exception("warning","Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(key))
             self.__add_evn_image(key)
             return self.__ENV_IMAGE_DICT_DARK[key] if darkMode is True else self.__ENV_IMAGE_DICT[key]
     def get_decoration_image(self, decorationType:str, key:Union[str,int], darkMode:bool) -> any:
@@ -100,7 +100,7 @@ class EnvImagesManagement:
             return self.__DECORATION_IMAGE_DICT_DARK[decorationType][key] if darkMode is True else self.__DECORATION_IMAGE_DICT[decorationType][key]
         #如果图片没找到
         except BaseException:
-            throwException("warning","Cannot find decoration image '{0}' in type '{1}', we will try to load it for you right now, but please by aware.".format(key,decorationType))
+            throw_exception("warning","Cannot find decoration image '{0}' in type '{1}', we will try to load it for you right now, but please by aware.".format(key,decorationType))
             self.__add_decoration_image(decorationType,key)
             return self.__DECORATION_IMAGE_DICT_DARK[decorationType][key] if darkMode is True else self.__DECORATION_IMAGE_DICT[decorationType][key]
     #获取当前装饰物种类的数量

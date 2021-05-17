@@ -15,14 +15,14 @@ def imgLoadFunction(path:Union[str,ImageSurface], ifConvertAlpha:bool) -> ImageS
             try:
                 return pygame.image.load(os.path.join(path))
             except:
-                throwException("error",'Cannot load image from path: {}'.format(path))
+                throw_exception("error",'Cannot load image from path: {}'.format(path))
         else:
             try:
                 return pygame.image.load(os.path.join(path)).convert_alpha()
             except:
-                throwException("error",'Cannot load image from path: {}'.format(path))
+                throw_exception("error",'Cannot load image from path: {}'.format(path))
     else:
-        throwException("error","The path '{}' has to be a string or at least a ImageSurface!".format(path))
+        throw_exception("error","The path '{}' has to be a string or at least a ImageSurface!".format(path))
 
 #图片加载模块：接收图片路径,长,高,返回对应图片
 def load_img(path:Union[str,ImageSurface], size:Union[tuple,list]=tuple(), alpha:int=255, ifConvertAlpha:bool=True) -> ImageSurface:
@@ -73,7 +73,7 @@ def resize_img(img:ImageSurface, size:Union[tuple,list]=(None,None)) -> ImageSur
         width = size
         height = None
     else:
-        throwException("error","The size '{}' is not acceptable.".format(size))
+        throw_exception("error","The size '{}' is not acceptable.".format(size))
     #编辑图片
     if height is not None and height >= 0 and width is None:
         img = pygame.transform.scale(img,(round(height/img.get_height()*img.get_width()), round(height)))
@@ -82,7 +82,7 @@ def resize_img(img:ImageSurface, size:Union[tuple,list]=(None,None)) -> ImageSur
     elif width >= 0 and height >= 0:
         img = pygame.transform.scale(img, (round(width), round(height)))
     elif width < 0 or height < 0:
-        throwException("error","Both width and height must be positive interger!")
+        throw_exception("error","Both width and height must be positive interger!")
     return img
 
 #精准地缩放尺寸
@@ -99,7 +99,7 @@ def smoothly_resize_img(img:ImageSurface, size:Union[tuple,list]=(None,None)):
         width = size
         height = None
     else:
-        throwException("error","The size '{}' is not acceptable.".format(size))
+        throw_exception("error","The size '{}' is not acceptable.".format(size))
     #编辑图片
     if height is not None and height >= 0 and width is None:
         img = pygame.transform.smoothscale(img,(round(height/img.get_height()*img.get_width()), round(height)))
@@ -108,12 +108,14 @@ def smoothly_resize_img(img:ImageSurface, size:Union[tuple,list]=(None,None)):
     elif width >= 0 and height >= 0:
         img = pygame.transform.smoothscale(img, (round(width), round(height)))
     elif width < 0 or height < 0:
-        throwException("error","Both width and height must be positive interger!")
+        throw_exception("error","Both width and height must be positive interger!")
     return img
 
 #翻转图片
-def flip_img(img:ImageSurface, horizontal:bool, vertical:bool) -> ImageSurface:
-    return pygame.transform.flip(img, horizontal, vertical)
+def flip_img(img:ImageSurface, horizontal:bool, vertical:bool) -> ImageSurface: return pygame.transform.flip(img, horizontal, vertical)
+
+#旋转图片
+def rotate_img(img:ImageSurface, angle:int) -> ImageSurface: return pygame.transform.rotate(img, angle)
 
 #增加图片暗度
 def add_darkness(img:ImageSurface, value:int) -> ImageSurface:
@@ -227,7 +229,7 @@ def is_hover_pygame_object(imgObject:object, objectPos:Union[tuple,list]=(0,0), 
         return True if 0 < mouse_x-off_set_x-imgObject.x < imgObject.width and 0 < mouse_y-off_set_y-imgObject.y < imgObject.height\
             else False
     else:
-        throwException("error","Unable to check current object: {0} (type:{1})".format(imgObject,type(imgObject)))
+        throw_exception("error","Unable to check current object: {0} (type:{1})".format(imgObject,type(imgObject)))
 
 #检测数值是否越界
 def keep_in_range(number:Union[int,float], min_value:Union[int,float], max_value:Union[int,float]) -> Union[int,float]:
@@ -240,4 +242,4 @@ def convert_percentage(percentage:Union[str,float]) -> float:
     elif isinstance(percentage, float):
         return percentage
     else:
-        throwException("error", '"{}" is not a valid percentage that can be converted'.format(percentage))
+        throw_exception("error", '"{}" is not a valid percentage that can be converted'.format(percentage))

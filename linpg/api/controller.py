@@ -13,14 +13,14 @@ class SingleJoystick:
         if self.inputController is None and pygame.joystick.get_count() > 0:
             self.inputController = pygame.joystick.Joystick(0)
             self.inputController.init()
-            throwException("info","Joystick is detected and initialized successfully.")
+            throw_exception("info","Joystick is detected and initialized successfully.")
         elif self.inputController is not None:
             if pygame.joystick.get_count() == 0:
                 self.inputController = None
             elif self.inputController.get_id() != pygame.joystick.Joystick(0).get_id():
                 self.inputController = pygame.joystick.Joystick(0)
                 self.inputController.init()
-                throwException("info","Joystick changed! New joystick is detected and initialized successfully.")
+                throw_exception("info","Joystick changed! New joystick is detected and initialized successfully.")
     #手柄是否初始化
     def get_init(self) -> bool:
         return self.inputController.get_init() if self.inputController is not None else False
@@ -71,22 +71,22 @@ class GameController:
     def get_events(self): return self.__INPUT_EVENTS
     #获取单个事件
     def get_event(self, event_type:str) -> bool:
-        if event_type == "comfirm":
+        if event_type == "confirm":
             if self.__confirm_event == 1:
                 return True
             elif self.__confirm_event == 0:
                 return False
             else:
-                throwException("error", "self.__confirm_event in GameController is set to invalid number!")
+                throw_exception("error", "self.__confirm_event in GameController is set to invalid number!")
         elif event_type == "back":
             if self.__back_event == 1:
                 return True
             elif self.__back_event == 0:
                 return False
             else:
-                throwException("error", "self.__back_event in GameController is set to invalid number!")
+                throw_exception("error", "self.__back_event in GameController is set to invalid number!")
         else:
-            throwException("error", 'The event type "{}" is not supported!'.format(event_type))
+            throw_exception("error", 'The event type "{}" is not supported!'.format(event_type))
         return False
     #返回鼠标的坐标
     def get_mouse_pos(self) -> tuple: return self.mouse_x,self.mouse_y
@@ -139,8 +139,9 @@ class DisplayController:
     def get_height(self) -> int: return self.__standard_height
     def get_size(self) -> tuple: return self.__standard_width,self.__standard_height
     #初始化屏幕
-    def init_screen(self, flags:any) -> any:
-        return pygame.display.set_mode(self.get_size(),flags)
+    def init_screen(self) -> any:
+        flags = pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN if self.__screen_scale == 100 else pygame.SCALED
+        return pygame.display.set_mode(self.get_size(), flags)
     def quit(self) -> None:
         from sys import exit
         #退出游戏

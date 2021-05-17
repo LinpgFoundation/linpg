@@ -15,7 +15,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         try:
             self._option_box_selected_surface = StaticImage(os.path.join(DIALOG_UI_PATH,"option_selected.png"),0,0)
         except:
-            throwException("warning","Cannot find 'option_selected.png' in 'UI' file, 'option.png' will be loaded instead.")
+            throw_exception("warning","Cannot find 'option_selected.png' in 'UI' file, 'option.png' will be loaded instead.")
             self._option_box_selected_surface = self._option_box_surface.light_copy()
         #对话文件路径
         self._dialog_folder_path:str = "Data"
@@ -38,8 +38,8 @@ class AbstractDialogSystem(AbstractGameSystem):
                 )
     #获取对话文件的主语言
     def get_default_lang(self) -> str:
-        return loadConfig(os.path.join(self._dialog_folder_path,self._chapter_type,"info.yaml"),"default_lang") if self._project_name is None\
-            else loadConfig(os.path.join(self._dialog_folder_path,self._chapter_type,self._project_name,"info.yaml"),"default_lang")
+        return load_config(os.path.join(self._dialog_folder_path,self._chapter_type,"info.yaml"),"default_lang") if self._project_name is None\
+            else load_config(os.path.join(self._dialog_folder_path,self._chapter_type,self._project_name,"info.yaml"),"default_lang")
     #初始化关键参数
     def _initialize(self, chapterType:str, chapterId:int, projectName:str, dialogId:Union[str,int]="head", dialog_options:dict={}) -> None:
         super()._initialize(chapterType,chapterId,projectName)
@@ -65,7 +65,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                         )
                     self.__background_image_surface.start()
                 else:
-                    throwException("error","Cannot find a background image or video file called '{}'.".format(self.__background_image_name))
+                    throw_exception("error","Cannot find a background image or video file called '{}'.".format(self.__background_image_name))
             else:
                 self.__background_image_surface = self._black_bg.copy()
     #停止播放
@@ -82,7 +82,7 @@ class AbstractDialogSystem(AbstractGameSystem):
     #把基础内容画到surface上
     def draw(self, surface:ImageSurface) -> None:
         #检测章节是否初始化
-        if self._chapter_id is None: raise throwException("error","The dialog has not been initialized!")
+        if self._chapter_id is None: raise throw_exception("error","The dialog has not been initialized!")
         #展示背景图片和npc立绘
         self.display_background_image(surface)
         self._npc_manager.draw(surface)
@@ -278,7 +278,7 @@ class DialogContent(AbstractDialog):
             self.__textPlayingSound = load_sound("Assets/sound/ui/dialog_words_playing.ogg")
         except FileNotFoundError:
             self.__textPlayingSound = None
-            throwException(
+            throw_exception(
                 "warning",
                 "Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!\nAs a result, the text playing sound will be disabled."
                 )
@@ -400,11 +400,11 @@ class DialogContent(AbstractDialog):
 class NpcImageDatabase:
     def __init__(self):
         try:
-            self.__DATA = loadConfig("Data/npcImageDatabase.yaml")
+            self.__DATA = load_config("Data/npcImageDatabase.yaml")
         except FileNotFoundError:
             self.__DATA = {}
-            saveConfig("Data/npcImageDatabase.yaml",self.__DATA)
-            throwException("warning","Cannot find 'npcImageDatabase.yaml' in 'Data' file, a new one is created.")
+            save_config("Data/npcImageDatabase.yaml",self.__DATA)
+            throw_exception("warning","Cannot find 'npcImageDatabase.yaml' in 'Data' file, a new one is created.")
     def get_kind(self, fileName:str) -> str:
         for key in self.__DATA:
             if fileName in self.__DATA[key]: return key

@@ -5,7 +5,7 @@ _MAP_ENV_IMAGE:object = None
 #方块数据
 _BLOCKS_DATABASE:dict = None
 try:
-    _BLOCKS_DATABASE = loadConfig("Data/blocks.yaml","blocks")
+    _BLOCKS_DATABASE = load_config("Data/blocks.yaml","blocks")
 except:
     _BLOCKS_DATABASE = {}
 

@@ -43,7 +43,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
                 #同一首曲子，不更新任何内容
                 pass
         else:
-            throwException("error","Path '{}' does not exist!".format(path))
+            throw_exception("error","Path '{}' does not exist!".format(path))
     #获取bgm音量
     @property
     def bgm_volume(self) -> float: return self.__bgm_volume
@@ -55,7 +55,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
                 pygame.mixer.music.set_volume(volume)
             self.__bgm_volume = volume
         else:
-            throwException("error","Volume '{}' is out of the range! (must between 0 and 1)".format(volume))
+            throw_exception("error","Volume '{}' is out of the range! (must between 0 and 1)".format(volume))
     #播放bgm
     def play_bgm(self, times:int=1) -> None:
         if self.__bgm_path is not None and not pygame.mixer.music.get_busy() and not self.__if_stop_playing_bgm:
@@ -114,7 +114,7 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
         "project_name": self._project_name
         }
     #获取需要保存的数据 - 子类必须实现
-    def _get_data_need_to_save(self) -> dict: throwException("error","The child class does not implement _get_data_need_to_save() function!")
+    def _get_data_need_to_save(self) -> dict: throw_exception("error","The child class does not implement _get_data_need_to_save() function!")
     #保存进度
     def save_progress(self) -> None:
         #确保储存进度存档的文件夹存在

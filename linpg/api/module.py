@@ -40,11 +40,11 @@ class GameObject2d(GameObject):
     #宽
     @property
     def width(self) -> int: return self.get_width()
-    def get_width(self) -> int: throwException("error","The child class has to implement get_width() function!")
+    def get_width(self) -> int: throw_exception("error","The child class has to implement get_width() function!")
     #高
     @property
     def height(self) -> int: return self.get_height()
-    def get_height(self) -> int: throwException("error","The child class has to implement get_height() function!")
+    def get_height(self) -> int: throw_exception("error","The child class has to implement get_height() function!")
     #尺寸
     @property
     def size(self) -> tuple: return self.get_width(),self.get_height()
@@ -82,7 +82,7 @@ class GameObject2d(GameObject):
     def draw(self, surface:ImageSurface) -> None: self.display(surface)
     #根据offSet将图片展示到surface的对应位置上 - 子类必须实现
     def display(self, surface:ImageSurface, offSet:tuple=(0,0)) -> None:
-        throwException("error","The child class does not implement display() function!")
+        throw_exception("error","The child class does not implement display() function!")
     #忽略现有坐标，将图片画到surface的指定位置上，不推荐使用
     def blit(self, surface:ImageSurface, pos:tuple) -> None: 
         old_pos = self.get_pos()
@@ -125,7 +125,7 @@ class SaveDataThread(threading.Thread):
         self.path:str = path
         self.data:dict = data
     def run(self) -> None:
-        saveConfig(self.path,self.data)
+        save_config(self.path,self.data)
         del self.data,self.path
 
 #将来用来兼容pygame和pyglet图层的模块

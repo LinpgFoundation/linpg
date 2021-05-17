@@ -47,7 +47,7 @@ def load_audio_from_video_as_music(moviePath:str) -> bool:
         if not get_setting("KeepVedioCache"): os.remove(path)
         return True
     except:
-        throwException("warning", "Cannot load music from {}!\nIf this vedio has no sound, then just ignore this warning.".format(moviePath))
+        throw_exception("warning", "Cannot load music from {}!\nIf this vedio has no sound, then just ignore this warning.".format(moviePath))
         return False
 
 #视频模块接口，不能实例化

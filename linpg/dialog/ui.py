@@ -132,15 +132,14 @@ class DialogButtons:
         self.skipButtonHovered.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONTSIZE*0.5,self.icon_y))
         self.skipButtonHovered.blit(tempButtonTxt,(0,0))
         tempButtonTxt = self.FONT.render(dialog_txt["skip"],get_antialias(),(105, 105, 105))
-        tempButtonIcon.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
+        tempButtonIcon = add_darkness(tempButtonIcon, 100)
         self.skipButton.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONTSIZE*0.5,self.icon_y))
         self.skipButton.blit(tempButtonTxt,(0,0))
         self.skipButton = Image(self.skipButton,window_x*0.9,window_y*0.05)
         self.skipButtonHovered = Image(self.skipButtonHovered,window_x*0.9,window_y*0.05)
         #生成自动播放按钮
         self.autoIconHovered = load_img(os.path.join(DIALOG_UI_PATH,"dialog_auto.png"),(self.FONTSIZE,self.FONTSIZE))
-        self.autoIcon = self.autoIconHovered.copy()
-        self.autoIcon.fill((100,100,100), special_flags=pygame.BLEND_RGB_SUB)
+        self.autoIcon = add_darkness(self.autoIconHovered, 100)
         self.autoIconDegree = 0
         self.autoIconDegreeChange = (2**0.5-1)*self.FONTSIZE/45
         self.autoMode:bool = False

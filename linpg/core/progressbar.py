@@ -16,7 +16,7 @@ class ProgressBar(AbstractImage):
         self.color:tuple = get_color_rbga(color)
     def display(self, surface: ImageSurface, offSet: Union[tuple, list] = (0, 0)) -> None:
         if not self.hidden:
-            pygame.draw.rect(surface, self.color, pygame.Rect(add_pos(self.pos, offSet), (int(self._width*self.percentage), self._height)))
+            draw_rect(surface, self.color, (add_pos(self.pos, offSet), (int(self._width*self.percentage), self._height)))
 
 #进度条Surface
 class ProgressBarSurface(AbstractImage):
@@ -30,9 +30,9 @@ class ProgressBarSurface(AbstractImage):
         height: int,
         mode: str = "horizontal"
         ):
-        if imgOnTop is not None: imgOnTop = imgLoadFunction(imgOnTop, True)
+        if imgOnTop is not None: imgOnTop = quickly_load_img(imgOnTop)
         super().__init__(imgOnTop,x,y,max_width,height)
-        self.img2 = imgLoadFunction(imgOnBottom,True) if imgOnBottom is not None else None
+        self.img2 = quickly_load_img(imgOnBottom) if imgOnBottom is not None else None
         self._current_percentage = 0
         self._mode:bool = True
         self.set_mode(mode)

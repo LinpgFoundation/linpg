@@ -1,6 +1,5 @@
 # cython: language_level=3
 import pygame.freetype
-from pygame.colordict import THECOLORS
 from .system import *
 
 #文字渲染器管理模块
@@ -187,23 +186,3 @@ class DynamicTextSurface(TextSurface):
 #高级文字制作模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
 def load_dynamic_text(txt:any, color:Union[str,tuple,list], pos:tuple, size:int=50, ifBold:bool=False, ifItalic:bool=False) -> DynamicTextSurface:
     return DynamicTextSurface(render_font(txt,color,size,ifBold,ifItalic),render_font(txt,color,size*1.5,ifBold,ifItalic),pos[0],pos[1])
-
-#给定一个颜色的名字，返回对应的RGB列表
-def get_color_rbga(color:Union[str,tuple,list]) -> tuple:
-    if isinstance(color,(tuple,list)):
-        return color
-    elif isinstance(color,(str)):
-        if color == "gray" or color == "grey" or color == "disable":
-            return (105, 105, 105, 255)
-        elif color == "white" or color == "enable":
-            return (255, 255, 255, 255)
-        else:
-            try:
-                return THECOLORS[color]
-            except KeyError:
-                throw_exception("error","This color is currently not available!")
-    else:
-        throw_exception(
-            "error",
-            "The color has to be a string, tuple or list! As a result, {0} (type:{1}) is not acceptable!".format(color,type(color))
-            )

@@ -28,7 +28,7 @@ class ButtonWithDes(Button):
         panding:int = int(font_surface.get_height()/2)
         self.des_surface = new_surface((font_surface.get_width()+panding*2,font_surface.get_height()+panding*2)).convert_alpha()
         self.des_surface.fill(get_color_rbga("white"))
-        pygame.draw.rect(self.des_surface,get_color_rbga("black"),(0,0, self.des_surface.get_width(),self.des_surface.get_height()),2)
+        draw_rect(self.des_surface,get_color_rbga("black"), Shape(0,0,self.des_surface.get_width(),self.des_surface.get_height()), 2)
         self.des_surface.blit(font_surface,(panding,panding))
     def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
         super().display(surface, offSet)

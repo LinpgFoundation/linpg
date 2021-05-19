@@ -113,8 +113,8 @@ class DialogSystem(AbstractDialogSystem):
         self._black_bg.set_alpha(255)
     #淡出
     def fadeOut(self, surface:ImageSurface) -> None:
-        pygame.mixer.music.fadeout(1000)
-        pygame.mixer.fadeout(1000)
+        fade_out_sound(1000)
+        fade_out_music(1000)
         for i in range(0,255,5):
             self._black_bg.set_alpha(i)
             self._black_bg.draw(surface)
@@ -129,81 +129,75 @@ class DialogSystem(AbstractDialogSystem):
         self._buttons_mananger.draw(surface)
         #按键判定
         leftClick = False
-        for event in controller.events:
-            if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.JOYBUTTONDOWN:
-                if event.button == 1 or controller.joystick.get_button(0) == 1:
-                    if self._buttons_mananger.button_hovered == "hide" and not self._is_showing_history:
-                        self._buttons_mananger.hidden = not self._buttons_mananger.hidden
-                        self._dialog_txt_system.hidden = self._buttons_mananger.hidden
-                    #如果接来下没有文档了或者玩家按到了跳过按钮
-                    elif self._buttons_mananger.button_hovered == "skip" and not self._is_showing_history:
-                        #淡出
-                        self.fadeOut(surface)
-                        self.stop()
-                    elif self._buttons_mananger.button_hovered == "auto" and not self._is_showing_history:
-                        self._buttons_mananger.autoModeSwitch()
-                        self._dialog_txt_system.autoMode = self._buttons_mananger.autoMode
-                    elif self.history_back.is_hover() and self._is_showing_history is True:
-                        self._is_showing_history = False
-                        self._history_surface = None
-                    elif self._buttons_mananger.button_hovered == "history" and not self._is_showing_history:
-                        self._is_showing_history = True
-                    #如果所有行都没有播出，则播出所有行
-                    elif not self._dialog_txt_system.is_all_played():
-                        self._dialog_txt_system.play_all()
-                    else:
-                        leftClick = True
-                elif event.button == 4 and self._history_surface_local_y<0:
-                    self._history_surface = None
-                    self._history_surface_local_y += display.get_height()*0.1
-                elif event.button == 5:
-                    self._history_surface = None
-                    self._history_surface_local_y -= display.get_height()*0.1
-                #返回上一个对话场景（在被允许的情况下）
-                elif event.button == 3 or controller.joystick.get_button(1) == 1:
-                    if self.dialogContent[self._dialog_id]["last_dialog_id"] is not None:
-                        self.__update_scene(self.dialogContent[self._dialog_id]["last_dialog_id"])
-                    else:
-                        pass
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                if self._is_showing_history is True:
-                    self._is_showing_history = False
-                else:
-                    progress_saved_text = Image(
-                        self._dialog_txt_system.FONT.render(get_lang("Global","progress_has_been_saved"),get_antialias(),(255, 255, 255)),0,0
-                        )
-                    progress_saved_text.set_alpha(0)
-                    self.pause_menu.hidden = False
+        if controller.get_event("confirm"):
+            if self._buttons_mananger.button_hovered == "hide" and not self._is_showing_history:
+                self._buttons_mananger.hidden = not self._buttons_mananger.hidden
+                self._dialog_txt_system.hidden = self._buttons_mananger.hidden
+            #如果接来下没有文档了或者玩家按到了跳过按钮
+            elif self._buttons_mananger.button_hovered == "skip" and not self._is_showing_history:
+                #淡出
+                self.fadeOut(surface)
+                self.stop()
+            elif self._buttons_mananger.button_hovered == "auto" and not self._is_showing_history:
+                self._buttons_mananger.autoModeSwitch()
+                self._dialog_txt_system.autoMode = self._buttons_mananger.autoMode
+            elif self.history_back.is_hover() and self._is_showing_history is True:
+                self._is_showing_history = False
+                self._history_surface = None
+            elif self._buttons_mananger.button_hovered == "history" and not self._is_showing_history:
+                self._is_showing_history = True
+            #如果所有行都没有播出，则播出所有行
+            elif not self._dialog_txt_system.is_all_played():
+                self._dialog_txt_system.play_all()
+            else:
+                leftClick = True
+        if controller.get_event("scroll_up") and self._history_surface_local_y<0:
+            self._history_surface = None
+            self._history_surface_local_y += display.get_height()*0.1
+        if controller.get_event("scroll_down"):
+            self._history_surface = None
+            self._history_surface_local_y -= display.get_height()*0.1
+        if controller.get_event("previous") and self.dialogContent[self._dialog_id]["last_dialog_id"] is not None:
+            self.__update_scene(self.dialogContent[self._dialog_id]["last_dialog_id"])
+        if controller.get_event("back"):
+            if self._is_showing_history is True:
+                self._is_showing_history = False
+            else:
+                progress_saved_text = Image(
+                    self._dialog_txt_system.FONT.render(get_lang("Global","progress_has_been_saved"),get_antialias(),(255, 255, 255)),0,0
+                    )
+                progress_saved_text.set_alpha(0)
+                self.pause_menu.hidden = False
+                display.flip()
+                while not self.pause_menu.hidden:
                     display.flip()
-                    while not self.pause_menu.hidden:
-                        display.flip()
-                        self.pause_menu.draw(surface)
-                        result = self.pause_menu.get_button_clicked()
-                        if result == "break":
-                            get_option_menu().hidden = True
-                            self.pause_menu.hidden = True
-                        elif result == "save":
-                            self.save_progress()
-                            progress_saved_text.set_alpha(255)
-                        elif result == "option_menu":
-                            get_option_menu().hidden = False
-                        elif result == "back_to_mainMenu":
-                            get_option_menu().hidden = True
-                            progress_saved_text.set_alpha(0)
-                            self.fadeOut(surface)
-                            self.pause_menu.hidden = True
-                            self.stop()
-                        #展示设置UI
-                        get_option_menu().draw(surface)
-                        #更新音量
-                        if get_option_menu().need_update["volume"] is True: self.__update_sound_volume()
-                        #更新语言
-                        if get_option_menu().need_update["language"] is True: self.updated_language(surface)
-                        #显示进度已保存的文字
-                        progress_saved_text.drawOnTheCenterOf(surface)
-                        progress_saved_text.fade_out(5)
-                    del progress_saved_text
-                    self.pause_menu.screenshot = None
+                    self.pause_menu.draw(surface)
+                    result = self.pause_menu.get_button_clicked()
+                    if result == "break":
+                        get_option_menu().hidden = True
+                        self.pause_menu.hidden = True
+                    elif result == "save":
+                        self.save_progress()
+                        progress_saved_text.set_alpha(255)
+                    elif result == "option_menu":
+                        get_option_menu().hidden = False
+                    elif result == "back_to_mainMenu":
+                        get_option_menu().hidden = True
+                        progress_saved_text.set_alpha(0)
+                        self.fadeOut(surface)
+                        self.pause_menu.hidden = True
+                        self.stop()
+                    #展示设置UI
+                    get_option_menu().draw(surface)
+                    #更新音量
+                    if get_option_menu().need_update["volume"] is True: self.__update_sound_volume()
+                    #更新语言
+                    if get_option_menu().need_update["language"] is True: self.updated_language(surface)
+                    #显示进度已保存的文字
+                    progress_saved_text.drawOnTheCenterOf(surface)
+                    progress_saved_text.fade_out(5)
+                del progress_saved_text
+                self.pause_menu.screenshot = None
         #显示对话选项
         if self._dialog_txt_system.is_all_played() and self._dialog_txt_system.hidden is False and self.dialogContent[self._dialog_id]["next_dialog_id"] is not None and self.dialogContent[self._dialog_id]["next_dialog_id"]["type"] == "option":
             optionBox_y_base = (display.get_height()*3/4-(len(self.dialogContent[self._dialog_id]["next_dialog_id"]["target"]))*2*display.get_width()*0.03)/4
@@ -235,8 +229,8 @@ class DialogSystem(AbstractDialogSystem):
         #展示历史
         if self._is_showing_history:
             if self._history_surface is None:
-                self._history_surface = new_transparent_surface(display.get_size())
-                pygame.draw.rect(self._history_surface,(0,0,0),((0,0),display.get_size()))
+                self._history_surface = new_surface(display.get_size()).convert()
+                self._history_surface.fill(get_color_rbga("black"))
                 self._history_surface.set_alpha(150)
                 dialogIdTemp = "head"
                 local_y = self._history_surface_local_y
@@ -279,7 +273,6 @@ class DialogSystem(AbstractDialogSystem):
             #如果是切换场景
             elif self.dialogContent[self._dialog_id]["next_dialog_id"]["type"] == "changeScene":
                 self.fadeOut(surface)
-                pygame.time.wait(2000)
                 #更新场景
                 self.__update_scene(self.dialogContent[self._dialog_id]["next_dialog_id"]["target"])
                 self._dialog_txt_system.resetDialogueboxData()
@@ -563,11 +556,6 @@ class DialogEditor(AbstractDialogSystem):
                     #等待玩家选择一个选项
                     while True:
                         surface.blit(screenshot,(0,0))
-                        leftClick = False
-                        for event in controller.events:
-                            if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.JOYBUTTONDOWN:
-                                leftClick = True
-                                break
                         for i in range(len(theNext["target"])):
                             button = theNext["target"][i]
                             option_txt = self.FONT.render(button["txt"],get_antialias(),get_color_rbga("white"))
@@ -580,7 +568,7 @@ class DialogEditor(AbstractDialogSystem):
                                 self._option_box_selected_surface.set_pos(option_button_x,option_button_y)
                                 self._option_box_selected_surface.draw(surface)
                                 display_in_center(option_txt,self._option_box_selected_surface,self._option_box_selected_surface.x,self._option_box_selected_surface.y,surface)
-                                if leftClick: return button["id"]
+                                if controller.get_event("confirm"): return button["id"]
                             else:
                                 self._option_box_surface.set_size(option_button_width,option_button_height)
                                 self._option_box_surface.set_pos(option_button_x,option_button_y)
@@ -623,7 +611,7 @@ class DialogEditor(AbstractDialogSystem):
         #处理输入事件
         leftClick:bool = False
         for event in controller.events:
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == MOUSE_BUTTON_DOWN:
                 if event.button == 1:
                     if self.UIContainerRightButton.is_hover():
                         self.UIContainerRightButton.switch()

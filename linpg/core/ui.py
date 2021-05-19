@@ -4,7 +4,7 @@ from .container import *
 #暂停菜单
 class PauseMenu:
     def __init__(self) -> None:
-        self.white_bg = None
+        self.black_bg = None
         self.button_resume = None
         self.button_save = None
         self.button_setting = None
@@ -13,10 +13,10 @@ class PauseMenu:
         self.hidden:bool = True
     def initialize(self, surface:ImageSurface) -> None:
         width,height = display.get_size()
-        surfaceTmp = new_transparent_surface((width,height))
-        pygame.draw.rect(surfaceTmp,(0,0,0),(0,0,width,height))
-        self.white_bg = Image(surfaceTmp,0,0,width,height)
-        self.white_bg.set_alpha(50)
+        surfaceTmp = new_surface((width,height)).convert()
+        surfaceTmp.fill(get_color_rbga("black"))
+        self.black_bg = Image(surfaceTmp,0,0,width,height)
+        self.black_bg.set_alpha(50)
         #按钮-继续
         self.button_resume = load_dynamic_text(
             get_lang("Global","resume"),
@@ -47,10 +47,10 @@ class PauseMenu:
             if self.screenshot is None: self.screenshot = surface.copy()
             #画出原先的背景
             surface.blit(self.screenshot,(0,0))
+            #如果背景层还没有初始化
+            if self.black_bg is None: self.initialize(surface)
             #展示暂停菜单的背景层
-            if self.white_bg is None:
-                self.initialize(surface)
-            self.white_bg.draw(surface)
+            self.black_bg.draw(surface)
             #展示按钮
             self.button_resume.draw(surface)
             self.button_save.draw(surface)
@@ -62,20 +62,19 @@ class PauseMenu:
     def get_button_clicked(self) -> str:
         if not self.hidden:
             #判定按键
-            for event in controller.events:
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            if controller.get_event("back"):
+                return "break"
+            elif controller.get_event("confirm"):
+                #判定按钮
+                if self.button_resume.is_hover():
                     return "break"
-                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    #判定按钮
-                    if self.button_resume.is_hover():
-                        return "break"
-                    elif self.button_save.is_hover():
-                        return "save"
-                    elif self.button_setting.is_hover():
-                        return "option_menu"
-                    elif self.button_back.is_hover():
-                        set_glob_value("BackToMainMenu",True)
-                        return "back_to_mainMenu"
+                elif self.button_save.is_hover():
+                    return "save"
+                elif self.button_setting.is_hover():
+                    return "option_menu"
+                elif self.button_back.is_hover():
+                    set_glob_value("BackToMainMenu",True)
+                    return "back_to_mainMenu"
         return ""
 
 #设置UI
@@ -89,10 +88,7 @@ class OptionMenu(AbstractImage):
         else:
             baseImg = new_surface((width,height)).convert()
             baseImg.fill((255,255,255))
-            pygame.draw.rect(
-                baseImg, get_color_rbga("gray"),
-                pygame.Rect(width*0.05,height*0.05,width*0.9,height*0.9)
-                )
+            draw_rect(baseImg, get_color_rbga("gray"), Shape(width*0.05,height*0.05,width*0.9,height*0.9))
         super().__init__(baseImg,x,y,width,height)
         #默认隐藏
         self.hidden = True
@@ -225,7 +221,7 @@ class OptionMenu(AbstractImage):
                     if -self.__item_height/2<mouse_y-self.bar_y1<self.__item_height*1.5:
                         self.soundVolume_background_music = round(100*(mouse_x-self.bar_x)/self.bar_width)
                         set_setting("Sound","background_music",self.soundVolume_background_music)
-                        pygame.mixer.music.set_volume(self.soundVolume_background_music/100.0)
+                        set_music_volume(self.soundVolume_background_music/100.0)
                         self.need_update["volume"] = True
                     #如果碰到音效的音量条
                     elif -self.__item_height/2<mouse_y-self.bar_y2<self.__item_height*1.5:

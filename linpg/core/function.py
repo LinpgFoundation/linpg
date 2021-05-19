@@ -12,7 +12,7 @@ def load_image(
     ifConvertAlpha: bool = True
     ) -> Image:
     return Image(
-        imgLoadFunction(path, ifConvertAlpha),
+        quickly_load_img(path, ifConvertAlpha),
         position[0],
         position[1],
         int(width),
@@ -30,7 +30,7 @@ def load_static_image(
     ifConvertAlpha: bool = True
     ) -> StaticImage:
     return StaticImage(
-        imgLoadFunction(path, ifConvertAlpha),
+        quickly_load_img(path, ifConvertAlpha),
         position[0],
         position[1],
         int(width),
@@ -50,7 +50,7 @@ def load_dynamic_image(
     ifConvertAlpha: bool = True
     ) -> DynamicImage:
     return DynamicImage(
-        imgLoadFunction(path,ifConvertAlpha),
+        quickly_load_img(path,ifConvertAlpha),
         position[0],
         position[1],
         target_position[0],
@@ -150,7 +150,7 @@ def load_button_with_text_in_center(
     return load_button(img, position, img.get_size(), alpha_when_not_hover)
 
 #获取特定颜色的表面
-def get_single_color_surface(color, size=None) -> ImageSurface:
+def get_single_color_surface(color, size=None) -> Image:
     # 如果size是none，则使用屏幕的尺寸
     if size is None: size = display.get_size()
     # 获取surface
@@ -171,33 +171,3 @@ def is_hover(
         return imgObject.is_hover((mouse_x - local_x, mouse_y - local_y))
     else:
         return is_hover_pygame_object(imgObject, objectPos, local_x, local_y)
-
-# 转换pygame的rect类至linpg引擎的shape类
-def convert_to_shape(rect: Union[Shape, pygame.Rect]) -> Shape:
-    #确认是pygame.Rect类再转换
-    if isinstance(rect, pygame.Rect):
-        return Shape(rect.x, rect.y, rect.width, rect.height)
-    #如果是Shape类，则没必要转换
-    elif isinstance(rect, Shape):
-        return rect
-    else:
-        throw_exception("error", 'The rect has to be "pygame.Rect" or at least "linpg.Shape", not "{}".'.format(type(rect)))
-
-# 转换linpg引擎的shape类至pygame的rect类
-def convert_to_rect(shape: Union[Shape, pygame.Rect]) -> pygame.Rect:
-    #确认是pygame.Rect类再转换
-    if isinstance(shape, pygame.Rect):
-        return shape
-    #如果是Shape类，则没必要转换
-    elif isinstance(shape, Shape):
-        return pygame.Rect(shape.left, shape.top, shape.width, shape.height)
-    else:
-        throw_exception("error", 'The shape has to be "linpg.Shape" or at least "pygame.Rect", not "{}".'.format(type(shape)))
-
-# 是否形状一样
-def is_same_shape(rect1: Union[Shape, pygame.Rect], rect2: Union[Shape, pygame.Rect]) -> bool:
-    return rect1.x == rect2.x and rect1.y == rect2.y and rect1.width == rect2.width and rect1.height == rect2.height
-
-# 画正方形（的方块）
-def draw_rect(surface:ImageSurface, color:any, rect:Union[pygame.Rect, Shape], width:int=0) -> None:
-    pygame.draw.rect(surface, color, convert_to_rect(rect), width)

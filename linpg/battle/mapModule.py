@@ -14,8 +14,7 @@ class EnvImagesManagement:
         self.__DECORATION_IMAGE_DICT_DARK:dict = None if not darkMode else {}
         #背景图片
         self.__BACKGROUND_IMAGE_PATH:str = "Assets/image/dialog_background"
-        self.__BACKGROUND_IMAGE:ImageSurface =\
-            pygame.image.load(os.path.join(self.__BACKGROUND_IMAGE_PATH,bgImgName)).convert() if bgImgName is not None else None
+        self.__BACKGROUND_IMAGE:ImageSurface = quickly_load_img(os.path.join(self.__BACKGROUND_IMAGE_PATH,bgImgName), False).convert() if bgImgName is not None else None
         #背景图层
         self.__BACKGROUND_SURFACE = None
         self.__MAP_SURFACE = None

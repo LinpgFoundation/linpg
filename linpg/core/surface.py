@@ -1,25 +1,5 @@
 # cython: language_level=3
-from ..api import *
-
-#与pygame.Rect类似的形状类
-class Shape(GameObject2d):
-    def __init__(self, left:Union[int,float], top:Union[int,float], width:int, height:int):
-        super().__init__(left,top)
-        self._width:int = int(width)
-        self._height:int = int(height)
-    #宽度
-    def get_width(self) -> int: return self._width
-    def set_width(self, value:Union[int,float]) -> None: self._width = int(value)
-    #高度
-    def get_height(self) -> int: return self._height
-    def set_height(self, value:Union[int,float]) -> None: self._height = int(value)
-    #尺寸
-    def set_size(self, width:Union[int,float], height:Union[int,float]) -> None:
-        self.set_width(width)
-        self.set_height(height)
-    #画出轮廓
-    def draw_outline(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0), color:str="red", line_width:int=2) -> None:
-        pygame.draw.rect(surface,get_color_rbga(color),pygame.Rect(add_pos(self.pos,offSet),self.size),line_width)
+from .shape import *
 
 #图形接口
 class AbstractImage(Shape):
@@ -96,8 +76,8 @@ class StaticImage(AdvancedAbstractImage):
     @property
     def crop_rect(self) -> object: return self.__crop_rect
     def get_crop_rect(self) -> object: return self.__crop_rect
-    def set_crop_rect(self, rect:Union[pygame.Rect, Shape, None]) -> None:
-        if rect is None or isinstance(rect,(pygame.Rect,Shape)):
+    def set_crop_rect(self, rect:Union[ShapeRect, Shape, None]) -> None:
+        if rect is None or isinstance(rect, (ShapeRect, Shape)):
             if self.__crop_rect != rect:
                 self.__crop_rect = rect
                 self.__need_update = True
@@ -135,7 +115,7 @@ class StaticImage(AdvancedAbstractImage):
         if self.__is_flipped: self.flip()
     #画出轮廓
     def draw_outline(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0), color:any="red", line_width:int=2) -> None:
-        pygame.draw.rect(surface,get_color_rbga(color),pygame.Rect(add_pos(self.abs_pos,offSet),self.img.get_size()),line_width)
+        draw_rect(surface, get_color_rbga(color), (add_pos(self.abs_pos,offSet), self.img.get_size()), line_width)
     #是否被鼠标触碰
     def is_hover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
         if mouse_pos == (-1,-1): mouse_pos = controller.get_mouse_pos()
@@ -149,10 +129,10 @@ class StaticImage(AdvancedAbstractImage):
     def light_copy(self): return StaticImage(self.img_original,self.x,self.y,self._width,self._height)
     #加暗度
     def add_darkness(self, value:int) -> None:
-        self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_SUB)
+        self.img_original = add_darkness(self.img_original, value)
         self.__need_update = True
     def subtract_darkness(self, value:int) -> None:
-        self.img_original.fill((value, value, value),special_flags=pygame.BLEND_RGB_ADD)
+        self.img_original = subtract_darkness(self.img_original, value)
         self.__need_update = True
     #展示
     def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
@@ -180,7 +160,7 @@ class Image(AbstractImage):
         return replica
     #更新图片
     def update(self, img_path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> None:
-        self.img = imgLoadFunction(img_path,ifConvertAlpha)
+        self.img = quickly_load_img(img_path,ifConvertAlpha)
     def drawOnTheCenterOf(self, surface:ImageSurface) -> None:
         surface.blit(resize_img(self.img,self.size),((surface.get_width()-self._width)/2,(surface.get_height()-self._height)/2))
     def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:

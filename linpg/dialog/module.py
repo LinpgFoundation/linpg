@@ -324,7 +324,7 @@ class DialogContent(AbstractDialog):
     def render_font(self, txt:str, color:tuple) -> ImageSurface: return self.FONT.render(txt,get_antialias(),color)
     #如果音效还在播放则停止播放文字音效
     def stop_playing_text_sound(self) -> None:
-        if pygame.mixer.get_busy() and self.__textPlayingSound is not None: self.__textPlayingSound.stop()
+        if is_any_sound_playing() and self.__textPlayingSound is not None: self.__textPlayingSound.stop()
     def draw(self, surface:ImageSurface) -> None:
         if not self.hidden:
             if not self.__fade_out_stage:
@@ -381,12 +381,12 @@ class DialogContent(AbstractDialog):
             )
         #如果当前行的字符还没有完全播出
         if self.textIndex < len(self.content[self.displayedLine]):
-            if not pygame.mixer.get_busy() and self.__textPlayingSound is not None:
+            if not is_any_sound_playing() and self.__textPlayingSound is not None:
                 self.__textPlayingSound.play()
             self.textIndex +=1
         #当前行的所有字都播出后，播出下一行
         elif self.displayedLine < len(self.content)-1:
-            if not pygame.mixer.get_busy() and self.__textPlayingSound is not None:
+            if not is_any_sound_playing() and self.__textPlayingSound is not None:
                 self.__textPlayingSound.play()
             self.textIndex = 1
             self.displayedLine += 1

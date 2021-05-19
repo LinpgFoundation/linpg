@@ -3,48 +3,46 @@ from .typing import *
 #python本体库
 import random, re
 from typing import List
+#第三方库
 import numpy
+from pygame.colordict import THECOLORS
 
 """加载"""
-#识别图片模块，用于引擎内加载图片，十分不建议在本文件外调用
-def imgLoadFunction(path:Union[str,ImageSurface], ifConvertAlpha:bool) -> ImageSurface:
-    if isinstance(path,ImageSurface):
+#识快速加载图片
+def quickly_load_img(path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> ImageSurface:
+    if isinstance(path, ImageSurface):
         return path
-    elif isinstance(path,str):
-        if not ifConvertAlpha:
-            try:
-                return pygame.image.load(os.path.join(path))
-            except:
-                throw_exception("error",'Cannot load image from path: {}'.format(path))
-        else:
+    elif isinstance(path, str):
+        if ifConvertAlpha is True:
             try:
                 return pygame.image.load(os.path.join(path)).convert_alpha()
             except:
-                throw_exception("error",'Cannot load image from path: {}'.format(path))
+                if get_setting("DeveloperMode") is True: 
+                    throw_exception("error",'Cannot load image from path: {}'.format(path))
+                else:
+                    return get_texture_missing_surface()
+        else:
+            try:
+                return pygame.image.load(os.path.join(path))
+            except:
+                if get_setting("DeveloperMode") is True:
+                    throw_exception("error",'Cannot load image from path: {}'.format(path))
+                else:
+                    return get_texture_missing_surface()
     else:
         throw_exception("error","The path '{}' has to be a string or at least a ImageSurface!".format(path))
 
 #图片加载模块：接收图片路径,长,高,返回对应图片
 def load_img(path:Union[str,ImageSurface], size:Union[tuple,list]=tuple(), alpha:int=255, ifConvertAlpha:bool=True) -> ImageSurface:
     #加载图片
-    img = imgLoadFunction(path,ifConvertAlpha)
+    img = quickly_load_img(path,ifConvertAlpha)
     #根据参数编辑图片
     if alpha != 255: img.set_alpha(alpha)
     #如果没有给size,则直接返回Surface
-    return img if len(size) == 0 else smoothly_resize_img(img, size)
-
-#快速加载图片
-def quickly_load_img(path:Union[str,ImageSurface], size:Union[tuple,list]=tuple()) -> ImageSurface:
-    #加载图片
-    img = imgLoadFunction(path)
-    #如果没有给size,则直接返回Surface
-    return img if len(size) == 0 else resize_img(img, size)
-
-#加载音效
-def load_sound(path:str, volume:float=1.0) -> pygame.mixer.Sound:
-    soundTmp:object = pygame.mixer.Sound(path)
-    if volume != 1.0: soundTmp.set_volume(volume)
-    return soundTmp
+    if len(size) == 0:
+        return img
+    else:
+        return smoothly_resize_img(img, size) if get_antialias() is True else resize_img(img, size)
 
 #加载路径下的所有图片，储存到一个list当中，然后返回
 def load_img_in_folder(pathRule:str, size:Union[tuple,list]=tuple()) -> List[ImageSurface]:
@@ -57,6 +55,17 @@ def new_surface(size:Union[tuple,list], surface_flags:any=None) -> ImageSurface:
 #获取透明的Surface
 def new_transparent_surface(size:Union[tuple,list]) -> ImageSurface:
     return new_surface(size, pygame.SRCALPHA).convert_alpha()
+
+#获取材质缺失的临时警示材质
+def get_texture_missing_surface(size:Union[tuple,list]) -> ImageSurface:
+    texture_missing_surface:ImageSurface = new_surface(size).convert()
+    texture_missing_surface.fill(get_color_rbga("black"))
+    half_width:int = int(size[0]/2)
+    half_height:int = int(size[1]/2)
+    purple_color_rbga:tuple = get_color_rbga("purple")
+    pygame.draw.rect(texture_missing_surface, purple_color_rbga, pygame.Rect(half_width,0,texture_missing_surface.get_width()-half_width,half_height))
+    pygame.draw.rect(texture_missing_surface, purple_color_rbga, pygame.Rect(0,half_height,half_width,texture_missing_surface.get_height-half_height))
+    return texture_missing_surface
 
 """处理"""
 #重新编辑尺寸
@@ -171,11 +180,6 @@ def display_within_center(item1:ImageSurface, item2:ImageSurface, x:Union[int,fl
 #字典合并
 def merge_dict(dict1:dict, dict2:dict) -> dict: return {**dict1, **dict2}
 
-#关闭背景音乐
-def unload_all_music() -> None:
-    pygame.mixer.music.unload()
-    pygame.mixer.stop()
-
 #随机数
 def get_random_int(start:int, end:int) -> int: return random.randint(start, end)
 
@@ -243,3 +247,26 @@ def convert_percentage(percentage:Union[str,float]) -> float:
         return percentage
     else:
         throw_exception("error", '"{}" is not a valid percentage that can be converted'.format(percentage))
+
+#给定一个颜色的名字，返回对应的RGB列表
+def get_color_rbga(color:Union[str,tuple,list]) -> tuple:
+    if isinstance(color,(tuple,list)):
+        return color
+    elif isinstance(color,(str)):
+        if color == "gray" or color == "grey" or color == "disable":
+            return (105, 105, 105, 255)
+        elif color == "white" or color == "enable":
+            return (255, 255, 255, 255)
+        else:
+            try:
+                return THECOLORS[color]
+            except KeyError:
+                throw_exception("error","This color is currently not available!")
+    else:
+        throw_exception(
+            "error",
+            "The color has to be a string, tuple or list! As a result, {0} (type:{1}) is not acceptable!".format(color,type(color))
+            )
+
+#获取帧数控制器
+def get_clock() -> pygame.time.Clock: return pygame.time.Clock()

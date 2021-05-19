@@ -150,19 +150,14 @@ reload_setting()
 """重要参数"""
 #获取抗锯齿参数
 def get_antialias() -> bool: return True if _LINPG_SETTING["Antialias"] is True else False
-
 #获取文字信息
 def get_font() -> str: return _LINPG_SETTING["Font"]
-
 #设置文字信息
 def set_font(value:str) -> None: _LINPG_SETTING["Font"] = value
-
 #获取文字类型
 def get_font_type() -> str: return _LINPG_SETTING["FontType"]
-
 #设置文字类型
 def set_font_type(value:str) -> None: _LINPG_SETTING["FontType"] = value
-
 #获取文字的具体信息
 def get_font_details() -> tuple: return get_font(), get_font_type(), get_antialias()
 

@@ -36,11 +36,11 @@ class EntityDynamicProgressBarSurface(DynamicProgressBarSurface):
     def load_image(self):
         global _BEING_NOTICED_IMG,_FULLY_EXPOSED_IMG,_ORANGE_VIGILANCE_IMG,_RED_VIGILANCE_IMG
         #被察觉图标
-        if _BEING_NOTICED_IMG is None: _BEING_NOTICED_IMG = imgLoadFunction("Assets/image/UI/eye_orange.png",True)
-        if _FULLY_EXPOSED_IMG is None: _FULLY_EXPOSED_IMG = imgLoadFunction("Assets/image/UI/eye_red.png",True)
+        if _BEING_NOTICED_IMG is None: _BEING_NOTICED_IMG = quickly_load_img(r"Assets/image/UI/eye_orange.png")
+        if _FULLY_EXPOSED_IMG is None: _FULLY_EXPOSED_IMG = quickly_load_img(r"Assets/image/UI/eye_red.png")
         #警觉图标
-        if _ORANGE_VIGILANCE_IMG is None: _ORANGE_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_orange.png",True)
-        if _RED_VIGILANCE_IMG is None: _RED_VIGILANCE_IMG = imgLoadFunction("Assets/image/UI/vigilance_red.png",True)
+        if _ORANGE_VIGILANCE_IMG is None: _ORANGE_VIGILANCE_IMG = quickly_load_img(r"Assets/image/UI/vigilance_orange.png")
+        if _RED_VIGILANCE_IMG is None: _RED_VIGILANCE_IMG = quickly_load_img(r"Assets/image/UI/vigilance_red.png")
     def draw(self, surface:ImageSurface, isFriendlyCharacter:bool=True) -> None:
         global _BEING_NOTICED_IMG,_FULLY_EXPOSED_IMG,_ORANGE_VIGILANCE_IMG,_RED_VIGILANCE_IMG
         if not isFriendlyCharacter:
@@ -87,9 +87,9 @@ class EntityHpBar(DynamicProgressBarSurface):
     #检测被察觉的图标是否生产，如果没有则生成
     def load_image(self):
         global _HP_GREEN_IMG,_HP_RED_IMG,_HP_EMPTY_IMG
-        if _HP_GREEN_IMG is None: _HP_GREEN_IMG = imgLoadFunction("Assets/image/UI/hp_green.png",True)
-        if _HP_RED_IMG is None: _HP_RED_IMG = imgLoadFunction("Assets/image/UI/hp_red.png",True)
-        if  _HP_EMPTY_IMG is None: _HP_EMPTY_IMG = imgLoadFunction("Assets/image/UI/hp_empty.png",True)
+        if _HP_GREEN_IMG is None: _HP_GREEN_IMG = quickly_load_img(r"Assets/image/UI/hp_green.png")
+        if _HP_RED_IMG is None: _HP_RED_IMG = quickly_load_img(r"Assets/image/UI/hp_red.png")
+        if  _HP_EMPTY_IMG is None: _HP_EMPTY_IMG = quickly_load_img(r"Assets/image/UI/hp_empty.png")
     def draw(self, surface:ImageSurface, isDying:bool) -> None:
         global _HP_GREEN_IMG,_HP_RED_IMG,_HP_EMPTY_IMG
         surface.blit(resize_img(_HP_EMPTY_IMG,self.size),self.pos)
@@ -151,7 +151,7 @@ class EntitySoundManager(AbstractEntitySoundManager):
                 else:
                     sound = sound_list[0]
                 sound.set_volume(get_setting("Sound","sound_effects")/100.0)
-                pygame.mixer.Channel(self._channel_id).play(sound)
+                play_sound(sound, self._channel_id)
 
 #射击音效 -- 频道2
 class AttackingSoundManager(AbstractEntitySoundManager):
@@ -177,7 +177,7 @@ class AttackingSoundManager(AbstractEntitySoundManager):
     #播放
     def play(self, kind:str) -> None:
         if kind in self._sounds_dict:
-            pygame.mixer.Channel(self._channel_id).play(self._sounds_dict[kind][get_random_int(0,len(self._sounds_dict[kind])-1)])
+            play_sound(self._sounds_dict[kind][get_random_int(0,len(self._sounds_dict[kind])-1)], self._channel_id)
 
 #计算最远攻击距离
 def calculate_range(effective_range_dic:dict) -> int:

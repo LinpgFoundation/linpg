@@ -92,7 +92,7 @@ class DropDownSingleChoiceList(GameObjectContainer):
             if self.img is not None:
                 self.img.display(surface, current_abs_pos)
             else:
-                pygame.draw.rect(surface, get_color_rbga("white"), pygame.Rect(current_abs_pos,self.size))
+                draw_rect(surface, get_color_rbga("white"), (current_abs_pos,self.size))
             #列出当前选中的选项
             current_pos:tuple = current_abs_pos
             font_surface:ImageSurface = cope_bounding(self.__FONT.render(self.get_current_selected_item(), get_antialias(), self.__font_color))

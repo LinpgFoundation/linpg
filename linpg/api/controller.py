@@ -44,25 +44,42 @@ class GameController:
         self.mouse_y:int = 0
         self.mouse_moving_speed:Union[int,float] = speed
         #输入事件
-        self.__INPUT_EVENTS:list = pygame.event.get()
-        """常见事件"""
-        #是否有确认事件
-        self.__confirm_event:int = 0
-        #是否有返回事件
-        self.__back_event:int = 0
+        self.__INPUT_EVENTS:list = []
+        #检测特定事件
+        self.__specific_events = {
+            #是否有确认事件
+            "confirm": False,
+            #是否有返回事件
+            "back": False,
+            #鼠标滚轮
+            "scroll_up": False,
+            "scroll_down": False,
+            "previous": False
+        }
     #更新输入事件
     def __update_input_events(self) -> None:
         self.joystick.update_device()
         self.__INPUT_EVENTS = pygame.event.get()
         #重设用于判断常见事件的参数
-        self.__confirm_event = 0
-        self.__back_event = 0
+        for key in self.__specific_events:
+            self.__specific_events[key] = False
         for event in self.__INPUT_EVENTS:
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 or \
-                event.type == pygame.JOYBUTTONDOWN and self.joystick.get_button(0) is True:
-                self.__confirm_event = 1
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                self.__back_event = 1
+            if event.type == MOUSE_BUTTON_DOWN:
+                if event.button == 1:
+                    self.__specific_events["confirm"] = True
+                elif event.button == 3:
+                    self.__specific_events["previous"] = True
+                elif event.button == 4:
+                    self.__specific_events["scroll_up"] = True
+                elif event.button == 5:
+                    self.__specific_events["scroll_down"] = True
+            elif event.type == JOYSTICK_BUTTON_DOWN:
+                if self.joystick.get_button(0) is True:
+                    self.__specific_events["confirm"] = True
+                elif self.joystick.get_button(1) is True:
+                    self.__specific_events["previous"] = True
+            elif event.type == KEY_DOWN and event.key == KEY_ESCAPE:
+                self.__specific_events["back"] = True
         #更新鼠标坐标
         self.mouse_x,self.mouse_y = pygame.mouse.get_pos()
     #获取输入事件
@@ -71,23 +88,10 @@ class GameController:
     def get_events(self): return self.__INPUT_EVENTS
     #获取单个事件
     def get_event(self, event_type:str) -> bool:
-        if event_type == "confirm":
-            if self.__confirm_event == 1:
-                return True
-            elif self.__confirm_event == 0:
-                return False
-            else:
-                throw_exception("error", "self.__confirm_event in GameController is set to invalid number!")
-        elif event_type == "back":
-            if self.__back_event == 1:
-                return True
-            elif self.__back_event == 0:
-                return False
-            else:
-                throw_exception("error", "self.__back_event in GameController is set to invalid number!")
-        else:
+        try:
+            return self.__specific_events[event_type]
+        except KeyError:
             throw_exception("error", 'The event type "{}" is not supported!'.format(event_type))
-        return False
     #返回鼠标的坐标
     def get_mouse_pos(self) -> tuple: return self.mouse_x,self.mouse_y
     #是否鼠标按钮被点击
@@ -112,7 +116,7 @@ controller:GameController = GameController(get_setting("MouseIconWidth"),get_set
 class DisplayController:
     def __init__(self, fps:int):
         self.__fps:int = max(int(fps),1)
-        self.__clock:object = pygame.time.Clock()
+        self.__clock:object = get_clock()
         self.__standard_fps:int = 60
         #默认尺寸
         self.__screen_scale:int = keep_in_range(int(get_setting("ScreenScale")),0,100)

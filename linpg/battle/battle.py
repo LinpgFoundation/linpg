@@ -74,17 +74,19 @@ class AbstractBattleSystem(AbstractGameSystem):
             self.__pressKeyToMove["down"] = True if round(controller.joystick.get_axis(4)) == 1 else False
             self.__pressKeyToMove["right"] = True if round(controller.joystick.get_axis(3)) == 1 else False
             self.__pressKeyToMove["left"] = True if round(controller.joystick.get_axis(3)) == -1 else False
+    #检测按下按键的事件
     def _check_key_down(self, event:object) -> None:
-        if event.key == pygame.K_UP: self.__pressKeyToMove["up"] = True
-        if event.key == pygame.K_DOWN: self.__pressKeyToMove["down"] = True
-        if event.key == pygame.K_LEFT: self.__pressKeyToMove["left"] = True
-        if event.key == pygame.K_RIGHT: self.__pressKeyToMove["right"] = True
-        if event.key == pygame.K_p: self.MAP.dev_mode()
+        if event.key == KEY_ARROW_UP: self.__pressKeyToMove["up"] = True
+        elif event.key == KEY_ARROW_DOWN: self.__pressKeyToMove["down"] = True
+        elif event.key == KEY_ARROW_LEFT: self.__pressKeyToMove["left"] = True
+        elif event.key == KEY_ARROW_RIGHT: self.__pressKeyToMove["right"] = True
+        elif event.unicode == "p": self.MAP.dev_mode()
+    #检测按键回弹的事件
     def _check_key_up(self, event:object) -> None:
-        if event.key == pygame.K_UP: self.__pressKeyToMove["up"] = False
-        if event.key == pygame.K_DOWN: self.__pressKeyToMove["down"] = False
-        if event.key == pygame.K_LEFT: self.__pressKeyToMove["left"] = False
-        if event.key == pygame.K_RIGHT: self.__pressKeyToMove["right"] = False
+        if event.key == KEY_ARROW_UP: self.__pressKeyToMove["up"] = False
+        elif event.key == KEY_ARROW_DOWN: self.__pressKeyToMove["down"] = False
+        elif event.key == KEY_ARROW_LEFT: self.__pressKeyToMove["left"] = False
+        elif event.key == KEY_ARROW_RIGHT: self.__pressKeyToMove["right"] = False
     #根据鼠标移动屏幕
     def _check_right_click_move(self, mouse_x:int, mouse_y:int) -> None:
         if controller.mouse_get_press(2):

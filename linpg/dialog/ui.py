@@ -293,11 +293,11 @@ class LeaveWithoutSavingWarning(AbstractImage):
             self.__text_2.display(surface,pos)
             """按钮"""
             #保存
-            if is_hover(self.save_button, local_x=pos[0], local_y=pos[1]): self.__button_hovered = 1
+            if is_hover(self.save_button, off_set_x=pos[0], off_set_y=pos[1]): self.__button_hovered = 1
             self.save_button.display(surface,pos)
             #取消
-            if is_hover(self.cancel_button, local_x=pos[0], local_y=pos[1]): self.__button_hovered = 2
+            if is_hover(self.cancel_button, off_set_x=pos[0], off_set_y=pos[1]): self.__button_hovered = 2
             self.cancel_button.display(surface,pos)
             #不要保存
-            if is_hover(self.dont_save_button, local_x=pos[0], local_y=pos[1]): self.__button_hovered = 3
+            if is_hover(self.dont_save_button, off_set_x=pos[0], off_set_y=pos[1]): self.__button_hovered = 3
             self.dont_save_button.display(surface,pos)

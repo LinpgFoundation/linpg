@@ -21,6 +21,9 @@ class Shape(GameObject2d):
     def draw_outline(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0), color:str="red", line_width:int=2) -> None:
         draw_rect(surface, get_color_rbga(color), pygame.Rect(add_pos(self.pos,offSet),self.size), line_width)
 
+#新建一个形状类
+def new_shape(pos:tuple, size:tuple) -> Shape: return Shape(pos[0], pos[1], size[0], size[1])
+
 ShapeLiked = Union[Shape, ShapeRect, tuple]
 
 # 转换pygame的rect类至linpg引擎的shape类
@@ -72,3 +75,21 @@ def is_same_shape(rect1: ShapeLiked, rect2: ShapeLiked) -> bool:
 # 画正方形（的方块）
 def draw_rect(surface:ImageSurface, color:any, rect:ShapeLiked, width:int=0) -> None:
     pygame.draw.rect(surface, color, convert_to_rect(rect), width)
+
+# 画圆形
+def draw_circle(surface:ImageSurface, color:any, center_pos:tuple, width:int=0):
+    pygame.draw.circle(surface, color, center_pos, width)
+
+# 检测图片是否被点击
+def is_hover(
+    imgObject: object,
+    objectPos: Union[tuple, list] = (0, 0),
+    off_set_x: Union[int, float] = 0,
+    off_set_y: Union[int, float] = 0
+    ) -> bool:
+    mouse_x, mouse_y = controller.get_mouse_pos()
+    # 如果是Linpg引擎的GameObject2d类(所有2d物品的父类)
+    if isinstance(imgObject, GameObject2d):
+        return imgObject.is_hover((mouse_x - off_set_x, mouse_y - off_set_y))
+    else:
+        return is_hover_pygame_object(imgObject, objectPos, off_set_x, off_set_y)

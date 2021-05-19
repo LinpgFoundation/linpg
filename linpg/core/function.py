@@ -157,17 +157,3 @@ def get_single_color_surface(color, size=None) -> Image:
     surfaceTmp = new_surface(size).convert()
     surfaceTmp.fill(color)
     return Image(surfaceTmp, 0, 0, size[0], size[1])
-
-# 检测图片是否被点击
-def is_hover(
-    imgObject: object,
-    objectPos: Union[tuple, list] = (0, 0),
-    local_x: Union[int, float] = 0,
-    local_y: Union[int, float] = 0
-    ) -> bool:
-    mouse_x, mouse_y = controller.get_mouse_pos()
-    # 如果是Linpg引擎的GameObject2d类(所有2d物品的父类)
-    if isinstance(imgObject, GameObject2d):
-        return imgObject.is_hover((mouse_x - local_x, mouse_y - local_y))
-    else:
-        return is_hover_pygame_object(imgObject, objectPos, local_x, local_y)

@@ -100,17 +100,17 @@ class DropDownSingleChoiceList(GameObjectContainer):
                 font_surface,
                 add_pos(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))
                 )
-            rect_of_outline:pygame.Rect = pygame.Rect(current_pos, (self.width, self.__block_height))
-            pygame.draw.rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
-            font_surface = pygame.transform.flip(cope_bounding(self.__FONT.render("^", get_antialias(), self.__font_color)), False, True)
+            rect_of_outline = new_shape(current_pos, (self.width, self.__block_height))
+            draw_rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
+            font_surface = flip_img(cope_bounding(self.__FONT.render("^", get_antialias(), self.__font_color)), False, True)
             surface.blit(
                 font_surface,
                 add_pos(current_pos, (int(self.width-font_surface.get_width()*1.5), int((self.__block_height-font_surface.get_height())/2)))
                 )
             if controller.get_event("confirm"):
-                if is_hover_pygame_object(rect_of_outline):
+                if is_hover(rect_of_outline):
                     self.__fold_choice = not self.__fold_choice
-                elif not self.__fold_choice and not is_hover_pygame_object(pygame.Rect(current_abs_pos,self.size)):
+                elif not self.__fold_choice and not is_hover(new_shape(current_abs_pos, self.size)):
                     self.__fold_choice = True
             #列出选择
             if not self.__fold_choice:
@@ -121,9 +121,9 @@ class DropDownSingleChoiceList(GameObjectContainer):
                         font_surface,
                         add_pos(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))
                     )
-                    rect_of_outline = pygame.Rect(current_pos, (self.width, self.__block_height))
-                    pygame.draw.rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
-                    if is_hover_pygame_object(rect_of_outline) and controller.mouse_get_press(0): self.chosen_id = i
+                    rect_of_outline = new_shape(current_pos, (self.width, self.__block_height))
+                    draw_rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
+                    if is_hover(rect_of_outline) and controller.mouse_get_press(0): self.chosen_id = i
                     if i != self.chosen_id:
                         pygame.draw.circle(surface, self.__font_color, add_pos(current_pos,(self.width*0.1, self.__block_height/2)), 3, self.outline_thickness)
                     else:
@@ -213,15 +213,15 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
     @property
     def current_hovered_item(self) -> Union[str,int,None]: return self.__current_hovered_item
     #获取滚动条按钮的Rect
-    def __get_scroll_button_rect(self, off_set_x:Union[int,float], off_set_y:Union[int,float]) -> Union[pygame.Rect,None]:
+    def __get_scroll_button_rect(self, off_set_x:Union[int, float], off_set_y:Union[int, float]) -> Union[Shape, None]:
         if not self.__mode:
             if self.__total_height > self._height:
-                return pygame.Rect(
+                return Shape(
                     int(self.x+self._local_x+off_set_x),
                     int(self.y-self._height*self._local_y/self.__total_height+off_set_y),
                     self.button_tickness,
                     int(self._height*self._height/self.__total_height)
-                    ) if self.__scroll_bar_pos is True else pygame.Rect(
+                    ) if self.__scroll_bar_pos is True else Shape(
                         int(self.x+self._local_x+self._width-self.button_tickness+off_set_x),
                         int(self.y-self._height*self._local_y/self.__total_height+off_set_y),
                         self.button_tickness,
@@ -229,12 +229,12 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                         )
         else:
             if self.__total_width > self._width:
-                return pygame.Rect(
+                return Shape(
                     int(self.x-self._width*self._local_x/self.__total_width+off_set_x),
                     int(self.y+self._local_y+off_set_y),
                     int(self._width*self._width/self.__total_width),
                     self.button_tickness
-                    ) if self.__scroll_bar_pos is True else pygame.Rect(
+                    ) if self.__scroll_bar_pos is True else Shape(
                         int(self.x-self._width*self._local_x/self.__total_width+off_set_x),
                         int(self.y+self._local_y+self._height-self.button_tickness+off_set_y),
                         int(self._width*self._width/self.__total_width),
@@ -242,20 +242,20 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                         )
         return None
     #获取滚动条的Rect
-    def __get_scroll_bar_rect(self, off_set_x:Union[int,float], off_set_y:Union[int,float]) -> Union[pygame.Rect,None]:
+    def __get_scroll_bar_rect(self, off_set_x:Union[int,float], off_set_y:Union[int,float]) -> Union[Shape, None]:
         if not self.__mode:
             if self.__total_height > self._height:
-                return pygame.Rect(
+                return Shape(
                     int(self.x+self._local_x+off_set_x), int(self.y+off_set_y), self.button_tickness, self._height
-                    ) if self.__scroll_bar_pos is True else pygame.Rect(
+                    ) if self.__scroll_bar_pos is True else Shape(
                         int(self.x+self._local_x+self._width-self.button_tickness+off_set_x), int(self.y+off_set_y),
                         self.button_tickness, self._height
                         )
         else:
             if self.__total_width > self._width:
-                return pygame.Rect(
+                return Shape(
                     int(self.x+off_set_x), int(self.y+self._local_y+off_set_y), self._width, self.button_tickness
-                    ) if self.__scroll_bar_pos is True else pygame.Rect(
+                    ) if self.__scroll_bar_pos is True else Shape(
                         int(self.x+off_set_x), int(self.y+self._local_y+self._height-self.button_tickness+off_set_y),
                         self._width, self.button_tickness
                         )
@@ -282,7 +282,6 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
             #定义部分用到的变量
             abs_local_y:int; crop_height:int; new_height:int
             abs_local_x:int; crop_width:int; new_width:int
-            subsurface_rect:pygame.Rect
             item_has_been_dawn_on_this_line:int = 0
             #画出物品栏里的图片
             for key,item in self.__items_dict.items():
@@ -298,7 +297,7 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                                 new_width = self._width
                             subsurface_rect = pygame.Rect(0,0,new_width,new_height)
                             surface.blit(item.subsurface(subsurface_rect),(current_x,current_y))
-                            if is_hover_pygame_object(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
+                            if is_hover(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
                                 self.__current_hovered_item = key
                         elif -(item.get_height()) <= abs_local_y < 0:
                             crop_height = -abs_local_y
@@ -310,7 +309,7 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                                 new_width = self._width
                             subsurface_rect = pygame.Rect(0,crop_height,new_width,new_height)
                             surface.blit(item.subsurface(subsurface_rect),(current_x,current_y+crop_height))
-                            if is_hover_pygame_object(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
+                            if is_hover(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
                                 self.__current_hovered_item = key
                         #换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line-1:
@@ -331,7 +330,7 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                                 new_height = self._height
                             subsurface_rect = pygame.Rect(0,0,new_width,new_height)
                             surface.blit(item.subsurface(subsurface_rect),(current_x,current_y))
-                            if is_hover_pygame_object(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
+                            if is_hover(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
                                 self.__current_hovered_item = key
                         elif -(item.get_width()) <= abs_local_x < 0:
                             crop_width = -abs_local_x
@@ -343,7 +342,7 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                                 new_height = self._height
                             subsurface_rect = pygame.Rect(crop_width,0,new_width,new_height)
                             surface.blit(item.subsurface(subsurface_rect),(current_x+crop_width,current_y))
-                            if is_hover_pygame_object(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
+                            if is_hover(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
                                 self.__current_hovered_item = key
                         #换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line-1:
@@ -369,12 +368,12 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                 if not self.__mode and self.__total_height > self._height or self.__mode is True and self.__total_width > self._width:
                     #查看与鼠标有关的事件
                     for event in controller.events:
-                        if event.type == pygame.MOUSEBUTTONDOWN:
+                        if event.type == MOUSE_BUTTON_DOWN:
                             if event.button == 1:
                                 scroll_bar_rect = self.__get_scroll_bar_rect(off_set[0],off_set[1])
-                                if scroll_bar_rect is not None and is_hover_pygame_object(scroll_bar_rect):
+                                if scroll_bar_rect is not None and is_hover(scroll_bar_rect):
                                     scroll_button_rect = self.__get_scroll_button_rect(off_set[0],off_set[1])
-                                    if is_hover_pygame_object(scroll_button_rect):
+                                    if is_hover(scroll_button_rect):
                                         if not self.__is_holding_scroll_button:
                                             self.__is_holding_scroll_button = True
                                             self.__mouse_x_last,self.__mouse_y_last = controller.get_mouse_pos()
@@ -399,7 +398,7 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                                     self._local_y -= self.move_speed
                                 else:
                                     self._local_x += self.move_speed
-                        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                        elif event.type == MOUSE_BUTTON_UP and event.button == 1:
                             self.__is_holding_scroll_button = False
                 else:
                     self.__is_holding_scroll_button = False
@@ -430,6 +429,6 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
             
             #画出滚动条
             scroll_button_rect = self.__get_scroll_button_rect(off_set[0],off_set[1])
-            if scroll_button_rect is not None: pygame.draw.rect(surface,get_color_rbga("white"),scroll_button_rect)
+            if scroll_button_rect is not None: draw_rect(surface,get_color_rbga("white"),scroll_button_rect)
             scroll_bar_rect = self.__get_scroll_bar_rect(off_set[0],off_set[1])
-            if scroll_bar_rect is not None: pygame.draw.rect(surface,get_color_rbga("white"),scroll_bar_rect,2)
+            if scroll_bar_rect is not None: draw_rect(surface,get_color_rbga("white"),scroll_bar_rect,2)

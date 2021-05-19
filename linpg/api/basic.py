@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .typing import *
+from .key import *
 #python本体库
 import random, re
 from typing import List

@@ -2,7 +2,7 @@
 from .shape import *
 
 #图形接口
-class AbstractImage(Shape):
+class AbstractImage(Rect):
     def __init__(self, img:any, x:Union[int,float], y:Union[int,float], width:int, height:int):
         super().__init__(x, y, width, height)
         self.img = img
@@ -76,8 +76,8 @@ class StaticImage(AdvancedAbstractImage):
     @property
     def crop_rect(self) -> object: return self.__crop_rect
     def get_crop_rect(self) -> object: return self.__crop_rect
-    def set_crop_rect(self, rect:Union[ShapeRect, Shape, None]) -> None:
-        if rect is None or isinstance(rect, (ShapeRect, Shape)):
+    def set_crop_rect(self, rect:Union[Rect, None]) -> None:
+        if rect is None or isinstance(rect, Rect):
             if self.__crop_rect != rect:
                 self.__crop_rect = rect
                 self.__need_update = True
@@ -92,7 +92,7 @@ class StaticImage(AdvancedAbstractImage):
         if self.__crop_rect is not None:
             new_x:int = max(rect.x,self.__crop_rect.x)
             new_y:int = max(rect.y,self.__crop_rect.y)
-            rect = Shape(new_x,new_y,min(rect.right,self.__crop_rect.right)-new_x,min(rect.bottom,self.__crop_rect.bottom)-new_y)
+            rect = Rect(new_x,new_y,min(rect.right,self.__crop_rect.right)-new_x,min(rect.bottom,self.__crop_rect.bottom)-new_y)
         self.img = new_transparent_surface(rect.size)
         self.set_local_pos(rect.x,rect.y)
         self.img.blit(imgTmp,(-self._local_x,-self._local_y))

@@ -1,5 +1,16 @@
 # cython: language_level=3
+import threading
 from .mixer import *
+
+#使用多线程保存数据
+class SaveDataThread(threading.Thread):
+    def __init__(self, path:str, data:dict):
+        super().__init__()
+        self.path:str = path
+        self.data:dict = data
+    def run(self) -> None:
+        save_config(self.path,self.data)
+        del self.data,self.path
 
 #系统模块接口
 class AbstractSystem:

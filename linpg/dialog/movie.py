@@ -35,9 +35,9 @@ def split_audio_from_video(moviePath:str, audioType:str="mp3") -> str:
 
 def load_audio_from_video_as_sound(moviePath:str) -> object:
     path = split_audio_from_video(moviePath)
-    PygameAudio = load_sound(path)
+    sound_audio = load_sound(path)
     if not get_setting("KeepVedioCache"): os.remove(path)
-    return PygameAudio
+    return sound_audio
 
 def load_audio_from_video_as_music(moviePath:str) -> bool:
     unload_music()

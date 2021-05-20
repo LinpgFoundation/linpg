@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .function import *
+from .inputbox import *
 
 class Converter:
     def __init__(self) -> None:

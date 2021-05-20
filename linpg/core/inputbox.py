@@ -10,7 +10,7 @@ class AbstractInputBox(GameObject2d):
         self.FONT = create_font(self.FONTSIZE)
         self.default_width = default_width
         self.deafult_height = int(self.FONTSIZE*1.5)
-        self.input_box = Shape(x, y, default_width, self.deafult_height)
+        self.input_box = Rect(x, y, default_width, self.deafult_height)
         self.color = get_color_rbga('lightskyblue3')
         self.txt_color = get_color_rbga(txt_color)
         self.active:bool = False
@@ -26,7 +26,7 @@ class AbstractInputBox(GameObject2d):
         self.FONT = create_font(self.FONTSIZE)
     def set_pos(self, x:Union[int,float], y:Union[int,float]) -> None:
         super().set_pos(x,y)
-        self.input_box = Shape(x, y, self.default_width, self.FONTSIZE*1.5)
+        self.input_box = Rect(x, y, self.default_width, self.FONTSIZE*1.5)
 
 #单行输入框
 class SingleLineInputBox(AbstractInputBox):

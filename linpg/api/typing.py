@@ -10,7 +10,6 @@ pygame.init()
 from ..lang import *
 
 ImageSurface = pygame.Surface
-ShapeRect = pygame.Rect
 
 """指向pygame事件的指针"""
 #鼠标

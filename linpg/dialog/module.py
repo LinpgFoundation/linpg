@@ -76,7 +76,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         super().stop()
     #将背景图片画到surface上
     def display_background_image(self, surface:ImageSurface) -> None:
-        if isinstance(self.__background_image_surface, Shape):
+        if isinstance(self.__background_image_surface, Rect):
             self.__background_image_surface.set_size(surface.get_width(), surface.get_height())
         self.__background_image_surface.draw(surface)
     #把基础内容画到surface上
@@ -100,7 +100,7 @@ class NpcImageManager:
         self.__darkness:int = 50
         self.__img_width:int = int(display.get_width()/2)
         try:
-            self.__communication_surface_rect:object = Shape(int(self.__img_width*0.25),0,int(self.__img_width*0.5),int(self.__img_width*0.56))
+            self.__communication_surface_rect:object = Rect(int(self.__img_width*0.25),0,int(self.__img_width*0.5),int(self.__img_width*0.56))
             self.__communication = StaticImage(
                 os.path.join(DIALOG_UI_PATH,"communication.png"),0,0,self.__communication_surface_rect.width,self.__communication_surface_rect.height
                 )

@@ -88,7 +88,7 @@ class OptionMenu(AbstractImage):
         else:
             baseImg = new_surface((width,height)).convert()
             baseImg.fill((255,255,255))
-            draw_rect(baseImg, get_color_rbga("gray"), Shape(width*0.05,height*0.05,width*0.9,height*0.9))
+            draw_rect(baseImg, get_color_rbga("gray"), Rect(width*0.05, height*0.05, width*0.9, height*0.9))
         super().__init__(baseImg,x,y,width,height)
         #默认隐藏
         self.hidden = True

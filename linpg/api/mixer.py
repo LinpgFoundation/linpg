@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .module import *
+from .controller import *
 
 #音效管理模块接口
 class AbstractSoundManager:

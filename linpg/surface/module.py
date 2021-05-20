@@ -1,6 +1,5 @@
 # cython: language_level=3
-import threading
-from .controller import *
+from ..api import *
 
 #坐标类
 class Coordinate:
@@ -117,16 +116,6 @@ class GameObject3d(GameObject2point5d):
     #设置坐标
     def set_pos(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]) -> None:
         super().set_pos(x,y,z)
-
-#使用多线程保存数据
-class SaveDataThread(threading.Thread):
-    def __init__(self, path:str, data:dict):
-        super().__init__()
-        self.path:str = path
-        self.data:dict = data
-    def run(self) -> None:
-        save_config(self.path,self.data)
-        del self.data,self.path
 
 #将来用来兼容pygame和pyglet图层的模块
 class Image(ImageSurface):

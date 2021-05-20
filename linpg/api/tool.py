@@ -1,6 +1,6 @@
 # cython: language_level=3
 from pygame._sdl2 import Renderer, Window, messagebox
-from .font import *
+from .system import *
 
 #提示窗口
 class Message:

@@ -63,8 +63,12 @@ def get_texture_missing_surface(size:Union[tuple,list]) -> ImageSurface:
     half_width:int = int(size[0]/2)
     half_height:int = int(size[1]/2)
     purple_color_rbga:tuple = get_color_rbga("purple")
-    pygame.draw.rect(texture_missing_surface, purple_color_rbga, pygame.Rect(half_width,0,texture_missing_surface.get_width()-half_width,half_height))
-    pygame.draw.rect(texture_missing_surface, purple_color_rbga, pygame.Rect(0,half_height,half_width,texture_missing_surface.get_height-half_height))
+    pygame.draw.rect(
+        texture_missing_surface, purple_color_rbga, pygame.Rect(half_width, 0, texture_missing_surface.get_width()-half_width, half_height)
+        )
+    pygame.draw.rect(
+        texture_missing_surface, purple_color_rbga, pygame.Rect(0, half_height, half_width, texture_missing_surface.get_height()-half_height)
+        )
     return texture_missing_surface
 
 """处理"""
@@ -249,10 +253,10 @@ def convert_percentage(percentage:Union[str,float]) -> float:
         throw_exception("error", '"{}" is not a valid percentage that can be converted'.format(percentage))
 
 #给定一个颜色的名字，返回对应的RGB列表
-def get_color_rbga(color:Union[str,tuple,list]) -> tuple:
-    if isinstance(color,(tuple,list)):
+def get_color_rbga(color:Union[str, tuple, list]) -> tuple:
+    if isinstance(color, (tuple, list)):
         return color
-    elif isinstance(color,(str)):
+    elif isinstance(color, (str)):
         if color == "gray" or color == "grey" or color == "disable":
             return (105, 105, 105, 255)
         elif color == "white" or color == "enable":

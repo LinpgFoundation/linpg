@@ -1,6 +1,6 @@
 # cython: language_level=3
 """
 结构:
-shape -> surface -> progressbar -> button -> container -> ui -> inputbox -> function -> converter
+progressbar -> button -> container -> ui -> inputbox -> converter
 """
 from .converter import *

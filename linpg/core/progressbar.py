@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .surface import *
+from ..surface import *
 
 #进度条
 class ProgressBar(AbstractImage):
@@ -16,7 +16,7 @@ class ProgressBar(AbstractImage):
         self.color:tuple = get_color_rbga(color)
     def display(self, surface: ImageSurface, offSet: Union[tuple, list] = (0, 0)) -> None:
         if not self.hidden:
-            draw_rect(surface, self.color, (add_pos(self.pos, offSet), (int(self._width*self.percentage), self._height)))
+            draw_rect(surface, self.color, new_rect(add_pos(self.pos, offSet), (int(self._width*self.percentage), self._height)))
 
 #进度条Surface
 class ProgressBarSurface(AbstractImage):

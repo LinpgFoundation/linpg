@@ -1,7 +1,7 @@
 # cython: language_level=3
 import queue
 import av
-from ..core import *
+from ..ui import *
 
 #获取视频的音频 （返回路径）
 def split_audio_from_video(moviePath:str, audioType:str="mp3") -> str:

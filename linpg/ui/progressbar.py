@@ -1,5 +1,5 @@
 # cython: language_level=3
-from ..surface import *
+from ..core import *
 
 #进度条
 class ProgressBar(AbstractImage):

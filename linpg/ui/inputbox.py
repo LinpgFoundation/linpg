@@ -1,6 +1,6 @@
 # cython: language_level=3
 import time
-from .ui import *
+from .menu import *
 
 #输入框Abstract，请勿实体化
 class AbstractInputBox(GameObject2d):

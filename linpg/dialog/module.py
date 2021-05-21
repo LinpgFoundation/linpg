@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .ui import *
+from .component import *
 
 #视觉小说系统接口
 class AbstractDialogSystem(AbstractGameSystem):

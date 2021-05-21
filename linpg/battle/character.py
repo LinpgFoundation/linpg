@@ -1,7 +1,5 @@
 # cython: language_level=3
 from .entity import *
-import queue
-from collections import deque
 
 #攻击所需的AP
 AP_IS_NEEDED_TO_ATTACK:int = 5

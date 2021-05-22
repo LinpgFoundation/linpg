@@ -89,7 +89,7 @@ class AbstractVedio(threading.Thread, AbstractImage):
     #把画面画到屏幕上
     def draw(self, surface:ImageSurface) -> None:
         #如果Queue不是空的
-        if not self._frameQueue.empty(): pygame.surfarray.blit_array(surface,self._frameQueue.get())
+        if not self._frameQueue.empty(): draw_array(surface, self._frameQueue.get())
 
 #视频片段展示模块--灵活，但不能保证帧数和音乐同步
 class VedioSurface(AbstractVedio):

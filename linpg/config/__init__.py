@@ -23,7 +23,7 @@ def throw_exception(exception_type:str, info:str) -> None:
     if exception_type_lower == "error":
         #生成错误报告
         if not os.path.exists("crash_reports"): os.mkdir("crash_reports")
-        with open(os.path.join("crash_reports","crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
+        with open(os.path.join("crash_reports", "crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
             f.write("Error Message From Linpg: {}".format(info))
         #打印出错误
         raise Error('LinpgEngine-Error: {}'.format(info))
@@ -71,6 +71,10 @@ def load_config(path:str, key:str=None) -> any:
 
 #配置文件保存
 def save_config(path:str, data:any) -> None:
+    #确保用于储存的文件夹存在
+    dir_path:str = os.path.dirname(path)
+    if len(dir_path) > 0 and not os.path.exists(dir_path): os.makedirs(dir_path)
+    #保存文件
     with open(path, "w", encoding='utf-8') as f:
         if path.endswith(".yaml"):
             if YAML_INITIALIZED:
@@ -93,6 +97,18 @@ def organize_config_in_folder(pathname:str) -> None:
 
 #初始化储存设置配置文件的变量
 _LINPG_SETTING:dict = None
+
+#用于储存当前配置文件保存路径的参数
+_LINPG_SETTING_FOLDER_PATH:str = "Save"
+_LINPG_SETTING_FILE_NAME:str = "setting.yaml"
+
+#获取配置文件保存的路径
+def get_setting_path() -> str: return os.path.join(_LINPG_SETTING_FOLDER_PATH, _LINPG_SETTING_FILE_NAME)
+
+#设置配置文件保存的路径
+def set_setting_path(path:str) -> None:
+    global _LINPG_SETTING_FOLDER_PATH, _LINPG_SETTING_FILE_NAME
+    _LINPG_SETTING_FOLDER_PATH, _LINPG_SETTING_FILE_NAME = os.path.split(path)
 
 #在不确定的情况下尝试获取设置配置文件
 def try_get_setting(key:str, key2:str=None) -> any:
@@ -121,7 +137,7 @@ def set_setting(key:str, key2:str=None, value:any=None) -> None:
             _LINPG_SETTING[key][key2] = value
 
 #保存设置参数
-def save_setting() -> None: save_config("Save/setting.yaml",_LINPG_SETTING)
+def save_setting() -> None: save_config(get_setting_path(), _LINPG_SETTING)
 
 #修改设置参数并保存
 def set_and_save_setting(key:str, key2:str=None, value:any=None) -> None:
@@ -132,15 +148,13 @@ def set_and_save_setting(key:str, key2:str=None, value:any=None) -> None:
 def reload_setting() -> None:
     global _LINPG_SETTING
     #如果配置文件setting.yaml存在
-    if os.path.exists("Save/setting.yaml"): _LINPG_SETTING = load_config("Save/setting.yaml")
+    if os.path.exists(get_setting_path()): _LINPG_SETTING = load_config(get_setting_path())
     #如果不存在就创建一个
     else:
         #导入local,查看默认语言
         import locale
-        _LINPG_SETTING = load_config(os.path.join(os.path.dirname(__file__),"setting.json"))
+        _LINPG_SETTING = load_config(os.path.join(os.path.dirname(__file__), "setting.json"))
         _LINPG_SETTING["Language"] = "SimplifiedChinese" if locale.getdefaultlocale()[0] == "zh_CN" else "English"
-        #别忘了看看Save文件夹是不是都不存在
-        if not os.path.exists("Save"): os.makedirs("Save")
         #保存设置
         save_setting()
 
@@ -151,11 +165,11 @@ reload_setting()
 #获取抗锯齿参数
 def get_antialias() -> bool: return True if _LINPG_SETTING["Antialias"] is True else False
 #获取文字信息
-def get_font() -> str: return _LINPG_SETTING["Font"]
+def get_font() -> str: return str(_LINPG_SETTING["Font"])
 #设置文字信息
 def set_font(value:str) -> None: _LINPG_SETTING["Font"] = value
 #获取文字类型
-def get_font_type() -> str: return _LINPG_SETTING["FontType"]
+def get_font_type() -> str: return str(_LINPG_SETTING["FontType"])
 #设置文字类型
 def set_font_type(value:str) -> None: _LINPG_SETTING["FontType"] = value
 #获取文字的具体信息
@@ -183,9 +197,9 @@ def remove_glob_value(key:str) -> None:
     del _LINPG_GLOBAL_DATA[key]
 
 """版本信息"""
-_SETUP_INFO:dict = load_config(os.path.join(os.path.dirname(__file__),"info.json"))
+_SETUP_INFO:dict = load_config(os.path.join(os.path.dirname(__file__), "info.json"))
 #获取当前版本号
-def get_current_version() -> str: return "{0}.{1}.{2}".format(_SETUP_INFO["version"],_SETUP_INFO["revision"],_SETUP_INFO["patch"])
+def get_current_version() -> str: return "{0}.{1}.{2}".format(_SETUP_INFO["version"], _SETUP_INFO["revision"], _SETUP_INFO["patch"])
 #获取作者邮箱
 def get_author_email() -> str: return deepcopy(_SETUP_INFO["author_email"])
 #获取github项目地址

@@ -1,11 +1,12 @@
 # cython: language_level=3
 from .mapModule import *
 
+#地图场景图片管理
 _MAP_ENV_IMAGE:object = None
 #方块数据
 _BLOCKS_DATABASE:dict = None
 try:
-    _BLOCKS_DATABASE = load_config("Data/blocks.yaml","blocks")
+    _BLOCKS_DATABASE = load_config(os.path.join("Data", "blocks.yaml"), "blocks")
 except:
     _BLOCKS_DATABASE = {}
 
@@ -45,7 +46,7 @@ class MapObject:
     @property
     def block_height(self) -> int: return _MAP_ENV_IMAGE.get_block_height()
     @property
-    def decorations(self): return self.__decorations.copy().tolist()
+    def decorations(self) -> tuple: return self.__decorations
     #加载环境图片，一般被视为初始化的一部分
     def load_env_img(self, block_size:tuple) -> None:
         global _MAP_ENV_IMAGE
@@ -76,20 +77,22 @@ class MapObject:
     #加载装饰物
     def load_decorations(self, decorationData:dict) -> None:
         decorations:list = []
+        new_decoration:DecorationObject = None
         for decorationType,itemsThatType in decorationData.items():
             for itemData in itemsThatType.values():
                 if decorationType == "campfire":
-                    decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,decorationType))
-                    decorations[-1].imgId = get_random_int(0,9)
-                    decorations[-1].range = itemData["range"]
-                    decorations[-1].alpha = 255
+                    new_decoration = DecorationObject(itemData["x"],itemData["y"],decorationType,decorationType)
+                    new_decoration.imgId = get_random_int(0,9)
+                    new_decoration.range = itemData["range"]
+                    new_decoration.alpha = 255
                 elif decorationType == "chest":
-                    decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,decorationType))
-                    decorations[-1].items = itemData["items"] if "items" in itemData else []
+                    new_decoration = DecorationObject(itemData["x"],itemData["y"],decorationType,decorationType)
+                    new_decoration.items = itemData["items"] if "items" in itemData else []
                     #是否箱子有白名单（只能被特定角色拾取）
-                    decorations[-1].whitelist = itemData["whitelist"] if "whitelist" in itemData else None
+                    new_decoration.whitelist = itemData["whitelist"] if "whitelist" in itemData else None
                 else:
-                    decorations.append(DecorationObject(itemData["x"],itemData["y"],decorationType,itemData["image"]))
+                    new_decoration = DecorationObject(itemData["x"],itemData["y"],decorationType,itemData["image"])
+                decorations.append(new_decoration)
         self.__decorations = numpy.sort(numpy.asarray(decorations))
     #根据index寻找装饰物
     def find_decoration_with_id(self, index:int) -> DecorationObject: return self.__decorations[index]
@@ -165,7 +168,7 @@ class MapObject:
         #画出背景
         _MAP_ENV_IMAGE.display_background_surface(screen,self.getPos())
         #返回offset
-        return (screen_to_move_x,screen_to_move_y)
+        return screen_to_move_x, screen_to_move_y
     #重新绘制地图
     def __update_map_surface(self, window_size:tuple) -> None:
         posTupleTemp:tuple

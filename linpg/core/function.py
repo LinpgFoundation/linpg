@@ -133,3 +133,7 @@ def is_hover(
         return imgObject.is_hover((mouse_x - off_set_x, mouse_y - off_set_y))
     else:
         return is_hover_pygame_object(imgObject, objectPos, off_set_x, off_set_y)
+
+# 将array转换并画到surface上
+def draw_array(surface: ImageSurface, array: any) -> None:
+    pygame.surfarray.blit_array(surface, array)

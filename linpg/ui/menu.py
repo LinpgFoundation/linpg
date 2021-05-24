@@ -15,7 +15,7 @@ class PauseMenu:
         width,height = display.get_size()
         surfaceTmp = new_surface((width,height)).convert()
         surfaceTmp.fill(get_color_rbga("black"))
-        self.black_bg = Image(surfaceTmp,0,0,width,height)
+        self.black_bg = load_static_image(surfaceTmp, (0,0), width, height)
         self.black_bg.set_alpha(50)
         #按钮-继续
         self.button_resume = load_dynamic_text(

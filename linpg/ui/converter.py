@@ -111,7 +111,7 @@ class Converter:
                 #返回按钮
                 return button_t
             elif data["type"] == "image":
-                image_t = load_image(load_img(data["src"]),(0,0),data["width"],data["height"])
+                image_t = load_dynamic_image(load_img(data["src"]),(0,0),data["width"],data["height"])
                 if "name" in data: image_t.tag = data["name"]
                 #转换坐标
                 self.__make_sure_pos(data, "x", int((max_width-image_t.get_width())/2), max_width)

@@ -106,7 +106,7 @@ class EnvImagesManagement:
     def get_decoration_num(self, decorationType:str) -> int: return len(self.__DECORATION_IMAGE_DICT[decorationType])
     #新图层
     def new_surface(self, screen_size:tuple, map_size:tuple) -> None:
-        self.__BACKGROUND_SURFACE = resize_img(self.__BACKGROUND_IMAGE,screen_size) if self.__BACKGROUND_IMAGE is not None \
+        self.__BACKGROUND_SURFACE = resize_img(self.__BACKGROUND_IMAGE, screen_size) if self.__BACKGROUND_IMAGE is not None \
             else new_surface(screen_size).convert()
         if self.__MAP_SURFACE is not None:
             self.__MAP_SURFACE.fill((0,0,0,0))
@@ -117,8 +117,8 @@ class EnvImagesManagement:
     #画出地图
     def display_background_surface(self, screen:ImageSurface, pos:tuple) -> None:
         screen.blits((
-            (self.__BACKGROUND_SURFACE,(0,0)),
-            (self.__MAP_SURFACE,pos)
+            (self.__BACKGROUND_SURFACE, (0,0)),
+            (self.__MAP_SURFACE, pos)
         ))
 
 #方块类

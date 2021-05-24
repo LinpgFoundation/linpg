@@ -163,10 +163,11 @@ class DialogSystem(AbstractDialogSystem):
             if self._is_showing_history is True:
                 self._is_showing_history = False
             else:
-                progress_saved_text = Image(
+                progress_saved_text = StaticImage(
                     self._dialog_txt_system.FONT.render(get_lang("Global","progress_has_been_saved"),get_antialias(),(255, 255, 255)),0,0
                     )
                 progress_saved_text.set_alpha(0)
+                progress_saved_text.set_center(surface.get_width()/2, surface.get_height()/2)
                 self.pause_menu.hidden = False
                 display.flip()
                 while not self.pause_menu.hidden:
@@ -194,7 +195,7 @@ class DialogSystem(AbstractDialogSystem):
                     #更新语言
                     if get_option_menu().need_update["language"] is True: self.updated_language(surface)
                     #显示进度已保存的文字
-                    progress_saved_text.drawOnTheCenterOf(surface)
+                    progress_saved_text.draw(surface)
                     progress_saved_text.fade_out(5)
                 del progress_saved_text
                 self.pause_menu.screenshot = None
@@ -287,7 +288,7 @@ class DialogEditor(AbstractDialogSystem):
         self.FONTSIZE:int = int(display.get_width()*0.015)
         self.FONT = create_font(self.FONTSIZE)
         #对话框
-        self._dialogue_box_image = load_image(os.path.join(DIALOG_UI_PATH,"dialoguebox.png"),(display.get_width()*0.13,display.get_height()*0.65),display.get_width()*0.74,display.get_height()/4)
+        self._dialogue_box_image = load_dynamic_image(os.path.join(DIALOG_UI_PATH,"dialoguebox.png"),(display.get_width()*0.13,display.get_height()*0.65),display.get_width()*0.74,display.get_height()/4)
         self.narrator = SingleLineInputBox(display.get_width()*0.2,self._dialogue_box_image.y+self.FONTSIZE,self.FONTSIZE,"white")
         self.content = MultipleLinesInputBox(display.get_width()*0.2,display.get_height()*0.73,self.FONTSIZE,"white")
         #将npc立绘系统设置为开发者模式
@@ -323,11 +324,11 @@ class DialogEditor(AbstractDialogSystem):
         self.__loadDialogData(part)
         #容器按钮
         button_width:int = int(display.get_width()*0.04)
-        self.UIContainerRightButton = load_dynamic_image(
+        self.UIContainerRightButton = load_movable_image(
             os.path.join(DIALOG_UI_PATH,"container_button.png"),
             (display.get_width()-button_width,display.get_height()*0.4),
             (display.get_width()-button_width-container_width,display.get_height()*0.4),
-            (container_width/10,0),button_width,int(display.get_height()*0.2)
+            (container_width/10,0), button_width, int(display.get_height()*0.2)
             )
         self.UIContainerRightButton.rotate(90)
         #UI按钮
@@ -615,7 +616,7 @@ class DialogEditor(AbstractDialogSystem):
                 if event.button == 1:
                     if self.UIContainerRightButton.is_hover():
                         self.UIContainerRightButton.switch()
-                        self.UIContainerRightButton.flip(True,False)
+                        self.UIContainerRightButton.flip()
                     #退出
                     elif buttonHovered == "back":
                         if self.__no_changes_were_made() is True:

@@ -67,13 +67,6 @@ class AbstractBattleSystem(AbstractGameSystem):
     def characters_loaded(self) -> int: return self.__characterDataLoaderThread.currentID
     @property
     def characters_total(self) -> int: return self.__characterDataLoaderThread.totalNum
-    #检测手柄事件
-    def _check_jostick_events(self) -> None:
-        if controller.joystick.get_init():
-            self.__pressKeyToMove["up"] = True if round(controller.joystick.get_axis(4)) == -1 else False
-            self.__pressKeyToMove["down"] = True if round(controller.joystick.get_axis(4)) == 1 else False
-            self.__pressKeyToMove["right"] = True if round(controller.joystick.get_axis(3)) == 1 else False
-            self.__pressKeyToMove["left"] = True if round(controller.joystick.get_axis(3)) == -1 else False
     #检测按下按键的事件
     def _check_key_down(self, event:object) -> None:
         if event.key == KEY.ARROW_UP: self.__pressKeyToMove["up"] = True
@@ -88,22 +81,31 @@ class AbstractBattleSystem(AbstractGameSystem):
         elif event.key == KEY.ARROW_LEFT: self.__pressKeyToMove["left"] = False
         elif event.key == KEY.ARROW_RIGHT: self.__pressKeyToMove["right"] = False
     #根据鼠标移动屏幕
-    def _check_right_click_move(self, mouse_x:int, mouse_y:int) -> None:
+    def _check_right_click_move(self) -> None:
         if controller.mouse_get_press(2):
+            mouse_pos = controller.get_mouse_pos()
             if self.__mouse_move_temp_x == -1 and self.__mouse_move_temp_y == -1:
-                self.__mouse_move_temp_x = mouse_x
-                self.__mouse_move_temp_y = mouse_y
+                self.__mouse_move_temp_x = mouse_pos[0]
+                self.__mouse_move_temp_y = mouse_pos[1]
             else:
-                if self.__mouse_move_temp_x != mouse_x or self.__mouse_move_temp_y != mouse_y:
-                    if self.__mouse_move_temp_x != mouse_x:
-                        self.MAP.addPos_x(self.__mouse_move_temp_x-mouse_x)
-                    if self.__mouse_move_temp_y != mouse_y:
-                        self.MAP.addPos_y(self.__mouse_move_temp_y-mouse_y)
-                    self.__mouse_move_temp_x = mouse_x
-                    self.__mouse_move_temp_y = mouse_y
+                if self.__mouse_move_temp_x != mouse_pos[0] or self.__mouse_move_temp_y != mouse_pos[1]:
+                    if self.__mouse_move_temp_x != mouse_pos[0]:
+                        self.MAP.add_local_x(self.__mouse_move_temp_x-mouse_pos[0])
+                    if self.__mouse_move_temp_y != mouse_pos[1]:
+                        self.MAP.add_local_y(self.__mouse_move_temp_y-mouse_pos[1])
+                    self.__mouse_move_temp_x = mouse_pos[0]
+                    self.__mouse_move_temp_y = mouse_pos[1]
         else:
             self.__mouse_move_temp_x = -1
             self.__mouse_move_temp_y = -1
+    #检测手柄事件
+    def _check_jostick_events(self) -> None:
+        if controller.joystick.get_init():
+            self.__pressKeyToMove["up"] = True if round(controller.joystick.get_axis(4)) == -1 else False
+            self.__pressKeyToMove["down"] = True if round(controller.joystick.get_axis(4)) == 1 else False
+            self.__pressKeyToMove["right"] = True if round(controller.joystick.get_axis(3)) == 1 else False
+            self.__pressKeyToMove["left"] = True if round(controller.joystick.get_axis(3)) == -1 else False
+    #检测并处理屏幕移动事件
     def _check_if_move_screen(self) -> None:
         #根据按键情况设定要移动的数值
         if self.__pressKeyToMove["up"]:
@@ -129,17 +131,17 @@ class AbstractBattleSystem(AbstractGameSystem):
     def _move_screen(self) -> None:
         #如果需要移动屏幕
         if self.screen_to_move_x is not None and self.screen_to_move_x != 0:
-            temp_value = int(self.MAP.getPos_x() + self.screen_to_move_x*0.2)
-            if display.get_width()-self.MAP.surface_width <= temp_value <= 0:
-                self.MAP.setPos_x(temp_value)
+            temp_value = int(self.MAP.get_local_x() + self.screen_to_move_x*0.2)
+            if display.get_width()-self.MAP.get_width() <= temp_value <= 0:
+                self.MAP.set_local_x(temp_value)
                 self.screen_to_move_x *= 0.8
                 if round(self.screen_to_move_x) == 0: self.screen_to_move_x = 0
             else:
                 self.screen_to_move_x = 0
         if self.screen_to_move_y is not None and self.screen_to_move_y != 0:
-            temp_value = int(self.MAP.getPos_y() + self.screen_to_move_y*0.2)
-            if display.get_height()-self.MAP.surface_height <= temp_value <= 0:
-                self.MAP.setPos_y(temp_value)
+            temp_value = int(self.MAP.get_local_y() + self.screen_to_move_y*0.2)
+            if display.get_height()-self.MAP.get_height() <= temp_value <= 0:
+                self.MAP.set_local_y(temp_value)
                 self.screen_to_move_y *= 0.8
                 if round(self.screen_to_move_y) == 0: self.screen_to_move_y = 0
             else:

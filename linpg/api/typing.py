@@ -11,6 +11,9 @@ from ..lang import *
 
 ImageSurface = pygame.Surface
 
+#int_f指参数推荐输入int, 但一开始接受时可以为float，但最后会转换为int
+int_f = Union[int, float]
+
 """指向pygame事件的指针"""
 #鼠标
 MOUSE_BUTTON_DOWN = pygame.MOUSEBUTTONDOWN

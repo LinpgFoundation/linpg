@@ -135,8 +135,8 @@ class DialogButtons:
         tempButtonIcon = add_darkness(tempButtonIcon, 100)
         self.skipButton.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONTSIZE*0.5,self.icon_y))
         self.skipButton.blit(tempButtonTxt,(0,0))
-        self.skipButton = Image(self.skipButton,window_x*0.9,window_y*0.05)
-        self.skipButtonHovered = Image(self.skipButtonHovered,window_x*0.9,window_y*0.05)
+        self.skipButton = load_static_image(self.skipButton,(window_x*0.9,window_y*0.05))
+        self.skipButtonHovered = load_static_image(self.skipButtonHovered,(window_x*0.9,window_y*0.05))
         #生成自动播放按钮
         self.autoIconHovered = load_img(os.path.join(DIALOG_UI_PATH,"dialog_auto.png"),(self.FONTSIZE,self.FONTSIZE))
         self.autoIcon = add_darkness(self.autoIconHovered, 100)
@@ -149,9 +149,9 @@ class DialogButtons:
         self.autoButtonHovered = new_transparent_surface((temp_w,tempButtonTxt.get_height()))
         self.autoButton.blit(tempButtonTxt,(0,0))
         self.autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"],get_antialias(),(255, 255, 255)),(0,0))
-        self.autoButton = Image(self.autoButton,window_x*0.8,window_y*0.05)
+        self.autoButton = load_dynamic_image(self.autoButton,(window_x*0.8,window_y*0.05))
         self.autoButton.tag = int(self.autoButton.x+self.autoButton.img.get_width()-self.FONTSIZE)
-        self.autoButtonHovered = Image(self.autoButtonHovered,window_x*0.8,window_y*0.05)
+        self.autoButtonHovered = load_dynamic_image(self.autoButtonHovered,(window_x*0.8,window_y*0.05))
         self.autoButtonHovered.tag = int(self.autoButtonHovered.x+self.autoButtonHovered.img.get_width()-self.FONTSIZE)
         #隐藏按钮
         self.hideButton = load_button(

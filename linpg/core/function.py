@@ -3,15 +3,15 @@ from PIL import Image as ImageLoader
 from .font import *
 
 # 高级图片加载模块：接收图片路径（或者已经载入的图片）,位置:(x,y),长,高,返回对应的图片class
-def load_image(
+def load_dynamic_image(
     path: Union[str, ImageSurface],
     position: tuple,
     width: Union[int, float] = -1,
     height: Union[int, float] = -1,
     tag: str = "default",
     ifConvertAlpha: bool = True
-    ) -> Image:
-    return Image(
+    ) -> DynamicImage:
+    return DynamicImage(
         quickly_load_img(path, ifConvertAlpha),
         position[0],
         position[1],
@@ -39,7 +39,7 @@ def load_static_image(
         )
 
 # 高级动态图片加载模块：接收图片路径（或者已经载入的图片）,位置:(x,y),长,高,返回对应的图片class
-def load_dynamic_image(
+def load_movable_image(
     path: Union[str, ImageSurface],
     position: tuple,
     target_position: tuple,
@@ -48,8 +48,8 @@ def load_dynamic_image(
     height: Union[int, float] = -1,
     tag="default",
     ifConvertAlpha: bool = True
-    ) -> DynamicImage:
-    return DynamicImage(
+    ) -> MovableImage:
+    return MovableImage(
         quickly_load_img(path, ifConvertAlpha),
         position[0],
         position[1],
@@ -115,13 +115,13 @@ def get_img_subsurface(img:ImageSurface, rect:RectLiked) -> ImageSurface:
         return img.subsurface(convert_to_pygame_rect(rect))
 
 #获取特定颜色的表面
-def get_single_color_surface(color, size=None) -> Image:
+def get_single_color_surface(color, size=None) -> StaticImage:
     # 如果size是none，则使用屏幕的尺寸
     if size is None: size = display.get_size()
     # 获取surface
     surfaceTmp = new_surface(size).convert()
     surfaceTmp.fill(color)
-    return Image(surfaceTmp, 0, 0, size[0], size[1])
+    return StaticImage(surfaceTmp, 0, 0, size[0], size[1])
 
 # 检测图片是否被点击
 def is_hover(

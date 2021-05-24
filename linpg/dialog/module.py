@@ -121,7 +121,7 @@ class NpcImageManager:
     def __loadNpc(self, path:str) -> None:
         name = os.path.basename(path)
         self.__npcImageDict[name] = {}
-        self.__npcImageDict[name]["normal"] = StaticImage(path,0,0,self.__img_width,self.__img_width)
+        self.__npcImageDict[name]["normal"] = load_static_image(path,(0,0),self.__img_width,self.__img_width)
         #生成深色图片
         self.__npcImageDict[name]["dark"] = self.__npcImageDict[name]["normal"].copy()
         self.__npcImageDict[name]["dark"].add_darkness(self.__darkness)
@@ -328,11 +328,11 @@ class DialogContent(AbstractDialog):
     def draw(self, surface:ImageSurface) -> None:
         if not self.hidden:
             if not self.__fade_out_stage:
-                self.__fadeIn(surface)
+                self.__fade_in(surface)
             else:
-                self.__fadeOut(surface)
+                self.__fade_out(surface)
     #渐入
-    def __fadeIn(self, surface:ImageSurface) -> None:
+    def __fade_in(self, surface:ImageSurface) -> None:
         #如果对话框图片的最高高度没有被设置，则根据屏幕大小设置一个
         if self.dialoguebox_max_height is None:
             self.dialoguebox_max_height = surface.get_height()/4
@@ -344,13 +344,15 @@ class DialogContent(AbstractDialog):
         (surface.get_width()*0.13,self.dialoguebox_y))
         #如果对话框图片还在放大阶段
         if self.dialoguebox_height < self.dialoguebox_max_height:
-            self.dialoguebox_height += self.dialoguebox_max_height/10
-            self.dialoguebox_y -= self.dialoguebox_max_height/20
+            self.dialoguebox_height = min(
+                int(self.dialoguebox_height+self.dialoguebox_max_height*display.sfpsp/10), self.dialoguebox_max_height
+                )
+            self.dialoguebox_y -= int(self.dialoguebox_max_height*display.sfpsp/20)
         #如果已经放大好了
         else:
             self.__blit_txt(surface)
     #淡出
-    def __fadeOut(self, surface:ImageSurface) -> None:
+    def __fade_out(self, surface:ImageSurface) -> None:
         #画出对话框图片
         if self.dialoguebox_y is not None:
             surface.blit(
@@ -358,8 +360,8 @@ class DialogContent(AbstractDialog):
                 (surface.get_width()*0.13,self.dialoguebox_y)
                 )
         if self.dialoguebox_height > 0:
-            self.dialoguebox_height = max(self.dialoguebox_height-self.dialoguebox_max_height/10,0)
-            self.dialoguebox_y += self.dialoguebox_max_height/20
+            self.dialoguebox_height = max(int(self.dialoguebox_height-self.dialoguebox_max_height*display.sfpsp/10), 0)
+            self.dialoguebox_y += int(self.dialoguebox_max_height*display.sfpsp/20)
         else:
             self.resetDialogueboxData()
     #将文字画到屏幕上

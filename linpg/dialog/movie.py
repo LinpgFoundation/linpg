@@ -176,10 +176,9 @@ def cutscene(surface:ImageSurface, videoPath:str) -> None:
     is_skip:bool = False
     is_playing:bool = True
     #初始化跳过按钮的参数
-    skip_button:object = Image(
-        quickly_load_img("Assets/image/UI/dialog_skip.png"),
-        int(surface.get_width()*0.92),
-        int(surface.get_height()*0.05),
+    skip_button:object = load_static_image(
+        r"Assets/image/UI/dialog_skip.png",
+        (int(surface.get_width()*0.92), int(surface.get_height()*0.05)),
         int(surface.get_width()*0.055),
         int(surface.get_height()*0.06)
         )

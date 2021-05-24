@@ -117,12 +117,6 @@ class GameObject3d(GameObject2point5d):
     def set_pos(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]) -> None:
         super().set_pos(x,y,z)
 
-#将来用来兼容pygame和pyglet图层的模块
-class Image(ImageSurface):
-    def __init__(self, size, flag):
-        super().__init__(size, flag)
-        self.type = "pygame"
-
 #需要被打印的物品
 class ItemNeedBlit(GameObject2point5d):
     def __init__(self, image:object, weight:Union[int,float], pos:Union[tuple,list], offSet:Union[tuple,list]):

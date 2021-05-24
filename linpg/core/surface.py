@@ -3,11 +3,18 @@ from .shape import *
 
 #图形接口
 class AbstractImage(Rect):
-    def __init__(self, img:any, x:Union[int,float], y:Union[int,float], width:int, height:int):
+    def __init__(self, img:any, x:Union[int,float], y:Union[int,float], width:int_f, height:int_f, tag:str=""):
         super().__init__(x, y, width, height)
-        self.img = img
+        self.img:any = img
         self.hidden:bool = False
-        self.tag:str = ""
+        self.tag:str = str(tag)
+        #确保长宽均已输入且为正整数
+        if self._width < 0 and self._height < 0:
+            self._width, self._height = self.img.get_size()
+        elif self._width < 0 and self._height >= 0:
+            self._width = self._height/self.img.get_height()*self.img.get_width()
+        elif self._width >= 0 and self._height < 0:
+            self._height = self._width/self.img.get_width()*self.img.get_height()
     #透明度
     @property
     def alpha(self) -> int: return self.get_alpha()
@@ -16,42 +23,89 @@ class AbstractImage(Rect):
     #获取图片
     def get_image_pointer(self) -> any: return self.img
     def get_image_copy(self) -> any: return self.img.copy()
+    #淡入
+    def fade_in(self, value:int) -> None: self.set_alpha(self.get_alpha()+value)
+    #淡出
+    def fade_out(self, value:int) -> None: self.set_alpha(self.get_alpha()-value)
+    #旋转
+    def rotate(self, angle:int) -> None: self.img = rotate_img(self.img, angle)
+
+#高级图形类
+class DynamicImage(AbstractImage):
+    #返回一个复制
+    def copy(self):
+        replica = DynamicImage(self.get_image_copy(), self.x, self.y, self._width, self._height, self.tag)
+        self.img.set_alpha(255)
+        return replica
+    #返回一个浅复制品
+    def light_copy(self): return DynamicImage(self.get_image_pointer(), self.x, self.y, self._width, self._height, self.tag)
+    #更新图片
+    def update(self, img_path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> None:
+        self.img = quickly_load_img(img_path,ifConvertAlpha)
+    def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
+        if not self.hidden: surface.blit(resize_img(self.img,self.size),add_pos(self.pos,offSet))
+    #反转
+    def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = flip_img(self.img,vertical,horizontal)
 
 #有本地坐标的图形接口
 class AdvancedAbstractImage(AbstractImage):
-    def __init__(self, img: any, x:Union[int, float], y:Union[int, float], width:int, height:int):
-        super().__init__(img, x, y, width, height)
+    def __init__(self, img: any, x:Union[int,float], y:Union[int,float], width:int_f, height:int_f, tag:str=""):
+        super().__init__(img, x, y, width, height, tag)
         self._local_x:int = 0
         self._local_y:int = 0
         self._alpha:int = 255
     #透明度
     def get_alpha(self) -> int: return self._alpha
-    def set_alpha(self, value:int) -> None:
-        new_alpha:int = keep_in_range(int(value),0,255)
-        if new_alpha != self.get_alpha():
-            self._alpha = new_alpha
-            if isinstance(self.img, ImageSurface) and self.img.get_alpha() != self._alpha: super().set_alpha(self._alpha)
-    #本地坐标
+    def set_alpha(self, value:int, update_original:bool=True) -> None:
+        self._alpha = keep_in_range(int(value), 0, 255)
+        if isinstance(self.img, pygame.Surface) and update_original is True: super().set_alpha(self._alpha)
+    #获取本地坐标
     @property
-    def local_pos(self) -> tuple: return self._local_x,self._local_y
-    def get_local_pos(self) -> tuple: return self._local_x,self._local_y
-    def set_local_pos(self, local_x:int, local_y:int) -> None:
-        self._local_x = int(local_x)
-        self._local_y = int(local_y)
+    def local_x(self) -> int: return self._local_x
+    def get_local_x(self) -> int: return self._local_x
+    @property
+    def local_y(self) -> int: return self._local_y
+    def get_local_y(self) -> int: return self._local_y
+    @property
+    def local_pos(self) -> tuple: return self._local_x, self._local_y
+    def get_local_pos(self) -> tuple: return self._local_x, self._local_y
+    #设置本地坐标
+    def set_local_x(self, value:int_f) -> None: self._local_x = int(value)
+    def set_local_y(self, value:int_f) -> None: self._local_y = int(value)
+    def set_local_pos(self, local_x:int_f, local_y:int_f) -> None:
+        self.set_local_x(local_x)
+        self.set_local_y(local_y)
+    #增加本地坐标
+    def add_local_x(self, value:int_f) -> None: self.set_local_x(self._local_x + value)
+    def add_local_y(self, value:int_f) -> None: self.set_local_y(self._local_y + value)
+    def add_local_pos(self, local_x:int_f, local_y:int_f) -> None:
+        self.add_local_x(local_x)
+        self.add_local_y(local_y)
     #绝对的本地坐标
     @property
-    def abs_pos(self) -> tuple: return self.x+self._local_x,self.y+self._local_y
-    def get_abs_pos(self) -> tuple: return self.x+self._local_x,self.y+self._local_y
+    def abs_x(self) -> Union[int,float]: return self.x + self._local_x
+    @property
+    def abs_y(self) -> Union[int,float]: return self.y + self._local_y
+    @property
+    def abs_pos(self) -> tuple: return self.abs_x, self.abs_y
+    def get_abs_pos(self) -> tuple: return self.abs_x, self.abs_y
 
 #用于静态图片的surface
 class StaticImage(AdvancedAbstractImage):
-    def __init__(self, img:Union[str,ImageSurface], x:Union[int,float], y:Union[int,float], width:int=-1, height:int=-1, tag:str="default"):
-        super().__init__(None,x,y,width,height)
-        self.img_original = load_img(img)
+    def __init__(self, img:Union[str,ImageSurface], x:Union[int,float], y:Union[int,float], width:int_f=-1, height:int_f=-1, tag:str="default"):
+        super().__init__(quickly_load_img(img),x,y,width,height,tag)
+        self.__processed_img:ImageSurface = None
         self.__is_flipped:bool = False
         self.__need_update:bool = True if self._width >= 0 and self._height >= 0 else False
         self.__crop_rect:object = None
-        self.tag = tag
+    #旋转
+    def rotate(self, angle:int) -> None:
+        super().rotate(angle)
+        self.__need_update = True
+    #设置透明度
+    def set_alpha(self, value:int) -> None:
+        super().set_alpha(value, False)
+        if self.__processed_img is not None: self.__processed_img.set_alpha(self._alpha)
     #宽度
     def set_width(self, value:Union[int,float]) -> None:
         value = int(value)
@@ -59,9 +113,9 @@ class StaticImage(AdvancedAbstractImage):
             super().set_width(value)
             self.__need_update = True
     def set_width_with_size_locked(self, width:Union[int,float]) -> None:
-        height:int = int(width/self.img_original.get_width()*self.img_original.get_height())
+        height:int = int(width/self.img.get_width()*self.img.get_height())
         width = int(width)
-        self.set_size(width,height)
+        self.set_size(width, height)
     #高度
     def set_height(self, value:Union[int,float]) -> None:
         value = int(value)
@@ -69,9 +123,9 @@ class StaticImage(AdvancedAbstractImage):
             super().set_height(value)
             self.__need_update = True
     def set_height_with_size_locked(self, height:Union[int,float]) -> None:
-        width = int(height/self.img_original.get_height()*self.img_original.get_width())
+        width:int = int(height/self.img.get_height()*self.img.get_width())
         height = int(height)
-        self.set_size(width,height)
+        self.set_size(width, height)
     #截图的范围
     @property
     def crop_rect(self) -> object: return self.__crop_rect
@@ -87,17 +141,17 @@ class StaticImage(AdvancedAbstractImage):
             throw_exception("error","You have to input either a None or a Rect, not {}".format(type(rect)))
     #更新图片
     def _update_img(self) -> None:
-        imgTmp = smoothly_resize_img(self.img_original, self.size) if get_antialias() is True else resize_img(self.img_original, self.size)
+        imgTmp = smoothly_resize_img(self.img, self.size) if get_antialias() is True else resize_img(self.img, self.size)
         rect = imgTmp.get_bounding_rect()
         if self.__crop_rect is not None:
-            new_x:int = max(rect.x,self.__crop_rect.x)
-            new_y:int = max(rect.y,self.__crop_rect.y)
-            rect = Rect(new_x,new_y,min(rect.right,self.__crop_rect.right)-new_x,min(rect.bottom,self.__crop_rect.bottom)-new_y)
-        self.img = new_transparent_surface(rect.size)
+            new_x:int = max(rect.x, self.__crop_rect.x)
+            new_y:int = max(rect.y, self.__crop_rect.y)
+            rect = Rect(new_x, new_y, min(rect.right,self.__crop_rect.right)-new_x, min(rect.bottom,self.__crop_rect.bottom)-new_y)
+        self.__processed_img = new_transparent_surface(rect.size)
         self.set_local_pos(rect.x,rect.y)
-        self.img.blit(imgTmp,(-self._local_x,-self._local_y))
+        self.__processed_img.blit(imgTmp,(-self._local_x,-self._local_y))
         if self._alpha != 255:
-            self.img.set_alpha(self._alpha)
+            self.__processed_img.set_alpha(self._alpha)
         self.__need_update = False
     #反转原图，并打上已反转的标记
     def flip(self) -> None:
@@ -105,7 +159,7 @@ class StaticImage(AdvancedAbstractImage):
         self.flip_original()
     #反转原图
     def flip_original(self) -> None:
-        self.img_original = flip_img(self.img_original,True,False)
+        self.img = flip_img(self.img,True,False)
         self.__need_update = True
     #如果不处于反转状态，则反转
     def flip_if_not(self) -> None:
@@ -115,77 +169,69 @@ class StaticImage(AdvancedAbstractImage):
         if self.__is_flipped: self.flip()
     #画出轮廓
     def draw_outline(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0), color:any="red", line_width:int=2) -> None:
-        draw_rect(surface, get_color_rbga(color), (add_pos(self.abs_pos,offSet), self.img.get_size()), line_width)
+        draw_rect(surface, get_color_rbga(color), (add_pos(self.abs_pos,offSet), self.__processed_img.get_size()), line_width)
     #是否被鼠标触碰
     def is_hover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
         if mouse_pos == (-1,-1): mouse_pos = controller.get_mouse_pos()
-        if self.img is not None:
-            return 0 < mouse_pos[0]-self.x-self._local_x < self.img.get_width() and 0 < mouse_pos[1]-self.y-self._local_y < self.img.get_height()
+        if self.__processed_img is not None:
+            return 0 < mouse_pos[0]-self.x-self._local_x < self.__processed_img.get_width() and 0 < mouse_pos[1]-self.y-self._local_y < self.__processed_img.get_height()
         else:
             return False
     #返回一个复制品
-    def copy(self): return StaticImage(self.img_original.copy(),self.x,self.y,self._width,self._height)
+    def copy(self): return StaticImage(self.img.copy(),self.x,self.y,self._width,self._height)
     #返回一个浅复制品
-    def light_copy(self): return StaticImage(self.img_original,self.x,self.y,self._width,self._height)
+    def light_copy(self): return StaticImage(self.img,self.x,self.y,self._width,self._height)
     #加暗度
     def add_darkness(self, value:int) -> None:
-        self.img_original = add_darkness(self.img_original, value)
+        self.img = add_darkness(self.img, value)
         self.__need_update = True
     def subtract_darkness(self, value:int) -> None:
-        self.img_original = subtract_darkness(self.img_original, value)
+        self.img = subtract_darkness(self.img, value)
         self.__need_update = True
     #展示
     def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
         if not self.hidden:
             #如果图片需要更新，则先更新
-            if self.__need_update: self._update_img()
+            if self.__need_update is True: self._update_img()
             #将已经处理好的图片画在给定的图层上
-            surface.blit(self.img,(self.x+self._local_x+offSet[0], self.y+self._local_y+offSet[1]))
-
-#高级图形类
-class Image(AbstractImage):
-    def __init__(self, img:ImageSurface, x:Union[int,float], y:Union[int,float], width:int=-1, height:int=-1, tag:str="default"):
-        super().__init__(img,x,y,width,height)
-        self.tag = tag
-        if self._width < 0 and self._height < 0:
-            self._width,self._height = self.img.get_size()
-        elif self._width < 0 and self._height >= 0:
-            self._width = self._height/self.img.get_height()*self.img.get_width()
-        elif self._width >= 0 and self._height < 0:
-            self._height = self._width/self.img.get_width()*self.img.get_height()
-    #返回一个复制
-    def copy(self) -> None:
-        replica = Image(self.get_image_copy(),self.x,self.y,self._width,self._height,self.tag)
-        self.img.set_alpha(255)
-        return replica
-    #更新图片
-    def update(self, img_path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> None:
-        self.img = quickly_load_img(img_path,ifConvertAlpha)
-    def drawOnTheCenterOf(self, surface:ImageSurface) -> None:
-        surface.blit(resize_img(self.img,self.size),((surface.get_width()-self._width)/2,(surface.get_height()-self._height)/2))
-    def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
-        if not self.hidden: surface.blit(resize_img(self.img,self.size),add_pos(self.pos,offSet))
-    #旋转
-    def rotate(self, angle:int) -> None: self.img = rotate_img(self.img, angle)
-    #反转
-    def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = flip_img(self.img,vertical,horizontal)
-    #淡出
-    def fade_out(self, speed:int) -> None:
-        alphaTmp = self.get_alpha()
-        if alphaTmp > 0: self.set_alpha(alphaTmp-speed)
+            surface.blit(self.__processed_img, add_pos(self.abs_pos, offSet))
 
 #需要移动的动态图片
-class DynamicImage(Image):
-    def __init__(self, img:ImageSurface, x:Union[int,float], y:Union[int,float], target_x:Union[int,float], target_y:Union[int,float],
-        moveSpeed_x:Union[int,float], moveSpeed_y:Union[int,float], width:int=-1, height:int=-1, tag:str="default"):
-        super().__init__(img,x,y,width,height,tag)
-        self.default_x = x
-        self.default_y = y
-        self.target_x = target_x
-        self.target_y = target_y
-        self.moveSpeed_x = moveSpeed_x
-        self.moveSpeed_y = moveSpeed_y
+class MovableImage(StaticImage):
+    def __init__(
+        self, img:ImageSurface,
+        x:Union[int,float],
+        y:Union[int,float],
+        target_x:Union[int,float],
+        target_y:Union[int,float],
+        move_speed_x:Union[int,float],
+        move_speed_y:Union[int,float],
+        width:int_f=-1,
+        height:int_f=-1,
+        tag:str="default"
+        ):
+        super().__init__(img, x, y, width, height, tag)
+        self.__default_x = x
+        self.__default_y = y
+        self.__target_x = target_x
+        self.__target_y = target_y
+        self.__move_speed_x = move_speed_x
+        self.__move_speed_y = move_speed_y
         self.__is_moving_toward_target:bool = False
+    #返回一个复制
+    def copy(self): return MovableImage(
+        self.get_image_copy(), self.x, self.y,
+        self.__target_x, self.__target_y,
+        self.__move_speed_x, self.__move_speed_y,
+        self._width, self._height, self.tag
+        )
+    #返回一个浅复制品
+    def light_copy(self): return MovableImage(
+        self.get_image_pointer(), self.x, self.y,
+        self.__target_x, self.__target_y,
+        self.__move_speed_x, self.__move_speed_y,
+        self._width, self._height, self.tag
+        )
     #控制
     def switch(self) -> None: self.__is_moving_toward_target = not self.__is_moving_toward_target
     def move_toward(self) -> None: self.__is_moving_toward_target = True
@@ -193,46 +239,50 @@ class DynamicImage(Image):
     #移动状态
     def is_moving_toward_target(self) -> bool: return self.__is_moving_toward_target
     def has_reached_target(self) -> bool:
-        return self.x == self.target_x and self.y == self.target_y if self.__is_moving_toward_target is True \
-            else self.x == self.default_x and self.y == self.default_y
+        return self.x == self.__target_x and self.y == self.__target_y if self.__is_moving_toward_target is True \
+            else self.x == self.__default_x and self.y == self.__default_y
     #画出
     def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
         if not self.hidden:
-            super().display(surface,offSet)
+            super().display(surface, offSet)
             if self.__is_moving_toward_target is True:
-                if self.default_x < self.target_x:
-                    if self.x < self.target_x: self.x += self.moveSpeed_x
-                    if self.x > self.target_x: self.x = self.target_x
-                elif self.default_x > self.target_x:
-                    if self.x > self.target_x: self.x -= self.moveSpeed_x
-                    if self.x < self.target_x: self.x = self.target_x
-                if self.default_y < self.target_y:
-                    if self.y < self.target_y: self.y += self.moveSpeed_y
-                    if self.y > self.target_y: self.y = self.target_y
-                elif self.default_y > self.target_y:
-                    if self.y > self.target_y: self.y -= self.moveSpeed_y
-                    if self.y < self.target_y: self.y = self.target_y
+                if self.__default_x < self.__target_x:
+                    if self.x < self.__target_x: self.x += self.__move_speed_x
+                    if self.x > self.__target_x: self.x = self.__target_x
+                elif self.__default_x > self.__target_x:
+                    if self.x > self.__target_x: self.x -= self.__move_speed_x
+                    if self.x < self.__target_x: self.x = self.__target_x
+                if self.__default_y < self.__target_y:
+                    if self.y < self.__target_y: self.y += self.__move_speed_y
+                    if self.y > self.__target_y: self.y = self.__target_y
+                elif self.__default_y > self.__target_y:
+                    if self.y > self.__target_y: self.y -= self.__move_speed_y
+                    if self.y < self.__target_y: self.y = self.__target_y
             else:
-                if self.default_x < self.target_x:
-                    if self.x > self.default_x: self.x -= self.moveSpeed_x
-                    if self.x < self.default_x: self.x = self.default_x
-                elif self.default_x > self.target_x:
-                    if self.x < self.default_x: self.x += self.moveSpeed_x
-                    if self.x > self.default_x: self.x = self.default_x
-                if self.default_y < self.target_y:
-                    if self.y > self.default_y: self.y -= self.moveSpeed_y
-                    if self.y < self.default_y: self.y = self.default_y
-                elif self.default_y > self.target_y:
-                    if self.y < self.default_y: self.y += self.moveSpeed_y
-                    if self.y > self.default_y: self.y = self.default_y
+                if self.__default_x < self.__target_x:
+                    if self.x > self.__default_x: self.x -= self.__move_speed_x
+                    if self.x < self.__default_x: self.x = self.__default_x
+                elif self.__default_x > self.__target_x:
+                    if self.x < self.__default_x: self.x += self.__move_speed_x
+                    if self.x > self.__default_x: self.x = self.__default_x
+                if self.__default_y < self.__target_y:
+                    if self.y > self.__default_y: self.y -= self.__move_speed_y
+                    if self.y < self.__default_y: self.y = self.__default_y
+                elif self.__default_y > self.__target_y:
+                    if self.y < self.__default_y: self.y += self.__move_speed_y
+                    if self.y > self.__default_y: self.y = self.__default_y
 
 #gif图片管理
 class GifSurface(AdvancedAbstractImage):
-    def __init__(self,imgList:numpy.ndarray, x:Union[int,float], y:Union[int,float], width:int, height:int, updateGap:int):
-        super().__init__(imgList,x,y,width,height)
+    def __init__(self,imgList:numpy.ndarray, x:Union[int,float], y:Union[int,float], width:int_f, height:int_f, updateGap:int_f, tag:str="default"):
+        super().__init__(imgList, x, y, width, height, tag)
         self.imgId:int = 0
         self.updateGap:int = max(int(updateGap),0)
         self.countDown:int = 0
+    #返回一个复制
+    def copy(self): return GifSurface(self.get_image_copy(), self.x, self.y, self._width, self._height, self.updateGap)
+    #返回一个浅复制品
+    def light_copy(self): return GifSurface(self.get_image_pointer(), self.x, self.y, self._width, self._height, self.updateGap)
     #当前图片
     @property
     def current_image(self) -> StaticImage: return self.img[self.imgId]

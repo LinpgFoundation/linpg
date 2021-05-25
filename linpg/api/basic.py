@@ -166,19 +166,27 @@ def cope_bounding(img:ImageSurface) -> ImageSurface: return crop_img(img,img.get
 
 """展示"""
 #中心展示模块1：接受两个item和item2的x和y，将item1展示在item2的中心位置,但不展示item2：
-def display_in_center(item1:ImageSurface, item2:ImageSurface, x:Union[int,float], y:Union[int,float], screen:ImageSurface,
-    off_set_x:Union[int,float] = 0, off_set_y:Union[int,float] = 0) -> None:
+def display_in_center(
+    item1:ImageSurface, item2:ImageSurface, x:Union[int,float], y:Union[int,float], screen:ImageSurface,
+    off_set_x:Union[int,float] = 0, off_set_y:Union[int,float] = 0
+    ) -> None:
     added_x = (item2.get_width()-item1.get_width())/2
     added_y = (item2.get_height()-item1.get_height())/2
     screen.blit(item1,(x+added_x+off_set_x,y+added_y+off_set_y))
 
 #中心展示模块2：接受两个item和item2的x和y，展示item2后，将item1展示在item2的中心位置：
-def display_within_center(item1:ImageSurface, item2:ImageSurface, x:Union[int,float], y:Union[int,float], screen:ImageSurface,
-    off_set_x:Union[int,float] = 0, off_set_y:Union[int,float] = 0) -> None:
+def display_within_center(
+    item1:ImageSurface, item2:ImageSurface, x:Union[int,float], y:Union[int,float], screen:ImageSurface,
+    off_set_x:Union[int,float] = 0, off_set_y:Union[int,float] = 0
+    ) -> None:
     added_x = (item2.get_width()-item1.get_width())/2
     added_y = (item2.get_height()-item1.get_height())/2
     screen.blit(item2,(x+off_set_x,y+off_set_y))
     screen.blit(item1,(x+added_x+off_set_x,y+added_y+off_set_y))
+
+# 将array转换并画到surface上
+def draw_array(surface: ImageSurface, array: any) -> None:
+    pygame.surfarray.blit_array(surface, array)
 
 """其他"""
 #字典合并

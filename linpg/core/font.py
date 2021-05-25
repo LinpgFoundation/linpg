@@ -1,6 +1,6 @@
 # cython: language_level=3
 import pygame.freetype
-from .surface import *
+from .gif import *
 
 #文字渲染器管理模块
 class FontGenerator:

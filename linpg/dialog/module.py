@@ -54,18 +54,21 @@ class AbstractDialogSystem(AbstractGameSystem):
             self.__background_image_name = image_name
             #更新背景的图片数据
             if self.__background_image_name is not None:
-                #尝试加载图片式的背景
-                img_path = os.path.join(self._background_image_folder_path,self.__background_image_name)
-                if os.path.exists(img_path):
-                    self.__background_image_surface = load_static_image(img_path,(0,0))
-                #如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
-                elif os.path.exists(os.path.join(self._dynamic_background_folder_path,self.__background_image_name)):
-                    self.__background_image_surface = VedioSurface(
-                        os.path.join(self._dynamic_background_folder_path,self.__background_image_name),display.get_width(),display.get_height()
-                        )
-                    self.__background_image_surface.start()
+                if self.__background_image_name != "<transparent>":
+                    #尝试加载图片式的背景
+                    img_path = os.path.join(self._background_image_folder_path,self.__background_image_name)
+                    if os.path.exists(img_path):
+                        self.__background_image_surface = load_static_image(img_path,(0,0))
+                    #如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
+                    elif os.path.exists(os.path.join(self._dynamic_background_folder_path,self.__background_image_name)):
+                        self.__background_image_surface = VedioSurface(
+                            os.path.join(self._dynamic_background_folder_path,self.__background_image_name),display.get_width(),display.get_height()
+                            )
+                        self.__background_image_surface.start()
+                    else:
+                        throw_exception("error","Cannot find a background image or video file called '{}'.".format(self.__background_image_name))
                 else:
-                    throw_exception("error","Cannot find a background image or video file called '{}'.".format(self.__background_image_name))
+                    self.__background_image_surface = None
             else:
                 self.__background_image_surface = self._black_bg.copy()
     #停止播放
@@ -76,9 +79,10 @@ class AbstractDialogSystem(AbstractGameSystem):
         super().stop()
     #将背景图片画到surface上
     def display_background_image(self, surface:ImageSurface) -> None:
-        if isinstance(self.__background_image_surface, Rect):
-            self.__background_image_surface.set_size(surface.get_width(), surface.get_height())
-        self.__background_image_surface.draw(surface)
+        if self.__background_image_surface is not None:
+            if isinstance(self.__background_image_surface, Rect):
+                self.__background_image_surface.set_size(surface.get_width(), surface.get_height())
+            self.__background_image_surface.draw(surface)
     #把基础内容画到surface上
     def draw(self, surface:ImageSurface) -> None:
         #检测章节是否初始化
@@ -265,7 +269,7 @@ class NpcImageManager:
     #更新立绘
     def update(self, characterNameList:Union[list,tuple,None]) -> None:
         self.__npcLastRound = self.__npcThisRound
-        self.__npcThisRound = tuple(characterNameList) if isinstance(characterNameList,(list,tuple)) else tuple()
+        self.__npcThisRound = tuple(characterNameList) if characterNameList is not None else tuple()
         self.__npcLastRoundImgAlpha = 255
         self.__npcThisRoundImgAlpha = 5
         self.__move_x = 0

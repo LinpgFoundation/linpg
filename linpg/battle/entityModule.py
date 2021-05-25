@@ -249,7 +249,7 @@ class EntityImageManager:
                     }
                 if faction == "sangvisFerri":
                     for img in self.__CHARACTERS_IMAGE_DICT[characterType][action]["img"]:
-                        img.flip_original()
+                        img.flip_original_img()
                 return {"imgId":0,"alpha":255}
             else:
                 return None

@@ -1,5 +1,4 @@
 # cython: language_level=3
-from PIL import Image as ImageLoader
 from .font import *
 
 # 高级图片加载模块：接收图片路径（或者已经载入的图片）,位置:(x,y),长,高,返回对应的图片class
@@ -62,32 +61,6 @@ def load_movable_image(
         tag
         )
 
-# 加载GIF格式图片
-def load_gif(
-    img_list_or_path: Union[str, tuple, list],
-    position: tuple,
-    size: tuple,
-    updateGap: int = 1
-    ) -> GifSurface:
-    imgList: list = []
-    # 如果是gif文件
-    if isinstance(img_list_or_path, str) and img_list_or_path.endswith(".gif"):
-        gif_image: object = ImageLoader.open(img_list_or_path)
-        theFilePath: str = os.path.dirname(img_list_or_path)
-        for i in range(gif_image.n_frames):
-            gif_image.seek(i)
-            pathTmp = os.path.join(theFilePath, "gifTempFileForLoading_{}.png".format(i))
-            gif_image.save(pathTmp)
-            imgList.append(StaticImage(pathTmp, 0, 0, size[0], size[1]))
-            os.remove(pathTmp)
-    # 如果是一个列表的文件路径
-    elif isinstance(img_list_or_path, (tuple, list)):
-        for image_path in img_list_or_path:
-            imgList.append(StaticImage(image_path, 0, 0, size[0], size[1]))
-    else:
-        throw_exception("error", 'Invalid input for "img_list_or_path": {}'.format(img_list_or_path))
-    return GifSurface(numpy.asarray(imgList), position[0], position[1], size[0], size[1], updateGap)
-
 #转换linpg.Rect至pygame.Rect
 def convert_to_pygame_rect(rect:RectLiked) -> pygame.Rect:
     # 如果是pygame.Rect类，则没必要转换
@@ -133,7 +106,3 @@ def is_hover(
         return imgObject.is_hover((mouse_x - off_set_x, mouse_y - off_set_y))
     else:
         return is_hover_pygame_object(imgObject, objectPos, off_set_x, off_set_y)
-
-# 将array转换并画到surface上
-def draw_array(surface: ImageSurface, array: any) -> None:
-    pygame.surfarray.blit_array(surface, array)

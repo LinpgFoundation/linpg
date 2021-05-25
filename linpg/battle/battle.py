@@ -18,15 +18,22 @@ class AbstractBattleSystem(AbstractGameSystem):
         self.alliances_data = None
         self.enemies_data = None
         #地图数据
-        self.MAP = None
-        #对话数据
-        self.dialogData = None
+        self.MAP:object = None
+        #视觉小说系统与参数
+        self._DIALOG:object = DialogSystem(True)
+        self.dialog_parameters:dict = None
+        self.dialog_during_battle:dict = {}
+        self._is_dialog_updated:bool = False
+        self.dialog_key:str = ""
         #方格标准尺寸
         self._standard_block_width:int = int(display.get_width()/10)
         self._standard_block_height:int = int(display.get_height()/10)
         #缩进
         self.zoomIn = 100
         self.zoomIntoBe = 100
+    def stop(self) -> None:
+        self._DIALOG.stop()
+        super().stop()
     #获取对话文件所在的具体路径
     def get_map_file_location(self) -> str:
         return os.path.join("Data",self._chapter_type,"chapter{}_map.yaml".format(self._chapter_id)) if self._project_name is None\

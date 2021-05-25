@@ -1,5 +1,6 @@
 # cython: language_level=3
 import threading
+from tkinter.constants import TRUE
 from .mixer import *
 
 #使用多线程保存数据
@@ -23,6 +24,7 @@ class AbstractSystem:
     def isPlaying(self) -> bool: return self.__is_playing
     def is_playing(self) -> bool: return self.__is_playing
     def stop(self) -> None: self.__is_playing = False
+    def _continue(self) -> None: self.__is_playing = True
     #是否本体语言和当前一致
     def language_need_update(self) -> bool: return self._language_when_initialize != get_current_language()
     #更新语言

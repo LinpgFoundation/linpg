@@ -156,10 +156,10 @@ class StaticImage(AdvancedAbstractImage):
     #反转原图，并打上已反转的标记
     def flip(self) -> None:
         self.__is_flipped = not self.__is_flipped
-        self.flip_original()
+        self.flip_original_img()
     #反转原图
-    def flip_original(self) -> None:
-        self.img = flip_img(self.img,True,False)
+    def flip_original_img(self, horizontal:bool=True, vertical:bool=False) -> None:
+        self.img = flip_img(self.img, horizontal, vertical)
         self.__need_update = True
     #如果不处于反转状态，则反转
     def flip_if_not(self) -> None:
@@ -271,30 +271,3 @@ class MovableImage(StaticImage):
                 elif self.__default_y > self.__target_y:
                     if self.y < self.__default_y: self.y += self.__move_speed_y
                     if self.y > self.__default_y: self.y = self.__default_y
-
-#gif图片管理
-class GifSurface(AdvancedAbstractImage):
-    def __init__(self,imgList:numpy.ndarray, x:Union[int,float], y:Union[int,float], width:int_f, height:int_f, updateGap:int_f, tag:str="default"):
-        super().__init__(imgList, x, y, width, height, tag)
-        self.imgId:int = 0
-        self.updateGap:int = max(int(updateGap),0)
-        self.countDown:int = 0
-    #返回一个复制
-    def copy(self): return GifSurface(self.get_image_copy(), self.x, self.y, self._width, self._height, self.updateGap)
-    #返回一个浅复制品
-    def light_copy(self): return GifSurface(self.get_image_pointer(), self.x, self.y, self._width, self._height, self.updateGap)
-    #当前图片
-    @property
-    def current_image(self) -> StaticImage: return self.img[self.imgId]
-    #展示
-    def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)):
-        if not self.hidden:
-            self.current_image.set_size(self.get_width(), self.get_height())
-            self.current_image.set_alpha(self._alpha)
-            self.current_image.display(surface, add_pos(self.pos,offSet))
-            if self.countDown >= self.updateGap:
-                self.countDown = 0
-                self.imgId += 1
-                if self.imgId >= len(self.img): self.imgId = 0
-            else:
-                self.countDown += 1

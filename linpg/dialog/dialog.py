@@ -3,10 +3,10 @@ from .module import *
 
 #视觉小说系统模块
 class DialogSystem(AbstractDialogSystem):
-    def __init__(self) -> None:
+    def __init__(self, basic_features_only:bool=False) -> None:
         super().__init__()
         #UI按钮
-        self._buttons_mananger = DialogButtons()
+        self._buttons_mananger = DialogButtons() if not basic_features_only else None
         #加载对话框系统
         self._dialog_txt_system = DialogContent(int(display.get_width()*0.015))
         #更新音效
@@ -20,9 +20,9 @@ class DialogSystem(AbstractDialogSystem):
             os.path.join(DIALOG_UI_PATH,"back.png"),
             (display.get_width()*0.04,display.get_height()*0.04),
             (display.get_width()*0.03,display.get_height()*0.04), 150
-        )
+        ) if not basic_features_only else None
         #暂停菜单
-        self.pause_menu = PauseMenu()
+        self.pause_menu = PauseMenu() if not basic_features_only else None
     #返回需要保存数据
     def _get_data_need_to_save(self) -> dict: return merge_dict(
         self.data_of_parent_game_system, {"dialog_id": self._dialog_id, "dialog_options": self.dialog_options, "type": self.part}
@@ -49,8 +49,8 @@ class DialogSystem(AbstractDialogSystem):
     #更新语言
     def updated_language(self, surface:ImageSurface) -> None:
         super().updated_language()
-        self.pause_menu.initialize(surface)
-        self._buttons_mananger.initialize()
+        if self.pause_menu is not None: self.pause_menu.initialize(surface)
+        if self._buttons_mananger is not None: self._buttons_mananger.initialize()
         self.__process_data()
     #加载章节信息
     def __process_data(self) -> None:
@@ -98,6 +98,28 @@ class DialogSystem(AbstractDialogSystem):
             if self.auto_save: self.save_progress()
         else:
             throw_exception("error","The dialog id {} does not exist!".format(theNextDialogId))
+    def continue_scene(self, theNextDialogId:Union[str,int]) -> None:
+        self._continue()
+        self.__update_scene(theNextDialogId)
+    def __check_button_event(self, surface:ImageSurface) -> bool:
+        if self._buttons_mananger is not None and not self._is_showing_history:
+            if self._buttons_mananger.button_hovered == "hide":
+                self._buttons_mananger.hidden = not self._buttons_mananger.hidden
+                self._dialog_txt_system.hidden = self._buttons_mananger.hidden
+            #如果接来下没有文档了或者玩家按到了跳过按钮, 则准备淡出并停止播放
+            elif self._buttons_mananger.button_hovered == "skip":
+                self.fadeOut(surface)
+                self.stop()
+            elif self._buttons_mananger.button_hovered == "auto":
+                self._buttons_mananger.autoModeSwitch()
+                self._dialog_txt_system.autoMode = self._buttons_mananger.autoMode
+            elif self._buttons_mananger.button_hovered == "history":
+                self._is_showing_history = True
+            else:
+                return False
+        else:
+            return False
+        return True
     #更新音量
     def __update_sound_volume(self) -> None:
         self.set_bgm_volume(get_setting("Sound","background_music")/100)
@@ -126,26 +148,15 @@ class DialogSystem(AbstractDialogSystem):
         #背景音乐
         self.play_bgm(-1)
         #按钮
-        self._buttons_mananger.draw(surface)
+        if self._buttons_mananger is not None: self._buttons_mananger.draw(surface)
         #按键判定
         leftClick = False
         if controller.get_event("confirm"):
-            if self._buttons_mananger.button_hovered == "hide" and not self._is_showing_history:
-                self._buttons_mananger.hidden = not self._buttons_mananger.hidden
-                self._dialog_txt_system.hidden = self._buttons_mananger.hidden
-            #如果接来下没有文档了或者玩家按到了跳过按钮
-            elif self._buttons_mananger.button_hovered == "skip" and not self._is_showing_history:
-                #淡出
-                self.fadeOut(surface)
-                self.stop()
-            elif self._buttons_mananger.button_hovered == "auto" and not self._is_showing_history:
-                self._buttons_mananger.autoModeSwitch()
-                self._dialog_txt_system.autoMode = self._buttons_mananger.autoMode
-            elif self.history_back.is_hover() and self._is_showing_history is True:
+            if self.history_back is not None and self.history_back.is_hover() and self._is_showing_history is True:
                 self._is_showing_history = False
                 self._history_surface = None
-            elif self._buttons_mananger.button_hovered == "history" and not self._is_showing_history:
-                self._is_showing_history = True
+            elif self.__check_button_event(surface) is True:
+                pass
             #如果所有行都没有播出，则播出所有行
             elif not self._dialog_txt_system.is_all_played():
                 self._dialog_txt_system.play_all()
@@ -159,7 +170,7 @@ class DialogSystem(AbstractDialogSystem):
             self._history_surface_local_y -= display.get_height()*0.1
         if controller.get_event("previous") and self.dialogContent[self._dialog_id]["last_dialog_id"] is not None:
             self.__update_scene(self.dialogContent[self._dialog_id]["last_dialog_id"])
-        if controller.get_event("back"):
+        if controller.get_event("back") and self.pause_menu is not None:
             if self._is_showing_history is True:
                 self._is_showing_history = False
             else:
@@ -200,7 +211,9 @@ class DialogSystem(AbstractDialogSystem):
                 del progress_saved_text
                 self.pause_menu.screenshot = None
         #显示对话选项
-        if self._dialog_txt_system.is_all_played() and self._dialog_txt_system.hidden is False and self.dialogContent[self._dialog_id]["next_dialog_id"] is not None and self.dialogContent[self._dialog_id]["next_dialog_id"]["type"] == "option":
+        if self._dialog_txt_system.is_all_played() and self._dialog_txt_system.hidden is False and \
+            self.dialogContent[self._dialog_id]["next_dialog_id"] is not None and \
+                self.dialogContent[self._dialog_id]["next_dialog_id"]["type"] == "option":
             optionBox_y_base = (display.get_height()*3/4-(len(self.dialogContent[self._dialog_id]["next_dialog_id"]["target"]))*2*display.get_width()*0.03)/4
             optionBox_height = int(display.get_width()*0.05)
             nextDialogId = None
@@ -228,7 +241,7 @@ class DialogSystem(AbstractDialogSystem):
                 self.__update_scene(nextDialogId)
                 leftClick = False
         #展示历史
-        if self._is_showing_history:
+        if self._is_showing_history is True:
             if self._history_surface is None:
                 self._history_surface = new_surface(display.get_size()).convert()
                 self._history_surface.fill(get_color_rbga("black"))
@@ -258,26 +271,47 @@ class DialogSystem(AbstractDialogSystem):
                     else:
                         dialogIdTemp = None
             surface.blit(self._history_surface,(0,0))
-            self.history_back.draw(surface)
-            self.history_back.is_hover()
+            if self.history_back is not None:
+                self.history_back.draw(surface)
+                self.history_back.is_hover()
+        #如果对话被隐藏，则无视进入下一个对白的操作
+        elif self._buttons_mananger is not None and self._buttons_mananger.hidden is True:
+            pass
+        #如果操作或自动播放系统告知需要更新
         elif self._dialog_txt_system.needUpdate() or leftClick:
-            if self.dialogContent[self._dialog_id]["next_dialog_id"] is None or self.dialogContent[self._dialog_id]["next_dialog_id"]["target"] is None:
+            if self.dialogContent[self._dialog_id]["next_dialog_id"] is None:
                 self.fadeOut(surface)
                 self.stop()
-            elif self.dialogContent[self._dialog_id]["next_dialog_id"]["type"] == "default":
-                self.__update_scene(self.dialogContent[self._dialog_id]["next_dialog_id"]["target"])
-            #如果是需要播放过程动画
-            elif self.dialogContent[self._dialog_id]["next_dialog_id"]["type"] == "cutscene":
-                self.fadeOut(surface)
-                self.stop()
-                cutscene(surface,os.path.join(self._dynamic_background_folder_path,self.dialogContent[self._dialog_id]["next_dialog_id"]["target"]))
-            #如果是切换场景
-            elif self.dialogContent[self._dialog_id]["next_dialog_id"]["type"] == "changeScene":
-                self.fadeOut(surface)
-                #更新场景
-                self.__update_scene(self.dialogContent[self._dialog_id]["next_dialog_id"]["target"])
-                self._dialog_txt_system.resetDialogueboxData()
-                self.fadeIn(surface)
+            else:
+                next_dialog_type:str = str(self.dialogContent[self._dialog_id]["next_dialog_id"]["type"])
+                #默认转到下一个对话
+                if next_dialog_type == "default":
+                    self.__update_scene(self.dialogContent[self._dialog_id]["next_dialog_id"]["target"])
+                #如果是多选项，则不用处理
+                elif next_dialog_type == "option": pass
+                #如果是切换场景
+                elif next_dialog_type == "changeScene":
+                    self.fadeOut(surface)
+                    #更新场景
+                    self.__update_scene(self.dialogContent[self._dialog_id]["next_dialog_id"]["target"])
+                    self._dialog_txt_system.resetDialogueboxData()
+                    self.fadeIn(surface)
+                #如果是需要播放过程动画
+                elif next_dialog_type == "cutscene":
+                    self.fadeOut(surface)
+                    self.stop()
+                    cutscene(
+                        surface,
+                        os.path.join(self._dynamic_background_folder_path, self.dialogContent[self._dialog_id]["next_dialog_id"]["target"])
+                        )
+                #break被视为立刻退出，没有淡出动画
+                elif next_dialog_type == "break":
+                    self._npc_manager.update(tuple())
+                    self._dialog_txt_system.resetDialogueboxData()
+                    self.stop()
+                #非法type
+                else:
+                    throw_exception("error", 'Type "{}" is not a valid type.'.format(next_dialog_type))
 
 #对话制作器
 class DialogEditor(AbstractDialogSystem):

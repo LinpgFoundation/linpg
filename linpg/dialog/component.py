@@ -2,23 +2,38 @@
 from .movie import *
 
 #ui路径
-DIALOG_UI_PATH:str = "Assets/image/UI"
+DIALOG_UI_PATH:str = os.path.join("Assets", "image", "UI")
 
-#对话框基础模块
-class AbstractDialog:
-    def __init__(self, img:ImageSurface, fontSize:Union[int,float]):
-        self.dialoguebox = img
+#对话框和对话框内容
+class DialogContent:
+    def __init__(self, fontSize:int_f):
+        self.dialoguebox = quickly_load_img(os.path.join(DIALOG_UI_PATH, "dialoguebox.png"))
         self.FONTSIZE = int(fontSize)
         self.FONT = create_font(self.FONTSIZE)
         self.content = []
         self.narrator = None
         self.textIndex = None
         self.displayedLine = None
-    def update(self, txt:list, narrator:str) -> None:
-        self.textIndex = 0
-        self.displayedLine = 0
-        self.content = txt
-        self.narrator = narrator
+        try:
+            self.__textPlayingSound = load_sound(r"Assets/sound/ui/dialog_words_playing.ogg")
+        except FileNotFoundError:
+            self.__textPlayingSound = None
+            throw_exception(
+                "warning",
+                "Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!\nAs a result, the text playing sound will be disabled."
+                )
+        self.READINGSPEED = get_setting("ReadingSpeed")
+        self.dialoguebox_max_height = None
+        #鼠标图标
+        self.mouseImg = load_gif(
+            (os.path.join(DIALOG_UI_PATH,"mouse_none.png"), os.path.join(DIALOG_UI_PATH,"mouse.png")),
+            (display.get_width()*0.82,display.get_height()*0.83),(self.FONTSIZE,self.FONTSIZE), 50
+            )
+        self.hidden:bool = False
+        self.readTime = 0
+        self.totalLetters = 0
+        self.autoMode = False
+        self.reset()
     #是否所有内容均已展出
     def is_all_played(self) -> bool:
         #如果self.content是空的，也就是说没有任何内容，那么应当视为所有内容都被播放了
@@ -31,81 +46,114 @@ class AbstractDialog:
         if not self.is_all_played():
             self.displayedLine = len(self.content)-1
             self.textIndex = len(self.content[self.displayedLine])-1
-
-#对话框和对话框内容
-class DialogBox(AbstractDialog,GameObject2d):
-    def __init__(self, imgPath:str, x:Union[int,float], y:Union[int,float], width:int, height:int, fontSize:int):
-        AbstractDialog.__init__(self,load_img(imgPath,(width,height)),fontSize)
-        GameObject2d.__init__(self,x,y)
-        self.__surface = None
-        self.deafult_x = x
-        self.deafult_y = y
-        self.txt_x = fontSize
-        self.txt_y = fontSize*2
-        self.narrator_icon = None
-        self.narrator_x = fontSize*3
-        self.narrator_y = fontSize/2
-        self.updated:bool = False
-        self.__drew:bool = False
-        self.__flipped:bool = False
-    def get_width(self) -> int: return self.dialoguebox.get_width()
-    def get_height(self)-> int:  return self.dialoguebox.get_height()
-    def set_size(self, width:Union[int,float,None], height:Union[int,float,None]) -> None:
-        self.dialoguebox = smoothly_resize_img(self.dialoguebox,(width,height))
-    def draw(self, surface:ImageSurface, characterInfoBoardUI:object=None):
-        #如果对话框需要继续更新
-        if not self.__drew:
-            self.__surface = self.dialoguebox.copy()
-            if self.__flipped is True:
-                #讲述人名称
-                if self.narrator is not None:
-                    self.__surface.blit(self.FONT.render(self.narrator,get_antialias(),(255,255,255)),(self.get_width()*0.6+self.narrator_x,self.narrator_y))
-                #角色图标
-                if self.narrator_icon is not None and characterInfoBoardUI is not None:
-                    self.__surface.blit(characterInfoBoardUI.characterIconImages[self.narrator_icon],(self.get_width()-self.txt_x,self.txt_y))
-                x = self.txt_x
-            else:
-                #讲述人名称
-                if self.narrator is not None:
-                    self.__surface.blit(self.FONT.render(self.narrator,get_antialias(),(255,255,255)),(self.narrator_x,self.narrator_y))
-                #角色图标
-                if self.narrator_icon is not None and characterInfoBoardUI is not None:
-                    img = characterInfoBoardUI.characterIconImages[self.narrator_icon]
-                    self.__surface.blit(img,(self.txt_x,self.txt_y))
-                    x = self.txt_x+img.get_width() + self.FONTSIZE
-                else:
-                    x = self.txt_x
-            y = self.txt_y
-            if len(self.content)>0:
-                #已经播放的行
-                for i in range(self.displayedLine):
-                    self.__surface.blit(self.FONT.render(self.content[i],get_antialias(),(255,255,255)),(x,y))
-                    y += self.FONTSIZE*1.2
-                #正在播放的行
-                self.__surface.blit(self.FONT.render(self.content[self.displayedLine][:self.textIndex],get_antialias(),(255,255,255)),(x,y))
-                if self.textIndex < len(self.content[self.displayedLine]):
-                    self.textIndex += 1
-                elif self.displayedLine < len(self.content)-1:
-                    self.displayedLine += 1
-                    self.textIndex = 0
-                elif self.textIndex >= len(self.content[self.displayedLine]):
-                    self.__drew = True
-        surface.blit(self.__surface,(self.x,self.y))
-    def update(self, txt:list, narrator:str, narrator_icon:str=None) -> None:
-        super().update(txt,narrator)
-        self.updated = True
-        self.__drew = False
-        self.narrator_icon = narrator_icon
+    #更新内容
+    def update(self, txt:list, narrator:str, forceNotResizeDialoguebox:bool=False) -> None:
+        self.totalLetters = 0
+        self.readTime = 0
+        for i in range(len(self.content)):
+            self.totalLetters += len(self.content[i])
+        if self.narrator != narrator and not forceNotResizeDialoguebox:
+            self.__fade_out_stage = True
+        self.textIndex = 0
+        self.displayedLine = 0
+        self.content = txt
+        self.narrator = narrator
+        self.stop_playing_text_sound()
     def reset(self) -> None:
-        self.x = self.deafult_x
-        self.y = self.deafult_y
-        self.updated = False
-        #刷新对话框surface防止上一段的对话还残留在surface上
-        self.content = []
-        self.__surface = self.dialoguebox.copy()
-    def flip(self) -> None:
-        self.dialoguebox = flip_img(self.dialoguebox,True,False)
-        self.__flipped = not self.__flipped
+        self.__fade_out_stage = False
+        self.dialoguebox_height = 0
+        self.dialoguebox_y = None
+        self.__txt_alpha = 255
+    #获取文字播放时的音效的音量
+    def get_sound_volume(self) -> float: 
+        if self.__textPlayingSound is not None:
+            return self.__textPlayingSound.get_volume()
+        else:
+            return 0.0
+    #修改文字播放时的音效的音量
+    def set_sound_volume(self, num:Union[float,int]) -> None:
+        if self.__textPlayingSound is not None: self.__textPlayingSound.set_volume(num/100.0)
+    #是否需要更新
+    def needUpdate(self) -> bool:
+        return True if self.autoMode and self.readTime >= self.totalLetters else False
+    #渲染文字
+    def render_font(self, txt:str, color:tuple) -> ImageSurface: return self.FONT.render(txt,get_antialias(),color)
+    #如果音效还在播放则停止播放文字音效
+    def stop_playing_text_sound(self) -> None:
+        if is_any_sound_playing() and self.__textPlayingSound is not None: self.__textPlayingSound.stop()
+    #渐入
+    def __fade_in(self, surface:ImageSurface) -> None:
+        #如果对话框图片的最高高度没有被设置，则根据屏幕大小设置一个
+        if self.dialoguebox_max_height is None:
+            self.dialoguebox_max_height = surface.get_height()/4
+        #如果当前对话框图片的y坐标不存在（一般出现在对话系统例行初始化后），则根据屏幕大小设置一个
+        if self.dialoguebox_y is None:
+            self.dialoguebox_y = surface.get_height()*0.65+self.dialoguebox_max_height/2
+        #画出对话框图片
+        surface.blit(smoothly_resize_img(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
+        (surface.get_width()*0.13,self.dialoguebox_y))
+        #如果对话框图片还在放大阶段
+        if self.dialoguebox_height < self.dialoguebox_max_height:
+            self.dialoguebox_height = min(
+                int(self.dialoguebox_height+self.dialoguebox_max_height*display.sfpsp/10), self.dialoguebox_max_height
+                )
+            self.dialoguebox_y -= int(self.dialoguebox_max_height*display.sfpsp/20)
+        #如果已经放大好了
+        else:
+            self.__blit_txt(surface)
+    #淡出
+    def __fade_out(self, surface:ImageSurface) -> None:
+        #画出对话框图片
+        if self.dialoguebox_y is not None:
+            surface.blit(
+                smoothly_resize_img(self.dialoguebox,(surface.get_width()*0.74,self.dialoguebox_height)),
+                (surface.get_width()*0.13,self.dialoguebox_y)
+                )
+        if self.dialoguebox_height > 0:
+            self.dialoguebox_height = max(int(self.dialoguebox_height-self.dialoguebox_max_height*display.sfpsp/10), 0)
+            self.dialoguebox_y += int(self.dialoguebox_max_height*display.sfpsp/20)
+        else:
+            self.reset()
+    #展示
+    def draw(self, surface:ImageSurface) -> None:
+        if not self.hidden:
+            if not self.__fade_out_stage:
+                self.__fade_in(surface)
+            else:
+                self.__fade_out(surface)
+    #将文字画到屏幕上
+    def __blit_txt(self, surface:ImageSurface) -> None:
+        x:int = int(surface.get_width()*0.2)
+        y:int = int(surface.get_height()*0.73)
+        #写上当前讲话人的名字
+        if self.narrator is not None:
+            surface.blit(self.render_font(self.narrator,(255, 255, 255)),(x,self.dialoguebox_y+self.FONTSIZE))
+        #画出鼠标gif
+        self.mouseImg.draw(surface)
+        #对话框已播放的内容
+        for i in range(self.displayedLine):
+            surface.blit(self.render_font(self.content[i],(255, 255, 255)),(x,y+self.FONTSIZE*1.5*i))
+        #对话框正在播放的内容
+        surface.blit(
+            self.render_font(self.content[self.displayedLine][:self.textIndex],(255, 255, 255)),
+            (x,y+self.FONTSIZE*1.5*self.displayedLine)
+            )
+        #如果当前行的字符还没有完全播出
+        if self.textIndex < len(self.content[self.displayedLine]):
+            if not is_any_sound_playing() and self.__textPlayingSound is not None:
+                self.__textPlayingSound.play()
+            self.textIndex +=1
+        #当前行的所有字都播出后，播出下一行
+        elif self.displayedLine < len(self.content)-1:
+            if not is_any_sound_playing() and self.__textPlayingSound is not None:
+                self.__textPlayingSound.play()
+            self.textIndex = 1
+            self.displayedLine += 1
+        #当所有行都播出后
+        else:
+            self.stop_playing_text_sound()
+            if self.autoMode and self.readTime < self.totalLetters:
+                self.readTime += self.READINGSPEED
 
 #对话系统按钮UI模块
 class DialogButtons:
@@ -166,7 +214,7 @@ class DialogButtons:
             os.path.join(DIALOG_UI_PATH,"dialog_history.png"), (window_x*0.1, window_y*0.05),(self.FONTSIZE,self.FONTSIZE), 150
         )
     @property
-    def button_hovered(self) -> str:
+    def item_hovered(self) -> str:
         if self.__button_hovered == 1:
             return "hide"
         elif self.__button_hovered == 2:
@@ -271,7 +319,7 @@ class LeaveWithoutSavingWarning(AbstractImage):
         #触碰的按钮
         self.__button_hovered:int = 0
     @property
-    def button_hovered(self) -> str:
+    def item_hovered(self) -> str:
         if self.__button_hovered == 1:
             return "save"
         elif self.__button_hovered == 2:

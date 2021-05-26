@@ -77,7 +77,7 @@ class DialogSystem(AbstractDialogSystem):
         if len(self.dialogContent) == 0 or "head" not in self.dialogContent: throw_exception("error","You need to set up a head for the dialog.")
         #将数据载入刚初始化的模块中
         self.__update_scene(self._dialog_id)
-        self._dialog_txt_system.resetDialogueboxData()
+        self._dialog_txt_system.reset()
     #更新场景
     def __update_scene(self, theNextDialogId:Union[str,int]) -> None:
         #如果dialog Id 不存在
@@ -103,17 +103,17 @@ class DialogSystem(AbstractDialogSystem):
         self.__update_scene(theNextDialogId)
     def __check_button_event(self, surface:ImageSurface) -> bool:
         if self._buttons_mananger is not None and not self._is_showing_history:
-            if self._buttons_mananger.button_hovered == "hide":
+            if self._buttons_mananger.item_hovered == "hide":
                 self._buttons_mananger.hidden = not self._buttons_mananger.hidden
                 self._dialog_txt_system.hidden = self._buttons_mananger.hidden
             #如果接来下没有文档了或者玩家按到了跳过按钮, 则准备淡出并停止播放
-            elif self._buttons_mananger.button_hovered == "skip":
+            elif self._buttons_mananger.item_hovered == "skip":
                 self.fadeOut(surface)
                 self.stop()
-            elif self._buttons_mananger.button_hovered == "auto":
+            elif self._buttons_mananger.item_hovered == "auto":
                 self._buttons_mananger.autoModeSwitch()
                 self._dialog_txt_system.autoMode = self._buttons_mananger.autoMode
-            elif self._buttons_mananger.button_hovered == "history":
+            elif self._buttons_mananger.item_hovered == "history":
                 self._is_showing_history = True
             else:
                 return False
@@ -294,7 +294,7 @@ class DialogSystem(AbstractDialogSystem):
                     self.fadeOut(surface)
                     #更新场景
                     self.__update_scene(self.dialogContent[self._dialog_id]["next_dialog_id"]["target"])
-                    self._dialog_txt_system.resetDialogueboxData()
+                    self._dialog_txt_system.reset()
                     self.fadeIn(surface)
                 #如果是需要播放过程动画
                 elif next_dialog_type == "cutscene":
@@ -306,8 +306,6 @@ class DialogSystem(AbstractDialogSystem):
                         )
                 #break被视为立刻退出，没有淡出动画
                 elif next_dialog_type == "break":
-                    self._npc_manager.update(tuple())
-                    self._dialog_txt_system.resetDialogueboxData()
                     self.stop()
                 #非法type
                 else:
@@ -615,7 +613,7 @@ class DialogEditor(AbstractDialogSystem):
         super().draw(surface)
         #画上对话框
         self._dialogue_box_image.draw(surface)
-        if self._npc_manager.npc_get_click is not None: surface.blit(self.removeNpcButton,controller.get_mouse_pos())
+        if self._npc_manager.character_get_click is not None: surface.blit(self.removeNpcButton,controller.get_mouse_pos())
         self.narrator.draw(surface)
         if self.narrator.needSave: self.dialogData[self.part][self._dialog_id]["narrator"] = self.narrator.get_text()
         self.content.draw(surface)
@@ -715,10 +713,10 @@ class DialogEditor(AbstractDialogSystem):
                 #鼠标右键
                 elif event.button == 3:
                     #移除角色立绘
-                    if self._npc_manager.npc_get_click is not None:
-                        self.dialogData[self.part][self._dialog_id]["characters_img"].remove(self._npc_manager.npc_get_click)
+                    if self._npc_manager.character_get_click is not None:
+                        self.dialogData[self.part][self._dialog_id]["characters_img"].remove(self._npc_manager.character_get_click)
                         self._npc_manager.update(self.dialogData[self.part][self._dialog_id]["characters_img"])
-                        self._npc_manager.npc_get_click = None
+                        self._npc_manager.character_get_click = None
         
         #画上右侧菜单的按钮
         self.UIContainerRightButton.draw(surface)
@@ -763,14 +761,14 @@ class DialogEditor(AbstractDialogSystem):
         
         #未保存离开时的警告
         self.__no_save_warning.draw(surface)
-        if leftClick is True and self.__no_save_warning.button_hovered != "":
+        if leftClick is True and self.__no_save_warning.item_hovered != "":
             #保存并离开
-            if self.__no_save_warning.button_hovered == "save":
+            if self.__no_save_warning.item_hovered == "save":
                 self.save_progress()
                 self.stop()
             #取消
-            elif self.__no_save_warning.button_hovered == "cancel":
+            elif self.__no_save_warning.item_hovered == "cancel":
                 self.__no_save_warning.hidden = True
             #不保存并离开
-            elif self.__no_save_warning.button_hovered == "dont_save":
+            elif self.__no_save_warning.item_hovered == "dont_save":
                 self.stop()

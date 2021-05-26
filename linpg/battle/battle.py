@@ -22,8 +22,8 @@ class AbstractBattleSystem(AbstractGameSystem):
         #视觉小说系统与参数
         self._DIALOG:object = DialogSystem(True)
         self.dialog_parameters:dict = None
-        self.dialog_during_battle:dict = {}
         self._is_dialog_updated:bool = False
+        self._dialog_dictionary:dict = {}
         self.dialog_key:str = ""
         #方格标准尺寸
         self._standard_block_width:int = int(display.get_width()/10)

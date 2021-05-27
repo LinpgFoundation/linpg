@@ -196,9 +196,9 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
         else:
             throw_exception("error",'Scroll bar position "{}" is not supported! Try sth like "right" or "bottom" instead.'.format(pos))
     #添加一个物品
-    def set(self, key:Union[str,int], value:Union[AbstractImage,ImageSurface,None]) -> None: self.__items_dict[key] = value
+    def set(self, key:Union[str,int], value:Union[AbstractImage, ImageSurface, None]) -> None: self.__items_dict[key] = value
     #获取一个物品
-    def get(self, key:Union[str,int]) -> Union[AbstractImage,ImageSurface,None]: return self.__items_dict[key]
+    def get(self, key:Union[str,int]) -> Union[AbstractImage, ImageSurface, None]: return self.__items_dict[key]
     #移除一个物品
     def remove(self, key:Union[str,int]) -> None: del self.__items_dict[key]
     #交换2个key名下的图片

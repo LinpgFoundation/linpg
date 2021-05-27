@@ -57,8 +57,8 @@ class DialogSystem(AbstractDialogSystem):
         #获取该项目的默认语言
         default_lang_of_dialog:str = self.get_default_lang()
         #读取目标对话文件的数据
-        if os.path.exists(self.get_dialog_file_location(get_setting("Language"))):
-            currentDialogData = load_config(self.get_dialog_file_location(get_setting("Language")),"dialogs")[self.part]
+        if os.path.exists(self.get_dialog_file_location()):
+            currentDialogData = load_config(self.get_dialog_file_location(),"dialogs")[self.part]
             #如果该dialog文件是另一个语言dialog文件的子类
             if default_lang_of_dialog != get_setting("Language"):
                 self.dialogContent = load_config(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")[self.part]
@@ -162,7 +162,7 @@ class DialogSystem(AbstractDialogSystem):
                 self._dialog_txt_system.play_all()
             else:
                 leftClick = True
-        if controller.get_event("scroll_up") and self._history_surface_local_y<0:
+        if controller.get_event("scroll_up") and self._history_surface_local_y < 0:
             self._history_surface = None
             self._history_surface_local_y += display.get_height()*0.1
         if controller.get_event("scroll_down"):
@@ -315,7 +315,7 @@ class DialogSystem(AbstractDialogSystem):
 class DialogEditor(AbstractDialogSystem):
     def load(self, chapterType:str, chapterId:int, part:str=None, projectName:str=None):
         self._initialize(chapterType,chapterId,projectName)
-        self.folder_for_save_file,self.name_for_save_file = os.path.split(self.get_dialog_file_location(get_setting("Language")))
+        self.folder_for_save_file,self.name_for_save_file = os.path.split(self.get_dialog_file_location())
         #文字
         self.FONTSIZE:int = int(display.get_width()*0.015)
         self.FONT = create_font(self.FONTSIZE)
@@ -424,8 +424,8 @@ class DialogEditor(AbstractDialogSystem):
     #返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
         original_data:dict = load_config(
-            self.get_dialog_file_location(get_setting("Language"))
-            ) if os.path.exists(self.get_dialog_file_location(get_setting("Language"))) else {}
+            self.get_dialog_file_location()
+            ) if os.path.exists(self.get_dialog_file_location()) else {}
         original_data["dialogs"] = self.__slipt_the_stuff_need_save()
         return original_data
     #更新背景选项栏
@@ -448,8 +448,8 @@ class DialogEditor(AbstractDialogSystem):
     #读取章节信息
     def __loadDialogData(self, part:str) -> None:
         self.dialogData = load_config(
-            self.get_dialog_file_location(get_setting("Language")),"dialogs"
-            ) if os.path.exists(self.get_dialog_file_location(get_setting("Language"))) else {}
+            self.get_dialog_file_location(),"dialogs"
+            ) if os.path.exists(self.get_dialog_file_location()) else {}
         self.parts = list(self.dialogData.keys())
         #获取默认语言
         default_lang_of_dialog:str = self.get_default_lang()
@@ -519,7 +519,7 @@ class DialogEditor(AbstractDialogSystem):
         return data_need_save
     #检查是否有任何改动
     def __no_changes_were_made(self) -> bool:
-        return load_config(self.get_dialog_file_location(get_setting("Language")),"dialogs") == self.__slipt_the_stuff_need_save()
+        return load_config(self.get_dialog_file_location(),"dialogs") == self.__slipt_the_stuff_need_save()
     #更新场景
     def __update_scene(self, theNextDialogId:Union[str,int]) -> None:
         if theNextDialogId in self.dialogData[self.part]:

@@ -30,7 +30,8 @@ class AbstractDialogSystem(AbstractGameSystem):
         #是否开启自动保存
         self.auto_save:bool = False
     #获取对话文件所在的具体路径
-    def get_dialog_file_location(self, lang:str) -> str:
+    def get_dialog_file_location(self, lang:str="") -> str:
+        if len(lang) == 0: lang = get_setting("Language")
         return os.path.join(
             self._dialog_folder_path, self._chapter_type, "chapter{0}_dialogs_{1}.yaml".format(self._chapter_id, lang)
             ) if self._project_name is None else os.path.join(

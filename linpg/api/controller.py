@@ -122,6 +122,8 @@ class DisplayController:
         self.__screen_scale:int = keep_in_range(int(get_setting("ScreenScale")),0,100)
         self.__standard_width:int = round(1920*self.__screen_scale/100)
         self.__standard_height:int = round(1080*self.__screen_scale/100)
+        #主要的窗口
+        self.__SCREEN_WINDOW:object = None
     #帧数
     @property
     def fps(self) -> int: return self.__fps
@@ -135,17 +137,33 @@ class DisplayController:
         pygame.display.flip()
         controller.draw()
     #设置窗口标题
-    def set_caption(self, title:any): pygame.display.set_caption(title)
+    def set_caption(self, title:str) -> None:
+        if is_using_pygame():
+            pygame.display.set_caption(title)
+        else:
+            self.__SCREEN_WINDOW.set_caption(title)
     #设置窗口图标
-    def set_icon(self, path:str): pygame.display.set_icon(pygame.image.load(os.path.join(path)))
+    def set_icon(self, path:str) -> None:
+        if is_using_pygame():
+            pygame.display.set_icon(quickly_load_img(path, False))
+        else:
+            self.__SCREEN_WINDOW.set_icon(quickly_load_img(path, False))
     #窗口尺寸
     def get_width(self) -> int: return self.__standard_width
     def get_height(self) -> int: return self.__standard_height
     def get_size(self) -> tuple: return self.__standard_width,self.__standard_height
     #初始化屏幕
-    def init_screen(self) -> any:
-        flags = pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN if self.__screen_scale == 100 else pygame.SCALED
-        return pygame.display.set_mode(self.get_size(), flags)
+    def init_screen(self) -> object:
+        if is_using_pygame():
+            flags = pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN if self.__screen_scale == 100 else pygame.SCALED
+            self.__SCREEN_WINDOW = pygame.display.set_mode(self.get_size(), flags)
+        else:
+            self.__SCREEN_WINDOW = pyglet.window.Window(self.get_width(), self.get_height())
+        return self.__SCREEN_WINDOW
+    #获取屏幕
+    @property
+    def screen_window(self) -> object: return self.__SCREEN_WINDOW
+    #退出
     def quit(self) -> None:
         from sys import exit
         #退出游戏
@@ -153,3 +171,7 @@ class DisplayController:
 
 #帧率控制器
 display:DisplayController = DisplayController(get_setting("FPS"))
+
+# 直接画到屏幕上
+def draw_on_screen(surface: ImageSurface, pos:tuple) -> None:
+    display.screen_window.blit(surface, pos)

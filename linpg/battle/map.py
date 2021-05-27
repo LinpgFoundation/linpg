@@ -50,7 +50,7 @@ class MapObject(AdvancedAbstractImage):
     @property
     def block_height(self) -> int: return _MAP_ENV_IMAGE.get_block_height()
     @property
-    def decorations(self) -> tuple: return self.__decorations
+    def decorations(self) -> numpy.ndarray: return self.__decorations
     #加载环境图片，一般被视为初始化的一部分
     def load_env_img(self, block_size:tuple) -> None:
         global _MAP_ENV_IMAGE

@@ -13,9 +13,10 @@ def quickly_load_img(path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> 
     if isinstance(path, ImageSurface):
         return path
     elif isinstance(path, str):
+        path = os.path.join(path)
         if ifConvertAlpha is True:
             try:
-                return pygame.image.load(os.path.join(path)).convert_alpha()
+                return pygame.image.load(path).convert_alpha() if is_using_pygame() else pyglet.image.load(path)
             except:
                 if get_setting("DeveloperMode") is True: 
                     throw_exception("error",'Cannot load image from path: {}'.format(path))
@@ -23,7 +24,7 @@ def quickly_load_img(path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> 
                     return get_texture_missing_surface()
         else:
             try:
-                return pygame.image.load(os.path.join(path))
+                return pygame.image.load(path) if is_using_pygame() else pyglet.image.load(path)
             except:
                 if get_setting("DeveloperMode") is True:
                     throw_exception("error",'Cannot load image from path: {}'.format(path))

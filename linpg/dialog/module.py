@@ -10,13 +10,16 @@ class AbstractDialogSystem(AbstractGameSystem):
         #黑色Void帘幕
         self._black_bg = get_single_color_surface("black")
         #选项栏
-        self._option_box_surface = StaticImage(os.path.join(DIALOG_UI_PATH,"option.png"),0,0)
+        self._option_box_surface = load_static_image(os.path.join(DIALOG_UI_PATH, "option.png"), (0,0))
         #选项栏-选中
         try:
-            self._option_box_selected_surface = StaticImage(os.path.join(DIALOG_UI_PATH,"option_selected.png"),0,0)
+            self._option_box_selected_surface = StaticImage(os.path.join(DIALOG_UI_PATH, "option_selected.png"), (0,0))
         except:
-            throw_exception("warning","Cannot find 'option_selected.png' in 'UI' file, 'option.png' will be loaded instead.")
-            self._option_box_selected_surface = self._option_box_surface.light_copy()
+            throw_exception(
+                "warning",
+                "Cannot find 'option_selected.png' in '{}' file, 'option.png' will be used instead.".format(DIALOG_UI_PATH)
+            )
+            self._option_box_selected_surface = self._option_box_surface.copy()
         #对话文件路径
         self._dialog_folder_path:str = "Data"
         #背景音乐路径
@@ -63,7 +66,9 @@ class AbstractDialogSystem(AbstractGameSystem):
                     #如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
                     elif os.path.exists(os.path.join(self._dynamic_background_folder_path,self.__background_image_name)):
                         self.__background_image_surface = VedioSurface(
-                            os.path.join(self._dynamic_background_folder_path,self.__background_image_name),display.get_width(),display.get_height()
+                            os.path.join(self._dynamic_background_folder_path,self.__background_image_name),
+                            display.get_width(),
+                            display.get_height()
                             )
                         self.__background_image_surface.start()
                     else:

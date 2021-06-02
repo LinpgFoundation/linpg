@@ -51,41 +51,13 @@ def get_language_id(lang_name:str) -> str:
 #获取可用语言
 def get_available_language() -> tuple: return tuple(_LINPG_LANG_AVAILABLE)
 
-#获取语言配置文件
-def get_lang(key:str, key2:str=None) -> any:
-    if key2 is None:
-        try:
-            return deepcopy(_LINPG_LANG[key])
-        except KeyError:
-            throw_exception(
-                "warning",
-                'Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'
-                .format(key)
-                )
-            return key
-    else:
-        try:
-            return deepcopy(_LINPG_LANG[key][key2])
-        except KeyError:
-            throw_exception(
-                "warning",
-                'Getting "KeyError" while trying to get {} from {} category!\nPlease check your code or report this bug to the developer!'
-                .format(key2,key)
-            )
-            return key2
+#根据key(s)获取对应的语言
+def get_lang(*keys:str) -> any: return get_value_by_keys(_LINPG_LANG, keys)
+def get_lang_by_keys(keys:Union[tuple, list]) -> any:
+    return get_value_by_keys(_LINPG_LANG, tuple(keys)) if not isinstance(keys, tuple) else get_value_by_keys(_LINPG_LANG, keys)
 
-#尝试获取语言配置文件
-def try_get_lang(key:str, key2:str=None) -> any:
-    if key2 is None:
-        try:
-            return deepcopy(_LINPG_LANG[key])
-        except KeyError:
-            return key
-    else:
-        try:
-            return deepcopy(_LINPG_LANG[key][key2])
-        except KeyError:
-            return key2
+#尝试根据key(s)获取对应的语言
+def try_get_lang(*keys:str) -> any: return get_value_by_keys(_LINPG_LANG, keys, False)
 
 #获取本地化的数字
 def get_num_in_local_text(num:Union[int,str]) -> str:

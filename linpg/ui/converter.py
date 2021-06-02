@@ -1,4 +1,5 @@
 # cython: language_level=3
+from collections import deque
 from .inputbox import *
 
 class Converter:
@@ -44,6 +45,28 @@ class Converter:
                         throw_exception("error",'Cannot convert "{}" because it is not a valid percentage.'.format(item[key]))
             else:
                 throw_exception("error","Valid value for {0}: {1}.".format(key, item[key]))
+    #转换文字
+    def convert_text(self, text:str) -> str:
+        final_text_list:deque = deque()
+        text_index:int = 0
+        find_close_bracket:bool = False
+        while text_index < len(text):
+            if text[text_index] == "{":
+                #寻找 "}"
+                for a in range(text_index+1,len(text)):
+                    if text[a] == "}":
+                        find_close_bracket = True
+                        break
+                if find_close_bracket is True:
+                    find_close_bracket = False
+                    final_text_list.append(get_lang_by_keys((b.strip() for b in text[text_index+1:a].split(","))))
+                    text_index = a
+                else:
+                    throw_exception("error", 'Cannot find close bracket for text: {}'.format())
+            else:
+                final_text_list.append(text[text_index])
+            text_index += 1
+        return "".join(final_text_list)
     #生成UI
     def generate_ui(self, data:dict, max_width:int=-1, max_height:int=-1) -> GameObject2d:
         #如果没有提供最大高度，则默认使用屏幕高度
@@ -58,7 +81,7 @@ class Converter:
             if "italic" not in data: data["italic"] = False
             #生成文字图层
             text_t = TextSurface(
-                render_font_without_bounding(data["src"], data["color"], data["font_size"], data["bold"], data["italic"]), 0, 0
+                render_font_without_bounding(self.convert_text(data["src"]), data["color"], data["font_size"], data["bold"], data["italic"]), 0, 0
                 )
             #转换坐标
             self.__make_sure_pos(data, "x", int((max_width-text_t.get_width())/2), max_width)
@@ -95,7 +118,7 @@ class Converter:
             elif data["type"] == "button":
                 if "alpha_when_not_hover" not in data: data["alpha_when_not_hover"] = 255
                 button_t = load_button_with_text_in_center(
-                    load_img(data["src"]), data["text"]["scr"], data["text"]["color"], data["height"], (0,0), data["alpha_when_not_hover"]
+                    load_img(data["src"]), self.convert_text(data["text"]["scr"]), data["text"]["color"], data["height"], (0,0), data["alpha_when_not_hover"]
                     ) if "text" in data else load_button(
                         load_img(data["src"]), (0,0), (data["width"], data["height"]), data["alpha_when_not_hover"]
                     )

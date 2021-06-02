@@ -7,11 +7,19 @@ from .mixer import *
 class SaveDataThread(threading.Thread):
     def __init__(self, path:str, data:dict):
         super().__init__()
-        self.path:str = path
-        self.data:dict = data
+        self.path:str = str(path)
+        self.data:dict = dict(data)
+        self.result:bool = False
+    def copy(self) -> object: return SaveDataThread(self.path, self.data)
     def run(self) -> None:
-        save_config(self.path,self.data)
-        del self.data,self.path
+        try:
+            save_config(self.path,self.data)
+            self.result = True
+        except:
+            if get_setting("DeveloperMode") is True:
+                throw_exception("error", "Cannot save data to path: {}".format(self.path)) 
+            else:
+                pass
 
 #系统模块接口
 class AbstractSystem:

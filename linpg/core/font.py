@@ -88,7 +88,7 @@ def create_font(size:Union[int,float], ifBold:bool=False, ifItalic:bool=False) -
         if os.path.exists(font_path):
             normal_font = pygame.font.Font(font_path,font_size)
         else:
-            throw_exception("warning", "Cannot find the {}.ttf file, the engine's font has been change to default.".format(get_font()))
+            throw_exception("warning", "Cannot find the {}.ttf file, the engine's font has been changed to default.".format(get_font()))
             set_font("arial")
             set_font_type("default")
             return pygame.font.SysFont(get_font(),font_size,ifBold,ifItalic)

@@ -1,6 +1,5 @@
 # cython: language_level=3
 from .entityModule import *
-from collections import deque
 
 #储存角色图片的常量
 _CHARACTERS_IMAGE_SYS:object = EntityImageManager()
@@ -426,7 +425,7 @@ class Entity(GameObject):
         yTemp -= MapClass.block_width*0.2
         self.__hp_bar.set_size(MapClass.block_width/2,MapClass.block_width/10)
         self.__hp_bar.set_pos(xTemp,yTemp)
-        if self.dying is False:
+        if not self.dying:
             self.__hp_bar.set_percentage(self.__current_hp/self.__max_hp)
             self.__hp_bar.draw(surface,False)
             display_in_center(

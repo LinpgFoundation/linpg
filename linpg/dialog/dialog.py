@@ -211,7 +211,7 @@ class DialogSystem(AbstractDialogSystem):
                 del progress_saved_text
                 self.pause_menu.screenshot = None
         #显示对话选项
-        if self._dialog_txt_system.is_all_played() and self._dialog_txt_system.hidden is False and \
+        if self._dialog_txt_system.is_all_played() and not self._dialog_txt_system.hidden and \
             self.dialogContent[self._dialog_id]["next_dialog_id"] is not None and \
                 self.dialogContent[self._dialog_id]["next_dialog_id"]["type"] == "option":
             optionBox_y_base = (display.get_height()*3/4-(len(self.dialogContent[self._dialog_id]["next_dialog_id"]["target"]))*2*display.get_width()*0.03)/4

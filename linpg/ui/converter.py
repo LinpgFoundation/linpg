@@ -18,16 +18,19 @@ class Converter:
             if isinstance(item[key], str) and item[key].endswith("%"):
                 try:
                     item[key] = int(convert_percentage(item[key])*value_in_case_percentage)
-                except:
+                except BaseException:
                     if "name" in item:
                         throw_exception("error",'Cannot convert "{0}" because it is not a valid percentage for "{1}".'.format(item[key], item["name"]))
                     else:
                         throw_exception("error",'Cannot convert "{}" because it is not a valid percentage.'.format(item[key]))
             else:
-                if "name" in item:
-                    throw_exception("error",'The "{0}" for "{1}" needs to an interger instead of "{2}".'.format(key, item["name"], item[key]))
-                else:
-                    throw_exception("error",'The "{0}" needs to an interger instead of "{1}".'.format(key, item[key]))
+                try:
+                    item[key] = int(item[key])
+                except BaseException:
+                    if "name" in item:
+                        throw_exception("error",'The "{0}" for "{1}" needs to an interger instead of "{2}".'.format(key, item["name"], item[key]))
+                    else:
+                        throw_exception("error",'The "{0}" needs to an interger instead of "{1}".'.format(key, item[key]))
     #检测坐标是否合法
     def __make_sure_pos(self, item:dict, key:str, value_in_case_center:int, value_in_case_percentage:int) -> None:
         if key not in item:
@@ -38,7 +41,7 @@ class Converter:
             elif item[key].endswith("%"):
                 try:
                     item[key] = int(convert_percentage(item[key])*value_in_case_percentage)
-                except:
+                except BaseException:
                     if "name" in item:
                         throw_exception("error",'Cannot convert "{0}" because it is not a valid percentage for "{1}".'.format(item[key], item["name"]))
                     else:
@@ -118,7 +121,12 @@ class Converter:
             elif data["type"] == "button":
                 if "alpha_when_not_hover" not in data: data["alpha_when_not_hover"] = 255
                 button_t = load_button_with_text_in_center(
-                    load_img(data["src"]), self.convert_text(data["text"]["scr"]), data["text"]["color"], data["height"], (0,0), data["alpha_when_not_hover"]
+                    load_img(data["src"]),
+                    self.convert_text(data["text"]["src"]),
+                    data["text"]["color"],
+                    data["height"],
+                    (0,0),
+                    data["alpha_when_not_hover"]
                     ) if "text" in data else load_button(
                         load_img(data["src"]), (0,0), (data["width"], data["height"]), data["alpha_when_not_hover"]
                     )

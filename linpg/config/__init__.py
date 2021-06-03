@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .glob import *
+from .ui import *
 
 # 加载设置配置文件
 reload_setting()

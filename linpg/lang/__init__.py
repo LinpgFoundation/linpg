@@ -64,5 +64,5 @@ def get_num_in_local_text(num:Union[int,str]) -> str:
     num = int(num)
     try:
         return deepcopy(_LINPG_LANG["Numbers"][num])
-    except:
+    except BaseException:
         return str(num)

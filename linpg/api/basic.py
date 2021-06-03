@@ -5,6 +5,7 @@ import random, re
 from typing import List
 #第三方库
 import numpy
+from PIL import ImageColor
 from pygame.colordict import THECOLORS
 
 """加载"""
@@ -17,7 +18,7 @@ def quickly_load_img(path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> 
         if ifConvertAlpha is True:
             try:
                 return pygame.image.load(path).convert_alpha() if is_using_pygame() else pyglet.image.load(path)
-            except:
+            except BaseException:
                 if get_setting("DeveloperMode") is True: 
                     throw_exception("error",'Cannot load image from path: {}'.format(path))
                 else:
@@ -25,7 +26,7 @@ def quickly_load_img(path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> 
         else:
             try:
                 return pygame.image.load(path) if is_using_pygame() else pyglet.image.load(path)
-            except:
+            except BaseException:
                 if get_setting("DeveloperMode") is True:
                     throw_exception("error",'Cannot load image from path: {}'.format(path))
                 else:
@@ -265,7 +266,9 @@ def convert_percentage(percentage:Union[str,float]) -> float:
 def get_color_rbga(color:Union[str, tuple, list]) -> tuple:
     if isinstance(color, (tuple, list)):
         return color
-    elif isinstance(color, (str)):
+    elif isinstance(color, str):
+        if color[0] == "#":
+            return ImageColor.getrgb(color)
         if color == "gray" or color == "grey" or color == "disable":
             return (105, 105, 105, 255)
         elif color == "white" or color == "enable":

@@ -386,6 +386,8 @@ class Console(SingleLineInputBox):
                 self.txtOutput.append("Unknown status for dev command.")
         elif conditions[0] == "linpg" and conditions[1] == "info":
             self.txtOutput.append("Linpg Version: {}".format(get_current_version()))
+        elif conditions[0] == "quit":
+            display.quit()
         else:
             self.txtOutput.append("The command is unknown!")
     def draw(self, screen:ImageSurface) -> None:

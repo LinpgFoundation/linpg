@@ -14,7 +14,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         #选项栏-选中
         try:
             self._option_box_selected_surface = StaticImage(os.path.join(DIALOG_UI_PATH, "option_selected.png"), (0,0))
-        except:
+        except BaseException:
             throw_exception(
                 "warning",
                 "Cannot find 'option_selected.png' in '{}' file, 'option.png' will be used instead.".format(DIALOG_UI_PATH)

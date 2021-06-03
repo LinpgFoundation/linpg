@@ -411,10 +411,7 @@ class DialogEditor(AbstractDialogSystem):
         self.removeNpcButton = surfaceTmp
         self.smart_add_mode = False
         #未保存离开时的警告
-        self.__no_save_warning = LeaveWithoutSavingWarning(
-            os.path.join(DIALOG_UI_PATH,"container.png"),0,0,display.get_width()/2,display.get_height()/4
-            )
-        self.__no_save_warning.set_center(display.get_width()/2,display.get_height()/2)
+        self.__no_save_warning = converter.generate_ui(get_raw_deault_ui("leave_without_saving_warning"))
         #切换准备编辑的dialog部分
         self.dialog_key_select = DropDownSingleChoiceList(None, button_width*9, button_y+font_size, font_size)
         for i in range(len(self.parts)): self.dialog_key_select.append(self.parts[i])
@@ -639,7 +636,7 @@ class DialogEditor(AbstractDialogSystem):
             self.part_id = self.parts.index(self.dialog_key_select.get_current_selected_item())
             try:
                 self.__update_scene(self._dialog_id)
-            except:
+            except BaseException:
                 self.__update_scene("head")
         #处理输入事件
         leftClick:bool = False

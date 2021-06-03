@@ -7,7 +7,7 @@ _MAP_ENV_IMAGE:object = None
 _BLOCKS_DATABASE:dict = None
 try:
     _BLOCKS_DATABASE = load_config(os.path.join("Data", "blocks.yaml"), "blocks")
-except:
+except BaseException:
     _BLOCKS_DATABASE = {}
 
 #地图模块

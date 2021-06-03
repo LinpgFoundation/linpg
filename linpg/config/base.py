@@ -7,7 +7,7 @@ YAML_INITIALIZED:bool = False
 try:
     import yaml
     YAML_INITIALIZED = True
-except:
+except BaseException:
     pass
 
 # Linpg本身错误类

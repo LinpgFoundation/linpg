@@ -22,7 +22,7 @@ class FriendlyCharacter(Entity):
         #尝试加载重创立绘
         try:
             self.__getHurtImage = EntityGetHurtImage(self.type,display.get_height()/4,display.get_height()/2)
-        except:
+        except BaseException:
             throw_exception("warning","Character {} does not have damaged artwork!".format(self.type))
             self.__getHurtImage = None
             if not os.path.exists("Assets/image/npc_icon/{}.png".format(self.type)): print("And also its icon.")

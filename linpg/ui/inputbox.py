@@ -311,10 +311,7 @@ class Console(SingleLineInputBox):
         self.hidden:bool = True
         self.textHistory:list = []
         self.__backward_id:int = 1
-        self.__events:dict = {
-            "cheat": False,
-            "dev": True if get_setting("DeveloperMode") is True else False
-            }
+        self.__events:dict = {"cheat": False}
         self.txtOutput:list = []
     def get_events(self, key:Union[int,str]) -> any:
         try:
@@ -338,43 +335,7 @@ class Console(SingleLineInputBox):
         elif event.key == KEY.RETURN:
             if len(self._text)>0:
                 if self._text.startswith('/'):
-                    cmd_blocks:list = self._text[1:].split()
-                    if cmd_blocks[0] == "cheat":
-                        if cmd_blocks[1] == "on":
-                            if "cheat" in self.__events and self.__events["cheat"]:
-                                self.txtOutput.append("Cheat mode has already been activated!")
-                            else:
-                                self.__events["cheat"] = True
-                                self.txtOutput.append("Cheat mode is activated.")
-                        elif cmd_blocks[1] == "off":
-                            if "cheat" in self.__events and not self.__events["cheat"]:
-                                self.txtOutput.append("Cheat mode has already been deactivated!")
-                            else:
-                                self.__events["cheat"] = False
-                                self.txtOutput.append("Cheat mode is deactivated.")
-                        else:
-                            self.txtOutput.append("Unknown status for cheat command.")
-                    elif cmd_blocks[0] == "say":
-                        self.txtOutput.append(self._text.replace("/say"))
-                    elif cmd_blocks[0] == "dev":
-                        if cmd_blocks[1] == "on":
-                            if "dev" in self.__events and self.__events["dev"]:
-                                self.txtOutput.append("Developer mode has been activated!")
-                            else:
-                                self.txtOutput.append("Developer mode is activated.")
-                                self.__events["dev"] = True
-                        elif cmd_blocks[1] == "off":
-                            if "dev" in self.__events and not self.__events["dev"]:
-                                self.txtOutput.append("Developer mode has been deactivated!")
-                            else:
-                                self.txtOutput.append("Developer mode is deactivated.")
-                                self.__events["dev"] = False
-                        else:
-                            self.txtOutput.append("Unknown status for dev command.")
-                    elif cmd_blocks[0] == "linpg" and cmd_blocks[1] == "info":
-                        self.txtOutput.append("Linpg Version: {}".format(get_current_version()))
-                    else:
-                        self.txtOutput.append("Unknown command!")
+                    self._check_command(self._text[1:].split())
                 else:
                     self.txtOutput.append(self._text)
                 self.textHistory.append(self._text) 
@@ -390,6 +351,43 @@ class Console(SingleLineInputBox):
             self.color = self.color_active if self.active else self.color_inactive
             return True
         return False
+    def _check_command(self, conditions:list) -> None:
+        if conditions[0] == "cheat":
+            if conditions[1] == "on":
+                if "cheat" in self.__events and self.__events["cheat"] is True:
+                    self.txtOutput.append("Cheat mode has already been activated!")
+                else:
+                    self.__events["cheat"] = True
+                    self.txtOutput.append("Cheat mode is activated.")
+            elif conditions[1] == "off":
+                if "cheat" in self.__events and not self.__events["cheat"]:
+                    self.txtOutput.append("Cheat mode has already been deactivated!")
+                else:
+                    self.__events["cheat"] = False
+                    self.txtOutput.append("Cheat mode is deactivated.")
+            else:
+                self.txtOutput.append("Unknown status for cheat command.")
+        elif conditions[0] == "say":
+            self.txtOutput.append(self._text.replace("/say"))
+        elif conditions[0] == "dev":
+            if conditions[1] == "on":
+                if get_setting("DeveloperMode") is True:
+                    self.txtOutput.append("Developer mode has been activated!")
+                else:
+                    set_setting("DeveloperMode", value=True)
+                    self.txtOutput.append("Developer mode is activated.")
+            elif conditions[1] == "off":
+                if not get_setting("DeveloperMode"):
+                    self.txtOutput.append("Developer mode has been deactivated!")
+                else:
+                    set_setting("DeveloperMode", value=False)
+                    self.txtOutput.append("Developer mode is deactivated.")
+            else:
+                self.txtOutput.append("Unknown status for dev command.")
+        elif conditions[0] == "linpg" and conditions[1] == "info":
+            self.txtOutput.append("Linpg Version: {}".format(get_current_version()))
+        else:
+            self.txtOutput.append("The command is unknown!")
     def draw(self, screen:ImageSurface) -> None:
         if self.hidden is True:
             for event in controller.events:
@@ -428,6 +426,3 @@ class Console(SingleLineInputBox):
             #画出 “|” 符号
             if int(time.time()%2)==0 or len(controller.events)>0:
                 screen.blit(self._holder, (self.x+self.FONTSIZE*0.25+self.FONT.size(self._text[:self.holderIndex])[0], self.y))
-
-#初始化控制台模块
-console:object = Console(0,0)

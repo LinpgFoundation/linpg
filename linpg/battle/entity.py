@@ -124,20 +124,16 @@ class Entity(GameObject):
     def have_enough_action_point(self, value:int) -> bool: return self.__current_action_point >= value
     #尝试减少行动值，如果成功，返回true,失败则返回false
     def try_reduce_action_point(self, value:int) -> bool:
-        if not console.get_events("cheat"):
-            if isinstance(value,int):
-                if self.__current_action_point >= value:
-                    #有足够的行动值来减去
-                    self.__current_action_point -= value
-                    return True
-                else:
-                    #没有足够的行动值来减去
-                    return False
+        if isinstance(value, int):
+            if self.__current_action_point >= value:
+                #有足够的行动值来减去
+                self.__current_action_point -= value
+                return True
             else:
-                throw_exception("error","While you reduce the action points, the module cannot reduce a non-int value!")
+                #没有足够的行动值来减去
+                return False
         else:
-            #作弊模式开启时不扣行动力
-            return True
+            throw_exception("error", "While you reduce the action points, the module cannot reduce a non-int value!")
     """角色血量护甲参数管理"""
     #是否角色还活着
     @property
@@ -373,7 +369,7 @@ class Entity(GameObject):
         img_of_char.set_pos(pos[0]-MapClass.block_width*0.3,pos[1]-MapClass.block_width*0.85)
         img_of_char.draw(surface)
         #如果是开发者模式，则开启轮廓
-        if console.get_events("dev"): img_of_char.draw_outline(surface)
+        if get_setting("DeveloperMode"): img_of_char.draw_outline(surface)
     #把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
     def draw(self, surface:ImageSurface, MapClass:object) -> None:
 

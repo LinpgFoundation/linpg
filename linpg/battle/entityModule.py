@@ -10,8 +10,9 @@ class EntityGetHurtImage(GameObject):
         super().__init__(None,y)
         self.yToGo = None
         self.width = int(width)
-        self.alpha = 255
+        self.alpha:int = 255
         self.add(self_type)
+        self.__IMAGE_FOLDER_PATH:str = "Assets/image/npc"
     def draw(self, screen:ImageSurface, characterType:str) -> None:
         GetHurtImage = resize_img(_CHARACTERS_GET_HURT_IMAGE_DICT[characterType],(self.width,self.width))
         if self.alpha != 255:
@@ -20,7 +21,9 @@ class EntityGetHurtImage(GameObject):
     def add(self, characterType:str) -> None:
         global _CHARACTERS_GET_HURT_IMAGE_DICT
         if characterType not in _CHARACTERS_GET_HURT_IMAGE_DICT:
-            _CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = load_img("Assets/image/npc/{}_hurt.png".format(characterType))
+            _CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = load_img(
+                os.path.join(self.__IMAGE_FOLDER_PATH, "{}_hurt.png".format(characterType))
+                )
 
 #指向储存角色被察觉和警觉的图标的指针
 _BEING_NOTICED_IMG:ImageSurface = None

@@ -1,6 +1,6 @@
 # cython: language_level=3
 """
 结构:
-movie -> ui -> module -> dialog
+movie -> component -> module -> dialog
 """
 from .dialog import *

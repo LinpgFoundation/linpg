@@ -1,5 +1,25 @@
 # cython: language_level=3
-from .module import *
+import threading
+from tkinter.constants import TRUE
+from .mixer import *
+
+#使用多线程保存数据
+class SaveDataThread(threading.Thread):
+    def __init__(self, path:str, data:dict):
+        super().__init__()
+        self.path:str = str(path)
+        self.data:dict = dict(data)
+        self.result:bool = False
+    def copy(self) -> object: return SaveDataThread(self.path, self.data)
+    def run(self) -> None:
+        try:
+            save_config(self.path,self.data)
+            self.result = True
+        except BaseException:
+            if get_setting("DeveloperMode") is True:
+                throw_exception("error", "Cannot save data to path: {}".format(self.path)) 
+            else:
+                pass
 
 #系统模块接口
 class AbstractSystem:
@@ -12,6 +32,7 @@ class AbstractSystem:
     def isPlaying(self) -> bool: return self.__is_playing
     def is_playing(self) -> bool: return self.__is_playing
     def stop(self) -> None: self.__is_playing = False
+    def _continue(self) -> None: self.__is_playing = True
     #是否本体语言和当前一致
     def language_need_update(self) -> bool: return self._language_when_initialize != get_current_language()
     #更新语言
@@ -43,7 +64,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
                 #同一首曲子，不更新任何内容
                 pass
         else:
-            throwException("error","Path '{}' does not exist!".format(path))
+            throw_exception("error","Path '{}' does not exist!".format(path))
     #获取bgm音量
     @property
     def bgm_volume(self) -> float: return self.__bgm_volume
@@ -55,7 +76,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
                 pygame.mixer.music.set_volume(volume)
             self.__bgm_volume = volume
         else:
-            throwException("error","Volume '{}' is out of the range! (must between 0 and 1)".format(volume))
+            throw_exception("error","Volume '{}' is out of the range! (must between 0 and 1)".format(volume))
     #播放bgm
     def play_bgm(self, times:int=1) -> None:
         if self.__bgm_path is not None and not pygame.mixer.music.get_busy() and not self.__if_stop_playing_bgm:
@@ -114,7 +135,7 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
         "project_name": self._project_name
         }
     #获取需要保存的数据 - 子类必须实现
-    def _get_data_need_to_save(self) -> dict: throwException("error","The child class does not implement _get_data_need_to_save() function!")
+    def _get_data_need_to_save(self) -> dict: throw_exception("error","The child class does not implement _get_data_need_to_save() function!")
     #保存进度
     def save_progress(self) -> None:
         #确保储存进度存档的文件夹存在
@@ -124,36 +145,3 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
         save_thread.start()
         save_thread.join()
         del save_thread
-
-#音效管理模块接口
-class AbstractSoundManager:
-    def __init__(self, channel_id:int):
-        self._channel_id:int = int(channel_id)
-    @property
-    def channel_id(self) -> int: return self._channel_id
-    def get_channel_id(self) -> int: return self._channel_id
-    def set_channel_id(self, channel_id:int) -> None: self.channel_id = int(channel_id)
-
-#音效管理模块-列表
-class SoundManagement(AbstractSoundManager):
-    def __init__(self, channel_id:int):
-        super().__init__(channel_id)
-        self.sound_id = 0
-        self.__sounds_list = []
-    #添加音乐
-    def add(self, path:str) -> None: self.__sounds_list.append(pygame.mixer.Sound(path))
-    #播放音乐
-    def play(self, sound_id:int=-1) -> None:
-        if len(self.__sounds_list) > 0 and not pygame.mixer.Channel(self._channel_id).get_busy():
-            self.sound_id = randomInt(0,len(self.__sounds_list)-1) if sound_id < 0 else sound_id
-            pygame.mixer.Channel(self._channel_id).play(self.__sounds_list[self.sound_id])
-    #停止播放
-    def stop(self) -> None: pygame.mixer.Channel(self._channel_id).stop()
-    #获取音量
-    @property
-    def volume(self) -> float: return self.get_volume()
-    def get_volume(self) -> float: return self.__sounds_list[0].get_volume()
-    #设置音量
-    def set_volume(self, volume:Union[float,int]) -> None:
-        for i in range(len(self.__sounds_list)):
-            self.__sounds_list[i].set_volume(volume)

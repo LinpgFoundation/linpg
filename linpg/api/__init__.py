@@ -1,6 +1,6 @@
 # cython: language_level=3
 """
 结构:
-basic -> controller -> module -> system -> font -> tool
+typing -> key -> basic -> controller -> mixer -> system -> tool
 """
 from .tool import *

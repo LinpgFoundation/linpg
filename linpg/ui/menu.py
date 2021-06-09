@@ -4,53 +4,53 @@ from .container import *
 #暂停菜单
 class PauseMenu:
     def __init__(self) -> None:
-        self.white_bg = None
+        self.black_bg = None
         self.button_resume = None
         self.button_save = None
         self.button_setting = None
         self.button_back = None
         self.screenshot = None
         self.hidden:bool = True
-    def initialize(self, surface:pygame.Surface) -> None:
+    def initialize(self, surface:ImageSurface) -> None:
         width,height = display.get_size()
-        surfaceTmp = pygame.Surface((width,height),flags=pygame.SRCALPHA).convert_alpha()
-        pygame.draw.rect(surfaceTmp,(0,0,0),(0,0,width,height))
-        self.white_bg = ImageSurface(surfaceTmp,0,0,width,height)
-        self.white_bg.set_alpha(50)
+        surfaceTmp = new_surface((width,height)).convert()
+        surfaceTmp.fill(get_color_rbga("black"))
+        self.black_bg = load_static_image(surfaceTmp, (0,0), width, height)
+        self.black_bg.set_alpha(50)
         #按钮-继续
-        self.button_resume = fontRenderPro(
+        self.button_resume = load_dynamic_text(
             get_lang("Global","resume"),
             "white",
             (surface.get_width()*0.1,surface.get_height()*0.4,surface.get_width()/38)
         )
         #按钮-保存游戏
-        self.button_save = fontRenderPro(
+        self.button_save = load_dynamic_text(
             get_lang("Global","save_current_progress"),
             "white",
             (surface.get_width()*0.1,surface.get_height()*0.5,surface.get_width()/38)
         )
         #按钮-设置
-        self.button_setting = fontRenderPro(
+        self.button_setting = load_dynamic_text(
             get_lang("OptionMenu","option_menu"),
             "white",
             (surface.get_width()*0.1,surface.get_height()*0.6,surface.get_width()/38)
         )
         #按钮-返回
-        self.button_back = fontRenderPro(
+        self.button_back = load_dynamic_text(
             get_lang("Global","back"),
             "white",
             (surface.get_width()*0.1,surface.get_height()*0.7,surface.get_width()/38)
         )
-    def draw(self, surface:pygame.Surface) -> None:
+    def draw(self, surface:ImageSurface) -> None:
         if not self.hidden:
             #展示原先的背景
             if self.screenshot is None: self.screenshot = surface.copy()
             #画出原先的背景
             surface.blit(self.screenshot,(0,0))
+            #如果背景层还没有初始化
+            if self.black_bg is None: self.initialize(surface)
             #展示暂停菜单的背景层
-            if self.white_bg is None:
-                self.initialize(surface)
-            self.white_bg.draw(surface)
+            self.black_bg.draw(surface)
             #展示按钮
             self.button_resume.draw(surface)
             self.button_save.draw(surface)
@@ -62,20 +62,19 @@ class PauseMenu:
     def get_button_clicked(self) -> str:
         if not self.hidden:
             #判定按键
-            for event in controller.events:
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            if controller.get_event("back"):
+                return "break"
+            elif controller.get_event("confirm"):
+                #判定按钮
+                if self.button_resume.is_hover():
                     return "break"
-                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    #判定按钮
-                    if self.button_resume.is_hover():
-                        return "break"
-                    elif self.button_save.is_hover():
-                        return "save"
-                    elif self.button_setting.is_hover():
-                        return "option_menu"
-                    elif self.button_back.is_hover():
-                        set_glob_value("BackToMainMenu",True)
-                        return "back_to_mainMenu"
+                elif self.button_save.is_hover():
+                    return "save"
+                elif self.button_setting.is_hover():
+                    return "option_menu"
+                elif self.button_back.is_hover():
+                    set_glob_value("BackToMainMenu",True)
+                    return "back_to_mainMenu"
         return ""
 
 #设置UI
@@ -85,14 +84,11 @@ class OptionMenu(AbstractImage):
         #加载设置菜单的背景图片
         baseImgPath:str = os.path.join(self.__ui_image_folder_path,"setting_baseImg.png")
         if os.path.exists(baseImgPath):
-            baseImg = smoothscaleImg(loadImg(baseImgPath), (width,height))
+            baseImg = smoothly_resize_img(load_img(baseImgPath), (width,height))
         else:
-            baseImg = getSurface((width,height)).convert()
+            baseImg = new_surface((width,height)).convert()
             baseImg.fill((255,255,255))
-            pygame.draw.rect(
-                baseImg, findColorRGBA("gray"),
-                pygame.Rect(width*0.05,height*0.05,width*0.9,height*0.9)
-                )
+            draw_rect(baseImg, get_color_rbga("gray"), Rect(width*0.05, height*0.05, width*0.9, height*0.9))
         super().__init__(baseImg,x,y,width,height)
         #默认隐藏
         self.hidden = True
@@ -100,7 +96,7 @@ class OptionMenu(AbstractImage):
         self.__item_height:int = int(self.height*0.05)
         #划动条的宽度
         self.bar_width:int = int(self.width*0.6)
-        self.button = loadImg(os.path.join(self.__ui_image_folder_path,"setting_bar_circle.png"),(self.__item_height,self.__item_height*2))
+        self.button = load_img(os.path.join(self.__ui_image_folder_path,"setting_bar_circle.png"),(self.__item_height,self.__item_height*2))
         self.bar_img1 = DynamicProgressBarSurface(
             os.path.join(self.__ui_image_folder_path,"setting_bar_full.png"),
             os.path.join(self.__ui_image_folder_path,"setting_bar_empty.png"),
@@ -114,17 +110,17 @@ class OptionMenu(AbstractImage):
         self.bar_y2 = self.y + self.__item_height*12
         self.bar_y3 = self.y + self.__item_height*16
         #音量数值
-        self.soundVolume_background_music = keepInRange(get_setting("Sound","background_music"),0,100)
-        self.soundVolume_sound_effects = keepInRange(get_setting("Sound","sound_effects"),0,100)
-        self.soundVolume_sound_environment = keepInRange(get_setting("Sound","sound_environment"),0,100)
+        self.soundVolume_background_music = keep_in_range(get_setting("Sound","background_music"),0,100)
+        self.soundVolume_sound_effects = keep_in_range(get_setting("Sound","sound_effects"),0,100)
+        self.soundVolume_sound_environment = keep_in_range(get_setting("Sound","sound_environment"),0,100)
         #字体渲染器
-        self.__NORMAL_FONT = createFont(self.__item_height)
+        self.__NORMAL_FONT = create_font(self.__item_height)
         #设置UI中的文字
         langTxt = get_lang("OptionMenu")
-        self.settingTitleTxt = TextSurface(fontRender(langTxt["setting"],"white",self.__item_height*1.5),0,edge_panding)
+        self.settingTitleTxt = TextSurface(render_font(langTxt["setting"],"white",self.__item_height*1.5),0,edge_panding)
         self.settingTitleTxt.set_centerx(width/2)
         #语言
-        self.current_lang = TextSurface(fontRender("{}: ".format(langTxt["language"]), "white", self.__item_height),self.bar_x, self.bar_y0)
+        self.current_lang = TextSurface(render_font("{}: ".format(langTxt["language"]), "white", self.__item_height),self.bar_x, self.bar_y0)
         self.language_choice = DropDownSingleChoiceList(None, self.bar_x, self.bar_y0, self.__item_height)
         for lang_choice in get_available_language():
             self.language_choice.append(lang_choice)
@@ -136,7 +132,7 @@ class OptionMenu(AbstractImage):
         #环境声效
         self.soundEnvironmentTxt:str = langTxt["sound_environment"]
         #返回
-        self.__back_button = fontRenderPro(get_lang("Global","back"),"white",(0,0),self.__item_height)
+        self.__back_button = load_dynamic_text(get_lang("Global","back"),"white",(0,0),self.__item_height)
         self.__back_button.set_bottom(height-edge_panding)
         self.__back_button.set_centerx(self.width/2)
         self.need_update:dict = {}
@@ -147,9 +143,9 @@ class OptionMenu(AbstractImage):
         reload_lang()
         #设置UI中的文字
         langTxt = get_lang("OptionMenu")
-        self.settingTitleTxt.font_surface = fontRender(langTxt["setting"],"white",self.__item_height*1.5)
+        self.settingTitleTxt.font_surface = render_font(langTxt["setting"],"white",self.__item_height*1.5)
         #语言
-        self.current_lang = TextSurface(fontRender("{}: ".format(langTxt["language"]), "white", self.__item_height),self.bar_x, self.bar_y0)
+        self.current_lang = TextSurface(render_font("{}: ".format(langTxt["language"]), "white", self.__item_height),self.bar_x, self.bar_y0)
         #背景音乐
         self.backgroundMusicTxt = langTxt["background_music"]
         #音效
@@ -157,8 +153,8 @@ class OptionMenu(AbstractImage):
         #环境声效
         self.soundEnvironmentTxt = langTxt["sound_environment"]
         #返回
-        self.__back_button = fontRenderPro(get_lang("Global","back"), "white", self.__back_button.pos, self.__item_height)
-    def draw(self, surface:pygame.Surface) -> None:
+        self.__back_button = load_dynamic_text(get_lang("Global","back"), "white", self.__back_button.pos, self.__item_height)
+    def draw(self, surface:ImageSurface) -> None:
         self.need_update = {
             "volume": False,
             "language": False
@@ -225,7 +221,7 @@ class OptionMenu(AbstractImage):
                     if -self.__item_height/2<mouse_y-self.bar_y1<self.__item_height*1.5:
                         self.soundVolume_background_music = round(100*(mouse_x-self.bar_x)/self.bar_width)
                         set_setting("Sound","background_music",self.soundVolume_background_music)
-                        pygame.mixer.music.set_volume(self.soundVolume_background_music/100.0)
+                        set_music_volume(self.soundVolume_background_music/100.0)
                         self.need_update["volume"] = True
                     #如果碰到音效的音量条
                     elif -self.__item_height/2<mouse_y-self.bar_y2<self.__item_height*1.5:

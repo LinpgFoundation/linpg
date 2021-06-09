@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .ui import *
+from .character import *
 
 #战斗系统接口，请勿实例化
 class AbstractBattleSystem(AbstractGameSystem):
@@ -18,15 +18,22 @@ class AbstractBattleSystem(AbstractGameSystem):
         self.alliances_data = None
         self.enemies_data = None
         #地图数据
-        self.MAP = None
-        #对话数据
-        self.dialogData = None
+        self.MAP:object = None
+        #视觉小说系统与参数
+        self._DIALOG:object = DialogSystem(True)
+        self.dialog_parameters:dict = None
+        self._is_dialog_updated:bool = False
+        self._dialog_dictionary:dict = {}
+        self.dialog_key:str = ""
         #方格标准尺寸
         self._standard_block_width:int = int(display.get_width()/10)
         self._standard_block_height:int = int(display.get_height()/10)
         #缩进
         self.zoomIn = 100
         self.zoomIntoBe = 100
+    def stop(self) -> None:
+        self._DIALOG.stop()
+        super().stop()
     #获取对话文件所在的具体路径
     def get_map_file_location(self) -> str:
         return os.path.join("Data",self._chapter_type,"chapter{}_map.yaml".format(self._chapter_id)) if self._project_name is None\
@@ -37,15 +44,15 @@ class AbstractBattleSystem(AbstractGameSystem):
     #计算光亮区域 并初始化地图
     def _calculate_darkness(self) -> None: self.MAP.calculate_darkness(self.alliances_data)
     #展示地图
-    def _display_map(self, screen:pygame.Surface) -> None:
+    def _display_map(self, screen:ImageSurface) -> None:
         self._check_if_move_screen()
         self._move_screen()
         self.screen_to_move_x,self.screen_to_move_y = self.MAP.display_map(screen,self.screen_to_move_x,self.screen_to_move_y)
     #展示场景装饰物
-    def _display_decoration(self, screen:pygame.Surface) -> None:
+    def _display_decoration(self, screen:ImageSurface) -> None:
         self.MAP.display_decoration(screen,self.alliances_data,self.enemies_data)
     #展示天气
-    def _display_weather(self, screen:pygame.Surface) -> None:
+    def _display_weather(self, screen:ImageSurface) -> None:
         if self.weatherController is not None: self.weatherController.draw(screen,self.MAP.block_width)
     #初始化角色加载器
     def _initial_characters_loader(self, alliancesData:dict, enemiesData:dict, mode:str="default") -> None:
@@ -67,6 +74,37 @@ class AbstractBattleSystem(AbstractGameSystem):
     def characters_loaded(self) -> int: return self.__characterDataLoaderThread.currentID
     @property
     def characters_total(self) -> int: return self.__characterDataLoaderThread.totalNum
+    #检测按下按键的事件
+    def _check_key_down(self, event:object) -> None:
+        if event.key == KEY.ARROW_UP: self.__pressKeyToMove["up"] = True
+        elif event.key == KEY.ARROW_DOWN: self.__pressKeyToMove["down"] = True
+        elif event.key == KEY.ARROW_LEFT: self.__pressKeyToMove["left"] = True
+        elif event.key == KEY.ARROW_RIGHT: self.__pressKeyToMove["right"] = True
+        elif event.unicode == "p": self.MAP.dev_mode()
+    #检测按键回弹的事件
+    def _check_key_up(self, event:object) -> None:
+        if event.key == KEY.ARROW_UP: self.__pressKeyToMove["up"] = False
+        elif event.key == KEY.ARROW_DOWN: self.__pressKeyToMove["down"] = False
+        elif event.key == KEY.ARROW_LEFT: self.__pressKeyToMove["left"] = False
+        elif event.key == KEY.ARROW_RIGHT: self.__pressKeyToMove["right"] = False
+    #根据鼠标移动屏幕
+    def _check_right_click_move(self) -> None:
+        if controller.mouse_get_press(2):
+            mouse_pos = controller.get_mouse_pos()
+            if self.__mouse_move_temp_x == -1 and self.__mouse_move_temp_y == -1:
+                self.__mouse_move_temp_x = mouse_pos[0]
+                self.__mouse_move_temp_y = mouse_pos[1]
+            else:
+                if self.__mouse_move_temp_x != mouse_pos[0] or self.__mouse_move_temp_y != mouse_pos[1]:
+                    if self.__mouse_move_temp_x != mouse_pos[0]:
+                        self.MAP.add_local_x(self.__mouse_move_temp_x-mouse_pos[0])
+                    if self.__mouse_move_temp_y != mouse_pos[1]:
+                        self.MAP.add_local_y(self.__mouse_move_temp_y-mouse_pos[1])
+                    self.__mouse_move_temp_x = mouse_pos[0]
+                    self.__mouse_move_temp_y = mouse_pos[1]
+        else:
+            self.__mouse_move_temp_x = -1
+            self.__mouse_move_temp_y = -1
     #检测手柄事件
     def _check_jostick_events(self) -> None:
         if controller.joystick.get_init():
@@ -74,34 +112,7 @@ class AbstractBattleSystem(AbstractGameSystem):
             self.__pressKeyToMove["down"] = True if round(controller.joystick.get_axis(4)) == 1 else False
             self.__pressKeyToMove["right"] = True if round(controller.joystick.get_axis(3)) == 1 else False
             self.__pressKeyToMove["left"] = True if round(controller.joystick.get_axis(3)) == -1 else False
-    def _check_key_down(self, event:object) -> None:
-        if event.key == pygame.K_UP: self.__pressKeyToMove["up"] = True
-        if event.key == pygame.K_DOWN: self.__pressKeyToMove["down"] = True
-        if event.key == pygame.K_LEFT: self.__pressKeyToMove["left"] = True
-        if event.key == pygame.K_RIGHT: self.__pressKeyToMove["right"] = True
-        if event.key == pygame.K_p: self.MAP.dev_mode()
-    def _check_key_up(self, event:object) -> None:
-        if event.key == pygame.K_UP: self.__pressKeyToMove["up"] = False
-        if event.key == pygame.K_DOWN: self.__pressKeyToMove["down"] = False
-        if event.key == pygame.K_LEFT: self.__pressKeyToMove["left"] = False
-        if event.key == pygame.K_RIGHT: self.__pressKeyToMove["right"] = False
-    #根据鼠标移动屏幕
-    def _check_right_click_move(self, mouse_x:int, mouse_y:int) -> None:
-        if controller.mouse_get_press(2):
-            if self.__mouse_move_temp_x == -1 and self.__mouse_move_temp_y == -1:
-                self.__mouse_move_temp_x = mouse_x
-                self.__mouse_move_temp_y = mouse_y
-            else:
-                if self.__mouse_move_temp_x != mouse_x or self.__mouse_move_temp_y != mouse_y:
-                    if self.__mouse_move_temp_x != mouse_x:
-                        self.MAP.addPos_x(self.__mouse_move_temp_x-mouse_x)
-                    if self.__mouse_move_temp_y != mouse_y:
-                        self.MAP.addPos_y(self.__mouse_move_temp_y-mouse_y)
-                    self.__mouse_move_temp_x = mouse_x
-                    self.__mouse_move_temp_y = mouse_y
-        else:
-            self.__mouse_move_temp_x = -1
-            self.__mouse_move_temp_y = -1
+    #检测并处理屏幕移动事件
     def _check_if_move_screen(self) -> None:
         #根据按键情况设定要移动的数值
         if self.__pressKeyToMove["up"]:
@@ -127,17 +138,17 @@ class AbstractBattleSystem(AbstractGameSystem):
     def _move_screen(self) -> None:
         #如果需要移动屏幕
         if self.screen_to_move_x is not None and self.screen_to_move_x != 0:
-            temp_value = int(self.MAP.getPos_x() + self.screen_to_move_x*0.2)
-            if display.get_width()-self.MAP.surface_width <= temp_value <= 0:
-                self.MAP.setPos_x(temp_value)
+            temp_value = int(self.MAP.get_local_x() + self.screen_to_move_x*0.2)
+            if display.get_width()-self.MAP.get_width() <= temp_value <= 0:
+                self.MAP.set_local_x(temp_value)
                 self.screen_to_move_x *= 0.8
                 if round(self.screen_to_move_x) == 0: self.screen_to_move_x = 0
             else:
                 self.screen_to_move_x = 0
         if self.screen_to_move_y is not None and self.screen_to_move_y != 0:
-            temp_value = int(self.MAP.getPos_y() + self.screen_to_move_y*0.2)
-            if display.get_height()-self.MAP.surface_height <= temp_value <= 0:
-                self.MAP.setPos_y(temp_value)
+            temp_value = int(self.MAP.get_local_y() + self.screen_to_move_y*0.2)
+            if display.get_height()-self.MAP.get_height() <= temp_value <= 0:
+                self.MAP.set_local_y(temp_value)
                 self.screen_to_move_y *= 0.8
                 if round(self.screen_to_move_y) == 0: self.screen_to_move_y = 0
             else:

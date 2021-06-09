@@ -2,7 +2,7 @@ import os
 import shutil
 
 #先编译py文件
-if not os.path.exists("src") or input("Do you want to compile everything (Y/n):") == "Y":
+if not os.path.exists("src") or input("Do you want to recompile everything (Y/n):") == "Y":
     #新建一个key,以告诉编译程序需要保留pyd文件
     with open("../linpg/building_key.txt", "w", encoding='utf-8') as f: pass
     #编译所有文件

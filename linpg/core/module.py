@@ -1,6 +1,5 @@
 # cython: language_level=3
-import threading
-from .controller import *
+from ..api import *
 
 #坐标类
 class Coordinate:
@@ -40,11 +39,11 @@ class GameObject2d(GameObject):
     #宽
     @property
     def width(self) -> int: return self.get_width()
-    def get_width(self) -> int: throwException("error","The child class has to implement get_width() function!")
+    def get_width(self) -> int: throw_exception("error","The child class has to implement get_width() function!")
     #高
     @property
     def height(self) -> int: return self.get_height()
-    def get_height(self) -> int: throwException("error","The child class has to implement get_height() function!")
+    def get_height(self) -> int: throw_exception("error","The child class has to implement get_height() function!")
     #尺寸
     @property
     def size(self) -> tuple: return self.get_width(),self.get_height()
@@ -79,12 +78,12 @@ class GameObject2d(GameObject):
         if mouse_pos == (-1,-1): mouse_pos = controller.get_mouse_pos()
         return 0 < mouse_pos[0]-self.x < self.get_width() and 0 < mouse_pos[1]-self.y < self.get_height()
     #将图片直接画到surface上
-    def draw(self, surface:pygame.Surface) -> None: self.display(surface)
+    def draw(self, surface:ImageSurface) -> None: self.display(surface)
     #根据offSet将图片展示到surface的对应位置上 - 子类必须实现
-    def display(self, surface:pygame.Surface, offSet:tuple=(0,0)) -> None:
-        throwException("error","The child class does not implement display() function!")
+    def display(self, surface:ImageSurface, offSet:tuple=(0,0)) -> None:
+        throw_exception("error","The child class does not implement display() function!")
     #忽略现有坐标，将图片画到surface的指定位置上，不推荐使用
-    def blit(self, surface:pygame.Surface, pos:tuple) -> None: 
+    def blit(self, surface:ImageSurface, pos:tuple) -> None: 
         old_pos = self.get_pos()
         self.set_pos(pos)
         self.draw(surface)
@@ -118,33 +117,17 @@ class GameObject3d(GameObject2point5d):
     def set_pos(self, x:Union[int,float], y:Union[int,float], z:Union[int,float]) -> None:
         super().set_pos(x,y,z)
 
-#使用多线程保存数据
-class SaveDataThread(threading.Thread):
-    def __init__(self, path:str, data:dict):
-        super().__init__()
-        self.path:str = path
-        self.data:dict = data
-    def run(self) -> None:
-        saveConfig(self.path,self.data)
-        del self.data,self.path
-
-#将来用来兼容pygame和pyglet图层的模块
-class ImageSurface(pygame.Surface):
-    def __init__(self, size, flag):
-        super().__init__(size, flag)
-        self.type = "pygame"
-
 #需要被打印的物品
 class ItemNeedBlit(GameObject2point5d):
     def __init__(self, image:object, weight:Union[int,float], pos:Union[tuple,list], offSet:Union[tuple,list]):
         super().__init__(pos[0],pos[1],weight)
         self.image = image
         self.offSet = offSet
-    def draw(self, surface:pygame.Surface) -> None:
-        if isinstance(self.image,pygame.Surface):
+    def draw(self, surface:ImageSurface) -> None:
+        if isinstance(self.image, pygame.Surface):
             surface.blit(self.image,add_pos(self.pos,self.offSet))
         else:
             try:
                 self.image.display(surface,self.offSet)
-            except:
+            except BaseException:
                 self.image.draw(surface)

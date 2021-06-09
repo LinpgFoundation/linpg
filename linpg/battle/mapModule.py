@@ -14,8 +14,7 @@ class EnvImagesManagement:
         self.__DECORATION_IMAGE_DICT_DARK:dict = None if not darkMode else {}
         #背景图片
         self.__BACKGROUND_IMAGE_PATH:str = "Assets/image/dialog_background"
-        self.__BACKGROUND_IMAGE:pygame.Surface =\
-            pygame.image.load(os.path.join(self.__BACKGROUND_IMAGE_PATH,bgImgName)).convert() if bgImgName is not None else None
+        self.__BACKGROUND_IMAGE:ImageSurface = quickly_load_img(os.path.join(self.__BACKGROUND_IMAGE_PATH,bgImgName), False).convert() if bgImgName is not None else None
         #背景图层
         self.__BACKGROUND_SURFACE = None
         self.__MAP_SURFACE = None
@@ -37,14 +36,14 @@ class EnvImagesManagement:
     def __add_evn_image(self, fileName:str) -> None:
         imgPath:str = os.path.join(self.__ENV_IMAGE_PATH,"{}.png".format(fileName))
         if os.path.exists(imgPath):
-            self.__ENV_IMAGE_DICT[fileName] = StaticImageSurface(imgPath,0,0)
+            self.__ENV_IMAGE_DICT[fileName] = StaticImage(imgPath,0,0)
             self.__ENV_IMAGE_DICT[fileName].set_width_with_size_locked(self.__BLOCK_WIDTH)
             #如果是夜战模式
             if self.__ENV_IMAGE_DICT_DARK is not None:
                 self.__ENV_IMAGE_DICT_DARK[fileName] = self.__ENV_IMAGE_DICT[fileName].copy()
-                self.__ENV_IMAGE_DICT_DARK[fileName].addDarkness(self.__DARKNESS)
+                self.__ENV_IMAGE_DICT_DARK[fileName].add_darkness(self.__DARKNESS)
         else:
-            throwException("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__ENV_IMAGE_PATH))
+            throw_exception("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__ENV_IMAGE_PATH))
     #加载场景装饰物图片
     def __add_decoration_image(self, decorationType:str, fileName:str) -> None:
         imgPath:str = os.path.join(self.__DECORATION_IMAGE_PATH, "{}.png".format(fileName))
@@ -56,26 +55,26 @@ class EnvImagesManagement:
             #最后确认一下是不是需要加载
             if fileName not in self.__DECORATION_IMAGE_DICT[decorationType]:
                 #生成图片
-                self.__DECORATION_IMAGE_DICT[decorationType][fileName] = StaticImageSurface(imgPath,0,0)
+                self.__DECORATION_IMAGE_DICT[decorationType][fileName] = StaticImage(imgPath,0,0)
                 #如果是夜战模式
                 if self.__DECORATION_IMAGE_DICT_DARK is not None:
                     if decorationType not in self.__DECORATION_IMAGE_DICT_DARK:
                         self.__DECORATION_IMAGE_DICT_DARK[decorationType] = {}
                     self.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName] = self.__DECORATION_IMAGE_DICT[decorationType][fileName].copy()
-                    self.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName].addDarkness(self.__DARKNESS)
+                    self.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName].add_darkness(self.__DARKNESS)
         #类Gif形式，decorationType应该与fileName一致
         elif decorationType not in self.__DECORATION_IMAGE_DICT:
             imgPath = os.path.join(self.__DECORATION_IMAGE_PATH,decorationType)
             if os.path.exists(imgPath):
                 self.__DECORATION_IMAGE_DICT[decorationType] = [
-                    StaticImageSurface(img_id,0,0) for img_id in natural_sort(glob(os.path.join(imgPath,"*.png")))
+                    StaticImage(img_id,0,0) for img_id in natural_sort(glob(os.path.join(imgPath,"*.png")))
                     ]
                 if self.__DECORATION_IMAGE_DICT_DARK is not None:
                     self.__DECORATION_IMAGE_DICT_DARK[decorationType] = {}
                     self.__DECORATION_IMAGE_DICT_DARK[decorationType][decorationType] = self.__DECORATION_IMAGE_DICT[decorationType][-1].copy()
-                    self.__DECORATION_IMAGE_DICT_DARK[decorationType][decorationType].addDarkness(self.__DARKNESS)
+                    self.__DECORATION_IMAGE_DICT_DARK[decorationType][decorationType].add_darkness(self.__DARKNESS)
             else:
-                throwException("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__DECORATION_IMAGE_PATH))
+                throw_exception("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__DECORATION_IMAGE_PATH))
     #获取方块尺寸
     def get_block_width(self) -> int: return self.__BLOCK_WIDTH
     def get_block_height(self) -> int: return self.__BLOCK_HEIGHT
@@ -88,11 +87,11 @@ class EnvImagesManagement:
         #如果是黑夜模式，则应该调整黑夜模式下的地图方块尺寸
         if self.__ENV_IMAGE_DICT_DARK is not None:
             for key in self.__ENV_IMAGE_DICT_DARK: self.__ENV_IMAGE_DICT_DARK[key].set_width_with_size_locked(self.__BLOCK_WIDTH)
-    def get_env_image(self, key:str, darkMode:bool) -> StaticImageSurface:
+    def get_env_image(self, key:str, darkMode:bool) -> StaticImage:
         try:
             return self.__ENV_IMAGE_DICT_DARK[key] if darkMode is True else self.__ENV_IMAGE_DICT[key]
         except BaseException:
-            throwException("warning","Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(key))
+            throw_exception("warning","Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(key))
             self.__add_evn_image(key)
             return self.__ENV_IMAGE_DICT_DARK[key] if darkMode is True else self.__ENV_IMAGE_DICT[key]
     def get_decoration_image(self, decorationType:str, key:Union[str,int], darkMode:bool) -> any:
@@ -100,26 +99,26 @@ class EnvImagesManagement:
             return self.__DECORATION_IMAGE_DICT_DARK[decorationType][key] if darkMode is True else self.__DECORATION_IMAGE_DICT[decorationType][key]
         #如果图片没找到
         except BaseException:
-            throwException("warning","Cannot find decoration image '{0}' in type '{1}', we will try to load it for you right now, but please by aware.".format(key,decorationType))
+            throw_exception("warning","Cannot find decoration image '{0}' in type '{1}', we will try to load it for you right now, but please by aware.".format(key,decorationType))
             self.__add_decoration_image(decorationType,key)
             return self.__DECORATION_IMAGE_DICT_DARK[decorationType][key] if darkMode is True else self.__DECORATION_IMAGE_DICT[decorationType][key]
     #获取当前装饰物种类的数量
     def get_decoration_num(self, decorationType:str) -> int: return len(self.__DECORATION_IMAGE_DICT[decorationType])
     #新图层
     def new_surface(self, screen_size:tuple, map_size:tuple) -> None:
-        self.__BACKGROUND_SURFACE = resizeImg(self.__BACKGROUND_IMAGE,screen_size) if self.__BACKGROUND_IMAGE is not None \
-            else pygame.Surface(screen_size).convert()
+        self.__BACKGROUND_SURFACE = resize_img(self.__BACKGROUND_IMAGE, screen_size) if self.__BACKGROUND_IMAGE is not None \
+            else new_surface(screen_size).convert()
         if self.__MAP_SURFACE is not None:
             self.__MAP_SURFACE.fill((0,0,0,0))
         else:
-            self.__MAP_SURFACE = pygame.Surface(map_size,flags=pygame.SRCALPHA).convert_alpha()
+            self.__MAP_SURFACE = new_transparent_surface(map_size)
     #获取图层
-    def get_surface(self) -> pygame.Surface: return self.__MAP_SURFACE
+    def get_surface(self) -> ImageSurface: return self.__MAP_SURFACE
     #画出地图
-    def display_background_surface(self, screen:pygame.Surface, pos:tuple) -> None:
+    def display_background_surface(self, screen:ImageSurface, pos:tuple) -> None:
         screen.blits((
-            (self.__BACKGROUND_SURFACE,(0,0)),
-            (self.__MAP_SURFACE,pos)
+            (self.__BACKGROUND_SURFACE, (0,0)),
+            (self.__MAP_SURFACE, pos)
         ))
 
 #方块类
@@ -157,3 +156,36 @@ class Node:
         self.father = None  # 父节点
         self.g = g  # g值，g值在用到的时候会重新算
         self.h = (abs(endPoint.x - point.x) + abs(endPoint.y - point.y)) * 10  # 计算h值
+
+#环境系统
+class WeatherSystem:
+    def  __init__(self, weather:str, window_x:int, window_y:int, entityNum:int=50):
+        self.name = 0
+        self.img_list = [load_img(imgPath) for imgPath in glob(os.path.join("Assets/image/environment",weather,"*.png"))]
+        self.__items:tuple = tuple([Snow(
+                imgId = get_random_int(0,len(self.img_list)-1),
+                size = get_random_int(5,10),
+                speed = get_random_int(1,4),
+                x = get_random_int(1,window_x*1.5),
+                y = get_random_int(1,window_y)
+                ) for i in range(entityNum)])
+    def draw(self, surface:ImageSurface, perBlockWidth:Union[int,float]) -> None:
+        speed_unit:int = int(perBlockWidth/15)
+        for item in self.__items:
+            if 0 <= item.x < surface.get_width() and 0 <= item.y < surface.get_height():
+                surface.blit(resize_img(self.img_list[item.imgId],(perBlockWidth/item.size,perBlockWidth/item.size)),item.pos)
+            item.move(speed_unit)
+            if item.x <= 0 or item.y >= surface.get_height():
+                item.y = get_random_int(-50,0)
+                item.x = get_random_int(0,surface.get_width()*2)
+
+#雪花片
+class Snow(GameObject):
+    def  __init__(self, imgId:int, size:int, speed:int, x:int, y:int):
+        super().__init__(x,y)
+        self.imgId:int = imgId
+        self.size:int = size
+        self.speed:int = speed
+    def move(self, speed_unit:int) -> None:
+        self.x -= self.speed*speed_unit
+        self.y += self.speed*speed_unit

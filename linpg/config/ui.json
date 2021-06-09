@@ -1,0 +1,79 @@
+{
+    "leave_without_saving_warning": {
+        "height": "25%",
+        "hidden": true,
+        "type": "container",
+        "items": [
+            {
+                "color": "white",
+                "font_size": "10%",
+                "src": "{Global,warning}",
+                "type": "text",
+                "x": "center",
+                "y": "10%"
+            },
+            {
+                "color": "white",
+                "font_size": "10%",
+                "src": "{Dialog,leave_without_save1}",
+                "type": "text",
+                "x": "center",
+                "y": "25%"
+            },
+            {
+                "color": "white",
+                "font_size": "10%",
+                "src": "{Dialog,leave_without_save2}",
+                "type": "text",
+                "x": "center",
+                "y": "40%"
+            },
+            {
+                "height": "10%",
+                "width": "10%",
+                "name": "save",
+                "text": {
+                    "src": "{Global,save}",
+                    "color": "black"
+                },
+                "src": "Assets/image/UI/menu.png",
+                "type": "button",
+                "x": "10%",
+                "y": "70%",
+                "alpha_when_not_hover": 150
+            },
+            {
+                "height": "10%",
+                "width": "10%",
+                "name": "cancel",
+                "text": {
+                    "src": "{Global,cancel}",
+                    "color": "black"
+                },
+                "src": "Assets/image/UI/menu.png",
+                "type": "button",
+                "x": "40%",
+                "y": "70%",
+                "alpha_when_not_hover": 150
+            },
+            {
+                "height": "10%",
+                "width": "10%",
+                "name": "dont_save",
+                "text": {
+                    "src": "{Global,dont_save}",
+                    "color": "black"
+                },
+                "src": "Assets/image/UI/menu.png",
+                "type": "button",
+                "x": "70%",
+                "y": "70%",
+                "alpha_when_not_hover": 150
+            }
+        ],
+        "src": "Assets/image/UI/container.png",
+        "width": "50%",
+        "x": "center",
+        "y": "center"
+    }
+}

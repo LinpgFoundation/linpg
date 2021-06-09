@@ -1,10 +1,10 @@
 # cython: language_level=3
 import queue
 import av
-from ..core import *
+from ..ui import *
 
 #获取视频的音频 （返回路径）
-def getAudioFromVideo(moviePath:str, audioType:str="mp3") -> str:
+def split_audio_from_video(moviePath:str, audioType:str="mp3") -> str:
     #如果没有Cache文件夹，则创建一个
     if not os.path.exists("Cache"): os.makedirs("Cache")
     #获取路径
@@ -33,27 +33,28 @@ def getAudioFromVideo(moviePath:str, audioType:str="mp3") -> str:
     #读取完成，返回音乐文件的对应目录
     return outPutPath
 
-def loadAudioAsSound(moviePath:str) -> object:
-    path = getAudioFromVideo(moviePath)
-    PygameAudio = pygame.mixer.Sound(path)
+def load_audio_from_video_as_sound(moviePath:str) -> object:
+    path = split_audio_from_video(moviePath)
+    sound_audio = load_sound(path)
     if not get_setting("KeepVedioCache"): os.remove(path)
-    return PygameAudio
+    return sound_audio
 
-def loadAudioAsMusic(moviePath:str) -> bool:
-    pygame.mixer.music.unload()
+def load_audio_from_video_as_music(moviePath:str) -> bool:
+    unload_music()
     try:
-        path = getAudioFromVideo(moviePath)
-        pygame.mixer.music.load(path)
+        path = split_audio_from_video(moviePath)
+        load_music(path)
         if not get_setting("KeepVedioCache"): os.remove(path)
         return True
-    except:
-        throwException("warning", "Cannot load music from {}!\nIf this vedio has no sound, then just ignore this warning.".format(moviePath))
+    except BaseException:
+        throw_exception("warning", "Cannot load music from {}!\nIf this vedio has no sound, then just ignore this warning.".format(moviePath))
         return False
 
 #视频模块接口，不能实例化
-class AbstractVedio(threading.Thread):
+class AbstractVedio(threading.Thread, AbstractImage):
     def __init__(self, path:str, width:int, height:int):
-        super().__init__()
+        threading.Thread.__init__(self)
+        AbstractImage.__init__(self, None, 0, 0, width, height)
         self._path = path
         self._video_container = av.open(self._path,mode='r')
         self._video_stream = self._video_container.streams.video[0]
@@ -63,9 +64,7 @@ class AbstractVedio(threading.Thread):
         self._frameRate = round(self._video_stream.average_rate)
         self._frameQueue = queue.Queue(maxsize=self._frameRate)
         self._stopped:bool = False
-        self._clock = pygame.time.Clock()
-        self._width = width
-        self._height = height
+        self._clock = get_clock()
         self._pts = 0
         self._threadLock = threading.Lock()
     #处理当前帧的画面
@@ -88,21 +87,21 @@ class AbstractVedio(threading.Thread):
     #停止
     def stop(self) -> None: self._stopped = True
     #把画面画到屏幕上
-    def draw(self, surface:pygame.Surface) -> None:
+    def draw(self, surface:ImageSurface) -> None:
         #如果Queue不是空的
-        if not self._frameQueue.empty(): pygame.surfarray.blit_array(surface,self._frameQueue.get())
+        if not self._frameQueue.empty(): draw_array(surface, self._frameQueue.get())
 
 #视频片段展示模块--灵活，但不能保证帧数和音乐同步
-class VedioFrame(AbstractVedio):
+class VedioSurface(AbstractVedio):
     def __init__(self, path:str, width:int, height:int, loop:bool=True, with_music:bool=False, play_range:tuple=None, volume:float=1.0):
         super().__init__(path,width,height)
         self.loop = loop
         self.looped_times = 0
-        self.bgm = loadAudioAsSound(path) if with_music else None
+        self.bgm = load_audio_from_video_as_sound(path) if with_music else None
         self.__volume = volume
         #如果初始音量不为1，则应该设置对应的音量
         if self.__volume != 1.0 and self.bgm is not None: self.bgm.set_volume(self.__volume)
-        self.bgm_channel = pygame.mixer.find_channel() if with_music else None
+        self.bgm_channel = find_channel() if with_music else None
         self.start_point = play_range[0] if play_range is not None else None
         self.end_point = play_range[1] if play_range is not None else None
         self.started:bool = False
@@ -119,7 +118,7 @@ class VedioFrame(AbstractVedio):
     #返回一个克隆
     def copy(self) -> object:
         with_music = True if self.bgm is not None else False
-        return VedioFrame(self._path,self._width,self._height,self.loop,with_music,(self.start_point,self.end_point),self.__volume)
+        return VedioSurface(self._path,self._width,self._height,self.loop,with_music,(self.start_point,self.end_point),self.__volume)
     #开始执行线程
     def run(self) -> None:
         self.started = True
@@ -141,7 +140,7 @@ class VedioFrame(AbstractVedio):
         #确保播放完剩余的帧
         while not self._frameQueue.empty(): pass
     #把画面画到屏幕上
-    def draw(self, surface:pygame.Surface) -> None:
+    def draw(self, surface:ImageSurface) -> None:
         super().draw(surface)
         #播放背景音乐
         if self.bgm is not None and not self.bgm_channel.get_busy() and self.loop: self.bgm_channel.play(self.bgm)
@@ -151,10 +150,10 @@ class VedioPlayer(AbstractVedio):
     def __init__(self, path:str, width:int, height:int):
         super().__init__(path,width,height)
         self.__allowFrameDelay:int = 10
-        self.__bgm_status:bool = loadAudioAsMusic(path)
+        self.__bgm_status:bool = load_audio_from_video_as_music(path)
     #开始执行线程
     def run(self) -> None:
-        if self.__bgm_status is True: pygame.mixer.music.play()
+        if self.__bgm_status is True: play_music()
         for frame in self._video_container.decode(self._video_stream):
             #如果需要跳出
             if self._stopped is True:
@@ -164,29 +163,28 @@ class VedioPlayer(AbstractVedio):
             #处理当前帧
             self._processFrame(frame)
             #确保匀速播放
-            if not int(pygame.mixer.music.get_pos()/1000*self._frameRate)-self.get_frameIndex() >= self.__allowFrameDelay:
+            if not int(get_music_pos()/1000*self._frameRate)-self.get_frameIndex() >= self.__allowFrameDelay:
                 self._clock.tick(self._frameRate)
         #确保播放完剩余的帧
         while not self._frameQueue.empty(): pass
-        pygame.mixer.music.unload()
+        unload_music()
 
 #过场动画
-def cutscene(surface:pygame.Surface, videoPath:str) -> None:
+def cutscene(surface:ImageSurface, videoPath:str) -> None:
     #初始化部分参数
     surface_size:tuple = surface.get_size()
     is_skip:bool = False
     is_playing:bool = True
     #初始化跳过按钮的参数
-    skip_button:object = ImageSurface(
-        pygame.image.load("Assets/image/UI/dialog_skip.png").convert_alpha(),
-        int(surface.get_width()*0.92),
-        int(surface.get_height()*0.05),
+    skip_button:object = load_static_image(
+        r"Assets/image/UI/dialog_skip.png",
+        (int(surface.get_width()*0.92), int(surface.get_height()*0.05)),
         int(surface.get_width()*0.055),
         int(surface.get_height()*0.06)
         )
     #生成黑色帘幕
-    black_bg:pygame.Surface = pygame.Surface(surface_size,flags=pygame.SRCALPHA).convert_alpha()
-    pygame.draw.rect(black_bg,(0,0,0),(0,0,surface_size[0],surface_size[1]))
+    black_bg:ImageSurface = new_surface(surface_size).convert()
+    black_bg.fill(get_color_rbga("black"))
     black_bg.set_alpha(0)
     #进度条
     bar_height:int = 10
@@ -202,7 +200,7 @@ def cutscene(surface:pygame.Surface, videoPath:str) -> None:
         white_progress_bar.draw(surface)
         if skip_button.is_hover() and controller.mouse_get_press(0) and not is_skip:
             is_skip = True
-            pygame.mixer.music.fadeout(5000)
+            fade_out_music(5000)
         if is_skip is True:
             temp_alpha:int = black_bg.get_alpha()
             if temp_alpha < 255:

@@ -1,5 +1,4 @@
 # cython: language_level=3
-from copy import deepcopy
 from .base import *
 
 #初始化储存设置配置文件的变量
@@ -16,21 +15,6 @@ def get_setting_path() -> str: return os.path.join(_LINPG_SETTING_FOLDER_PATH, _
 def set_setting_path(path:str) -> None:
     global _LINPG_SETTING_FOLDER_PATH, _LINPG_SETTING_FILE_NAME
     _LINPG_SETTING_FOLDER_PATH, _LINPG_SETTING_FILE_NAME = os.path.split(path)
-
-#根据keys查找值，最后返回一个复制的对象
-def get_value_by_keys(dict_to_check:dict, keys:tuple, warning:bool=True) -> any:
-    pointer = dict_to_check
-    for key in keys:
-        try:
-            pointer = pointer[key]
-        except KeyError:
-            if warning is True: throw_exception(
-                "warning",
-                'Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'
-                .format(key)
-                )
-            return key
-    return deepcopy(pointer)
 
 #获取设置配置文件
 def get_setting(*keys:str) -> any: return get_value_by_keys(_LINPG_SETTING, keys)

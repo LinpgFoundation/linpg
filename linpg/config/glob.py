@@ -14,7 +14,7 @@ def get_glob_value(key: str) -> any:
     return deepcopy(_LINPG_GLOBAL_DATA[key])
 
 # 如果不是对应的值，则设置为对应的值，返回是否对应
-def if_get_set_value(key: str, valueToGet: any, valueToSet: any) -> bool:
+def if_get_set_glob_value(key: str, valueToGet: any, valueToSet: any) -> bool:
     global _LINPG_GLOBAL_DATA
     if _LINPG_GLOBAL_DATA[key] == valueToGet:
         _LINPG_GLOBAL_DATA[key] = valueToSet

@@ -114,12 +114,12 @@ controller:GameController = GameController(get_setting("MouseIconWidth"),get_set
 
 #画面更新控制器
 class DisplayController:
-    def __init__(self, fps:int):
-        self.__fps:int = max(int(fps),1)
+    def __init__(self):
+        self.__fps:int = max(int(get_setting("FPS")), 1)
         self.__clock:object = get_clock()
         self.__standard_fps:int = 60
         #默认尺寸
-        self.__screen_scale:int = keep_in_range(int(get_setting("ScreenScale")),0,100)
+        self.__screen_scale:int = max(int(get_setting("ScreenScale")), 0)
         self.__standard_width:int = round(1920*self.__screen_scale/100)
         self.__standard_height:int = round(1080*self.__screen_scale/100)
         #主要的窗口
@@ -149,14 +149,21 @@ class DisplayController:
         else:
             self.__SCREEN_WINDOW.set_icon(quickly_load_img(path, False))
     #窗口尺寸
+    @property
+    def width(self) -> int: return self.__standard_width
     def get_width(self) -> int: return self.__standard_width
+    @property
+    def height(self) -> int: return self.__standard_height
     def get_height(self) -> int: return self.__standard_height
-    def get_size(self) -> tuple: return self.__standard_width,self.__standard_height
+    @property
+    def size(self) -> tuple: return self.__standard_width, self.__standard_height
+    def get_size(self) -> tuple: return self.__standard_width, self.__standard_height
     #初始化屏幕
     def init_screen(self) -> object:
         if is_using_pygame():
             flags = pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN if self.__screen_scale == 100 else pygame.SCALED
             self.__SCREEN_WINDOW = pygame.display.set_mode(self.get_size(), flags)
+            self.__SCREEN_WINDOW.set_alpha(None)
         else:
             self.__SCREEN_WINDOW = pyglet.window.Window(self.get_width(), self.get_height())
         return self.__SCREEN_WINDOW
@@ -170,7 +177,7 @@ class DisplayController:
         exit()
 
 #帧率控制器
-display:DisplayController = DisplayController(get_setting("FPS"))
+display:DisplayController = DisplayController()
 
 # 直接画到屏幕上
 def draw_on_screen(surface: ImageSurface, pos:tuple) -> None:

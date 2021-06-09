@@ -1,5 +1,8 @@
 # cython: language_level=3
-import os, json
+from __future__ import annotations
+import json
+import os
+from copy import deepcopy
 from datetime import datetime
 from glob import glob
 # 尝试导入yaml库
@@ -37,8 +40,23 @@ def throw_exception(exception_type:str, info:str) -> None:
     else:
         throw_exception("error","Hey, the exception_type '{}' is not acceptable!".format(exception_type))
 
+#根据keys查找值，最后返回一个复制的对象
+def get_value_by_keys(dict_to_check:dict, keys:tuple, warning:bool=True) -> any:
+    pointer = dict_to_check
+    for key in keys:
+        try:
+            pointer = pointer[key]
+        except KeyError:
+            if warning is True: throw_exception(
+                "warning",
+                'Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'
+                .format(key)
+                )
+            return key
+    return deepcopy(pointer)
+
 # 配置文件加载
-def load_config(path:str, key:str=None) -> any:
+def load_config(path:str, *keys:str) -> any:
     # 检测配置文件是否存在
     if not os.path.exists(path): throw_exception("error","Cannot find file on path: {}".format(path))
     # 按照类型加载配置文件
@@ -61,7 +79,7 @@ def load_config(path:str, key:str=None) -> any:
     else:
         throw_exception("error","Linpg can only load json and yaml (if pyyaml is installed).")
     # 返回配置文件中的数据
-    return Data if key is None else Data[key]
+    return Data if len(keys) == 0 else get_value_by_keys(Data,keys)
 
 # 配置文件保存
 def save_config(path:str, data:any) -> None:

@@ -20,9 +20,14 @@ class AbstractImage(Rect):
     def alpha(self) -> int: return self.get_alpha()
     def get_alpha(self) -> int: return self.img.get_alpha()
     def set_alpha(self, value:int) -> None: self.img.set_alpha(value)
+    def add_alpha(self, value:int) -> None: self.set_alpha(self.get_alpha()+value)
+    def subtract_alpha(self, value:int) -> None: self.set_alpha(self.get_alpha()-value)
     #获取图片
     def get_image_pointer(self) -> any: return self.img
     def get_image_copy(self) -> any: return self.img.copy()
+    #更新图片
+    def update_image(self, img_path:Union[str, ImageSurface], ifConvertAlpha:bool=True) -> None:
+        self.img = quickly_load_img(img_path, ifConvertAlpha)
     #淡入
     def fade_in(self, value:int) -> None: self.set_alpha(self.get_alpha()+value)
     #淡出
@@ -39,13 +44,11 @@ class DynamicImage(AbstractImage):
         return replica
     #返回一个浅复制品
     def light_copy(self): return DynamicImage(self.get_image_pointer(), self.x, self.y, self._width, self._height, self.tag)
-    #更新图片
-    def update(self, img_path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> None:
-        self.img = quickly_load_img(img_path,ifConvertAlpha)
-    def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
-        if not self.hidden: surface.blit(resize_img(self.img,self.size),add_pos(self.pos,offSet))
     #反转
     def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = flip_img(self.img,vertical,horizontal)
+    #展示
+    def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
+        if not self.hidden: surface.blit(resize_img(self.img,self.size),add_pos(self.pos,offSet))
 
 #有本地坐标的图形接口
 class AdvancedAbstractImage(AbstractImage):
@@ -58,7 +61,7 @@ class AdvancedAbstractImage(AbstractImage):
     def get_alpha(self) -> int: return self._alpha
     def set_alpha(self, value:int, update_original:bool=True) -> None:
         self._alpha = keep_in_range(int(value), 0, 255)
-        if isinstance(self.img, pygame.Surface) and update_original is True: super().set_alpha(self._alpha)
+        if update_original is True and isinstance(self.img, pygame.Surface): super().set_alpha(self._alpha)
     #获取本地坐标
     @property
     def local_x(self) -> int: return self._local_x
@@ -98,6 +101,10 @@ class StaticImage(AdvancedAbstractImage):
         self.__is_flipped:bool = False
         self.__need_update:bool = True if self._width >= 0 and self._height >= 0 else False
         self.__crop_rect:object = None
+    #更新图片
+    def update_image(self, img_path:Union[str, ImageSurface], ifConvertAlpha:bool=True) -> None:
+        super().update_image(img_path, ifConvertAlpha)
+        self.__need_update = True
     #旋转
     def rotate(self, angle:int) -> None:
         super().rotate(angle)
@@ -105,7 +112,7 @@ class StaticImage(AdvancedAbstractImage):
     #设置透明度
     def set_alpha(self, value:int) -> None:
         super().set_alpha(value, False)
-        if self.__processed_img is not None: self.__processed_img.set_alpha(self._alpha)
+        if self.__processed_img is not None: self.__processed_img.set_alpha(self.get_alpha())
     #宽度
     def set_width(self, value:Union[int,float]) -> None:
         value = int(value)
@@ -143,14 +150,17 @@ class StaticImage(AdvancedAbstractImage):
     def _update_img(self) -> None:
         imgTmp = smoothly_resize_img(self.img, self.size) if get_antialias() is True else resize_img(self.img, self.size)
         rect = imgTmp.get_bounding_rect()
-        if self.__crop_rect is not None:
-            new_x:int = max(rect.x, self.__crop_rect.x)
-            new_y:int = max(rect.y, self.__crop_rect.y)
-            rect = Rect(new_x, new_y, min(rect.right,self.__crop_rect.right)-new_x, min(rect.bottom,self.__crop_rect.bottom)-new_y)
-        self.__processed_img = new_transparent_surface(rect.size)
-        self.set_local_pos(rect.x,rect.y)
-        self.__processed_img.blit(imgTmp,(-self._local_x,-self._local_y))
-        if self._alpha != 255:
+        if self.width != rect.width or self.height != rect.height or self.__crop_rect is not None:
+            if self.__crop_rect is not None:
+                new_x:int = max(rect.x, self.__crop_rect.x)
+                new_y:int = max(rect.y, self.__crop_rect.y)
+                rect = Rect(new_x, new_y, min(rect.right,self.__crop_rect.right)-new_x, min(rect.bottom,self.__crop_rect.bottom)-new_y)
+            self.__processed_img = new_transparent_surface(rect.size)
+            self.set_local_pos(rect.x,rect.y)
+            self.__processed_img.blit(imgTmp,(-self._local_x,-self._local_y))
+        else:
+            self.__processed_img = imgTmp
+        if self._alpha < 255:
             self.__processed_img.set_alpha(self._alpha)
         self.__need_update = False
     #反转原图，并打上已反转的标记

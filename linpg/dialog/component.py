@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .movie import *
+from ..media import *
 
 #ui路径
 DIALOG_UI_PATH:str = os.path.join("Assets", "image", "UI")

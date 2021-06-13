@@ -516,7 +516,11 @@ class DialogEditor(AbstractDialogSystem):
         return data_need_save
     #检查是否有任何改动
     def __no_changes_were_made(self) -> bool:
-        return load_config(self.get_dialog_file_location(),"dialogs") == self.__slipt_the_stuff_need_save()
+        dialog_file_location_t:str = self.get_dialog_file_location()
+        if os.path.exists(dialog_file_location_t):
+            return load_config(dialog_file_location_t, "dialogs") == self.__slipt_the_stuff_need_save()
+        else:
+            return False
     #更新场景
     def __update_scene(self, theNextDialogId:Union[str,int]) -> None:
         if theNextDialogId in self.dialogData[self.part]:

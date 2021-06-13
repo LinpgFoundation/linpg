@@ -73,7 +73,7 @@ class PauseMenu:
                 elif self.button_setting.is_hover():
                     return "option_menu"
                 elif self.button_back.is_hover():
-                    set_glob_value("BackToMainMenu",True)
+                    global_value.set("BackToMainMenu",True)
                     return "back_to_mainMenu"
         return ""
 

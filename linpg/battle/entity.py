@@ -26,7 +26,7 @@ class Entity(GameObject):
         #当前血量
         self.__current_hp = DATA["current_hp"] if "current_hp" in DATA else DATA["max_hp"]
         #最大血量
-        self.__max_hp = DATA["max_hp"]
+        self.__max_hp = max(DATA["max_hp"],1)
         #不可再生的护甲值
         self.__irrecoverable_armor = DATA["irrecoverable_armor"] if "irrecoverable_armor" in DATA else 0
         #当前可再生的护甲值
@@ -372,7 +372,6 @@ class Entity(GameObject):
         if get_setting("DeveloperMode"): img_of_char.draw_outline(surface)
     #把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
     def draw(self, surface:ImageSurface, MapClass:object) -> None:
-
         self.__blit_entity_img(surface,MapClass,alpha=self.get_imgAlpaha(self.__current_action))
         #计算imgId
         self.draw_nothing()

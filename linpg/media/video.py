@@ -15,13 +15,14 @@ class AbstractVedio(threading.Thread, AbstractImage):
         self._frameRate = round(self._video_stream.average_rate)
         self._frameQueue = queue.Queue(maxsize=self._frameRate)
         self._stopped:bool = False
+        self._paused:bool = False
         self._clock = get_clock()
         self._pts = 0
         self._threadLock = threading.Lock()
     #处理当前帧的画面
     def _processFrame(self, frame:object):
         #如果当前队列是满的，则等待
-        while self._frameQueue.full(): pass
+        while self._frameQueue.full() or self._paused is True: pass
         #加锁，防止self.set_pos()误触self._pts
         self._threadLock.acquire()
         self._pts = frame.pts
@@ -37,6 +38,8 @@ class AbstractVedio(threading.Thread, AbstractImage):
     def get_percentagePlayed(self) -> float: return self._pts/self._video_stream.duration
     #停止
     def stop(self) -> None: self._stopped = True
+    #暂停
+    def pause(self) -> None: self._paused = not self._paused
     #把画面画到屏幕上
     def draw(self, surface:ImageSurface) -> None:
         #如果Queue不是空的

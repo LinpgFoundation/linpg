@@ -9,6 +9,8 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._npc_manager = CharacterImageManager()
         #黑色Void帘幕
         self._black_bg = get_single_color_surface("black")
+        #加载对话框系统
+        self._dialog_txt_system = DialogBox(int(display.get_width()*0.015))
         #选项栏
         self._option_box_surface = load_static_image(os.path.join(DIALOG_UI_PATH, "option.png"), (0,0))
         #选项栏-选中
@@ -30,6 +32,8 @@ class AbstractDialogSystem(AbstractGameSystem):
         #背景图片
         self.__background_image_name = None
         self.__background_image_surface = self._black_bg.copy()
+        #编辑器模式模式
+        self.dev_mode:bool = False
         #是否开启自动保存
         self.auto_save:bool = False
     #获取对话文件所在的具体路径
@@ -56,6 +60,9 @@ class AbstractDialogSystem(AbstractGameSystem):
         if self.__background_image_name != image_name:
             #更新背景的名称
             self.__background_image_name = image_name
+            #如果背景是视频，则应该停止，以防止内存泄漏
+            if isinstance(self.__background_image_surface, VedioSurface):
+                self.__background_image_surface.stop()
             #更新背景的图片数据
             if self.__background_image_name is not None:
                 if self.__background_image_name != "<transparent>":
@@ -73,6 +80,8 @@ class AbstractDialogSystem(AbstractGameSystem):
                         self.__background_image_surface.start()
                     else:
                         throw_exception("error","Cannot find a background image or video file called '{}'.".format(self.__background_image_name))
+                elif self.dev_mode is True:
+                    self.__background_image_surface = load_static_image(get_texture_missing_surface(display.get_size()),(0,0))
                 else:
                     self.__background_image_surface = None
             else:
@@ -96,3 +105,4 @@ class AbstractDialogSystem(AbstractGameSystem):
         #展示背景图片和npc立绘
         self.display_background_image(surface)
         self._npc_manager.draw(surface)
+        self._dialog_txt_system.draw(surface)

@@ -1,6 +1,6 @@
 # cython: language_level=3
 """
 结构:
-component -> character -> module -> dialog
+dialogbox-> component -> character -> abstract -> dialog -> editor
 """
-from .dialog import *
+from .editor import *

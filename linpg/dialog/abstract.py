@@ -5,6 +5,8 @@ from .character import *
 class AbstractDialogSystem(AbstractGameSystem):
     def __init__(self):
         super().__init__()
+        #存储视觉小说数据的参数
+        self._dialog_data:dict = {}
         #加载对话的背景图片模块
         self._npc_manager = CharacterImageManager()
         #黑色Void帘幕
@@ -48,13 +50,55 @@ class AbstractDialogSystem(AbstractGameSystem):
     def get_default_lang(self) -> str:
         return load_config(os.path.join(self._dialog_folder_path,self._chapter_type,"info.yaml"),"default_lang") if self._project_name is None\
             else load_config(os.path.join(self._dialog_folder_path,self._chapter_type,self._project_name,"info.yaml"),"default_lang")
+    @property
+    def dialog_content(self) -> str: return self._dialog_data[self.part]
+    @property
+    def current_dialog_content(self) -> dict: return self.get_current_dialog_content()
+    #获取当前对话的信息
+    def get_current_dialog_content(self) -> dict: return self._dialog_data[self.part][self._dialog_id]
     #初始化关键参数
-    def _initialize(self, chapterType:str, chapterId:int, projectName:str, dialogId:Union[str,int]="head", dialog_options:dict={}) -> None:
+    def _initialize(
+        self, chapterType:str, chapterId:int, part:str, projectName:str, dialogId:Union[str,int]="head", dialog_options:dict={}
+        ) -> None:
         super()._initialize(chapterType,chapterId,projectName)
         #对白id
         self._dialog_id = dialogId
         #玩家做出的选项
         self.dialog_options = dialog_options
+        #播放的部分
+        self.part = part
+    #载入数据
+    def _load_content(self) -> None:
+        #获取该项目的默认语言
+        default_lang_of_dialog:str = self.get_default_lang()
+        #读取目标对话文件的数据
+        if os.path.exists(self.get_dialog_file_location()):
+            dialogDataDict:dict = load_config(self.get_dialog_file_location(),"dialogs")
+            #如果该dialog文件是另一个语言dialog文件的子类
+            if default_lang_of_dialog != get_setting("Language"):
+                self._dialog_data = load_config(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")
+                for part in dialogDataDict:
+                    for key in dialogDataDict[part]:
+                        if key in self._dialog_data[part]:
+                            for key2,dataNeedReplace in dialogDataDict[part][key].items():
+                                self._dialog_data[part][key][key2] = dataNeedReplace
+                        else:
+                            self._dialog_data[part][key] = dialogDataDict[part][key]
+            #如果该dialog文件是主语言
+            else:
+                self._dialog_data = dialogDataDict
+        else:
+            self._dialog_data = load_config(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")
+        #确认dialog数据合法
+        if len(self._dialog_data) == 0:
+            throw_exception("error", "The dialog dict has no content inside.")
+        elif len(self.dialog_content) == 0:
+            throw_exception("error", 'The selected dialog dict "{}" has no content inside.'.format(self.part))
+        elif "head" not in self.dialog_content:
+            throw_exception("error", 'You need to set up a "head" for the selected dialog "{}".'.format(self.part))
+        #将数据载入刚初始化的模块中
+        self._update_scene(self._dialog_id)
+        self._dialog_txt_system.reset()
     #更新背景图片
     def _update_background_image(self, image_name:str) -> None:
         if self.__background_image_name != image_name:
@@ -86,6 +130,23 @@ class AbstractDialogSystem(AbstractGameSystem):
                     self.__background_image_surface = None
             else:
                 self.__background_image_surface = self._black_bg.copy()
+    #更新场景
+    def _update_scene(self, theNextDialogId:Union[str,int]) -> None:
+        #更新dialogId
+        self._dialog_id = theNextDialogId
+        #获取当前对话的内容
+        currentDialogContent:dict = self.get_current_dialog_content()
+        #更新立绘和背景
+        self._npc_manager.update(currentDialogContent["characters_img"])
+        self._update_background_image(currentDialogContent["background_img"])
+        #更新对话框
+        self._dialog_txt_system.update(currentDialogContent["narrator"], currentDialogContent["content"])
+        #更新背景音乐
+        if not self.dev_mode:
+            if currentDialogContent["background_music"] is not None:
+                self.set_bgm(os.path.join(self._background_music_folder_path,currentDialogContent["background_music"]))
+            else:
+                self.set_bgm(None)
     #停止播放
     def stop(self) -> None:
         #如果背景是多线程的VedioSurface，则应该退出占用

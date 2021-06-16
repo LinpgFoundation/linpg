@@ -498,7 +498,6 @@ class MapObject(AdvancedAbstractImage):
             # 判断是否终止
             point = self.__endPointInCloseList()
             if point:  # 如果终点在关闭表中，就返回结果
-                # print("关闭表中")
                 cPoint = point
                 pathList:list = []
                 while True:

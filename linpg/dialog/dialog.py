@@ -5,10 +5,13 @@ from .abstract import *
 class DialogSystem(AbstractDialogSystem):
     def __init__(self, basic_features_only:bool=False) -> None:
         super().__init__()
-        #UI按钮
-        self._buttons_mananger = DialogButtons() if not basic_features_only else None
+        if not basic_features_only:
+            #UI按钮
+            self._buttons_mananger = DialogButtons()
+            #暂停菜单
+            self.pause_menu = PauseMenu()
         #更新音效
-        self.__update_sound_volume()
+        self._update_sound_volume()
         #是否要显示历史对白页面
         self._is_showing_history:bool = False
         self._history_surface = None
@@ -19,12 +22,6 @@ class DialogSystem(AbstractDialogSystem):
             (display.get_width()*0.04,display.get_height()*0.04),
             (display.get_width()*0.03,display.get_height()*0.04), 150
         ) if not basic_features_only else None
-        #暂停菜单
-        self.pause_menu = PauseMenu() if not basic_features_only else None
-    #返回需要保存数据
-    def _get_data_need_to_save(self) -> dict: return merge_dict(
-        self.data_of_parent_game_system, {"dialog_id": self._dialog_id, "dialog_options": self.dialog_options, "type": self.part}
-        )
     #读取章节
     def load(self, save_path:str) -> None:
         saveData = load_config(save_path)
@@ -43,12 +40,6 @@ class DialogSystem(AbstractDialogSystem):
         self._initialize(chapterType,chapterId,part,projectName)
         #根据已有参数载入数据
         self._load_content()
-    #更新语言
-    def updated_language(self, surface:ImageSurface) -> None:
-        super().updated_language()
-        if self.pause_menu is not None: self.pause_menu.initialize(surface)
-        if self._buttons_mananger is not None: self._buttons_mananger.initialize()
-        self._load_content()
     #更新场景
     def _update_scene(self, theNextDialogId:Union[str,int]) -> None:
         #如果dialog Id存在
@@ -61,6 +52,9 @@ class DialogSystem(AbstractDialogSystem):
     def continue_scene(self, theNextDialogId:Union[str,int]) -> None:
         self._continue()
         self._update_scene(theNextDialogId)
+    def switch_part(self, part:str) -> None:
+        self._part = part
+        self._load_content()
     def __check_button_event(self, surface:ImageSurface) -> bool:
         if self._buttons_mananger is not None and not self._is_showing_history:
             if self._buttons_mananger.item_hovered == "hide":
@@ -80,20 +74,16 @@ class DialogSystem(AbstractDialogSystem):
         else:
             return False
         return True
-    #更新音量
-    def __update_sound_volume(self) -> None:
-        self.set_bgm_volume(get_setting("Sound","background_music")/100)
-        self._dialog_txt_system.set_sound_volume(get_setting("Sound","sound_effects"))
     #淡入或淡出
-    def fade(self, surface:ImageSurface, stage:str="out") -> None:
-        if stage == "out":
+    def fade(self, surface:ImageSurface, stage:str="$out") -> None:
+        if stage == "$out":
             fade_out_sound(1000)
             fade_out_music(1000)
             for i in range(0,255,5):
                 self._black_bg.set_alpha(i)
                 self._black_bg.draw(surface)
                 display.flip()
-        elif stage == "in":
+        elif stage == "$in":
             for i in range(255,0,-5):
                 self.display_background_image(surface)
                 self._black_bg.set_alpha(i)
@@ -165,7 +155,7 @@ class DialogSystem(AbstractDialogSystem):
                     #展示设置UI
                     get_option_menu().draw(surface)
                     #更新音量
-                    if get_option_menu().need_update["volume"] is True: self.__update_sound_volume()
+                    if get_option_menu().need_update["volume"] is True: self._update_sound_volume()
                     #更新语言
                     if get_option_menu().need_update["language"] is True: self.updated_language(surface)
                     #显示进度已保存的文字
@@ -199,7 +189,7 @@ class DialogSystem(AbstractDialogSystem):
                     self._option_box_surface.draw(surface)
                     display_in_center(option_txt,self._option_box_surface,self._option_box_surface.x,self._option_box_surface.y,surface)
             if nextDialogId is not None:
-                self.dialog_options[self._dialog_id] = {"id":i,"target":nextDialogId}
+                self._dialog_options[self._dialog_id] = {"id":i,"target":nextDialogId}
                 #更新场景
                 self._update_scene(nextDialogId)
                 leftClick = False
@@ -226,9 +216,9 @@ class DialogSystem(AbstractDialogSystem):
                         elif self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "option":
                             narratorTemp = self._dialog_txt_system.render_font(self._buttons_mananger.choiceTxt+" - ",(0,191,255))
                             self._history_surface.blit(narratorTemp,(display.get_width()*0.15-narratorTemp.get_width(),display.get_height()*0.1+local_y))
-                            self._history_surface.blit(self._dialog_txt_system.render_font(str(self.dialog_options[dialogIdTemp]["target"]),(0,191,255)),(display.get_width()*0.15,display.get_height()*0.1+local_y))
+                            self._history_surface.blit(self._dialog_txt_system.render_font(str(self._dialog_options[dialogIdTemp]["target"]),(0,191,255)),(display.get_width()*0.15,display.get_height()*0.1+local_y))
                             local_y+=self._dialog_txt_system.FONTSIZE*1.5
-                            dialogIdTemp = self.dialog_options[dialogIdTemp]["target"]
+                            dialogIdTemp = self._dialog_options[dialogIdTemp]["target"]
                         else:
                             dialogIdTemp = None
                     else:
@@ -258,7 +248,7 @@ class DialogSystem(AbstractDialogSystem):
                     #更新场景
                     self._update_scene(currentDialogContent["next_dialog_id"]["target"])
                     self._dialog_txt_system.reset()
-                    self.fade(surface, "in")
+                    self.fade(surface, "$in")
                 #如果是需要播放过程动画
                 elif next_dialog_type == "cutscene":
                     self.fade(surface)

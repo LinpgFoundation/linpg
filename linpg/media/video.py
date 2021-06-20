@@ -49,13 +49,13 @@ class AbstractVedio(threading.Thread, AbstractImage):
 class VedioSurface(AbstractVedio):
     def __init__(self, path:str, width:int, height:int, loop:bool=True, with_music:bool=False, play_range:tuple=None, volume:float=1.0):
         super().__init__(path,width,height)
-        self.loop = loop
-        self.looped_times = 0
+        self.loop:bool = loop
+        self.looped_times:int = 0
         self.bgm = load_audio_from_video_as_sound(path) if with_music else None
-        self.__volume = volume
+        self.__volume:float = volume
         #如果初始音量不为1，则应该设置对应的音量
         if self.__volume != 1.0 and self.bgm is not None: self.bgm.set_volume(self.__volume)
-        self.bgm_channel = find_channel() if with_music else None
+        self.bgm_channel:int = find_channel() if with_music else None
         self.start_point = play_range[0] if play_range is not None else None
         self.end_point = play_range[1] if play_range is not None else None
         self.started:bool = False
@@ -76,21 +76,26 @@ class VedioSurface(AbstractVedio):
     #开始执行线程
     def run(self) -> None:
         self.started = True
-        for frame in self._video_container.decode(self._video_stream):
-            #如果要中途停止
-            if self._stopped is True:
-                #清空queue内储存的所有加载完的帧
-                with self._frameQueue.mutex: self._frameQueue.queue.clear()
+        while True:
+            for frame in self._video_container.decode(self._video_stream):
+                #如果要中途停止
+                if self._stopped is True:
+                    #清空queue内储存的所有加载完的帧
+                    with self._frameQueue.mutex: self._frameQueue.queue.clear()
+                    break
+                #处理当前Frame
+                self._processFrame(frame)
+                if self.end_point is not None and self.get_pos() >= self.end_point:
+                    self.looped_times += 1
+                    if not self.loop:
+                        self._stopped = True
+                    else:
+                        self.set_pos(self.start_point)
+                self._clock.tick(self._frameRate)
+            if not self.loop:
                 break
-            #处理当前Frame
-            self._processFrame(frame)
-            if self.end_point is not None and self.get_pos() >= self.end_point:
-                self.looped_times += 1
-                if not self.loop:
-                    self._stopped = True
-                else:
-                    self.set_pos(self.start_point)
-            self._clock.tick(self._frameRate)
+            else:
+                self.set_pos(0)
         #确保播放完剩余的帧
         while not self._frameQueue.empty(): pass
     #把画面画到屏幕上

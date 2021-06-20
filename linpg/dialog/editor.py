@@ -101,7 +101,7 @@ class DialogEditor(AbstractDialogSystem):
         #切换准备编辑的dialog部分
         self.dialog_key_select = DropDownSingleChoiceList(None, button_width*9, button_y+font_size, font_size)
         for key in self._dialog_data: self.dialog_key_select.append(key)
-        self.dialog_key_select.set_current_selected_item(self.part)
+        self.dialog_key_select.set_current_selected_item(self._part)
     #返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
         original_data:dict = load_config(
@@ -161,10 +161,10 @@ class DialogEditor(AbstractDialogSystem):
                 self._dialog_data_default = None
         #则尝试加载后仍然出现内容为空的情况
         if len(list(self._dialog_data.keys())) <= 0: 
-            self.part = "example_dialog"
-            self._dialog_data[self.part] = {}
-        if len(list(self._dialog_data[self.part].keys())) <= 0:
-            self._dialog_data[self.part]["head"] = {
+            self._part = "example_dialog"
+            self._dialog_data[self._part] = {}
+        if len(list(self._dialog_data[self._part].keys())) <= 0:
+            self._dialog_data[self._part]["head"] = {
                 "background_img": None,
                 "background_music": None,
                 "characters_img": [],
@@ -303,8 +303,8 @@ class DialogEditor(AbstractDialogSystem):
         #展示出当前可供编辑的dialog章节
         self.dialog_key_select.draw(surface)
         #切换当前正在浏览编辑的dialog部分
-        if self.dialog_key_select.get_current_selected_item() != self.part:
-            self.part = self.dialog_key_select.get_current_selected_item()
+        if self.dialog_key_select.get_current_selected_item() != self._part:
+            self._part = self.dialog_key_select.get_current_selected_item()
             try:
                 self._update_scene(self._dialog_id)
             except BaseException:

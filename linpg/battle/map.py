@@ -14,20 +14,22 @@ except BaseException:
 class MapObject(AdvancedAbstractImage):
     def __init__(self, mapDataDic:dict, perBlockWidth:int_f, perBlockHeight:int_f):
         #初始化地图数据
-        self.__MapData = mapDataDic["map"]
-        for y in range(len(self.__MapData)):
-            for x in range(len(self.__MapData[y])):
-                item = self.__MapData[y][x]
-                self.__MapData[y][x] = BlockObject(item,_BLOCKS_DATABASE[item]["canPassThrough"])
-        self.__MapData = numpy.asarray(self.__MapData)
+        self.__Map_Data = mapDataDic["map"]
+        for y in range(len(self.__Map_Data)):
+            for x in range(len(self.__Map_Data[y])):
+                item = self.__Map_Data[y][x]
+                self.__Map_Data[y][x] = BlockObject(item,_BLOCKS_DATABASE[item]["canPassThrough"])
+        self.__Map_Data = numpy.asarray(self.__Map_Data)
         #使用numpy的shape决定self.row和self.column
-        self.row,self.column = self.__MapData.shape
+        self.row,self.column = self.__Map_Data.shape
         #现已可以计算尺寸，初始化父类
         super().__init__(
             mapDataDic["backgroundImage"], #self.img:str储存了背景图片的信息
             0, 0,
             int(perBlockWidth*0.9*((self.row+self.column+1)/2)), int(perBlockWidth*0.45*((self.row+self.column+1)/2)+perBlockWidth)
             )
+        #设置本地坐标
+        self.set_local_pos(mapDataDic["local_x"], mapDataDic["local_y"])
         #是否夜战
         self.__night_mode:bool = bool(mapDataDic["atNight"]) if "atNight" in mapDataDic else False
         #装饰物
@@ -37,8 +39,6 @@ class MapObject(AdvancedAbstractImage):
         self.load_env_img((perBlockWidth,perBlockHeight))
         #处于光处的区域
         self.__light_area:numpy.ndarray = None
-        #设置本地坐标
-        self.set_local_pos(mapDataDic["local_x"], mapDataDic["local_y"])
         #追踪是否需要更新的参数
         self.__need_update_surface:bool = True
         #追踪目前已经画出的方块
@@ -54,7 +54,7 @@ class MapObject(AdvancedAbstractImage):
     #加载环境图片，一般被视为初始化的一部分
     def load_env_img(self, block_size:tuple) -> None:
         global _MAP_ENV_IMAGE
-        _MAP_ENV_IMAGE = EnvImagesManagement(self.__MapData, self.__decorations, self.img, block_size, self.__night_mode)
+        _MAP_ENV_IMAGE = EnvImagesManagement(self.__Map_Data, self.__decorations, self.img, block_size, self.__night_mode)
     #开发者模式
     def dev_mode(self) -> None:
         if self.__debug_win is None:
@@ -189,9 +189,9 @@ class MapObject(AdvancedAbstractImage):
                 if screen_min<=posTupleTemp[0]<window_size[0] and screen_min<=posTupleTemp[1]<window_size[1]:
                     if self.__block_on_surface[y][x] == 0:
                         if not self.isPosInLightArea(x,y):
-                            evn_img = _MAP_ENV_IMAGE.get_env_image(self.__MapData[y][x].name,True)
+                            evn_img = _MAP_ENV_IMAGE.get_env_image(self.__Map_Data[y][x].name,True)
                         else:
-                            evn_img = _MAP_ENV_IMAGE.get_env_image(self.__MapData[y][x].name,False)
+                            evn_img = _MAP_ENV_IMAGE.get_env_image(self.__Map_Data[y][x].name,False)
                         evn_img.set_pos(posTupleTemp[0]-self._local_x,posTupleTemp[1]-self._local_y)
                         evn_img.draw(mapSurface)
                         self.__block_on_surface[y][x] = 1
@@ -283,11 +283,11 @@ class MapObject(AdvancedAbstractImage):
                     imgToBlit.draw(screen)
     #更新方块
     def update_block(self, pos:dict, name:str) -> None:
-        self.__MapData[pos["y"]][pos["x"]].update(name,_BLOCKS_DATABASE[name]["canPassThrough"])
+        self.__Map_Data[pos["y"]][pos["x"]].update(name,_BLOCKS_DATABASE[name]["canPassThrough"])
         self.__need_update_surface = True
         self.__block_on_surface = None
     #是否角色能通过该方块
-    def ifBlockCanPassThrough(self, pos:dict) -> bool: return self.__MapData[pos["y"]][pos["x"]].canPassThrough
+    def ifBlockCanPassThrough(self, pos:dict) -> bool: return self.__Map_Data[pos["y"]][pos["x"]].canPassThrough
     #计算在地图中的方块
     def calBlockInMap(self, mouse_x:int, mouse_y:int):
         guess_x:int = int(((mouse_x-self._local_x-self.row*self.block_width*0.43)/0.43+(mouse_y-self._local_y-self.block_width*0.4)/0.22)/2/self.block_width)

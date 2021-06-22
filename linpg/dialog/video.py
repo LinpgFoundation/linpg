@@ -1,54 +1,6 @@
 # cython: language_level=3
 import queue
-import av
 from ..ui import *
-
-#获取视频的音频 （返回路径）
-def split_audio_from_video(moviePath:str, audioType:str="mp3") -> str:
-    #如果没有Cache文件夹，则创建一个
-    if not os.path.exists("Cache"): os.makedirs("Cache")
-    #获取路径
-    outPutPath:str = os.path.join("Cache","{0}.{1}".format(os.path.basename(moviePath).replace(".","_"),audioType))
-    #如果路径已经存在，则直接返回路径
-    if os.path.exists(outPutPath): return outPutPath
-    #把视频载入到流容器中
-    input_container:object = av.open(moviePath)
-    input_stream:object = input_container.streams.audio[0]
-    input_stream.thread_type = 'AUTO'
-    #创建输出的容器
-    output_container = av.open(outPutPath, 'w')
-    output_stream = output_container.add_stream(audioType)
-    #把input容器中的音乐片段载入到输出容器中
-    for frame in input_container.decode(input_stream):
-        frame.pts = None
-        for packet in output_stream.encode(frame):
-            output_container.mux(packet)
-    #关闭input容器
-    input_container.close()
-    #解码输出容器
-    for packet in output_stream.encode(None):
-        output_container.mux(packet)
-    #写入工作完成，关闭输出容器
-    output_container.close()
-    #读取完成，返回音乐文件的对应目录
-    return outPutPath
-
-def load_audio_from_video_as_sound(moviePath:str) -> object:
-    path = split_audio_from_video(moviePath)
-    sound_audio = load_sound(path)
-    if not get_setting("KeepVedioCache"): os.remove(path)
-    return sound_audio
-
-def load_audio_from_video_as_music(moviePath:str) -> bool:
-    unload_music()
-    try:
-        path = split_audio_from_video(moviePath)
-        load_music(path)
-        if not get_setting("KeepVedioCache"): os.remove(path)
-        return True
-    except BaseException:
-        throw_exception("warning", "Cannot load music from {}!\nIf this vedio has no sound, then just ignore this warning.".format(moviePath))
-        return False
 
 #视频模块接口，不能实例化
 class AbstractVedio(threading.Thread, AbstractImage):
@@ -64,13 +16,14 @@ class AbstractVedio(threading.Thread, AbstractImage):
         self._frameRate = round(self._video_stream.average_rate)
         self._frameQueue = queue.Queue(maxsize=self._frameRate)
         self._stopped:bool = False
+        self._paused:bool = False
         self._clock = get_clock()
         self._pts = 0
         self._threadLock = threading.Lock()
     #处理当前帧的画面
     def _processFrame(self, frame:object):
         #如果当前队列是满的，则等待
-        while self._frameQueue.full(): pass
+        while self._frameQueue.full() or self._paused is True: pass
         #加锁，防止self.set_pos()误触self._pts
         self._threadLock.acquire()
         self._pts = frame.pts
@@ -86,6 +39,8 @@ class AbstractVedio(threading.Thread, AbstractImage):
     def get_percentagePlayed(self) -> float: return self._pts/self._video_stream.duration
     #停止
     def stop(self) -> None: self._stopped = True
+    #暂停
+    def pause(self) -> None: self._paused = not self._paused
     #把画面画到屏幕上
     def draw(self, surface:ImageSurface) -> None:
         #如果Queue不是空的
@@ -95,13 +50,13 @@ class AbstractVedio(threading.Thread, AbstractImage):
 class VedioSurface(AbstractVedio):
     def __init__(self, path:str, width:int, height:int, loop:bool=True, with_music:bool=False, play_range:tuple=None, volume:float=1.0):
         super().__init__(path,width,height)
-        self.loop = loop
-        self.looped_times = 0
+        self.loop:bool = loop
+        self.looped_times:int = 0
         self.bgm = load_audio_from_video_as_sound(path) if with_music else None
-        self.__volume = volume
+        self.__volume:float = volume
         #如果初始音量不为1，则应该设置对应的音量
         if self.__volume != 1.0 and self.bgm is not None: self.bgm.set_volume(self.__volume)
-        self.bgm_channel = find_channel() if with_music else None
+        self.bgm_channel:int = find_channel() if with_music else None
         self.start_point = play_range[0] if play_range is not None else None
         self.end_point = play_range[1] if play_range is not None else None
         self.started:bool = False
@@ -122,21 +77,26 @@ class VedioSurface(AbstractVedio):
     #开始执行线程
     def run(self) -> None:
         self.started = True
-        for frame in self._video_container.decode(self._video_stream):
-            #如果要中途停止
-            if self._stopped is True:
-                #清空queue内储存的所有加载完的帧
-                with self._frameQueue.mutex: self._frameQueue.queue.clear()
+        while True:
+            for frame in self._video_container.decode(self._video_stream):
+                #如果要中途停止
+                if self._stopped is True:
+                    #清空queue内储存的所有加载完的帧
+                    with self._frameQueue.mutex: self._frameQueue.queue.clear()
+                    break
+                #处理当前Frame
+                self._processFrame(frame)
+                if self.end_point is not None and self.get_pos() >= self.end_point:
+                    self.looped_times += 1
+                    if not self.loop:
+                        self._stopped = True
+                    else:
+                        self.set_pos(self.start_point)
+                self._clock.tick(self._frameRate)
+            if not self.loop or self._stopped is True:
                 break
-            #处理当前Frame
-            self._processFrame(frame)
-            if self.end_point is not None and self.get_pos() >= self.end_point:
-                self.looped_times += 1
-                if not self.loop:
-                    self._stopped = True
-                else:
-                    self.set_pos(self.start_point)
-            self._clock.tick(self._frameRate)
+            else:
+                self.set_pos(0)
         #确保播放完剩余的帧
         while not self._frameQueue.empty(): pass
     #把画面画到屏幕上

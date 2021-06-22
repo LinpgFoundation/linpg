@@ -21,25 +21,25 @@ class PauseMenu:
         self.button_resume = load_dynamic_text(
             get_lang("Global","resume"),
             "white",
-            (surface.get_width()*0.1,surface.get_height()*0.4,surface.get_width()/38)
+            (surface.get_width()*0.1,surface.get_height()*0.4),surface.get_width()/38
         )
         #按钮-保存游戏
         self.button_save = load_dynamic_text(
             get_lang("Global","save_current_progress"),
             "white",
-            (surface.get_width()*0.1,surface.get_height()*0.5,surface.get_width()/38)
+            (surface.get_width()*0.1,surface.get_height()*0.5),surface.get_width()/38
         )
         #按钮-设置
         self.button_setting = load_dynamic_text(
             get_lang("OptionMenu","option_menu"),
             "white",
-            (surface.get_width()*0.1,surface.get_height()*0.6,surface.get_width()/38)
+            (surface.get_width()*0.1,surface.get_height()*0.6),surface.get_width()/38
         )
         #按钮-返回
         self.button_back = load_dynamic_text(
             get_lang("Global","back"),
             "white",
-            (surface.get_width()*0.1,surface.get_height()*0.7,surface.get_width()/38)
+            (surface.get_width()*0.1,surface.get_height()*0.7),surface.get_width()/38
         )
     def draw(self, surface:ImageSurface) -> None:
         if not self.hidden:
@@ -73,7 +73,7 @@ class PauseMenu:
                 elif self.button_setting.is_hover():
                     return "option_menu"
                 elif self.button_back.is_hover():
-                    set_glob_value("BackToMainMenu",True)
+                    global_value.set("BackToMainMenu",True)
                     return "back_to_mainMenu"
         return ""
 

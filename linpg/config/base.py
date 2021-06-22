@@ -6,12 +6,15 @@ from copy import deepcopy
 from datetime import datetime
 from glob import glob
 # 尝试导入yaml库
-YAML_INITIALIZED:bool = False
+_YAML_INITIALIZED:bool = False
 try:
     import yaml
-    YAML_INITIALIZED = True
+    _YAML_INITIALIZED = True
 except BaseException:
     pass
+
+#错误报告存储的路径
+_CRASH_REPORTS_PATH:str = "crash_reports"
 
 # Linpg本身错误类
 class Error(Exception):
@@ -23,15 +26,15 @@ def throw_exception(exception_type:str, info:str) -> None:
     exception_type_lower:str = exception_type.lower()
     if exception_type_lower == "error":
         # 生成错误报告
-        if not os.path.exists("crash_reports"): os.mkdir("crash_reports")
-        with open(os.path.join("crash_reports", "crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
+        if not os.path.exists(_CRASH_REPORTS_PATH): os.mkdir(_CRASH_REPORTS_PATH)
+        with open(os.path.join(_CRASH_REPORTS_PATH, "crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
             f.write("Error Message From Linpg: {}".format(info))
         # 打印出错误
         raise Error('LinpgEngine-Error: {}'.format(info))
     elif exception_type_lower == "warning":
         # 生成错误报告
-        if not os.path.exists("crash_reports"): os.mkdir("crash_reports")
-        with open(os.path.join("crash_reports","crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
+        if not os.path.exists(_CRASH_REPORTS_PATH): os.mkdir(_CRASH_REPORTS_PATH)
+        with open(os.path.join(_CRASH_REPORTS_PATH,"crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
             f.write("Warning Message From Linpg: {}".format(info))
         # 打印出警告
         print("LinpgEngine-Warning: {}".format(info))
@@ -61,7 +64,7 @@ def load_config(path:str, *keys:str) -> any:
     if not os.path.exists(path): throw_exception("error","Cannot find file on path: {}".format(path))
     # 按照类型加载配置文件
     if path.endswith(".yaml"):
-        if YAML_INITIALIZED is True:
+        if _YAML_INITIALIZED is True:
             try:
                 # 尝试使用默认模式加载yaml配置文件
                 with open(path, "r", encoding='utf-8') as f: Data = yaml.load(f.read(), Loader=yaml.FullLoader)
@@ -89,7 +92,7 @@ def save_config(path:str, data:any) -> None:
     # 保存文件
     with open(path, "w", encoding='utf-8') as f:
         if path.endswith(".yaml"):
-            if YAML_INITIALIZED:
+            if _YAML_INITIALIZED is True:
                 yaml.dump(data, f, allow_unicode=True)
             else:
                 throw_exception("error","You cannot save .yaml file because yaml is not imported successfully.")

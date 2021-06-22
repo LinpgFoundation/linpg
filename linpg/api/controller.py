@@ -159,7 +159,7 @@ class DisplayController:
     def size(self) -> tuple: return self.__standard_width, self.__standard_height
     def get_size(self) -> tuple: return self.__standard_width, self.__standard_height
     #初始化屏幕
-    def init_screen(self) -> object:
+    def init(self) -> object:
         if is_using_pygame():
             flags = pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN if self.__screen_scale == 100 else pygame.SCALED
             self.__SCREEN_WINDOW = pygame.display.set_mode(self.get_size(), flags)
@@ -169,7 +169,7 @@ class DisplayController:
         return self.__SCREEN_WINDOW
     #获取屏幕
     @property
-    def screen_window(self) -> object: return self.__SCREEN_WINDOW
+    def window(self) -> object: return self.__SCREEN_WINDOW
     #退出
     def quit(self) -> None:
         from sys import exit
@@ -181,4 +181,4 @@ display:DisplayController = DisplayController()
 
 # 直接画到屏幕上
 def draw_on_screen(surface: ImageSurface, pos:tuple) -> None:
-    display.screen_window.blit(surface, pos)
+    display.window.blit(surface, pos)

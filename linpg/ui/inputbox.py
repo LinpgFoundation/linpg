@@ -17,7 +17,7 @@ class AbstractInputBox(GameObject2d):
         self._text = None
         self._holder = self.FONT.render("|",get_antialias(),self.txt_color)
         self.holderIndex = 0
-        self.needSave = False
+        self.need_save = False
     def get_width(self) -> int: return self.input_box.width
     def get_height(self) -> int: return self.input_box.height
     def get_fontsize(self) -> int: return self.FONTSIZE
@@ -35,7 +35,7 @@ class SingleLineInputBox(AbstractInputBox):
         self._text:str = ""
         self._left_ctrl_pressing:bool = False
     def get_text(self) -> str:
-        self.needSave = False
+        self.need_save = False
         if self._text == "":
             return None
         else:
@@ -112,7 +112,7 @@ class SingleLineInputBox(AbstractInputBox):
                     pass
                 elif event.key == KEY.ESCAPE:
                     self.active = False
-                    self.needSave = True
+                    self.need_save = True
                 else:
                     self._add_char(event.unicode)
             elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and self.active is True:
@@ -120,7 +120,7 @@ class SingleLineInputBox(AbstractInputBox):
                     self._reset_holderIndex(mouse_x)
                 else:
                     self.active = False
-                    self.needSave = True
+                    self.need_save = True
             elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and 0<=mouse_x-self.x<=self.input_box.width and 0<=mouse_y-self.y<=self.input_box.height:
                 self.active = True
                 self._reset_holderIndex(mouse_x)
@@ -141,7 +141,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         self._text = [""]
         self.lineId = 0
     def get_text(self) -> list:
-        self.needSave = False
+        self.need_save = False
         if len(self._text) == 0 or self._text == [""]:
             return None
         else:
@@ -267,7 +267,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                     #ESC，关闭
                     elif event.key == KEY.ESCAPE:
                         self.active = False
-                        self.needSave = True
+                        self.need_save = True
                     elif event.key == KEY.RETURN:
                         #如果“|”位于最后
                         if self.holderIndex == len(self._text[self.lineId]):
@@ -285,7 +285,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                         self._reset_holderIndex(mouse_x,mouse_y)
                     else:
                         self.active = False
-                        self.needSave = True
+                        self.need_save = True
             elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and self.x<=mouse_x<=self.x+self.input_box.width and self.y<=mouse_y<=self.y+self.input_box.height:
                 self.active = True
                 self._reset_holderIndex(mouse_x,mouse_y)

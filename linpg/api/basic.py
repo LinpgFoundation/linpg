@@ -39,7 +39,7 @@ def load_img(path:Union[str,ImageSurface], size:Union[tuple,list]=tuple(), alpha
     #加载图片
     img = quickly_load_img(path,ifConvertAlpha)
     #根据参数编辑图片
-    if alpha != 255: img.set_alpha(alpha)
+    if alpha < 255: img.set_alpha(alpha)
     #如果没有给size,则直接返回Surface
     if len(size) == 0:
         return img

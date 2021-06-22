@@ -1,6 +1,5 @@
 # cython: language_level=3
 import threading
-from tkinter.constants import TRUE
 from .mixer import *
 
 #使用多线程保存数据

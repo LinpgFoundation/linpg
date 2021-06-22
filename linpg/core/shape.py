@@ -64,6 +64,25 @@ def convert_rect(rect: RectLiked) -> Rect:
     else:
         throw_exception("error", 'The rect has to be RectLiked object, not "{}".'.format(type(rect)))
 
+#转换linpg.Rect至pygame.Rect
+def convert_to_pygame_rect(rect:RectLiked) -> pygame.Rect:
+    # 如果是pygame.Rect类，则没必要转换
+    if isinstance(rect, pygame.Rect):
+        return rect
+    # 确认是linpg.Rect类再转换
+    elif isinstance(rect, Rect):
+        return pygame.Rect(rect.left, rect.top, rect.width, rect.height)
+    # 如果是tuple类，则需要创建
+    elif isinstance(rect, tuple):
+        if len(rect) == 2:
+            return pygame.Rect(rect[0], rect[1])
+        elif len(rect) == 4:
+            return pygame.Rect(rect[0], rect[1], rect[2], rect[3])
+        else:
+            throw_exception("error", 'Invalid length for forming a rect.')
+    else:
+        throw_exception("error", 'The rect has to be RectLiked object, not "{}".'.format(type(rect)))
+
 # 是否形状一样
 def is_same_rect(rect1: RectLiked, rect2: RectLiked) -> bool:
     # 确保两个输入的类rect的物品都不是tuple
@@ -71,6 +90,17 @@ def is_same_rect(rect1: RectLiked, rect2: RectLiked) -> bool:
     if isinstance(rect2, tuple): convert_rect(rect2)
     # 比较并返回结果
     return rect1.x == rect2.x and rect1.y == rect2.y and rect1.width == rect2.width and rect1.height == rect2.height
+
+# 检测图片是否被点击
+def is_hover(
+    imgObject: object, objectPos: Union[tuple, list] = (0, 0), off_set_x: Union[int, float] = 0, off_set_y: Union[int, float] = 0
+    ) -> bool:
+    mouse_x, mouse_y = controller.get_mouse_pos()
+    # 如果是Linpg引擎的GameObject2d类(所有2d物品的父类)
+    if isinstance(imgObject, GameObject2d):
+        return imgObject.is_hover((mouse_x - off_set_x, mouse_y - off_set_y))
+    else:
+        return is_hover_pygame_object(imgObject, objectPos, off_set_x, off_set_y)
 
 # 圆形类
 class Circle(Square):

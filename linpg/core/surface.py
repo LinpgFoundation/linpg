@@ -3,7 +3,7 @@ from .shape import *
 
 #图形接口
 class AbstractImage(Rect):
-    def __init__(self, img:any, x:Union[int,float], y:Union[int,float], width:int_f, height:int_f, tag:str=""):
+    def __init__(self, img:any, x:Union[int,float], y:Union[int,float], width:int_f, height:int_f, tag:str):
         super().__init__(x, y, width, height)
         self.img:any = img
         self.hidden:bool = False
@@ -12,9 +12,9 @@ class AbstractImage(Rect):
         if self._width < 0 and self._height < 0:
             self._width, self._height = self.img.get_size()
         elif self._width < 0 and self._height >= 0:
-            self._width = self._height/self.img.get_height()*self.img.get_width()
+            self.set_width(self._height/self.img.get_height()*self.img.get_width())
         elif self._width >= 0 and self._height < 0:
-            self._height = self._width/self.img.get_width()*self.img.get_height()
+            self.set_height(self._width/self.img.get_width()*self.img.get_height())
     #透明度
     @property
     def alpha(self) -> int: return self.get_alpha()
@@ -37,6 +37,8 @@ class AbstractImage(Rect):
 
 #高级图形类
 class DynamicImage(AbstractImage):
+    def __init__(self, img: any, x: Union[int, float], y: Union[int, float], width: int_f=-1, height: int_f=-1, tag: str=""):
+        super().__init__(quickly_load_img(img), x, y, width, height, tag)
     #返回一个复制
     def copy(self):
         replica = DynamicImage(self.get_image_copy(), self.x, self.y, self._width, self._height, self.tag)
@@ -281,3 +283,19 @@ class MovableImage(StaticImage):
                 elif self.__default_y > self.__target_y:
                     if self.y < self.__default_y: self.y += self.__move_speed_y
                     if self.y > self.__default_y: self.y = self.__default_y
+
+#获取图片的subsurface
+def get_img_subsurface(img:ImageSurface, rect:RectLiked) -> ImageSurface:
+    if isinstance(rect, pygame.Rect):
+        return img.subsurface(rect)
+    else:
+        return img.subsurface(convert_to_pygame_rect(rect))
+
+#获取特定颜色的表面
+def get_single_color_surface(color, size=None) -> StaticImage:
+    # 如果size是none，则使用屏幕的尺寸
+    if size is None: size = display.get_size()
+    # 获取surface
+    surfaceTmp = new_surface(size).convert()
+    surfaceTmp.fill(color)
+    return StaticImage(surfaceTmp, 0, 0, size[0], size[1])

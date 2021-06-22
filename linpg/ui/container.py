@@ -3,9 +3,8 @@ from .button import *
 
 #用于储存游戏对象的容器，类似html的div
 class GameObjectContainer(AbstractImage):
-    def __init__(self, bg_img:Union[str,ImageSurface,None], x:Union[int,float], y:Union[int,float], width:int, height:int):
-        if bg_img is not None: bg_img = StaticImage(bg_img,0,0,width,height)
-        super().__init__(bg_img,x,y,width,height)
+    def __init__(self, bg_img:Union[str,ImageSurface,None], x:Union[int,float], y:Union[int,float], width:int, height:int, tag:str=""):
+        super().__init__(StaticImage(bg_img, 0, 0, width, height) if bg_img is not None else bg_img, x, y, width, height, tag)
         self.items:list = []
         self.item_hovered = None
     #新增一个物品
@@ -38,8 +37,8 @@ class GameObjectContainer(AbstractImage):
 
 #下拉选项菜单
 class DropDownSingleChoiceList(GameObjectContainer):
-    def __init__(self, bg_img: Union[str, ImageSurface, None], x: Union[int, float], y: Union[int, float], font_size: int, font_color: any="black"):
-        super().__init__(bg_img, x, y, 0, 0)
+    def __init__(self, bg_img: Union[str, ImageSurface, None], x: Union[int, float], y: Union[int, float], font_size: int, font_color: any="black", tag:str=""):
+        super().__init__(bg_img, x, y, 0, 0, tag)
         self.chosen_id:int = 0
         self.__DEFAULT_CONTENT:str = ""
         self.__font_size:int = int(font_size)
@@ -131,9 +130,8 @@ class DropDownSingleChoiceList(GameObjectContainer):
 
 #带有滚动条的Surface容器
 class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
-    def __init__(self, img:Union[str,ImageSurface,None], x:Union[int,float], y:Union[int,float], width:int, height:int, mode:str="horizontal"):
-        if img is not None: img = load_img(img,(width,height))
-        super().__init__(img,x,y,width,height)
+    def __init__(self, img:Union[str,ImageSurface,None], x:Union[int,float], y:Union[int,float], width:int, height:int, mode:str="horizontal", tag:str=""):
+        super().__init__(load_img(img, (width, height)) if img is not None else img, x, y, width, height, tag)
         self.panding:int = 0
         self.__items_dict:dict = {}
         self.distance_between_item:int = 20

@@ -3,10 +3,10 @@ from .progressbar import *
 
 # 按钮
 class Button(AbstractImage):
-    def __init__(self, img: ImageSurface, x: int, y: int, width: int = -1, height: int = -1):
+    def __init__(self, img: ImageSurface, x: int, y: int, width: int = -1, height: int = -1, tag:str=""):
         if width < 0: width = img.get_width()
         if height < 0: height = img.get_height()
-        super().__init__(img, x, y, width, height)
+        super().__init__(img, x, y, width, height, tag)
         # self.img是未被触碰时的默认图片，img2是被鼠标触碰时展示的图片
         self.img2 = None
         self.__is_hovered: bool = False
@@ -60,8 +60,8 @@ def load_button_with_text_in_center(
 
 # 带描述的按钮
 class ButtonWithDes(Button):
-    def __init__(self, img: ImageSurface, des: str, x: int, y: int, width: int = -1, height: int = -1):
-        super().__init__(img, x, y, width, height)
+    def __init__(self, img: ImageSurface, des: str, x: int, y: int, width: int = -1, height: int = -1, tag:str=""):
+        super().__init__(img, x, y, width, height, tag)
         self.des = des
         font_surface = render_font_without_bounding(des, "black", self._height * 0.5)
         panding: int = int(font_surface.get_height() / 2)
@@ -76,8 +76,8 @@ class ButtonWithDes(Button):
 
 # 带描述的按钮
 class ButtonWithDes(Button):
-    def __init__(self, img: ImageSurface, des: str, x: int, y: int, width: int = -1, height: int = -1):
-        super().__init__(img, x, y, width, height)
+    def __init__(self, img: ImageSurface, des: str, x: int, y: int, width: int = -1, height: int = -1, tag:str=""):
+        super().__init__(img, x, y, width, height, tag)
         self.des = des
         font_surface = render_font_without_bounding(des, "black", self._height * 0.5)
         panding: int = int(font_surface.get_height() / 2)

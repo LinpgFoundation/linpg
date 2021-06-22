@@ -4,9 +4,9 @@ from ..ui import *
 
 #视频模块接口，不能实例化
 class AbstractVedio(threading.Thread, AbstractImage):
-    def __init__(self, path:str, width:int, height:int):
+    def __init__(self, path:str, width:int, height:int, tag:str=""):
         threading.Thread.__init__(self)
-        AbstractImage.__init__(self, None, 0, 0, width, height)
+        AbstractImage.__init__(self, None, 0, 0, width, height, tag)
         self._path = path
         self._video_container = av.open(self._path,mode='r')
         self._video_stream = self._video_container.streams.video[0]
@@ -48,8 +48,11 @@ class AbstractVedio(threading.Thread, AbstractImage):
 
 #视频片段展示模块--灵活，但不能保证帧数和音乐同步
 class VedioSurface(AbstractVedio):
-    def __init__(self, path:str, width:int, height:int, loop:bool=True, with_music:bool=False, play_range:tuple=None, volume:float=1.0):
-        super().__init__(path,width,height)
+    def __init__(
+        self, path: str, width: int, height: int,
+        loop: bool = True, with_music: bool = False, play_range: tuple = None, volume: float = 1.0, tag: str = ""
+        ):
+        super().__init__(path, width, height, tag)
         self.loop:bool = loop
         self.looped_times:int = 0
         self.bgm = load_audio_from_video_as_sound(path) if with_music else None
@@ -107,8 +110,8 @@ class VedioSurface(AbstractVedio):
 
 #视频播放系统模块--强制帧数和音乐同步，但不灵活
 class VedioPlayer(AbstractVedio):
-    def __init__(self, path:str, width:int, height:int):
-        super().__init__(path,width,height)
+    def __init__(self, path:str, width:int, height:int, tag:str=""):
+        super().__init__(path, width, height, tag)
         self.__allowFrameDelay:int = 10
         self.__bgm_status:bool = load_audio_from_video_as_music(path)
     #开始执行线程
@@ -136,11 +139,10 @@ def cutscene(surface:ImageSurface, videoPath:str) -> None:
     is_skip:bool = False
     is_playing:bool = True
     #初始化跳过按钮的参数
-    skip_button:object = load_static_image(
+    skip_button:object = StaticImage(
         r"Assets/image/UI/dialog_skip.png",
-        (int(surface.get_width()*0.92), int(surface.get_height()*0.05)),
-        int(surface.get_width()*0.055),
-        int(surface.get_height()*0.06)
+        int(surface.get_width()*0.92), int(surface.get_height()*0.05),
+        int(surface.get_width()*0.055), int(surface.get_height()*0.06)
         )
     #生成黑色帘幕
     black_bg:ImageSurface = new_surface(surface_size).convert()

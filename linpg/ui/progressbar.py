@@ -9,9 +9,10 @@ class ProgressBar(AbstractImage):
         y: Union[int, float],
         max_width: int,
         height: int,
-        color: any
+        color: any,
+        tag:str=""
         ):
-        super().__init__(None,x,y,max_width,height)
+        super().__init__(None, x, y, max_width, height, tag)
         self.percentage = 0
         self.color:tuple = get_color_rbga(color)
     def display(self, surface: ImageSurface, offSet: Union[tuple, list] = (0, 0)) -> None:
@@ -28,10 +29,11 @@ class ProgressBarSurface(AbstractImage):
         y: Union[int, float],
         max_width: int,
         height: int,
-        mode: str = "horizontal"
+        mode: str = "horizontal",
+        tag:str=""
         ):
         if imgOnTop is not None: imgOnTop = quickly_load_img(imgOnTop)
-        super().__init__(imgOnTop,x,y,max_width,height)
+        super().__init__(imgOnTop, x, y, max_width, height, tag)
         self.img2 = quickly_load_img(imgOnBottom) if imgOnBottom is not None else None
         self._current_percentage = 0
         self._mode:bool = True

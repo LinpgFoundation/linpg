@@ -40,11 +40,12 @@ class DialogEditor(AbstractDialogSystem):
         self.UIContainerRight_npc.distance_between_item = 0
         #容器按钮
         button_width:int = int(display.get_width()*0.04)
-        self.UIContainerRightButton = load_movable_image(
+        self.UIContainerRightButton = MovableImage(
             os.path.join(DIALOG_UI_PATH,"container_button.png"),
-            (display.get_width()-button_width,display.get_height()*0.4),
-            (display.get_width()-button_width-container_width,display.get_height()*0.4),
-            (container_width/10,0), button_width, int(display.get_height()*0.2)
+            int(display.get_width()-button_width), int(display.get_height()*0.4),
+            int(display.get_width()-button_width-container_width), int(display.get_height()*0.4),
+            int(container_width/10), 0,
+            button_width, int(display.get_height()*0.2)
             )
         self.UIContainerRightButton.rotate(90)
         #UI按钮

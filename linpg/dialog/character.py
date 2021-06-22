@@ -37,7 +37,7 @@ class CharacterImageManager:
     def __load_character(self, path:str) -> None:
         name = os.path.basename(path)
         self.__character_image[name] = {}
-        self.__character_image[name]["normal"] = load_static_image(path,(0,0),self.__img_width,self.__img_width)
+        self.__character_image[name]["normal"] = StaticImage(path, 0, 0, self.__img_width, self.__img_width)
         #生成深色图片
         self.__character_image[name]["dark"] = self.__character_image[name]["normal"].copy()
         self.__character_image[name]["dark"].add_darkness(self.__darkness)

@@ -12,10 +12,9 @@ class PauseMenu:
         self.screenshot = None
         self.hidden:bool = True
     def initialize(self, surface:ImageSurface) -> None:
-        width,height = display.get_size()
-        surfaceTmp = new_surface((width,height)).convert()
+        surfaceTmp = new_surface(display.get_size()).convert()
         surfaceTmp.fill(get_color_rbga("black"))
-        self.black_bg = load_static_image(surfaceTmp, (0,0), width, height)
+        self.black_bg = StaticImage(surfaceTmp, 0, 0)
         self.black_bg.set_alpha(50)
         #按钮-继续
         self.button_resume = load_dynamic_text(
@@ -79,7 +78,7 @@ class PauseMenu:
 
 #设置UI
 class OptionMenu(AbstractImage):
-    def __init__(self, x:int, y:int, width:int, height:int):
+    def __init__(self, x:int, y:int, width:int, height:int, tag:str=""):
         self.__ui_image_folder_path:str = "Assets/image/UI"
         #加载设置菜单的背景图片
         baseImgPath:str = os.path.join(self.__ui_image_folder_path,"setting_baseImg.png")
@@ -89,7 +88,7 @@ class OptionMenu(AbstractImage):
             baseImg = new_surface((width,height)).convert()
             baseImg.fill((255,255,255))
             draw_rect(baseImg, get_color_rbga("gray"), Rect(width*0.05, height*0.05, width*0.9, height*0.9))
-        super().__init__(baseImg,x,y,width,height)
+        super().__init__(baseImg, x, y, width, height, tag)
         #默认隐藏
         self.hidden = True
         #物品尺寸

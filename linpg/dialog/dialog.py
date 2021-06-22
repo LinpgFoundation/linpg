@@ -102,7 +102,7 @@ class DialogSystem(AbstractDialogSystem):
         #获取当前dialog数据
         currentDialogContent = self.get_current_dialog_content()
         #按键判定
-        leftClick = False
+        leftClick:bool = False
         if controller.get_event("confirm"):
             if self.history_back is not None and self.history_back.is_hover() and self._is_showing_history is True:
                 self._is_showing_history = False

@@ -1,5 +1,6 @@
 # cython: language_level=3
-from .audio import *
+import queue
+from ..ui import *
 
 #视频模块接口，不能实例化
 class AbstractVedio(threading.Thread, AbstractImage):
@@ -92,7 +93,7 @@ class VedioSurface(AbstractVedio):
                     else:
                         self.set_pos(self.start_point)
                 self._clock.tick(self._frameRate)
-            if not self.loop:
+            if not self.loop or self._stopped is True:
                 break
             else:
                 self.set_pos(0)

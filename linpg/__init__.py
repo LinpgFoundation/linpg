@@ -1,6 +1,6 @@
 """
 结构:
-config -> lang -> api -> core -> ui -> media -> dialog -> battle -> interface
+config -> lang -> api -> core -> ui -> dialog -> battle -> interface
 """
 from .interface import *
 import platform

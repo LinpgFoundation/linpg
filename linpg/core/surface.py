@@ -37,7 +37,7 @@ class AbstractImage(Rect):
 
 #高级图形类
 class DynamicImage(AbstractImage):
-    def __init__(self, img: any, x: Union[int, float], y: Union[int, float], width: int_f=-1, height: int_f=-1, tag: str=""):
+    def __init__(self, img: Union[str,ImageSurface], x: Union[int, float], y: Union[int, float], width: int_f=-1, height: int_f=-1, tag: str=""):
         super().__init__(quickly_load_img(img), x, y, width, height, tag)
     #返回一个复制
     def copy(self):
@@ -98,7 +98,7 @@ class AdvancedAbstractImage(AbstractImage):
 #用于静态图片的surface
 class StaticImage(AdvancedAbstractImage):
     def __init__(self, img:Union[str,ImageSurface], x:Union[int,float], y:Union[int,float], width:int_f=-1, height:int_f=-1, tag:str="default"):
-        super().__init__(quickly_load_img(img),x,y,width,height,tag)
+        super().__init__(quickly_load_img(img), x, y, width, height, tag)
         self.__processed_img:ImageSurface = None
         self.__is_flipped:bool = False
         self.__need_update:bool = True if self._width >= 0 and self._height >= 0 else False
@@ -211,15 +211,11 @@ class StaticImage(AdvancedAbstractImage):
 #需要移动的动态图片
 class MovableImage(StaticImage):
     def __init__(
-        self, img:ImageSurface,
-        x:Union[int,float],
-        y:Union[int,float],
-        target_x:Union[int,float],
-        target_y:Union[int,float],
-        move_speed_x:Union[int,float],
-        move_speed_y:Union[int,float],
-        width:int_f=-1,
-        height:int_f=-1,
+        self, img:Union[str,ImageSurface],
+        x:Union[int,float], y:Union[int,float],
+        target_x:Union[int,float], target_y:Union[int,float],
+        move_speed_x:Union[int,float], move_speed_y:Union[int,float],
+        width:int_f=-1, height:int_f=-1,
         tag:str="default"
         ):
         super().__init__(img, x, y, width, height, tag)

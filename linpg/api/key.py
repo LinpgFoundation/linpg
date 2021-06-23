@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .typing import *
+from .basic import *
 from tkinter import Tk
 
 class KeySystem:

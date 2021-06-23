@@ -55,27 +55,27 @@ class VedioSurface(AbstractVedio):
         super().__init__(path, width, height, tag)
         self.loop:bool = loop
         self.looped_times:int = 0
-        self.bgm = load_audio_from_video_as_sound(path) if with_music else None
+        self.__audio = load_audio_from_video_as_sound(path) if with_music else None
+        self.__audio_channel:int = find_channel() if with_music else None
         self.__volume:float = volume
         #如果初始音量不为1，则应该设置对应的音量
-        if self.__volume != 1.0 and self.bgm is not None: self.bgm.set_volume(self.__volume)
-        self.bgm_channel:int = find_channel() if with_music else None
+        if self.__volume != 1.0 and self.__audio is not None: self.__audio.set_volume(self.__volume)
         self.start_point = play_range[0] if play_range is not None else None
         self.end_point = play_range[1] if play_range is not None else None
         self.started:bool = False
     #音量
     def get_volume(self) -> float: return self.__volume
     def set_volume(self, value:float) -> None:
-        if self.bgm is not None:
+        if self.__audio is not None:
             self.__volume = value
-            self.bgm.set_volume(self.__volume)
+            self.__audio.set_volume(self.__volume)
     #设置播放的位置
     def set_pos(self, offset:float) -> None:
         self._video_container.seek(int(offset/self._video_stream.time_base),any_frame=True,stream=self._video_stream)
         self._frameQueue.queue.clear()
     #返回一个克隆
     def copy(self) -> object:
-        with_music = True if self.bgm is not None else False
+        with_music = True if self.__audio is not None else False
         return VedioSurface(self._path,self._width,self._height,self.loop,with_music,(self.start_point,self.end_point),self.__volume)
     #开始执行线程
     def run(self) -> None:
@@ -106,7 +106,7 @@ class VedioSurface(AbstractVedio):
     def draw(self, surface:ImageSurface) -> None:
         super().draw(surface)
         #播放背景音乐
-        if self.bgm is not None and not self.bgm_channel.get_busy() and self.loop: self.bgm_channel.play(self.bgm)
+        if self.__audio is not None and not self.__audio_channel.get_busy() and self.loop: self.__audio_channel.play(self.__audio)
 
 #视频播放系统模块--强制帧数和音乐同步，但不灵活
 class VedioPlayer(AbstractVedio):

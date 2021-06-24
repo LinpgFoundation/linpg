@@ -14,7 +14,7 @@ class ProgressBar(AbstractImage):
         ):
         super().__init__(None, x, y, max_width, height, tag)
         self.percentage = 0
-        self.color:tuple = get_color_rbga(color)
+        self.color:tuple = Color.get(color)
     def display(self, surface: ImageSurface, offSet: Union[tuple, list] = (0, 0)) -> None:
         if not self.hidden:
             draw_rect(surface, self.color, new_rect(add_pos(self.pos, offSet), (int(self._width*self.percentage), self._height)))

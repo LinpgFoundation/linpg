@@ -171,7 +171,7 @@ class DialogSystem(AbstractDialogSystem):
             optionBox_height = int(display.get_width()*0.05)
             nextDialogId = None
             for i in range(len(currentDialogContent["next_dialog_id"]["target"])):
-                option_txt = self._dialog_txt_system.render_font(currentDialogContent["next_dialog_id"]["target"][i]["txt"],get_color_rbga("white"))
+                option_txt = self._dialog_txt_system.render_font(currentDialogContent["next_dialog_id"]["target"][i]["txt"],Color.WHITE)
                 optionBox_width = int(option_txt.get_width()+display.get_width()*0.05) 
                 optionBox_x = (display.get_width()-optionBox_width)/2
                 optionBox_y = (i+1)*2*display.get_width()*0.03+optionBox_y_base
@@ -197,7 +197,7 @@ class DialogSystem(AbstractDialogSystem):
         if self._is_showing_history is True:
             if self._history_surface is None:
                 self._history_surface = new_surface(display.get_size()).convert()
-                self._history_surface.fill(get_color_rbga("black"))
+                self._history_surface.fill(Color.BLACK)
                 self._history_surface.set_alpha(150)
                 dialogIdTemp = "head"
                 local_y = self._history_surface_local_y

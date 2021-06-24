@@ -58,10 +58,10 @@ def new_transparent_surface(size:Union[tuple,list]) -> ImageSurface:
 #获取材质缺失的临时警示材质
 def get_texture_missing_surface(size:Union[tuple,list]) -> ImageSurface:
     texture_missing_surface:ImageSurface = new_surface(size).convert()
-    texture_missing_surface.fill(get_color_rbga("black"))
+    texture_missing_surface.fill(Color.BLACK)
     half_width:int = int(size[0]/2)
     half_height:int = int(size[1]/2)
-    purple_color_rbga:tuple = get_color_rbga("purple")
+    purple_color_rbga:tuple = Color.get("purple")
     pygame.draw.rect(
         texture_missing_surface, purple_color_rbga, pygame.Rect(half_width, 0, texture_missing_surface.get_width()-half_width, half_height)
         )

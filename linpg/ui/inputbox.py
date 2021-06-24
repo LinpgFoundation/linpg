@@ -11,8 +11,8 @@ class AbstractInputBox(GameObject2d):
         self.default_width = default_width
         self.deafult_height = int(self.FONTSIZE*1.5)
         self.input_box = Rect(x, y, default_width, self.deafult_height)
-        self.color = get_color_rbga('lightskyblue3')
-        self.txt_color = get_color_rbga(txt_color)
+        self.color = Color.get("lightskyblue3")
+        self.txt_color = Color.get(txt_color)
         self.active:bool = False
         self._text = None
         self._holder = self.FONT.render("|",get_antialias(),self.txt_color)
@@ -126,7 +126,7 @@ class SingleLineInputBox(AbstractInputBox):
                 self._reset_holderIndex(mouse_x)
         # 画出文字
         if self._text is not None and len(self._text) > 0:
-            screen.blit(self.FONT.render(self._text,get_antialias(),get_color_rbga(self.txt_color)), (self.x+self.FONTSIZE*0.25,self.y))
+            screen.blit(self.FONT.render(self._text,get_antialias(),Color.get(self.txt_color)), (self.x+self.FONTSIZE*0.25,self.y))
         #画出输入框
         if self.active:
             draw_rect(screen, self.color, self.input_box, 2)
@@ -292,7 +292,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         if self._text is not None:
             for i in range(len(self._text)): 
                 # 画出文字
-                screen.blit(self.FONT.render(self._text[i],get_antialias(),get_color_rbga(self.txt_color)),(self.x+self.FONTSIZE*0.25,self.y+i*self.deafult_height))
+                screen.blit(self.FONT.render(self._text[i],get_antialias(),Color.get(self.txt_color)),(self.x+self.FONTSIZE*0.25,self.y+i*self.deafult_height))
         if self.active:
             # 画出输入框
             draw_rect(screen, self.color, self.input_box, 2)
@@ -303,8 +303,8 @@ class MultipleLinesInputBox(AbstractInputBox):
 #控制台
 class Console(SingleLineInputBox):
     def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int=32, default_width:int=150):
-        self.color_inactive = get_color_rbga('lightskyblue3')
-        self.color_active = get_color_rbga('dodgerblue2')
+        self.color_inactive = Color.get("lightskyblue3")
+        self.color_active = Color.get("dodgerblue2")
         super().__init__(x,y,font_size,self.color_active,default_width)
         self.color = self.color_active
         self.active:bool = True

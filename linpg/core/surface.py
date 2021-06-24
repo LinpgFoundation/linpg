@@ -47,10 +47,10 @@ class DynamicImage(AbstractImage):
     #返回一个浅复制品
     def light_copy(self): return DynamicImage(self.get_image_pointer(), self.x, self.y, self._width, self._height, self.tag)
     #反转
-    def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = flip_img(self.img,vertical,horizontal)
+    def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = flip_img(self.img, vertical, horizontal)
     #展示
     def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
-        if not self.hidden: surface.blit(resize_img(self.img,self.size),add_pos(self.pos,offSet))
+        if not self.hidden: surface.blit(resize_img(self.img, self.size), add_pos(self.pos, offSet))
 
 #有本地坐标的图形接口
 class AdvancedAbstractImage(AbstractImage):
@@ -181,7 +181,7 @@ class StaticImage(AdvancedAbstractImage):
         if self.__is_flipped: self.flip()
     #画出轮廓
     def draw_outline(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0), color:any="red", line_width:int=2) -> None:
-        draw_rect(surface, get_color_rbga(color), (add_pos(self.abs_pos,offSet), self.__processed_img.get_size()), line_width)
+        draw_rect(surface, Color.get(color), (add_pos(self.abs_pos,offSet), self.__processed_img.get_size()), line_width)
     #是否被鼠标触碰
     def is_hover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
         if mouse_pos == (-1,-1): mouse_pos = controller.get_mouse_pos()
@@ -295,3 +295,57 @@ def get_single_color_surface(color, size=None) -> StaticImage:
     surfaceTmp = new_surface(size).convert()
     surfaceTmp.fill(color)
     return StaticImage(surfaceTmp, 0, 0, size[0], size[1])
+
+# gif图片管理
+class GifImage(AdvancedAbstractImage):
+    def __init__(
+        self,
+        imgList: numpy.ndarray,
+        x: Union[int, float],
+        y: Union[int, float],
+        width: int_f,
+        height: int_f,
+        updateGap: int_f,
+        tag: str = "default"
+        ):
+        super().__init__(imgList, x, y, width, height, tag)
+        self.imgId: int = 0
+        self.updateGap: int = max(int(updateGap), 0)
+        self.countDown: int = 0
+    # 返回一个复制
+    def copy(self):
+        return GifImage(
+            self.get_image_copy(),
+            self.x,
+            self.y,
+            self._width,
+            self._height,
+            self.updateGap,
+        )
+    # 返回一个浅复制品
+    def light_copy(self):
+        return GifImage(
+            self.get_image_pointer(),
+            self.x,
+            self.y,
+            self._width,
+            self._height,
+            self.updateGap,
+        )
+    # 当前图片
+    @property
+    def current_image(self) -> StaticImage:
+        return self.img[self.imgId]
+    # 展示
+    def display(self, surface: ImageSurface, offSet: Union[tuple, list] = (0, 0)):
+        if not self.hidden:
+            self.current_image.set_size(self.get_width(), self.get_height())
+            self.current_image.set_alpha(self._alpha)
+            self.current_image.display(surface, add_pos(self.pos, offSet))
+            if self.countDown >= self.updateGap:
+                self.countDown = 0
+                self.imgId += 1
+                if self.imgId >= len(self.img):
+                    self.imgId = 0
+            else:
+                self.countDown += 1

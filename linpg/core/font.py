@@ -1,6 +1,6 @@
 # cython: language_level=3
 import pygame.freetype
-from .gif import *
+from .surface import *
 
 #文字渲染器管理模块
 class FontGenerator:
@@ -18,7 +18,7 @@ class FontGenerator:
         self.__FONT = create_font(size,ifBold,ifItalic)
     def render(self, txt:any, color:Union[str,tuple,list]):
         if self.__SIZE is not None:
-            return self.__FONT.render(txt, get_antialias(), get_color_rbga(color))
+            return self.__FONT.render(txt, get_antialias(), Color.get(color))
         else:
             throw_exception("error","Standard font is not initialized!")
     def get_size(self) -> int:
@@ -125,7 +125,7 @@ def create_freetype_font(size:Union[float,int], ifBold:bool=False, ifItalic:bool
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
 def render_font(txt:any, color:Union[str,tuple,list], size:int, ifBold:bool=False, ifItalic:bool=False) -> ImageSurface:
     _LINPG_LAST_FONT.check_for_update(size, ifBold, ifItalic)
-    return _LINPG_LAST_FONT.render(txt, get_color_rbga(color)) if isinstance(color,str) else _LINPG_LAST_FONT.render(txt, color)
+    return _LINPG_LAST_FONT.render(txt, Color.get(color))
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
 def render_font_without_bounding(txt:any, color:Union[str,tuple,list], size:int, ifBold:bool=False, ifItalic:bool=False) -> ImageSurface:
@@ -135,7 +135,7 @@ def render_font_without_bounding(txt:any, color:Union[str,tuple,list], size:int,
 def render_freetype(txt:any, color:Union[str,tuple,list], size:int, ifBold:bool=False, ifItalic:bool=False) -> ImageSurface:
     normal_font = create_freetype_font(size,ifBold,ifItalic)
     if isinstance(color,str):
-        text_out = normal_font.render(txt, get_antialias(), get_color_rbga(color))
+        text_out = normal_font.render(txt, get_antialias(), Color.get(color))
     else:
         text_out = normal_font.render(txt, get_antialias(), color)
     return text_out

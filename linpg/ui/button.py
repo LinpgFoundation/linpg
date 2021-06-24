@@ -52,7 +52,7 @@ def load_button_with_text_in_center(
     position: tuple,
     alpha_when_not_hover: int = 255
     ) -> Button:
-    txt_surface = render_font_without_bounding(txt, get_color_rbga(font_color), font_size)
+    txt_surface = render_font_without_bounding(txt, Color.get(font_color), font_size)
     panding: int = int(font_size * 0.3)
     img = load_img(path,size=(txt_surface.get_width()+panding*2,txt_surface.get_height()+panding*2))
     img.blit(txt_surface, (panding, panding))
@@ -66,8 +66,8 @@ class ButtonWithDes(Button):
         font_surface = render_font_without_bounding(des, "black", self._height * 0.5)
         panding: int = int(font_surface.get_height() / 2)
         self.des_surface = new_surface((font_surface.get_width()+panding*2, font_surface.get_height()+panding*2)).convert_alpha()
-        self.des_surface.fill(get_color_rbga("white"))
-        draw_rect(self.des_surface, get_color_rbga("black"), new_rect((0, 0), self.des_surface.get_size()), 2)
+        self.des_surface.fill(Color.WHITE)
+        draw_rect(self.des_surface, Color.BLACK, new_rect((0, 0), self.des_surface.get_size()), 2)
         self.des_surface.blit(font_surface, (panding, panding))
     def display(self, surface: ImageSurface, offSet: Union[tuple, list] = (0, 0)) -> None:
         super().display(surface, offSet)
@@ -82,8 +82,8 @@ class ButtonWithDes(Button):
         font_surface = render_font_without_bounding(des, "black", self._height * 0.5)
         panding: int = int(font_surface.get_height() / 2)
         self.des_surface = new_surface((font_surface.get_width()+panding*2, font_surface.get_height()+panding*2)).convert_alpha()
-        self.des_surface.fill(get_color_rbga("white"))
-        draw_rect(self.des_surface, get_color_rbga("black"), new_rect((0, 0), self.des_surface.get_size()), 2)
+        self.des_surface.fill(Color.WHITE)
+        draw_rect(self.des_surface, Color.BLACK, new_rect((0, 0), self.des_surface.get_size()), 2)
         self.des_surface.blit(font_surface, (panding, panding))
     def display(self, surface: ImageSurface, offSet: Union[tuple, list] = (0, 0)) -> None:
         super().display(surface, offSet)

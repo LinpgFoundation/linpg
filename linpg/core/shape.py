@@ -22,7 +22,7 @@ class Square(GameObject2d):
     def get_rect(self) -> tuple: return self.x, self.y, self._width, self._width
     #画出轮廓
     def draw_outline(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0), color:str="red", thickness:int=2) -> None:
-        draw_rect(surface, get_color_rbga(color), (add_pos(self.pos,offSet),self.size), thickness)
+        draw_rect(surface, Color.get(color), (add_pos(self.pos,offSet),self.size), thickness)
 
 # 用于兼容的长方类
 class Rect(Square):
@@ -41,9 +41,9 @@ def new_rect(pos:tuple, size:tuple) -> Rect: return Rect(pos[0], pos[1], size[0]
 # 画正方形（的方块）
 def draw_rect(surface:ImageSurface, color:any, rect:RectLiked, thickness:int=0) -> None:
     if isinstance(rect, (pygame.Rect, tuple)):
-        pygame.draw.rect(surface, get_color_rbga(color), rect, thickness)
+        pygame.draw.rect(surface, Color.get(color), rect, thickness)
     elif isinstance(rect, Rect):
-        pygame.draw.rect(surface, get_color_rbga(color), rect.get_rect(), thickness)
+        pygame.draw.rect(surface, Color.get(color), rect.get_rect(), thickness)
 
 # 转换pygame的rect类至linpg引擎的rect类
 def convert_rect(rect: RectLiked) -> Rect:
@@ -110,8 +110,8 @@ class Circle(Square):
     def radius(self) -> Union[int, float]: return self._width/2
     #画出轮廓
     def draw_outline(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0), color:str="red", thickness:int=2) -> None:
-        draw_circle(surface, get_color_rbga(color), add_pos(self.center, offSet), self.radius, thickness)
+        draw_circle(surface, Color.get(color), add_pos(self.center, offSet), self.radius, thickness)
 
 # 画圆形
 def draw_circle(surface:ImageSurface, color:any, center_pos:tuple, radius:int, thickness:int=0):
-    pygame.draw.circle(surface, get_color_rbga(color), center_pos, radius, thickness)
+    pygame.draw.circle(surface, Color.get(color), center_pos, radius, thickness)

@@ -43,7 +43,7 @@ class DropDownSingleChoiceList(GameObjectContainer):
         self.__DEFAULT_CONTENT:str = ""
         self.__font_size:int = int(font_size)
         self.__block_height:int = int(font_size*1.5)
-        self.__font_color:tuple = get_color_rbga(font_color)
+        self.__font_color:tuple = Color.get(font_color)
         self.__FONT = create_font(self.__font_size)
         self.__fold_choice:bool = True
         self.outline_thickness:int = 1
@@ -60,7 +60,7 @@ class DropDownSingleChoiceList(GameObjectContainer):
         self.__FONT = create_font(self.__font_size)
         self._update_width()
     #更新font的颜色
-    def update_font_color(self, font_color:int) -> None: self.__font_color = get_color_rbga(font_color)
+    def update_font_color(self, font_color:int) -> None: self.__font_color = Color.get(font_color)
     #新增一个物品
     def append(self, new_item:Union[str,int]) -> None:
         self.items.append(new_item)
@@ -91,7 +91,7 @@ class DropDownSingleChoiceList(GameObjectContainer):
             if self.img is not None:
                 self.img.display(surface, current_abs_pos)
             else:
-                draw_rect(surface, get_color_rbga("white"), (current_abs_pos,self.size))
+                draw_rect(surface, Color.WHITE, (current_abs_pos,self.size))
             #列出当前选中的选项
             current_pos:tuple = current_abs_pos
             font_surface:ImageSurface = cope_bounding(self.__FONT.render(self.get_current_selected_item(), get_antialias(), self.__font_color))
@@ -427,6 +427,6 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
             
             #画出滚动条
             scroll_button_rect = self.__get_scroll_button_rect(off_set[0],off_set[1])
-            if scroll_button_rect is not None: draw_rect(surface,get_color_rbga("white"),scroll_button_rect)
+            if scroll_button_rect is not None: draw_rect(surface,Color.WHITE,scroll_button_rect)
             scroll_bar_rect = self.__get_scroll_bar_rect(off_set[0],off_set[1])
-            if scroll_bar_rect is not None: draw_rect(surface,get_color_rbga("white"),scroll_bar_rect,2)
+            if scroll_bar_rect is not None: draw_rect(surface,Color.WHITE,scroll_bar_rect,2)

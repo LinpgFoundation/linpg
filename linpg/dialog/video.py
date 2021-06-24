@@ -46,7 +46,7 @@ class AbstractVedio(threading.Thread, AbstractImage):
         #如果Queue不是空的
         if not self._frameQueue.empty(): draw_array(surface, self._frameQueue.get())
 
-#视频片段展示模块--灵活，但不能保证帧数和音乐同步
+#视频片段展示模块--灵活，但不能保证视频和音效同步
 class VedioSurface(AbstractVedio):
     def __init__(
         self, path: str, width: int, height: int,
@@ -146,7 +146,7 @@ def cutscene(surface:ImageSurface, videoPath:str) -> None:
         )
     #生成黑色帘幕
     black_bg:ImageSurface = new_surface(surface_size).convert()
-    black_bg.fill(get_color_rbga("black"))
+    black_bg.fill(Color.BLACK)
     black_bg.set_alpha(0)
     #进度条
     bar_height:int = 10

@@ -92,9 +92,9 @@ class DialogEditor(AbstractDialogSystem):
         #从配置文件中加载数据
         self._load_content()
         #移除按钮
-        self.removeNpcButton = self._dialog_txt_system.FONT.render(CONFIG["removeNpc"],get_antialias(),get_color_rbga("black"))
+        self.removeNpcButton = self._dialog_txt_system.FONT.render(CONFIG["removeNpc"],get_antialias(),Color.BLACK)
         surfaceTmp = new_surface((self.removeNpcButton.get_width()*1.2,self.removeNpcButton.get_height()*1.2)).convert()
-        surfaceTmp.fill(get_color_rbga("white"))
+        surfaceTmp.fill(Color.WHITE)
         surfaceTmp.blit(self.removeNpcButton,(self.removeNpcButton.get_width()*0.1,0))
         self.removeNpcButton = surfaceTmp
         #未保存离开时的警告
@@ -261,7 +261,7 @@ class DialogEditor(AbstractDialogSystem):
                         surface.blit(screenshot,(0,0))
                         for i in range(len(theNext["target"])):
                             button = theNext["target"][i]
-                            option_txt = self._dialog_txt_system.FONT.render(button["txt"],get_antialias(),get_color_rbga("white"))
+                            option_txt = self._dialog_txt_system.FONT.render(button["txt"],get_antialias(),Color.WHITE)
                             option_button_width = int(option_txt.get_width()+surface.get_width()*0.05)
                             option_button_x = int((surface.get_width()-option_button_width)/2)
                             option_button_y = int((i+1)*2*surface.get_width()*0.03+optionBox_y_base)

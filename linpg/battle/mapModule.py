@@ -90,7 +90,7 @@ class EnvImagesManagement:
     def get_env_image(self, key:str, darkMode:bool) -> StaticImage:
         try:
             return self.__ENV_IMAGE_DICT_DARK[key] if darkMode is True else self.__ENV_IMAGE_DICT[key]
-        except BaseException:
+        except Exception:
             throw_exception("warning","Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(key))
             self.__add_evn_image(key)
             return self.__ENV_IMAGE_DICT_DARK[key] if darkMode is True else self.__ENV_IMAGE_DICT[key]
@@ -98,7 +98,7 @@ class EnvImagesManagement:
         try:
             return self.__DECORATION_IMAGE_DICT_DARK[decorationType][key] if darkMode is True else self.__DECORATION_IMAGE_DICT[decorationType][key]
         #如果图片没找到
-        except BaseException:
+        except Exception:
             throw_exception("warning","Cannot find decoration image '{0}' in type '{1}', we will try to load it for you right now, but please by aware.".format(key,decorationType))
             self.__add_decoration_image(decorationType,key)
             return self.__DECORATION_IMAGE_DICT_DARK[decorationType][key] if darkMode is True else self.__DECORATION_IMAGE_DICT[decorationType][key]

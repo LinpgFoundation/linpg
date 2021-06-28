@@ -14,7 +14,7 @@ class SaveDataThread(threading.Thread):
         try:
             save_config(self.path,self.data)
             self.result = True
-        except BaseException:
+        except Exception:
             if get_setting("DeveloperMode") is True:
                 throw_exception("error", "Cannot save data to path: {}".format(self.path)) 
             else:

@@ -117,6 +117,6 @@ def load_audio_from_video_as_music(moviePath:str) -> bool:
         load_music(path)
         if not get_setting("KeepVedioCache"): os.remove(path)
         return True
-    except BaseException:
+    except Exception:
         throw_exception("warning", "Cannot load music from {}!\nIf this vedio has no sound, then just ignore this warning.".format(moviePath))
         return False

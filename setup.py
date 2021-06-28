@@ -11,7 +11,7 @@ try:
         "description": linpg.get_short_description(),
         "url": linpg.get_repository_url()
     }
-except BaseException:
+except Exception:
     import json
     info_json_path:str = "info.json"
     if not os.path.exists(info_json_path): info_json_path = os.path.join("src","linpg","config","info.json")

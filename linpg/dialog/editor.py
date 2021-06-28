@@ -308,7 +308,7 @@ class DialogEditor(AbstractDialogSystem):
             self._part = self.dialog_key_select.get_current_selected_item()
             try:
                 self._update_scene(self._dialog_id)
-            except BaseException:
+            except Exception:
                 self._update_scene("head")
         #处理输入事件
         leftClick:bool = False

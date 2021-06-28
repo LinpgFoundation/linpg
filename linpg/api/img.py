@@ -15,7 +15,7 @@ def quickly_load_img(path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> 
         if ifConvertAlpha is True:
             try:
                 return pygame.image.load(path).convert_alpha() if is_using_pygame() else pyglet.image.load(path)
-            except BaseException:
+            except Exception:
                 if get_setting("DeveloperMode") is True: 
                     throw_exception("error",'Cannot load image from path: {}'.format(path))
                 else:
@@ -23,7 +23,7 @@ def quickly_load_img(path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> 
         else:
             try:
                 return pygame.image.load(path) if is_using_pygame() else pyglet.image.load(path)
-            except BaseException:
+            except Exception:
                 if get_setting("DeveloperMode") is True:
                     throw_exception("error",'Cannot load image from path: {}'.format(path))
                 else:
@@ -61,7 +61,7 @@ def get_texture_missing_surface(size:Union[tuple,list]) -> ImageSurface:
     texture_missing_surface.fill(Color.BLACK)
     half_width:int = int(size[0]/2)
     half_height:int = int(size[1]/2)
-    purple_color_rbga:tuple = Color.get("purple")
+    purple_color_rbga:tuple = Color.VIOLET
     pygame.draw.rect(
         texture_missing_surface, purple_color_rbga, pygame.Rect(half_width, 0, texture_missing_surface.get_width()-half_width, half_height)
         )

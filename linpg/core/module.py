@@ -129,5 +129,5 @@ class ItemNeedBlit(GameObject2point5d):
         else:
             try:
                 self.image.display(surface,self.offSet)
-            except BaseException:
+            except Exception:
                 self.image.draw(surface)

@@ -10,7 +10,7 @@ _YAML_INITIALIZED:bool = False
 try:
     import yaml
     _YAML_INITIALIZED = True
-except BaseException:
+except Exception:
     pass
 
 #错误报告存储的路径

@@ -18,7 +18,7 @@ class Converter:
             if isinstance(item[key], str) and item[key].endswith("%"):
                 try:
                     item[key] = int(convert_percentage(item[key])*value_in_case_percentage)
-                except BaseException:
+                except Exception:
                     if "name" in item:
                         throw_exception("error",'Cannot convert "{0}" because it is not a valid percentage for "{1}".'.format(item[key], item["name"]))
                     else:
@@ -26,7 +26,7 @@ class Converter:
             else:
                 try:
                     item[key] = int(item[key])
-                except BaseException:
+                except Exception:
                     if "name" in item:
                         throw_exception("error",'The "{0}" for "{1}" needs to an interger instead of "{2}".'.format(key, item["name"], item[key]))
                     else:
@@ -41,7 +41,7 @@ class Converter:
             elif item[key].endswith("%"):
                 try:
                     item[key] = int(convert_percentage(item[key])*value_in_case_percentage)
-                except BaseException:
+                except Exception:
                     if "name" in item:
                         throw_exception("error",'Cannot convert "{0}" because it is not a valid percentage for "{1}".'.format(item[key], item["name"]))
                     else:

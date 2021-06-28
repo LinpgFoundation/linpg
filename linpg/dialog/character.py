@@ -22,7 +22,7 @@ class CharacterImageManager:
                 )
             self.__communication_dark = self.__communication.copy()
             self.__communication_dark.add_darkness(self.__darkness)
-        except BaseException:
+        except Exception:
             self.__communication = None
             self.__communication_dark = None
         self.__CHARACTER_IMAGE_DATABASE:CharacterImageDatabase = CharacterImageDatabase()

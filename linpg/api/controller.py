@@ -78,7 +78,7 @@ class GameController:
                     self.__specific_events["confirm"] = True
                 elif self.joystick.get_button(1) is True:
                     self.__specific_events["previous"] = True
-            elif event.type == KEY.DOWN and event.key == KEY.ESCAPE:
+            elif event.type == Key.DOWN and event.key == Key.ESCAPE:
                 self.__specific_events["back"] = True
         #更新鼠标坐标
         self.mouse_x,self.mouse_y = pygame.mouse.get_pos()

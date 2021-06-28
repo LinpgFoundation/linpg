@@ -27,4 +27,7 @@ class KeySystem:
     def get_key_code(self, key_name:str) -> any: return pygame.key.key_code(key_name)
     def get_clipboard(self) -> str: return self.__root.clipboard_get()
 
+"""即将弃置"""
 KEY = KeySystem()
+
+Key = KeySystem()

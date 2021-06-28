@@ -87,30 +87,30 @@ class SingleLineInputBox(AbstractInputBox):
         else:
             self.input_box.set_width(self.default_width)
     def _check_key_down(self, event:object) -> bool:
-        if event.key == KEY.BACKSPACE:
+        if event.key == Key.BACKSPACE:
             self._remove_char("ahead")
             return True
-        elif event.key == KEY.DELETE:
+        elif event.key == Key.DELETE:
             self._remove_char("behind")
             return True
-        elif event.key == KEY.ARROW_LEFT and self.holderIndex > 0:
+        elif event.key == Key.ARROW_LEFT and self.holderIndex > 0:
             self.holderIndex -= 1
             return True
-        elif event.key == KEY.ARROW_RIGHT and self.holderIndex < len(self._text):
+        elif event.key == Key.ARROW_RIGHT and self.holderIndex < len(self._text):
             self.holderIndex += 1
             return True
-        elif event.unicode == "v" and KEY.get_pressed("v") and KEY.get_pressed(KEY.LEFT_CTRL) or \
-            event.key == KEY.LEFT_CTRL and KEY.get_pressed("v") and KEY.get_pressed(KEY.LEFT_CTRL):
-            self._add_char(KEY.get_clipboard())
+        elif event.unicode == "v" and Key.get_pressed("v") and Key.get_pressed(Key.LEFT_CTRL) or \
+            event.key == Key.LEFT_CTRL and Key.get_pressed("v") and Key.get_pressed(Key.LEFT_CTRL):
+            self._add_char(Key.get_clipboard())
             return True
         return False
     def draw(self, screen:ImageSurface) -> None:
         mouse_x,mouse_y = controller.get_mouse_pos()
         for event in controller.events:
-            if event.type == KEY.DOWN and self.active is True:
+            if event.type == Key.DOWN and self.active is True:
                 if self._check_key_down(event):
                     pass
-                elif event.key == KEY.ESCAPE:
+                elif event.key == Key.ESCAPE:
                     self.active = False
                     self.need_save = True
                 else:
@@ -244,31 +244,31 @@ class MultipleLinesInputBox(AbstractInputBox):
         mouse_x,mouse_y = controller.get_mouse_pos()
         for event in controller.events:
             if self.active:
-                if event.type == KEY.DOWN:
-                    if event.key == KEY.BACKSPACE:
+                if event.type == Key.DOWN:
+                    if event.key == Key.BACKSPACE:
                         self._remove_char("ahead")
-                    elif event.key == KEY.DELETE:
+                    elif event.key == Key.DELETE:
                         self._remove_char("behind")
-                    elif event.key == KEY.ARROW_LEFT and self.holderIndex > 0:
+                    elif event.key == Key.ARROW_LEFT and self.holderIndex > 0:
                         self.holderIndex -= 1
-                    elif event.key == KEY.ARROW_RIGHT and self.holderIndex < len(self._text[self.lineId]):
+                    elif event.key == Key.ARROW_RIGHT and self.holderIndex < len(self._text[self.lineId]):
                         self.holderIndex += 1
-                    elif event.key == KEY.ARROW_UP and self.lineId>0:
+                    elif event.key == Key.ARROW_UP and self.lineId>0:
                         self.lineId -= 1
                         if self.holderIndex > len(self._text[self.lineId])-1:
                             self.holderIndex = len(self._text[self.lineId])-1
-                    elif event.key == KEY.ARROW_DOWN and self.lineId<len(self._text)-1:
+                    elif event.key == Key.ARROW_DOWN and self.lineId<len(self._text)-1:
                         self.lineId += 1
                         if self.holderIndex > len(self._text[self.lineId])-1:
                             self.holderIndex = len(self._text[self.lineId])-1
-                    elif event.unicode == "v" and KEY.get_pressed("v") and KEY.get_pressed(KEY.LEFT_CTRL) or \
-                        event.key == KEY.LEFT_CTRL and KEY.get_pressed("v") and KEY.get_pressed(KEY.LEFT_CTRL):
-                        self._add_char(KEY.get_clipboard())
+                    elif event.unicode == "v" and Key.get_pressed("v") and Key.get_pressed(Key.LEFT_CTRL) or \
+                        event.key == Key.LEFT_CTRL and Key.get_pressed("v") and Key.get_pressed(Key.LEFT_CTRL):
+                        self._add_char(Key.get_clipboard())
                     #ESC，关闭
-                    elif event.key == KEY.ESCAPE:
+                    elif event.key == Key.ESCAPE:
                         self.active = False
                         self.need_save = True
-                    elif event.key == KEY.RETURN:
+                    elif event.key == Key.RETURN:
                         #如果“|”位于最后
                         if self.holderIndex == len(self._text[self.lineId]):
                             self._text.insert(self.lineId+1,"")
@@ -322,17 +322,17 @@ class Console(SingleLineInputBox):
         if super()._check_key_down(event):
             return True
         #向上-过去历史
-        elif event.key == KEY.ARROW_UP and self.__backward_id<len(self.textHistory):
+        elif event.key == Key.ARROW_UP and self.__backward_id<len(self.textHistory):
             self.__backward_id += 1
             self.set_text(self.textHistory[len(self.textHistory)-self.__backward_id])
             return True
         #向下-过去历史，最近的一个
-        elif event.key == KEY.ARROW_DOWN and self.__backward_id>1:
+        elif event.key == Key.ARROW_DOWN and self.__backward_id>1:
             self.__backward_id -= 1
             self.set_text(self.textHistory[len(self.textHistory)-self.__backward_id])
             return True
         #回车
-        elif event.key == KEY.RETURN:
+        elif event.key == Key.RETURN:
             if len(self._text)>0:
                 if self._text.startswith('/'):
                     self._check_command(self._text[1:].split())
@@ -345,7 +345,7 @@ class Console(SingleLineInputBox):
                 throw_exception("warning","The input box is empty!")
             return True
         #ESC，关闭
-        elif event.key == KEY.ESCAPE:
+        elif event.key == Key.ESCAPE:
             self.active = False
             # Change the current color of the input box.
             self.color = self.color_active if self.active else self.color_inactive
@@ -393,7 +393,7 @@ class Console(SingleLineInputBox):
     def draw(self, screen:ImageSurface) -> None:
         if self.hidden is True:
             for event in controller.events:
-                if event.type == KEY.DOWN and event.key == KEY.BACKQUOTE:
+                if event.type == Key.DOWN and event.key == Key.BACKQUOTE:
                     self.hidden = False
                     break
         elif not self.hidden:
@@ -407,14 +407,14 @@ class Console(SingleLineInputBox):
                     else:
                         self.active = False
                         self.color = self.color_inactive
-                elif event.type == KEY.DOWN:
+                elif event.type == Key.DOWN:
                     if self.active is True:
                         if self._check_key_down(event):
                             pass
                         else:
                             self._add_char(event.unicode)
                     else:
-                        if event.key == KEY.BACKQUOTE or event.key == KEY.ESCAPE:
+                        if event.key == Key.BACKQUOTE or event.key == Key.ESCAPE:
                             self.hidden = True
                             self.set_text()
             #画出输出信息

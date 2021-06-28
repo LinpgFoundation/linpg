@@ -80,7 +80,7 @@ def optimize_cn_content(filePath:str) -> None:
             try:
                 while file_lines[i][-2] == " ":
                     file_lines[i] = file_lines[i][:-2]+"\n"
-            except BaseException:
+            except Exception:
                 pass
     #删除原始文件
     os.remove(filePath)

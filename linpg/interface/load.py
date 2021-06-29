@@ -9,13 +9,13 @@ class Loader:
     def img(self, path:str, size:tuple=tuple(), alpha:int=255, ifConvertAlpha:bool=True) -> ImageSurface:
         return load_img(path, size, alpha, ifConvertAlpha)
     # 静态图片
-    def static_image(self, path:str, position:tuple, size:tuple=(-1,-1), tag:str="deafult") -> StaticImage:
+    def static_image(self, path:str, position:tuple, size:tuple=NoSize, tag:str="deafult") -> StaticImage:
         return StaticImage(path, position[0], position[1], size[0], size[1], tag)
     # 动态图片
-    def dynamic_image(self, path:str, position:tuple, size:tuple=(-1,-1), tag:str="deafult") -> DynamicImage:
+    def dynamic_image(self, path:str, position:tuple, size:tuple=NoSize, tag:str="deafult") -> DynamicImage:
         return DynamicImage(path, position[0], position[1], size[0], size[1], tag)
     # 可自行移动的图片
-    def movable_image(self, path:str, position:tuple, target_position:tuple, move_speed:tuple=(0,0), size:tuple=(-1,-1), tag="default") -> MovableImage:
+    def movable_image(self, path:str, position:tuple, target_position:tuple, move_speed:tuple = (0,0), size:tuple = NoSize, tag = "default") -> MovableImage:
         return MovableImage(path, position[0], position[1], target_position[0], target_position[1], move_speed[0], move_speed[1], size[0], size[1], tag)
     # gif图片
     def gif(self, gif_path_or_img_list: Union[str, tuple, list], position: tuple, size: tuple, updateGap: int = 1) -> GifImage:

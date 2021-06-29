@@ -21,7 +21,7 @@ class Square(GameObject2d):
     #获取rect
     def get_rect(self) -> tuple: return self.x, self.y, self._width, self._width
     #画出轮廓
-    def draw_outline(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0), color:str="red", thickness:int=2) -> None:
+    def draw_outline(self, surface:ImageSurface, offSet:pos_liked=Origin, color:str="red", thickness:int=2) -> None:
         draw_rect(surface, Color.get(color), (add_pos(self.pos,offSet),self.size), thickness)
 
 # 用于兼容的长方类
@@ -93,7 +93,7 @@ def is_same_rect(rect1: RectLiked, rect2: RectLiked) -> bool:
 
 # 检测图片是否被点击
 def is_hover(
-    imgObject: object, objectPos: Union[tuple, list] = (0, 0), off_set_x: Union[int, float] = 0, off_set_y: Union[int, float] = 0
+    imgObject: object, objectPos: pos_liked = Origin, off_set_x: Union[int, float] = 0, off_set_y: Union[int, float] = 0
     ) -> bool:
     mouse_x, mouse_y = controller.get_mouse_pos()
     # 如果是Linpg引擎的GameObject2d类(所有2d物品的父类)
@@ -109,7 +109,7 @@ class Circle(Square):
     @property
     def radius(self) -> Union[int, float]: return self._width/2
     #画出轮廓
-    def draw_outline(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0), color:str="red", thickness:int=2) -> None:
+    def draw_outline(self, surface:ImageSurface, offSet:pos_liked=Origin, color:str="red", thickness:int=2) -> None:
         draw_circle(surface, Color.get(color), add_pos(self.center, offSet), self.radius, thickness)
 
 # 画圆形

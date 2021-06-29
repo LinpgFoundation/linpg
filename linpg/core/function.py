@@ -45,7 +45,7 @@ def load_movable_image(
     path: Union[str, ImageSurface],
     position: tuple,
     target_position: tuple,
-    moveSpeed: tuple = (0, 0),
+    moveSpeed: tuple = Origin,
     width: Union[int, float] = -1,
     height: Union[int, float] = -1,
     tag="default",

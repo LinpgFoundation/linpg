@@ -49,7 +49,7 @@ class DynamicImage(AbstractImage):
     #反转
     def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = flip_img(self.img, vertical, horizontal)
     #展示
-    def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
+    def display(self, surface:ImageSurface, offSet:pos_liked=Origin) -> None:
         if not self.hidden: surface.blit(resize_img(self.img, self.size), add_pos(self.pos, offSet))
 
 #有本地坐标的图形接口
@@ -180,11 +180,11 @@ class StaticImage(AdvancedAbstractImage):
     def flip_back_to_normal(self) -> None:
         if self.__is_flipped: self.flip()
     #画出轮廓
-    def draw_outline(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0), color:any="red", line_width:int=2) -> None:
+    def draw_outline(self, surface:ImageSurface, offSet:pos_liked=Origin, color:any="red", line_width:int=2) -> None:
         draw_rect(surface, Color.get(color), (add_pos(self.abs_pos,offSet), self.__processed_img.get_size()), line_width)
     #是否被鼠标触碰
-    def is_hover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
-        if mouse_pos == (-1,-1): mouse_pos = controller.get_mouse_pos()
+    def is_hover(self, mouse_pos:pos_liked=NoSize) -> bool:
+        if mouse_pos is NoSize: mouse_pos = controller.get_mouse_pos()
         if self.__processed_img is not None:
             return 0 < mouse_pos[0]-self.x-self._local_x < self.__processed_img.get_width() and 0 < mouse_pos[1]-self.y-self._local_y < self.__processed_img.get_height()
         else:
@@ -201,7 +201,7 @@ class StaticImage(AdvancedAbstractImage):
         self.img = subtract_darkness(self.img, value)
         self.__need_update = True
     #展示
-    def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
+    def display(self, surface:ImageSurface, offSet:pos_liked=Origin) -> None:
         if not self.hidden:
             #如果图片需要更新，则先更新
             if self.__need_update is True: self._update_img()
@@ -250,7 +250,7 @@ class MovableImage(StaticImage):
         return self.x == self.__target_x and self.y == self.__target_y if self.__is_moving_toward_target is True \
             else self.x == self.__default_x and self.y == self.__default_y
     #画出
-    def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
+    def display(self, surface:ImageSurface, offSet:pos_liked=Origin) -> None:
         if not self.hidden:
             super().display(surface, offSet)
             if self.__is_moving_toward_target is True:
@@ -337,7 +337,7 @@ class GifImage(AdvancedAbstractImage):
     def current_image(self) -> StaticImage:
         return self.img[self.imgId]
     # 展示
-    def display(self, surface: ImageSurface, offSet: Union[tuple, list] = (0, 0)):
+    def display(self, surface: ImageSurface, offSet: pos_liked = Origin):
         if not self.hidden:
             self.current_image.set_size(self.get_width(), self.get_height())
             self.current_image.set_alpha(self._alpha)

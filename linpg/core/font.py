@@ -16,7 +16,7 @@ class FontGenerator:
     def update(self, size:int, ifBold:bool=False, ifItalic:bool=False) -> None:
         self.__SIZE = size
         self.__FONT = create_font(size,ifBold,ifItalic)
-    def render(self, txt:any, color:Union[str,tuple,list]):
+    def render(self, txt:any, color: color_liked):
         if self.__SIZE is not None:
             return self.__FONT.render(txt, get_antialias(), Color.get(color))
         else:
@@ -123,16 +123,16 @@ def create_freetype_font(size:Union[float,int], ifBold:bool=False, ifItalic:bool
         throw_exception("error","FontType option in setting file is incorrect!")
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
-def render_font(txt:any, color:Union[str,tuple,list], size:int, ifBold:bool=False, ifItalic:bool=False) -> ImageSurface:
+def render_font(txt:any, color: color_liked, size:int, ifBold:bool=False, ifItalic:bool=False) -> ImageSurface:
     _LINPG_LAST_FONT.check_for_update(size, ifBold, ifItalic)
     return _LINPG_LAST_FONT.render(txt, Color.get(color))
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
-def render_font_without_bounding(txt:any, color:Union[str,tuple,list], size:int, ifBold:bool=False, ifItalic:bool=False) -> ImageSurface:
+def render_font_without_bounding(txt:any, color: color_liked, size:int, ifBold:bool=False, ifItalic:bool=False) -> ImageSurface:
     return cope_bounding(render_font(txt,color,size,ifBold,ifItalic))
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
-def render_freetype(txt:any, color:Union[str,tuple,list], size:int, ifBold:bool=False, ifItalic:bool=False) -> ImageSurface:
+def render_freetype(txt:any, color: color_liked, size:int, ifBold:bool=False, ifItalic:bool=False) -> ImageSurface:
     normal_font = create_freetype_font(size,ifBold,ifItalic)
     if isinstance(color,str):
         text_out = normal_font.render(txt, get_antialias(), Color.get(color))
@@ -155,7 +155,7 @@ class TextSurface(GameObject2d):
     def get_alpha(self) -> int: return self.font_surface.get_alpha()
     def set_alpha(self, value:int) -> None: self.font_surface.set_alpha(value)
     #画出
-    def display(self, surface:ImageSurface, offSet:tuple=(0,0)) -> None:
+    def display(self, surface:ImageSurface, offSet:tuple=Origin) -> None:
         surface.blit(self.font_surface,add_pos(self.pos,offSet))
 
 #动态文字类
@@ -171,7 +171,7 @@ class DynamicTextSurface(TextSurface):
     #用于检测触碰的快捷
     def has_been_hovered(self) -> bool: return self.__is_hovered
     #画出
-    def display(self, surface:ImageSurface, offSet:tuple=(0,0)) -> None:
+    def display(self, surface:ImageSurface, offSet:tuple=Origin) -> None:
         mouse_pos = controller.get_mouse_pos()
         self.__is_hovered = self.is_hover(subtract_pos(mouse_pos,offSet))
         if self.__is_hovered:
@@ -184,5 +184,5 @@ class DynamicTextSurface(TextSurface):
             surface.blit(self.font_surface,add_pos(self.pos,offSet))
 
 #高级文字制作模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
-def load_dynamic_text(txt:any, color:Union[str,tuple,list], pos:tuple, size:int=50, ifBold:bool=False, ifItalic:bool=False) -> DynamicTextSurface:
+def load_dynamic_text(txt:any, color: color_liked, pos:tuple, size:int=50, ifBold:bool=False, ifItalic:bool=False) -> DynamicTextSurface:
     return DynamicTextSurface(render_font(txt,color,size,ifBold,ifItalic),render_font(txt,color,size*1.5,ifBold,ifItalic),pos[0],pos[1])

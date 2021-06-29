@@ -1,4 +1,6 @@
 # cython: language_level=3
+from PIL import ImageColor
+from .key import *
 if is_using_pygame():
     try:
         from pygame.colordict import THECOLORS
@@ -6,8 +8,6 @@ if is_using_pygame():
         THECOLORS = {}
 else:
     THECOLORS = {}
-from PIL import ImageColor
-from .key import *
 
 class ColorManager:
     def __init__(self) -> None:
@@ -54,7 +54,7 @@ class ColorManager:
     def VIOLET(self) -> tuple: return self.__VIOLET
     """获取颜色"""
     #给定一个颜色的名字或序号，返回对应的RGB列表
-    def get(self, color:Union[str, tuple, list]) -> tuple:
+    def get(self, color:color_liked) -> tuple:
         if isinstance(color, str):
             if color[0] == "#":
                 return ImageColor.getrgb(color)
@@ -74,4 +74,4 @@ Color: ColorManager = ColorManager()
 
 """即将弃置"""
 #给定一个颜色的名字，返回对应的RGB列表
-def get_color_rbga(color:Union[str, tuple, list]) -> tuple: return Color.get(color)
+def get_color_rbga(color:color_liked) -> tuple: return Color.get(color)

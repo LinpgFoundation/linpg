@@ -4,7 +4,7 @@ from .menu import *
 
 #输入框Abstract，请勿实体化
 class AbstractInputBox(GameObject2d):
-    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int):
+    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:color_liked, default_width:int):
         super().__init__(x,y)
         self.FONTSIZE:int = int(font_size)
         self.FONT = create_font(self.FONTSIZE)
@@ -30,7 +30,7 @@ class AbstractInputBox(GameObject2d):
 
 #单行输入框
 class SingleLineInputBox(AbstractInputBox):
-    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int=150):
+    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:color_liked, default_width:int=150):
         super().__init__(x,y,font_size,txt_color,default_width)
         self._text:str = ""
         self._left_ctrl_pressing:bool = False
@@ -43,7 +43,7 @@ class SingleLineInputBox(AbstractInputBox):
     def set_text(self, new_txt:str=None) -> None:
         if new_txt is not None and len(new_txt)>0:
             self._text = new_txt
-            self.holderIndex = len(new_txt)-1
+            self.holderIndex = len(new_txt)
         else:
             self._text = ""
             self.holderIndex = 0
@@ -136,7 +136,7 @@ class SingleLineInputBox(AbstractInputBox):
 
 #多行输入框
 class MultipleLinesInputBox(AbstractInputBox):
-    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int=150):
+    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:color_liked, default_width:int=150):
         super().__init__(x,y,font_size,txt_color,default_width)
         self._text = [""]
         self.lineId = 0
@@ -309,10 +309,11 @@ class Console(SingleLineInputBox):
         self.color = self.color_active
         self.active:bool = True
         self.hidden:bool = True
-        self.textHistory:list = []
+        self._text_history:list = []
         self.__backward_id:int = 1
         self.__events:dict = {"cheat": False}
-        self.txtOutput:list = []
+        self._txt_output:list = []
+        self.command_indicator:str = "/"
     def get_events(self, key:Union[int,str]) -> any:
         try:
             return self.__events[key]
@@ -322,25 +323,25 @@ class Console(SingleLineInputBox):
         if super()._check_key_down(event):
             return True
         #向上-过去历史
-        elif event.key == Key.ARROW_UP and self.__backward_id<len(self.textHistory):
+        elif event.key == Key.ARROW_UP and self.__backward_id < len(self._text_history):
             self.__backward_id += 1
-            self.set_text(self.textHistory[len(self.textHistory)-self.__backward_id])
+            self.set_text(self._text_history[-self.__backward_id])
             return True
         #向下-过去历史，最近的一个
-        elif event.key == Key.ARROW_DOWN and self.__backward_id>1:
+        elif event.key == Key.ARROW_DOWN and self.__backward_id > 1:
             self.__backward_id -= 1
-            self.set_text(self.textHistory[len(self.textHistory)-self.__backward_id])
+            self.set_text(self._text_history[-self.__backward_id])
             return True
         #回车
         elif event.key == Key.RETURN:
             if len(self._text)>0:
-                if self._text.startswith('/'):
-                    self._check_command(self._text[1:].split())
+                if self._text.startswith(self.command_indicator):
+                    self._check_command(self._text[len(self.command_indicator):].split())
                 else:
-                    self.txtOutput.append(self._text)
-                self.textHistory.append(self._text) 
+                    self._txt_output.append(self._text)
+                self._text_history.append(self._text)
+                self.__backward_id = 0
                 self.set_text()
-                self.__backward_id = 1
             else:
                 throw_exception("warning","The input box is empty!")
             return True
@@ -355,41 +356,41 @@ class Console(SingleLineInputBox):
         if conditions[0] == "cheat":
             if conditions[1] == "on":
                 if "cheat" in self.__events and self.__events["cheat"] is True:
-                    self.txtOutput.append("Cheat mode has already been activated!")
+                    self._txt_output.append("Cheat mode has already been activated!")
                 else:
                     self.__events["cheat"] = True
-                    self.txtOutput.append("Cheat mode is activated.")
+                    self._txt_output.append("Cheat mode is activated.")
             elif conditions[1] == "off":
                 if "cheat" in self.__events and not self.__events["cheat"]:
-                    self.txtOutput.append("Cheat mode has already been deactivated!")
+                    self._txt_output.append("Cheat mode has already been deactivated!")
                 else:
                     self.__events["cheat"] = False
-                    self.txtOutput.append("Cheat mode is deactivated.")
+                    self._txt_output.append("Cheat mode is deactivated.")
             else:
-                self.txtOutput.append("Unknown status for cheat command.")
+                self._txt_output.append("Unknown status for cheat command.")
         elif conditions[0] == "say":
-            self.txtOutput.append(self._text.replace("/say"))
+            self._txt_output.append(self._text[len(self.command_indicator)+4:])
         elif conditions[0] == "dev":
             if conditions[1] == "on":
                 if get_setting("DeveloperMode") is True:
-                    self.txtOutput.append("Developer mode has been activated!")
+                    self._txt_output.append("Developer mode has been activated!")
                 else:
                     set_setting("DeveloperMode", value=True)
-                    self.txtOutput.append("Developer mode is activated.")
+                    self._txt_output.append("Developer mode is activated.")
             elif conditions[1] == "off":
                 if not get_setting("DeveloperMode"):
-                    self.txtOutput.append("Developer mode has been deactivated!")
+                    self._txt_output.append("Developer mode has been deactivated!")
                 else:
                     set_setting("DeveloperMode", value=False)
-                    self.txtOutput.append("Developer mode is deactivated.")
+                    self._txt_output.append("Developer mode is deactivated.")
             else:
-                self.txtOutput.append("Unknown status for dev command.")
+                self._txt_output.append("Unknown status for dev command.")
         elif conditions[0] == "linpg" and conditions[1] == "info":
-            self.txtOutput.append("Linpg Version: {}".format(get_current_version()))
+            self._txt_output.append("Linpg Version: {}".format(Info.current_version))
         elif conditions[0] == "quit":
             display.quit()
         else:
-            self.txtOutput.append("The command is unknown!")
+            self._txt_output.append("The command is unknown!")
     def draw(self, screen:ImageSurface) -> None:
         if self.hidden is True:
             for event in controller.events:
@@ -418,8 +419,8 @@ class Console(SingleLineInputBox):
                             self.hidden = True
                             self.set_text()
             #画出输出信息
-            for i in range(len(self.txtOutput)):
-                screen.blit(self.FONT.render(self.txtOutput[i],get_antialias(),self.color),(self.x+self.FONTSIZE*0.25, self.y-(len(self.txtOutput)-i)*self.FONTSIZE*1.5))
+            for i in range(len(self._txt_output)):
+                screen.blit(self.FONT.render(self._txt_output[i],get_antialias(),self.color),(self.x+self.FONTSIZE*0.25, self.y-(len(self._txt_output)-i)*self.FONTSIZE*1.5))
             # 画出文字
             if self._text is not None and len(self._text) > 0:
                 screen.blit(self.FONT.render(self._text,get_antialias(),self.color),(self.x+self.FONTSIZE*0.25, self.y))

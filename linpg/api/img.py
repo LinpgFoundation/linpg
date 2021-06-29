@@ -1,5 +1,4 @@
 # cython: language_level=3
-from typing import List
 from .color import *
 
 # 源库自带的图形类
@@ -32,7 +31,7 @@ def quickly_load_img(path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> 
         throw_exception("error","The path '{}' has to be a string or at least a ImageSurface!".format(path))
 
 #图片加载模块：接收图片路径,长,高,返回对应图片
-def load_img(path:Union[str,ImageSurface], size:Union[tuple,list]=tuple(), alpha:int=255, ifConvertAlpha:bool=True) -> ImageSurface:
+def load_img(path:Union[str,ImageSurface], size:size_liked=tuple(), alpha:int=255, ifConvertAlpha:bool=True) -> ImageSurface:
     #加载图片
     img = quickly_load_img(path,ifConvertAlpha)
     #根据参数编辑图片
@@ -44,19 +43,19 @@ def load_img(path:Union[str,ImageSurface], size:Union[tuple,list]=tuple(), alpha
         return smoothly_resize_img(img, size) if get_antialias() is True else resize_img(img, size)
 
 #加载路径下的所有图片，储存到一个list当中，然后返回
-def load_img_in_folder(pathRule:str, size:Union[tuple,list]=tuple()) -> List[ImageSurface]:
+def load_img_in_folder(pathRule:str, size:size_liked=tuple()) -> list:
     return [load_img(imgPath, size) for imgPath in glob(pathRule)]
 
 #获取Surface
-def new_surface(size:Union[tuple,list], surface_flags:any=None) -> ImageSurface:
+def new_surface(size:size_liked, surface_flags:any=None) -> ImageSurface:
     return pygame.Surface(size, flags=surface_flags) if surface_flags is not None else pygame.Surface(size)
 
 #获取透明的Surface
-def new_transparent_surface(size:Union[tuple,list]) -> ImageSurface:
+def new_transparent_surface(size:size_liked) -> ImageSurface:
     return new_surface(size, pygame.SRCALPHA).convert_alpha()
 
 #获取材质缺失的临时警示材质
-def get_texture_missing_surface(size:Union[tuple,list]) -> ImageSurface:
+def get_texture_missing_surface(size:size_liked) -> ImageSurface:
     texture_missing_surface:ImageSurface = new_surface(size).convert()
     texture_missing_surface.fill(Color.BLACK)
     half_width:int = int(size[0]/2)
@@ -72,7 +71,7 @@ def get_texture_missing_surface(size:Union[tuple,list]) -> ImageSurface:
 
 """处理"""
 #重新编辑尺寸
-def resize_img(img:ImageSurface, size:Union[tuple,list]=(None,None)) -> ImageSurface:
+def resize_img(img:ImageSurface, size:size_liked=(None,None)) -> ImageSurface:
     #转换尺寸
     if isinstance(size,(list,tuple)):
         if len(size) == 1:
@@ -98,7 +97,7 @@ def resize_img(img:ImageSurface, size:Union[tuple,list]=(None,None)) -> ImageSur
     return img
 
 #精准地缩放尺寸
-def smoothly_resize_img(img:ImageSurface, size:Union[tuple,list]=(None,None)):
+def smoothly_resize_img(img:ImageSurface, size:size_liked=(None,None)):
     #转换尺寸
     if isinstance(size,(list,tuple)):
         if len(size) == 1:
@@ -151,7 +150,7 @@ def change_darkness(surface:ImageSurface, value:int) -> ImageSurface:
         return subtract_darkness(surface,abs(value))
 
 #按照给定的位置对图片进行剪裁
-def crop_img(img:ImageSurface, pos:Union[tuple,list]=(0,0),size:Union[tuple,list]=(0,0)) -> ImageSurface:
+def crop_img(img:ImageSurface, pos:pos_liked=Origin,size:size_liked=Origin) -> ImageSurface:
     if isinstance(pos,pygame.Rect):
         cropped = new_transparent_surface(pos.size)
         cropped.blit(img,(-pos.x,-pos.y))
@@ -188,10 +187,10 @@ def draw_array(surface: ImageSurface, array: any) -> None:
     pygame.surfarray.blit_array(surface, array)
 
 #是否触碰pygame类
-def is_hover_pygame_object(imgObject:object, objectPos:Union[tuple,list]=(0,0), off_set_x:Union[int,float]=0, off_set_y:Union[int,float]=0) -> bool:
+def is_hover_pygame_object(imgObject:object, objectPos:pos_liked=Origin, off_set_x:Union[int,float]=0, off_set_y:Union[int,float]=0) -> bool:
     mouse_x,mouse_y = pygame.mouse.get_pos()
     #如果是pygame的Surface类
-    if isinstance(imgObject,ImageSurface):
+    if isinstance(imgObject, ImageSurface):
         return True if 0 < mouse_x-off_set_x-objectPos[0] < imgObject.get_width() and 0 < mouse_y-off_set_y-objectPos[1] < imgObject.get_height()\
             else False
     #如果是Rect类

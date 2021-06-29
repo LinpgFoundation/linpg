@@ -23,7 +23,7 @@ class GameObjectContainer(AbstractImage):
         super().set_height(value)
         if self.img is not None: self.img.set_height(value)
     #把物品画到surface上
-    def display(self, surface:ImageSurface, offSet:tuple=(0,0)) -> None:
+    def display(self, surface:ImageSurface, offSet:tuple=Origin) -> None:
         self.item_hovered = None
         if not self.hidden:
             current_abs_pos:tuple = add_pos(self.pos, offSet)
@@ -84,7 +84,7 @@ class DropDownSingleChoiceList(GameObjectContainer):
         super().clear()
         self._update_width()
     #把物品画到surface上
-    def display(self, surface:ImageSurface, offSet:tuple=(0,0)) -> None:
+    def display(self, surface:ImageSurface, offSet:tuple=Origin) -> None:
         if not self.hidden:
             current_abs_pos:tuple = add_pos(self.pos, offSet)
             #画出背景
@@ -264,7 +264,7 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
     def get_item_per_line(self) -> int: return self.__item_per_line
     def set_item_per_line(self, value:int) -> None: self.__item_per_line = int(value)
     #把素材画到屏幕上
-    def display(self, surface:ImageSurface, off_set:tuple=(0,0)) -> None:
+    def display(self, surface:ImageSurface, off_set:tuple=Origin) -> None:
         self.__current_hovered_item = None
         if not self.hidden:
             """画出"""

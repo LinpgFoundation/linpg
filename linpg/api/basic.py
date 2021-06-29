@@ -21,8 +21,15 @@ def is_using_pygame() -> bool: return True if not _LIBRARY_INDICATOR else False
 #是否正在使用pyglet库
 def is_using_pyglet() -> bool: return True if _LIBRARY_INDICATOR is True else False
 
+"""linpg自带属性"""
 #int_f指参数推荐输入int, 但一开始接受时可以为float，但最后会转换为int
 int_f = Union[int, float]
+pos_liked = Union[tuple, list, numpy.ndarray]
+size_liked = Union[tuple, list, numpy.ndarray]
+color_liked = Union[tuple, str, list]
+Origin:tuple = (0, 0)
+NoSize:tuple = (-1, -1)
+NoPos:tuple = (-1, -1)
 
 """指向pygame事件的指针"""
 #鼠标
@@ -41,12 +48,12 @@ def get_random_int(start:int, end:int) -> int: return random.randint(start, end)
 def convert_pos(pos:any) -> tuple:
     #检测坐标
     if isinstance(pos, (list, tuple, numpy.ndarray)):
-        return pos[0],pos[1]
+        return pos[0], pos[1]
     elif isinstance(pos, dict):
-        return pos["x"],pos["y"]
+        return pos["x"], pos["y"]
     else:
         try:
-            return pos.x,pos.y
+            return pos.x, pos.y
         except Exception:
             throw_exception("error", 'Cannot convert position "{}".'.format(pos))
 

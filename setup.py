@@ -5,12 +5,7 @@ import setuptools
 INFO:dict
 try:
     import linpg
-    INFO = {
-        "version": linpg.get_current_version(),
-        "author_email": linpg.get_author_email(),
-        "description": linpg.get_short_description(),
-        "url": linpg.get_repository_url()
-    }
+    INFO = linpg.details
 except Exception:
     import json
     info_json_path:str = "info.json"

@@ -15,7 +15,7 @@ class ProgressBar(AbstractImage):
         super().__init__(None, x, y, max_width, height, tag)
         self.percentage = 0
         self.color:tuple = Color.get(color)
-    def display(self, surface: ImageSurface, offSet: Union[tuple, list] = (0, 0)) -> None:
+    def display(self, surface: ImageSurface, offSet: pos_liked = Origin) -> None:
         if not self.hidden:
             draw_rect(surface, self.color, new_rect(add_pos(self.pos, offSet), (int(self._width*self.percentage), self._height)))
 
@@ -62,7 +62,7 @@ class ProgressBarSurface(AbstractImage):
     def copy(self): return ProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return ProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #展示
-    def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
+    def display(self, surface:ImageSurface, offSet:pos_liked = Origin) -> None:
         if not self.hidden:
             pos = add_pos(self.pos, offSet)
             surface.blit(resize_img(self.img2,self.size),pos)
@@ -110,7 +110,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
             self._current_percentage > self._percentage_to_be and self.__perecent_update_each_time < 0:
             self._current_percentage += self.__perecent_update_each_time
     #展示
-    def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
+    def display(self, surface:ImageSurface, offSet:pos_liked = Origin) -> None:
         if not self.hidden:
             pos:tuple = add_pos(self.pos,offSet)
             surface.blit(resize_img(self.img2,self.size),pos)

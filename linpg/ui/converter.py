@@ -125,10 +125,10 @@ class Converter:
                     self.convert_text(data["text"]["src"]),
                     data["text"]["color"],
                     data["height"],
-                    (0,0),
+                    Origin,
                     data["alpha_when_not_hover"]
                     ) if "text" in data else load_button(
-                        load_img(data["src"]), (0,0), (data["width"], data["height"]), data["alpha_when_not_hover"]
+                        load_img(data["src"]), Origin, (data["width"], data["height"]), data["alpha_when_not_hover"]
                     )
                 if "name" in data:
                     button_t.tag = data["name"]

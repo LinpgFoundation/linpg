@@ -128,7 +128,7 @@ class DialogSystem(AbstractDialogSystem):
                 self._is_showing_history = False
             else:
                 progress_saved_text = StaticImage(
-                    self._dialog_txt_system.FONT.render(get_lang("Global","progress_has_been_saved"),get_antialias(),(255, 255, 255)),0,0
+                    self._dialog_txt_system.FONT.render(Lang.get_text("Global","progress_has_been_saved"),get_antialias(),(255, 255, 255)),0,0
                     )
                 progress_saved_text.set_alpha(0)
                 progress_saved_text.set_center(surface.get_width()/2, surface.get_height()/2)

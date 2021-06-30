@@ -25,7 +25,7 @@ class AbstractSystem:
     def __init__(self):
         #判定用于判定是否还在播放的参数
         self.__is_playing:bool = True
-        self._language_when_initialize:str = get_current_language()
+        self._language_when_initialize:str = Lang.get_current_language()
     #是否正在播放
     @property
     def isPlaying(self) -> bool: return self.__is_playing
@@ -33,9 +33,9 @@ class AbstractSystem:
     def stop(self) -> None: self.__is_playing = False
     def _continue(self) -> None: self.__is_playing = True
     #是否本体语言和当前一致
-    def language_need_update(self) -> bool: return self._language_when_initialize != get_current_language()
+    def language_need_update(self) -> bool: return self._language_when_initialize != Lang.get_current_language()
     #更新语言
-    def updated_language(self) -> None: self._language_when_initialize = get_current_language()
+    def updated_language(self) -> None: self._language_when_initialize = Lang.get_current_language()
 
 #拥有背景音乐的系统模块接口
 class SystemWithBackgroundMusic(AbstractSystem):

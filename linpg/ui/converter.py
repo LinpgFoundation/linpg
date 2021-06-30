@@ -62,7 +62,7 @@ class Converter:
                         break
                 if find_close_bracket is True:
                     find_close_bracket = False
-                    final_text_list.append(get_lang_by_keys((b.strip() for b in text[text_index+1:a].split(","))))
+                    final_text_list.append(Lang.get_text_by_keys((b.strip() for b in text[text_index+1:a].split(","))))
                     text_index = a
                 else:
                     throw_exception("error", 'Cannot find close bracket for text: {}'.format())

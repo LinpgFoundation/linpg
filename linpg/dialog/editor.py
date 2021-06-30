@@ -49,7 +49,7 @@ class DialogEditor(AbstractDialogSystem):
             )
         self.UIContainerRightButton.rotate(90)
         #UI按钮
-        CONFIG = get_lang("DialogCreator")
+        CONFIG = Lang.get_text("DialogCreator")
         button_y = int(display.get_height()*0.03)
         font_size = int(button_width/3)
         #控制容器转换的按钮
@@ -66,10 +66,10 @@ class DialogEditor(AbstractDialogSystem):
         #页面右上方的一排按钮
         self.buttonsUI = {
             "save": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "save.png"), get_lang("Global", "save"), (button_width*7.25, button_y), button_size, 150
+                os.path.join(DIALOG_UI_PATH, "save.png"), Lang.get_text("Global", "save"), (button_width*7.25, button_y), button_size, 150
                 ),
             "reload": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "reload.png"), get_lang("Global", "reload_file"), (button_width*6, button_y), button_size, 150
+                os.path.join(DIALOG_UI_PATH, "reload.png"), Lang.get_text("Global", "reload_file"), (button_width*6, button_y), button_size, 150
             ),
             "add": load_button_with_des(
                 os.path.join(DIALOG_UI_PATH, "add.png"), CONFIG["add"], (button_width*4.75, button_y), button_size, 150

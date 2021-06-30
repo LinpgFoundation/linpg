@@ -18,25 +18,25 @@ class PauseMenu:
         self.black_bg.set_alpha(50)
         #按钮-继续
         self.button_resume = load_dynamic_text(
-            get_lang("Global","resume"),
+            Lang.get_text("Global","resume"),
             "white",
             (surface.get_width()*0.1,surface.get_height()*0.4),surface.get_width()/38
         )
         #按钮-保存游戏
         self.button_save = load_dynamic_text(
-            get_lang("Global","save_current_progress"),
+            Lang.get_text("Global","save_current_progress"),
             "white",
             (surface.get_width()*0.1,surface.get_height()*0.5),surface.get_width()/38
         )
         #按钮-设置
         self.button_setting = load_dynamic_text(
-            get_lang("OptionMenu","option_menu"),
+            Lang.get_text("OptionMenu","option_menu"),
             "white",
             (surface.get_width()*0.1,surface.get_height()*0.6),surface.get_width()/38
         )
         #按钮-返回
         self.button_back = load_dynamic_text(
-            get_lang("Global","back"),
+            Lang.get_text("Global","back"),
             "white",
             (surface.get_width()*0.1,surface.get_height()*0.7),surface.get_width()/38
         )
@@ -115,15 +115,15 @@ class OptionMenu(AbstractImage):
         #字体渲染器
         self.__NORMAL_FONT = create_font(self.__item_height)
         #设置UI中的文字
-        langTxt = get_lang("OptionMenu")
+        langTxt = Lang.get_text("OptionMenu")
         self.settingTitleTxt = TextSurface(render_font(langTxt["setting"],"white",self.__item_height*1.5),0,edge_panding)
         self.settingTitleTxt.set_centerx(width/2)
         #语言
         self.current_lang = TextSurface(render_font("{}: ".format(langTxt["language"]), "white", self.__item_height),self.bar_x, self.bar_y0)
         self.language_choice = DropDownSingleChoiceList(None, self.bar_x, self.bar_y0, self.__item_height)
-        for lang_choice in get_available_language():
+        for lang_choice in Lang.get_available_languages():
             self.language_choice.append(lang_choice)
-        self.language_choice.set_current_selected_item(get_current_language())
+        self.language_choice.set_current_selected_item(Lang.get_current_language())
         #背景音乐
         self.backgroundMusicTxt:str = langTxt["background_music"]
         #音效
@@ -131,17 +131,17 @@ class OptionMenu(AbstractImage):
         #环境声效
         self.soundEnvironmentTxt:str = langTxt["sound_environment"]
         #返回
-        self.__back_button = load_dynamic_text(get_lang("Global","back"),"white",(0,0),self.__item_height)
+        self.__back_button = load_dynamic_text(Lang.get_text("Global","back"),"white",(0,0),self.__item_height)
         self.__back_button.set_bottom(height-edge_panding)
         self.__back_button.set_centerx(self.width/2)
         self.need_update:dict = {}
     #更新语言
     def __update_lang(self, lang:str) -> None:
         #更新语言并保存新的参数到本地
-        set_and_save_setting("Language", value=get_language_id(lang))
-        reload_lang()
+        set_and_save_setting("Language", value=Lang.get_language_id(lang))
+        Lang.reload()
         #设置UI中的文字
-        langTxt = get_lang("OptionMenu")
+        langTxt = Lang.get_text("OptionMenu")
         self.settingTitleTxt.font_surface = render_font(langTxt["setting"],"white",self.__item_height*1.5)
         #语言
         self.current_lang = TextSurface(render_font("{}: ".format(langTxt["language"]), "white", self.__item_height),self.bar_x, self.bar_y0)
@@ -152,7 +152,7 @@ class OptionMenu(AbstractImage):
         #环境声效
         self.soundEnvironmentTxt = langTxt["sound_environment"]
         #返回
-        self.__back_button = load_dynamic_text(get_lang("Global","back"), "white", self.__back_button.pos, self.__item_height)
+        self.__back_button = load_dynamic_text(Lang.get_text("Global","back"), "white", self.__back_button.pos, self.__item_height)
     def draw(self, surface:ImageSurface) -> None:
         self.need_update = {
             "volume": False,
@@ -207,7 +207,7 @@ class OptionMenu(AbstractImage):
             self.current_lang.draw(surface)
             self.language_choice.display(surface, (self.current_lang.get_width(),0))
             #如果需要，则更新语言
-            if self.language_choice.get_current_selected_item() != get_current_language():
+            if self.language_choice.get_current_selected_item() != Lang.get_current_language():
                 self.__update_lang(self.language_choice.get_current_selected_item())
                 self.need_update["language"] = True
             #按键的判定按钮

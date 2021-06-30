@@ -107,7 +107,7 @@ def split_audio_from_video(moviePath:str, audioType:str="mp3") -> str:
 def load_audio_from_video_as_sound(moviePath:str) -> object:
     path = split_audio_from_video(moviePath)
     sound_audio = load_sound(path)
-    if not get_setting("KeepVedioCache"): os.remove(path)
+    if not Setting.get("KeepVedioCache"): os.remove(path)
     return sound_audio
 
 def load_audio_from_video_as_music(moviePath:str) -> bool:
@@ -115,7 +115,7 @@ def load_audio_from_video_as_music(moviePath:str) -> bool:
     try:
         path = split_audio_from_video(moviePath)
         load_music(path)
-        if not get_setting("KeepVedioCache"): os.remove(path)
+        if not Setting.get("KeepVedioCache"): os.remove(path)
         return True
     except Exception:
         throw_exception("warning", "Cannot load music from {}!\nIf this vedio has no sound, then just ignore this warning.".format(moviePath))

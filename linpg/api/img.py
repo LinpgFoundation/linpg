@@ -15,7 +15,7 @@ def quickly_load_img(path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> 
             try:
                 return pygame.image.load(path).convert_alpha() if is_using_pygame() else pyglet.image.load(path)
             except Exception:
-                if get_setting("DeveloperMode") is True: 
+                if Setting.get("DeveloperMode") is True: 
                     throw_exception("error",'Cannot load image from path: {}'.format(path))
                 else:
                     return get_texture_missing_surface()
@@ -23,7 +23,7 @@ def quickly_load_img(path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> 
             try:
                 return pygame.image.load(path) if is_using_pygame() else pyglet.image.load(path)
             except Exception:
-                if get_setting("DeveloperMode") is True:
+                if Setting.get("DeveloperMode") is True:
                     throw_exception("error",'Cannot load image from path: {}'.format(path))
                 else:
                     return get_texture_missing_surface()
@@ -40,7 +40,7 @@ def load_img(path:Union[str,ImageSurface], size:size_liked=tuple(), alpha:int=25
     if len(size) == 0:
         return img
     else:
-        return smoothly_resize_img(img, size) if get_antialias() is True else resize_img(img, size)
+        return smoothly_resize_img(img, size) if Setting.antialias is True else resize_img(img, size)
 
 #加载路径下的所有图片，储存到一个list当中，然后返回
 def load_img_in_folder(pathRule:str, size:size_liked=tuple()) -> list:

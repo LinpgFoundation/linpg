@@ -30,7 +30,7 @@ class DialogBox:
                 "warning",
                 "Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!\nAs a result, the text playing sound will be disabled."
                 )
-        self.READINGSPEED = get_setting("ReadingSpeed")
+        self.READINGSPEED = Setting.get("ReadingSpeed")
         #鼠标图标
         self.mouseImg = GifImage(
             numpy.asarray((
@@ -100,7 +100,7 @@ class DialogBox:
     def needUpdate(self) -> bool:
         return True if self.autoMode and self.readTime >= self.totalLetters else False
     #渲染文字
-    def render_font(self, txt:str, color:tuple) -> ImageSurface: return self.FONT.render(txt,get_antialias(),color)
+    def render_font(self, txt:str, color:tuple) -> ImageSurface: return self.FONT.render(txt,Setting.antialias,color)
     #如果音效还在播放则停止播放文字音效
     def stop_playing_text_sound(self) -> None:
         if is_any_sound_playing() and self.__textPlayingSound is not None: self.__textPlayingSound.stop()

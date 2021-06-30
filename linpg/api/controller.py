@@ -110,16 +110,16 @@ class GameController:
             screen.blit(self.iconImg,(self.mouse_x,self.mouse_y))
 
 #控制器输入组件初始化
-controller:GameController = GameController(get_setting("MouseIconWidth"),get_setting("MouseMoveSpeed"))
+controller:GameController = GameController(Setting.get("MouseIconWidth"),Setting.get("MouseMoveSpeed"))
 
 #画面更新控制器
 class DisplayController:
     def __init__(self):
-        self.__fps:int = max(int(get_setting("FPS")), 1)
+        self.__fps:int = max(int(Setting.get("FPS")), 1)
         self.__clock:object = get_clock()
         self.__standard_fps:int = 60
         #默认尺寸
-        self.__screen_scale:int = max(int(get_setting("ScreenScale")), 0)
+        self.__screen_scale:int = max(int(Setting.get("ScreenScale")), 0)
         self.__standard_width:int = round(1920*self.__screen_scale/100)
         self.__standard_height:int = round(1080*self.__screen_scale/100)
         #主要的窗口
@@ -180,5 +180,5 @@ class DisplayController:
 display:DisplayController = DisplayController()
 
 # 直接画到屏幕上
-def draw_on_screen(surface: ImageSurface, pos:tuple) -> None:
-    display.window.blit(surface, pos)
+def draw_on_screen(surface_to_draw: ImageSurface, pos:tuple) -> None:
+    display.window.blit(surface_to_draw, pos)

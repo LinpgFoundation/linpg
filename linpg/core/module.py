@@ -79,14 +79,25 @@ class GameObject2d(GameObject):
         return 0 < mouse_pos[0]-self.x < self.get_width() and 0 < mouse_pos[1]-self.y < self.get_height()
     #将图片直接画到surface上
     def draw(self, surface:ImageSurface) -> None: self.display(surface)
+    #将图片直接画到屏幕上
+    def draw_on_screen(self) -> None: self.display(display.window)
     #根据offSet将图片展示到surface的对应位置上 - 子类必须实现
-    def display(self, surface:ImageSurface, offSet:tuple=Origin) -> None:
+    def display(self, surface:ImageSurface, offSet:pos_liked=Origin) -> None:
         throw_exception("error","The child class does not implement display() function!")
-    #忽略现有坐标，将图片画到surface的指定位置上，不推荐使用
-    def blit(self, surface:ImageSurface, pos:tuple) -> None: 
+    #根据offSet将图片展示到屏幕的对应位置上
+    def display_on_screen(self, offSet:pos_liked=Origin) -> None:
+        self.display(display.window, offSet)
+    #忽略现有坐标，将图片画到surface的指定位置上
+    def blit(self, surface:ImageSurface, pos:pos_liked) -> None: 
         old_pos = self.get_pos()
         self.set_pos(pos)
         self.draw(surface)
+        self.set_pos(old_pos)
+    #忽略现有坐标，将图片画到surface的指定位置上
+    def blit_on_screen(self, pos:pos_liked) -> None: 
+        old_pos = self.get_pos()
+        self.set_pos(pos)
+        self.draw(display.window)
         self.set_pos(old_pos)
 
 #2.5d游戏对象接口 - 使用z轴判断图案的图层

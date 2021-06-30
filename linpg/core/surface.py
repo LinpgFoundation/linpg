@@ -150,7 +150,7 @@ class StaticImage(AdvancedAbstractImage):
             throw_exception("error","You have to input either a None or a Rect, not {}".format(type(rect)))
     #更新图片
     def _update_img(self) -> None:
-        imgTmp = smoothly_resize_img(self.img, self.size) if get_antialias() is True else resize_img(self.img, self.size)
+        imgTmp = smoothly_resize_img(self.img, self.size) if Setting.antialias is True else resize_img(self.img, self.size)
         rect = imgTmp.get_bounding_rect()
         if self.width != rect.width or self.height != rect.height or self.__crop_rect is not None:
             if self.__crop_rect is not None:

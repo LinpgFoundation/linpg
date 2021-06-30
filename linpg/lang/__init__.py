@@ -4,58 +4,67 @@ from ..config import *
 
 class LanguageManager:
     def __init__(self) -> None:
-        #语言配置文件
-        self.__LINPG_LANG:dict = {}
-        #可选的语言
-        self.__LINPG_LANG_AVAILABLE:list = []
+        # 语言配置文件
+        self.__LANG_DATA:dict = {}
+        # 可选的语言
+        self.__LANG_AVAILABLE:list = []
         # 语言储存路径
-        self.__LANG_PATH:str = os.path.join(os.path.dirname(__file__), "*.json")
-        #初始化
+        self.__LANG_PATH_PATTERN:str = os.path.join(os.path.dirname(__file__), "*.json")
+        # 储存额外语言数据的文件夹
+        self.__EX_LANG_FOLDER:str = "Lang"
+        # 初始化
         self.reload()
+    #当前语言对应的内置语言文件的路径
+    @property
+    def internal_language_file_path(self) -> str:
+        return os.path.join(os.path.dirname(__file__), "{}.json".format(Setting.get("Language")))
     #重新加载语言文件
     def reload(self) -> None:
-        if os.path.exists(os.path.join("Lang","{}.yaml".format(get_setting("Language")))):
-            self.__LINPG_LANG = {
-                **load_config(os.path.join("Lang","{}.yaml".format(get_setting("Language")))),
-                **load_config(os.path.join(os.path.dirname(__file__),"{}.json".format(get_setting("Language"))))
-                }
-        elif os.path.exists(os.path.join("Lang","{}.json".format(get_setting("Language")))):
-            self.__LINPG_LANG = {
-                **load_config(os.path.join("Lang","{}.json".format(get_setting("Language")))),
-                **load_config(os.path.join(os.path.dirname(__file__),"{}.json".format(get_setting("Language"))))
+        path_t:str = os.path.join(self.__EX_LANG_FOLDER, "{}.yaml".format(Setting.get("Language")))
+        if os.path.exists(path_t):
+            self.__LANG_DATA = {
+                **load_config(path_t),
+                **load_config(self.internal_language_file_path)
                 }
         else:
-            throw_exception("warning", "Linpg cannot load additional language file.")
-            self.__LINPG_LANG = load_config(os.path.join(os.path.dirname(__file__),"{}.json".format(get_setting("Language"))))
+            path_t = os.path.join(self.__EX_LANG_FOLDER, "{}.json".format(Setting.get("Language")))
+            if os.path.exists(path_t):
+                self.__LANG_DATA = {
+                    **load_config(path_t),
+                    **load_config(self.internal_language_file_path)
+                    }
+            else:
+                throw_exception("warning", "Linpg cannot load additional language file.")
+                self.__LANG_DATA = load_config(self.internal_language_file_path)
         #获取本地可用的语言
-        self.__LINPG_LANG_AVAILABLE.clear()
-        for lang_file in glob(os.path.join(self.__LANG_PATH)):
-            if os.path.exists(os.path.join("Lang",os.path.basename(lang_file).replace(".json",".yaml"))) or \
-                os.path.exists(os.path.join("Lang",os.path.basename(lang_file))):
-                self.__LINPG_LANG_AVAILABLE.append(load_config(lang_file, "Language"))
+        self.__LANG_AVAILABLE.clear()
+        for lang_file in glob(os.path.join(self.__LANG_PATH_PATTERN)):
+            if os.path.exists(os.path.join(self.__EX_LANG_FOLDER, os.path.basename(lang_file).replace(".json",".yaml"))) or \
+                os.path.exists(os.path.join(self.__EX_LANG_FOLDER, os.path.basename(lang_file))):
+                self.__LANG_AVAILABLE.append(load_config(lang_file, "Language"))
     #整理语言文件
     def organize(self) -> None:
-        organize_config_in_folder(os.path.join(self.__LANG_PATH))
+        organize_config_in_folder(os.path.join(self.__LANG_PATH_PATTERN))
         self.reload()
     #获取当前的语言
-    def get_current_language(self) -> str: return deepcopy(self.__LINPG_LANG["Language"])
+    def get_current_language(self) -> str: return deepcopy(self.__LANG_DATA["Language"])
     #获取语言的名称id
     def get_language_id(self, lang_name:str) -> str:
-        for lang_file in glob(os.path.join(self.__LANG_PATH)):
+        for lang_file in glob(os.path.join(self.__LANG_PATH_PATTERN)):
             if load_config(lang_file, "Language") == lang_name: return os.path.basename(lang_file).replace(".json","")
         return ""
     #获取可用语言
-    def get_available_languages(self) -> tuple: return tuple(self.__LINPG_LANG_AVAILABLE)
+    def get_available_languages(self) -> tuple: return tuple(self.__LANG_AVAILABLE)
     #根据key(s)获取对应的语言
-    def get_text(self, *key:str) -> any: return get_value_by_keys(self.__LINPG_LANG, key)
+    def get_text(self, *key:str) -> any: return get_value_by_keys(self.__LANG_DATA, key)
     def get_text_by_keys(self, keys:Union[tuple, list]) -> any:
-        return get_value_by_keys(self.__LINPG_LANG, tuple(keys)) if not isinstance(keys, tuple) else get_value_by_keys(self.__LINPG_LANG, keys)
+        return get_value_by_keys(self.__LANG_DATA, tuple(keys)) if not isinstance(keys, tuple) else get_value_by_keys(self.__LANG_DATA, keys)
     #尝试根据key(s)获取对应的语言
-    def try_to_get_text(self, *key:str) -> any: return get_value_by_keys(self.__LINPG_LANG, key, False)
+    def try_to_get_text(self, *key:str) -> any: return get_value_by_keys(self.__LANG_DATA, key, False)
     #获取本地化的数字
-    def get_num_in_local_text(self, num:Union[int,str]) -> str:
+    def get_num_in_local_text(self, num:Union[int, str]) -> str:
         try:
-            return deepcopy(self.__LINPG_LANG["Numbers"][int(num)])
+            return deepcopy(self.__LANG_DATA["Numbers"][int(num)])
         except Exception:
             return str(num)
 

@@ -18,7 +18,7 @@ class FontGenerator:
         self.__FONT = create_font(size,ifBold,ifItalic)
     def render(self, txt:any, color: color_liked):
         if self.__SIZE is not None:
-            return self.__FONT.render(txt, get_antialias(), Color.get(color))
+            return self.__FONT.render(txt, Setting.antialias, Color.get(color))
         else:
             throw_exception("error","Standard font is not initialized!")
     def get_size(self) -> int:
@@ -81,17 +81,17 @@ def create_font(size:Union[int,float], ifBold:bool=False, ifItalic:bool=False) -
     #检测pygame的font模块是否已经初始化
     if not pygame.font.get_init(): pygame.font.init()
     #根据类型处理
-    if get_font_type() == "default":
-        return pygame.font.SysFont(get_font(),font_size,ifBold,ifItalic)
-    elif get_font_type() == "custom":
-        font_path:str = os.path.join("Assets","font","{}.ttf".format(get_font()))
+    if Setting.font_type == "default":
+        return pygame.font.SysFont(Setting.font,font_size,ifBold,ifItalic)
+    elif Setting.font_type == "custom":
+        font_path:str = os.path.join("Assets","font","{}.ttf".format(Setting.font))
         if os.path.exists(font_path):
             normal_font = pygame.font.Font(font_path,font_size)
         else:
-            throw_exception("warning", "Cannot find the {}.ttf file, the engine's font has been changed to default.".format(get_font()))
+            throw_exception("warning", "Cannot find the {}.ttf file, the engine's font has been changed to default.".format(Setting.font))
             set_font("arial")
             set_font_type("default")
-            return pygame.font.SysFont(get_font(),font_size,ifBold,ifItalic)
+            return pygame.font.SysFont(Setting.font,font_size,ifBold,ifItalic)
         if ifBold is True: normal_font.set_bold(ifBold)
         if ifItalic is True: normal_font.set_italic(ifItalic)
         return normal_font
@@ -105,17 +105,17 @@ def create_freetype_font(size:Union[float,int], ifBold:bool=False, ifItalic:bool
     #检测pygame的font模块是否已经初始化
     if not pygame.freetype.get_init(): pygame.freetype.init()
     #根据类型处理
-    if get_font_type() == "default":
-        return pygame.freetype.SysFont(get_font(),font_size,ifBold,ifItalic)
-    elif get_font_type() == "custom":
-        font_path:str = os.path.join("Assets","font","{}.ttf".format(get_font()))
+    if Setting.font_type == "default":
+        return pygame.freetype.SysFont(Setting.font,font_size,ifBold,ifItalic)
+    elif Setting.font_type == "custom":
+        font_path:str = os.path.join("Assets","font","{}.ttf".format(Setting.font))
         if os.path.exists(font_path):
             normal_font = pygame.freetype.Font(font_path,font_size)
         else:
-            throw_exception("warning", "Cannot find the {}.ttf file, the engine's font has been change to default.".format(get_font()))
+            throw_exception("warning", "Cannot find the {}.ttf file, the engine's font has been change to default.".format(Setting.font))
             set_font("arial")
             set_font_type("default")
-            return pygame.freetype.SysFont(get_font(),font_size,ifBold,ifItalic)
+            return pygame.freetype.SysFont(Setting.font,font_size,ifBold,ifItalic)
         if ifBold is True: normal_font.set_bold(True)
         if ifItalic is True: normal_font.set_italic(True)
         return normal_font
@@ -135,9 +135,9 @@ def render_font_without_bounding(txt:any, color: color_liked, size:int, ifBold:b
 def render_freetype(txt:any, color: color_liked, size:int, ifBold:bool=False, ifItalic:bool=False) -> ImageSurface:
     normal_font = create_freetype_font(size,ifBold,ifItalic)
     if isinstance(color,str):
-        text_out = normal_font.render(txt, get_antialias(), Color.get(color))
+        text_out = normal_font.render(txt, Setting.antialias, Color.get(color))
     else:
-        text_out = normal_font.render(txt, get_antialias(), color)
+        text_out = normal_font.render(txt, Setting.antialias, color)
     return text_out
 
 #基础文字类

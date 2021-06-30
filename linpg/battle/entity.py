@@ -369,7 +369,7 @@ class Entity(GameObject):
         img_of_char.set_pos(pos[0]-MapClass.block_width*0.3,pos[1]-MapClass.block_width*0.85)
         img_of_char.draw(surface)
         #如果是开发者模式，则开启轮廓
-        if get_setting("DeveloperMode"): img_of_char.draw_outline(surface)
+        if Setting.get("DeveloperMode"): img_of_char.draw_outline(surface)
     #把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
     def draw(self, surface:ImageSurface, MapClass:object) -> None:
         self.__blit_entity_img(surface,MapClass,alpha=self.get_imgAlpaha(self.__current_action))
@@ -424,14 +424,14 @@ class Entity(GameObject):
             self.__hp_bar.set_percentage(self.__current_hp/self.__max_hp)
             self.__hp_bar.draw(surface,False)
             display_in_center(
-                _ENTITY_UI_FONT.render("{0}/{1}".format(self.__current_hp,self.__max_hp),get_antialias(),(0,0,0)),
+                _ENTITY_UI_FONT.render("{0}/{1}".format(self.__current_hp,self.__max_hp),Setting.antialias,(0,0,0)),
                 self.__hp_bar,xTemp,yTemp,surface
                 )
         else:
             self.__hp_bar.set_percentage(self.dying/DYING_ROUND_LIMIT)
             self.__hp_bar.draw(surface,True)
             display_in_center(
-                _ENTITY_UI_FONT.render("{0}/{1}".format(self.dying,DYING_ROUND_LIMIT),get_antialias(),(0,0,0))
+                _ENTITY_UI_FONT.render("{0}/{1}".format(self.dying,DYING_ROUND_LIMIT),Setting.antialias,(0,0,0))
                 ,self.__hp_bar,xTemp,yTemp,surface
                 )
         return xTemp,yTemp

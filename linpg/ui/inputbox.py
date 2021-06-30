@@ -15,7 +15,7 @@ class AbstractInputBox(GameObject2d):
         self.txt_color = Color.get(txt_color)
         self.active:bool = False
         self._text = None
-        self._holder = self.FONT.render("|",get_antialias(),self.txt_color)
+        self._holder = self.FONT.render("|",Setting.antialias,self.txt_color)
         self.holderIndex = 0
         self.need_save = False
     def get_width(self) -> int: return self.input_box.width
@@ -126,7 +126,7 @@ class SingleLineInputBox(AbstractInputBox):
                 self._reset_holderIndex(mouse_x)
         # 画出文字
         if self._text is not None and len(self._text) > 0:
-            screen.blit(self.FONT.render(self._text,get_antialias(),Color.get(self.txt_color)), (self.x+self.FONTSIZE*0.25,self.y))
+            screen.blit(self.FONT.render(self._text,Setting.antialias,Color.get(self.txt_color)), (self.x+self.FONTSIZE*0.25,self.y))
         #画出输入框
         if self.active:
             draw_rect(screen, self.color, self.input_box, 2)
@@ -292,7 +292,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         if self._text is not None:
             for i in range(len(self._text)): 
                 # 画出文字
-                screen.blit(self.FONT.render(self._text[i],get_antialias(),Color.get(self.txt_color)),(self.x+self.FONTSIZE*0.25,self.y+i*self.deafult_height))
+                screen.blit(self.FONT.render(self._text[i],Setting.antialias,Color.get(self.txt_color)),(self.x+self.FONTSIZE*0.25,self.y+i*self.deafult_height))
         if self.active:
             # 画出输入框
             draw_rect(screen, self.color, self.input_box, 2)
@@ -372,16 +372,16 @@ class Console(SingleLineInputBox):
             self._txt_output.append(self._text[len(self.command_indicator)+4:])
         elif conditions[0] == "dev":
             if conditions[1] == "on":
-                if get_setting("DeveloperMode") is True:
+                if Setting.get("DeveloperMode") is True:
                     self._txt_output.append("Developer mode has been activated!")
                 else:
-                    set_setting("DeveloperMode", value=True)
+                    Setting.set("DeveloperMode", value=True)
                     self._txt_output.append("Developer mode is activated.")
             elif conditions[1] == "off":
-                if not get_setting("DeveloperMode"):
+                if not Setting.get("DeveloperMode"):
                     self._txt_output.append("Developer mode has been deactivated!")
                 else:
-                    set_setting("DeveloperMode", value=False)
+                    Setting.set("DeveloperMode", value=False)
                     self._txt_output.append("Developer mode is deactivated.")
             else:
                 self._txt_output.append("Unknown status for dev command.")
@@ -420,10 +420,10 @@ class Console(SingleLineInputBox):
                             self.set_text()
             #画出输出信息
             for i in range(len(self._txt_output)):
-                screen.blit(self.FONT.render(self._txt_output[i],get_antialias(),self.color),(self.x+self.FONTSIZE*0.25, self.y-(len(self._txt_output)-i)*self.FONTSIZE*1.5))
+                screen.blit(self.FONT.render(self._txt_output[i],Setting.antialias,self.color),(self.x+self.FONTSIZE*0.25, self.y-(len(self._txt_output)-i)*self.FONTSIZE*1.5))
             # 画出文字
             if self._text is not None and len(self._text) > 0:
-                screen.blit(self.FONT.render(self._text,get_antialias(),self.color),(self.x+self.FONTSIZE*0.25, self.y))
+                screen.blit(self.FONT.render(self._text,Setting.antialias,self.color),(self.x+self.FONTSIZE*0.25, self.y))
             #画出输入框
             draw_rect(screen, self.color, self.input_box, 2)
             #画出 “|” 符号

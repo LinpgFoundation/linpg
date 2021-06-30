@@ -94,14 +94,14 @@ class DropDownSingleChoiceList(GameObjectContainer):
                 draw_rect(surface, Color.WHITE, (current_abs_pos,self.size))
             #列出当前选中的选项
             current_pos:tuple = current_abs_pos
-            font_surface:ImageSurface = cope_bounding(self.__FONT.render(self.get_current_selected_item(), get_antialias(), self.__font_color))
+            font_surface:ImageSurface = cope_bounding(self.__FONT.render(self.get_current_selected_item(), Setting.antialias, self.__font_color))
             surface.blit(
                 font_surface,
                 add_pos(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))
                 )
             rect_of_outline = new_rect(current_pos, (self.width, self.__block_height))
             draw_rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
-            font_surface = flip_img(cope_bounding(self.__FONT.render("^", get_antialias(), self.__font_color)), False, True)
+            font_surface = flip_img(cope_bounding(self.__FONT.render("^", Setting.antialias, self.__font_color)), False, True)
             surface.blit(
                 font_surface,
                 add_pos(current_pos, (int(self.width-font_surface.get_width()*1.5), int((self.__block_height-font_surface.get_height())/2)))
@@ -115,7 +115,7 @@ class DropDownSingleChoiceList(GameObjectContainer):
             if not self.__fold_choice:
                 for i in range(len(self.items)):
                     current_pos = add_pos(current_abs_pos, (0,(i+1)*self.__block_height))
-                    font_surface = cope_bounding(self.__FONT.render(self.items[i], get_antialias(), self.__font_color))
+                    font_surface = cope_bounding(self.__FONT.render(self.items[i], Setting.antialias, self.__font_color))
                     surface.blit(
                         font_surface,
                         add_pos(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))

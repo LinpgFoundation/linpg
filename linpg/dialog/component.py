@@ -17,7 +17,7 @@ class DialogButtons:
         dialog_txt:dict = Lang.get_text("Dialog")
         #生成跳过按钮
         tempButtonIcon = load_img(os.path.join(DIALOG_UI_PATH,"dialog_skip.png"),(self.FONTSIZE,self.FONTSIZE))
-        tempButtonTxt = self.FONT.render(dialog_txt["skip"],get_antialias(),(255, 255, 255))
+        tempButtonTxt = self.FONT.render(dialog_txt["skip"],Setting.antialias,(255, 255, 255))
         temp_w = tempButtonTxt.get_width()+self.FONTSIZE*1.5
         self.choiceTxt = dialog_txt["choice"]
         self.skipButton = new_transparent_surface((temp_w,tempButtonTxt.get_height()))
@@ -25,7 +25,7 @@ class DialogButtons:
         self.icon_y = (tempButtonTxt.get_height()-tempButtonIcon.get_height())/2
         self.skipButtonHovered.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONTSIZE*0.5,self.icon_y))
         self.skipButtonHovered.blit(tempButtonTxt,(0,0))
-        tempButtonTxt = self.FONT.render(dialog_txt["skip"],get_antialias(),(105, 105, 105))
+        tempButtonTxt = self.FONT.render(dialog_txt["skip"],Setting.antialias,(105, 105, 105))
         tempButtonIcon = add_darkness(tempButtonIcon, 100)
         self.skipButton.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONTSIZE*0.5,self.icon_y))
         self.skipButton.blit(tempButtonTxt,(0,0))
@@ -37,12 +37,12 @@ class DialogButtons:
         self.autoIconDegree = 0
         self.autoIconDegreeChange = (2**0.5-1)*self.FONTSIZE/45
         self.autoMode:bool = False
-        tempButtonTxt = self.FONT.render(dialog_txt["auto"],get_antialias(),(105, 105, 105))
+        tempButtonTxt = self.FONT.render(dialog_txt["auto"],Setting.antialias,(105, 105, 105))
         temp_w = tempButtonTxt.get_width()+self.FONTSIZE*1.5
         self.autoButton = new_transparent_surface((temp_w,tempButtonTxt.get_height()))
         self.autoButtonHovered = new_transparent_surface((temp_w,tempButtonTxt.get_height()))
         self.autoButton.blit(tempButtonTxt,(0,0))
-        self.autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"],get_antialias(),(255, 255, 255)),(0,0))
+        self.autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"],Setting.antialias,(255, 255, 255)),(0,0))
         self.autoButton = DynamicImage(self.autoButton, window_x*0.8, window_y*0.05)
         self.autoButton.tag = int(self.autoButton.x+self.autoButton.img.get_width()-self.FONTSIZE)
         self.autoButtonHovered = DynamicImage(self.autoButtonHovered, window_x*0.8, window_y*0.05)

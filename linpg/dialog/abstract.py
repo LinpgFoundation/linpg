@@ -44,7 +44,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self.auto_save:bool = False
     #获取对话文件所在的具体路径
     def get_dialog_file_location(self, lang:str="") -> str:
-        if len(lang) == 0: lang = get_setting("Language")
+        if len(lang) == 0: lang = Setting.get("Language")
         return os.path.join(
             self._dialog_folder_path, self._chapter_type, "chapter{0}_dialogs_{1}.yaml".format(self._chapter_id, lang)
             ) if self._project_name is None else os.path.join(
@@ -97,7 +97,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                 dialogDataDict:dict = load_config(self.get_dialog_file_location(), "dialogs", self._part)
                 assert isinstance(dialogDataDict, dict)
                 #如果该dialog文件是另一个语言dialog文件的子类
-                if default_lang_of_dialog != get_setting("Language"):
+                if default_lang_of_dialog != Setting.get("Language"):
                     self._dialog_data[self._part] = load_config(self.get_dialog_file_location(default_lang_of_dialog),"dialogs", self._part)
                     try:
                         assert isinstance(self._dialog_data[self._part], dict)
@@ -184,8 +184,8 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._load_content()
     #更新音量
     def _update_sound_volume(self) -> None:
-        self.set_bgm_volume(get_setting("Sound","background_music")/100)
-        self._dialog_txt_system.set_sound_volume(get_setting("Sound","sound_effects"))
+        self.set_bgm_volume(Setting.get("Sound","background_music")/100)
+        self._dialog_txt_system.set_sound_volume(Setting.get("Sound","sound_effects"))
     #停止播放
     def stop(self) -> None:
         #如果背景是多线程的VedioSurface，则应该退出占用

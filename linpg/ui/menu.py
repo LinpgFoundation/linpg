@@ -109,9 +109,9 @@ class OptionMenu(AbstractImage):
         self.bar_y2 = self.y + self.__item_height*12
         self.bar_y3 = self.y + self.__item_height*16
         #音量数值
-        self.soundVolume_background_music = keep_in_range(get_setting("Sound","background_music"),0,100)
-        self.soundVolume_sound_effects = keep_in_range(get_setting("Sound","sound_effects"),0,100)
-        self.soundVolume_sound_environment = keep_in_range(get_setting("Sound","sound_environment"),0,100)
+        self.soundVolume_background_music = keep_in_range(Setting.get("Sound","background_music"),0,100)
+        self.soundVolume_sound_effects = keep_in_range(Setting.get("Sound","sound_effects"),0,100)
+        self.soundVolume_sound_environment = keep_in_range(Setting.get("Sound","sound_environment"),0,100)
         #字体渲染器
         self.__NORMAL_FONT = create_font(self.__item_height)
         #设置UI中的文字
@@ -138,7 +138,7 @@ class OptionMenu(AbstractImage):
     #更新语言
     def __update_lang(self, lang:str) -> None:
         #更新语言并保存新的参数到本地
-        set_and_save_setting("Language", value=Lang.get_language_id(lang))
+        Setting.set_and_save("Language", value=Lang.get_language_id(lang))
         Lang.reload()
         #设置UI中的文字
         langTxt = Lang.get_text("OptionMenu")
@@ -219,21 +219,21 @@ class OptionMenu(AbstractImage):
                     #如果碰到背景音乐的音量条
                     if -self.__item_height/2<mouse_y-self.bar_y1<self.__item_height*1.5:
                         self.soundVolume_background_music = round(100*(mouse_x-self.bar_x)/self.bar_width)
-                        set_setting("Sound","background_music",self.soundVolume_background_music)
+                        Setting.set("Sound","background_music",self.soundVolume_background_music)
                         set_music_volume(self.soundVolume_background_music/100.0)
                         self.need_update["volume"] = True
                     #如果碰到音效的音量条
                     elif -self.__item_height/2<mouse_y-self.bar_y2<self.__item_height*1.5:
                         self.soundVolume_sound_effects = round(100*(mouse_x-self.bar_x)/self.bar_width)
-                        set_setting("Sound","sound_effects",self.soundVolume_sound_effects)
+                        Setting.set("Sound","sound_effects",self.soundVolume_sound_effects)
                         self.need_update["volume"] = True
                     #如果碰到环境声的音量条
                     elif -self.__item_height/2<mouse_y-self.bar_y3<self.__item_height*1.5:
                         self.soundVolume_sound_environment = round(100*(mouse_x-self.bar_x)/self.bar_width)
-                        set_setting("Sound","sound_environment",self.soundVolume_sound_environment)
+                        Setting.set("Sound","sound_environment",self.soundVolume_sound_environment)
                         self.need_update["volume"] = True
                     #保存新的参数
-                    if self.need_update["volume"] is True: save_setting()
+                    if self.need_update["volume"] is True: Setting.save()
                     #判定返回按钮 
                     if self.__back_button.has_been_hovered():
                         self.hidden = True

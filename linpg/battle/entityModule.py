@@ -153,7 +153,7 @@ class EntitySoundManager(AbstractEntitySoundManager):
                     sound = sound_list[get_random_int(0,len(sound_list)-1)]
                 else:
                     sound = sound_list[0]
-                sound.set_volume(get_setting("Sound","sound_effects")/100.0)
+                sound.set_volume(Setting.get("Sound","sound_effects")/100.0)
                 play_sound(sound, self._channel_id)
 
 #射击音效 -- 频道2

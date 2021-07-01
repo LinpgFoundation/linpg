@@ -6,7 +6,7 @@ _CHARACTERS_IMAGE_SYS:object = EntityImageManager()
 #储存角色音效的常量
 _CHARACTERS_SOUND_SYSTEM:object = EntitySoundManager(5)
 #角色UI的文字数据
-_ENTITY_UI_FONT:object = create_font(display.get_width()/192)
+_ENTITY_UI_FONT:object = create_font(Display.get_width()/192)
 
 #濒死回合限制
 DYING_ROUND_LIMIT:int = 3
@@ -96,7 +96,7 @@ class Entity(GameObject):
         try:
             action_dict:dict = self.__imgId_dict[action]
         except KeyError:
-            throw_exception("error", 'Action "{}" is invalid!'.format(action))
+            EXCEPTION.throw("error", 'Action "{}" is invalid!'.format(action))
         return action_dict["imgId"] if action_dict is not None else -1
     #获取角色特定动作的图片总数量
     def get_imgNum(self, action:str) -> int: return _CHARACTERS_IMAGE_SYS.get_img_num(self.type,action)
@@ -133,7 +133,7 @@ class Entity(GameObject):
                 #没有足够的行动值来减去
                 return False
         else:
-            throw_exception("error", "While you reduce the action points, the module cannot reduce a non-int value!")
+            EXCEPTION.throw("error", "While you reduce the action points, the module cannot reduce a non-int value!")
     """角色血量护甲参数管理"""
     #是否角色还活着
     @property
@@ -155,7 +155,7 @@ class Entity(GameObject):
         elif hpHealed == 0:
             pass
         else:
-            throw_exception("error","You cannot heal a negative value")
+            EXCEPTION.throw("error","You cannot heal a negative value")
     #降低血量
     def decreaseHp(self, damage:int):
         if not self.__if_invincible and damage > 0:
@@ -188,7 +188,7 @@ class Entity(GameObject):
         elif self.__if_invincible or damage == 0:
             pass
         else:
-            throw_exception("error","You cannot do a negative damage")
+            EXCEPTION.throw("error","You cannot do a negative damage")
     #攻击另一个Entity
     def attack(self, another_entity:object) -> int:
         damage = get_random_int(self.min_damage,self.max_damage)
@@ -213,7 +213,7 @@ class Entity(GameObject):
             self.__moving_path = deque(path)
             self.set_action("move")
         else:
-            throw_exception("error","Character cannot move to a invalid path!")
+            EXCEPTION.throw("error","Character cannot move to a invalid path!")
     #根据路径移动
     def __move_based_on_path(self) -> None:
         if len(self.__moving_path) > 0:
@@ -332,7 +332,7 @@ class Entity(GameObject):
         elif "far" in self.effective_range and self.effective_range["far"] is not None:
             return self.effective_range["far"][-1]
         else:
-            throw_exception("error","This character has no valid effective range!")
+            EXCEPTION.throw("error","This character has no valid effective range!")
     #根据坐标反转角色
     def set_flip_based_on_pos(self, pos:any):
         #转换坐标
@@ -394,7 +394,7 @@ class Entity(GameObject):
             elif not self.__if_action_loop:
                 self.set_action()
             else:
-                throw_exception("error","The self.__if_action_loop data error: {}".format(self.__if_action_loop))
+                EXCEPTION.throw("error","The self.__if_action_loop data error: {}".format(self.__if_action_loop))
         else:
             if self.__imgId_dict[self.__current_action]["imgId"] > 0:
                 self.__imgId_dict[self.__current_action]["imgId"] -= 1

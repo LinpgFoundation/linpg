@@ -35,7 +35,7 @@ class Loader:
             for image_path in gif_path_or_img_list:
                 imgList.append(StaticImage(image_path, 0, 0, size[0], size[1]))
         else:
-            throw_exception("error", 'Invalid input for "gif_path_or_img_list": {}'.format(gif_path_or_img_list))
+            EXCEPTION.throw("error", 'Invalid input for "gif_path_or_img_list": {}'.format(gif_path_or_img_list))
         return GifImage(numpy.asarray(imgList), position[0], position[1], size[0], size[1], updateGap)
     def button(self, path:str, position:tuple, size:tuple, alpha_when_not_hover:int=255) -> Button:
         return load_button(path, position, size, alpha_when_not_hover)

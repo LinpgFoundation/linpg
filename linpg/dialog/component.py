@@ -10,7 +10,7 @@ class DialogButtons:
     #初始化
     def initialize(self) -> None:
         #从设置中读取信息
-        window_x,window_y = display.get_size()
+        window_x,window_y = Display.get_size()
         self.FONTSIZE:int = int(window_x*0.0175)
         self.FONT = create_font(self.FONTSIZE)
         #从语言文件中读取按钮文字

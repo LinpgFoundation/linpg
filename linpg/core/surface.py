@@ -147,7 +147,7 @@ class StaticImage(AdvancedAbstractImage):
             else:
                 pass
         else:
-            throw_exception("error","You have to input either a None or a Rect, not {}".format(type(rect)))
+            EXCEPTION.throw("error","You have to input either a None or a Rect, not {}".format(type(rect)))
     #更新图片
     def _update_img(self) -> None:
         imgTmp = smoothly_resize_img(self.img, self.size) if Setting.antialias is True else resize_img(self.img, self.size)
@@ -290,7 +290,7 @@ def get_img_subsurface(img:ImageSurface, rect:RectLiked) -> ImageSurface:
 #获取特定颜色的表面
 def get_single_color_surface(color, size=None) -> StaticImage:
     # 如果size是none，则使用屏幕的尺寸
-    if size is None: size = display.get_size()
+    if size is None: size = Display.get_size()
     # 获取surface
     surfaceTmp = new_surface(size).convert()
     surfaceTmp.fill(color)

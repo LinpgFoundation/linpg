@@ -171,4 +171,4 @@ def cutscene(surface:ImageSurface, videoPath:str) -> None:
                 is_playing = False
                 VIDEO.stop()
             surface.blit(black_bg,(0,0))
-        display.flip()
+        Display.flip()

@@ -157,7 +157,7 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
         elif mode == "vertical":
             self.__mode = False
         else:
-            throw_exception("error","Mode '{}' is not supported!".format(mode))
+            EXCEPTION.throw("error","Mode '{}' is not supported!".format(mode))
     def switch_mode(self) -> None:
         self.__mode = not self.__mode
         self.set_local_pos(0,0)
@@ -175,24 +175,24 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
             if not self.__mode:
                 self.__scroll_bar_pos = True
             else:
-                throw_exception("error","You cannot put the scroll bar on the left during horizontal mode!")
+                EXCEPTION.throw("error","You cannot put the scroll bar on the left during horizontal mode!")
         elif pos == "right":
             if not self.__mode:
                 self.__scroll_bar_pos = False
             else:
-                throw_exception("error","You cannot put the scroll bar on the right during horizontal mode!")
+                EXCEPTION.throw("error","You cannot put the scroll bar on the right during horizontal mode!")
         elif pos == "top":
             if self.__mode is True:
                 self.__scroll_bar_pos = True
             else:
-                throw_exception("error","You cannot put the scroll bar on the top during vertical mode!")
+                EXCEPTION.throw("error","You cannot put the scroll bar on the top during vertical mode!")
         elif pos == "bottom":
             if self.__mode is True:
                 self.__scroll_bar_pos = False
             else:
-                throw_exception("error","You cannot put the scroll bar on the bottom during vertical mode!")
+                EXCEPTION.throw("error","You cannot put the scroll bar on the bottom during vertical mode!")
         else:
-            throw_exception("error",'Scroll bar position "{}" is not supported! Try sth like "right" or "bottom" instead.'.format(pos))
+            EXCEPTION.throw("error",'Scroll bar position "{}" is not supported! Try sth like "right" or "bottom" instead.'.format(pos))
     #添加一个物品
     def set(self, key:Union[str,int], value:Union[AbstractImage, ImageSurface, None]) -> None: self.__items_dict[key] = value
     #获取一个物品

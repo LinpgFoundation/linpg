@@ -20,17 +20,17 @@ class FontGenerator:
         if self.__SIZE is not None:
             return self.__FONT.render(txt, Setting.antialias, Color.get(color))
         else:
-            throw_exception("error","Standard font is not initialized!")
+            EXCEPTION.throw("error","Standard font is not initialized!")
     def get_size(self) -> int:
         if self.__SIZE is not None:
             return self.__SIZE
         else:
-            throw_exception("error","Standard font is not initialized!")
+            EXCEPTION.throw("error","Standard font is not initialized!")
     def get_font(self):
         if self.__FONT is not None:
             return self.__FONT
         else:
-            throw_exception("error","Standard font is not initialized!")
+            EXCEPTION.throw("error","Standard font is not initialized!")
     def check_for_update(self, size:int, ifBold:bool=False, ifItalic:bool=False) -> None:
         if self.__FONT is None or self.__SIZE != size or self.bold != ifBold or self.italic != ifItalic: self.update(size)
 
@@ -51,9 +51,9 @@ def set_standard_font_size(size:int, fonType:str="medium") -> None:
         elif fonType == "big":
             _LINPG_STANDARD_BIG_FONT.update(size)
         else:
-            throw_exception("error", "Standard font type must be 'small', 'medium', or 'big'!")
+            EXCEPTION.throw("error", "Standard font type must be 'small', 'medium', or 'big'!")
     else:
-        throw_exception("error","Standard font size must be positive interger not {}!".format(size))
+        EXCEPTION.throw("error","Standard font size must be positive interger not {}!".format(size))
 def get_standard_font_size(fonType:str) -> int:
     if fonType == "medium":
         return _LINPG_STANDARD_MEDIUM_FONT.get_size()
@@ -62,7 +62,7 @@ def get_standard_font_size(fonType:str) -> int:
     elif fonType == "big":
         return _LINPG_STANDARD_BIG_FONT.get_size()
     else:
-        throw_exception("error","Standard font type must be 'small', 'medium', or 'big'!")
+        EXCEPTION.throw("error","Standard font type must be 'small', 'medium', or 'big'!")
 #标准文字快速渲染
 def standard_font_render(fonType:str, txt:str, color:str) -> ImageSurface:
     if fonType == "medium":
@@ -72,7 +72,7 @@ def standard_font_render(fonType:str, txt:str, color:str) -> ImageSurface:
     elif fonType == "big":
         return _LINPG_STANDARD_BIG_FONT.render(txt,color)
     else:
-        throw_exception("error","Standard font type must be 'small', 'medium', or 'big'!")
+        EXCEPTION.throw("error","Standard font type must be 'small', 'medium', or 'big'!")
 
 #创建字体
 def create_font(size:Union[int,float], ifBold:bool=False, ifItalic:bool=False) -> object:
@@ -88,7 +88,7 @@ def create_font(size:Union[int,float], ifBold:bool=False, ifItalic:bool=False) -
         if os.path.exists(font_path):
             normal_font = pygame.font.Font(font_path,font_size)
         else:
-            throw_exception("warning", "Cannot find the {}.ttf file, the engine's font has been changed to default.".format(Setting.font))
+            EXCEPTION.warn("Cannot find the {}.ttf file, the engine's font has been changed to default.".format(Setting.font))
             set_font("arial")
             set_font_type("default")
             return pygame.font.SysFont(Setting.font,font_size,ifBold,ifItalic)
@@ -96,7 +96,7 @@ def create_font(size:Union[int,float], ifBold:bool=False, ifItalic:bool=False) -
         if ifItalic is True: normal_font.set_italic(ifItalic)
         return normal_font
     else:
-        throw_exception("error","FontType option in setting file is incorrect!")
+        EXCEPTION.throw("error","FontType option in setting file is incorrect!")
 
 #创建FreeType字体
 def create_freetype_font(size:Union[float,int], ifBold:bool=False, ifItalic:bool=False) -> any:
@@ -112,7 +112,7 @@ def create_freetype_font(size:Union[float,int], ifBold:bool=False, ifItalic:bool
         if os.path.exists(font_path):
             normal_font = pygame.freetype.Font(font_path,font_size)
         else:
-            throw_exception("warning", "Cannot find the {}.ttf file, the engine's font has been change to default.".format(Setting.font))
+            EXCEPTION.warn("Cannot find the {}.ttf file, the engine's font has been change to default.".format(Setting.font))
             set_font("arial")
             set_font_type("default")
             return pygame.freetype.SysFont(Setting.font,font_size,ifBold,ifItalic)
@@ -120,7 +120,7 @@ def create_freetype_font(size:Union[float,int], ifBold:bool=False, ifItalic:bool
         if ifItalic is True: normal_font.set_italic(True)
         return normal_font
     else:
-        throw_exception("error","FontType option in setting file is incorrect!")
+        EXCEPTION.throw("error","FontType option in setting file is incorrect!")
 
 #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
 def render_font(txt:any, color: color_liked, size:int, ifBold:bool=False, ifItalic:bool=False) -> ImageSurface:

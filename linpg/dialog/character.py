@@ -12,7 +12,7 @@ class CharacterImageManager:
         self.__characters_this_round:tuple = tuple()
         self.__this_round_image_alpha:int = 0
         self.__darkness:int = 50
-        self.__img_width:int = int(display.get_width()/2)
+        self.__img_width:int = int(Display.get_width()/2)
         try:
             self.__communication_surface_rect:Rect = Rect(int(self.__img_width*0.25),0,int(self.__img_width*0.5),int(self.__img_width*0.56))
             self.__communication = StaticImage(
@@ -192,11 +192,11 @@ class CharacterImageDatabase:
         self.__DATA_PATH:str = os.path.join("Data", "npcImageDatabase.yaml")
         self.__DATA:dict = {}
         try:
-            self.__DATA = load_config(self.__DATA_PATH)
+            self.__DATA = Config.load(self.__DATA_PATH)
         except FileNotFoundError:
             self.__DATA = {}
-            save_config(self.__DATA_PATH, self.__DATA)
-            throw_exception("warning", "Cannot find 'npcImageDatabase.yaml' in 'Data' file, a new one is created.")
+            Config.save(self.__DATA_PATH, self.__DATA)
+            EXCEPTION.warn("Cannot find 'npcImageDatabase.yaml' in 'Data' file, a new one is created.")
     def is_the_same_character(self, fileName1:str, fileName2:str) -> bool:
         fileName1 = fileName1.replace("<c>","").replace("<d>","")
         fileName2 = fileName2.replace("<c>","").replace("<d>","")

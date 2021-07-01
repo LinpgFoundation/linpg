@@ -10,11 +10,11 @@ class DialogBox:
         #编辑器模式
         self.__dev_mode:bool = False
         #对胡框数据
-        self.dialoguebox_max_height:int = int(display.get_height()/4)
-        self.dialoguebox_max_y:int = int(display.get_height()*0.65)
+        self.dialoguebox_max_height:int = int(Display.get_height()/4)
+        self.dialoguebox_max_y:int = int(Display.get_height()*0.65)
         #对胡框图片
         self.dialoguebox:StaticImage = StaticImage(
-            os.path.join(DIALOG_UI_PATH, "dialoguebox.png"), int(display.get_width()*0.13), 0, display.get_width()*0.74
+            os.path.join(DIALOG_UI_PATH, "dialoguebox.png"), int(Display.get_width()*0.13), 0, Display.get_width()*0.74
             )
         self.FONTSIZE:int = int(fontSize)
         self.FONT:int = create_font(self.FONTSIZE)
@@ -26,7 +26,7 @@ class DialogBox:
             self.__textPlayingSound = load_sound(r"Assets/sound/ui/dialog_words_playing.ogg")
         except FileNotFoundError:
             self.__textPlayingSound = None
-            throw_exception(
+            EXCEPTION.throw(
                 "warning",
                 "Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!\nAs a result, the text playing sound will be disabled."
                 )
@@ -37,7 +37,7 @@ class DialogBox:
                 StaticImage(os.path.join(DIALOG_UI_PATH,"mouse_none.png"), 0, 0, self.FONTSIZE, self.FONTSIZE),
                 StaticImage(os.path.join(DIALOG_UI_PATH,"mouse.png"), 0, 0, self.FONTSIZE, self.FONTSIZE)
                 )),
-            int(display.get_width()*0.82), int(display.get_height()*0.83), self.FONTSIZE, self.FONTSIZE, 50
+            int(Display.get_width()*0.82), int(Display.get_height()*0.83), self.FONTSIZE, self.FONTSIZE, 50
             )
         self.hidden:bool = False
         self.readTime = 0
@@ -51,8 +51,8 @@ class DialogBox:
             self.content = []
             self.narrator = None
         else:
-            self.content = MultipleLinesInputBox(display.get_width()*0.2,display.get_height()*0.73,self.FONTSIZE,"white")
-            self.narrator = SingleLineInputBox(display.get_width()*0.2,self.dialoguebox_max_y+self.FONTSIZE,self.FONTSIZE,"white")
+            self.content = MultipleLinesInputBox(Display.get_width()*0.2,Display.get_height()*0.73,self.FONTSIZE,"white")
+            self.narrator = SingleLineInputBox(Display.get_width()*0.2,self.dialoguebox_max_y+self.FONTSIZE,self.FONTSIZE,"white")
     #是否所有内容均已展出
     def is_all_played(self) -> bool:
         #如果self.content是空的，也就是说没有任何内容，那么应当视为所有内容都被播放了
@@ -163,9 +163,9 @@ class DialogBox:
                 #如果对话框图片还在放大阶段
                 if self.dialoguebox_height < self.dialoguebox_max_height:
                     self.dialoguebox_height = min(
-                        int(self.dialoguebox_height+self.dialoguebox_max_height*display.sfpsp/10), self.dialoguebox_max_height
+                        int(self.dialoguebox_height+self.dialoguebox_max_height*Display.sfpsp/10), self.dialoguebox_max_height
                         )
-                    self.dialoguebox_y -= int(self.dialoguebox_max_height*display.sfpsp/20)
+                    self.dialoguebox_y -= int(self.dialoguebox_max_height*Display.sfpsp/20)
                 #如果已经放大好了
                 else:
                     self.__draw_text(surface)
@@ -176,7 +176,7 @@ class DialogBox:
                     #画出对话框
                     self.__draw_dialogbox(surface)
                 if self.dialoguebox_height > 0:
-                    self.dialoguebox_height = max(int(self.dialoguebox_height-self.dialoguebox_max_height*display.sfpsp/10), 0)
-                    self.dialoguebox_y += int(self.dialoguebox_max_height*display.sfpsp/20)
+                    self.dialoguebox_height = max(int(self.dialoguebox_height-self.dialoguebox_max_height*Display.sfpsp/10), 0)
+                    self.dialoguebox_y += int(self.dialoguebox_max_height*Display.sfpsp/20)
                 else:
                     self.reset()

@@ -23,35 +23,35 @@ class LanguageManager:
         path_t:str = os.path.join(self.__EX_LANG_FOLDER, "{}.yaml".format(Setting.get("Language")))
         if os.path.exists(path_t):
             self.__LANG_DATA = {
-                **load_config(path_t),
-                **load_config(self.internal_language_file_path)
+                **Config.load(path_t),
+                **Config.load(self.internal_language_file_path)
                 }
         else:
             path_t = os.path.join(self.__EX_LANG_FOLDER, "{}.json".format(Setting.get("Language")))
             if os.path.exists(path_t):
                 self.__LANG_DATA = {
-                    **load_config(path_t),
-                    **load_config(self.internal_language_file_path)
+                    **Config.load(path_t),
+                    **Config.load(self.internal_language_file_path)
                     }
             else:
-                throw_exception("warning", "Linpg cannot load additional language file.")
-                self.__LANG_DATA = load_config(self.internal_language_file_path)
+                EXCEPTION.warn("Linpg cannot load additional language file.")
+                self.__LANG_DATA = Config.load(self.internal_language_file_path)
         #获取本地可用的语言
         self.__LANG_AVAILABLE.clear()
         for lang_file in glob(os.path.join(self.__LANG_PATH_PATTERN)):
             if os.path.exists(os.path.join(self.__EX_LANG_FOLDER, os.path.basename(lang_file).replace(".json",".yaml"))) or \
                 os.path.exists(os.path.join(self.__EX_LANG_FOLDER, os.path.basename(lang_file))):
-                self.__LANG_AVAILABLE.append(load_config(lang_file, "Language"))
+                self.__LANG_AVAILABLE.append(Config.load(lang_file, "Language"))
     #整理语言文件
     def organize(self) -> None:
-        organize_config_in_folder(os.path.join(self.__LANG_PATH_PATTERN))
+        Config.organize(os.path.join(self.__LANG_PATH_PATTERN))
         self.reload()
     #获取当前的语言
     def get_current_language(self) -> str: return deepcopy(self.__LANG_DATA["Language"])
     #获取语言的名称id
     def get_language_id(self, lang_name:str) -> str:
         for lang_file in glob(os.path.join(self.__LANG_PATH_PATTERN)):
-            if load_config(lang_file, "Language") == lang_name: return os.path.basename(lang_file).replace(".json","")
+            if Config.load(lang_file, "Language") == lang_name: return os.path.basename(lang_file).replace(".json","")
         return ""
     #获取可用语言
     def get_available_languages(self) -> tuple: return tuple(self.__LANG_AVAILABLE)

@@ -233,7 +233,7 @@ class EntityImageManager:
         elif mode == "dev":
             imgId_dict = {"wait":self.loadImageCollection(characterType,"wait",faction)}
         else:
-            throw_exception("error","Mode is not supported")
+            EXCEPTION.throw("error","Mode is not supported")
         return imgId_dict
     #动图制作模块：接受一个友方角色名和动作,当前的方块标准长和高，返回对应角色动作list或者因为没图片而返回None
     #810*810 position:405/567
@@ -272,7 +272,7 @@ def makeFolderForCharacterSounds() -> None:
 
 #加载并更新更新位于Data中的角色数据配置文件-character_data.yaml
 def loadCharacterData() -> None:
-    loadData = load_config("Data/character_data.yaml")
+    loadData = Config.load("Data/character_data.yaml")
     ifAnythingChange = False
     for path in glob(r'Assets/image/character/*'):
         name = os.path.basename(path)
@@ -294,7 +294,7 @@ def loadCharacterData() -> None:
             "skill_effective_range": None,
             }
             ifAnythingChange = True
-            throw_exception("info","A new character call {} has been updated to the data file.".format(name))
+            EXCEPTION.inform("A new character call {} has been updated to the data file.".format(name))
     for path in glob(r'Assets/image/sangvisFerri/*'):
         name = os.path.basename(path)
         if name not in loadData:
@@ -313,9 +313,9 @@ def loadCharacterData() -> None:
             "min_damage": 1,
             }
             ifAnythingChange = True
-            throw_exception("info","A new character call {} has been updated to the data file.".format(name))
+            EXCEPTION.inform("A new character call {} has been updated to the data file.".format(name))
     if ifAnythingChange is True:
-        save_config("Data/character_data.yaml",loadData)
+        Config.save("Data/character_data.yaml",loadData)
     makeFolderForCharacterSounds()
     return loadData
 
@@ -329,16 +329,16 @@ class DecisionHolder:
         if self.action == "move":
             return self.data
         else:
-            throw_exception("error","The character does not decide to move!")
+            EXCEPTION.throw("error","The character does not decide to move!")
     @property
     def target(self):
         if self.action == "attack":
             return self.data[0]
         else:
-            throw_exception("error","The character does not decide to attack!")
+            EXCEPTION.throw("error","The character does not decide to attack!")
     @property
     def target_area(self):
         if self.action == "attack":
             return self.data[1]
         else:
-            throw_exception("error","The character does not decide to attack!")
+            EXCEPTION.throw("error","The character does not decide to attack!")

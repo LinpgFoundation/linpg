@@ -24,7 +24,7 @@ class Message:
         self.error = error
         self.return_button = return_button
         self.escape_button = escape_button
-    def draw(self): return messagebox(self.title,self.message,None,self.info,self.warn,self.error,self.buttons,self.return_button,self.escape_button)
+    def show(self): return messagebox(self.title,self.message,None,self.info,self.warn,self.error,self.buttons,self.return_button,self.escape_button)
 
 #窗口
 class RenderedWindow:
@@ -34,19 +34,19 @@ class RenderedWindow:
         self.set_size(size)
     @property
     def size(self) -> tuple: return self.__size
-    def set_size(self,size:tuple) -> None:
+    def set_size(self, size:tuple) -> None:
         win = Window(self.title,size,always_on_top=self.always_on_top)
         self.__win = Renderer(win)
         self.__size = size
     def clear(self) -> None: self.__win.clear()
     def present(self) -> None: self.__win.present()
-    def draw_rect(self,rect_pos,color) -> None:
+    def draw_rect(self, rect_pos:pos_liked, color:color_liked) -> None:
         self.__win.draw_color = Color.get(color)
         self.__win.draw_rect(pygame.Rect(rect_pos))
-    def fill_rect(self,rect_pos,color) -> None:
+    def fill_rect(self, rect_pos:pos_liked, color:color_liked) -> None:
         self.__win.draw_color = Color.get(color)
         self.__win.fill_rect(pygame.Rect(rect_pos))
-    def fill(self,color) -> None:
+    def fill(self, color:color_liked) -> None:
         self.fill_rect((0,0,self.__size[0],self.__size[1]),color)
 
 #优化中文文档

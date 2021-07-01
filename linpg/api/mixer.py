@@ -1,6 +1,6 @@
 # cython: language_level=3
 import av
-from .controller import *
+from .display import *
 
 #音效管理模块接口
 class AbstractSoundManager:
@@ -118,5 +118,5 @@ def load_audio_from_video_as_music(moviePath:str) -> bool:
         if not Setting.get("KeepVedioCache"): os.remove(path)
         return True
     except Exception:
-        throw_exception("warning", "Cannot load music from {}!\nIf this vedio has no sound, then just ignore this warning.".format(moviePath))
+        EXCEPTION.warn("Cannot load music from {}!\nIf this vedio has no sound, then just ignore this warning.".format(moviePath))
         return False

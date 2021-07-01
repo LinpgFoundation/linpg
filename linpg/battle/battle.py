@@ -26,8 +26,8 @@ class AbstractBattleSystem(AbstractGameSystem):
         self._dialog_dictionary:dict = {}
         self.dialog_key:str = ""
         #方格标准尺寸
-        self._standard_block_width:int = int(display.get_width()/10)
-        self._standard_block_height:int = int(display.get_height()/10)
+        self._standard_block_width:int = int(Display.get_width()/10)
+        self._standard_block_height:int = int(Display.get_height()/10)
         #缩进
         self.zoomIn = 100
         self.zoomIntoBe = 100
@@ -139,7 +139,7 @@ class AbstractBattleSystem(AbstractGameSystem):
         #如果需要移动屏幕
         if self.screen_to_move_x is not None and self.screen_to_move_x != 0:
             temp_value = int(self.MAP.get_local_x() + self.screen_to_move_x*0.2)
-            if display.get_width()-self.MAP.get_width() <= temp_value <= 0:
+            if Display.get_width()-self.MAP.get_width() <= temp_value <= 0:
                 self.MAP.set_local_x(temp_value)
                 self.screen_to_move_x *= 0.8
                 if round(self.screen_to_move_x) == 0: self.screen_to_move_x = 0
@@ -147,7 +147,7 @@ class AbstractBattleSystem(AbstractGameSystem):
                 self.screen_to_move_x = 0
         if self.screen_to_move_y is not None and self.screen_to_move_y != 0:
             temp_value = int(self.MAP.get_local_y() + self.screen_to_move_y*0.2)
-            if display.get_height()-self.MAP.get_height() <= temp_value <= 0:
+            if Display.get_height()-self.MAP.get_height() <= temp_value <= 0:
                 self.MAP.set_local_y(temp_value)
                 self.screen_to_move_y *= 0.8
                 if round(self.screen_to_move_y) == 0: self.screen_to_move_y = 0

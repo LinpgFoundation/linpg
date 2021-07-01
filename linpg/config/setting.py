@@ -17,17 +17,17 @@ class SettingSystem:
     #重新加载设置数据
     def reload(self) -> None:
         #如果配置文件setting.yaml存在
-        if os.path.exists(self.get_config_path()): self.__SETTING_DATA = load_config(self.get_config_path())
+        if os.path.exists(self.get_config_path()): self.__SETTING_DATA = Config.load(self.get_config_path())
         #如果不存在就创建一个
         else:
             #导入local,查看默认语言
             import locale
-            self.__SETTING_DATA = load_config(os.path.join(os.path.dirname(__file__), "setting.json"))
+            self.__SETTING_DATA = Config.load(os.path.join(os.path.dirname(__file__), "setting.json"))
             self.__SETTING_DATA["Language"] = "SimplifiedChinese" if locale.getdefaultlocale()[0] == "zh_CN" else "English"
             #保存设置
             self.save()
     #保存设置数据
-    def save(self) -> None: save_config(self.get_config_path(), self.__SETTING_DATA)
+    def save(self) -> None: Config.save(self.get_config_path(), self.__SETTING_DATA)
     #获取设置数据
     def get(self, *key:str) -> any: return self.get_by_keys(key)
     def get_by_keys(self, keys:tuple) -> any: return get_value_by_keys(self.__SETTING_DATA, keys)
@@ -41,7 +41,7 @@ class SettingSystem:
             else:
                 self.__SETTING_DATA[key][key2] = value
         else:
-            throw_exception("error", "You need to enter a valid value!")
+            EXCEPTION.throw("error", "You need to enter a valid value!")
     def set_and_save(self, key:str, key2:str=None, value:any=None) -> None:
         self.set(key, key2, value)
         self.save()
@@ -70,7 +70,7 @@ def set_setting_path(path:str) -> None: Setting.set_config_path(path)
 #获取设置配置文件
 def get_setting(*keys:str) -> any: return  Setting.get_by_keys(keys)
 #在不确定的情况下尝试获取设置配置文件
-def try_get_setting(*keys:str) -> any: throw_exception("error", "No longer variable!")
+def try_get_setting(*keys:str) -> any: EXCEPTION.throw("error", "No longer variable!")
 #修改设置参数
 def set_setting(key:str, key2:str=None, value:any=None) -> None: Setting.set(key, key2, value)
 #修改设置参数并保存
@@ -80,10 +80,10 @@ def get_antialias() -> bool: return Setting.antialias
 #获取文字信息
 def get_font() -> str: return Setting.font
 #设置文字信息
-def set_font(value:str) -> None: throw_exception("error", "No longer variable!")
+def set_font(value:str) -> None: EXCEPTION.throw("error", "No longer variable!")
 #获取文字类型
 def get_font_type() -> str: return Setting.font_type
 #设置文字类型
-def set_font_type(value:str) -> None: throw_exception("error", "No longer variable!")
+def set_font_type(value:str) -> None: EXCEPTION.throw("error", "No longer variable!")
 #获取文字的具体信息
-def get_font_details() -> tuple: return throw_exception("error", "No longer variable!")
+def get_font_details() -> tuple: return EXCEPTION.throw("error", "No longer variable!")

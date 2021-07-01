@@ -91,7 +91,7 @@ def load_gif(
         for image_path in img_list_or_path:
             imgList.append(StaticImage(image_path, 0, 0, size[0], size[1]))
     else:
-        throw_exception(
+        EXCEPTION.throw(
             "error", 'Invalid input for "img_list_or_path": {}'.format(img_list_or_path)
         )
     return GifImage(

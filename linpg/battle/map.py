@@ -6,7 +6,7 @@ _MAP_ENV_IMAGE:object = None
 #方块数据
 _BLOCKS_DATABASE:dict = None
 try:
-    _BLOCKS_DATABASE = load_config(os.path.join("Data", "blocks.yaml"), "blocks")
+    _BLOCKS_DATABASE = Config.load(os.path.join("Data", "blocks.yaml"), "blocks")
 except Exception:
     _BLOCKS_DATABASE = {}
 
@@ -128,10 +128,10 @@ class MapObject(AdvancedAbstractImage):
         self.set_width(newPerBlockWidth*0.9*((self.row+self.column+1)/2))
         self.set_height(newPerBlockWidth*0.45*((self.row+self.column+1)/2)+newPerBlockWidth)
         _MAP_ENV_IMAGE.set_block_size(newPerBlockWidth,newPerBlockHeight)
-        if self._width < display.get_width():
-            self._width = display.get_width()
-        if self._height < display.get_height():
-            self._height = display.get_height()
+        if self._width < Display.get_width():
+            self._width = Display.get_width()
+        if self._height < Display.get_height():
+            self._height = Display.get_height()
         #自动校准坐标
         self.add_local_x((old_width-self._width)/2)
         self.add_local_y((old_height-self._height)/2)

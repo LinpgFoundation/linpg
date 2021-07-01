@@ -57,12 +57,12 @@ def convert_rect(rect: RectLiked) -> Rect:
         elif len(rect) == 4:
             return Rect(rect[0], rect[1], rect[2], rect[3])
         else:
-            throw_exception("error", 'Invalid length for forming a rect.')
+            EXCEPTION.throw("error", 'Invalid length for forming a rect.')
     #如果是Rect类，则没必要转换
     elif isinstance(rect, Rect):
         return rect
     else:
-        throw_exception("error", 'The rect has to be RectLiked object, not "{}".'.format(type(rect)))
+        EXCEPTION.throw("error", 'The rect has to be RectLiked object, not "{}".'.format(type(rect)))
 
 #转换linpg.Rect至pygame.Rect
 def convert_to_pygame_rect(rect:RectLiked) -> pygame.Rect:
@@ -79,9 +79,9 @@ def convert_to_pygame_rect(rect:RectLiked) -> pygame.Rect:
         elif len(rect) == 4:
             return pygame.Rect(rect[0], rect[1], rect[2], rect[3])
         else:
-            throw_exception("error", 'Invalid length for forming a rect.')
+            EXCEPTION.throw("error", 'Invalid length for forming a rect.')
     else:
-        throw_exception("error", 'The rect has to be RectLiked object, not "{}".'.format(type(rect)))
+        EXCEPTION.throw("error", 'The rect has to be RectLiked object, not "{}".'.format(type(rect)))
 
 # 是否形状一样
 def is_same_rect(rect1: RectLiked, rect2: RectLiked) -> bool:

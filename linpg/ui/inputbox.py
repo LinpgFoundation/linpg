@@ -54,7 +54,7 @@ class SingleLineInputBox(AbstractInputBox):
             self.holderIndex += len(char)
             self._reset_inputbox_width()
         else:
-            throw_exception("warning","The value of event.unicode is empty!")
+            EXCEPTION.warn("The value of event.unicode is empty!")
     def _remove_char(self, action:str) -> None:
         if action == "ahead":
             if self.holderIndex > 0:
@@ -64,7 +64,7 @@ class SingleLineInputBox(AbstractInputBox):
             if self.holderIndex < len(self._text):
                 self._text = self._text[:self.holderIndex]+self._text[self.holderIndex+1:]
         else:
-            throw_exception("error","Action has to be either 'ahead' or 'behind'!")
+            EXCEPTION.throw("error","Action has to be either 'ahead' or 'behind'!")
         self._reset_inputbox_width()
     def _reset_holderIndex(self, mouse_x:int) -> None:
         last_width = 0
@@ -153,7 +153,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             self._text = new_txt
             self._reset_inputbox_size()
         else:
-            throw_exception("error","The new_txt for MultipleLinesInputBox.set_text() must be a list!")
+            EXCEPTION.throw("error","The new_txt for MultipleLinesInputBox.set_text() must be a list!")
     def set_fontsize(self, font_size:int) -> None:
         super().set_fontsize(font_size)
         self._reset_inputbox_size()
@@ -191,7 +191,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                 self._text[self.lineId] += theStringAfterHolderIndex
                 self._reset_inputbox_size()
         else:
-            throw_exception("warning","The value of event.unicode is empty!")
+            EXCEPTION.warn("The value of event.unicode is empty!")
     #删除对应字符
     def _remove_char(self, action:str) -> None:
         if action == "ahead":
@@ -218,7 +218,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                     self._text[self.lineId] += self._text[self.lineId+1]
                 self._text.pop(self.lineId+1)
         else:
-            throw_exception("error", "Action has to be either 'ahead' or 'behind'!")
+            EXCEPTION.throw("error", "Action has to be either 'ahead' or 'behind'!")
         self._reset_inputbox_size()
     def _reset_holderIndex(self, mouse_x:int, mouse_y:int) -> None:
         self.lineId = round((mouse_y-self.y)/self.FONTSIZE)-1
@@ -318,7 +318,7 @@ class Console(SingleLineInputBox):
         try:
             return self.__events[key]
         except KeyError:
-            throw_exception("error",'Console cannot find key "{}"!'.format(key))
+            EXCEPTION.throw("error",'Console cannot find key "{}"!'.format(key))
     def _check_key_down(self, event:object) -> bool:
         if super()._check_key_down(event):
             return True
@@ -343,7 +343,7 @@ class Console(SingleLineInputBox):
                 self.__backward_id = 0
                 self.set_text()
             else:
-                throw_exception("warning","The input box is empty!")
+                EXCEPTION.warn("The input box is empty!")
             return True
         #ESC，关闭
         elif event.key == Key.ESCAPE:
@@ -388,7 +388,7 @@ class Console(SingleLineInputBox):
         elif conditions[0] == "linpg" and conditions[1] == "info":
             self._txt_output.append("Linpg Version: {}".format(Info.current_version))
         elif conditions[0] == "quit":
-            display.quit()
+            Display.quit()
         else:
             self._txt_output.append("The command is unknown!")
     def draw(self, screen:ImageSurface) -> None:

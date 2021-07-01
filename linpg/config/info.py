@@ -4,7 +4,7 @@ from .ui import *
 #版本信息管理模块
 class InfoManager:
     def __init__(self) -> None:
-        self.__INFO: dict = load_config(os.path.join(os.path.dirname(__file__), "info.json"))
+        self.__INFO: dict = Config.load(os.path.join(os.path.dirname(__file__), "info.json"))
     # 获取当前版本号
     @property
     def current_version(self) -> str:

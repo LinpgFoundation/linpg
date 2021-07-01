@@ -64,11 +64,11 @@ class ColorManager:
                 try:
                     return tuple(THECOLORS[color])
                 except KeyError:
-                    throw_exception("error", 'The color "{}" is currently not available!'.format(color))
+                    EXCEPTION.throw("error", 'The color "{}" is currently not available!'.format(color))
         elif isinstance(color, (tuple, list)):
             return tuple(color)
         else:
-            throw_exception("error", "The color has to be a string, tuple or list, and {0} (type:{1}) is not acceptable!".format(color, type(color)))
+            EXCEPTION.throw("error", "The color has to be a string, tuple or list, and {0} (type:{1}) is not acceptable!".format(color, type(color)))
 
 Color: ColorManager = ColorManager()
 

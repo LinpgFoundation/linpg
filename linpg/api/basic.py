@@ -55,7 +55,7 @@ def convert_pos(pos:any) -> tuple:
         try:
             return pos.x, pos.y
         except Exception:
-            throw_exception("error", 'Cannot convert position "{}".'.format(pos))
+            EXCEPTION.throw("error", 'Cannot convert position "{}".'.format(pos))
 
 #判断2个坐标是否相同
 def is_same_pos(pos1:any, pos2:any) -> bool: return convert_pos(pos1) == convert_pos(pos2)
@@ -96,7 +96,7 @@ def convert_percentage(percentage:Union[str,float]) -> float:
     elif isinstance(percentage, float):
         return percentage
     else:
-        throw_exception("error", '"{}" is not a valid percentage that can be converted'.format(percentage))
+        EXCEPTION.throw("error", '"{}" is not a valid percentage that can be converted'.format(percentage))
 
 #获取帧数控制器
 def get_clock() -> pygame.time.Clock: return pygame.time.Clock()

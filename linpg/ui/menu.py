@@ -12,7 +12,7 @@ class PauseMenu:
         self.screenshot = None
         self.hidden:bool = True
     def initialize(self, surface:ImageSurface) -> None:
-        surfaceTmp = new_surface(display.get_size()).convert()
+        surfaceTmp = new_surface(Display.get_size()).convert()
         surfaceTmp.fill(Color.BLACK)
         self.black_bg = StaticImage(surfaceTmp, 0, 0)
         self.black_bg.set_alpha(50)

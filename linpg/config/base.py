@@ -36,7 +36,7 @@ class LinpgException(Exception):
         print("LinpgEngine-Warning: {}".format(info))
     #告知不严重但建议查看的问题
     def inform(self, info:str) -> None:
-        print('LinpgEngine-Info: {}'.format(info))
+        print('LinpgEngine-Inform: {}'.format(info))
     #抛出问题
     def throw(self, exception_type:str, info:str) -> None:
         exception_type_lower:str = exception_type.lower()
@@ -70,7 +70,7 @@ class ConfigManager:
     def __init__(self) -> None:
         pass
     # 配置文件保存
-    def load(self, path:str, *keys:str) -> any:
+    def load(self, path:str, *key:str) -> any:
         # 检测配置文件是否存在
         if not os.path.exists(path): EXCEPTION.throw("error","Cannot find file on path: {}".format(path))
         # 按照类型加载配置文件
@@ -91,9 +91,13 @@ class ConfigManager:
             # 使用json模块加载配置文件
             with open(path, "r", encoding='utf-8') as f: Data = json.load(f)
         else:
-            EXCEPTION.throw("error","Linpg can only load json and yaml (if pyyaml is installed).")
+            EXCEPTION.throw("error", "Linpg can only load json and yaml (if pyyaml is installed).")
         # 返回配置文件中的数据
-        return Data if len(keys) == 0 else get_value_by_keys(Data, keys)
+        return Data if len(key) == 0 else get_value_by_keys(Data, key)
+    # 加载内部配置文件保存
+    def load_internal(self, path:str, *key:str) -> any:
+        Data_t = self.load(os.path.join(os.path.dirname(__file__), path))
+        return Data_t if len(key) == 0 else get_value_by_keys(Data_t, key)
     # 配置文件保存
     def save(self, path:str, data:any) -> None:
         # 确保用于储存的文件夹存在

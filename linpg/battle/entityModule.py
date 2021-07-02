@@ -143,7 +143,7 @@ class EntitySoundManager(AbstractEntitySoundManager):
             for soundType in os.listdir(os.path.join(self._SOUNDS_PATH,characterType)):
                 self._sounds_dict[characterType][soundType] = []
                 for soundPath in glob(os.path.join(self._SOUNDS_PATH,characterType,soundType,"*")):
-                    self._sounds_dict[characterType][soundType].append(load_sound(soundPath))
+                    self._sounds_dict[characterType][soundType].append(Sound.load(soundPath))
     #播放角色音效
     def play(self, characterType:str, soundType:str) -> None:
         if characterType in self._sounds_dict and soundType in self._sounds_dict[characterType]:
@@ -154,7 +154,7 @@ class EntitySoundManager(AbstractEntitySoundManager):
                 else:
                     sound = sound_list[0]
                 sound.set_volume(Setting.get("Sound","sound_effects")/100.0)
-                play_sound(sound, self._channel_id)
+                Sound.play(sound, self._channel_id)
 
 #射击音效 -- 频道2
 class AttackingSoundManager(AbstractEntitySoundManager):
@@ -176,11 +176,11 @@ class AttackingSoundManager(AbstractEntitySoundManager):
         self.volume:int = volume
         for key in self._sounds_dict:
             for i in range(len(self._sounds_dict[key])):
-                self._sounds_dict[key][i] = load_sound(self._sounds_dict[key][i], volume/100.0)
+                self._sounds_dict[key][i] = Sound.load(self._sounds_dict[key][i], volume/100.0)
     #播放
     def play(self, kind:str) -> None:
         if kind in self._sounds_dict:
-            play_sound(self._sounds_dict[kind][get_random_int(0,len(self._sounds_dict[kind])-1)], self._channel_id)
+            Sound.play(self._sounds_dict[kind][get_random_int(0,len(self._sounds_dict[kind])-1)], self._channel_id)
 
 #计算最远攻击距离
 def calculate_range(effective_range_dic:dict) -> int:

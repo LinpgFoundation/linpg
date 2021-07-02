@@ -56,7 +56,7 @@ class VedioSurface(AbstractVedio):
         self.loop:bool = loop
         self.looped_times:int = 0
         self.__audio = load_audio_from_video_as_sound(path) if with_music else None
-        self.__audio_channel:int = find_channel() if with_music else None
+        self.__audio_channel:int = Sound.find_channel() if with_music else None
         self.__volume:float = volume
         #如果初始音量不为1，则应该设置对应的音量
         if self.__volume != 1.0 and self.__audio is not None: self.__audio.set_volume(self.__volume)
@@ -116,7 +116,7 @@ class VedioPlayer(AbstractVedio):
         self.__bgm_status:bool = load_audio_from_video_as_music(path)
     #开始执行线程
     def run(self) -> None:
-        if self.__bgm_status is True: play_music()
+        if self.__bgm_status is True: Music.play()
         for frame in self._video_container.decode(self._video_stream):
             #如果需要跳出
             if self._stopped is True:
@@ -126,11 +126,11 @@ class VedioPlayer(AbstractVedio):
             #处理当前帧
             self._processFrame(frame)
             #确保匀速播放
-            if not int(get_music_pos()/1000*self._frameRate)-self.get_frameIndex() >= self.__allowFrameDelay:
+            if not int(Music.get_pos()/1000*self._frameRate)-self.get_frameIndex() >= self.__allowFrameDelay:
                 self._clock.tick(self._frameRate)
         #确保播放完剩余的帧
         while not self._frameQueue.empty(): pass
-        unload_music()
+        Music.unload()
 
 #过场动画
 def cutscene(surface:ImageSurface, videoPath:str) -> None:
@@ -162,7 +162,7 @@ def cutscene(surface:ImageSurface, videoPath:str) -> None:
         white_progress_bar.draw(surface)
         if skip_button.is_hover() and controller.mouse_get_press(0) and not is_skip:
             is_skip = True
-            fade_out_music(5000)
+            Music.fade_out(5000)
         if is_skip is True:
             temp_alpha:int = black_bg.get_alpha()
             if temp_alpha < 255:

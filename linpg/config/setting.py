@@ -22,7 +22,7 @@ class SettingSystem:
         else:
             #导入local,查看默认语言
             import locale
-            self.__SETTING_DATA = Config.load(os.path.join(os.path.dirname(__file__), "setting.json"))
+            self.__SETTING_DATA = Config.load_internal("setting.json")
             self.__SETTING_DATA["Language"] = "SimplifiedChinese" if locale.getdefaultlocale()[0] == "zh_CN" else "English"
             #保存设置
             self.save()

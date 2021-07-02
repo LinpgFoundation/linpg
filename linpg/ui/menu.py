@@ -72,7 +72,7 @@ class PauseMenu:
                 elif self.button_setting.is_hover():
                     return "option_menu"
                 elif self.button_back.is_hover():
-                    global_value.set("BackToMainMenu",True)
+                    GlobalValue.set("BackToMainMenu",True)
                     return "back_to_mainMenu"
         return ""
 
@@ -220,7 +220,7 @@ class OptionMenu(AbstractImage):
                     if -self.__item_height/2<mouse_y-self.bar_y1<self.__item_height*1.5:
                         self.soundVolume_background_music = round(100*(mouse_x-self.bar_x)/self.bar_width)
                         Setting.set("Sound","background_music",self.soundVolume_background_music)
-                        set_music_volume(self.soundVolume_background_music/100.0)
+                        Music.set_volume(self.soundVolume_background_music/100.0)
                         self.need_update["volume"] = True
                     #如果碰到音效的音量条
                     elif -self.__item_height/2<mouse_y-self.bar_y2<self.__item_height*1.5:

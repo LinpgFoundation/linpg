@@ -77,8 +77,7 @@ class DialogSystem(AbstractDialogSystem):
     #淡入或淡出
     def fade(self, surface:ImageSurface, stage:str="$out") -> None:
         if stage == "$out":
-            fade_out_sound(1000)
-            fade_out_music(1000)
+            Media.fade_out(1000)
             for i in range(0,255,5):
                 self._black_bg.set_alpha(i)
                 self._black_bg.draw(surface)

@@ -9,3 +9,7 @@ info = Info
 key = Key
 config = Config
 color = Color
+global_value = GlobalValue
+sound = Sound
+music = Music
+media = Media

@@ -23,7 +23,7 @@ class DialogBox:
         self.textIndex = None
         self.displayedLine = None
         try:
-            self.__textPlayingSound = load_sound(r"Assets/sound/ui/dialog_words_playing.ogg")
+            self.__textPlayingSound = Sound.load(r"Assets/sound/ui/dialog_words_playing.ogg")
         except FileNotFoundError:
             self.__textPlayingSound = None
             EXCEPTION.throw(
@@ -103,7 +103,7 @@ class DialogBox:
     def render_font(self, txt:str, color:tuple) -> ImageSurface: return self.FONT.render(txt,Setting.antialias,color)
     #如果音效还在播放则停止播放文字音效
     def stop_playing_text_sound(self) -> None:
-        if is_any_sound_playing() and self.__textPlayingSound is not None: self.__textPlayingSound.stop()
+        if Media.get_busy() and self.__textPlayingSound is not None: self.__textPlayingSound.stop()
     #将文字画到屏幕上
     def __draw_text(self, surface:ImageSurface) -> None:
         if not self.__dev_mode:
@@ -122,12 +122,12 @@ class DialogBox:
                 )
             #如果当前行的字符还没有完全播出
             if self.textIndex < len(self.content[self.displayedLine]):
-                if not is_any_sound_playing() and self.__textPlayingSound is not None:
+                if not Media.get_busy() and self.__textPlayingSound is not None:
                     self.__textPlayingSound.play()
                 self.textIndex +=1
             #当前行的所有字都播出后，播出下一行
             elif self.displayedLine < len(self.content)-1:
-                if not is_any_sound_playing() and self.__textPlayingSound is not None:
+                if not Media.get_busy() and self.__textPlayingSound is not None:
                     self.__textPlayingSound.play()
                 self.textIndex = 1
                 self.displayedLine += 1

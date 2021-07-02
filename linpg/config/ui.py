@@ -1,7 +1,7 @@
 # cython: language_level=3
 from .glob import *
 
-_DEFAULT_UI:dict = Config.load(os.path.join(os.path.dirname(__file__), "ui.json"))
+_DEFAULT_UI:dict = Config.load_internal("ui.json")
 
 def get_raw_deault_ui(name:str) -> dict:
     try:

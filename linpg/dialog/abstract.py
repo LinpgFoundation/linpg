@@ -108,7 +108,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                             else:
                                 self._dialog_data[self._part][dialog_id] = dialogDataDict[dialog_id]
                     except AssertionError:
-                        threading(
+                        EXCEPTION.throw(
                             "error",
                             'Cannot load part "{}" from default language dialog! Worst case scenario, it needs to be empty!'
                             .format(self._part)
@@ -117,7 +117,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                 else:
                     self._dialog_data[self._part] = dialogDataDict
             except AssertionError:
-                threading("error", 'Cannot load part "{0}" from "{1}"!'.format(self._part, self.get_dialog_file_location()))
+                EXCEPTION.throw("error", 'Cannot load part "{0}" from "{1}"!'.format(self._part, self.get_dialog_file_location()))
         else:
             self._dialog_data[self._part] = Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._part)
         #确认dialog数据合法

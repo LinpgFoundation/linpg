@@ -369,7 +369,7 @@ class Entity(GameObject):
         img_of_char.set_pos(pos[0]-MapClass.block_width*0.3,pos[1]-MapClass.block_width*0.85)
         img_of_char.draw(surface)
         #如果是开发者模式，则开启轮廓
-        if Setting.get("DeveloperMode"): img_of_char.draw_outline(surface)
+        if Setting.developer_mode: img_of_char.draw_outline(surface)
     #把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
     def draw(self, surface:ImageSurface, MapClass:object) -> None:
         self.__blit_entity_img(surface,MapClass,alpha=self.get_imgAlpaha(self.__current_action))

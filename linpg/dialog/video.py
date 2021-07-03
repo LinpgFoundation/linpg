@@ -7,14 +7,15 @@ class AbstractVedio(threading.Thread, AbstractImage):
     def __init__(self, path:str, width:int, height:int, tag:str=""):
         threading.Thread.__init__(self)
         AbstractImage.__init__(self, None, 0, 0, width, height, tag)
-        self._path = path
-        self._video_container = av.open(self._path,mode='r')
+        self._path:str = path
+        self._video_container = av.open(self._path, mode='r')
         self._video_stream = self._video_container.streams.video[0]
         self._video_stream.thread_type = 'AUTO'
         #self._audio_stream = self._video_container.streams.audio[0]
         #self._audio_stream.thread_type = 'AUTO'
-        self._frameRate = round(self._video_stream.average_rate)
-        self._frameQueue = queue.Queue(maxsize=self._frameRate)
+        self._frame_rate = round(self._video_stream.average_rate)
+        self._frame_queue:queue.Queue = queue.Queue(maxsize=self._frame_rate)
+        self._frame_format:str = 'rgb24'
         self._stopped:bool = False
         self._paused:bool = False
         self._clock = get_clock()
@@ -23,19 +24,17 @@ class AbstractVedio(threading.Thread, AbstractImage):
     #处理当前帧的画面
     def _processFrame(self, frame:object):
         #如果当前队列是满的，则等待
-        while self._frameQueue.full() or self._paused is True: pass
+        while self._frame_queue.full() or self._paused is True: pass
         #加锁，防止self.set_pos()误触self._pts
         self._threadLock.acquire()
         self._pts = frame.pts
         self._threadLock.release()
-        array = frame.to_ndarray(width=self._width,height=self._height,format='rgb24')
-        array = array.swapaxes(0,1)
-        self._frameQueue.put(array)
+        self._frame_queue.put(frame.to_ndarray(width=self._width,height=self._height,format=self._frame_format).swapaxes(0,1))
     """获取信息"""
     def get_frameNum(self) -> int: return self._video_stream.frames
-    def get_frameRate(self) -> int: return self._frameRate
+    def get_frameRate(self) -> int: return self._frame_rate
     def get_pos(self) -> float: return self._pts*self._video_stream.time_base
-    def get_frameIndex(self) -> int: return round(self._pts*self._video_stream.time_base*self._frameRate)
+    def get_frameIndex(self) -> int: return round(self._pts*self._video_stream.time_base*self._frame_rate)
     def get_percentagePlayed(self) -> float: return self._pts/self._video_stream.duration
     #停止
     def stop(self) -> None: self._stopped = True
@@ -44,7 +43,7 @@ class AbstractVedio(threading.Thread, AbstractImage):
     #把画面画到屏幕上
     def draw(self, surface:ImageSurface) -> None:
         #如果Queue不是空的
-        if not self._frameQueue.empty(): draw_array(surface, self._frameQueue.get())
+        if not self._frame_queue.empty(): draw_array(surface, self._frame_queue.get())
 
 #视频片段展示模块--灵活，但不能保证视频和音效同步
 class VedioSurface(AbstractVedio):
@@ -72,7 +71,7 @@ class VedioSurface(AbstractVedio):
     #设置播放的位置
     def set_pos(self, offset:float) -> None:
         self._video_container.seek(int(offset/self._video_stream.time_base),any_frame=True,stream=self._video_stream)
-        self._frameQueue.queue.clear()
+        self._frame_queue.queue.clear()
     #返回一个克隆
     def copy(self) -> object:
         with_music = True if self.__audio is not None else False
@@ -85,7 +84,7 @@ class VedioSurface(AbstractVedio):
                 #如果要中途停止
                 if self._stopped is True:
                     #清空queue内储存的所有加载完的帧
-                    with self._frameQueue.mutex: self._frameQueue.queue.clear()
+                    with self._frame_queue.mutex: self._frame_queue.queue.clear()
                     break
                 #处理当前Frame
                 self._processFrame(frame)
@@ -95,13 +94,13 @@ class VedioSurface(AbstractVedio):
                         self._stopped = True
                     else:
                         self.set_pos(self.start_point)
-                self._clock.tick(self._frameRate)
+                self._clock.tick(self._frame_rate)
             if not self.loop or self._stopped is True:
                 break
             else:
                 self.set_pos(0)
         #确保播放完剩余的帧
-        while not self._frameQueue.empty(): pass
+        while not self._frame_queue.empty(): pass
     #把画面画到屏幕上
     def draw(self, surface:ImageSurface) -> None:
         super().draw(surface)
@@ -121,15 +120,15 @@ class VedioPlayer(AbstractVedio):
             #如果需要跳出
             if self._stopped is True:
                 #清空queue内储存的所有加载完的帧
-                with self._frameQueue.mutex: self._frameQueue.queue.clear()
+                with self._frame_queue.mutex: self._frame_queue.queue.clear()
                 break
             #处理当前帧
             self._processFrame(frame)
             #确保匀速播放
-            if not int(Music.get_pos()/1000*self._frameRate)-self.get_frameIndex() >= self.__allowFrameDelay:
-                self._clock.tick(self._frameRate)
+            if not int(Music.get_pos()/1000*self._frame_rate)-self.get_frameIndex() >= self.__allowFrameDelay:
+                self._clock.tick(self._frame_rate)
         #确保播放完剩余的帧
-        while not self._frameQueue.empty(): pass
+        while not self._frame_queue.empty(): pass
         Music.unload()
 
 #过场动画

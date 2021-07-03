@@ -14,24 +14,27 @@ class LanguageManager:
         self.__EX_LANG_FOLDER:str = "Lang"
         # 初始化
         self.reload()
+    #当前语言的文件路径
+    @ property
+    def internal_lang_file_path(self) -> str: return os.path.join(os.path.dirname(__file__), "{}.json".format(Setting.language))
     #重新加载语言文件
     def reload(self) -> None:
-        path_t:str = os.path.join(self.__EX_LANG_FOLDER, "{}.yaml".format(Setting.get("Language")))
+        path_t:str = os.path.join(self.__EX_LANG_FOLDER, "{}.yaml".format(Setting.language))
         if os.path.exists(path_t):
             self.__LANG_DATA = {
                 **Config.load(path_t),
-                **Config.load_internal("{}.json".format(Setting.get("Language")))
+                **Config.load(self.internal_lang_file_path)
                 }
         else:
-            path_t = os.path.join(self.__EX_LANG_FOLDER, "{}.json".format(Setting.get("Language")))
+            path_t = os.path.join(self.__EX_LANG_FOLDER, "{}.json".format(Setting.language))
             if os.path.exists(path_t):
                 self.__LANG_DATA = {
                     **Config.load(path_t),
-                    **Config.load_internal("{}.json".format(Setting.get("Language")))
+                    **Config.load(self.internal_lang_file_path)
                     }
             else:
                 EXCEPTION.warn("Linpg cannot load additional language file.")
-                self.__LANG_DATA = Config.load_internal("{}.json".format(Setting.get("Language")))
+                self.__LANG_DATA = Config.load(self.internal_lang_file_path)
         #获取本地可用的语言
         self.__LANG_AVAILABLE.clear()
         for lang_file in glob(os.path.join(self.__LANG_PATH_PATTERN)):

@@ -137,14 +137,14 @@ class DialogEditor(AbstractDialogSystem):
         #如果dialogs字典是空的
         if len(list(self._dialog_data.keys())) <= 0:
             #如果不是默认主语言，则尝试加载主语言
-            if default_lang_of_dialog != Setting.get("Language"):
+            if default_lang_of_dialog != Setting.language:
                 self.is_default = False
                 #读取原始数据
                 self._dialog_data_default = Config.load(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")
                 self._dialog_data = deepcopy(self._dialog_data_default)
         else:
             #如果不是默认主语言
-            if default_lang_of_dialog != Setting.get("Language"):
+            if default_lang_of_dialog != Setting.language:
                 self.is_default = False
                 #读取原始数据
                 self._dialog_data_default = Config.load(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")

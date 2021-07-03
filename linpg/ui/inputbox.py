@@ -372,13 +372,13 @@ class Console(SingleLineInputBox):
             self._txt_output.append(self._text[len(self.command_indicator)+4:])
         elif conditions[0] == "dev":
             if conditions[1] == "on":
-                if Setting.get("DeveloperMode") is True:
+                if Setting.developer_mode is True:
                     self._txt_output.append("Developer mode has been activated!")
                 else:
                     Setting.set("DeveloperMode", value=True)
                     self._txt_output.append("Developer mode is activated.")
             elif conditions[1] == "off":
-                if not Setting.get("DeveloperMode"):
+                if not Setting.developer_mode:
                     self._txt_output.append("Developer mode has been deactivated!")
                 else:
                     Setting.set("DeveloperMode", value=False)

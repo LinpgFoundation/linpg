@@ -47,6 +47,9 @@ class DisplayController:
     @property
     def size(self) -> tuple: return self.__standard_width, self.__standard_height
     def get_size(self) -> tuple: return self.__standard_width, self.__standard_height
+    #分辨率 - str
+    @property
+    def resolution(self) -> str: return "{0}x{1}".format(self.__standard_width, self.__standard_height)
     #初始化屏幕
     def init(self) -> object:
         if is_using_pygame():

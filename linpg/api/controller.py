@@ -2,7 +2,7 @@
 from .img import *
 
 #手柄控制组件
-class SingleJoystick:
+class JoystickController:
     def __init__(self):
         #如果pygame的手柄组件没有初始化，则初始化
         if not pygame.joystick.get_init(): pygame.joystick.init()
@@ -33,7 +33,7 @@ class SingleJoystick:
 #输入管理组件
 class GameController:
     def __init__(self, mouse_icon_width:Union[int,float], speed:Union[int,float], custom:bool=False):
-        self.joystick = SingleJoystick()
+        self.joystick = JoystickController()
         if custom is True:
             pygame.mouse.set_visible(False)
             self.iconImg = load_img(os.path.join("Assets/image/UI","mouse_icon.png")),(int(mouse_icon_width),int(mouse_icon_width*1.3))

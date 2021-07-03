@@ -55,6 +55,11 @@ class SettingSystem:
     #获取抗锯齿参数
     @property
     def antialias(self) -> bool: return self.__SETTING_DATA["Antialias"] is True
+    #语言
+    @property
+    def language(self) -> str: return self.__SETTING_DATA["Language"]
+    @property
+    def developer_mode(self) -> bool: return self.__SETTING_DATA["DeveloperMode"] is True
 
 Setting:SettingSystem = SettingSystem()
 

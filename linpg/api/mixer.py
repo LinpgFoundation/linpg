@@ -48,9 +48,9 @@ class SoundController:
     def play(self, sound:pygame.mixer.Sound, channel_id:int) -> None:
         pygame.mixer.Channel(channel_id).play(sound)
     #淡出音效
-    def fade_out(time:float) -> None: pygame.mixer.fadeout(int(time))
+    def fade_out(self, time:float) -> None: pygame.mixer.fadeout(int(time))
     #寻找一个可用的频道
-    def find_channel(force:bool=False) -> int: return pygame.mixer.find_channel(force)
+    def find_channel(self, force:bool=False) -> int: return pygame.mixer.find_channel(force)
 
 Sound:SoundController = SoundController()
 

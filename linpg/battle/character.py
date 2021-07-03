@@ -234,12 +234,12 @@ class CharacterDataLoader(threading.Thread):
             else:
                 self.alliances[key] = FriendlyCharacter(value,self.DATABASE[value["type"]],self.mode)
             self.currentID+=1
-            if Setting.get("DeveloperMode"): print("total: {0}, current: {1}".format(self.totalNum,self.currentID))
+            if Setting.developer_mode: print("total: {0}, current: {1}".format(self.totalNum,self.currentID))
         for key,value in self.enemies.items():
             if isinstance(value,HostileCharacter):
                 value.load_image()
             else:
                 self.enemies[key] = HostileCharacter(value,self.DATABASE[value["type"]],self.mode)
             self.currentID += 1
-            if Setting.get("DeveloperMode"): print("total: {0}, current: {1}".format(self.totalNum,self.currentID))
+            if Setting.developer_mode: print("total: {0}, current: {1}".format(self.totalNum,self.currentID))
     def getResult(self) -> tuple: return self.alliances,self.enemies

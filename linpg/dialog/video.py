@@ -54,7 +54,7 @@ class VedioSurface(AbstractVedio):
         super().__init__(path, width, height, tag)
         self.loop:bool = loop
         self.looped_times:int = 0
-        self.__audio = load_audio_from_video_as_sound(path) if with_music else None
+        self.__audio = Sound.load_from_video(path) if with_music else None
         self.__audio_channel:int = Sound.find_channel() if with_music else None
         self.__volume:float = volume
         #如果初始音量不为1，则应该设置对应的音量
@@ -112,7 +112,7 @@ class VedioPlayer(AbstractVedio):
     def __init__(self, path:str, width:int, height:int, tag:str=""):
         super().__init__(path, width, height, tag)
         self.__allowFrameDelay:int = 10
-        self.__bgm_status:bool = load_audio_from_video_as_music(path)
+        self.__bgm_status:bool = Music.load_from_video(path)
     #开始执行线程
     def run(self) -> None:
         if self.__bgm_status is True: Music.play()
@@ -159,7 +159,7 @@ def cutscene(surface:ImageSurface, videoPath:str) -> None:
         skip_button.draw(surface)
         white_progress_bar.percentage = VIDEO.get_percentagePlayed()
         white_progress_bar.draw(surface)
-        if skip_button.is_hover() and controller.mouse_get_press(0) and not is_skip:
+        if skip_button.is_hover() and Controller.mouse.get_pressed(0) and not is_skip:
             is_skip = True
             Music.fade_out(5000)
         if is_skip is True:

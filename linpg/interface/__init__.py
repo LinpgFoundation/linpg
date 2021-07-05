@@ -13,3 +13,4 @@ global_value = GlobalValue
 sound = Sound
 music = Music
 media = Media
+controller = Controller

@@ -105,8 +105,7 @@ class SingleLineInputBox(AbstractInputBox):
             return True
         return False
     def draw(self, screen:ImageSurface) -> None:
-        mouse_x,mouse_y = controller.get_mouse_pos()
-        for event in controller.events:
+        for event in Controller.events:
             if event.type == Key.DOWN and self.active is True:
                 if self._check_key_down(event):
                     pass
@@ -116,14 +115,14 @@ class SingleLineInputBox(AbstractInputBox):
                 else:
                     self._add_char(event.unicode)
             elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and self.active is True:
-                if self.x<=mouse_x<=self.x+self.input_box.width and self.y<=mouse_y<=self.y+self.input_box.height:
-                    self._reset_holderIndex(mouse_x)
+                if self.x<=Controller.mouse.x<=self.x+self.input_box.width and self.y<=Controller.mouse.y<=self.y+self.input_box.height:
+                    self._reset_holderIndex(Controller.mouse.x)
                 else:
                     self.active = False
                     self.need_save = True
-            elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and 0<=mouse_x-self.x<=self.input_box.width and 0<=mouse_y-self.y<=self.input_box.height:
+            elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and 0<=Controller.mouse.x-self.x<=self.input_box.width and 0<=Controller.mouse.y-self.y<=self.input_box.height:
                 self.active = True
-                self._reset_holderIndex(mouse_x)
+                self._reset_holderIndex(Controller.mouse.x)
         # 画出文字
         if self._text is not None and len(self._text) > 0:
             screen.blit(self.FONT.render(self._text,Setting.antialias,Color.get(self.txt_color)), (self.x+self.FONTSIZE*0.25,self.y))
@@ -131,7 +130,7 @@ class SingleLineInputBox(AbstractInputBox):
         if self.active:
             draw_rect(screen, self.color, self.input_box, 2)
             #画出 “|” 符号
-            if int(time.time()%2)==0 or len(controller.events)>0:
+            if int(time.time()%2)==0 or len(Controller.events)>0:
                 screen.blit(self._holder, (self.x+self.FONTSIZE*0.25+self.FONT.size(self._text[:self.holderIndex])[0], self.y))
 
 #多行输入框
@@ -241,8 +240,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         else:
             self.holderIndex = i-1
     def draw(self, screen:ImageSurface) -> bool:
-        mouse_x,mouse_y = controller.get_mouse_pos()
-        for event in controller.events:
+        for event in Controller.events:
             if self.active:
                 if event.type == Key.DOWN:
                     if event.key == Key.BACKSPACE:
@@ -281,14 +279,14 @@ class MultipleLinesInputBox(AbstractInputBox):
                     else:
                         self._add_char(event.unicode)
                 elif event.type == MOUSE_BUTTON_DOWN and event.button == 1:
-                    if self.x<=mouse_x<=self.x+self.input_box.width and self.y<=mouse_y<=self.y+self.input_box.height:
-                        self._reset_holderIndex(mouse_x,mouse_y)
+                    if self.x<=Controller.mouse.x<=self.x+self.input_box.width and self.y<=Controller.mouse.y<=self.y+self.input_box.height:
+                        self._reset_holderIndex(Controller.mouse.x,Controller.mouse.y)
                     else:
                         self.active = False
                         self.need_save = True
-            elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and self.x<=mouse_x<=self.x+self.input_box.width and self.y<=mouse_y<=self.y+self.input_box.height:
+            elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and self.x<=Controller.mouse.x<=self.x+self.input_box.width and self.y<=Controller.mouse.y<=self.y+self.input_box.height:
                 self.active = True
-                self._reset_holderIndex(mouse_x,mouse_y)
+                self._reset_holderIndex(Controller.mouse.x,Controller.mouse.y)
         if self._text is not None:
             for i in range(len(self._text)): 
                 # 画出文字
@@ -297,7 +295,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             # 画出输入框
             draw_rect(screen, self.color, self.input_box, 2)
             #画出 “|” 符号
-            if int(time.time()%2)==0 or len(controller.events)>0:
+            if int(time.time()%2)==0 or len(Controller.events)>0:
                 screen.blit(self._holder, (self.x+self.FONTSIZE*0.1+self.FONT.size(self._text[self.lineId][:self.holderIndex])[0], self.y+self.lineId*self.deafult_height))
 
 #控制台
@@ -393,15 +391,14 @@ class Console(SingleLineInputBox):
             self._txt_output.append("The command is unknown!")
     def draw(self, screen:ImageSurface) -> None:
         if self.hidden is True:
-            for event in controller.events:
+            for event in Controller.events:
                 if event.type == Key.DOWN and event.key == Key.BACKQUOTE:
                     self.hidden = False
                     break
         elif not self.hidden:
-            for event in controller.events:
+            for event in Controller.events:
                 if event.type == MOUSE_BUTTON_DOWN:
-                    mouse_x,mouse_y = controller.get_mouse_pos()
-                    if self.x <= mouse_x <= self.x+self.input_box.width and self.y <= mouse_y <= self.y+self.input_box.height:
+                    if self.x <= Controller.mouse.x <= self.x+self.input_box.width and self.y <= Controller.mouse.y <= self.y+self.input_box.height:
                         self.active = not self.active
                         # Change the current color of the input box.
                         self.color = self.color_active if self.active else self.color_inactive
@@ -427,5 +424,5 @@ class Console(SingleLineInputBox):
             #画出输入框
             draw_rect(screen, self.color, self.input_box, 2)
             #画出 “|” 符号
-            if int(time.time()%2)==0 or len(controller.events)>0:
+            if int(time.time()%2)==0 or len(Controller.events)>0:
                 screen.blit(self._holder, (self.x+self.FONTSIZE*0.25+self.FONT.size(self._text[:self.holderIndex])[0], self.y))

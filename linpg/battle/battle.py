@@ -31,6 +31,8 @@ class AbstractBattleSystem(AbstractGameSystem):
         #缩进
         self.zoomIn = 100
         self.zoomIntoBe = 100
+        #天气系统
+        self._weather_system:WeatherSystem = WeatherSystem()
     def stop(self) -> None:
         self._DIALOG.stop()
         super().stop()
@@ -51,9 +53,6 @@ class AbstractBattleSystem(AbstractGameSystem):
     #展示场景装饰物
     def _display_decoration(self, screen:ImageSurface) -> None:
         self.MAP.display_decoration(screen,self.alliances_data,self.enemies_data)
-    #展示天气
-    def _display_weather(self, screen:ImageSurface) -> None:
-        if self.weatherController is not None: self.weatherController.draw(screen,self.MAP.block_width)
     #初始化角色加载器
     def _initial_characters_loader(self, alliancesData:dict, enemiesData:dict, mode:str="default") -> None:
         self.__characterDataLoaderThread = CharacterDataLoader(alliancesData,enemiesData,mode)
@@ -89,29 +88,28 @@ class AbstractBattleSystem(AbstractGameSystem):
         elif event.key == Key.ARROW_RIGHT: self.__pressKeyToMove["right"] = False
     #根据鼠标移动屏幕
     def _check_right_click_move(self) -> None:
-        if controller.mouse_get_press(2):
-            mouse_pos = controller.get_mouse_pos()
+        if Controller.mouse.get_pressed(2):
             if self.__mouse_move_temp_x == -1 and self.__mouse_move_temp_y == -1:
-                self.__mouse_move_temp_x = mouse_pos[0]
-                self.__mouse_move_temp_y = mouse_pos[1]
+                self.__mouse_move_temp_x = Controller.mouse.x
+                self.__mouse_move_temp_y = Controller.mouse.y
             else:
-                if self.__mouse_move_temp_x != mouse_pos[0] or self.__mouse_move_temp_y != mouse_pos[1]:
-                    if self.__mouse_move_temp_x != mouse_pos[0]:
-                        self.MAP.add_local_x(self.__mouse_move_temp_x-mouse_pos[0])
-                    if self.__mouse_move_temp_y != mouse_pos[1]:
-                        self.MAP.add_local_y(self.__mouse_move_temp_y-mouse_pos[1])
-                    self.__mouse_move_temp_x = mouse_pos[0]
-                    self.__mouse_move_temp_y = mouse_pos[1]
+                if self.__mouse_move_temp_x != Controller.mouse.x or self.__mouse_move_temp_y != Controller.mouse.y:
+                    if self.__mouse_move_temp_x != Controller.mouse.x:
+                        self.MAP.add_local_x(self.__mouse_move_temp_x-Controller.mouse.x)
+                    if self.__mouse_move_temp_y != Controller.mouse.y:
+                        self.MAP.add_local_y(self.__mouse_move_temp_y-Controller.mouse.y)
+                    self.__mouse_move_temp_x = Controller.mouse.x
+                    self.__mouse_move_temp_y = Controller.mouse.y
         else:
             self.__mouse_move_temp_x = -1
             self.__mouse_move_temp_y = -1
     #检测手柄事件
     def _check_jostick_events(self) -> None:
-        if controller.joystick.get_init():
-            self.__pressKeyToMove["up"] = True if round(controller.joystick.get_axis(4)) == -1 else False
-            self.__pressKeyToMove["down"] = True if round(controller.joystick.get_axis(4)) == 1 else False
-            self.__pressKeyToMove["right"] = True if round(controller.joystick.get_axis(3)) == 1 else False
-            self.__pressKeyToMove["left"] = True if round(controller.joystick.get_axis(3)) == -1 else False
+        if Controller.joystick.get_init():
+            self.__pressKeyToMove["up"] = True if round(Controller.joystick.get_axis(4)) == -1 else False
+            self.__pressKeyToMove["down"] = True if round(Controller.joystick.get_axis(4)) == 1 else False
+            self.__pressKeyToMove["right"] = True if round(Controller.joystick.get_axis(3)) == 1 else False
+            self.__pressKeyToMove["left"] = True if round(Controller.joystick.get_axis(3)) == -1 else False
     #检测并处理屏幕移动事件
     def _check_if_move_screen(self) -> None:
         #根据按键情况设定要移动的数值

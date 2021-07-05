@@ -172,8 +172,7 @@ class DynamicTextSurface(TextSurface):
     def has_been_hovered(self) -> bool: return self.__is_hovered
     #画出
     def display(self, surface:ImageSurface, offSet:tuple=Origin) -> None:
-        mouse_pos = controller.get_mouse_pos()
-        self.__is_hovered = self.is_hover(subtract_pos(mouse_pos,offSet))
+        self.__is_hovered = self.is_hover(subtract_pos(Controller.mouse.pos,offSet))
         if self.__is_hovered:
             surface.blit(
                 self.big_font_surface,

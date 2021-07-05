@@ -15,7 +15,7 @@ class Button(AbstractImage):
     def has_been_hovered(self) -> bool:
         return self.__is_hovered
     def display(self, surface: ImageSurface, offSet: pos_liked = Origin) -> None:
-        self.__is_hovered = self.is_hover(subtract_pos(controller.get_mouse_pos(), offSet))
+        self.__is_hovered = self.is_hover(subtract_pos(Controller.mouse.pos, offSet))
         surface.blit(resize_img(
             self.img2 if self.__is_hovered is True and self.img2 is not None else self.img,
             self.size
@@ -72,7 +72,7 @@ class ButtonWithDes(Button):
     def display(self, surface: ImageSurface, offSet: pos_liked = Origin) -> None:
         super().display(surface, offSet)
         if self.has_been_hovered():
-            surface.blit(self.des_surface, controller.get_mouse_pos())
+            surface.blit(self.des_surface, Controller.mouse.pos)
 
 # 带描述的按钮
 class ButtonWithDes(Button):
@@ -87,7 +87,7 @@ class ButtonWithDes(Button):
         self.des_surface.blit(font_surface, (panding, panding))
     def display(self, surface: ImageSurface, offSet: pos_liked = Origin) -> None:
         super().display(surface, offSet)
-        if self.has_been_hovered(): surface.blit(self.des_surface, controller.get_mouse_pos())
+        if self.has_been_hovered(): surface.blit(self.des_surface, Controller.mouse.pos)
 
 # 加载按钮
 def load_button_with_des(

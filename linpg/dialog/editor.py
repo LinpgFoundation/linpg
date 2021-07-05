@@ -265,13 +265,12 @@ class DialogEditor(AbstractDialogSystem):
                             option_button_width = int(option_txt.get_width()+surface.get_width()*0.05)
                             option_button_x = int((surface.get_width()-option_button_width)/2)
                             option_button_y = int((i+1)*2*surface.get_width()*0.03+optionBox_y_base)
-                            mouse_x,mouse_y = controller.get_mouse_pos()
-                            if 0 < mouse_x-option_button_x < option_button_width and 0 < mouse_y-option_button_y < option_button_height:
+                            if 0 < Controller.mouse.x-option_button_x < option_button_width and 0 < Controller.mouse.y-option_button_y < option_button_height:
                                 self._option_box_selected_surface.set_size(option_button_width,option_button_height)
                                 self._option_box_selected_surface.set_pos(option_button_x,option_button_y)
                                 self._option_box_selected_surface.draw(surface)
                                 display_in_center(option_txt,self._option_box_selected_surface,self._option_box_selected_surface.x,self._option_box_selected_surface.y,surface)
-                                if controller.get_event("confirm"): return button["id"]
+                                if Controller.get_event("confirm"): return button["id"]
                             else:
                                 self._option_box_surface.set_size(option_button_width,option_button_height)
                                 self._option_box_surface.set_pos(option_button_x,option_button_y)
@@ -312,7 +311,7 @@ class DialogEditor(AbstractDialogSystem):
                 self._update_scene("head")
         #处理输入事件
         leftClick:bool = False
-        for event in controller.events:
+        for event in Controller.events:
             if event.type == MOUSE_BUTTON_DOWN:
                 if event.button == 1:
                     if self.UIContainerRightButton.is_hover():
@@ -381,7 +380,7 @@ class DialogEditor(AbstractDialogSystem):
                         self._npc_manager.update(currentDialogContent["characters_img"])
                         self._npc_manager.character_get_click = None
         #显示移除角色的提示
-        if self._npc_manager.character_get_click is not None : surface.blit(self.removeNpcButton,controller.get_mouse_pos())
+        if self._npc_manager.character_get_click is not None : surface.blit(self.removeNpcButton,Controller.mouse.pos)
         #画上右侧菜单的按钮
         self.UIContainerRightButton.draw(surface)
         #画上右侧菜单

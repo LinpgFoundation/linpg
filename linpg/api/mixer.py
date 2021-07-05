@@ -44,6 +44,12 @@ class SoundController:
         soundTmp:object = pygame.mixer.Sound(path)
         if volume != 1.0: soundTmp.set_volume(volume)
         return soundTmp
+    #从一个视频中加载音效
+    def load_from_video(self, path:str, volume:float=1.0) -> pygame.mixer.Sound:
+        path_of_sound:str = split_audio_from_video(path)
+        sound_audio = self.load(path_of_sound, volume)
+        if not Setting.get("KeepVedioCache"): os.remove(path_of_sound)
+        return sound_audio
     #播放音效
     def play(self, sound:pygame.mixer.Sound, channel_id:int) -> None:
         pygame.mixer.Channel(channel_id).play(sound)
@@ -60,6 +66,17 @@ class MusicController:
         pass
     #加载背景音乐（但不播放）
     def load(self, path:str) -> None: pygame.mixer.music.load(path)
+    #从一个视频中加载音乐
+    def load_from_video(self, path:str) -> bool:
+        self.unload()
+        try:
+            path_of_music:str = split_audio_from_video(path)
+            self.load(path_of_music)
+            if not Setting.get("KeepVedioCache"): os.remove(path_of_music)
+            return True
+        except Exception:
+            EXCEPTION.warn("Cannot load music from {}!\nIf this vedio has no sound, then just ignore this warning.".format(path))
+            return False
     #卸载背景音乐
     def unload(self) -> None: pygame.mixer.music.unload()
     #播放背景音乐
@@ -122,23 +139,6 @@ def split_audio_from_video(moviePath:str, audioType:str="mp3") -> str:
     #读取完成，返回音乐文件的对应目录
     return outPutPath
 
-def load_audio_from_video_as_sound(moviePath:str) -> object:
-    path = split_audio_from_video(moviePath)
-    sound_audio = Sound.load(path)
-    if not Setting.get("KeepVedioCache"): os.remove(path)
-    return sound_audio
-
-def load_audio_from_video_as_music(moviePath:str) -> bool:
-    Music.unload()
-    try:
-        path = split_audio_from_video(moviePath)
-        Music.load(path)
-        if not Setting.get("KeepVedioCache"): os.remove(path)
-        return True
-    except Exception:
-        EXCEPTION.warn("Cannot load music from {}!\nIf this vedio has no sound, then just ignore this warning.".format(moviePath))
-        return False
-
 """即将弃置"""
 #加载音效
 def load_sound(path:str, volume:float=1.0) -> pygame.mixer.Sound: return Sound.load(path, volume)
@@ -166,3 +166,6 @@ def set_music_volume(volume:float) -> None: Music.set_volume(volume)
 def is_any_sound_playing() -> bool: return Media.get_busy()
 #卸载所有音乐
 def unload_all_music() -> None: Media.unload()
+#从视频中加载音乐
+def load_audio_from_video_as_sound(moviePath:str) -> object: Sound.load_from_video(moviePath)
+def load_audio_from_video_as_music(moviePath:str) -> bool: Music.load_from_video(moviePath)

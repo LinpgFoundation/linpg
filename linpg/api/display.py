@@ -24,7 +24,8 @@ class DisplayController:
     def flip(self) -> None:
         self.__clock.tick(self.fps)
         pygame.display.flip()
-        controller.draw()
+        Controller.update()
+        Controller.mouse.draw_custom_icon(self.__SCREEN_WINDOW)
     #设置窗口标题
     def set_caption(self, title:str) -> None:
         if is_using_pygame():

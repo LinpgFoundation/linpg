@@ -95,10 +95,9 @@ def is_same_rect(rect1: RectLiked, rect2: RectLiked) -> bool:
 def is_hover(
     imgObject: object, objectPos: pos_liked = Origin, off_set_x: Union[int, float] = 0, off_set_y: Union[int, float] = 0
     ) -> bool:
-    mouse_x, mouse_y = controller.get_mouse_pos()
     # 如果是Linpg引擎的GameObject2d类(所有2d物品的父类)
     if isinstance(imgObject, GameObject2d):
-        return imgObject.is_hover((mouse_x - off_set_x, mouse_y - off_set_y))
+        return imgObject.is_hover((Controller.mouse.x - off_set_x, Controller.mouse.y - off_set_y))
     else:
         return is_hover_pygame_object(imgObject, objectPos, off_set_x, off_set_y)
 

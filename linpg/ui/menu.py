@@ -61,9 +61,9 @@ class PauseMenu:
     def get_button_clicked(self) -> str:
         if not self.hidden:
             #判定按键
-            if controller.get_event("back"):
+            if Controller.get_event("back"):
                 return "break"
-            elif controller.get_event("confirm"):
+            elif Controller.get_event("confirm"):
                 #判定按钮
                 if self.button_resume.is_hover():
                     return "break"
@@ -211,25 +211,23 @@ class OptionMenu(AbstractImage):
                 self.__update_lang(self.language_choice.get_current_selected_item())
                 self.need_update["language"] = True
             #按键的判定按钮
-            if controller.mouse_get_press(0):
-                #获取鼠标坐标
-                mouse_x,mouse_y=controller.get_mouse_pos()
+            if Controller.mouse.get_pressed(0):
                 #判定划动条
-                if 0 <= mouse_x-self.bar_x <= self.bar_width and not self.language_choice.is_hover():
+                if 0 <= Controller.mouse.x-self.bar_x <= self.bar_width and not self.language_choice.is_hover():
                     #如果碰到背景音乐的音量条
-                    if -self.__item_height/2<mouse_y-self.bar_y1<self.__item_height*1.5:
-                        self.soundVolume_background_music = round(100*(mouse_x-self.bar_x)/self.bar_width)
+                    if -self.__item_height/2<Controller.mouse.y-self.bar_y1<self.__item_height*1.5:
+                        self.soundVolume_background_music = round(100*(Controller.mouse.x-self.bar_x)/self.bar_width)
                         Setting.set("Sound","background_music",self.soundVolume_background_music)
                         Music.set_volume(self.soundVolume_background_music/100.0)
                         self.need_update["volume"] = True
                     #如果碰到音效的音量条
-                    elif -self.__item_height/2<mouse_y-self.bar_y2<self.__item_height*1.5:
-                        self.soundVolume_sound_effects = round(100*(mouse_x-self.bar_x)/self.bar_width)
+                    elif -self.__item_height/2<Controller.mouse.y-self.bar_y2<self.__item_height*1.5:
+                        self.soundVolume_sound_effects = round(100*(Controller.mouse.x-self.bar_x)/self.bar_width)
                         Setting.set("Sound","sound_effects",self.soundVolume_sound_effects)
                         self.need_update["volume"] = True
                     #如果碰到环境声的音量条
-                    elif -self.__item_height/2<mouse_y-self.bar_y3<self.__item_height*1.5:
-                        self.soundVolume_sound_environment = round(100*(mouse_x-self.bar_x)/self.bar_width)
+                    elif -self.__item_height/2<Controller.mouse.y-self.bar_y3<self.__item_height*1.5:
+                        self.soundVolume_sound_environment = round(100*(Controller.mouse.x-self.bar_x)/self.bar_width)
                         Setting.set("Sound","sound_environment",self.soundVolume_sound_environment)
                         self.need_update["volume"] = True
                     #保存新的参数

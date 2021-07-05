@@ -102,7 +102,7 @@ class DialogSystem(AbstractDialogSystem):
         currentDialogContent = self.get_current_dialog_content()
         #按键判定
         leftClick:bool = False
-        if controller.get_event("confirm"):
+        if Controller.get_event("confirm"):
             if self.history_back is not None and self.history_back.is_hover() and self._is_showing_history is True:
                 self._is_showing_history = False
                 self._history_surface = None
@@ -113,16 +113,16 @@ class DialogSystem(AbstractDialogSystem):
                 self._dialog_txt_system.play_all()
             else:
                 leftClick = True
-        if controller.get_event("scroll_up") and self._history_surface_local_y < 0:
+        if Controller.get_event("scroll_up") and self._history_surface_local_y < 0:
             self._history_surface = None
             self._history_surface_local_y += Display.get_height()*0.1
-        if controller.get_event("scroll_down"):
+        if Controller.get_event("scroll_down"):
             self._history_surface = None
             self._history_surface_local_y -= Display.get_height()*0.1
-        if controller.get_event("previous") and currentDialogContent["last_dialog_id"] is not None:
+        if Controller.get_event("previous") and currentDialogContent["last_dialog_id"] is not None:
             self._update_scene(currentDialogContent["last_dialog_id"])
         #暂停菜单
-        if controller.get_event("back") and self.pause_menu is not None:
+        if Controller.get_event("back") and self.pause_menu is not None:
             if self._is_showing_history is True:
                 self._is_showing_history = False
             else:
@@ -174,8 +174,7 @@ class DialogSystem(AbstractDialogSystem):
                 optionBox_width = int(option_txt.get_width()+Display.get_width()*0.05) 
                 optionBox_x = (Display.get_width()-optionBox_width)/2
                 optionBox_y = (i+1)*2*Display.get_width()*0.03+optionBox_y_base
-                mouse_x,mouse_y = controller.get_mouse_pos()
-                if 0 < mouse_x-optionBox_x < optionBox_width and 0 < mouse_y-optionBox_y < optionBox_height:
+                if 0 < Controller.mouse.x-optionBox_x < optionBox_width and 0 < Controller.mouse.y-optionBox_y < optionBox_height:
                     self._option_box_selected_surface.set_size(optionBox_width,optionBox_height)
                     self._option_box_selected_surface.set_pos(optionBox_x,optionBox_y)
                     self._option_box_selected_surface.draw(surface)

@@ -184,7 +184,7 @@ class StaticImage(AdvancedAbstractImage):
         draw_rect(surface, Color.get(color), (add_pos(self.abs_pos,offSet), self.__processed_img.get_size()), line_width)
     #是否被鼠标触碰
     def is_hover(self, mouse_pos:pos_liked=NoSize) -> bool:
-        if mouse_pos is NoSize: mouse_pos = controller.get_mouse_pos()
+        if mouse_pos is NoSize: mouse_pos = Controller.mouse.pos
         if self.__processed_img is not None:
             return 0 < mouse_pos[0]-self.x-self._local_x < self.__processed_img.get_width() and 0 < mouse_pos[1]-self.y-self._local_y < self.__processed_img.get_height()
         else:

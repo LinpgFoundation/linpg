@@ -106,7 +106,7 @@ class DropDownSingleChoiceList(GameObjectContainer):
                 font_surface,
                 add_pos(current_pos, (int(self.width-font_surface.get_width()*1.5), int((self.__block_height-font_surface.get_height())/2)))
                 )
-            if controller.get_event("confirm"):
+            if Controller.get_event("confirm"):
                 if is_hover(rect_of_outline):
                     self.__fold_choice = not self.__fold_choice
                 elif not self.__fold_choice and not is_hover(new_rect(current_abs_pos, self.size)):
@@ -122,7 +122,7 @@ class DropDownSingleChoiceList(GameObjectContainer):
                     )
                     rect_of_outline = new_rect(current_pos, (self.width, self.__block_height))
                     draw_rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
-                    if is_hover(rect_of_outline) and controller.mouse_get_press(0): self.chosen_id = i
+                    if is_hover(rect_of_outline) and Controller.mouse.get_pressed(0): self.chosen_id = i
                     if i != self.chosen_id:
                         draw_circle(surface, self.__font_color, add_pos(current_pos,(self.width*0.1, self.__block_height/2)), 3, self.outline_thickness)
                     else:
@@ -361,11 +361,10 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                 self.__total_height = self._height
             """处理事件"""
             #获取鼠标坐标
-            mouse_pos:tuple = controller.get_mouse_pos()
-            if self.is_hover(subtract_pos(mouse_pos,off_set)):
+            if self.is_hover(subtract_pos(Controller.mouse.pos,off_set)):
                 if not self.__mode and self.__total_height > self._height or self.__mode is True and self.__total_width > self._width:
                     #查看与鼠标有关的事件
-                    for event in controller.events:
+                    for event in Controller.events:
                         if event.type == MOUSE_BUTTON_DOWN:
                             if event.button == 1:
                                 scroll_bar_rect = self.__get_scroll_bar_rect(off_set[0],off_set[1])
@@ -374,17 +373,17 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                                     if is_hover(scroll_button_rect):
                                         if not self.__is_holding_scroll_button:
                                             self.__is_holding_scroll_button = True
-                                            self.__mouse_x_last,self.__mouse_y_last = controller.get_mouse_pos()
+                                            self.__mouse_x_last,self.__mouse_y_last = Controller.mouse.pos
                                     else:
                                         self.__is_holding_scroll_button = True
-                                        self.__mouse_x_last,self.__mouse_y_last = controller.get_mouse_pos()
+                                        self.__mouse_x_last,self.__mouse_y_last = Controller.mouse.pos
                                         if not self.__mode:
                                             self._local_y = int(
-                                                (self.y-mouse_pos[1]+scroll_button_rect.height/2)/scroll_bar_rect.height*self.__total_height
+                                                (self.y-Controller.mouse.y+scroll_button_rect.height/2)/scroll_bar_rect.height*self.__total_height
                                             )
                                         else:
                                             self._local_x = int(
-                                                (self.x-mouse_pos[0]+scroll_button_rect.width/2)/scroll_bar_rect.width*self.__total_width
+                                                (self.x-Controller.mouse.x+scroll_button_rect.width/2)/scroll_bar_rect.width*self.__total_width
                                             )
                             elif event.button == 4:
                                 if not self.__mode:
@@ -404,13 +403,12 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                 self.__is_holding_scroll_button = False
             #调整本地坐标
             if self.__is_holding_scroll_button is True:
-                mouse_x,mouse_y = controller.get_mouse_pos()
                 if not self.__mode:
-                    self._local_y += (self.__mouse_y_last-mouse_y)*(self.__total_height/self.height)
-                    self.__mouse_y_last = mouse_y
+                    self._local_y += (self.__mouse_y_last-Controller.mouse.y)*(self.__total_height/self.height)
+                    self.__mouse_y_last = Controller.mouse.y
                 else:
-                    self._local_x += (self.__mouse_x_last-mouse_x)*(self.__total_width/self.width)
-                    self.__mouse_x_last = mouse_x
+                    self._local_x += (self.__mouse_x_last-Controller.mouse.x)*(self.__total_width/self.width)
+                    self.__mouse_x_last = Controller.mouse.x
             #防止local坐标越界
             if not self.__mode:
                 if self._local_y > 0:

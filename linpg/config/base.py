@@ -80,9 +80,11 @@ class ConfigManager:
                     # 尝试使用默认模式加载yaml配置文件
                     with open(path, "r", encoding='utf-8') as f: Data = yaml.load(f.read(), Loader=yaml.FullLoader)
                 except yaml.constructor.ConstructorError:
-                    EXCEPTION.warn("Encounter a fatal error while loading the yaml file in path:\n'{}'\n\
-                        One possible reason is that at least one numpy array exists inside the yaml file.\n\
-                        The program will try to load the data using yaml.UnsafeLoader.".format(path))
+                    EXCEPTION.inform(
+                        "Encounter a fatal error while loading the yaml file in path:\n{}\n".format(path) + \
+                        "One possible reason is that at least one numpy array exists inside the yaml file.\n" + \
+                        "The program will try to load the data using yaml.UnsafeLoader."
+                        )
                     # 使用安全模式加载yaml配置文件
                     with open(path, "r", encoding='utf-8') as f: Data = yaml.load(f.read(), Loader=yaml.UnsafeLoader)
             else:

@@ -157,24 +157,38 @@ class Node:
         self.g = g  # g值，g值在用到的时候会重新算
         self.h = (abs(endPoint.x - point.x) + abs(endPoint.y - point.y)) * 10  # 计算h值
 
-#环境系统
+#天气系统
 class WeatherSystem:
-    def  __init__(self, weather:str, window_x:int, window_y:int, entityNum:int=50):
+    def  __init__(self):
+        self.__initialized:bool = False
+        self.__items:tuple = tuple()
+        self.__img_list:list = []
+        self.__speed_unit:int = 0
+    #初始化
+    def init(self, weather:str, entityNum:int=50) -> None:
+        self.__initialized = True
         self.name = 0
-        self.img_list = [load_img(imgPath) for imgPath in glob(os.path.join("Assets/image/environment",weather,"*.png"))]
-        self.__items:tuple = tuple([Snow(
-                imgId = get_random_int(0,len(self.img_list)-1),
+        self.__img_list = [load_img(imgPath) for imgPath in glob(os.path.join("Assets/image/environment", weather, "*.png"))]
+        self.__items = tuple([Snow(
+                imgId = get_random_int(0,len(self.__img_list)-1),
                 size = get_random_int(5,10),
                 speed = get_random_int(1,4),
-                x = get_random_int(1,window_x*1.5),
-                y = get_random_int(1,window_y)
+                x = get_random_int(1,Display.get_width()*1.5),
+                y = get_random_int(1,Display.get_height())
                 ) for i in range(entityNum)])
+    #查看初始化状态
+    def get_init(self) -> bool: return self.__initialized
+    #画出
     def draw(self, surface:ImageSurface, perBlockWidth:Union[int,float]) -> None:
-        speed_unit:int = int(perBlockWidth/15)
+        try:
+            assert self.__initialized is True
+        except AssertionError:
+            EXCEPTION.throw("error", "You need to initialize the weather system before using it.")
+        self.__speed_unit:int = int(perBlockWidth/15)
         for item in self.__items:
             if 0 <= item.x < surface.get_width() and 0 <= item.y < surface.get_height():
-                surface.blit(resize_img(self.img_list[item.imgId],(perBlockWidth/item.size,perBlockWidth/item.size)),item.pos)
-            item.move(speed_unit)
+                surface.blit(resize_img(self.__img_list[item.imgId],(perBlockWidth/item.size,perBlockWidth/item.size)),item.pos)
+            item.move(self.__speed_unit)
             if item.x <= 0 or item.y >= surface.get_height():
                 item.y = get_random_int(-50,0)
                 item.x = get_random_int(0,surface.get_width()*2)

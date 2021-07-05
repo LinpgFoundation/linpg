@@ -75,7 +75,7 @@ class GameObject2d(GameObject):
         self.set_centery(centery)
     #是否被鼠标触碰
     def is_hover(self, mouse_pos:pos_liked=NoPos) -> bool:
-        if mouse_pos is NoPos: mouse_pos = controller.get_mouse_pos()
+        if mouse_pos is NoPos: mouse_pos = Controller.mouse.pos
         return 0 < mouse_pos[0]-self.x < self.get_width() and 0 < mouse_pos[1]-self.y < self.get_height()
     #将图片直接画到surface上
     def draw(self, surface:ImageSurface) -> None: self.display(surface)

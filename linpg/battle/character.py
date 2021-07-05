@@ -19,17 +19,25 @@ class FriendlyCharacter(Entity):
         #生成被察觉的图标
         self.__beNoticedImage = EntityDynamicProgressBarSurface()
         self.__beNoticedImage.set_percentage(self._detection/100)
-        #尝试加载重创立绘
-        try:
-            self.__getHurtImage = EntityGetHurtImage(self.type,Display.get_height()/4,Display.get_height()/2)
-        except Exception:
-            EXCEPTION.warn("Character {} does not have damaged artwork!".format(self.type))
-            self.__getHurtImage = None
-            if not os.path.exists("Assets/image/npc_icon/{}.png".format(self.type)): print("And also its icon.")
+        #重创立绘
+        self.__getHurtImage = None
+        self.__try_load_get_hurt_image()
+    #加载图片
     def load_image(self) -> None:
         super().load_image()
-        self.__getHurtImage.add(self.type)
+        if self.__getHurtImage is not None:
+            self.__getHurtImage.add(self.type)
+        else:
+            self.__try_load_get_hurt_image()
         self.__beNoticedImage.load_image()
+    #尝试加载重创立绘
+    def __try_load_get_hurt_image(self) -> None:
+        try:
+            self.__getHurtImage = EntityGetHurtImage(self.type, Display.get_height()/4, Display.get_height()/2)
+        except Exception:
+            EXCEPTION.inform("Character {} does not have damaged artwork!".format(self.type))
+            self.__getHurtImage = None
+            if not os.path.exists(os.path.join("Assets/image/npc_icon", "{}.png".format(self.type))): print("And also its icon.")
     @property
     def detection(self) -> int: return self._detection
     @property

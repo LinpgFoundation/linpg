@@ -59,7 +59,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self.data_of_parent_game_system, {"dialog_id": self._dialog_id, "dialog_options": self._dialog_options, "type": self._part}
         )
     @property
-    def dialog_content(self) -> str: return self._dialog_data[self._part]
+    def dialog_content(self) -> dict: return self._dialog_data[self._part]
     @property
     def current_dialog_content(self) -> dict: return self.get_current_dialog_content()
     #获取当前对话的信息
@@ -184,8 +184,8 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._load_content()
     #更新音量
     def _update_sound_volume(self) -> None:
-        self.set_bgm_volume(Setting.get("Sound","background_music")/100)
-        self._dialog_txt_system.set_sound_volume(Setting.get("Sound","sound_effects"))
+        self.set_bgm_volume(Media.volume.background_music/100)
+        self._dialog_txt_system.set_sound_volume(Media.volume.effects)
     #停止播放
     def stop(self) -> None:
         #如果背景是多线程的VedioSurface，则应该退出占用

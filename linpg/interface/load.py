@@ -17,6 +17,9 @@ class Loader:
     # 可自行移动的图片
     def movable_image(self, path: str, position: tuple, target_position: tuple, move_speed: tuple = (0, 0), size: tuple = NoSize, tag = "default") -> MovableImage:
         return MovableImage(path, position[0], position[1], target_position[0], target_position[1], move_speed[0], move_speed[1], size[0], size[1], tag)
+    #进度条Surface
+    def progress_bar_surface(self, img_on_top_path: str, img_on_bottom_path: str, position: tuple, size: tuple, mode: str = "horizontal", tag:str="") -> ProgressBarSurface:
+        return ProgressBarSurface(img_on_top_path, img_on_bottom_path, position[0], position[1], size[0], size[1], mode, tag)
     # gif图片
     def gif(self, gif_path_or_img_list: Union[str, tuple, list], position: tuple, size: tuple, updateGap: int = 1) -> GifImage:
         imgList: list = []

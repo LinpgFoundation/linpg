@@ -94,9 +94,29 @@ class MusicController:
 
 Music:MusicController = MusicController()
 
+#音量管理
+class SoundVolumeManger:
+    def __init__(self) -> None:
+        self.__sound_unit:int = 100
+    @property
+    def general(self) -> int:
+        return 100
+    @property
+    def background_music(self) -> int:
+        return int(keep_in_range(Setting.get("Sound", "background_music"), 0, 100)*self.general/self.__sound_unit)
+    @property
+    def effects(self) -> int:
+        return int(keep_in_range(Setting.get("Sound", "sound_effects"), 0,100)*self.general/self.__sound_unit)
+    @property
+    def environment(self) -> int:
+        return int(keep_in_range(Setting.get("Sound", "sound_environment"),0,100)*self.general/self.__sound_unit)
+
+#多媒体全局管理
 class MediaController:
     def __init__(self) -> None:
-        pass
+        self.__volume:SoundVolumeManger = SoundVolumeManger()
+    @property
+    def volume(self) -> SoundVolumeManger: return self.__volume
     #是否有任何音乐在播放
     def get_busy(self) -> bool: return pygame.mixer.get_busy()
     #卸载所有音乐

@@ -12,11 +12,11 @@ class SaveDataThread(threading.Thread):
     def copy(self) -> object: return SaveDataThread(self.path, self.data)
     def run(self) -> None:
         try:
-            save_config(self.path,self.data)
+            Config.save(self.path,self.data)
             self.result = True
-        except BaseException:
-            if get_setting("DeveloperMode") is True:
-                throw_exception("error", "Cannot save data to path: {}".format(self.path)) 
+        except Exception:
+            if Setting.developer_mode is True:
+                EXCEPTION.throw("error", "Cannot save data to path: {}".format(self.path)) 
             else:
                 pass
 
@@ -25,7 +25,7 @@ class AbstractSystem:
     def __init__(self):
         #判定用于判定是否还在播放的参数
         self.__is_playing:bool = True
-        self._language_when_initialize:str = get_current_language()
+        self._language_when_initialize:str = Lang.get_current_language()
     #是否正在播放
     @property
     def isPlaying(self) -> bool: return self.__is_playing
@@ -33,9 +33,9 @@ class AbstractSystem:
     def stop(self) -> None: self.__is_playing = False
     def _continue(self) -> None: self.__is_playing = True
     #是否本体语言和当前一致
-    def language_need_update(self) -> bool: return self._language_when_initialize != get_current_language()
+    def language_need_update(self) -> bool: return self._language_when_initialize != Lang.get_current_language()
     #更新语言
-    def updated_language(self) -> None: self._language_when_initialize = get_current_language()
+    def updated_language(self) -> None: self._language_when_initialize = Lang.get_current_language()
 
 #拥有背景音乐的系统模块接口
 class SystemWithBackgroundMusic(AbstractSystem):
@@ -63,7 +63,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
                 #同一首曲子，不更新任何内容
                 pass
         else:
-            throw_exception("error","Path '{}' does not exist!".format(path))
+            EXCEPTION.throw("error","Path '{}' does not exist!".format(path))
     #获取bgm音量
     @property
     def bgm_volume(self) -> float: return self.__bgm_volume
@@ -75,7 +75,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
                 pygame.mixer.music.set_volume(volume)
             self.__bgm_volume = volume
         else:
-            throw_exception("error","Volume '{}' is out of the range! (must between 0 and 1)".format(volume))
+            EXCEPTION.throw("error","Volume '{}' is out of the range! (must between 0 and 1)".format(volume))
     #播放bgm
     def play_bgm(self, times:int=1) -> None:
         if self.__bgm_path is not None and not pygame.mixer.music.get_busy() and not self.__if_stop_playing_bgm:
@@ -93,6 +93,12 @@ class SystemWithBackgroundMusic(AbstractSystem):
     def unload_bgm(self) -> None:
         self.__bgm_path = None
         pygame.mixer.music.unload()
+    #把内容画到surface上（子类必须实现）
+    def draw(self, surface:ImageSurface) -> None:
+        EXCEPTION.throw("error","The child class needs to implement draw() function!")
+    #直接画到屏幕上
+    def draw_on_screen(self) -> None:
+        self.draw(Display.window)
 
 #游戏模块接口
 class AbstractGameSystem(SystemWithBackgroundMusic):
@@ -133,8 +139,9 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
         "chapter_id": self._chapter_id,
         "project_name": self._project_name
         }
-    #获取需要保存的数据 - 子类必须实现
-    def _get_data_need_to_save(self) -> dict: throw_exception("error","The child class does not implement _get_data_need_to_save() function!")
+    #获取需要保存的数据（子类必须实现）
+    def _get_data_need_to_save(self) -> dict:
+        EXCEPTION.throw("error", "The child class needs to implement _get_data_need_to_save() function!")
     #保存进度
     def save_progress(self) -> None:
         #确保储存进度存档的文件夹存在

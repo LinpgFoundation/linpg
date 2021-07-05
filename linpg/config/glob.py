@@ -25,4 +25,4 @@ class GlobalValueManager:
         else:
             return False
 
-global_value:GlobalValueManager = GlobalValueManager()
+GlobalValue:GlobalValueManager = GlobalValueManager()

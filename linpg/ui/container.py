@@ -3,9 +3,8 @@ from .button import *
 
 #用于储存游戏对象的容器，类似html的div
 class GameObjectContainer(AbstractImage):
-    def __init__(self, bg_img:Union[str,ImageSurface,None], x:Union[int,float], y:Union[int,float], width:int, height:int):
-        if bg_img is not None: bg_img = StaticImage(bg_img,0,0,width,height)
-        super().__init__(bg_img,x,y,width,height)
+    def __init__(self, bg_img:Union[str,ImageSurface,None], x:Union[int,float], y:Union[int,float], width:int, height:int, tag:str=""):
+        super().__init__(StaticImage(bg_img, 0, 0, width, height) if bg_img is not None else bg_img, x, y, width, height, tag)
         self.items:list = []
         self.item_hovered = None
     #新增一个物品
@@ -24,7 +23,7 @@ class GameObjectContainer(AbstractImage):
         super().set_height(value)
         if self.img is not None: self.img.set_height(value)
     #把物品画到surface上
-    def display(self, surface:ImageSurface, offSet:tuple=(0,0)) -> None:
+    def display(self, surface:ImageSurface, offSet:tuple=Origin) -> None:
         self.item_hovered = None
         if not self.hidden:
             current_abs_pos:tuple = add_pos(self.pos, offSet)
@@ -38,13 +37,13 @@ class GameObjectContainer(AbstractImage):
 
 #下拉选项菜单
 class DropDownSingleChoiceList(GameObjectContainer):
-    def __init__(self, bg_img: Union[str, ImageSurface, None], x: Union[int, float], y: Union[int, float], font_size: int, font_color: any="black"):
-        super().__init__(bg_img, x, y, 0, 0)
+    def __init__(self, bg_img: Union[str, ImageSurface, None], x: Union[int, float], y: Union[int, float], font_size: int, font_color: any="black", tag:str=""):
+        super().__init__(bg_img, x, y, 0, 0, tag)
         self.chosen_id:int = 0
         self.__DEFAULT_CONTENT:str = ""
         self.__font_size:int = int(font_size)
         self.__block_height:int = int(font_size*1.5)
-        self.__font_color:tuple = get_color_rbga(font_color)
+        self.__font_color:tuple = Color.get(font_color)
         self.__FONT = create_font(self.__font_size)
         self.__fold_choice:bool = True
         self.outline_thickness:int = 1
@@ -61,7 +60,7 @@ class DropDownSingleChoiceList(GameObjectContainer):
         self.__FONT = create_font(self.__font_size)
         self._update_width()
     #更新font的颜色
-    def update_font_color(self, font_color:int) -> None: self.__font_color = get_color_rbga(font_color)
+    def update_font_color(self, font_color:int) -> None: self.__font_color = Color.get(font_color)
     #新增一个物品
     def append(self, new_item:Union[str,int]) -> None:
         self.items.append(new_item)
@@ -85,29 +84,29 @@ class DropDownSingleChoiceList(GameObjectContainer):
         super().clear()
         self._update_width()
     #把物品画到surface上
-    def display(self, surface:ImageSurface, offSet:tuple=(0,0)) -> None:
+    def display(self, surface:ImageSurface, offSet:tuple=Origin) -> None:
         if not self.hidden:
             current_abs_pos:tuple = add_pos(self.pos, offSet)
             #画出背景
             if self.img is not None:
                 self.img.display(surface, current_abs_pos)
             else:
-                draw_rect(surface, get_color_rbga("white"), (current_abs_pos,self.size))
+                draw_rect(surface, Color.WHITE, (current_abs_pos,self.size))
             #列出当前选中的选项
             current_pos:tuple = current_abs_pos
-            font_surface:ImageSurface = cope_bounding(self.__FONT.render(self.get_current_selected_item(), get_antialias(), self.__font_color))
+            font_surface:ImageSurface = cope_bounding(self.__FONT.render(self.get_current_selected_item(), Setting.antialias, self.__font_color))
             surface.blit(
                 font_surface,
                 add_pos(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))
                 )
             rect_of_outline = new_rect(current_pos, (self.width, self.__block_height))
             draw_rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
-            font_surface = flip_img(cope_bounding(self.__FONT.render("^", get_antialias(), self.__font_color)), False, True)
+            font_surface = flip_img(cope_bounding(self.__FONT.render("^", Setting.antialias, self.__font_color)), False, True)
             surface.blit(
                 font_surface,
                 add_pos(current_pos, (int(self.width-font_surface.get_width()*1.5), int((self.__block_height-font_surface.get_height())/2)))
                 )
-            if controller.get_event("confirm"):
+            if Controller.get_event("confirm"):
                 if is_hover(rect_of_outline):
                     self.__fold_choice = not self.__fold_choice
                 elif not self.__fold_choice and not is_hover(new_rect(current_abs_pos, self.size)):
@@ -116,14 +115,14 @@ class DropDownSingleChoiceList(GameObjectContainer):
             if not self.__fold_choice:
                 for i in range(len(self.items)):
                     current_pos = add_pos(current_abs_pos, (0,(i+1)*self.__block_height))
-                    font_surface = cope_bounding(self.__FONT.render(self.items[i], get_antialias(), self.__font_color))
+                    font_surface = cope_bounding(self.__FONT.render(self.items[i], Setting.antialias, self.__font_color))
                     surface.blit(
                         font_surface,
                         add_pos(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))
                     )
                     rect_of_outline = new_rect(current_pos, (self.width, self.__block_height))
                     draw_rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
-                    if is_hover(rect_of_outline) and controller.mouse_get_press(0): self.chosen_id = i
+                    if is_hover(rect_of_outline) and Controller.mouse.get_pressed(0): self.chosen_id = i
                     if i != self.chosen_id:
                         draw_circle(surface, self.__font_color, add_pos(current_pos,(self.width*0.1, self.__block_height/2)), 3, self.outline_thickness)
                     else:
@@ -131,9 +130,8 @@ class DropDownSingleChoiceList(GameObjectContainer):
 
 #带有滚动条的Surface容器
 class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
-    def __init__(self, img:Union[str,ImageSurface,None], x:Union[int,float], y:Union[int,float], width:int, height:int, mode:str="horizontal"):
-        if img is not None: img = load_img(img,(width,height))
-        super().__init__(img,x,y,width,height)
+    def __init__(self, img:Union[str,ImageSurface,None], x:Union[int,float], y:Union[int,float], width:int, height:int, mode:str="horizontal", tag:str=""):
+        super().__init__(load_img(img, (width, height)) if img is not None else img, x, y, width, height, tag)
         self.panding:int = 0
         self.__items_dict:dict = {}
         self.distance_between_item:int = 20
@@ -159,7 +157,7 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
         elif mode == "vertical":
             self.__mode = False
         else:
-            throw_exception("error","Mode '{}' is not supported!".format(mode))
+            EXCEPTION.throw("error","Mode '{}' is not supported!".format(mode))
     def switch_mode(self) -> None:
         self.__mode = not self.__mode
         self.set_local_pos(0,0)
@@ -177,24 +175,24 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
             if not self.__mode:
                 self.__scroll_bar_pos = True
             else:
-                throw_exception("error","You cannot put the scroll bar on the left during horizontal mode!")
+                EXCEPTION.throw("error","You cannot put the scroll bar on the left during horizontal mode!")
         elif pos == "right":
             if not self.__mode:
                 self.__scroll_bar_pos = False
             else:
-                throw_exception("error","You cannot put the scroll bar on the right during horizontal mode!")
+                EXCEPTION.throw("error","You cannot put the scroll bar on the right during horizontal mode!")
         elif pos == "top":
             if self.__mode is True:
                 self.__scroll_bar_pos = True
             else:
-                throw_exception("error","You cannot put the scroll bar on the top during vertical mode!")
+                EXCEPTION.throw("error","You cannot put the scroll bar on the top during vertical mode!")
         elif pos == "bottom":
             if self.__mode is True:
                 self.__scroll_bar_pos = False
             else:
-                throw_exception("error","You cannot put the scroll bar on the bottom during vertical mode!")
+                EXCEPTION.throw("error","You cannot put the scroll bar on the bottom during vertical mode!")
         else:
-            throw_exception("error",'Scroll bar position "{}" is not supported! Try sth like "right" or "bottom" instead.'.format(pos))
+            EXCEPTION.throw("error",'Scroll bar position "{}" is not supported! Try sth like "right" or "bottom" instead.'.format(pos))
     #添加一个物品
     def set(self, key:Union[str,int], value:Union[AbstractImage, ImageSurface, None]) -> None: self.__items_dict[key] = value
     #获取一个物品
@@ -266,7 +264,7 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
     def get_item_per_line(self) -> int: return self.__item_per_line
     def set_item_per_line(self, value:int) -> None: self.__item_per_line = int(value)
     #把素材画到屏幕上
-    def display(self, surface:ImageSurface, off_set:tuple=(0,0)) -> None:
+    def display(self, surface:ImageSurface, off_set:tuple=Origin) -> None:
         self.__current_hovered_item = None
         if not self.hidden:
             """画出"""
@@ -363,11 +361,10 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                 self.__total_height = self._height
             """处理事件"""
             #获取鼠标坐标
-            mouse_pos:tuple = controller.get_mouse_pos()
-            if self.is_hover(subtract_pos(mouse_pos,off_set)):
+            if self.is_hover(subtract_pos(Controller.mouse.pos,off_set)):
                 if not self.__mode and self.__total_height > self._height or self.__mode is True and self.__total_width > self._width:
                     #查看与鼠标有关的事件
-                    for event in controller.events:
+                    for event in Controller.events:
                         if event.type == MOUSE_BUTTON_DOWN:
                             if event.button == 1:
                                 scroll_bar_rect = self.__get_scroll_bar_rect(off_set[0],off_set[1])
@@ -376,17 +373,17 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                                     if is_hover(scroll_button_rect):
                                         if not self.__is_holding_scroll_button:
                                             self.__is_holding_scroll_button = True
-                                            self.__mouse_x_last,self.__mouse_y_last = controller.get_mouse_pos()
+                                            self.__mouse_x_last,self.__mouse_y_last = Controller.mouse.pos
                                     else:
                                         self.__is_holding_scroll_button = True
-                                        self.__mouse_x_last,self.__mouse_y_last = controller.get_mouse_pos()
+                                        self.__mouse_x_last,self.__mouse_y_last = Controller.mouse.pos
                                         if not self.__mode:
                                             self._local_y = int(
-                                                (self.y-mouse_pos[1]+scroll_button_rect.height/2)/scroll_bar_rect.height*self.__total_height
+                                                (self.y-Controller.mouse.y+scroll_button_rect.height/2)/scroll_bar_rect.height*self.__total_height
                                             )
                                         else:
                                             self._local_x = int(
-                                                (self.x-mouse_pos[0]+scroll_button_rect.width/2)/scroll_bar_rect.width*self.__total_width
+                                                (self.x-Controller.mouse.x+scroll_button_rect.width/2)/scroll_bar_rect.width*self.__total_width
                                             )
                             elif event.button == 4:
                                 if not self.__mode:
@@ -406,13 +403,12 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                 self.__is_holding_scroll_button = False
             #调整本地坐标
             if self.__is_holding_scroll_button is True:
-                mouse_x,mouse_y = controller.get_mouse_pos()
                 if not self.__mode:
-                    self._local_y += (self.__mouse_y_last-mouse_y)*(self.__total_height/self.height)
-                    self.__mouse_y_last = mouse_y
+                    self._local_y += (self.__mouse_y_last-Controller.mouse.y)*(self.__total_height/self.height)
+                    self.__mouse_y_last = Controller.mouse.y
                 else:
-                    self._local_x += (self.__mouse_x_last-mouse_x)*(self.__total_width/self.width)
-                    self.__mouse_x_last = mouse_x
+                    self._local_x += (self.__mouse_x_last-Controller.mouse.x)*(self.__total_width/self.width)
+                    self.__mouse_x_last = Controller.mouse.x
             #防止local坐标越界
             if not self.__mode:
                 if self._local_y > 0:
@@ -429,6 +425,6 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
             
             #画出滚动条
             scroll_button_rect = self.__get_scroll_button_rect(off_set[0],off_set[1])
-            if scroll_button_rect is not None: draw_rect(surface,get_color_rbga("white"),scroll_button_rect)
+            if scroll_button_rect is not None: draw_rect(surface,Color.WHITE,scroll_button_rect)
             scroll_bar_rect = self.__get_scroll_bar_rect(off_set[0],off_set[1])
-            if scroll_bar_rect is not None: draw_rect(surface,get_color_rbga("white"),scroll_bar_rect,2)
+            if scroll_bar_rect is not None: draw_rect(surface,Color.WHITE,scroll_bar_rect,2)

@@ -19,12 +19,12 @@ class DialogSystem(AbstractDialogSystem):
         #展示历史界面-返回按钮
         self.history_back = load_button(
             os.path.join(DIALOG_UI_PATH,"back.png"),
-            (display.get_width()*0.04,display.get_height()*0.04),
-            (display.get_width()*0.03,display.get_height()*0.04), 150
+            (Display.get_width()*0.04,Display.get_height()*0.04),
+            (Display.get_width()*0.03,Display.get_height()*0.04), 150
         ) if not basic_features_only else None
     #读取章节
     def load(self, save_path:str) -> None:
-        saveData = load_config(save_path)
+        saveData = Config.load(save_path)
         self._initialize(
             saveData["chapter_type"],
             saveData["chapter_id"],
@@ -48,7 +48,7 @@ class DialogSystem(AbstractDialogSystem):
             #自动保存
             if self.auto_save: self.save_progress()
         else:
-            throw_exception("error","The dialog id {} does not exist!".format(theNextDialogId))
+            EXCEPTION.throw("error","The dialog id {} does not exist!".format(theNextDialogId))
     def continue_scene(self, theNextDialogId:Union[str,int]) -> None:
         self._continue()
         self._update_scene(theNextDialogId)
@@ -77,22 +77,21 @@ class DialogSystem(AbstractDialogSystem):
     #淡入或淡出
     def fade(self, surface:ImageSurface, stage:str="$out") -> None:
         if stage == "$out":
-            fade_out_sound(1000)
-            fade_out_music(1000)
+            Media.fade_out(1000)
             for i in range(0,255,5):
                 self._black_bg.set_alpha(i)
                 self._black_bg.draw(surface)
-                display.flip()
+                Display.flip()
         elif stage == "$in":
             for i in range(255,0,-5):
                 self.display_background_image(surface)
                 self._black_bg.set_alpha(i)
                 self._black_bg.draw(surface)
-                display.flip()
+                Display.flip()
             #重设black_bg的alpha值以便下一次使用
             self._black_bg.set_alpha(255)
         else:
-            throw_exception("error", 'Stage input has to be either "in" or "out", not "{}"'.format(stage))
+            EXCEPTION.throw("error", 'Stage input has to be either "in" or "out", not "{}"'.format(stage))
     def draw(self, surface:ImageSurface) -> None:
         super().draw(surface)
         #背景音乐
@@ -103,7 +102,7 @@ class DialogSystem(AbstractDialogSystem):
         currentDialogContent = self.get_current_dialog_content()
         #按键判定
         leftClick:bool = False
-        if controller.get_event("confirm"):
+        if Controller.get_event("confirm"):
             if self.history_back is not None and self.history_back.is_hover() and self._is_showing_history is True:
                 self._is_showing_history = False
                 self._history_surface = None
@@ -114,28 +113,28 @@ class DialogSystem(AbstractDialogSystem):
                 self._dialog_txt_system.play_all()
             else:
                 leftClick = True
-        if controller.get_event("scroll_up") and self._history_surface_local_y < 0:
+        if Controller.get_event("scroll_up") and self._history_surface_local_y < 0:
             self._history_surface = None
-            self._history_surface_local_y += display.get_height()*0.1
-        if controller.get_event("scroll_down"):
+            self._history_surface_local_y += Display.get_height()*0.1
+        if Controller.get_event("scroll_down"):
             self._history_surface = None
-            self._history_surface_local_y -= display.get_height()*0.1
-        if controller.get_event("previous") and currentDialogContent["last_dialog_id"] is not None:
+            self._history_surface_local_y -= Display.get_height()*0.1
+        if Controller.get_event("previous") and currentDialogContent["last_dialog_id"] is not None:
             self._update_scene(currentDialogContent["last_dialog_id"])
         #暂停菜单
-        if controller.get_event("back") and self.pause_menu is not None:
+        if Controller.get_event("back") and self.pause_menu is not None:
             if self._is_showing_history is True:
                 self._is_showing_history = False
             else:
                 progress_saved_text = StaticImage(
-                    self._dialog_txt_system.FONT.render(get_lang("Global","progress_has_been_saved"),get_antialias(),(255, 255, 255)),0,0
+                    self._dialog_txt_system.FONT.render(Lang.get_text("Global","progress_has_been_saved"),Setting.antialias,(255, 255, 255)),0,0
                     )
                 progress_saved_text.set_alpha(0)
                 progress_saved_text.set_center(surface.get_width()/2, surface.get_height()/2)
                 self.pause_menu.hidden = False
-                display.flip()
+                Display.flip()
                 while not self.pause_menu.hidden:
-                    display.flip()
+                    Display.flip()
                     self.pause_menu.draw(surface)
                     result = self.pause_menu.get_button_clicked()
                     if result == "break":
@@ -167,16 +166,15 @@ class DialogSystem(AbstractDialogSystem):
         if self._dialog_txt_system.is_all_played() and not self._dialog_txt_system.hidden and \
             currentDialogContent["next_dialog_id"] is not None and \
                 currentDialogContent["next_dialog_id"]["type"] == "option":
-            optionBox_y_base = (display.get_height()*3/4-(len(currentDialogContent["next_dialog_id"]["target"]))*2*display.get_width()*0.03)/4
-            optionBox_height = int(display.get_width()*0.05)
+            optionBox_y_base = (Display.get_height()*3/4-(len(currentDialogContent["next_dialog_id"]["target"]))*2*Display.get_width()*0.03)/4
+            optionBox_height = int(Display.get_width()*0.05)
             nextDialogId = None
             for i in range(len(currentDialogContent["next_dialog_id"]["target"])):
-                option_txt = self._dialog_txt_system.render_font(currentDialogContent["next_dialog_id"]["target"][i]["txt"],get_color_rbga("white"))
-                optionBox_width = int(option_txt.get_width()+display.get_width()*0.05) 
-                optionBox_x = (display.get_width()-optionBox_width)/2
-                optionBox_y = (i+1)*2*display.get_width()*0.03+optionBox_y_base
-                mouse_x,mouse_y = controller.get_mouse_pos()
-                if 0 < mouse_x-optionBox_x < optionBox_width and 0 < mouse_y-optionBox_y < optionBox_height:
+                option_txt = self._dialog_txt_system.render_font(currentDialogContent["next_dialog_id"]["target"][i]["txt"],Color.WHITE)
+                optionBox_width = int(option_txt.get_width()+Display.get_width()*0.05) 
+                optionBox_x = (Display.get_width()-optionBox_width)/2
+                optionBox_y = (i+1)*2*Display.get_width()*0.03+optionBox_y_base
+                if 0 < Controller.mouse.x-optionBox_x < optionBox_width and 0 < Controller.mouse.y-optionBox_y < optionBox_height:
                     self._option_box_selected_surface.set_size(optionBox_width,optionBox_height)
                     self._option_box_selected_surface.set_pos(optionBox_x,optionBox_y)
                     self._option_box_selected_surface.draw(surface)
@@ -196,27 +194,27 @@ class DialogSystem(AbstractDialogSystem):
         #展示历史
         if self._is_showing_history is True:
             if self._history_surface is None:
-                self._history_surface = new_surface(display.get_size()).convert()
-                self._history_surface.fill(get_color_rbga("black"))
+                self._history_surface = new_surface(Display.get_size()).convert()
+                self._history_surface.fill(Color.BLACK)
                 self._history_surface.set_alpha(150)
                 dialogIdTemp = "head"
                 local_y = self._history_surface_local_y
                 while dialogIdTemp is not None:
                     if self.dialog_content[dialogIdTemp]["narrator"] is not None:
                         narratorTemp = self._dialog_txt_system.render_font(self.dialog_content[dialogIdTemp]["narrator"]+': ["',(255, 255, 255))
-                        self._history_surface.blit(narratorTemp,(display.get_width()*0.15-narratorTemp.get_width(),display.get_height()*0.1+local_y))
+                        self._history_surface.blit(narratorTemp,(Display.get_width()*0.15-narratorTemp.get_width(),Display.get_height()*0.1+local_y))
                     for i in range(len(self.dialog_content[dialogIdTemp]["content"])):
                         txt = self.dialog_content[dialogIdTemp]["content"][i]
                         txt += '"]' if i == len(self.dialog_content[dialogIdTemp]["content"])-1 and self.dialog_content[dialogIdTemp]["narrator"] is not None else ""
-                        self._history_surface.blit(self._dialog_txt_system.render_font(txt,(255, 255, 255)),(display.get_width()*0.15,display.get_height()*0.1+local_y))
+                        self._history_surface.blit(self._dialog_txt_system.render_font(txt,(255, 255, 255)),(Display.get_width()*0.15,Display.get_height()*0.1+local_y))
                         local_y+=self._dialog_txt_system.FONTSIZE*1.5
                     if dialogIdTemp != self._dialog_id:
                         if self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "default" or self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "changeScene":
                             dialogIdTemp = self.dialog_content[dialogIdTemp]["next_dialog_id"]["target"]
                         elif self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "option":
                             narratorTemp = self._dialog_txt_system.render_font(self._buttons_mananger.choiceTxt+" - ",(0,191,255))
-                            self._history_surface.blit(narratorTemp,(display.get_width()*0.15-narratorTemp.get_width(),display.get_height()*0.1+local_y))
-                            self._history_surface.blit(self._dialog_txt_system.render_font(str(self._dialog_options[dialogIdTemp]["target"]),(0,191,255)),(display.get_width()*0.15,display.get_height()*0.1+local_y))
+                            self._history_surface.blit(narratorTemp,(Display.get_width()*0.15-narratorTemp.get_width(),Display.get_height()*0.1+local_y))
+                            self._history_surface.blit(self._dialog_txt_system.render_font(str(self._dialog_options[dialogIdTemp]["target"]),(0,191,255)),(Display.get_width()*0.15,Display.get_height()*0.1+local_y))
                             local_y+=self._dialog_txt_system.FONTSIZE*1.5
                             dialogIdTemp = self._dialog_options[dialogIdTemp]["target"]
                         else:
@@ -259,4 +257,4 @@ class DialogSystem(AbstractDialogSystem):
                     self.stop()
                 #非法type
                 else:
-                    throw_exception("error", 'Type "{}" is not a valid type.'.format(next_dialog_type))
+                    EXCEPTION.throw("error", 'Type "{}" is not a valid type.'.format(next_dialog_type))

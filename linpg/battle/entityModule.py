@@ -3,6 +3,7 @@ from .map import *
 
 #存储角色受伤立绘的常量
 _CHARACTERS_GET_HURT_IMAGE_DICT:dict = {}
+_IMAGE_FOLDER_PATH:str = "Assets/image/npc"
 
 #角色受伤立绘图形模块
 class EntityGetHurtImage(GameObject):
@@ -12,7 +13,6 @@ class EntityGetHurtImage(GameObject):
         self.width = int(width)
         self.alpha:int = 255
         self.add(self_type)
-        self.__IMAGE_FOLDER_PATH:str = "Assets/image/npc"
     def draw(self, screen:ImageSurface, characterType:str) -> None:
         GetHurtImage = resize_img(_CHARACTERS_GET_HURT_IMAGE_DICT[characterType],(self.width,self.width))
         if self.alpha != 255:
@@ -21,8 +21,8 @@ class EntityGetHurtImage(GameObject):
     def add(self, characterType:str) -> None:
         global _CHARACTERS_GET_HURT_IMAGE_DICT
         if characterType not in _CHARACTERS_GET_HURT_IMAGE_DICT:
-            _CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = load_img(
-                os.path.join(self.__IMAGE_FOLDER_PATH, "{}_hurt.png".format(characterType))
+            _CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = quickly_load_img(
+                os.path.join(_IMAGE_FOLDER_PATH, "{}_hurt.png".format(characterType))
                 )
 
 #指向储存角色被察觉和警觉的图标的指针
@@ -143,7 +143,7 @@ class EntitySoundManager(AbstractEntitySoundManager):
             for soundType in os.listdir(os.path.join(self._SOUNDS_PATH,characterType)):
                 self._sounds_dict[characterType][soundType] = []
                 for soundPath in glob(os.path.join(self._SOUNDS_PATH,characterType,soundType,"*")):
-                    self._sounds_dict[characterType][soundType].append(load_sound(soundPath))
+                    self._sounds_dict[characterType][soundType].append(Sound.load(soundPath))
     #播放角色音效
     def play(self, characterType:str, soundType:str) -> None:
         if characterType in self._sounds_dict and soundType in self._sounds_dict[characterType]:
@@ -153,8 +153,8 @@ class EntitySoundManager(AbstractEntitySoundManager):
                     sound = sound_list[get_random_int(0,len(sound_list)-1)]
                 else:
                     sound = sound_list[0]
-                sound.set_volume(get_setting("Sound","sound_effects")/100.0)
-                play_sound(sound, self._channel_id)
+                sound.set_volume(Media.volume.effects/100.0)
+                Sound.play(sound, self._channel_id)
 
 #射击音效 -- 频道2
 class AttackingSoundManager(AbstractEntitySoundManager):
@@ -176,11 +176,11 @@ class AttackingSoundManager(AbstractEntitySoundManager):
         self.volume:int = volume
         for key in self._sounds_dict:
             for i in range(len(self._sounds_dict[key])):
-                self._sounds_dict[key][i] = load_sound(self._sounds_dict[key][i], volume/100.0)
+                self._sounds_dict[key][i] = Sound.load(self._sounds_dict[key][i], volume/100.0)
     #播放
     def play(self, kind:str) -> None:
         if kind in self._sounds_dict:
-            play_sound(self._sounds_dict[kind][get_random_int(0,len(self._sounds_dict[kind])-1)], self._channel_id)
+            Sound.play(self._sounds_dict[kind][get_random_int(0,len(self._sounds_dict[kind])-1)], self._channel_id)
 
 #计算最远攻击距离
 def calculate_range(effective_range_dic:dict) -> int:
@@ -233,7 +233,7 @@ class EntityImageManager:
         elif mode == "dev":
             imgId_dict = {"wait":self.loadImageCollection(characterType,"wait",faction)}
         else:
-            throw_exception("error","Mode is not supported")
+            EXCEPTION.throw("error","Mode is not supported")
         return imgId_dict
     #动图制作模块：接受一个友方角色名和动作,当前的方块标准长和高，返回对应角色动作list或者因为没图片而返回None
     #810*810 position:405/567
@@ -272,7 +272,7 @@ def makeFolderForCharacterSounds() -> None:
 
 #加载并更新更新位于Data中的角色数据配置文件-character_data.yaml
 def loadCharacterData() -> None:
-    loadData = load_config("Data/character_data.yaml")
+    loadData = Config.load("Data/character_data.yaml")
     ifAnythingChange = False
     for path in glob(r'Assets/image/character/*'):
         name = os.path.basename(path)
@@ -294,7 +294,7 @@ def loadCharacterData() -> None:
             "skill_effective_range": None,
             }
             ifAnythingChange = True
-            throw_exception("info","A new character call {} has been updated to the data file.".format(name))
+            EXCEPTION.inform("A new character call {} has been updated to the data file.".format(name))
     for path in glob(r'Assets/image/sangvisFerri/*'):
         name = os.path.basename(path)
         if name not in loadData:
@@ -313,9 +313,9 @@ def loadCharacterData() -> None:
             "min_damage": 1,
             }
             ifAnythingChange = True
-            throw_exception("info","A new character call {} has been updated to the data file.".format(name))
+            EXCEPTION.inform("A new character call {} has been updated to the data file.".format(name))
     if ifAnythingChange is True:
-        save_config("Data/character_data.yaml",loadData)
+        Config.save("Data/character_data.yaml",loadData)
     makeFolderForCharacterSounds()
     return loadData
 
@@ -329,16 +329,16 @@ class DecisionHolder:
         if self.action == "move":
             return self.data
         else:
-            throw_exception("error","The character does not decide to move!")
+            EXCEPTION.throw("error","The character does not decide to move!")
     @property
     def target(self):
         if self.action == "attack":
             return self.data[0]
         else:
-            throw_exception("error","The character does not decide to attack!")
+            EXCEPTION.throw("error","The character does not decide to attack!")
     @property
     def target_area(self):
         if self.action == "attack":
             return self.data[1]
         else:
-            throw_exception("error","The character does not decide to attack!")
+            EXCEPTION.throw("error","The character does not decide to attack!")

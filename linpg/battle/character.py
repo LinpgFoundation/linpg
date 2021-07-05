@@ -19,17 +19,25 @@ class FriendlyCharacter(Entity):
         #生成被察觉的图标
         self.__beNoticedImage = EntityDynamicProgressBarSurface()
         self.__beNoticedImage.set_percentage(self._detection/100)
-        #尝试加载重创立绘
-        try:
-            self.__getHurtImage = EntityGetHurtImage(self.type,display.get_height()/4,display.get_height()/2)
-        except BaseException:
-            throw_exception("warning","Character {} does not have damaged artwork!".format(self.type))
-            self.__getHurtImage = None
-            if not os.path.exists("Assets/image/npc_icon/{}.png".format(self.type)): print("And also its icon.")
+        #重创立绘
+        self.__getHurtImage = None
+        self.__try_load_get_hurt_image()
+    #加载图片
     def load_image(self) -> None:
         super().load_image()
-        self.__getHurtImage.add(self.type)
+        if self.__getHurtImage is not None:
+            self.__getHurtImage.add(self.type)
+        else:
+            self.__try_load_get_hurt_image()
         self.__beNoticedImage.load_image()
+    #尝试加载重创立绘
+    def __try_load_get_hurt_image(self) -> None:
+        try:
+            self.__getHurtImage = EntityGetHurtImage(self.type, Display.get_height()/4, Display.get_height()/2)
+        except Exception:
+            EXCEPTION.inform("Character {} does not have damaged artwork!".format(self.type))
+            self.__getHurtImage = None
+            if not os.path.exists(os.path.join("Assets/image/npc_icon", "{}.png".format(self.type))): print("And also its icon.")
     @property
     def detection(self) -> int: return self._detection
     @property
@@ -189,7 +197,7 @@ class HostileCharacter(Entity):
                     else:
                         actions.put(DecisionHolder("move",the_route))
                 else:
-                    throw_exception("error","A hostile character cannot find a valid path when trying to attack {}!".format(target))
+                    EXCEPTION.throw("error","A hostile character cannot find a valid path when trying to attack {}!".format(target))
         #如果角色没有可以攻击的对象，则查看角色是否需要巡逻
         elif len(self.__patrol_path) > 0:
             #如果巡逻坐标点只有一个（意味着角色需要在该坐标上长期镇守）
@@ -199,7 +207,7 @@ class HostileCharacter(Entity):
                     if len(the_route) > 0:
                         actions.put(DecisionHolder("move",the_route))
                     else:
-                        throw_exception("error","A hostile character cannot find a valid path!")
+                        EXCEPTION.throw("error","A hostile character cannot find a valid path!")
                 else:
                     #如果角色在该点上，则原地待机
                     pass
@@ -211,7 +219,7 @@ class HostileCharacter(Entity):
                     #如果角色在这次移动后到达了最近的巡逻点，则应该更新最近的巡逻点
                     if is_same_pos(the_route[-1],self.__patrol_path[0]): self.__patrol_path.append(self.__patrol_path.popleft())
                 else:
-                    throw_exception("error","A hostile character cannot find a valid path!")
+                    EXCEPTION.throw("error","A hostile character cannot find a valid path!")
         else:
             pass
         #放回一个装有指令的列表
@@ -234,12 +242,12 @@ class CharacterDataLoader(threading.Thread):
             else:
                 self.alliances[key] = FriendlyCharacter(value,self.DATABASE[value["type"]],self.mode)
             self.currentID+=1
-            if get_setting("DeveloperMode"): print("total: {0}, current: {1}".format(self.totalNum,self.currentID))
+            if Setting.developer_mode: print("total: {0}, current: {1}".format(self.totalNum,self.currentID))
         for key,value in self.enemies.items():
             if isinstance(value,HostileCharacter):
                 value.load_image()
             else:
                 self.enemies[key] = HostileCharacter(value,self.DATABASE[value["type"]],self.mode)
             self.currentID += 1
-            if get_setting("DeveloperMode"): print("total: {0}, current: {1}".format(self.totalNum,self.currentID))
+            if Setting.developer_mode: print("total: {0}, current: {1}".format(self.totalNum,self.currentID))
     def getResult(self) -> tuple: return self.alliances,self.enemies

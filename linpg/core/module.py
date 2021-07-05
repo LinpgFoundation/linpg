@@ -39,11 +39,11 @@ class GameObject2d(GameObject):
     #宽
     @property
     def width(self) -> int: return self.get_width()
-    def get_width(self) -> int: throw_exception("error","The child class has to implement get_width() function!")
+    def get_width(self) -> int: EXCEPTION.throw("error","The child class has to implement get_width() function!")
     #高
     @property
     def height(self) -> int: return self.get_height()
-    def get_height(self) -> int: throw_exception("error","The child class has to implement get_height() function!")
+    def get_height(self) -> int: EXCEPTION.throw("error","The child class has to implement get_height() function!")
     #尺寸
     @property
     def size(self) -> tuple: return self.get_width(),self.get_height()
@@ -74,19 +74,30 @@ class GameObject2d(GameObject):
         self.set_centerx(centerx)
         self.set_centery(centery)
     #是否被鼠标触碰
-    def is_hover(self, mouse_pos:Union[tuple,list]=(-1,-1)) -> bool:
-        if mouse_pos == (-1,-1): mouse_pos = controller.get_mouse_pos()
+    def is_hover(self, mouse_pos:pos_liked=NoPos) -> bool:
+        if mouse_pos is NoPos: mouse_pos = Controller.mouse.pos
         return 0 < mouse_pos[0]-self.x < self.get_width() and 0 < mouse_pos[1]-self.y < self.get_height()
     #将图片直接画到surface上
     def draw(self, surface:ImageSurface) -> None: self.display(surface)
+    #将图片直接画到屏幕上
+    def draw_on_screen(self) -> None: self.display(Display.window)
     #根据offSet将图片展示到surface的对应位置上 - 子类必须实现
-    def display(self, surface:ImageSurface, offSet:tuple=(0,0)) -> None:
-        throw_exception("error","The child class does not implement display() function!")
-    #忽略现有坐标，将图片画到surface的指定位置上，不推荐使用
-    def blit(self, surface:ImageSurface, pos:tuple) -> None: 
+    def display(self, surface:ImageSurface, offSet:pos_liked=Origin) -> None:
+        EXCEPTION.throw("error","The child class does not implement display() function!")
+    #根据offSet将图片展示到屏幕的对应位置上
+    def display_on_screen(self, offSet:pos_liked=Origin) -> None:
+        self.display(Display.window, offSet)
+    #忽略现有坐标，将图片画到surface的指定位置上
+    def blit(self, surface:ImageSurface, pos:pos_liked) -> None: 
         old_pos = self.get_pos()
         self.set_pos(pos)
         self.draw(surface)
+        self.set_pos(old_pos)
+    #忽略现有坐标，将图片画到surface的指定位置上
+    def blit_on_screen(self, pos:pos_liked) -> None: 
+        old_pos = self.get_pos()
+        self.set_pos(pos)
+        self.draw(Display.window)
         self.set_pos(old_pos)
 
 #2.5d游戏对象接口 - 使用z轴判断图案的图层
@@ -119,7 +130,7 @@ class GameObject3d(GameObject2point5d):
 
 #需要被打印的物品
 class ItemNeedBlit(GameObject2point5d):
-    def __init__(self, image:object, weight:Union[int,float], pos:Union[tuple,list], offSet:Union[tuple,list]):
+    def __init__(self, image:object, weight:Union[int,float], pos:pos_liked, offSet:pos_liked):
         super().__init__(pos[0],pos[1],weight)
         self.image = image
         self.offSet = offSet
@@ -129,5 +140,5 @@ class ItemNeedBlit(GameObject2point5d):
         else:
             try:
                 self.image.display(surface,self.offSet)
-            except BaseException:
+            except Exception:
                 self.image.draw(surface)

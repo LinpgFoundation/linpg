@@ -4,18 +4,18 @@ from .menu import *
 
 #输入框Abstract，请勿实体化
 class AbstractInputBox(GameObject2d):
-    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int):
+    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:color_liked, default_width:int):
         super().__init__(x,y)
         self.FONTSIZE:int = int(font_size)
         self.FONT = create_font(self.FONTSIZE)
         self.default_width = default_width
         self.deafult_height = int(self.FONTSIZE*1.5)
         self.input_box = Rect(x, y, default_width, self.deafult_height)
-        self.color = get_color_rbga('lightskyblue3')
-        self.txt_color = get_color_rbga(txt_color)
+        self.color = Color.get("lightskyblue3")
+        self.txt_color = Color.get(txt_color)
         self.active:bool = False
         self._text = None
-        self._holder = self.FONT.render("|",get_antialias(),self.txt_color)
+        self._holder = self.FONT.render("|",Setting.antialias,self.txt_color)
         self.holderIndex = 0
         self.need_save = False
     def get_width(self) -> int: return self.input_box.width
@@ -30,7 +30,7 @@ class AbstractInputBox(GameObject2d):
 
 #单行输入框
 class SingleLineInputBox(AbstractInputBox):
-    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int=150):
+    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:color_liked, default_width:int=150):
         super().__init__(x,y,font_size,txt_color,default_width)
         self._text:str = ""
         self._left_ctrl_pressing:bool = False
@@ -43,7 +43,7 @@ class SingleLineInputBox(AbstractInputBox):
     def set_text(self, new_txt:str=None) -> None:
         if new_txt is not None and len(new_txt)>0:
             self._text = new_txt
-            self.holderIndex = len(new_txt)-1
+            self.holderIndex = len(new_txt)
         else:
             self._text = ""
             self.holderIndex = 0
@@ -54,7 +54,7 @@ class SingleLineInputBox(AbstractInputBox):
             self.holderIndex += len(char)
             self._reset_inputbox_width()
         else:
-            throw_exception("warning","The value of event.unicode is empty!")
+            EXCEPTION.warn("The value of event.unicode is empty!")
     def _remove_char(self, action:str) -> None:
         if action == "ahead":
             if self.holderIndex > 0:
@@ -64,7 +64,7 @@ class SingleLineInputBox(AbstractInputBox):
             if self.holderIndex < len(self._text):
                 self._text = self._text[:self.holderIndex]+self._text[self.holderIndex+1:]
         else:
-            throw_exception("error","Action has to be either 'ahead' or 'behind'!")
+            EXCEPTION.throw("error","Action has to be either 'ahead' or 'behind'!")
         self._reset_inputbox_width()
     def _reset_holderIndex(self, mouse_x:int) -> None:
         last_width = 0
@@ -87,56 +87,55 @@ class SingleLineInputBox(AbstractInputBox):
         else:
             self.input_box.set_width(self.default_width)
     def _check_key_down(self, event:object) -> bool:
-        if event.key == KEY.BACKSPACE:
+        if event.key == Key.BACKSPACE:
             self._remove_char("ahead")
             return True
-        elif event.key == KEY.DELETE:
+        elif event.key == Key.DELETE:
             self._remove_char("behind")
             return True
-        elif event.key == KEY.ARROW_LEFT and self.holderIndex > 0:
+        elif event.key == Key.ARROW_LEFT and self.holderIndex > 0:
             self.holderIndex -= 1
             return True
-        elif event.key == KEY.ARROW_RIGHT and self.holderIndex < len(self._text):
+        elif event.key == Key.ARROW_RIGHT and self.holderIndex < len(self._text):
             self.holderIndex += 1
             return True
-        elif event.unicode == "v" and KEY.get_pressed("v") and KEY.get_pressed(KEY.LEFT_CTRL) or \
-            event.key == KEY.LEFT_CTRL and KEY.get_pressed("v") and KEY.get_pressed(KEY.LEFT_CTRL):
-            self._add_char(KEY.get_clipboard())
+        elif event.unicode == "v" and Key.get_pressed("v") and Key.get_pressed(Key.LEFT_CTRL) or \
+            event.key == Key.LEFT_CTRL and Key.get_pressed("v") and Key.get_pressed(Key.LEFT_CTRL):
+            self._add_char(Key.get_clipboard())
             return True
         return False
     def draw(self, screen:ImageSurface) -> None:
-        mouse_x,mouse_y = controller.get_mouse_pos()
-        for event in controller.events:
-            if event.type == KEY.DOWN and self.active is True:
+        for event in Controller.events:
+            if event.type == Key.DOWN and self.active is True:
                 if self._check_key_down(event):
                     pass
-                elif event.key == KEY.ESCAPE:
+                elif event.key == Key.ESCAPE:
                     self.active = False
                     self.need_save = True
                 else:
                     self._add_char(event.unicode)
             elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and self.active is True:
-                if self.x<=mouse_x<=self.x+self.input_box.width and self.y<=mouse_y<=self.y+self.input_box.height:
-                    self._reset_holderIndex(mouse_x)
+                if self.x<=Controller.mouse.x<=self.x+self.input_box.width and self.y<=Controller.mouse.y<=self.y+self.input_box.height:
+                    self._reset_holderIndex(Controller.mouse.x)
                 else:
                     self.active = False
                     self.need_save = True
-            elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and 0<=mouse_x-self.x<=self.input_box.width and 0<=mouse_y-self.y<=self.input_box.height:
+            elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and 0<=Controller.mouse.x-self.x<=self.input_box.width and 0<=Controller.mouse.y-self.y<=self.input_box.height:
                 self.active = True
-                self._reset_holderIndex(mouse_x)
+                self._reset_holderIndex(Controller.mouse.x)
         # 画出文字
         if self._text is not None and len(self._text) > 0:
-            screen.blit(self.FONT.render(self._text,get_antialias(),get_color_rbga(self.txt_color)), (self.x+self.FONTSIZE*0.25,self.y))
+            screen.blit(self.FONT.render(self._text,Setting.antialias,Color.get(self.txt_color)), (self.x+self.FONTSIZE*0.25,self.y))
         #画出输入框
         if self.active:
             draw_rect(screen, self.color, self.input_box, 2)
             #画出 “|” 符号
-            if int(time.time()%2)==0 or len(controller.events)>0:
+            if int(time.time()%2)==0 or len(Controller.events)>0:
                 screen.blit(self._holder, (self.x+self.FONTSIZE*0.25+self.FONT.size(self._text[:self.holderIndex])[0], self.y))
 
 #多行输入框
 class MultipleLinesInputBox(AbstractInputBox):
-    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:Union[tuple,list,str], default_width:int=150):
+    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:color_liked, default_width:int=150):
         super().__init__(x,y,font_size,txt_color,default_width)
         self._text = [""]
         self.lineId = 0
@@ -153,7 +152,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             self._text = new_txt
             self._reset_inputbox_size()
         else:
-            throw_exception("error","The new_txt for MultipleLinesInputBox.set_text() must be a list!")
+            EXCEPTION.throw("error","The new_txt for MultipleLinesInputBox.set_text() must be a list!")
     def set_fontsize(self, font_size:int) -> None:
         super().set_fontsize(font_size)
         self._reset_inputbox_size()
@@ -191,7 +190,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                 self._text[self.lineId] += theStringAfterHolderIndex
                 self._reset_inputbox_size()
         else:
-            throw_exception("warning","The value of event.unicode is empty!")
+            EXCEPTION.warn("The value of event.unicode is empty!")
     #删除对应字符
     def _remove_char(self, action:str) -> None:
         if action == "ahead":
@@ -218,7 +217,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                     self._text[self.lineId] += self._text[self.lineId+1]
                 self._text.pop(self.lineId+1)
         else:
-            throw_exception("error", "Action has to be either 'ahead' or 'behind'!")
+            EXCEPTION.throw("error", "Action has to be either 'ahead' or 'behind'!")
         self._reset_inputbox_size()
     def _reset_holderIndex(self, mouse_x:int, mouse_y:int) -> None:
         self.lineId = round((mouse_y-self.y)/self.FONTSIZE)-1
@@ -241,34 +240,33 @@ class MultipleLinesInputBox(AbstractInputBox):
         else:
             self.holderIndex = i-1
     def draw(self, screen:ImageSurface) -> bool:
-        mouse_x,mouse_y = controller.get_mouse_pos()
-        for event in controller.events:
+        for event in Controller.events:
             if self.active:
-                if event.type == KEY.DOWN:
-                    if event.key == KEY.BACKSPACE:
+                if event.type == Key.DOWN:
+                    if event.key == Key.BACKSPACE:
                         self._remove_char("ahead")
-                    elif event.key == KEY.DELETE:
+                    elif event.key == Key.DELETE:
                         self._remove_char("behind")
-                    elif event.key == KEY.ARROW_LEFT and self.holderIndex > 0:
+                    elif event.key == Key.ARROW_LEFT and self.holderIndex > 0:
                         self.holderIndex -= 1
-                    elif event.key == KEY.ARROW_RIGHT and self.holderIndex < len(self._text[self.lineId]):
+                    elif event.key == Key.ARROW_RIGHT and self.holderIndex < len(self._text[self.lineId]):
                         self.holderIndex += 1
-                    elif event.key == KEY.ARROW_UP and self.lineId>0:
+                    elif event.key == Key.ARROW_UP and self.lineId>0:
                         self.lineId -= 1
                         if self.holderIndex > len(self._text[self.lineId])-1:
                             self.holderIndex = len(self._text[self.lineId])-1
-                    elif event.key == KEY.ARROW_DOWN and self.lineId<len(self._text)-1:
+                    elif event.key == Key.ARROW_DOWN and self.lineId<len(self._text)-1:
                         self.lineId += 1
                         if self.holderIndex > len(self._text[self.lineId])-1:
                             self.holderIndex = len(self._text[self.lineId])-1
-                    elif event.unicode == "v" and KEY.get_pressed("v") and KEY.get_pressed(KEY.LEFT_CTRL) or \
-                        event.key == KEY.LEFT_CTRL and KEY.get_pressed("v") and KEY.get_pressed(KEY.LEFT_CTRL):
-                        self._add_char(KEY.get_clipboard())
+                    elif event.unicode == "v" and Key.get_pressed("v") and Key.get_pressed(Key.LEFT_CTRL) or \
+                        event.key == Key.LEFT_CTRL and Key.get_pressed("v") and Key.get_pressed(Key.LEFT_CTRL):
+                        self._add_char(Key.get_clipboard())
                     #ESC，关闭
-                    elif event.key == KEY.ESCAPE:
+                    elif event.key == Key.ESCAPE:
                         self.active = False
                         self.need_save = True
-                    elif event.key == KEY.RETURN:
+                    elif event.key == Key.RETURN:
                         #如果“|”位于最后
                         if self.holderIndex == len(self._text[self.lineId]):
                             self._text.insert(self.lineId+1,"")
@@ -281,71 +279,72 @@ class MultipleLinesInputBox(AbstractInputBox):
                     else:
                         self._add_char(event.unicode)
                 elif event.type == MOUSE_BUTTON_DOWN and event.button == 1:
-                    if self.x<=mouse_x<=self.x+self.input_box.width and self.y<=mouse_y<=self.y+self.input_box.height:
-                        self._reset_holderIndex(mouse_x,mouse_y)
+                    if self.x<=Controller.mouse.x<=self.x+self.input_box.width and self.y<=Controller.mouse.y<=self.y+self.input_box.height:
+                        self._reset_holderIndex(Controller.mouse.x,Controller.mouse.y)
                     else:
                         self.active = False
                         self.need_save = True
-            elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and self.x<=mouse_x<=self.x+self.input_box.width and self.y<=mouse_y<=self.y+self.input_box.height:
+            elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and self.x<=Controller.mouse.x<=self.x+self.input_box.width and self.y<=Controller.mouse.y<=self.y+self.input_box.height:
                 self.active = True
-                self._reset_holderIndex(mouse_x,mouse_y)
+                self._reset_holderIndex(Controller.mouse.x,Controller.mouse.y)
         if self._text is not None:
             for i in range(len(self._text)): 
                 # 画出文字
-                screen.blit(self.FONT.render(self._text[i],get_antialias(),get_color_rbga(self.txt_color)),(self.x+self.FONTSIZE*0.25,self.y+i*self.deafult_height))
+                screen.blit(self.FONT.render(self._text[i],Setting.antialias,Color.get(self.txt_color)),(self.x+self.FONTSIZE*0.25,self.y+i*self.deafult_height))
         if self.active:
             # 画出输入框
             draw_rect(screen, self.color, self.input_box, 2)
             #画出 “|” 符号
-            if int(time.time()%2)==0 or len(controller.events)>0:
+            if int(time.time()%2)==0 or len(Controller.events)>0:
                 screen.blit(self._holder, (self.x+self.FONTSIZE*0.1+self.FONT.size(self._text[self.lineId][:self.holderIndex])[0], self.y+self.lineId*self.deafult_height))
 
 #控制台
 class Console(SingleLineInputBox):
     def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int=32, default_width:int=150):
-        self.color_inactive = get_color_rbga('lightskyblue3')
-        self.color_active = get_color_rbga('dodgerblue2')
+        self.color_inactive = Color.get("lightskyblue3")
+        self.color_active = Color.get("dodgerblue2")
         super().__init__(x,y,font_size,self.color_active,default_width)
         self.color = self.color_active
         self.active:bool = True
         self.hidden:bool = True
-        self.textHistory:list = []
+        self._text_history:list = []
         self.__backward_id:int = 1
         self.__events:dict = {"cheat": False}
-        self.txtOutput:list = []
+        self._txt_output:list = []
+        self.command_indicator:str = "/"
     def get_events(self, key:Union[int,str]) -> any:
         try:
             return self.__events[key]
         except KeyError:
-            throw_exception("error",'Console cannot find key "{}"!'.format(key))
+            EXCEPTION.throw("error",'Console cannot find key "{}"!'.format(key))
     def _check_key_down(self, event:object) -> bool:
         if super()._check_key_down(event):
             return True
         #向上-过去历史
-        elif event.key == KEY.ARROW_UP and self.__backward_id<len(self.textHistory):
+        elif event.key == Key.ARROW_UP and self.__backward_id < len(self._text_history):
             self.__backward_id += 1
-            self.set_text(self.textHistory[len(self.textHistory)-self.__backward_id])
+            self.set_text(self._text_history[-self.__backward_id])
             return True
         #向下-过去历史，最近的一个
-        elif event.key == KEY.ARROW_DOWN and self.__backward_id>1:
+        elif event.key == Key.ARROW_DOWN and self.__backward_id > 1:
             self.__backward_id -= 1
-            self.set_text(self.textHistory[len(self.textHistory)-self.__backward_id])
+            self.set_text(self._text_history[-self.__backward_id])
             return True
         #回车
-        elif event.key == KEY.RETURN:
+        elif event.key == Key.RETURN:
             if len(self._text)>0:
-                if self._text.startswith('/'):
-                    self._check_command(self._text[1:].split())
+                if self._text.startswith(self.command_indicator):
+                    self._check_command(self._text[len(self.command_indicator):].split())
                 else:
-                    self.txtOutput.append(self._text)
-                self.textHistory.append(self._text) 
+                    self._txt_output.append(self._text)
+                self._text_history.append(self._text)
+                self.__backward_id = 0
                 self.set_text()
-                self.__backward_id = 1
             else:
-                throw_exception("warning","The input box is empty!")
+                EXCEPTION.warn("The input box is empty!")
             return True
         #ESC，关闭
-        elif event.key == KEY.ESCAPE:
+        elif event.key == Key.ESCAPE:
             self.active = False
             # Change the current color of the input box.
             self.color = self.color_active if self.active else self.color_inactive
@@ -355,76 +354,75 @@ class Console(SingleLineInputBox):
         if conditions[0] == "cheat":
             if conditions[1] == "on":
                 if "cheat" in self.__events and self.__events["cheat"] is True:
-                    self.txtOutput.append("Cheat mode has already been activated!")
+                    self._txt_output.append("Cheat mode has already been activated!")
                 else:
                     self.__events["cheat"] = True
-                    self.txtOutput.append("Cheat mode is activated.")
+                    self._txt_output.append("Cheat mode is activated.")
             elif conditions[1] == "off":
                 if "cheat" in self.__events and not self.__events["cheat"]:
-                    self.txtOutput.append("Cheat mode has already been deactivated!")
+                    self._txt_output.append("Cheat mode has already been deactivated!")
                 else:
                     self.__events["cheat"] = False
-                    self.txtOutput.append("Cheat mode is deactivated.")
+                    self._txt_output.append("Cheat mode is deactivated.")
             else:
-                self.txtOutput.append("Unknown status for cheat command.")
+                self._txt_output.append("Unknown status for cheat command.")
         elif conditions[0] == "say":
-            self.txtOutput.append(self._text.replace("/say"))
+            self._txt_output.append(self._text[len(self.command_indicator)+4:])
         elif conditions[0] == "dev":
             if conditions[1] == "on":
-                if get_setting("DeveloperMode") is True:
-                    self.txtOutput.append("Developer mode has been activated!")
+                if Setting.developer_mode is True:
+                    self._txt_output.append("Developer mode has been activated!")
                 else:
-                    set_setting("DeveloperMode", value=True)
-                    self.txtOutput.append("Developer mode is activated.")
+                    Setting.set("DeveloperMode", value=True)
+                    self._txt_output.append("Developer mode is activated.")
             elif conditions[1] == "off":
-                if not get_setting("DeveloperMode"):
-                    self.txtOutput.append("Developer mode has been deactivated!")
+                if not Setting.developer_mode:
+                    self._txt_output.append("Developer mode has been deactivated!")
                 else:
-                    set_setting("DeveloperMode", value=False)
-                    self.txtOutput.append("Developer mode is deactivated.")
+                    Setting.set("DeveloperMode", value=False)
+                    self._txt_output.append("Developer mode is deactivated.")
             else:
-                self.txtOutput.append("Unknown status for dev command.")
+                self._txt_output.append("Unknown status for dev command.")
         elif conditions[0] == "linpg" and conditions[1] == "info":
-            self.txtOutput.append("Linpg Version: {}".format(get_current_version()))
+            self._txt_output.append("Linpg Version: {}".format(Info.current_version))
         elif conditions[0] == "quit":
-            display.quit()
+            Display.quit()
         else:
-            self.txtOutput.append("The command is unknown!")
+            self._txt_output.append("The command is unknown!")
     def draw(self, screen:ImageSurface) -> None:
         if self.hidden is True:
-            for event in controller.events:
-                if event.type == KEY.DOWN and event.key == KEY.BACKQUOTE:
+            for event in Controller.events:
+                if event.type == Key.DOWN and event.key == Key.BACKQUOTE:
                     self.hidden = False
                     break
         elif not self.hidden:
-            for event in controller.events:
+            for event in Controller.events:
                 if event.type == MOUSE_BUTTON_DOWN:
-                    mouse_x,mouse_y = controller.get_mouse_pos()
-                    if self.x <= mouse_x <= self.x+self.input_box.width and self.y <= mouse_y <= self.y+self.input_box.height:
+                    if self.x <= Controller.mouse.x <= self.x+self.input_box.width and self.y <= Controller.mouse.y <= self.y+self.input_box.height:
                         self.active = not self.active
                         # Change the current color of the input box.
                         self.color = self.color_active if self.active else self.color_inactive
                     else:
                         self.active = False
                         self.color = self.color_inactive
-                elif event.type == KEY.DOWN:
+                elif event.type == Key.DOWN:
                     if self.active is True:
                         if self._check_key_down(event):
                             pass
                         else:
                             self._add_char(event.unicode)
                     else:
-                        if event.key == KEY.BACKQUOTE or event.key == KEY.ESCAPE:
+                        if event.key == Key.BACKQUOTE or event.key == Key.ESCAPE:
                             self.hidden = True
                             self.set_text()
             #画出输出信息
-            for i in range(len(self.txtOutput)):
-                screen.blit(self.FONT.render(self.txtOutput[i],get_antialias(),self.color),(self.x+self.FONTSIZE*0.25, self.y-(len(self.txtOutput)-i)*self.FONTSIZE*1.5))
+            for i in range(len(self._txt_output)):
+                screen.blit(self.FONT.render(self._txt_output[i],Setting.antialias,self.color),(self.x+self.FONTSIZE*0.25, self.y-(len(self._txt_output)-i)*self.FONTSIZE*1.5))
             # 画出文字
             if self._text is not None and len(self._text) > 0:
-                screen.blit(self.FONT.render(self._text,get_antialias(),self.color),(self.x+self.FONTSIZE*0.25, self.y))
+                screen.blit(self.FONT.render(self._text,Setting.antialias,self.color),(self.x+self.FONTSIZE*0.25, self.y))
             #画出输入框
             draw_rect(screen, self.color, self.input_box, 2)
             #画出 “|” 符号
-            if int(time.time()%2)==0 or len(controller.events)>0:
+            if int(time.time()%2)==0 or len(Controller.events)>0:
                 screen.blit(self._holder, (self.x+self.FONTSIZE*0.25+self.FONT.size(self._text[:self.holderIndex])[0], self.y))

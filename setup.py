@@ -1,28 +1,18 @@
+import json
 import os
 import setuptools
 
 #读取信息
-INFO:dict
-try:
-    import linpg
-    INFO = {
-        "version": linpg.get_current_version(),
-        "author_email": linpg.get_author_email(),
-        "description": linpg.get_short_description(),
-        "url": linpg.get_repository_url()
+info_json_path:str = "info.json"
+if not os.path.exists(info_json_path): info_json_path = os.path.join("src", "linpg", "config", "info.json")
+with open(info_json_path, "r", encoding='utf-8') as f:
+    Data = json.load(f)
+    INFO:dict = {
+        "version": "{0}.{1}.{2}".format(Data["version"], Data["revision"], Data["patch"]),
+        "author_email": Data["author_email"],
+        "description": Data["short_description"],
+        "url": Data["repository_url"]
     }
-except BaseException:
-    import json
-    info_json_path:str = "info.json"
-    if not os.path.exists(info_json_path): info_json_path = os.path.join("src","linpg","config","info.json")
-    with open(info_json_path, "r", encoding='utf-8') as f:
-        Data = json.load(f)
-        INFO = {
-            "version": "{0}.{1}.{2}".format(Data["version"],Data["revision"],Data["patch"]),
-            "author_email": Data["author_email"],
-            "description": Data["short_description"],
-            "url": Data["repository_url"]
-        }
 
 #读取readme
 with open("README.md", "r", encoding="utf-8") as fh: long_description = fh.read()

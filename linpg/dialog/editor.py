@@ -12,11 +12,11 @@ class DialogEditor(AbstractDialogSystem):
         self.dev_mode = True
         self._npc_manager.dev_mode = True
         #加载容器
-        container_width = int(display.get_width()*0.2)
-        self.UIContainerRightImage = load_img(os.path.join(DIALOG_UI_PATH,"container.png"),(container_width,display.get_height()))
+        container_width = int(Display.get_width()*0.2)
+        self.UIContainerRightImage = load_img(os.path.join(DIALOG_UI_PATH,"container.png"),(container_width,Display.get_height()))
         #背景容器
         self.UIContainerRight_bg = SurfaceContainerWithScrollbar(
-            None, int(container_width*0.075), int(display.get_height()*0.1), int(container_width*0.85), int(display.get_height()*0.85), "vertical"
+            None, int(container_width*0.075), int(Display.get_height()*0.1), int(container_width*0.85), int(Display.get_height()*0.85), "vertical"
             )
         self.UIContainerRight_bg.set_scroll_bar_pos("right")
         #加载背景图片
@@ -25,12 +25,12 @@ class DialogEditor(AbstractDialogSystem):
         for imgPath in glob(os.path.join(self._background_image_folder_path,"*")):
             self.UIContainerRight_bg.set(os.path.basename(imgPath),load_img(imgPath,(container_width*0.8,None)))
         self.UIContainerRight_bg.set("<transparent>",get_texture_missing_surface((container_width*0.8, container_width*0.45)))
-        self.UIContainerRight_bg.distance_between_item = int(display.get_height()*0.02)
+        self.UIContainerRight_bg.distance_between_item = int(Display.get_height()*0.02)
         self.__current_select_bg_name = None
         self.__current_select_bg_copy = None
         #npc立绘容器
         self.UIContainerRight_npc = SurfaceContainerWithScrollbar(
-            None, int(container_width*0.075), int(display.get_height()*0.1), int(container_width*0.85), int(display.get_height()*0.85), "vertical"
+            None, int(container_width*0.075), int(Display.get_height()*0.1), int(container_width*0.85), int(Display.get_height()*0.85), "vertical"
             )
         self.UIContainerRight_npc.set_scroll_bar_pos("right")
         #加载npc立绘
@@ -39,17 +39,18 @@ class DialogEditor(AbstractDialogSystem):
         self.UIContainerRight_npc.hidden = True
         self.UIContainerRight_npc.distance_between_item = 0
         #容器按钮
-        button_width:int = int(display.get_width()*0.04)
-        self.UIContainerRightButton = load_movable_image(
+        button_width:int = int(Display.get_width()*0.04)
+        self.UIContainerRightButton = MovableImage(
             os.path.join(DIALOG_UI_PATH,"container_button.png"),
-            (display.get_width()-button_width,display.get_height()*0.4),
-            (display.get_width()-button_width-container_width,display.get_height()*0.4),
-            (container_width/10,0), button_width, int(display.get_height()*0.2)
+            int(Display.get_width()-button_width), int(Display.get_height()*0.4),
+            int(Display.get_width()-button_width-container_width), int(Display.get_height()*0.4),
+            int(container_width/10), 0,
+            button_width, int(Display.get_height()*0.2)
             )
         self.UIContainerRightButton.rotate(90)
         #UI按钮
-        CONFIG = get_lang("DialogCreator")
-        button_y = int(display.get_height()*0.03)
+        CONFIG = Lang.get_text("DialogCreator")
+        button_y = int(Display.get_height()*0.03)
         font_size = int(button_width/3)
         #控制容器转换的按钮
         self.button_select_background = load_button_with_text_in_center(
@@ -65,10 +66,10 @@ class DialogEditor(AbstractDialogSystem):
         #页面右上方的一排按钮
         self.buttonsUI = {
             "save": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "save.png"), get_lang("Global", "save"), (button_width*7.25, button_y), button_size, 150
+                os.path.join(DIALOG_UI_PATH, "save.png"), Lang.get_text("Global", "save"), (button_width*7.25, button_y), button_size, 150
                 ),
             "reload": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "reload.png"), get_lang("Global", "reload_file"), (button_width*6, button_y), button_size, 150
+                os.path.join(DIALOG_UI_PATH, "reload.png"), Lang.get_text("Global", "reload_file"), (button_width*6, button_y), button_size, 150
             ),
             "add": load_button_with_des(
                 os.path.join(DIALOG_UI_PATH, "add.png"), CONFIG["add"], (button_width*4.75, button_y), button_size, 150
@@ -91,9 +92,9 @@ class DialogEditor(AbstractDialogSystem):
         #从配置文件中加载数据
         self._load_content()
         #移除按钮
-        self.removeNpcButton = self._dialog_txt_system.FONT.render(CONFIG["removeNpc"],get_antialias(),get_color_rbga("black"))
+        self.removeNpcButton = self._dialog_txt_system.FONT.render(CONFIG["removeNpc"],Setting.antialias,Color.BLACK)
         surfaceTmp = new_surface((self.removeNpcButton.get_width()*1.2,self.removeNpcButton.get_height()*1.2)).convert()
-        surfaceTmp.fill(get_color_rbga("white"))
+        surfaceTmp.fill(Color.WHITE)
         surfaceTmp.blit(self.removeNpcButton,(self.removeNpcButton.get_width()*0.1,0))
         self.removeNpcButton = surfaceTmp
         #未保存离开时的警告
@@ -104,7 +105,7 @@ class DialogEditor(AbstractDialogSystem):
         self.dialog_key_select.set_current_selected_item(self._part)
     #返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
-        original_data:dict = load_config(
+        original_data:dict = Config.load(
             self.get_dialog_file_location()
             ) if os.path.exists(self.get_dialog_file_location()) else {}
         original_data["dialogs"] = self.__slipt_the_stuff_need_save()
@@ -128,7 +129,7 @@ class DialogEditor(AbstractDialogSystem):
             self.__current_select_bg_copy = None
     #读取章节信息
     def _load_content(self) -> None:
-        self._dialog_data = load_config(
+        self._dialog_data = Config.load(
             self.get_dialog_file_location(),"dialogs"
             ) if os.path.exists(self.get_dialog_file_location()) else {}
         #获取默认语言
@@ -136,17 +137,17 @@ class DialogEditor(AbstractDialogSystem):
         #如果dialogs字典是空的
         if len(list(self._dialog_data.keys())) <= 0:
             #如果不是默认主语言，则尝试加载主语言
-            if default_lang_of_dialog != get_setting("Language"):
+            if default_lang_of_dialog != Setting.language:
                 self.is_default = False
                 #读取原始数据
-                self._dialog_data_default = load_config(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")
+                self._dialog_data_default = Config.load(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")
                 self._dialog_data = deepcopy(self._dialog_data_default)
         else:
             #如果不是默认主语言
-            if default_lang_of_dialog != get_setting("Language"):
+            if default_lang_of_dialog != Setting.language:
                 self.is_default = False
                 #读取原始数据
-                self._dialog_data_default = load_config(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")
+                self._dialog_data_default = Config.load(self.get_dialog_file_location(default_lang_of_dialog),"dialogs")
                 #填入未被填入的数据
                 for part in self._dialog_data_default:
                     for key,DIALOG_DATA_TEMP in self._dialog_data_default[part].items():
@@ -196,7 +197,7 @@ class DialogEditor(AbstractDialogSystem):
     def __no_changes_were_made(self) -> bool:
         dialog_file_location_t:str = self.get_dialog_file_location()
         if os.path.exists(dialog_file_location_t):
-            return load_config(dialog_file_location_t, "dialogs") == self.__slipt_the_stuff_need_save()
+            return Config.load(dialog_file_location_t, "dialogs") == self.__slipt_the_stuff_need_save()
         else:
             return False
     #更新场景
@@ -260,23 +261,22 @@ class DialogEditor(AbstractDialogSystem):
                         surface.blit(screenshot,(0,0))
                         for i in range(len(theNext["target"])):
                             button = theNext["target"][i]
-                            option_txt = self._dialog_txt_system.FONT.render(button["txt"],get_antialias(),get_color_rbga("white"))
+                            option_txt = self._dialog_txt_system.FONT.render(button["txt"],Setting.antialias,Color.WHITE)
                             option_button_width = int(option_txt.get_width()+surface.get_width()*0.05)
                             option_button_x = int((surface.get_width()-option_button_width)/2)
                             option_button_y = int((i+1)*2*surface.get_width()*0.03+optionBox_y_base)
-                            mouse_x,mouse_y = controller.get_mouse_pos()
-                            if 0 < mouse_x-option_button_x < option_button_width and 0 < mouse_y-option_button_y < option_button_height:
+                            if 0 < Controller.mouse.x-option_button_x < option_button_width and 0 < Controller.mouse.y-option_button_y < option_button_height:
                                 self._option_box_selected_surface.set_size(option_button_width,option_button_height)
                                 self._option_box_selected_surface.set_pos(option_button_x,option_button_y)
                                 self._option_box_selected_surface.draw(surface)
                                 display_in_center(option_txt,self._option_box_selected_surface,self._option_box_selected_surface.x,self._option_box_selected_surface.y,surface)
-                                if controller.get_event("confirm"): return button["id"]
+                                if Controller.get_event("confirm"): return button["id"]
                             else:
                                 self._option_box_surface.set_size(option_button_width,option_button_height)
                                 self._option_box_surface.set_pos(option_button_x,option_button_y)
                                 self._option_box_surface.draw(surface)
                                 display_in_center(option_txt,self._option_box_surface,self._option_box_surface.x,self._option_box_surface.y,surface)
-                        display.flip()
+                        Display.flip()
         return None
     def draw(self, surface:ImageSurface) -> None:
         super().draw(surface)
@@ -307,11 +307,11 @@ class DialogEditor(AbstractDialogSystem):
             self._part = self.dialog_key_select.get_current_selected_item()
             try:
                 self._update_scene(self._dialog_id)
-            except BaseException:
+            except Exception:
                 self._update_scene("head")
         #处理输入事件
         leftClick:bool = False
-        for event in controller.events:
+        for event in Controller.events:
             if event.type == MOUSE_BUTTON_DOWN:
                 if event.button == 1:
                     if self.UIContainerRightButton.is_hover():
@@ -329,7 +329,7 @@ class DialogEditor(AbstractDialogSystem):
                         if lastId is not None:
                             self._update_scene(lastId)
                         else:
-                            throw_exception("warning", "There is no last dialog id.")
+                            EXCEPTION.warn("There is no last dialog id.")
                     elif buttonHovered == "delete":
                         lastId = self.__get_last_id()
                         nextId = self.__get_next_id(surface)
@@ -343,7 +343,7 @@ class DialogEditor(AbstractDialogSystem):
                                         break
                             else:
                                 #如果当前next_dialog_id的类型不支持的话，报错
-                                throw_exception("error","Cannot recognize next_dialog_id type: {}, please fix it".format(self.dialog_content[lastId]["next_dialog_id"]["type"]))
+                                EXCEPTION.throw("error","Cannot recognize next_dialog_id type: {}, please fix it".format(self.dialog_content[lastId]["next_dialog_id"]["type"]))
                             #修改下一个对白配置文件中的"last_dialog_id"的参数
                             if nextId is not None:
                                 if "last_dialog_id" in self.dialog_content[nextId] and self.dialog_content[nextId]["last_dialog_id"] is not None:
@@ -354,13 +354,13 @@ class DialogEditor(AbstractDialogSystem):
                             self._update_scene(lastId)
                             del self.dialog_content[needDeleteId]
                         else:
-                            throw_exception("warning", "There is no last dialog id.")
+                            EXCEPTION.warn("There is no last dialog id.")
                     elif buttonHovered == "next":
                         nextId = self.__get_next_id(surface)
                         if nextId is not None:
                             self._update_scene(nextId)
                         else:
-                            throw_exception("warning", "There is no next dialog id.")
+                            EXCEPTION.warn("There is no next dialog id.")
                     elif buttonHovered == "add":
                         nextId=1
                         while nextId in self.dialog_content:
@@ -380,11 +380,11 @@ class DialogEditor(AbstractDialogSystem):
                         self._npc_manager.update(currentDialogContent["characters_img"])
                         self._npc_manager.character_get_click = None
         #显示移除角色的提示
-        if self._npc_manager.character_get_click is not None : surface.blit(self.removeNpcButton,controller.get_mouse_pos())
+        if self._npc_manager.character_get_click is not None : surface.blit(self.removeNpcButton,Controller.mouse.pos)
         #画上右侧菜单的按钮
         self.UIContainerRightButton.draw(surface)
         #画上右侧菜单
-        if self.UIContainerRightButton.right < display.get_width():
+        if self.UIContainerRightButton.right < Display.get_width():
             surface.blit(self.UIContainerRightImage,(self.UIContainerRightButton.right,0))
             self.UIContainerRight_bg.display(surface,(self.UIContainerRightButton.right,0))
             self.UIContainerRight_npc.display(surface,(self.UIContainerRightButton.right,0))

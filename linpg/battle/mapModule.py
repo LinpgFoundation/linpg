@@ -43,7 +43,7 @@ class EnvImagesManagement:
                 self.__ENV_IMAGE_DICT_DARK[fileName] = self.__ENV_IMAGE_DICT[fileName].copy()
                 self.__ENV_IMAGE_DICT_DARK[fileName].add_darkness(self.__DARKNESS)
         else:
-            throw_exception("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__ENV_IMAGE_PATH))
+            EXCEPTION.throw("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__ENV_IMAGE_PATH))
     #加载场景装饰物图片
     def __add_decoration_image(self, decorationType:str, fileName:str) -> None:
         imgPath:str = os.path.join(self.__DECORATION_IMAGE_PATH, "{}.png".format(fileName))
@@ -74,7 +74,7 @@ class EnvImagesManagement:
                     self.__DECORATION_IMAGE_DICT_DARK[decorationType][decorationType] = self.__DECORATION_IMAGE_DICT[decorationType][-1].copy()
                     self.__DECORATION_IMAGE_DICT_DARK[decorationType][decorationType].add_darkness(self.__DARKNESS)
             else:
-                throw_exception("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__DECORATION_IMAGE_PATH))
+                EXCEPTION.throw("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__DECORATION_IMAGE_PATH))
     #获取方块尺寸
     def get_block_width(self) -> int: return self.__BLOCK_WIDTH
     def get_block_height(self) -> int: return self.__BLOCK_HEIGHT
@@ -90,16 +90,16 @@ class EnvImagesManagement:
     def get_env_image(self, key:str, darkMode:bool) -> StaticImage:
         try:
             return self.__ENV_IMAGE_DICT_DARK[key] if darkMode is True else self.__ENV_IMAGE_DICT[key]
-        except BaseException:
-            throw_exception("warning","Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(key))
+        except Exception:
+            EXCEPTION.warn("Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(key))
             self.__add_evn_image(key)
             return self.__ENV_IMAGE_DICT_DARK[key] if darkMode is True else self.__ENV_IMAGE_DICT[key]
     def get_decoration_image(self, decorationType:str, key:Union[str,int], darkMode:bool) -> any:
         try:
             return self.__DECORATION_IMAGE_DICT_DARK[decorationType][key] if darkMode is True else self.__DECORATION_IMAGE_DICT[decorationType][key]
         #如果图片没找到
-        except BaseException:
-            throw_exception("warning","Cannot find decoration image '{0}' in type '{1}', we will try to load it for you right now, but please by aware.".format(key,decorationType))
+        except Exception:
+            EXCEPTION.warn("Cannot find decoration image '{0}' in type '{1}', we will try to load it for you right now, but please by aware.".format(key,decorationType))
             self.__add_decoration_image(decorationType,key)
             return self.__DECORATION_IMAGE_DICT_DARK[decorationType][key] if darkMode is True else self.__DECORATION_IMAGE_DICT[decorationType][key]
     #获取当前装饰物种类的数量
@@ -157,24 +157,38 @@ class Node:
         self.g = g  # g值，g值在用到的时候会重新算
         self.h = (abs(endPoint.x - point.x) + abs(endPoint.y - point.y)) * 10  # 计算h值
 
-#环境系统
+#天气系统
 class WeatherSystem:
-    def  __init__(self, weather:str, window_x:int, window_y:int, entityNum:int=50):
+    def  __init__(self):
+        self.__initialized:bool = False
+        self.__items:tuple = tuple()
+        self.__img_list:list = []
+        self.__speed_unit:int = 0
+    #初始化
+    def init(self, weather:str, entityNum:int=50) -> None:
+        self.__initialized = True
         self.name = 0
-        self.img_list = [load_img(imgPath) for imgPath in glob(os.path.join("Assets/image/environment",weather,"*.png"))]
-        self.__items:tuple = tuple([Snow(
-                imgId = get_random_int(0,len(self.img_list)-1),
+        self.__img_list = [load_img(imgPath) for imgPath in glob(os.path.join("Assets/image/environment", weather, "*.png"))]
+        self.__items = tuple([Snow(
+                imgId = get_random_int(0,len(self.__img_list)-1),
                 size = get_random_int(5,10),
                 speed = get_random_int(1,4),
-                x = get_random_int(1,window_x*1.5),
-                y = get_random_int(1,window_y)
+                x = get_random_int(1,Display.get_width()*1.5),
+                y = get_random_int(1,Display.get_height())
                 ) for i in range(entityNum)])
+    #查看初始化状态
+    def get_init(self) -> bool: return self.__initialized
+    #画出
     def draw(self, surface:ImageSurface, perBlockWidth:Union[int,float]) -> None:
-        speed_unit:int = int(perBlockWidth/15)
+        try:
+            assert self.__initialized is True
+        except AssertionError:
+            EXCEPTION.throw("error", "You need to initialize the weather system before using it.")
+        self.__speed_unit:int = int(perBlockWidth/15)
         for item in self.__items:
             if 0 <= item.x < surface.get_width() and 0 <= item.y < surface.get_height():
-                surface.blit(resize_img(self.img_list[item.imgId],(perBlockWidth/item.size,perBlockWidth/item.size)),item.pos)
-            item.move(speed_unit)
+                surface.blit(resize_img(self.__img_list[item.imgId],(perBlockWidth/item.size,perBlockWidth/item.size)),item.pos)
+            item.move(self.__speed_unit)
             if item.x <= 0 or item.y >= surface.get_height():
                 item.y = get_random_int(-50,0)
                 item.x = get_random_int(0,surface.get_width()*2)

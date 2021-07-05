@@ -9,12 +9,13 @@ class ProgressBar(AbstractImage):
         y: Union[int, float],
         max_width: int,
         height: int,
-        color: any
+        color: any,
+        tag:str=""
         ):
-        super().__init__(None,x,y,max_width,height)
+        super().__init__(None, x, y, max_width, height, tag)
         self.percentage = 0
-        self.color:tuple = get_color_rbga(color)
-    def display(self, surface: ImageSurface, offSet: Union[tuple, list] = (0, 0)) -> None:
+        self.color:tuple = Color.get(color)
+    def display(self, surface: ImageSurface, offSet: pos_liked = Origin) -> None:
         if not self.hidden:
             draw_rect(surface, self.color, new_rect(add_pos(self.pos, offSet), (int(self._width*self.percentage), self._height)))
 
@@ -22,16 +23,17 @@ class ProgressBar(AbstractImage):
 class ProgressBarSurface(AbstractImage):
     def __init__(
         self,
-        imgOnTop: ImageSurface,
-        imgOnBottom: ImageSurface,
+        imgOnTop: Union[str, ImageSurface],
+        imgOnBottom: Union[str, ImageSurface],
         x: Union[int, float],
         y: Union[int, float],
         max_width: int,
         height: int,
-        mode: str = "horizontal"
+        mode: str = "horizontal",
+        tag:str=""
         ):
         if imgOnTop is not None: imgOnTop = quickly_load_img(imgOnTop)
-        super().__init__(imgOnTop,x,y,max_width,height)
+        super().__init__(imgOnTop, x, y, max_width, height, tag)
         self.img2 = quickly_load_img(imgOnBottom) if imgOnBottom is not None else None
         self._current_percentage = 0
         self._mode:bool = True
@@ -44,7 +46,7 @@ class ProgressBarSurface(AbstractImage):
         if 0 <= value <= 1:
             self._current_percentage = value
         else:
-            throw_exception("error","The percentage must be <= 1 and >= 0!")
+            EXCEPTION.throw("error","The percentage must be <= 1 and >= 0!")
     #模式
     @property
     def mode(self) -> str: return self.get_mode()
@@ -55,12 +57,12 @@ class ProgressBarSurface(AbstractImage):
         elif mode == "vertical":
             self._mode = False
         else:
-            throw_exception("error","Mode '{}' is not supported!".format(mode))
+            EXCEPTION.throw("error","Mode '{}' is not supported!".format(mode))
     #克隆
     def copy(self): return ProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return ProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #展示
-    def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
+    def display(self, surface:ImageSurface, offSet:pos_liked = Origin) -> None:
         if not self.hidden:
             pos = add_pos(self.pos, offSet)
             surface.blit(resize_img(self.img2,self.size),pos)
@@ -75,8 +77,8 @@ class ProgressBarSurface(AbstractImage):
 class DynamicProgressBarSurface(ProgressBarSurface):
     def __init__(
         self,
-        imgOnTop: ImageSurface,
-        imgOnBottom: ImageSurface,
+        imgOnTop: Union[str, ImageSurface],
+        imgOnBottom: Union[str, ImageSurface],
         x: Union[int, float],
         y: Union[int, float],
         max_width: int,
@@ -99,7 +101,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
             self._percentage_to_be = value*self.accuracy
             self.__perecent_update_each_time = (self._percentage_to_be-self._current_percentage)/self.__total_update_intervals
         else:
-            throw_exception("error","The percentage must be <= 1 and >= 0, not {}!".format(value))
+            EXCEPTION.throw("error","The percentage must be <= 1 and >= 0, not {}!".format(value))
     def copy(self): return DynamicProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return DynamicProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #检查并更新百分比
@@ -108,7 +110,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
             self._current_percentage > self._percentage_to_be and self.__perecent_update_each_time < 0:
             self._current_percentage += self.__perecent_update_each_time
     #展示
-    def display(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0)) -> None:
+    def display(self, surface:ImageSurface, offSet:pos_liked = Origin) -> None:
         if not self.hidden:
             pos:tuple = add_pos(self.pos,offSet)
             surface.blit(resize_img(self.img2,self.size),pos)

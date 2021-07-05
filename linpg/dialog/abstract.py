@@ -12,14 +12,14 @@ class AbstractDialogSystem(AbstractGameSystem):
         #黑色Void帘幕
         self._black_bg = get_single_color_surface("black")
         #加载对话框系统
-        self._dialog_txt_system = DialogBox(int(display.get_width()*0.015))
+        self._dialog_txt_system = DialogBox(int(Display.get_width()*0.015))
         #选项栏
         self._option_box_surface = StaticImage(os.path.join(DIALOG_UI_PATH, "option.png"), 0, 0)
         #选项栏-选中
         try:
             self._option_box_selected_surface = StaticImage(os.path.join(DIALOG_UI_PATH, "option_selected.png"), 0, 0)
-        except BaseException:
-            throw_exception(
+        except Exception:
+            EXCEPTION.throw(
                 "warning",
                 "Cannot find or load 'option_selected.png' in '{}' file, 'option.png' will be used instead.".format(DIALOG_UI_PATH)
             )
@@ -44,7 +44,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self.auto_save:bool = False
     #获取对话文件所在的具体路径
     def get_dialog_file_location(self, lang:str="") -> str:
-        if len(lang) == 0: lang = get_setting("Language")
+        if len(lang) == 0: lang = Setting.language
         return os.path.join(
             self._dialog_folder_path, self._chapter_type, "chapter{0}_dialogs_{1}.yaml".format(self._chapter_id, lang)
             ) if self._project_name is None else os.path.join(
@@ -52,14 +52,14 @@ class AbstractDialogSystem(AbstractGameSystem):
                 )
     #获取对话文件的主语言
     def get_default_lang(self) -> str:
-        return load_config(os.path.join(self._dialog_folder_path,self._chapter_type,"info.yaml"),"default_lang") if self._project_name is None\
-            else load_config(os.path.join(self._dialog_folder_path,self._chapter_type,self._project_name,"info.yaml"),"default_lang")
+        return Config.load(os.path.join(self._dialog_folder_path,self._chapter_type,"info.yaml"),"default_lang") if self._project_name is None\
+            else Config.load(os.path.join(self._dialog_folder_path,self._chapter_type,self._project_name,"info.yaml"),"default_lang")
     #返回需要保存数据
     def _get_data_need_to_save(self) -> dict: return merge_dict(
         self.data_of_parent_game_system, {"dialog_id": self._dialog_id, "dialog_options": self._dialog_options, "type": self._part}
         )
     @property
-    def dialog_content(self) -> str: return self._dialog_data[self._part]
+    def dialog_content(self) -> dict: return self._dialog_data[self._part]
     @property
     def current_dialog_content(self) -> dict: return self.get_current_dialog_content()
     #获取当前对话的信息
@@ -72,7 +72,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                     assert key in currentDialogContent
                 except AssertionError:
                     print(currentDialogContent)
-                    throw_exception(
+                    EXCEPTION.throw(
                         "error", 'Cannot find critical key "{0}" in part "{1}" with id "{2}".'.format(key, self._part, self._dialog_id)
                         )
         return currentDialogContent
@@ -94,11 +94,11 @@ class AbstractDialogSystem(AbstractGameSystem):
         #读取目标对话文件的数据
         if os.path.exists(self.get_dialog_file_location()):
             try:
-                dialogDataDict:dict = load_config(self.get_dialog_file_location(), "dialogs", self._part)
+                dialogDataDict:dict = Config.load(self.get_dialog_file_location(), "dialogs", self._part)
                 assert isinstance(dialogDataDict, dict)
                 #如果该dialog文件是另一个语言dialog文件的子类
-                if default_lang_of_dialog != get_setting("Language"):
-                    self._dialog_data[self._part] = load_config(self.get_dialog_file_location(default_lang_of_dialog),"dialogs", self._part)
+                if default_lang_of_dialog != Setting.language:
+                    self._dialog_data[self._part] = Config.load(self.get_dialog_file_location(default_lang_of_dialog),"dialogs", self._part)
                     try:
                         assert isinstance(self._dialog_data[self._part], dict)
                         for dialog_id in dialogDataDict:
@@ -108,7 +108,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                             else:
                                 self._dialog_data[self._part][dialog_id] = dialogDataDict[dialog_id]
                     except AssertionError:
-                        threading(
+                        EXCEPTION.throw(
                             "error",
                             'Cannot load part "{}" from default language dialog! Worst case scenario, it needs to be empty!'
                             .format(self._part)
@@ -117,14 +117,14 @@ class AbstractDialogSystem(AbstractGameSystem):
                 else:
                     self._dialog_data[self._part] = dialogDataDict
             except AssertionError:
-                threading("error", 'Cannot load part "{0}" from "{1}"!'.format(self._part, self.get_dialog_file_location()))
+                EXCEPTION.throw("error", 'Cannot load part "{0}" from "{1}"!'.format(self._part, self.get_dialog_file_location()))
         else:
-            self._dialog_data[self._part] = load_config(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._part)
+            self._dialog_data[self._part] = Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._part)
         #确认dialog数据合法
         if len(self.dialog_content) == 0:
-            throw_exception("error", 'The selected dialog dict "{}" has no content inside.'.format(self._part))
+            EXCEPTION.throw("error", 'The selected dialog dict "{}" has no content inside.'.format(self._part))
         elif "head" not in self.dialog_content:
-            throw_exception("error", 'You need to set up a "head" for the selected dialog "{}".'.format(self._part))
+            EXCEPTION.throw("error", 'You need to set up a "head" for the selected dialog "{}".'.format(self._part))
         #将数据载入刚初始化的模块中
         self._update_scene(self._dialog_id)
         self._dialog_txt_system.reset()
@@ -142,19 +142,19 @@ class AbstractDialogSystem(AbstractGameSystem):
                     #尝试加载图片式的背景
                     img_path:str = os.path.join(self._background_image_folder_path, self.__background_image_name)
                     if os.path.exists(img_path):
-                        self.__background_image_surface = load_static_image(img_path,(0,0))
+                        self.__background_image_surface = StaticImage(img_path, 0, 0)
                     #如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
                     elif os.path.exists(os.path.join(self._dynamic_background_folder_path,self.__background_image_name)):
                         self.__background_image_surface = VedioSurface(
                             os.path.join(self._dynamic_background_folder_path,self.__background_image_name),
-                            display.get_width(),
-                            display.get_height()
+                            Display.get_width(),
+                            Display.get_height()
                             )
                         self.__background_image_surface.start()
                     else:
-                        throw_exception("error","Cannot find a background image or video file called '{}'.".format(self.__background_image_name))
+                        EXCEPTION.throw("error","Cannot find a background image or video file called '{}'.".format(self.__background_image_name))
                 elif self.dev_mode is True:
-                    self.__background_image_surface = load_static_image(get_texture_missing_surface(display.get_size()),(0,0))
+                    self.__background_image_surface = StaticImage(get_texture_missing_surface(Display.get_size()), 0, 0)
                 else:
                     self.__background_image_surface = None
             else:
@@ -184,8 +184,8 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._load_content()
     #更新音量
     def _update_sound_volume(self) -> None:
-        self.set_bgm_volume(get_setting("Sound","background_music")/100)
-        self._dialog_txt_system.set_sound_volume(get_setting("Sound","sound_effects"))
+        self.set_bgm_volume(Media.volume.background_music/100)
+        self._dialog_txt_system.set_sound_volume(Media.volume.effects)
     #停止播放
     def stop(self) -> None:
         #如果背景是多线程的VedioSurface，则应该退出占用
@@ -201,7 +201,7 @@ class AbstractDialogSystem(AbstractGameSystem):
     #把基础内容画到surface上
     def draw(self, surface:ImageSurface) -> None:
         #检测章节是否初始化
-        if self._chapter_id is None: raise throw_exception("error","The dialog has not been initialized!")
+        if self._chapter_id is None: raise EXCEPTION.throw("error","The dialog has not been initialized!")
         #展示背景图片和npc立绘
         self.display_background_image(surface)
         self._npc_manager.draw(surface)

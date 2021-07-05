@@ -21,8 +21,8 @@ class Square(GameObject2d):
     #获取rect
     def get_rect(self) -> tuple: return self.x, self.y, self._width, self._width
     #画出轮廓
-    def draw_outline(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0), color:str="red", thickness:int=2) -> None:
-        draw_rect(surface, get_color_rbga(color), (add_pos(self.pos,offSet),self.size), thickness)
+    def draw_outline(self, surface:ImageSurface, offSet:pos_liked=Origin, color:str="red", thickness:int=2) -> None:
+        draw_rect(surface, Color.get(color), (add_pos(self.pos,offSet),self.size), thickness)
 
 # 用于兼容的长方类
 class Rect(Square):
@@ -41,9 +41,9 @@ def new_rect(pos:tuple, size:tuple) -> Rect: return Rect(pos[0], pos[1], size[0]
 # 画正方形（的方块）
 def draw_rect(surface:ImageSurface, color:any, rect:RectLiked, thickness:int=0) -> None:
     if isinstance(rect, (pygame.Rect, tuple)):
-        pygame.draw.rect(surface, get_color_rbga(color), rect, thickness)
+        pygame.draw.rect(surface, Color.get(color), rect, thickness)
     elif isinstance(rect, Rect):
-        pygame.draw.rect(surface, get_color_rbga(color), rect.get_rect(), thickness)
+        pygame.draw.rect(surface, Color.get(color), rect.get_rect(), thickness)
 
 # 转换pygame的rect类至linpg引擎的rect类
 def convert_rect(rect: RectLiked) -> Rect:
@@ -57,12 +57,31 @@ def convert_rect(rect: RectLiked) -> Rect:
         elif len(rect) == 4:
             return Rect(rect[0], rect[1], rect[2], rect[3])
         else:
-            throw_exception("error", 'Invalid length for forming a rect.')
+            EXCEPTION.throw("error", 'Invalid length for forming a rect.')
     #如果是Rect类，则没必要转换
     elif isinstance(rect, Rect):
         return rect
     else:
-        throw_exception("error", 'The rect has to be RectLiked object, not "{}".'.format(type(rect)))
+        EXCEPTION.throw("error", 'The rect has to be RectLiked object, not "{}".'.format(type(rect)))
+
+#转换linpg.Rect至pygame.Rect
+def convert_to_pygame_rect(rect:RectLiked) -> pygame.Rect:
+    # 如果是pygame.Rect类，则没必要转换
+    if isinstance(rect, pygame.Rect):
+        return rect
+    # 确认是linpg.Rect类再转换
+    elif isinstance(rect, Rect):
+        return pygame.Rect(rect.left, rect.top, rect.width, rect.height)
+    # 如果是tuple类，则需要创建
+    elif isinstance(rect, tuple):
+        if len(rect) == 2:
+            return pygame.Rect(rect[0], rect[1])
+        elif len(rect) == 4:
+            return pygame.Rect(rect[0], rect[1], rect[2], rect[3])
+        else:
+            EXCEPTION.throw("error", 'Invalid length for forming a rect.')
+    else:
+        EXCEPTION.throw("error", 'The rect has to be RectLiked object, not "{}".'.format(type(rect)))
 
 # 是否形状一样
 def is_same_rect(rect1: RectLiked, rect2: RectLiked) -> bool:
@@ -72,6 +91,16 @@ def is_same_rect(rect1: RectLiked, rect2: RectLiked) -> bool:
     # 比较并返回结果
     return rect1.x == rect2.x and rect1.y == rect2.y and rect1.width == rect2.width and rect1.height == rect2.height
 
+# 检测图片是否被点击
+def is_hover(
+    imgObject: object, objectPos: pos_liked = Origin, off_set_x: Union[int, float] = 0, off_set_y: Union[int, float] = 0
+    ) -> bool:
+    # 如果是Linpg引擎的GameObject2d类(所有2d物品的父类)
+    if isinstance(imgObject, GameObject2d):
+        return imgObject.is_hover((Controller.mouse.x - off_set_x, Controller.mouse.y - off_set_y))
+    else:
+        return is_hover_pygame_object(imgObject, objectPos, off_set_x, off_set_y)
+
 # 圆形类
 class Circle(Square):
     def __init__(self, x: Union[int, float], y: Union[int, float], diameter: int):
@@ -79,9 +108,9 @@ class Circle(Square):
     @property
     def radius(self) -> Union[int, float]: return self._width/2
     #画出轮廓
-    def draw_outline(self, surface:ImageSurface, offSet:Union[tuple,list]=(0,0), color:str="red", thickness:int=2) -> None:
-        draw_circle(surface, get_color_rbga(color), add_pos(self.center, offSet), self.radius, thickness)
+    def draw_outline(self, surface:ImageSurface, offSet:pos_liked=Origin, color:str="red", thickness:int=2) -> None:
+        draw_circle(surface, Color.get(color), add_pos(self.center, offSet), self.radius, thickness)
 
 # 画圆形
 def draw_circle(surface:ImageSurface, color:any, center_pos:tuple, radius:int, thickness:int=0):
-    pygame.draw.circle(surface, get_color_rbga(color), center_pos, radius, thickness)
+    pygame.draw.circle(surface, Color.get(color), center_pos, radius, thickness)

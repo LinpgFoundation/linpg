@@ -147,11 +147,6 @@ class GameController:
             else:
                 mouse_y_t = self.mouse.y
             self.mouse.set_pos((mouse_x_t,mouse_y_t))
-    """即将弃置"""
-    #返回鼠标的坐标
-    def get_mouse_pos(self) -> tuple: return self.mouse.pos
-    #是否鼠标按钮被点击
-    def mouse_get_press(self, button_id:int) -> bool: return self.mouse.get_pressed(button_id)
 
 #控制器输入组件初始化
 Controller:GameController = GameController()

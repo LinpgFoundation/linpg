@@ -46,13 +46,15 @@ class SettingSystem:
         self.set(key, key2, value)
         self.save()
     """其他常用的重要参数"""
-    #获取文字信息
+    #文字信息
     @property
     def font(self) -> str: return str(self.__SETTING_DATA["Font"])
-    #获取文字类型
+    def set_font(self, font_name:str) -> None: self.__SETTING_DATA["Font"] = font_name
+    #文字类型
     @property
     def font_type(self) -> str: return str(self.__SETTING_DATA["FontType"])
-    #获取抗锯齿参数
+    def set_font_type(self, font_type:str) -> None: self.__SETTING_DATA["FontType"] = font_type
+    #抗锯齿参数
     @property
     def antialias(self) -> bool: return self.__SETTING_DATA["Antialias"] is True
     #语言
@@ -62,33 +64,3 @@ class SettingSystem:
     def developer_mode(self) -> bool: return self.__SETTING_DATA["DeveloperMode"] is True
 
 Setting:SettingSystem = SettingSystem()
-
-"""即将弃置"""
-#重新加载设置配置文件，请勿在引擎外调用，重置配置文件请用reload_setting()
-def reload_setting() -> None: Setting.reload()
-#保存设置参数
-def save_setting() -> None: Setting.save()
-#获取配置文件保存的路径
-def get_setting_path() -> str: return Setting.get_config_path()
-#设置配置文件保存的路径
-def set_setting_path(path:str) -> None: Setting.set_config_path(path)
-#获取设置配置文件
-def get_setting(*keys:str) -> any: return  Setting.get_by_keys(keys)
-#在不确定的情况下尝试获取设置配置文件
-def try_get_setting(*keys:str) -> any: EXCEPTION.throw("error", "No longer variable!")
-#修改设置参数
-def set_setting(key:str, key2:str=None, value:any=None) -> None: Setting.set(key, key2, value)
-#修改设置参数并保存
-def set_and_save_setting(key:str, key2:str=None, value:any=None) -> None: Setting.set_and_save(key, key2, value)
-#获取抗锯齿参数
-def get_antialias() -> bool: return Setting.antialias
-#获取文字信息
-def get_font() -> str: return Setting.font
-#设置文字信息
-def set_font(value:str) -> None: EXCEPTION.throw("error", "No longer variable!")
-#获取文字类型
-def get_font_type() -> str: return Setting.font_type
-#设置文字类型
-def set_font_type(value:str) -> None: EXCEPTION.throw("error", "No longer variable!")
-#获取文字的具体信息
-def get_font_details() -> tuple: return EXCEPTION.throw("error", "No longer variable!")

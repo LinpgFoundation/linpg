@@ -1,5 +1,5 @@
 # cython: language_level=3
-from ..api import *
+from .system import *
 
 #坐标类
 class Coordinate:

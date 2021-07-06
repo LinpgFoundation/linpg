@@ -80,7 +80,9 @@ class MusicController:
     #卸载背景音乐
     def unload(self) -> None: pygame.mixer.music.unload()
     #播放背景音乐
-    def play(self) -> None: pygame.mixer.music.play()
+    def play(self, loops:int=0, start:float=0.0, fade_ms:int = 0) -> None: pygame.mixer.music.play(loops, start, fade_ms)
+    #停止播放
+    def stop(self) -> None: pygame.mixer.music.stop()
     #淡出背景音乐
     def fade_out(self, time:float) -> None: pygame.mixer.music.fadeout(int(time))
     #获取背景音乐播放的位置
@@ -91,6 +93,8 @@ class MusicController:
     def get_volume(self) -> float: return pygame.mixer.music.get_volume()
     #调整背景音乐的音量
     def set_volume(self, volume:float) -> None: pygame.mixer.music.set_volume(volume)
+    #是否忙碌
+    def get_busy(self) -> bool: return pygame.mixer.music.get_busy()
 
 Music:MusicController = MusicController()
 
@@ -159,33 +163,3 @@ def split_audio_from_video(moviePath:str, audioType:str="mp3") -> str:
     #读取完成，返回音乐文件的对应目录
     return outPutPath
 
-"""即将弃置"""
-#加载音效
-def load_sound(path:str, volume:float=1.0) -> pygame.mixer.Sound: return Sound.load(path, volume)
-#播放音效
-def play_sound(sound:pygame.mixer.Sound, channel_id:int) -> None: Sound.play(sound, channel_id)
-#淡出音效
-def fade_out_sound(time:int) -> None: Sound.fade_out(time)
-#寻找一个可用的频道
-def find_channel(force:bool=False) -> int: return Sound.find_channel(force)
-#卸载背景音乐
-def unload_music() -> None: Music.unload()
-#加载背景音乐（但不播放）
-def load_music(path:str) -> None: Music.load(path)
-#播放背景音乐
-def play_music() -> None: Music.play()
-#淡出背景音乐
-def fade_out_music(time:int) -> None: Music.fade_out(time)
-#获取背景音乐播放的位置
-def get_music_pos() -> any: return Music.get_pos()
-#获取背景音乐的音量
-def get_music_volume() -> float: return Music.get_volume()
-#调整背景音乐的音量
-def set_music_volume(volume:float) -> None: Music.set_volume(volume)
-#是否有任何音乐在播放
-def is_any_sound_playing() -> bool: return Media.get_busy()
-#卸载所有音乐
-def unload_all_music() -> None: Media.unload()
-#从视频中加载音乐
-def load_audio_from_video_as_sound(moviePath:str) -> object: Sound.load_from_video(moviePath)
-def load_audio_from_video_as_music(moviePath:str) -> bool: Music.load_from_video(moviePath)

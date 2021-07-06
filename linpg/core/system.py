@@ -1,6 +1,6 @@
 # cython: language_level=3
 import threading
-from .mixer import *
+from ..api import *
 
 #使用多线程保存数据
 class SaveDataThread(threading.Thread):
@@ -52,13 +52,13 @@ class SystemWithBackgroundMusic(AbstractSystem):
     def set_bgm(self, path:Union[str,None], forced:bool=False) -> None:
         if path is None:
             self.__bgm_path = None
-            pygame.mixer.music.unload()
+            Music.unload()
         #如果路径存在
         elif os.path.exists(path):
             #只有在音乐路径不一致或者强制更新的情况下才会更新路径（同时卸载现有音乐）
             if self.__bgm_path != path or forced is True:
                 self.__bgm_path = path
-                pygame.mixer.music.unload()
+                Music.unload()
             else:
                 #同一首曲子，不更新任何内容
                 pass
@@ -71,28 +71,28 @@ class SystemWithBackgroundMusic(AbstractSystem):
     #设置bgm音量
     def set_bgm_volume(self,volume:Union[float,int]) -> None:
         if 1 >= volume >= 0:
-            if self.__bgm_path is not None and pygame.mixer.music.get_busy():
-                pygame.mixer.music.set_volume(volume)
+            if self.__bgm_path is not None and Music.get_busy():
+                Music.set_volume(volume)
             self.__bgm_volume = volume
         else:
             EXCEPTION.throw("error","Volume '{}' is out of the range! (must between 0 and 1)".format(volume))
     #播放bgm
-    def play_bgm(self, times:int=1) -> None:
-        if self.__bgm_path is not None and not pygame.mixer.music.get_busy() and not self.__if_stop_playing_bgm:
-            pygame.mixer.music.load(self.__bgm_path)
-            pygame.mixer.music.set_volume(self.__bgm_volume)
-            pygame.mixer.music.play(times)
+    def play_bgm(self, loops:int=0) -> None:
+        if self.__bgm_path is not None and not Music.get_busy() and not self.__if_stop_playing_bgm:
+            Music.load(self.__bgm_path)
+            Music.set_volume(self.__bgm_volume)
+            Music.play(loops)
     #停止播放bgm
     def stop_playing_bgm(self) -> None:
         self.__if_stop_playing_bgm = True
-        pygame.mixer.music.stop()
+        Music.stop()
     #继续播放bgm
     def continue_playing_bgm(self) -> None:
         self.__if_stop_playing_bgm = False
     #卸载bgm，释放内存
     def unload_bgm(self) -> None:
         self.__bgm_path = None
-        pygame.mixer.music.unload()
+        Music.unload()
     #把内容画到surface上（子类必须实现）
     def draw(self, surface:ImageSurface) -> None:
         EXCEPTION.throw("error","The child class needs to implement draw() function!")

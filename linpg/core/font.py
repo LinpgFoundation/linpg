@@ -89,8 +89,8 @@ def create_font(size:Union[int,float], ifBold:bool=False, ifItalic:bool=False) -
             normal_font = pygame.font.Font(font_path,font_size)
         else:
             EXCEPTION.warn("Cannot find the {}.ttf file, the engine's font has been changed to default.".format(Setting.font))
-            set_font("arial")
-            set_font_type("default")
+            Setting.set_font("arial")
+            Setting.set_font_type("default")
             return pygame.font.SysFont(Setting.font,font_size,ifBold,ifItalic)
         if ifBold is True: normal_font.set_bold(ifBold)
         if ifItalic is True: normal_font.set_italic(ifItalic)
@@ -113,8 +113,8 @@ def create_freetype_font(size:Union[float,int], ifBold:bool=False, ifItalic:bool
             normal_font = pygame.freetype.Font(font_path,font_size)
         else:
             EXCEPTION.warn("Cannot find the {}.ttf file, the engine's font has been change to default.".format(Setting.font))
-            set_font("arial")
-            set_font_type("default")
+            Setting.set_font("arial")
+            Setting.set_font_type("default")
             return pygame.freetype.SysFont(Setting.font,font_size,ifBold,ifItalic)
         if ifBold is True: normal_font.set_bold(True)
         if ifItalic is True: normal_font.set_italic(True)

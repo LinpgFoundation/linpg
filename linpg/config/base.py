@@ -120,41 +120,47 @@ class ConfigManager:
     def organize(self, pathname:str) -> None:
         for configFilePath in glob(pathname):
             self.save(configFilePath, self.load(configFilePath))
+    #优化中文文档
+    def optimize_cn_content(self, filePath:str) -> None:
+        #读取原文件的数据
+        with open(filePath, "r", encoding='utf-8') as f:
+            file_lines = f.readlines()
+        #优化字符串
+        for i in range(len(file_lines)):
+            #如果字符串不为空
+            if len(file_lines[i]) > 1:
+                #替换字符
+                file_lines[i] = file_lines[i]\
+                    .replace("。。。","... ")\
+                    .replace("。",". ")\
+                    .replace("？？：","??: ")\
+                    .replace("？？","?? ")\
+                    .replace("？","? ")\
+                    .replace("！！","!! ")\
+                    .replace("！","! ")\
+                    .replace("：",": ")\
+                    .replace("，",", ")\
+                    .replace("“",'"')\
+                    .replace("”",'"')\
+                    .replace("‘","'")\
+                    .replace("’","'")\
+                    .replace("（"," (")\
+                    .replace("）",") ")\
+                    .replace("  "," ")
+                #移除末尾的空格
+                try:
+                    while file_lines[i][-2] == " ":
+                        file_lines[i] = file_lines[i][:-2]+"\n"
+                except Exception:
+                    pass
+        #删除原始文件
+        os.remove(filePath)
+        #创建并写入新数据
+        with open(filePath, "w", encoding='utf-8') as f:
+            f.writelines(file_lines)
+    #优化文件夹中特定文件的中文字符串
+    def optimize_cn_content_in_folder(self, pathname:str) -> None:
+        for configFilePath in glob(pathname):
+            self.optimize_cn_content(configFilePath)
 
 Config:ConfigManager = ConfigManager()
-
-"""即将弃置"""
-# 配置文件加载
-def load_config(path:str, *keys:str) -> any:
-    # 检测配置文件是否存在
-    if not os.path.exists(path): EXCEPTION.throw("error","Cannot find file on path: {}".format(path))
-    # 按照类型加载配置文件
-    if path.endswith(".yaml"):
-        if _YAML_INITIALIZED is True:
-            try:
-                # 尝试使用默认模式加载yaml配置文件
-                with open(path, "r", encoding='utf-8') as f: Data = yaml.load(f.read(), Loader=yaml.FullLoader)
-            except yaml.constructor.ConstructorError:
-                EXCEPTION.warn("Encounter a fatal error while loading the yaml file in path:\n'{}'\n\
-                    One possible reason is that at least one numpy array exists inside the yaml file.\n\
-                    The program will try to load the data using yaml.UnsafeLoader.".format(path))
-                # 使用安全模式加载yaml配置文件
-                with open(path, "r", encoding='utf-8') as f: Data = yaml.load(f.read(), Loader=yaml.UnsafeLoader)
-        else:
-            EXCEPTION.throw("error","You cannot load .yaml file because yaml is not imported successfully.")
-    elif path.endswith(".json"):
-        # 使用json模块加载配置文件
-        with open(path, "r", encoding='utf-8') as f: Data = json.load(f)
-    else:
-        EXCEPTION.throw("error","Linpg can only load json and yaml (if pyyaml is installed).")
-    # 返回配置文件中的数据
-    return Data if len(keys) == 0 else get_value_by_keys(Data,keys)
-
-# 配置文件保存
-def save_config(path:str, data:any) -> None: Config.save(path, data)
-
-# 整理配置文件（读取了再存）
-def organize_config_in_folder(pathname:str) -> None: Config.organize(pathname)
-
-# 抛出引擎内的异常
-def throw_exception(exception_type:str, info:str) -> None: EXCEPTION.throw(exception_type, info)

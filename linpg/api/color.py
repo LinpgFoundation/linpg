@@ -71,7 +71,3 @@ class ColorManager:
             EXCEPTION.throw("error", "The color has to be a string, tuple or list, and {0} (type:{1}) is not acceptable!".format(color, type(color)))
 
 Color: ColorManager = ColorManager()
-
-"""即将弃置"""
-#给定一个颜色的名字，返回对应的RGB列表
-def get_color_rbga(color:color_liked) -> tuple: return Color.get(color)

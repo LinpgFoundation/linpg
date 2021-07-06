@@ -28,13 +28,3 @@ class InfoManager:
         }
 
 Info:InfoManager = InfoManager()
-
-"""即将弃置"""
-# 获取当前版本号
-def get_current_version() -> str: return Info.current_version
-# 获取作者邮箱
-def get_author_email() -> str: return Info.author_email
-# 获取github项目地址
-def get_repository_url() -> str: return Info.repository_url
-# 获取项目简介
-def get_short_description() -> str: return Info.short_description

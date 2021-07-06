@@ -70,18 +70,3 @@ class LanguageManager:
 Lang:LanguageManager = LanguageManager()
 
 #Lang.organize()
-
-"""即将弃置"""
-#重新加载语言配置文件
-def reload_lang() -> None: Lang.reload()
-#获取当前的语言
-def get_current_language() -> str: return Lang.get_current_language()
-#获取语言的名称id
-def get_language_id(lang_name:str) -> str: Lang.get_language_id(lang_name)
-#获取可用语言
-def get_available_language() -> tuple: return Lang.get_available_languages()
-#根据key(s)获取对应的语言
-def get_lang(*keys:str) -> any: return Lang.get_text_by_keys(keys)
-def get_lang_by_keys(keys:Union[tuple, list]) -> any: Lang.get_text_by_keys(keys)
-#获取本地化的数字
-def get_num_in_local_text(num:Union[int,str]) -> str: Lang.get_num_in_local_text(num)

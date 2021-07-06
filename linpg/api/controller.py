@@ -62,8 +62,8 @@ class MouseController:
     @property
     def y(self) -> int: return self.__y
     @property
-    def pos(self) -> tuple: return self.__x, self.__y
-    def get_pos(self) -> tuple: return self.__x, self.__y
+    def pos(self) -> tuple[int]: return self.__x, self.__y
+    def get_pos(self) -> tuple[int]: return self.__x, self.__y
     #设置坐标
     def set_pos(self, pos:pos_liked) -> None:
         self.__x, self.__y = convert_pos(pos)
@@ -109,7 +109,7 @@ class GameController:
         try:
             return self.__SPECIFIC_EVENTS[event_type]
         except KeyError:
-            EXCEPTION.throw("error", 'The event type "{}" is not supported!'.format(event_type))
+            EXCEPTION.fatal('The event type "{}" is not supported!'.format(event_type))
     #更新输入
     def update(self):
         #更新输入事件

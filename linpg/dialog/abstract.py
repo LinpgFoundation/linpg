@@ -19,8 +19,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         try:
             self._option_box_selected_surface = StaticImage(os.path.join(DIALOG_UI_PATH, "option_selected.png"), 0, 0)
         except Exception:
-            EXCEPTION.throw(
-                "warning",
+            EXCEPTION.inform(
                 "Cannot find or load 'option_selected.png' in '{}' file, 'option.png' will be used instead.".format(DIALOG_UI_PATH)
             )
             self._option_box_selected_surface = self._option_box_surface.copy()
@@ -55,9 +54,10 @@ class AbstractDialogSystem(AbstractGameSystem):
         return Config.load(os.path.join(self._dialog_folder_path,self._chapter_type,"info.yaml"),"default_lang") if self._project_name is None\
             else Config.load(os.path.join(self._dialog_folder_path,self._chapter_type,self._project_name,"info.yaml"),"default_lang")
     #返回需要保存数据
-    def _get_data_need_to_save(self) -> dict: return merge_dict(
-        self.data_of_parent_game_system, {"dialog_id": self._dialog_id, "dialog_options": self._dialog_options, "type": self._part}
-        )
+    def _get_data_need_to_save(self) -> dict: return {
+        **self.data_of_parent_game_system,
+        **{"dialog_id": self._dialog_id, "dialog_options": self._dialog_options, "type": self._part}
+        }
     @property
     def dialog_content(self) -> dict: return self._dialog_data[self._part]
     @property
@@ -72,8 +72,8 @@ class AbstractDialogSystem(AbstractGameSystem):
                     assert key in currentDialogContent
                 except AssertionError:
                     print(currentDialogContent)
-                    EXCEPTION.throw(
-                        "error", 'Cannot find critical key "{0}" in part "{1}" with id "{2}".'.format(key, self._part, self._dialog_id)
+                    EXCEPTION.fatal(
+                        'Cannot find critical key "{0}" in part "{1}" with id "{2}".'.format(key, self._part, self._dialog_id)
                         )
         return currentDialogContent
     #初始化关键参数
@@ -108,8 +108,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                             else:
                                 self._dialog_data[self._part][dialog_id] = dialogDataDict[dialog_id]
                     except AssertionError:
-                        EXCEPTION.throw(
-                            "error",
+                        EXCEPTION.fatal(
                             'Cannot load part "{}" from default language dialog! Worst case scenario, it needs to be empty!'
                             .format(self._part)
                             )
@@ -117,14 +116,14 @@ class AbstractDialogSystem(AbstractGameSystem):
                 else:
                     self._dialog_data[self._part] = dialogDataDict
             except AssertionError:
-                EXCEPTION.throw("error", 'Cannot load part "{0}" from "{1}"!'.format(self._part, self.get_dialog_file_location()))
+                EXCEPTION.fatal('Cannot load part "{0}" from "{1}"!'.format(self._part, self.get_dialog_file_location()))
         else:
             self._dialog_data[self._part] = Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._part)
         #确认dialog数据合法
         if len(self.dialog_content) == 0:
-            EXCEPTION.throw("error", 'The selected dialog dict "{}" has no content inside.'.format(self._part))
+            EXCEPTION.fatal('The selected dialog dict "{}" has no content inside.'.format(self._part))
         elif "head" not in self.dialog_content:
-            EXCEPTION.throw("error", 'You need to set up a "head" for the selected dialog "{}".'.format(self._part))
+            EXCEPTION.fatal('You need to set up a "head" for the selected dialog "{}".'.format(self._part))
         #将数据载入刚初始化的模块中
         self._update_scene(self._dialog_id)
         self._dialog_txt_system.reset()
@@ -152,7 +151,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                             )
                         self.__background_image_surface.start()
                     else:
-                        EXCEPTION.throw("error","Cannot find a background image or video file called '{}'.".format(self.__background_image_name))
+                        EXCEPTION.fatal("Cannot find a background image or video file called '{}'.".format(self.__background_image_name))
                 elif self.dev_mode is True:
                     self.__background_image_surface = StaticImage(get_texture_missing_surface(Display.get_size()), 0, 0)
                 else:
@@ -201,7 +200,7 @@ class AbstractDialogSystem(AbstractGameSystem):
     #把基础内容画到surface上
     def draw(self, surface:ImageSurface) -> None:
         #检测章节是否初始化
-        if self._chapter_id is None: raise EXCEPTION.throw("error","The dialog has not been initialized!")
+        if self._chapter_id is None: raise EXCEPTION.fatal("The dialog has not been initialized!")
         #展示背景图片和npc立绘
         self.display_background_image(surface)
         self._npc_manager.draw(surface)

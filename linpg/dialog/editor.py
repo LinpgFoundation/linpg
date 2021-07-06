@@ -343,7 +343,7 @@ class DialogEditor(AbstractDialogSystem):
                                         break
                             else:
                                 #如果当前next_dialog_id的类型不支持的话，报错
-                                EXCEPTION.throw("error","Cannot recognize next_dialog_id type: {}, please fix it".format(self.dialog_content[lastId]["next_dialog_id"]["type"]))
+                                EXCEPTION.fatal("Cannot recognize next_dialog_id type: {}, please fix it".format(self.dialog_content[lastId]["next_dialog_id"]["type"]))
                             #修改下一个对白配置文件中的"last_dialog_id"的参数
                             if nextId is not None:
                                 if "last_dialog_id" in self.dialog_content[nextId] and self.dialog_content[nextId]["last_dialog_id"] is not None:

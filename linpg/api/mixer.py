@@ -1,5 +1,6 @@
 # cython: language_level=3
 import av
+import linpgtoolkit
 from .display import *
 
 #音效管理模块接口
@@ -35,6 +36,34 @@ class SoundManagement(AbstractSoundManager):
         for i in range(len(self.__sounds_list)):
             self.__sounds_list[i].set_volume(volume)
 
+#获取视频的音频 （返回路径）
+def _split_audio_from_video(input_path:str) -> str:
+    output_folder:str = os.path.dirname(input_path)
+    #产生不重名的output文件名称
+    output_file_name_t:str = os.path.basename(input_path).replace(".","_") + "{}.ogg"
+    output_file_name:str
+    index = 0
+    while True:
+        output_file_name = output_file_name_t.format(index)
+        if not os.path.exists(output_file_name):
+            break
+        else:
+            index += 1
+    #生成output路径
+    output_path:str = os.path.join(output_folder, output_file_name)
+    #让linpgtoolkit生成视频文件
+    convert_status:str = linpgtoolkit.ffmpeg.convert_from_vedio_to_audio(input_path, output_path)
+    #如果一切正常，返回output路径
+    if len(convert_status) < 1:
+        return output_path
+    #如果不正常...
+    elif convert_status == "FILE_NOT_EXIST":
+        EXCEPTION.fatal('Cannot find media file on path "{}".'.format(input_path))
+    elif convert_status == "FFMPEG_MISSING":
+        EXCEPTION.fatal('LinpgToolKit cannot find its "ffmpeg.exe" file. You may need to reinstall the toolkit.')
+    else:
+        EXCEPTION.fatal("Unexpected convert status, you need to report this issue to the developers.")
+
 #音效管理
 class SoundController:
     def __init__(self) -> None:
@@ -46,9 +75,9 @@ class SoundController:
         return soundTmp
     #从一个视频中加载音效
     def load_from_video(self, path:str, volume:float=1.0) -> pygame.mixer.Sound:
-        path_of_sound:str = split_audio_from_video(path)
+        path_of_sound:str = _split_audio_from_video(path)
         sound_audio = self.load(path_of_sound, volume)
-        if not Setting.get("KeepVedioCache"): os.remove(path_of_sound)
+        os.remove(path_of_sound)
         return sound_audio
     #播放音效
     def play(self, sound:pygame.mixer.Sound, channel_id:int) -> None:
@@ -70,9 +99,9 @@ class MusicController:
     def load_from_video(self, path:str) -> bool:
         self.unload()
         try:
-            path_of_music:str = split_audio_from_video(path)
+            path_of_music:str = _split_audio_from_video(path)
             self.load(path_of_music)
-            if not Setting.get("KeepVedioCache"): os.remove(path_of_music)
+            os.remove(path_of_music)
             return True
         except Exception:
             EXCEPTION.warn("Cannot load music from {}!\nIf this vedio has no sound, then just ignore this warning.".format(path))
@@ -133,33 +162,5 @@ class MediaController:
 
 Media:MediaController = MediaController()
 
-#获取视频的音频 （返回路径）
-def split_audio_from_video(moviePath:str, audioType:str="mp3") -> str:
-    #如果没有Cache文件夹，则创建一个
-    if not os.path.exists("Cache"): os.makedirs("Cache")
-    #获取路径
-    outPutPath:str = os.path.join("Cache","{0}.{1}".format(os.path.basename(moviePath).replace(".","_"),audioType))
-    #如果路径已经存在，则直接返回路径
-    if os.path.exists(outPutPath): return outPutPath
-    #把视频载入到流容器中
-    input_container:object = av.open(moviePath)
-    input_stream:object = input_container.streams.audio[0]
-    input_stream.thread_type = 'AUTO'
-    #创建输出的容器
-    output_container = av.open(outPutPath, 'w')
-    output_stream = output_container.add_stream(audioType)
-    #把input容器中的音乐片段载入到输出容器中
-    for frame in input_container.decode(input_stream):
-        frame.pts = None
-        for packet in output_stream.encode(frame):
-            output_container.mux(packet)
-    #关闭input容器
-    input_container.close()
-    #解码输出容器
-    for packet in output_stream.encode(None):
-        output_container.mux(packet)
-    #写入工作完成，关闭输出容器
-    output_container.close()
-    #读取完成，返回音乐文件的对应目录
-    return outPutPath
+
 

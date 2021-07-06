@@ -9,9 +9,9 @@ class Converter:
     def __make_sure_size(self, item:dict, key:str, value_in_case_percentage:int) -> None:
         if key not in item:
             if "name" in item:
-                EXCEPTION.throw("error",'You have to set "{0}" for "{1}".'.format(key, item["name"]))
+                EXCEPTION.fatal('You have to set "{0}" for "{1}".'.format(key, item["name"]))
             else:
-                EXCEPTION.throw("error",'You have to set "{}".'.format(key))
+                EXCEPTION.fatal('You have to set "{}".'.format(key))
         elif isinstance(item[key], float):
             item[key] = int(item[key])
         elif not isinstance(item[key], int):
@@ -20,17 +20,17 @@ class Converter:
                     item[key] = int(convert_percentage(item[key])*value_in_case_percentage)
                 except Exception:
                     if "name" in item:
-                        EXCEPTION.throw("error",'Cannot convert "{0}" because it is not a valid percentage for "{1}".'.format(item[key], item["name"]))
+                        EXCEPTION.fatal('Cannot convert "{0}" because it is not a valid percentage for "{1}".'.format(item[key], item["name"]))
                     else:
-                        EXCEPTION.throw("error",'Cannot convert "{}" because it is not a valid percentage.'.format(item[key]))
+                        EXCEPTION.fatal('Cannot convert "{}" because it is not a valid percentage.'.format(item[key]))
             else:
                 try:
                     item[key] = int(item[key])
                 except Exception:
                     if "name" in item:
-                        EXCEPTION.throw("error",'The "{0}" for "{1}" needs to an interger instead of "{2}".'.format(key, item["name"], item[key]))
+                        EXCEPTION.fatal('The "{0}" for "{1}" needs to an interger instead of "{2}".'.format(key, item["name"], item[key]))
                     else:
-                        EXCEPTION.throw("error",'The "{0}" needs to an interger instead of "{1}".'.format(key, item[key]))
+                        EXCEPTION.fatal('The "{0}" needs to an interger instead of "{1}".'.format(key, item[key]))
     #检测坐标是否合法
     def __make_sure_pos(self, item:dict, key:str, value_in_case_center:int, value_in_case_percentage:int) -> None:
         if key not in item:
@@ -43,11 +43,11 @@ class Converter:
                     item[key] = int(convert_percentage(item[key])*value_in_case_percentage)
                 except Exception:
                     if "name" in item:
-                        EXCEPTION.throw("error",'Cannot convert "{0}" because it is not a valid percentage for "{1}".'.format(item[key], item["name"]))
+                        EXCEPTION.fatal('Cannot convert "{0}" because it is not a valid percentage for "{1}".'.format(item[key], item["name"]))
                     else:
-                        EXCEPTION.throw("error",'Cannot convert "{}" because it is not a valid percentage.'.format(item[key]))
+                        EXCEPTION.fatal('Cannot convert "{}" because it is not a valid percentage.'.format(item[key]))
             else:
-                EXCEPTION.throw("error","Valid value for {0}: {1}.".format(key, item[key]))
+                EXCEPTION.fatal("Valid value for {0}: {1}.".format(key, item[key]))
     #转换文字
     def convert_text(self, text:str) -> str:
         final_text_list:deque = deque()
@@ -65,7 +65,7 @@ class Converter:
                     final_text_list.append(Lang.get_text_by_keys((b.strip() for b in text[text_index+1:a].split(","))))
                     text_index = a
                 else:
-                    EXCEPTION.throw("error", 'Cannot find close bracket for text: {}'.format())
+                    EXCEPTION.fatal('Cannot find close bracket for text: {}'.format())
             else:
                 final_text_list.append(text[text_index])
             text_index += 1
@@ -133,7 +133,7 @@ class Converter:
                 if "name" in data:
                     button_t.tag = data["name"]
                 else:
-                    EXCEPTION.throw("error", "You have to set a name for button type.")
+                    EXCEPTION.fatal("You have to set a name for button type.")
                 #转换坐标
                 self.__make_sure_pos(data, "x", int((max_width-button_t.get_width())/2), max_width)
                 self.__make_sure_pos(data, "y", int((max_height-button_t.get_height())/2), max_height)
@@ -152,6 +152,6 @@ class Converter:
                 #返回图片
                 return image_t
             else:
-                EXCEPTION.throw("error", "Current type is not supported")
+                EXCEPTION.fatal("Current type is not supported")
 
 converter:Converter = Converter()

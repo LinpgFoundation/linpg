@@ -233,7 +233,7 @@ class EntityImageManager:
         elif mode == "dev":
             imgId_dict = {"wait":self.loadImageCollection(characterType,"wait",faction)}
         else:
-            EXCEPTION.throw("error","Mode is not supported")
+            EXCEPTION.fatal("Mode is not supported")
         return imgId_dict
     #动图制作模块：接受一个友方角色名和动作,当前的方块标准长和高，返回对应角色动作list或者因为没图片而返回None
     #810*810 position:405/567
@@ -329,16 +329,16 @@ class DecisionHolder:
         if self.action == "move":
             return self.data
         else:
-            EXCEPTION.throw("error","The character does not decide to move!")
+            EXCEPTION.fatal("The character does not decide to move!")
     @property
     def target(self):
         if self.action == "attack":
             return self.data[0]
         else:
-            EXCEPTION.throw("error","The character does not decide to attack!")
+            EXCEPTION.fatal("The character does not decide to attack!")
     @property
     def target_area(self):
         if self.action == "attack":
             return self.data[1]
         else:
-            EXCEPTION.throw("error","The character does not decide to attack!")
+            EXCEPTION.fatal("The character does not decide to attack!")

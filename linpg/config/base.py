@@ -37,17 +37,6 @@ class LinpgException(Exception):
     #告知不严重但建议查看的问题
     def inform(self, info:str) -> None:
         print('LinpgEngine-Inform: {}'.format(info))
-    #抛出问题
-    def throw(self, exception_type:str, info:str) -> None:
-        exception_type_lower:str = exception_type.lower()
-        if exception_type_lower == "error":
-            self.fatal(info)
-        elif exception_type_lower == "warning":
-            self.warn(info)
-        elif exception_type_lower == "info":
-            self.inform(info)
-        else:
-            self.warn("Hey, the exception_type '{}' is not acceptable!".format(exception_type))
 
 EXCEPTION = LinpgException()
 
@@ -58,8 +47,7 @@ def get_value_by_keys(dict_to_check:dict, keys:tuple, warning:bool=True) -> any:
         try:
             pointer = pointer[key]
         except KeyError:
-            if warning is True: EXCEPTION.throw(
-                "warning",
+            if warning is True: EXCEPTION.warn(
                 'Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'
                 .format(key)
                 )
@@ -72,7 +60,7 @@ class ConfigManager:
     # 配置文件保存
     def load(self, path:str, *key:str) -> any:
         # 检测配置文件是否存在
-        if not os.path.exists(path): EXCEPTION.throw("error","Cannot find file on path: {}".format(path))
+        if not os.path.exists(path): EXCEPTION.fatal("Cannot find file on path: {}".format(path))
         # 按照类型加载配置文件
         if path.endswith(".yaml"):
             if _YAML_INITIALIZED is True:
@@ -88,12 +76,12 @@ class ConfigManager:
                     # 使用安全模式加载yaml配置文件
                     with open(path, "r", encoding='utf-8') as f: Data = yaml.load(f.read(), Loader=yaml.UnsafeLoader)
             else:
-                EXCEPTION.throw("error","You cannot load .yaml file because yaml is not imported successfully.")
+                EXCEPTION.fatal("You cannot load .yaml file because yaml is not imported successfully.")
         elif path.endswith(".json"):
             # 使用json模块加载配置文件
             with open(path, "r", encoding='utf-8') as f: Data = json.load(f)
         else:
-            EXCEPTION.throw("error", "Linpg can only load json and yaml (if pyyaml is installed).")
+            EXCEPTION.fatal("Linpg can only load json and yaml (if pyyaml is installed).")
         # 返回配置文件中的数据
         return Data if len(key) == 0 else get_value_by_keys(Data, key)
     # 加载内部配置文件保存
@@ -111,11 +99,11 @@ class ConfigManager:
                 if _YAML_INITIALIZED is True:
                     yaml.dump(data, f, allow_unicode=True)
                 else:
-                    EXCEPTION.throw("error","You cannot save .yaml file because yaml is not imported successfully.")
+                    EXCEPTION.fatal("You cannot save .yaml file because yaml is not imported successfully.")
             elif path.endswith(".json"):
                 json.dump(data, f, indent=4, ensure_ascii=False, sort_keys=True)
             else:
-                EXCEPTION.throw("error","Linpg cannot save this kind of config, and can only save json and yaml (if pyyaml is installed).")
+                EXCEPTION.fatal("Linpg cannot save this kind of config, and can only save json and yaml (if pyyaml is installed).")
     # 整理配置文件（读取了再存）
     def organize(self, pathname:str) -> None:
         for configFilePath in glob(pathname):

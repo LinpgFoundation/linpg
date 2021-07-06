@@ -43,7 +43,7 @@ class EnvImagesManagement:
                 self.__ENV_IMAGE_DICT_DARK[fileName] = self.__ENV_IMAGE_DICT[fileName].copy()
                 self.__ENV_IMAGE_DICT_DARK[fileName].add_darkness(self.__DARKNESS)
         else:
-            EXCEPTION.throw("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__ENV_IMAGE_PATH))
+            EXCEPTION.fatal('Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__ENV_IMAGE_PATH))
     #加载场景装饰物图片
     def __add_decoration_image(self, decorationType:str, fileName:str) -> None:
         imgPath:str = os.path.join(self.__DECORATION_IMAGE_PATH, "{}.png".format(fileName))
@@ -74,7 +74,7 @@ class EnvImagesManagement:
                     self.__DECORATION_IMAGE_DICT_DARK[decorationType][decorationType] = self.__DECORATION_IMAGE_DICT[decorationType][-1].copy()
                     self.__DECORATION_IMAGE_DICT_DARK[decorationType][decorationType].add_darkness(self.__DARKNESS)
             else:
-                EXCEPTION.throw("error",'Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__DECORATION_IMAGE_PATH))
+                EXCEPTION.fatal('Cannot find image "{0}" in folder "{1}"'.format(fileName,self.__DECORATION_IMAGE_PATH))
     #获取方块尺寸
     def get_block_width(self) -> int: return self.__BLOCK_WIDTH
     def get_block_height(self) -> int: return self.__BLOCK_HEIGHT
@@ -183,7 +183,7 @@ class WeatherSystem:
         try:
             assert self.__initialized is True
         except AssertionError:
-            EXCEPTION.throw("error", "You need to initialize the weather system before using it.")
+            EXCEPTION.fatal("You need to initialize the weather system before using it.")
         self.__speed_unit:int = int(perBlockWidth/15)
         for item in self.__items:
             if 0 <= item.x < surface.get_width() and 0 <= item.y < surface.get_height():

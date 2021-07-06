@@ -48,7 +48,7 @@ class DialogSystem(AbstractDialogSystem):
             #自动保存
             if self.auto_save: self.save_progress()
         else:
-            EXCEPTION.throw("error","The dialog id {} does not exist!".format(theNextDialogId))
+            EXCEPTION.fatal("The dialog id {} does not exist!".format(theNextDialogId))
     def continue_scene(self, theNextDialogId:Union[str,int]) -> None:
         self._continue()
         self._update_scene(theNextDialogId)
@@ -91,7 +91,7 @@ class DialogSystem(AbstractDialogSystem):
             #重设black_bg的alpha值以便下一次使用
             self._black_bg.set_alpha(255)
         else:
-            EXCEPTION.throw("error", 'Stage input has to be either "in" or "out", not "{}"'.format(stage))
+            EXCEPTION.fatal('Stage input has to be either "in" or "out", not "{}"'.format(stage))
     def draw(self, surface:ImageSurface) -> None:
         super().draw(surface)
         #背景音乐
@@ -257,4 +257,4 @@ class DialogSystem(AbstractDialogSystem):
                     self.stop()
                 #非法type
                 else:
-                    EXCEPTION.throw("error", 'Type "{}" is not a valid type.'.format(next_dialog_type))
+                    EXCEPTION.fatal('Type "{}" is not a valid type.'.format(next_dialog_type))

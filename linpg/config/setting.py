@@ -41,7 +41,7 @@ class SettingSystem:
             else:
                 self.__SETTING_DATA[key][key2] = value
         else:
-            EXCEPTION.throw("error", "You need to enter a valid value!")
+            EXCEPTION.fatal("You need to enter a valid value!")
     def set_and_save(self, key:str, key2:str=None, value:any=None) -> None:
         self.set(key, key2, value)
         self.save()

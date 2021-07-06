@@ -197,7 +197,7 @@ class HostileCharacter(Entity):
                     else:
                         actions.put(DecisionHolder("move",the_route))
                 else:
-                    EXCEPTION.throw("error","A hostile character cannot find a valid path when trying to attack {}!".format(target))
+                    EXCEPTION.fatal("A hostile character cannot find a valid path when trying to attack {}!".format(target))
         #如果角色没有可以攻击的对象，则查看角色是否需要巡逻
         elif len(self.__patrol_path) > 0:
             #如果巡逻坐标点只有一个（意味着角色需要在该坐标上长期镇守）
@@ -207,7 +207,7 @@ class HostileCharacter(Entity):
                     if len(the_route) > 0:
                         actions.put(DecisionHolder("move",the_route))
                     else:
-                        EXCEPTION.throw("error","A hostile character cannot find a valid path!")
+                        EXCEPTION.fatal("A hostile character cannot find a valid path!")
                 else:
                     #如果角色在该点上，则原地待机
                     pass
@@ -219,7 +219,7 @@ class HostileCharacter(Entity):
                     #如果角色在这次移动后到达了最近的巡逻点，则应该更新最近的巡逻点
                     if is_same_pos(the_route[-1],self.__patrol_path[0]): self.__patrol_path.append(self.__patrol_path.popleft())
                 else:
-                    EXCEPTION.throw("error","A hostile character cannot find a valid path!")
+                    EXCEPTION.fatal("A hostile character cannot find a valid path!")
         else:
             pass
         #放回一个装有指令的列表

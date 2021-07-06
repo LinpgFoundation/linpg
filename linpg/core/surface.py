@@ -147,7 +147,7 @@ class StaticImage(AdvancedAbstractImage):
             else:
                 pass
         else:
-            EXCEPTION.throw("error","You have to input either a None or a Rect, not {}".format(type(rect)))
+            EXCEPTION.fatal("You have to input either a None or a Rect, not {}".format(type(rect)))
     #更新图片
     def _update_img(self) -> None:
         imgTmp = smoothly_resize_img(self.img, self.size) if Setting.antialias is True else resize_img(self.img, self.size)

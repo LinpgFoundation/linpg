@@ -4,7 +4,6 @@
     "FPS": 60,
     "Font": "MicrosoftYaHei-2",
     "FontType": "custom",
-    "KeepVedioCache": true,
     "Language": null,
     "MouseIconWidth": 18,
     "MouseMoveSpeed": 30,

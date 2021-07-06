@@ -16,7 +16,7 @@ def quickly_load_img(path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> 
                 return pygame.image.load(path).convert_alpha() if is_using_pygame() else pyglet.image.load(path)
             except Exception:
                 if Setting.developer_mode is True: 
-                    EXCEPTION.throw("error",'Cannot load image from path: {}'.format(path))
+                    EXCEPTION.fatal('Cannot load image from path: {}'.format(path))
                 else:
                     return get_texture_missing_surface()
         else:
@@ -24,11 +24,11 @@ def quickly_load_img(path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> 
                 return pygame.image.load(path) if is_using_pygame() else pyglet.image.load(path)
             except Exception:
                 if Setting.developer_mode is True:
-                    EXCEPTION.throw("error",'Cannot load image from path: {}'.format(path))
+                    EXCEPTION.fatal('Cannot load image from path: {}'.format(path))
                 else:
                     return get_texture_missing_surface()
     else:
-        EXCEPTION.throw("error","The path '{}' has to be a string or at least a ImageSurface!".format(path))
+        EXCEPTION.fatal("The path '{}' has to be a string or at least a ImageSurface!".format(path))
 
 #图片加载模块：接收图片路径,长,高,返回对应图片
 def load_img(path:Union[str,ImageSurface], size:size_liked=tuple(), alpha:int=255, ifConvertAlpha:bool=True) -> ImageSurface:
@@ -84,7 +84,7 @@ def resize_img(img:ImageSurface, size:size_liked=(None,None)) -> ImageSurface:
         width = size
         height = None
     else:
-        EXCEPTION.throw("error","The size '{}' is not acceptable.".format(size))
+        EXCEPTION.fatal("The size '{}' is not acceptable.".format(size))
     #编辑图片
     if height is not None and height >= 0 and width is None:
         img = pygame.transform.scale(img,(round(height/img.get_height()*img.get_width()), round(height)))
@@ -93,7 +93,7 @@ def resize_img(img:ImageSurface, size:size_liked=(None,None)) -> ImageSurface:
     elif width >= 0 and height >= 0:
         img = pygame.transform.scale(img, (round(width), round(height)))
     elif width < 0 or height < 0:
-        EXCEPTION.throw("error","Both width and height must be positive interger!")
+        EXCEPTION.fatal("Both width and height must be positive interger!")
     return img
 
 #精准地缩放尺寸
@@ -110,7 +110,7 @@ def smoothly_resize_img(img:ImageSurface, size:size_liked=(None,None)):
         width = size
         height = None
     else:
-        EXCEPTION.throw("error","The size '{}' is not acceptable.".format(size))
+        EXCEPTION.fatal("The size '{}' is not acceptable.".format(size))
     #编辑图片
     if height is not None and height >= 0 and width is None:
         img = pygame.transform.smoothscale(img,(round(height/img.get_height()*img.get_width()), round(height)))
@@ -119,7 +119,7 @@ def smoothly_resize_img(img:ImageSurface, size:size_liked=(None,None)):
     elif width >= 0 and height >= 0:
         img = pygame.transform.smoothscale(img, (round(width), round(height)))
     elif width < 0 or height < 0:
-        EXCEPTION.throw("error","Both width and height must be positive interger!")
+        EXCEPTION.fatal("Both width and height must be positive interger!")
     return img
 
 #翻转图片
@@ -150,7 +150,7 @@ def change_darkness(surface:ImageSurface, value:int) -> ImageSurface:
         return subtract_darkness(surface,abs(value))
 
 #按照给定的位置对图片进行剪裁
-def crop_img(img:ImageSurface, pos:pos_liked=Origin,size:size_liked=Origin) -> ImageSurface:
+def crop_img(img:ImageSurface, pos:pos_liked=Origin, size:size_liked=(1,1)) -> ImageSurface:
     if isinstance(pos,pygame.Rect):
         cropped = new_transparent_surface(pos.size)
         cropped.blit(img,(-pos.x,-pos.y))
@@ -198,4 +198,4 @@ def is_hover_pygame_object(imgObject:object, objectPos:pos_liked=Origin, off_set
         return True if 0 < mouse_x-off_set_x-imgObject.x < imgObject.width and 0 < mouse_y-off_set_y-imgObject.y < imgObject.height\
             else False
     else:
-        EXCEPTION.throw("error","Unable to check current object: {0} (type:{1})".format(imgObject,type(imgObject)))
+        EXCEPTION.fatal("Unable to check current object: {0} (type:{1})".format(imgObject,type(imgObject)))

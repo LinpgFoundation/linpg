@@ -26,10 +26,10 @@ def is_using_pyglet() -> bool: return True if _LIBRARY_INDICATOR is True else Fa
 int_f = Union[int, float]
 pos_liked = Union[tuple, list, numpy.ndarray]
 size_liked = Union[tuple, list, numpy.ndarray]
-color_liked = Union[tuple, str, list]
-Origin:tuple = (0, 0)
-NoSize:tuple = (-1, -1)
-NoPos:tuple = (-1, -1)
+color_liked = Union[tuple[int], str, list]
+Origin:tuple[int] = (0, 0)
+NoSize:tuple[int] = (-1, -1)
+NoPos:tuple[int] = (-1, -1)
 
 """指向pygame事件的指针"""
 #鼠标
@@ -37,9 +37,6 @@ MOUSE_BUTTON_DOWN = pygame.MOUSEBUTTONDOWN
 MOUSE_BUTTON_UP = pygame.MOUSEBUTTONUP
 #手柄
 JOYSTICK_BUTTON_DOWN = pygame.JOYBUTTONDOWN
-
-#字典合并
-def merge_dict(dict1:dict, dict2:dict) -> dict: return {**dict1, **dict2}
 
 #随机数
 def get_random_int(start:int, end:int) -> int: return random.randint(start, end)
@@ -55,7 +52,7 @@ def convert_pos(pos:any) -> tuple:
         try:
             return pos.x, pos.y
         except Exception:
-            EXCEPTION.throw("error", 'Cannot convert position "{}".'.format(pos))
+            EXCEPTION.fatal('Cannot convert position "{}".'.format(pos))
 
 #判断2个坐标是否相同
 def is_same_pos(pos1:any, pos2:any) -> bool: return convert_pos(pos1) == convert_pos(pos2)
@@ -96,7 +93,7 @@ def convert_percentage(percentage:Union[str,float]) -> float:
     elif isinstance(percentage, float):
         return percentage
     else:
-        EXCEPTION.throw("error", '"{}" is not a valid percentage that can be converted'.format(percentage))
+        EXCEPTION.fatal('"{}" is not a valid percentage that can be converted'.format(percentage))
 
 #获取帧数控制器
 def get_clock() -> pygame.time.Clock: return pygame.time.Clock()

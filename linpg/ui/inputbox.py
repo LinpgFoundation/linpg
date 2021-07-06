@@ -64,7 +64,7 @@ class SingleLineInputBox(AbstractInputBox):
             if self.holderIndex < len(self._text):
                 self._text = self._text[:self.holderIndex]+self._text[self.holderIndex+1:]
         else:
-            EXCEPTION.throw("error","Action has to be either 'ahead' or 'behind'!")
+            EXCEPTION.fatal("Action has to be either 'ahead' or 'behind'!")
         self._reset_inputbox_width()
     def _reset_holderIndex(self, mouse_x:int) -> None:
         last_width = 0
@@ -152,7 +152,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             self._text = new_txt
             self._reset_inputbox_size()
         else:
-            EXCEPTION.throw("error","The new_txt for MultipleLinesInputBox.set_text() must be a list!")
+            EXCEPTION.fatal("The new_txt for MultipleLinesInputBox.set_text() must be a list!")
     def set_fontsize(self, font_size:int) -> None:
         super().set_fontsize(font_size)
         self._reset_inputbox_size()
@@ -217,7 +217,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                     self._text[self.lineId] += self._text[self.lineId+1]
                 self._text.pop(self.lineId+1)
         else:
-            EXCEPTION.throw("error", "Action has to be either 'ahead' or 'behind'!")
+            EXCEPTION.fatal("Action has to be either 'ahead' or 'behind'!")
         self._reset_inputbox_size()
     def _reset_holderIndex(self, mouse_x:int, mouse_y:int) -> None:
         self.lineId = round((mouse_y-self.y)/self.FONTSIZE)-1
@@ -316,7 +316,7 @@ class Console(SingleLineInputBox):
         try:
             return self.__events[key]
         except KeyError:
-            EXCEPTION.throw("error",'Console cannot find key "{}"!'.format(key))
+            EXCEPTION.fatal('Console cannot find key "{}"!'.format(key))
     def _check_key_down(self, event:object) -> bool:
         if super()._check_key_down(event):
             return True

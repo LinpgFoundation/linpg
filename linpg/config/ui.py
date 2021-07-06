@@ -7,4 +7,4 @@ def get_raw_deault_ui(name:str) -> dict:
     try:
         return deepcopy(_DEFAULT_UI[name])
     except KeyError:
-        EXCEPTION.throw("error", 'The ui called "{}" does not exist!'.format(name))
+        EXCEPTION.fatal('The ui called "{}" does not exist!'.format(name))

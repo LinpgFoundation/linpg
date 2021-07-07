@@ -7,7 +7,7 @@ _IMAGE_FOLDER_PATH:str = "Assets/image/npc"
 
 #角色受伤立绘图形模块
 class EntityGetHurtImage(GameObject):
-    def __init__(self, self_type:str, y:Union[int,float], width:int):
+    def __init__(self, self_type:str, y:number, width:int):
         super().__init__(None,y)
         self.yToGo = None
         self.width = int(width)

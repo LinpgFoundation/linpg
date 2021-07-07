@@ -139,11 +139,11 @@ class MapObject(AdvancedAbstractImage):
         self.__need_update_surface = True
         self.__block_on_surface = None
     #设置local坐标
-    def set_local_x(self, value:Union[int, float]) -> None:
+    def set_local_x(self, value:number) -> None:
         old_local_x:int = self._local_x
         super().set_local_x(value)
         if self._local_x != old_local_x: self.__need_update_surface = True
-    def set_local_y(self, value:Union[int, float]) -> None:
+    def set_local_y(self, value:number) -> None:
         old_local_y:int = self._local_y
         super().set_local_y(value)
         if self._local_y != old_local_y: self.__need_update_surface = True

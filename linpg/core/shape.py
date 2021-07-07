@@ -5,17 +5,17 @@ RectLiked = Union[Rect, pygame.Rect, tuple]
 
 # 正方形类
 class Square(GameObject2d):
-    def __init__(self, x: Union[int, float], y: Union[int, float], width:int):
+    def __init__(self, x: number, y: number, width:int):
         super().__init__(x, y)
         self._width:int = int(width)
     #宽度
     def get_width(self) -> int: return self._width
-    def set_width(self, value:Union[int,float]) -> None: self._width = int(value)
+    def set_width(self, value:number) -> None: self._width = int(value)
     #高度
     def get_height(self) -> int: return self._width
-    def set_height(self, value:Union[int,float]) -> None: self._width = int(value)
+    def set_height(self, value:number) -> None: self._width = int(value)
     #尺寸
-    def set_size(self, width:Union[int,float], height:Union[int,float]) -> None:
+    def set_size(self, width:number, height:number) -> None:
         self.set_width(width)
         self.set_height(height)
     #获取rect
@@ -26,12 +26,12 @@ class Square(GameObject2d):
 
 # 用于兼容的长方类
 class Rect(Square):
-    def __init__(self, left:Union[int,float], top:Union[int,float], width:int, height:int):
+    def __init__(self, left:number, top:number, width:int, height:int):
         super().__init__(left, top, width)
         self._height:int = int(height)
     #高度
     def get_height(self) -> int: return self._height
-    def set_height(self, value:Union[int,float]) -> None: self._height = int(value)
+    def set_height(self, value:number) -> None: self._height = int(value)
     #获取rect
     def get_rect(self) -> tuple: return self.x, self.y, self._width, self.height
 
@@ -93,7 +93,7 @@ def is_same_rect(rect1: RectLiked, rect2: RectLiked) -> bool:
 
 # 检测图片是否被点击
 def is_hover(
-    imgObject: object, objectPos: pos_liked = Origin, off_set_x: Union[int, float] = 0, off_set_y: Union[int, float] = 0
+    imgObject: object, objectPos: pos_liked = Origin, off_set_x: number = 0, off_set_y: number = 0
     ) -> bool:
     # 如果是Linpg引擎的GameObject2d类(所有2d物品的父类)
     if isinstance(imgObject, GameObject2d):
@@ -103,10 +103,10 @@ def is_hover(
 
 # 圆形类
 class Circle(Square):
-    def __init__(self, x: Union[int, float], y: Union[int, float], diameter: int):
+    def __init__(self, x: number, y: number, diameter: int):
         super().__init__(x, y, diameter)
     @property
-    def radius(self) -> Union[int, float]: return self._width/2
+    def radius(self) -> number: return self._width/2
     #画出轮廓
     def draw_outline(self, surface:ImageSurface, offSet:pos_liked=Origin, color:str="red", thickness:int=2) -> None:
         draw_circle(surface, Color.get(color), add_pos(self.center, offSet), self.radius, thickness)

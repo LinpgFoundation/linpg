@@ -79,7 +79,7 @@ class EnvImagesManagement:
     def get_block_width(self) -> int: return self.__BLOCK_WIDTH
     def get_block_height(self) -> int: return self.__BLOCK_HEIGHT
     #调整尺寸
-    def set_block_size(self, newWidth:Union[int,float], newHeight:Union[int,float]) -> None:
+    def set_block_size(self, newWidth:number, newHeight:number) -> None:
         self.__BLOCK_WIDTH = round(newWidth)
         self.__BLOCK_HEIGHT = round(newHeight)
         #调整地图方块尺寸
@@ -151,7 +151,7 @@ class DecorationObject(GameObject):
 
 #描述AStar算法中的节点数据
 class Node:
-    def __init__(self, point:Point, endPoint:Point, g:Union[int,float]=0):
+    def __init__(self, point:Point, endPoint:Point, g:number=0):
         self.point = point  # 自己的坐标
         self.father = None  # 父节点
         self.g = g  # g值，g值在用到的时候会重新算
@@ -179,7 +179,7 @@ class WeatherSystem:
     #查看初始化状态
     def get_init(self) -> bool: return self.__initialized
     #画出
-    def draw(self, surface:ImageSurface, perBlockWidth:Union[int,float]) -> None:
+    def draw(self, surface:ImageSurface, perBlockWidth:number) -> None:
         try:
             assert self.__initialized is True
         except AssertionError:

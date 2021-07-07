@@ -42,7 +42,7 @@ class CharacterImageManager:
         self.__character_image[name]["dark"] = self.__character_image[name]["normal"].copy()
         self.__character_image[name]["dark"].add_darkness(self.__darkness)
     #画出角色
-    def __display_character(self, name:str, x:Union[int,float], y:Union[int,float], alpha:int, surface:ImageSurface) -> None:
+    def __display_character(self, name:str, x:number, y:number, alpha:int, surface:ImageSurface) -> None:
         if alpha > 0:
             nameTemp = name.replace("<c>","").replace("<d>","")
             self.__ensure_the_existence_of(nameTemp)

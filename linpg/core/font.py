@@ -75,7 +75,7 @@ def standard_font_render(fonType:str, txt:str, color:str) -> ImageSurface:
         EXCEPTION.fatal("Standard font type must be 'small', 'medium', or 'big'!")
 
 #创建字体
-def create_font(size:Union[int,float], ifBold:bool=False, ifItalic:bool=False) -> object:
+def create_font(size:number, ifBold:bool=False, ifItalic:bool=False) -> object:
     #int化文字尺寸
     font_size:int = max(int(size),1)
     #检测pygame的font模块是否已经初始化
@@ -99,7 +99,7 @@ def create_font(size:Union[int,float], ifBold:bool=False, ifItalic:bool=False) -
         EXCEPTION.fatal("FontType option in setting file is incorrect!")
 
 #创建FreeType字体
-def create_freetype_font(size:Union[float,int], ifBold:bool=False, ifItalic:bool=False) -> any:
+def create_freetype_font(size:number, ifBold:bool=False, ifItalic:bool=False) -> any:
     #int化文字尺寸
     font_size:int = max(int(size),1)
     #检测pygame的font模块是否已经初始化
@@ -142,7 +142,7 @@ def render_freetype(txt:any, color: color_liked, size:int, ifBold:bool=False, if
 
 #基础文字类
 class TextSurface(GameObject2d):
-    def __init__(self, font_surface:ImageSurface, x:Union[int,float], y:Union[int,float]):
+    def __init__(self, font_surface:ImageSurface, x:number, y:number):
         super().__init__(x,y)
         self.font_surface = font_surface
     def get_width(self) -> int:
@@ -160,7 +160,7 @@ class TextSurface(GameObject2d):
 
 #动态文字类
 class DynamicTextSurface(TextSurface):
-    def __init__(self, n:ImageSurface, b:ImageSurface, x:Union[int,float], y:Union[int,float]):
+    def __init__(self, n:ImageSurface, b:ImageSurface, x:number, y:number):
         super().__init__(n,x,y)
         self.big_font_surface = b
         self.__is_hovered:bool = False

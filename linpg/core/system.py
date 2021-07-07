@@ -69,7 +69,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
     def bgm_volume(self) -> float: return self.__bgm_volume
     def get_bgm_volume(self) -> float: return self.__bgm_volume
     #设置bgm音量
-    def set_bgm_volume(self,volume:Union[float,int]) -> None:
+    def set_bgm_volume(self, volume:number) -> None:
         if 1 >= volume >= 0:
             if self.__bgm_path is not None and Music.get_busy():
                 Music.set_volume(volume)

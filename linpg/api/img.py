@@ -165,8 +165,8 @@ def cope_bounding(img:ImageSurface) -> ImageSurface: return crop_img(img,img.get
 """展示"""
 #中心展示模块1：接受两个item和item2的x和y，将item1展示在item2的中心位置,但不展示item2：
 def display_in_center(
-    item1:ImageSurface, item2:ImageSurface, x:Union[int,float], y:Union[int,float], screen:ImageSurface,
-    off_set_x:Union[int,float] = 0, off_set_y:Union[int,float] = 0
+    item1:ImageSurface, item2:ImageSurface, x:number, y:number, screen:ImageSurface,
+    off_set_x:number = 0, off_set_y:number = 0
     ) -> None:
     added_x = (item2.get_width()-item1.get_width())/2
     added_y = (item2.get_height()-item1.get_height())/2
@@ -174,8 +174,8 @@ def display_in_center(
 
 #中心展示模块2：接受两个item和item2的x和y，展示item2后，将item1展示在item2的中心位置：
 def display_within_center(
-    item1:ImageSurface, item2:ImageSurface, x:Union[int,float], y:Union[int,float], screen:ImageSurface,
-    off_set_x:Union[int,float] = 0, off_set_y:Union[int,float] = 0
+    item1:ImageSurface, item2:ImageSurface, x:number, y:number, screen:ImageSurface,
+    off_set_x:number = 0, off_set_y:number = 0
     ) -> None:
     added_x = (item2.get_width()-item1.get_width())/2
     added_y = (item2.get_height()-item1.get_height())/2
@@ -187,7 +187,7 @@ def draw_array(surface: ImageSurface, array: any) -> None:
     pygame.surfarray.blit_array(surface, array)
 
 #是否触碰pygame类
-def is_hover_pygame_object(imgObject:object, objectPos:pos_liked=Origin, off_set_x:Union[int,float]=0, off_set_y:Union[int,float]=0) -> bool:
+def is_hover_pygame_object(imgObject:object, objectPos:pos_liked=Origin, off_set_x:number=0, off_set_y:number=0) -> bool:
     mouse_x,mouse_y = pygame.mouse.get_pos()
     #如果是pygame的Surface类
     if isinstance(imgObject, ImageSurface):

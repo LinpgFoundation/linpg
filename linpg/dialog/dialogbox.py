@@ -93,8 +93,8 @@ class DialogBox:
         else:
             return 0.0
     #修改文字播放时的音效的音量
-    def set_sound_volume(self, num:Union[float,int]) -> None:
-        if self.__textPlayingSound is not None: self.__textPlayingSound.set_volume(num/100.0)
+    def set_sound_volume(self, volume:number) -> None:
+        if self.__textPlayingSound is not None: self.__textPlayingSound.set_volume(volume/100.0)
     #是否需要更新
     def needUpdate(self) -> bool:
         return True if self.autoMode and self.readTime >= self.totalLetters else False

@@ -24,9 +24,12 @@ def is_using_pyglet() -> bool: return True if _LIBRARY_INDICATOR is True else Fa
 """linpg自带属性"""
 #int_f指参数推荐输入int, 但一开始接受时可以为float，但最后会转换为int
 int_f = Union[int, float]
+#number，即数字，建议int但接受float
+number = Union[int, float]
 pos_liked = Union[tuple, list, numpy.ndarray]
 size_liked = Union[tuple, list, numpy.ndarray]
-color_liked = Union[tuple[int], str, list]
+color_liked = Union[tuple[int], str, list[int]]
+"""linpg自带常量"""
 Origin:tuple[int] = (0, 0)
 NoSize:tuple[int] = (-1, -1)
 NoPos:tuple[int] = (-1, -1)
@@ -58,7 +61,7 @@ def convert_pos(pos:any) -> tuple:
 def is_same_pos(pos1:any, pos2:any) -> bool: return convert_pos(pos1) == convert_pos(pos2)
 
 #相加2个坐标
-def add_pos(*positions:any) -> tuple:
+def add_pos(*positions:any) -> tuple[number]:
     x = 0
     y = 0
     for pos in positions:
@@ -68,7 +71,7 @@ def add_pos(*positions:any) -> tuple:
     return x,y
 
 #相减2个坐标
-def subtract_pos(position:any, *positions:any) -> tuple:
+def subtract_pos(position:any, *positions:any) -> tuple[number]:
     x,y = convert_pos(position)
     for pos in positions:
         convetred_pos = convert_pos(pos)
@@ -83,11 +86,11 @@ def natural_sort(l:list) -> list:
     return sorted(l, key = alphanum_key)
 
 #检测数值是否越界
-def keep_in_range(number:Union[int,float], min_value:Union[int,float], max_value:Union[int,float]) -> Union[int,float]:
+def keep_in_range(number:number, min_value:number, max_value:number) -> number:
     return max(min(max_value, number), min_value)
 
 #转换string形式的百分比
-def convert_percentage(percentage:Union[str,float]) -> float:
+def convert_percentage(percentage:Union[str, float]) -> float:
     if isinstance(percentage, str) and percentage.endswith("%"):
         return float(percentage.strip('%'))/100
     elif isinstance(percentage, float):

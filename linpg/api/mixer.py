@@ -32,7 +32,7 @@ class SoundManagement(AbstractSoundManager):
     def volume(self) -> float: return self.get_volume()
     def get_volume(self) -> float: return self.__sounds_list[0].get_volume()
     #设置音量
-    def set_volume(self, volume:Union[float,int]) -> None:
+    def set_volume(self, volume:number) -> None:
         for i in range(len(self.__sounds_list)):
             self.__sounds_list[i].set_volume(volume)
 
@@ -132,17 +132,17 @@ class SoundVolumeManger:
     def __init__(self) -> None:
         self.__sound_unit:int = 100
     @property
-    def general(self) -> int:
-        return 100
+    def global_value(self) -> int:
+        return round(keep_in_range(Setting.get("Sound", "global_value"), 0, self.__sound_unit) * self.global_value / self.__sound_unit)
     @property
     def background_music(self) -> int:
-        return int(keep_in_range(Setting.get("Sound", "background_music"), 0, 100)*self.general/self.__sound_unit)
+        return round(keep_in_range(Setting.get("Sound", "background_music"), 0, self.__sound_unit) * self.global_value / self.__sound_unit)
     @property
     def effects(self) -> int:
-        return int(keep_in_range(Setting.get("Sound", "sound_effects"), 0,100)*self.general/self.__sound_unit)
+        return round(keep_in_range(Setting.get("Sound", "effects"), 0, self.__sound_unit) * self.global_value / self.__sound_unit)
     @property
     def environment(self) -> int:
-        return int(keep_in_range(Setting.get("Sound", "sound_environment"),0,100)*self.general/self.__sound_unit)
+        return round(keep_in_range(Setting.get("Sound", "environment"), 0, self.__sound_unit) * self.global_value / self.__sound_unit)
 
 #多媒体全局管理
 class MediaController:
@@ -161,6 +161,3 @@ class MediaController:
         Music.fade_out(time)
 
 Media:MediaController = MediaController()
-
-
-

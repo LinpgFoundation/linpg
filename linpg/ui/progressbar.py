@@ -3,15 +3,7 @@ from ..core import *
 
 #进度条
 class ProgressBar(AbstractImage):
-    def __init__(
-        self,
-        x: Union[int, float],
-        y: Union[int, float],
-        max_width: int,
-        height: int,
-        color: any,
-        tag:str=""
-        ):
+    def __init__(self, x: number, y: number, max_width: int, height: int, color: color_liked, tag:str=""):
         super().__init__(None, x, y, max_width, height, tag)
         self.percentage = 0
         self.color:tuple = Color.get(color)
@@ -22,15 +14,8 @@ class ProgressBar(AbstractImage):
 #进度条Surface
 class ProgressBarSurface(AbstractImage):
     def __init__(
-        self,
-        imgOnTop: Union[str, ImageSurface],
-        imgOnBottom: Union[str, ImageSurface],
-        x: Union[int, float],
-        y: Union[int, float],
-        max_width: int,
-        height: int,
-        mode: str = "horizontal",
-        tag:str=""
+        self, imgOnTop: Union[str, ImageSurface], imgOnBottom: Union[str, ImageSurface],
+        x: number, y: number, max_width: int, height: int, mode: str = "horizontal", tag:str=""
         ):
         if imgOnTop is not None: imgOnTop = quickly_load_img(imgOnTop)
         super().__init__(imgOnTop, x, y, max_width, height, tag)
@@ -76,14 +61,8 @@ class ProgressBarSurface(AbstractImage):
 # 动态进度条Surface
 class DynamicProgressBarSurface(ProgressBarSurface):
     def __init__(
-        self,
-        imgOnTop: Union[str, ImageSurface],
-        imgOnBottom: Union[str, ImageSurface],
-        x: Union[int, float],
-        y: Union[int, float],
-        max_width: int,
-        height: int,
-        mode: str = "horizontal"
+        self, imgOnTop: Union[str, ImageSurface], imgOnBottom: Union[str, ImageSurface],
+        x: number, y: number, max_width: int, height: int, mode: str = "horizontal"
         ):
         super().__init__(imgOnTop, imgOnBottom, x, y, max_width, height, mode)
         self._percentage_to_be = 0

@@ -3,7 +3,7 @@ from .shape import *
 
 #图形接口
 class AbstractImage(Rect):
-    def __init__(self, img:any, x:Union[int,float], y:Union[int,float], width:int_f, height:int_f, tag:str):
+    def __init__(self, img:any, x:number, y:number, width:int_f, height:int_f, tag:str):
         super().__init__(x, y, width, height)
         self.img:any = img
         self.hidden:bool = False
@@ -37,7 +37,7 @@ class AbstractImage(Rect):
 
 #高级图形类
 class DynamicImage(AbstractImage):
-    def __init__(self, img: Union[str,ImageSurface], x: Union[int, float], y: Union[int, float], width: int_f=-1, height: int_f=-1, tag: str=""):
+    def __init__(self, img: Union[str,ImageSurface], x: number, y: number, width: int_f=-1, height: int_f=-1, tag: str=""):
         super().__init__(quickly_load_img(img), x, y, width, height, tag)
     #返回一个复制
     def copy(self):
@@ -54,7 +54,7 @@ class DynamicImage(AbstractImage):
 
 #有本地坐标的图形接口
 class AdvancedAbstractImage(AbstractImage):
-    def __init__(self, img: any, x:Union[int,float], y:Union[int,float], width:int_f, height:int_f, tag:str=""):
+    def __init__(self, img: any, x:number, y:number, width:int_f, height:int_f, tag:str=""):
         super().__init__(img, x, y, width, height, tag)
         self._local_x:int = 0
         self._local_y:int = 0
@@ -88,16 +88,16 @@ class AdvancedAbstractImage(AbstractImage):
         self.add_local_y(local_y)
     #绝对的本地坐标
     @property
-    def abs_x(self) -> Union[int,float]: return self.x + self._local_x
+    def abs_x(self) -> number: return self.x + self._local_x
     @property
-    def abs_y(self) -> Union[int,float]: return self.y + self._local_y
+    def abs_y(self) -> number: return self.y + self._local_y
     @property
     def abs_pos(self) -> tuple: return self.abs_x, self.abs_y
     def get_abs_pos(self) -> tuple: return self.abs_x, self.abs_y
 
 #用于静态图片的surface
 class StaticImage(AdvancedAbstractImage):
-    def __init__(self, img:Union[str,ImageSurface], x:Union[int,float], y:Union[int,float], width:int_f=-1, height:int_f=-1, tag:str="default"):
+    def __init__(self, img:Union[str,ImageSurface], x:number, y:number, width:int_f=-1, height:int_f=-1, tag:str="default"):
         super().__init__(quickly_load_img(img), x, y, width, height, tag)
         self.__processed_img:ImageSurface = None
         self.__is_flipped:bool = False
@@ -116,22 +116,22 @@ class StaticImage(AdvancedAbstractImage):
         super().set_alpha(value, False)
         if self.__processed_img is not None: self.__processed_img.set_alpha(self.get_alpha())
     #宽度
-    def set_width(self, value:Union[int,float]) -> None:
+    def set_width(self, value:number) -> None:
         value = int(value)
         if self._width != value:
             super().set_width(value)
             self.__need_update = True
-    def set_width_with_size_locked(self, width:Union[int,float]) -> None:
+    def set_width_with_size_locked(self, width:number) -> None:
         height:int = int(width/self.img.get_width()*self.img.get_height())
         width = int(width)
         self.set_size(width, height)
     #高度
-    def set_height(self, value:Union[int,float]) -> None:
+    def set_height(self, value:number) -> None:
         value = int(value)
         if self._height != value:
             super().set_height(value)
             self.__need_update = True
-    def set_height_with_size_locked(self, height:Union[int,float]) -> None:
+    def set_height_with_size_locked(self, height:number) -> None:
         width:int = int(height/self.img.get_height()*self.img.get_width())
         height = int(height)
         self.set_size(width, height)
@@ -212,9 +212,9 @@ class StaticImage(AdvancedAbstractImage):
 class MovableImage(StaticImage):
     def __init__(
         self, img:Union[str,ImageSurface],
-        x:Union[int,float], y:Union[int,float],
-        target_x:Union[int,float], target_y:Union[int,float],
-        move_speed_x:Union[int,float], move_speed_y:Union[int,float],
+        x:number, y:number,
+        target_x:number, target_y:number,
+        move_speed_x:number, move_speed_y:number,
         width:int_f=-1, height:int_f=-1,
         tag:str="default"
         ):
@@ -301,8 +301,8 @@ class GifImage(AdvancedAbstractImage):
     def __init__(
         self,
         imgList: numpy.ndarray,
-        x: Union[int, float],
-        y: Union[int, float],
+        x: number,
+        y: number,
         width: int_f,
         height: int_f,
         updateGap: int_f,

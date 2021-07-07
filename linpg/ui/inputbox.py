@@ -4,7 +4,7 @@ from .menu import *
 
 #输入框Abstract，请勿实体化
 class AbstractInputBox(GameObject2d):
-    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:color_liked, default_width:int):
+    def __init__(self, x:number, y:number, font_size:int, txt_color:color_liked, default_width:int):
         super().__init__(x,y)
         self.FONTSIZE:int = int(font_size)
         self.FONT = create_font(self.FONTSIZE)
@@ -24,13 +24,13 @@ class AbstractInputBox(GameObject2d):
     def set_fontsize(self, font_size:int) -> None:
         self.FONTSIZE = int(font_size)
         self.FONT = create_font(self.FONTSIZE)
-    def set_pos(self, x:Union[int,float], y:Union[int,float]) -> None:
+    def set_pos(self, x:number, y:number) -> None:
         super().set_pos(x,y)
         self.input_box = Rect(x, y, self.default_width, self.FONTSIZE*1.5)
 
 #单行输入框
 class SingleLineInputBox(AbstractInputBox):
-    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:color_liked, default_width:int=150):
+    def __init__(self, x:number, y:number, font_size:int, txt_color:color_liked, default_width:int=150):
         super().__init__(x,y,font_size,txt_color,default_width)
         self._text:str = ""
         self._left_ctrl_pressing:bool = False
@@ -135,7 +135,7 @@ class SingleLineInputBox(AbstractInputBox):
 
 #多行输入框
 class MultipleLinesInputBox(AbstractInputBox):
-    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int, txt_color:color_liked, default_width:int=150):
+    def __init__(self, x:number, y:number, font_size:int, txt_color:color_liked, default_width:int=150):
         super().__init__(x,y,font_size,txt_color,default_width)
         self._text = [""]
         self.lineId = 0
@@ -300,7 +300,7 @@ class MultipleLinesInputBox(AbstractInputBox):
 
 #控制台
 class Console(SingleLineInputBox):
-    def __init__(self, x:Union[int,float], y:Union[int,float], font_size:int=32, default_width:int=150):
+    def __init__(self, x:number, y:number, font_size:int=32, default_width:int=150):
         self.color_inactive = Color.get("lightskyblue3")
         self.color_active = Color.get("dodgerblue2")
         super().__init__(x,y,font_size,self.color_active,default_width)

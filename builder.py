@@ -32,6 +32,6 @@ if input("Do you want to package and upload the lastest build (Y/n):") == "Y":
     os.system("twine upload dist/*")
 
     #删除不需要的文件
-    folders_need_remove = ["dist","Save","build","crash_reports"]
+    folders_need_remove:tuple = ("dist", "Save", "build", "crash_reports")
     for path in folders_need_remove:
         if os.path.exists(path): shutil.rmtree(path)

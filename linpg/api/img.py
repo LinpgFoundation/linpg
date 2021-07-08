@@ -18,7 +18,7 @@ def quickly_load_img(path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> 
                 if Setting.developer_mode is True: 
                     EXCEPTION.fatal('Cannot load image from path: {}'.format(path))
                 else:
-                    return get_texture_missing_surface()
+                    return get_texture_missing_surface((192,108))
         else:
             try:
                 return pygame.image.load(path) if is_using_pygame() else pyglet.image.load(path)
@@ -26,7 +26,7 @@ def quickly_load_img(path:Union[str,ImageSurface], ifConvertAlpha:bool=True) -> 
                 if Setting.developer_mode is True:
                     EXCEPTION.fatal('Cannot load image from path: {}'.format(path))
                 else:
-                    return get_texture_missing_surface()
+                    return get_texture_missing_surface((192,108))
     else:
         EXCEPTION.fatal("The path '{}' has to be a string or at least a ImageSurface!".format(path))
 
@@ -165,8 +165,7 @@ def cope_bounding(img:ImageSurface) -> ImageSurface: return crop_img(img,img.get
 """展示"""
 #中心展示模块1：接受两个item和item2的x和y，将item1展示在item2的中心位置,但不展示item2：
 def display_in_center(
-    item1:ImageSurface, item2:ImageSurface, x:number, y:number, screen:ImageSurface,
-    off_set_x:number = 0, off_set_y:number = 0
+    item1:ImageSurface, item2:ImageSurface, x:number, y:number, screen:ImageSurface, off_set_x:number = 0, off_set_y:number = 0
     ) -> None:
     added_x = (item2.get_width()-item1.get_width())/2
     added_y = (item2.get_height()-item1.get_height())/2
@@ -174,8 +173,7 @@ def display_in_center(
 
 #中心展示模块2：接受两个item和item2的x和y，展示item2后，将item1展示在item2的中心位置：
 def display_within_center(
-    item1:ImageSurface, item2:ImageSurface, x:number, y:number, screen:ImageSurface,
-    off_set_x:number = 0, off_set_y:number = 0
+    item1:ImageSurface, item2:ImageSurface, x:number, y:number, screen:ImageSurface, off_set_x:number = 0, off_set_y:number = 0
     ) -> None:
     added_x = (item2.get_width()-item1.get_width())/2
     added_y = (item2.get_height()-item1.get_height())/2

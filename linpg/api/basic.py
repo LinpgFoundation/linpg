@@ -70,6 +70,9 @@ def add_pos(*positions:any) -> tuple[number]:
         y += convetred_pos[1]
     return x,y
 
+#int化坐标
+def int_pos(pos:tuple[number]) -> tuple[int]: return int(pos[0]), int(pos[1])
+
 #相减2个坐标
 def subtract_pos(position:any, *positions:any) -> tuple[number]:
     x,y = convert_pos(position)

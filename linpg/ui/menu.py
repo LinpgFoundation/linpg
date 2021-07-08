@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .container import *
+from .progressbar import *
 
 #暂停菜单
 class PauseMenu:
@@ -96,12 +96,10 @@ class OptionMenu(AbstractImage):
         #划动条的宽度
         self.bar_width:int = int(self.width*0.6)
         self.button = load_img(os.path.join(self.__ui_image_folder_path,"setting_bar_circle.png"),(self.__item_height,self.__item_height*2))
-        self.bar_img1 = DynamicProgressBarSurface(
+        self.__bar_input = DynamicProgressBarSurface(
             os.path.join(self.__ui_image_folder_path,"setting_bar_full.png"),
             os.path.join(self.__ui_image_folder_path,"setting_bar_empty.png"),
             0,0,self.bar_width,self.__item_height)
-        self.bar_img2 = self.bar_img1.light_copy()
-        self.bar_img3 = self.bar_img2.light_copy()
         self.bar_x = int(self.x+(width-self.bar_width)/2)
         edge_panding = height*0.05
         self.bar_y0 = self.y + self.__item_height*4
@@ -125,7 +123,7 @@ class OptionMenu(AbstractImage):
         #音效
         self.soundEffectsTxt:str = langTxt["sound_effects"]
         #环境声效
-        self.soundEnvironmentTxt:str = langTxt["sound_environment"]
+        self.soundEnvironmentTxt:str = langTxt["environmental_sound"]
         #返回
         self.__back_button = load_dynamic_text(Lang.get_text("Global","back"),"white",(0,0),self.__item_height)
         self.__back_button.set_bottom(height-edge_panding)
@@ -146,7 +144,7 @@ class OptionMenu(AbstractImage):
         #音效
         self.soundEffectsTxt = langTxt["sound_effects"]
         #环境声效
-        self.soundEnvironmentTxt = langTxt["sound_environment"]
+        self.soundEnvironmentTxt = langTxt["environmental_sound"]
         #返回
         self.__back_button = load_dynamic_text(Lang.get_text("Global","back"), "white", self.__back_button.pos, self.__item_height)
     def draw(self, surface:ImageSurface) -> None:
@@ -163,11 +161,11 @@ class OptionMenu(AbstractImage):
                 self.backgroundMusicTxt+": "+str(Media.volume.background_music),True,(255,255,255)),
                 (self.bar_x,self.bar_y1-self.__item_height*1.6)
             )
-            self.bar_img1.set_pos(self.bar_x,self.bar_y1)
-            self.bar_img1.set_percentage(Media.volume.background_music/100)
-            self.bar_img1.draw(surface)
+            self.__bar_input.set_pos(self.bar_x,self.bar_y1)
+            self.__bar_input.set_percentage(Media.volume.background_music/100)
+            self.__bar_input.draw(surface)
             surface.blit(self.button,(
-                self.bar_x+self.bar_img1.percentage*self.bar_img1.width-self.button.get_width()/2,
+                self.bar_x+self.__bar_input.percentage*self.__bar_input.width-self.button.get_width()/2,
                 self.bar_y1-self.__item_height/2
                 )
             )
@@ -176,11 +174,11 @@ class OptionMenu(AbstractImage):
                 self.soundEffectsTxt+": "+str(Media.volume.effects),True,(255, 255, 255)),
                 (self.bar_x,self.bar_y2-self.__item_height*1.6)
             )
-            self.bar_img2.set_pos(self.bar_x,self.bar_y2)
-            self.bar_img2.set_percentage(Media.volume.effects/100)
-            self.bar_img2.draw(surface)
+            self.__bar_input.set_pos(self.bar_x,self.bar_y2)
+            self.__bar_input.set_percentage(Media.volume.effects/100)
+            self.__bar_input.draw(surface)
             surface.blit(self.button,(
-                self.bar_x+self.bar_img2.percentage*self.bar_img2.width-self.button.get_width()/2,
+                self.bar_x+self.__bar_input.percentage*self.__bar_input.width-self.button.get_width()/2,
                 self.bar_y2-self.__item_height/2
                 )
             )
@@ -189,11 +187,11 @@ class OptionMenu(AbstractImage):
                 self.soundEnvironmentTxt+": "+str(Media.volume.environment),True,(255, 255, 255)),
                 (self.bar_x,self.bar_y3-self.__item_height*1.6)
             )
-            self.bar_img3.set_pos(self.bar_x,self.bar_y3)
-            self.bar_img3.set_percentage(Media.volume.environment/100)
-            self.bar_img3.draw(surface)
+            self.__bar_input.set_pos(self.bar_x,self.bar_y3)
+            self.__bar_input.set_percentage(Media.volume.environment/100)
+            self.__bar_input.draw(surface)
             surface.blit(self.button,(
-                self.bar_x+self.bar_img3.percentage*self.bar_img3.width-self.button.get_width()/2,
+                self.bar_x+self.__bar_input.percentage*self.__bar_input.width-self.button.get_width()/2,
                 self.bar_y3-self.__item_height/2
                 )
             )
@@ -207,9 +205,7 @@ class OptionMenu(AbstractImage):
                 self.__update_lang(self.language_choice.get_current_selected_item())
                 self.need_update["language"] = True
             #按键的判定按钮
-            if Controller.mouse.get_pressed(0):
-                #判定划动条
-                if 0 <= Controller.mouse.x-self.bar_x <= self.bar_width and not self.language_choice.is_hover():
+            if Controller.mouse.get_pressed(0) and 0 <= Controller.mouse.x-self.bar_x <= self.bar_width and not self.language_choice.is_hover():
                     #如果碰到背景音乐的音量条
                     if -self.__item_height/2<Controller.mouse.y-self.bar_y1<self.__item_height*1.5:
                         Setting.set("Sound", "background_music", round(100*(Controller.mouse.x-self.bar_x)/self.bar_width))
@@ -217,11 +213,11 @@ class OptionMenu(AbstractImage):
                         self.need_update["volume"] = True
                     #如果碰到音效的音量条
                     elif -self.__item_height/2<Controller.mouse.y-self.bar_y2<self.__item_height*1.5:
-                        Setting.set("Sound", "sound_effects", round(100*(Controller.mouse.x-self.bar_x)/self.bar_width))
+                        Setting.set("Sound", "effects", round(100*(Controller.mouse.x-self.bar_x)/self.bar_width))
                         self.need_update["volume"] = True
                     #如果碰到环境声的音量条
                     elif -self.__item_height/2<Controller.mouse.y-self.bar_y3<self.__item_height*1.5:
-                        Setting.set("Sound", "sound_environment", round(100*(Controller.mouse.x-self.bar_x)/self.bar_width))
+                        Setting.set("Sound", "environment", round(100*(Controller.mouse.x-self.bar_x)/self.bar_width))
                         self.need_update["volume"] = True
                     #保存新的参数
                     if self.need_update["volume"] is True: Setting.save()

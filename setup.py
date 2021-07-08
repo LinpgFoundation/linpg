@@ -32,7 +32,7 @@ setuptools.setup(
         "Bug Tracker": "https://github.com/Tigeia-Workshop/linpg/issues",
     },
     classifiers = [
-        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.9",
     ],
     package_dir={"": "src"},
     include_package_data=True,

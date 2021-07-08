@@ -133,7 +133,7 @@ class SoundVolumeManger:
         self.__sound_unit:int = 100
     @property
     def global_value(self) -> int:
-        return round(keep_in_range(Setting.get("Sound", "global_value"), 0, self.__sound_unit) * self.global_value / self.__sound_unit)
+        return round(keep_in_range(Setting.get("Sound", "global_value"), 0, self.__sound_unit))
     @property
     def background_music(self) -> int:
         return round(keep_in_range(Setting.get("Sound", "background_music"), 0, self.__sound_unit) * self.global_value / self.__sound_unit)

@@ -10,9 +10,9 @@
     "ReadingSpeed": 0.5,
     "ScreenScale": 100,
     "Sound": {
-        "global_value": 100,
         "background_music": 100,
         "effects": 100,
-        "environment": 100
+        "environment": 100,
+        "global_value": 100
     }
 }

@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .progressbar import *
+from ..core import *
 
 # 按钮
 class Button(AbstractImage):

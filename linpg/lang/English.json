@@ -57,10 +57,11 @@
     ],
     "OptionMenu": {
         "background_music": "Background Music",
+        "environmental_sound": "Environmental Sounds",
+        "global_volume": "Global Volume",
         "language": "Language",
         "option_menu": "Option Menu",
         "setting": "Setting",
-        "sound_effects": "Sound Effects",
-        "sound_environment": "Environmental Sounds"
+        "sound_effects": "Sound Effects"
     }
 }

@@ -1,6 +1,6 @@
 # cython: language_level=3
 from collections import deque
-from .inputbox import *
+from .menu import *
 
 class Converter:
     def __init__(self) -> None:
@@ -141,6 +141,41 @@ class Converter:
                 button_t.set_pos(data["x"],data["y"])
                 #返回按钮
                 return button_t
+            elif data["type"] == "progress_bar_adjuster":
+                #确认按钮存在
+                try:
+                    assert "indicator" in data
+                except AssertionError:
+                    EXCEPTION.fatal("You need to set a indicator for progress_bar_adjuster!")
+                #确认按钮有长宽
+                self.__make_sure_size(data["indicator"], "width", data["width"])
+                self.__make_sure_size(data["indicator"], "height", data["height"])
+                if "mode" not in data: data["mode"] = "horizontal"
+                #生成ProgressBarAdjuster
+                bar_t = ProgressBarAdjuster(
+                    data["src"][0], data["src"][1], data["indicator"]["src"],
+                    0, 0, data["width"], data["height"], data["indicator"]["width"], data["indicator"]["height"], data["mode"]
+                    )
+                if "name" in data:
+                    bar_t.tag = data["name"]
+                else:
+                    EXCEPTION.fatal("You have to set a name for progress_bar_adjuster type.")
+                #转换坐标
+                self.__make_sure_pos(data, "x", int((max_width-bar_t.get_width())/2), max_width)
+                self.__make_sure_pos(data, "y", int((max_height-bar_t.get_height())/2), max_height)
+                #设置坐标
+                bar_t.set_pos(data["x"], data["y"])
+                #返回图片
+                return bar_t
+            elif data["type"] == "drop_down_single_choice_list":
+                drop_down_t = DropDownSingleChoiceList(None, 0, 0, data["font_size"])
+                #转换坐标
+                self.__make_sure_pos(data, "x", int((max_width-drop_down_t.get_width())/2), max_width)
+                self.__make_sure_pos(data, "y", int((max_height-drop_down_t.get_height())/2), max_height)
+                #设置坐标
+                drop_down_t.set_pos(data["x"], data["y"])
+                #返回图片
+                return drop_down_t
             elif data["type"] == "image":
                 image_t = DynamicImage(data["src"], 0, 0, data["width"], data["height"])
                 if "name" in data: image_t.tag = data["name"]

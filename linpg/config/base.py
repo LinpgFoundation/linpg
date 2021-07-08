@@ -5,6 +5,7 @@ import os
 from copy import deepcopy
 from datetime import datetime
 from glob import glob
+import shutil
 # 尝试导入yaml库
 _YAML_INITIALIZED:bool = False
 try:
@@ -108,6 +109,9 @@ class ConfigManager:
     def organize(self, pathname:str) -> None:
         for configFilePath in glob(pathname):
             self.save(configFilePath, self.load(configFilePath))
+    # 整理内部配置文件
+    def organize_internal(self) -> None:
+        self.organize(os.path.join(os.path.dirname(__file__), "*.json"))
     #优化中文文档
     def optimize_cn_content(self, filePath:str) -> None:
         #读取原文件的数据
@@ -150,5 +154,18 @@ class ConfigManager:
     def optimize_cn_content_in_folder(self, pathname:str) -> None:
         for configFilePath in glob(pathname):
             self.optimize_cn_content(configFilePath)
+    #删除特定文件夹
+    def search_and_remove_folder(self, folder_to_search:str, stuff_to_remove:str) -> None:
+        #确保folder_to_search是一个目录
+        try:
+            assert os.path.isdir(folder_to_search)
+        except:
+            EXCEPTION.fatal("You can only search a folder!")
+        #移除当前文件夹符合条件的目录/文件
+        for path in glob(os.path.join(folder_to_search, "*")):
+            if path.endswith(stuff_to_remove):
+                shutil.rmtree(path)
+            elif os.path.isdir(path):
+                self.search_and_remove_folder(path, stuff_to_remove)
 
 Config:ConfigManager = ConfigManager()

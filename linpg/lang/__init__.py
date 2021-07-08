@@ -68,5 +68,3 @@ class LanguageManager:
             return str(num)
 
 Lang:LanguageManager = LanguageManager()
-
-#Lang.organize()

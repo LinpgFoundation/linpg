@@ -14,5 +14,6 @@
         "effects": 100,
         "environment": 100,
         "global_value": 100
-    }
+    },
+    "VerticalSync": true
 }

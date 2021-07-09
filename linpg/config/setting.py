@@ -16,13 +16,15 @@ class SettingSystem:
     def set_config_path(self, path:str) -> None: self.__SETTING_FOLDER_PATH, self.__SETTING_FILE_NAME = os.path.split(path)
     #重新加载设置数据
     def reload(self) -> None:
-        #如果配置文件setting.yaml存在
-        if os.path.exists(self.get_config_path()): self.__SETTING_DATA = Config.load(self.get_config_path())
-        #如果不存在就创建一个
+        #加载内部默认的设置配置文件
+        self.__SETTING_DATA = Config.load_internal("setting.json")
+        #如果自定义的设置配置文件存在，则加载
+        if os.path.exists(self.get_config_path()):
+            self.__SETTING_DATA.update(Config.load(self.get_config_path()))
+        #如果不存在自定义的设置配置文件，则应该创建一个
         else:
             #导入local,查看默认语言
             import locale
-            self.__SETTING_DATA = Config.load_internal("setting.json")
             self.__SETTING_DATA["Language"] = "SimplifiedChinese" if locale.getdefaultlocale()[0] == "zh_CN" else "English"
             #保存设置
             self.save()

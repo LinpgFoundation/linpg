@@ -8,18 +8,11 @@ class DisplayController:
         self.__clock:object = get_clock()
         self.__standard_fps:int = 60
         #默认尺寸
-        self.__screen_scale:int = max(int(Setting.get("ScreenScale")), 0)
+        self.__screen_scale:int = keep_in_range(int(Setting.get("ScreenScale")), 0, 100)
         self.__standard_width:int = round(1920*self.__screen_scale/100)
         self.__standard_height:int = round(1080*self.__screen_scale/100)
         #主要的窗口
         self.__SCREEN_WINDOW:object = None
-        #初始化屏幕
-        if is_using_pygame():
-            flags = pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN if self.__screen_scale == 100 else pygame.SCALED
-            self.__SCREEN_WINDOW = pygame.display.set_mode(self.get_size(), flags)
-            self.__SCREEN_WINDOW.set_alpha(None)
-        else:
-            self.__SCREEN_WINDOW = pyglet.window.Window(self.get_width(), self.get_height())
     #帧数
     @property
     def fps(self) -> int: return self.__fps
@@ -58,6 +51,21 @@ class DisplayController:
     #分辨率 - str
     @property
     def resolution(self) -> str: return "{0}x{1}".format(self.__standard_width, self.__standard_height)
+    #初始化屏幕
+    def init(self, flags = None) -> object:
+        if is_using_pygame() is True:
+            if flags is None:
+                if self.__screen_scale >= 100:
+                    flags = pygame.DOUBLEBUF | pygame.FULLSCREEN | pygame.HWSURFACE
+                else:
+                    flags =  pygame.SCALED
+            self.__SCREEN_WINDOW = pygame.display.set_mode(
+                self.get_size(), flags, vsync = 1 if Setting.get("VerticalSync") is True else 0
+                )
+            self.__SCREEN_WINDOW.set_alpha(None)
+        else:
+            self.__SCREEN_WINDOW = pyglet.window.Window(self.get_width(), self.get_height())
+        return self.__SCREEN_WINDOW
     #获取屏幕
     @property
     def window(self) -> object: return self.__SCREEN_WINDOW

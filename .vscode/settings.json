@@ -1,10 +1,12 @@
 {
     "cSpell.words": [
         "Ferri",
+        "HWSURFACE",
         "KEYUP",
         "LCTRL",
         "MOUSEBUTTONDOWN",
         "MOUSEBUTTONUP",
+        "OPENGL",
         "RGBA",
         "SRCALPHA",
         "alphanum",
@@ -39,6 +41,7 @@
         "sfpsp",
         "surfarray",
         "swapaxes",
+        "vsync",
         "yudonglin"
     ],
     "python.pythonPath": "C:\\Program Files\\Python39\\python.exe"

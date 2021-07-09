@@ -84,26 +84,15 @@ class OptionMenuInterface(AbstractImage):
         x = int((Display.get_width()-width)/2)
         y = int((Display.get_height()-height)/2)
         self.__ui_image_folder_path:str = "Assets/image/UI"
-        #加载设置菜单的背景图片
-        baseImgPath:str = os.path.join(self.__ui_image_folder_path,"setting_baseImg.png")
-        if os.path.exists(baseImgPath):
-            baseImg = smoothly_resize_img(load_img(baseImgPath), (width,height))
-        else:
-            baseImg = new_surface((width,height)).convert()
-            baseImg.fill((255,255,255))
-            draw_rect(baseImg, Color.GRAY, Rect(width*0.05, height*0.05, width*0.9, height*0.9))
-        super().__init__(baseImg, x, y, width, height, "")
+        super().__init__(None, x, y, width, height, "")
         #默认隐藏
         self.hidden = True
         #物品尺寸
         self.__item_height:int = int(self.height*0.05)
         #划动条的宽度
         self.bar_width:int = int(self.width*0.6)
-        self.button = load_img(os.path.join(self.__ui_image_folder_path,"setting_bar_circle.png"),(self.__item_height,self.__item_height*2))
-        self.__bar_input = DynamicProgressBarSurface(
-            os.path.join(self.__ui_image_folder_path,"setting_bar_full.png"),
-            os.path.join(self.__ui_image_folder_path,"setting_bar_empty.png"),
-            0,0,self.bar_width,self.__item_height)
+        self.button = None
+        self.__bar_input = None
         self.bar_x = int(self.x+(width-self.bar_width)/2)
         edge_panding = height*0.05
         self.bar_y0 = self.y + self.__item_height*4
@@ -112,16 +101,12 @@ class OptionMenuInterface(AbstractImage):
         self.bar_y3 = self.y + self.__item_height*16
         #字体渲染器
         self.__NORMAL_FONT = create_font(self.__item_height)
+        self.settingTitleTxt = None
+        #语言
+        self.current_lang = None
+        self.language_choice = None
         #设置UI中的文字
         langTxt = Lang.get_text("OptionMenu")
-        self.settingTitleTxt = TextSurface(render_font(langTxt["setting"],"white",self.__item_height*1.5),0,edge_panding)
-        self.settingTitleTxt.set_centerx(width/2)
-        #语言
-        self.current_lang = TextSurface(render_font("{}: ".format(langTxt["language"]), "white", self.__item_height),self.bar_x, self.bar_y0)
-        self.language_choice = DropDownSingleChoiceList(None, self.bar_x, self.bar_y0, self.__item_height)
-        for lang_choice in Lang.get_available_languages():
-            self.language_choice.append(lang_choice)
-        self.language_choice.set_current_selected_item(Lang.get_current_language())
         #背景音乐
         self.backgroundMusicTxt:str = langTxt["background_music"]
         #音效
@@ -129,10 +114,35 @@ class OptionMenuInterface(AbstractImage):
         #环境声效
         self.soundEnvironmentTxt:str = langTxt["environmental_sound"]
         #返回
-        self.__back_button = load_dynamic_text(Lang.get_text("Global","back"),"white",(0,0),self.__item_height)
-        self.__back_button.set_bottom(height-edge_panding)
-        self.__back_button.set_centerx(self.width/2)
+        self.__back_button = None
         self.need_update:dict = {}
+    def __init(self) -> None:
+        if self.__bar_input is None:
+            #加载设置菜单的背景图片
+            baseImgPath:str = os.path.join(self.__ui_image_folder_path,"setting_baseImg.png")
+            if os.path.exists(baseImgPath):
+                baseImg = smoothly_resize_img(load_img(baseImgPath), (self.width,self.height))
+            else:
+                baseImg = new_surface((self.width,self.height)).convert()
+                baseImg.fill((255,255,255))
+                draw_rect(baseImg, Color.GRAY, Rect(self.width*0.05, self.height*0.05, self.width*0.9, self.height*0.9))
+            self.img = baseImg
+            self.button = load_img(os.path.join(self.__ui_image_folder_path,"setting_bar_circle.png"),(self.__item_height,self.__item_height*2))
+            self.__bar_input = DynamicProgressBarSurface(
+                os.path.join(self.__ui_image_folder_path,"setting_bar_full.png"),
+                os.path.join(self.__ui_image_folder_path,"setting_bar_empty.png"),
+                0, 0, self.bar_width, self.__item_height
+                )
+            self.settingTitleTxt = TextSurface(render_font(Lang.get_text("OptionMenu","setting"),"white",self.__item_height*1.5),0,self.height*0.05)
+            self.settingTitleTxt.set_centerx(self.width/2)
+            self.current_lang = TextSurface(render_font("{}: ".format(Lang.get_text("OptionMenu","language")), "white", self.__item_height),self.bar_x, self.bar_y0)
+            self.language_choice = DropDownSingleChoiceList(None, self.bar_x, self.bar_y0, self.__item_height)
+            for lang_choice in Lang.get_available_languages():
+                self.language_choice.append(lang_choice)
+            self.language_choice.set_current_selected_item(Lang.get_current_language())
+            self.__back_button = load_dynamic_text(Lang.get_text("Global","back"),"white",(0,0),self.__item_height)
+            self.__back_button.set_bottom(self.height-self.height*0.05)
+            self.__back_button.set_centerx(self.width/2)
     #更新语言
     def __update_lang(self, lang:str) -> None:
         #更新语言并保存新的参数到本地
@@ -157,6 +167,7 @@ class OptionMenuInterface(AbstractImage):
             "language": False
             }
         if not self.hidden:
+            self.__init()
             #底部图
             surface.blit(self.img,(self.x,self.y))
             self.settingTitleTxt.display(surface,self.pos)

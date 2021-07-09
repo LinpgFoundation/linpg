@@ -138,25 +138,25 @@ class DialogSystem(AbstractDialogSystem):
                     self.pause_menu.draw(surface)
                     result = self.pause_menu.get_button_clicked()
                     if result == "break":
-                        get_option_menu().hidden = True
+                        OptionMenu.hidden = True
                         self.pause_menu.hidden = True
                     elif result == "save":
                         self.save_progress()
                         progress_saved_text.set_alpha(255)
                     elif result == "option_menu":
-                        get_option_menu().hidden = False
+                        OptionMenu.hidden = False
                     elif result == "back_to_mainMenu":
-                        get_option_menu().hidden = True
+                        OptionMenu.hidden = True
                         progress_saved_text.set_alpha(0)
                         self.fade(surface)
                         self.pause_menu.hidden = True
                         self.stop()
                     #展示设置UI
-                    get_option_menu().draw(surface)
+                    OptionMenu.draw(surface)
                     #更新音量
-                    if get_option_menu().need_update["volume"] is True: self._update_sound_volume()
+                    if OptionMenu.need_update["volume"] is True: self._update_sound_volume()
                     #更新语言
-                    if get_option_menu().need_update["language"] is True: self.updated_language(surface)
+                    if OptionMenu.need_update["language"] is True: self.updated_language(surface)
                     #显示进度已保存的文字
                     progress_saved_text.draw(surface)
                     progress_saved_text.fade_out(5)

@@ -17,9 +17,9 @@ except ModuleNotFoundError:
     _LIBRARY_INDICATOR = True
 
 #是否正在使用pygame库
-def is_using_pygame() -> bool: return True if not _LIBRARY_INDICATOR else False
+def is_using_pygame() -> bool: return _LIBRARY_INDICATOR is False
 #是否正在使用pyglet库
-def is_using_pyglet() -> bool: return True if _LIBRARY_INDICATOR is True else False
+def is_using_pyglet() -> bool: return _LIBRARY_INDICATOR is True
 
 """linpg自带属性"""
 #int_f指参数推荐输入int, 但一开始接受时可以为float，但最后会转换为int

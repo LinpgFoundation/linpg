@@ -77,8 +77,12 @@ class PauseMenu:
         return ""
 
 #设置UI
-class OptionMenu(AbstractImage):
-    def __init__(self, x:int, y:int, width:int, height:int, tag:str=""):
+class OptionMenuInterface(AbstractImage):
+    def __init__(self):
+        width = int(Display.get_width()*0.5)
+        height = int(Display.get_height()*0.75)
+        x = int((Display.get_width()-width)/2)
+        y = int((Display.get_height()-height)/2)
         self.__ui_image_folder_path:str = "Assets/image/UI"
         #加载设置菜单的背景图片
         baseImgPath:str = os.path.join(self.__ui_image_folder_path,"setting_baseImg.png")
@@ -88,7 +92,7 @@ class OptionMenu(AbstractImage):
             baseImg = new_surface((width,height)).convert()
             baseImg.fill((255,255,255))
             draw_rect(baseImg, Color.GRAY, Rect(width*0.05, height*0.05, width*0.9, height*0.9))
-        super().__init__(baseImg, x, y, width, height, tag)
+        super().__init__(baseImg, x, y, width, height, "")
         #默认隐藏
         self.hidden = True
         #物品尺寸
@@ -226,16 +230,4 @@ class OptionMenu(AbstractImage):
                         self.hidden = True
 
 #引擎本体的选项菜单
-option_menu:object = None
-
-#初始化引擎本体的选项菜单
-def init_option_menu(x:int, y:int, width:int, height:int) -> None:
-    global option_menu
-    option_menu = OptionMenu(x,y,width,height)
-
-#获取引擎本体的选项菜单的初始化信息
-def get_option_menu_init() -> bool:
-    global option_menu
-    return option_menu is not None
-
-def get_option_menu(): return option_menu
+OptionMenu:OptionMenuInterface = OptionMenuInterface()

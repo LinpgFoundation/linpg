@@ -13,6 +13,13 @@ class DisplayController:
         self.__standard_height:int = round(1080*self.__screen_scale/100)
         #主要的窗口
         self.__SCREEN_WINDOW:object = None
+        #初始化屏幕
+        if is_using_pygame():
+            flags = pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN if self.__screen_scale == 100 else pygame.SCALED
+            self.__SCREEN_WINDOW = pygame.display.set_mode(self.get_size(), flags)
+            self.__SCREEN_WINDOW.set_alpha(None)
+        else:
+            self.__SCREEN_WINDOW = pyglet.window.Window(self.get_width(), self.get_height())
     #帧数
     @property
     def fps(self) -> int: return self.__fps
@@ -51,15 +58,6 @@ class DisplayController:
     #分辨率 - str
     @property
     def resolution(self) -> str: return "{0}x{1}".format(self.__standard_width, self.__standard_height)
-    #初始化屏幕
-    def init(self) -> object:
-        if is_using_pygame():
-            flags = pygame.DOUBLEBUF | pygame.SCALED | pygame.FULLSCREEN if self.__screen_scale == 100 else pygame.SCALED
-            self.__SCREEN_WINDOW = pygame.display.set_mode(self.get_size(), flags)
-            self.__SCREEN_WINDOW.set_alpha(None)
-        else:
-            self.__SCREEN_WINDOW = pyglet.window.Window(self.get_width(), self.get_height())
-        return self.__SCREEN_WINDOW
     #获取屏幕
     @property
     def window(self) -> object: return self.__SCREEN_WINDOW

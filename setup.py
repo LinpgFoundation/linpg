@@ -42,7 +42,7 @@ setuptools.setup(
         "linpgtoolkit",
         "pygame",
         "pyyaml",
-        "av",
+        "opencv-python",
         "numpy",
     ]
 )

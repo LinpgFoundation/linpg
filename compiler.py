@@ -68,7 +68,8 @@ if __name__ == '__main__':
     files_for_setup = [
         "README.md",
         "LICENSE",
-        "CODE_OF_CONDUCT.md"
+        "CODE_OF_CONDUCT.md",
+        "doc"
         ]
     for the_file in files_for_setup:
         #如果是文件夹

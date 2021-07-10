@@ -98,7 +98,7 @@ class HostileCharacter(Entity):
         for key in theSangvisFerrisDataDic:
             defaultData[key] = theSangvisFerrisDataDic[key]
         super().__init__(defaultData,"sangvisFerri",mode)
-        self.__patrol_path = deque(defaultData["patrol_path"]) if "patrol_path" in defaultData else deque()
+        self.__patrol_path:deque = deque(defaultData["patrol_path"]) if "patrol_path" in defaultData else deque()
         self._vigilance = 0
         self.__vigilanceImage = EntityDynamicProgressBarSurface("vertical")
         self.__vigilanceImage.set_percentage(self._vigilance/100)
@@ -133,7 +133,7 @@ class HostileCharacter(Entity):
             self.__vigilanceImage.set_size(eyeImgWidth,eyeImgHeight)
             self.__vigilanceImage.set_pos(blit_pos[0]+MapClass.block_width*0.51-numberX,blit_pos[1]-numberY)
             self.__vigilanceImage.draw(surface,False)
-    def make_decision(self, Map:object, friendlyCharacterData:dict, hostileCharacterData:dict, the_characters_detected_last_round:dict) -> queue:
+    def make_decision(self, Map:object, friendlyCharacterData:dict, hostileCharacterData:dict, the_characters_detected_last_round:dict) -> deque:
         #存储友方角色价值榜
         target_value_board = []
         for name,theCharacter in friendlyCharacterData.items():
@@ -147,7 +147,7 @@ class HostileCharacter(Entity):
         #最大移动距离
         blocks_can_move = int((self.max_action_point)/AP_IS_NEEDED_TO_MOVE_ONE_BLOCK)
         #角色将会在该回合采取的行动
-        actions = queue.Queue()
+        actions:deque = deque()
         #如果角色有可以攻击的对象，且角色至少有足够的行动点数攻击
         if len(target_value_board) > 0 and self.max_action_point > AP_IS_NEEDED_TO_ATTACK:
             action_point_can_use = self.max_action_point
@@ -160,13 +160,13 @@ class HostileCharacter(Entity):
                     target = data[0]
             targetCharacterData = friendlyCharacterData[target]
             if self.can_attack(targetCharacterData):
-                actions.put(DecisionHolder("attack",tuple((target,self.range_target_in(targetCharacterData)))))
+                actions.append(DecisionHolder("attack",tuple((target,self.range_target_in(targetCharacterData)))))
                 action_point_can_use -= AP_IS_NEEDED_TO_ATTACK
                 """
                 if action_point_can_use > AP_IS_NEEDED_TO_ATTACK:
                     if self.hp_precentage > 0.2:
                         #如果自身血量正常，则应该考虑再次攻击角色
-                        actions.put(DecisionHolder("attack",target))
+                        actions.append(DecisionHolder("attack",target))
                         action_point_can_use -= AP_IS_NEEDED_TO_ATTACK
                     else:
                         pass
@@ -186,16 +186,16 @@ class HostileCharacter(Entity):
                             if range_target_in_if_can_attack == "near":
                                 break
                     if "near" in potential_attacking_pos_index:
-                        actions.put(DecisionHolder("move",the_route[:potential_attacking_pos_index["near"]]))
-                        actions.put(DecisionHolder("attack",tuple((target,"near"))))
+                        actions.append(DecisionHolder("move",the_route[:potential_attacking_pos_index["near"]]))
+                        actions.append(DecisionHolder("attack",tuple((target,"near"))))
                     elif "middle" in potential_attacking_pos_index:
-                        actions.put(DecisionHolder("move",the_route[:potential_attacking_pos_index["middle"]]))
-                        actions.put(DecisionHolder("attack",tuple((target,"middle"))))
+                        actions.append(DecisionHolder("move",the_route[:potential_attacking_pos_index["middle"]]))
+                        actions.append(DecisionHolder("attack",tuple((target,"middle"))))
                     elif "far" in potential_attacking_pos_index:
-                        actions.put(DecisionHolder("move",the_route[:potential_attacking_pos_index["far"]]))
-                        actions.put(DecisionHolder("attack",tuple((target,"far"))))
+                        actions.append(DecisionHolder("move",the_route[:potential_attacking_pos_index["far"]]))
+                        actions.append(DecisionHolder("attack",tuple((target,"far"))))
                     else:
-                        actions.put(DecisionHolder("move",the_route))
+                        actions.append(DecisionHolder("move",the_route))
                 else:
                     EXCEPTION.fatal("A hostile character cannot find a valid path when trying to attack {}!".format(target))
         #如果角色没有可以攻击的对象，则查看角色是否需要巡逻
@@ -205,7 +205,7 @@ class HostileCharacter(Entity):
                 if not is_same_pos(self.pos,self.__patrol_path[0]):
                     the_route = Map.findPath(self.pos,self.__patrol_path[0],hostileCharacterData,friendlyCharacterData,blocks_can_move)
                     if len(the_route) > 0:
-                        actions.put(DecisionHolder("move",the_route))
+                        actions.append(DecisionHolder("move",the_route))
                     else:
                         EXCEPTION.fatal("A hostile character cannot find a valid path!")
                 else:
@@ -215,7 +215,7 @@ class HostileCharacter(Entity):
             else:
                 the_route = Map.findPath(self.pos,self.__patrol_path[0],hostileCharacterData,friendlyCharacterData,blocks_can_move)
                 if len(the_route) > 0:
-                    actions.put(DecisionHolder("move",the_route))
+                    actions.append(DecisionHolder("move",the_route))
                     #如果角色在这次移动后到达了最近的巡逻点，则应该更新最近的巡逻点
                     if is_same_pos(the_route[-1],self.__patrol_path[0]): self.__patrol_path.append(self.__patrol_path.popleft())
                 else:

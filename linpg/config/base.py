@@ -15,7 +15,12 @@ except Exception:
     pass
 
 # Linpg本身错误类
-class LinpgException(Exception):
+class LinpgError(Exception):
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+# Linpg错误类管理器
+class LinpgExceptionHandler:
     def __init__(self):
         #错误报告存储的路径
         self.__CRASH_REPORTS_PATH:str = "crash_reports"
@@ -26,7 +31,7 @@ class LinpgException(Exception):
         with open(os.path.join(self.__CRASH_REPORTS_PATH, "crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
             f.write("Error Message From Linpg: {}".format(info))
         # 打印出错误
-        super().__init__('LinpgEngine-Error: {}'.format(info))
+        raise LinpgError('LinpgEngine-Error: {}'.format(info))
     #警告开发者非严重错误
     def warn(self, info:str) -> None:
         # 生成错误报告
@@ -39,7 +44,7 @@ class LinpgException(Exception):
     def inform(self, info:str) -> None:
         print('LinpgEngine-Inform: {}'.format(info))
 
-EXCEPTION = LinpgException()
+EXCEPTION = LinpgExceptionHandler()
 
 #根据keys查找值，最后返回一个复制的对象
 def get_value_by_keys(dict_to_check:dict, keys:tuple, warning:bool=True) -> any:

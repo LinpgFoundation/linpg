@@ -1,5 +1,4 @@
 # cython: language_level=3
-import av
 import linpgtoolkit
 from .display import *
 

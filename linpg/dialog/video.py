@@ -1,134 +1,148 @@
 # cython: language_level=3
-import queue
+import cv2
 from ..ui import *
 
-#视频模块接口，不能实例化
-class AbstractVedio(threading.Thread, AbstractImage):
-    def __init__(self, path:str, width:int, height:int, tag:str=""):
-        threading.Thread.__init__(self)
-        AbstractImage.__init__(self, None, 0, 0, width, height, tag)
+class VedioSurface(threading.Thread):
+    def __init__(self, path: str, loop: bool = True, play_range: tuple[int] = (0, -1)):
+        super().__init__()
         self._path:str = path
-        self._video_container = av.open(self._path, mode='r')
-        self._video_stream = self._video_container.streams.video[0]
-        self._video_stream.thread_type = 'AUTO'
-        #self._audio_stream = self._video_container.streams.audio[0]
-        #self._audio_stream.thread_type = 'AUTO'
-        self._frame_rate = round(self._video_stream.average_rate)
-        self._frame_queue:queue.Queue = queue.Queue(maxsize=self._frame_rate)
-        self._frame_format:str = 'rgb24'
-        self._stopped:bool = False
-        self._paused:bool = False
+        #确保路径存在
+        if not os.path.exists(self._path): EXCEPTION.fatal('Cannot find file on path: "{}"'.format(self._path))
+        """视频流"""
+        self.__video_stream:cv2.VideoCapture = None
+        self.__frame_rate:int = -1
+        self.__frame_deque:deque = deque()
+        """内部参数"""
         self._clock = get_clock()
-        self._pts = 0
-        self._threadLock = threading.Lock()
-    #处理当前帧的画面
-    def _processFrame(self, frame:object):
-        #如果当前队列是满的，则等待
-        while self._frame_queue.full() or self._paused is True: pass
-        #加锁，防止self.set_pos()误触self._pts
-        self._threadLock.acquire()
-        self._pts = frame.pts
-        self._threadLock.release()
-        self._frame_queue.put(frame.to_ndarray(width=self._width,height=self._height,format=self._frame_format).swapaxes(0,1))
-    """获取信息"""
-    def get_frameNum(self) -> int: return self._video_stream.frames
-    def get_frameRate(self) -> int: return self._frame_rate
-    def get_pos(self) -> float: return self._pts*self._video_stream.time_base
-    def get_frameIndex(self) -> int: return round(self._pts*self._video_stream.time_base*self._frame_rate)
-    def get_percentagePlayed(self) -> float: return self._pts/self._video_stream.duration
+        self.__stopped:bool = False
+        self.__started:bool = False
+        """可自定义参数"""
+        self.__loop:bool = loop
+        self.__looped_times:int = 0
+        #确保play_range参数合法
+        if len(play_range) < 2: EXCEPTION.fatal('The length of play_range parameter must >= 2.')
+        self.__starting_point:int = int(play_range[0])
+        self.__ending_point:int = int(play_range[1])
+    #初始化
+    def _init(self) -> None:
+        #加载视频流
+        self.__video_stream = cv2.VideoCapture(self._path)
+        #如果设置了起点，则为视频设置开始播放的位置
+        if self.__starting_point > 0: self.set_frame_index(self.__starting_point)
+        #获取秒帧数
+        self.__frame_rate = int(self.__video_stream.get(cv2.CAP_PROP_FPS))
+        #初始化用于储存帧的deque
+        self.__frame_deque = deque(maxlen=self.__frame_rate)
+        #改变用于辨识视频是否开始播放的flag
+        self.__started = True
+    #每秒帧数
+    @property
+    def fps(self) -> int: return self.__frame_rate
+    @property
+    def frame_rate(self) -> int: return self.__frame_rate
+    def get_frame_rate(self) -> int: return self.__frame_rate
+    #总帧数
+    @property
+    def frame_num(self) -> int: return self.__video_stream.get(cv2.CAP_PROP_FRAME_COUNT)
+    def get_frame_num(self) -> int: return self.__video_stream.get(cv2.CAP_PROP_FRAME_COUNT)
+    #当前帧坐标
+    @property
+    def frame_index(self) -> int: return self.__video_stream.get(cv2.CAP_PROP_POS_FRAMES)
+    def get_frame_index(self) -> int: return self.__video_stream.get(cv2.CAP_PROP_POS_FRAMES)
+    def set_frame_index(self, num:int) -> None:
+        self.__video_stream.set(cv2.CAP_PROP_POS_FRAMES, num)
+        self.__frame_deque.clear()
+    #已经播放的百分比
+    @property
+    def percentage(self) -> float: return self.frame_index/self.frame_num
+    def get_percentage_played(self) -> float: return self.frame_index/self.frame_num
     #停止
-    def stop(self) -> None: self._stopped = True
-    #暂停
-    def pause(self) -> None: self._paused = not self._paused
-    #把画面画到屏幕上
-    def draw(self, surface:ImageSurface) -> None:
-        #如果Queue不是空的
-        if not self._frame_queue.empty(): draw_array(surface, self._frame_queue.get())
-
-#视频片段展示模块--灵活，但不能保证视频和音效同步
-class VedioSurface(AbstractVedio):
-    def __init__(
-        self, path: str, width: int, height: int,
-        loop: bool = True, with_music: bool = False, play_range: tuple = None, volume: float = 1.0, tag: str = ""
-        ):
-        super().__init__(path, width, height, tag)
-        self.loop:bool = loop
-        self.looped_times:int = 0
-        self.__audio = Sound.load_from_video(path) if with_music else None
-        self.__audio_channel:int = Sound.find_channel() if with_music else None
-        self.__volume:float = volume
-        #如果初始音量不为1，则应该设置对应的音量
-        if self.__volume != 1.0 and self.__audio is not None: self.__audio.set_volume(self.__volume)
-        self.start_point = play_range[0] if play_range is not None else None
-        self.end_point = play_range[1] if play_range is not None else None
-        self.started:bool = False
-    #音量
-    def get_volume(self) -> float: return self.__volume
-    def set_volume(self, value:float) -> None:
-        if self.__audio is not None:
-            self.__volume = value
-            self.__audio.set_volume(self.__volume)
-    #设置播放的位置
-    def set_pos(self, offset:float) -> None:
-        self._video_container.seek(int(offset/self._video_stream.time_base),any_frame=True,stream=self._video_stream)
-        self._frame_queue.queue.clear()
-    #返回一个克隆
-    def copy(self) -> object:
-        with_music = True if self.__audio is not None else False
-        return VedioSurface(self._path,self._width,self._height,self.loop,with_music,(self.start_point,self.end_point),self.__volume)
+    def stop(self) -> None: self.__stopped = True
+    #是否已经开始
+    @property
+    def started(self) -> bool: return self.__started
+    #播放范围
+    def play_range(self) -> tuple[int]: return (self.__starting_point, self.__ending_point)
+    #返回一个复制
+    def copy(self) -> object: return VedioSurface(self._path, self.__loop, self.play_range)
+    #是否用于存储frame的双向列表是空的
+    def _is_frame_deque_not_empty(self) -> bool: return len(self.__frame_deque) > 0
+    #处理当前帧的画面
+    def _process(self):
+        #获取帧
+        frame = self.__video_stream.read()[1]
+        self.__frame_deque.append(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB).swapaxes(0,1))
     #开始执行线程
     def run(self) -> None:
-        self.started = True
-        while True:
-            for frame in self._video_container.decode(self._video_stream):
-                #如果要中途停止
-                if self._stopped is True:
-                    #清空queue内储存的所有加载完的帧
-                    with self._frame_queue.mutex: self._frame_queue.queue.clear()
-                    break
-                #处理当前Frame
-                self._processFrame(frame)
-                if self.end_point is not None and self.get_pos() >= self.end_point:
-                    self.looped_times += 1
-                    if not self.loop:
-                        self._stopped = True
-                    else:
-                        self.set_pos(self.start_point)
-                self._clock.tick(self._frame_rate)
-            if not self.loop or self._stopped is True:
+        self._init()
+        #循环处理帧直至播放完或者跳出
+        while self.frame_index <= self.frame_num:
+            #如果要中途停止
+            if self.__stopped is True:
+                #清空deque内储存的所有加载完的帧
+                self.__frame_deque.clear()
                 break
             else:
-                self.set_pos(0)
+                #处理当前Frame
+                self._process()
+                if self.__ending_point >= 0 and self.frame_index >= self.__ending_point:
+                    self.__looped_times += 1
+                    if not self.__loop:
+                        self.__stopped = True
+                    else:
+                        self.set_frame_index(self.__starting_point)
+                elif self.frame_index == self.frame_num:
+                    #如果不需要再次循环或者需要中途跳出
+                    if not self.__loop:
+                        break
+                    else:
+                        self.set_frame_index(self.__starting_point)
         #确保播放完剩余的帧
-        while not self._frame_queue.empty(): pass
-    #把画面画到屏幕上
+        while self._is_frame_deque_not_empty(): pass
+    #把画面画到surface上
     def draw(self, surface:ImageSurface) -> None:
-        super().draw(surface)
-        #播放背景音乐
-        if self.__audio is not None and not self.__audio_channel.get_busy() and self.loop: self.__audio_channel.play(self.__audio)
+        #如果不为空，则画出
+        if self._is_frame_deque_not_empty():
+            current_frame = self.__frame_deque.popleft()
+            if current_frame.shape[0] != surface.get_width() or current_frame.shape[1] != surface.get_height():
+                current_frame = cv2.resize(current_frame, surface.get_size())
+            draw_array(surface, current_frame)
 
-#视频播放系统模块--强制帧数和音乐同步，但不灵活
-class VedioPlayer(AbstractVedio):
-    def __init__(self, path:str, width:int, height:int, tag:str=""):
-        super().__init__(path, width, height, tag)
-        self.__allowFrameDelay:int = 10
-        self.__bgm_status:bool = Music.load_from_video(path)
+#视频模块
+class VedioPlayer(VedioSurface):
+    def __init__(self, path: str, volume: float = 1.0):
+        super().__init__(path, False)
+
+        """音效"""
+        self.__volume:float = volume
+        self.__allow_frame_delay:int = 10
+        #self.__audio_stream = Sound.load_from_video(path, self.__volume) if with_music is True else None
+        #self.__audio_channel:int = Sound.find_channel() if with_music else None
+    #返回一个复制
+    def copy(self) -> object: return VedioPlayer(self._path, self.__volume)
+    #把画面画到surface上
+    def draw(self, surface:ImageSurface) -> None:
+        #如果不为空，则画出
+        if len(self.__frame_deque) > 0: draw_array(surface, self.__frame_deque.popleft())
+        #播放背景音乐
+        if self.__audio_stream is not None and not self.__audio_channel.get_busy():
+            self.__audio_channel.play(self.__audio_stream)
     #开始执行线程
     def run(self) -> None:
         if self.__bgm_status is True: Music.play()
         for frame in self._video_container.decode(self._video_stream):
             #如果需要跳出
-            if self._stopped is True:
-                #清空queue内储存的所有加载完的帧
-                with self._frame_queue.mutex: self._frame_queue.queue.clear()
+            if self.__stopped is True:
+                #清空deque内储存的所有加载完的帧
+                with self.__frame_deque.mutex: self.__frame_deque.deque.clear()
                 break
             #处理当前帧
             self._processFrame(frame)
             #确保匀速播放
-            if not int(Music.get_pos()/1000*self._frame_rate)-self.get_frameIndex() >= self.__allowFrameDelay:
-                self._clock.tick(self._frame_rate)
+            if not int(Music.get_pos()/1000*self.__frame_rate)-self.get_frameIndex() >= self.__allowFrameDelay:
+                self._clock.tick(self.__frame_rate)
         #确保播放完剩余的帧
-        while not self._frame_queue.empty(): pass
+        while not self.__frame_deque.empty(): pass
         Music.unload()
 
 #过场动画

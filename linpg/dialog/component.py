@@ -124,3 +124,44 @@ class DialogButtons:
         else:
             self.autoMode = False
             self.autoIconDegree = 0
+
+#过场动画
+def cutscene(surface:ImageSurface, videoPath:str, fade_out_in_ms:int = 3000) -> None:
+    #初始化部分参数
+    surface_size:tuple = surface.get_size()
+    is_skip:bool = False
+    is_playing:bool = True
+    #初始化跳过按钮的参数
+    skip_button:object = StaticImage(
+        r"Assets/image/UI/dialog_skip.png",
+        int(surface.get_width()*0.92), int(surface.get_height()*0.05),
+        int(surface.get_width()*0.055), int(surface.get_height()*0.06)
+        )
+    #生成黑色帘幕
+    black_bg:ImageSurface = new_surface(surface_size).convert()
+    black_bg.fill(Color.BLACK)
+    black_bg.set_alpha(0)
+    #进度条
+    bar_height:int = 10
+    white_progress_bar:object = ProgressBar(bar_height,surface_size[1]-bar_height*2,surface_size[0]-bar_height*2,bar_height,"white")
+    #创建视频文件
+    VIDEO:object = VedioPlayer(videoPath)
+    VIDEO.start()
+    #播放主循环
+    while is_playing is True and VIDEO.is_alive() is True:
+        VIDEO.draw(surface)
+        skip_button.draw(surface)
+        white_progress_bar.set_percentage(VIDEO.get_percentage_played())
+        white_progress_bar.draw(surface)
+        if skip_button.is_hover() and Controller.mouse.get_pressed(0) and not is_skip:
+            is_skip = True
+            Music.fade_out(fade_out_in_ms)
+        if is_skip is True:
+            temp_alpha:int = black_bg.get_alpha()
+            if temp_alpha < 255:
+                black_bg.set_alpha(temp_alpha+5)
+            else:
+                is_playing = False
+                VIDEO.stop()
+            surface.blit(black_bg,(0,0))
+        Display.flip()

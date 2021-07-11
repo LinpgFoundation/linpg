@@ -2,9 +2,10 @@
 from collections import deque
 from .menu import *
 
-class Converter:
+class UiGenerator:
     def __init__(self) -> None:
         self.__default_pos:int = 0
+        self.__DEFAULT_UI:dict = Config.load_internal("ui.json")
     #检测尺寸是否合法
     def __make_sure_size(self, item:dict, key:str, value_in_case_percentage:int) -> None:
         if key not in item:
@@ -70,27 +71,40 @@ class Converter:
                 final_text_list.append(text[text_index])
             text_index += 1
         return "".join(final_text_list)
+    #生成引擎自带的默认UI
+    def generate_deault(self, name:str) -> GameObject2d:
+        try:
+            ui_dict_t:dict = self.__DEFAULT_UI[name]
+        except KeyError:
+            EXCEPTION.fatal('The ui called "{}" does not exist!'.format(name))
+        return self.generate(ui_dict_t)
     #生成UI
-    def generate_ui(self, data:dict, max_width:int=-1, max_height:int=-1) -> GameObject2d:
+    def generate(self, data:dict, max_width:int=-1, max_height:int=-1) -> GameObject2d:
         #如果没有提供最大高度，则默认使用屏幕高度
         if max_height < 0: max_height = Display.get_height()
         #如果对象是文字
-        if data["type"] == "text":
+        if data["type"] == "text" or data["type"] == "dynamic_text" or data["type"] == "drop_down_single_choice_list":
             #转换字体大小
             self.__make_sure_size(data, "font_size", max_height)
             #补充可选参数
             if "color" not in data: data["color"] = "black"
             if "bold" not in data: data["bold"] = False
             if "italic" not in data: data["italic"] = False
+            if "src" not in data:
+                data["src"] = None
+            else:
+                data["src"] = self.convert_text(data["src"])
             #生成文字图层
-            text_t = TextSurface(
-                render_font_without_bounding(self.convert_text(data["src"]), data["color"], data["font_size"], data["bold"], data["italic"]), 0, 0
+            if data["type"] == "text":
+                item_t = TextSurface(
+                    render_font_without_bounding(data["src"], data["color"], data["font_size"], data["bold"], data["italic"]), 0, 0
+                    ) 
+            elif data["type"] == "dynamic_text":
+                item_t = load_dynamic_text(
+                    data["src"], data["color"], (0,0), data["font_size"], data["bold"], data["italic"]
                 )
-            #转换坐标
-            self.__make_sure_pos(data, "x", int((max_width-text_t.get_width())/2), max_width)
-            self.__make_sure_pos(data, "y", int((max_height-text_t.get_height())/2), max_height)
-            text_t.set_pos(data["x"], data["y"])
-            return text_t
+            else:
+                item_t = DropDownSingleChoiceList(data["src"], 0, 0, data["font_size"], data["color"])
         else:
             #如果没有提供最大宽度，则默认使用屏幕宽度
             if max_width < 0: max_width = Display.get_width()
@@ -109,18 +123,18 @@ class Converter:
                     container_t.hidden = data["hidden"]
                 if "items" in data:
                     for each_item in data["items"]:
-                        container_t.append(self.generate_ui(each_item, container_t.get_width(), container_t.get_height()))
+                        container_t.append(self.generate(each_item, container_t.get_width(), container_t.get_height()))
                 elif "item" in data:
                     #警告用户是items而不是item
                     EXCEPTION.warn('I think you mean "items" instead of "item", right?\
                         We will try to load it this time, but please double check ASAP!')
                     #好吧，我们还是会至少尝试加载
                     for each_item in data["item"]:
-                        container_t.append(self.generate_ui(each_item, container_t.get_width(), container_t.get_height()))
+                        container_t.append(self.generate(each_item, container_t.get_width(), container_t.get_height()))
                 return container_t
             elif data["type"] == "button":
                 if "alpha_when_not_hover" not in data: data["alpha_when_not_hover"] = 255
-                button_t = load_button_with_text_in_center(
+                item_t = load_button_with_text_in_center(
                     load_img(data["src"]),
                     self.convert_text(data["text"]["src"]),
                     data["text"]["color"],
@@ -130,17 +144,7 @@ class Converter:
                     ) if "text" in data else load_button(
                         load_img(data["src"]), Origin, (data["width"], data["height"]), data["alpha_when_not_hover"]
                     )
-                if "name" in data:
-                    button_t.tag = data["name"]
-                else:
-                    EXCEPTION.fatal("You have to set a name for button type.")
-                #转换坐标
-                self.__make_sure_pos(data, "x", int((max_width-button_t.get_width())/2), max_width)
-                self.__make_sure_pos(data, "y", int((max_height-button_t.get_height())/2), max_height)
-                #设置坐标
-                button_t.set_pos(data["x"],data["y"])
-                #返回按钮
-                return button_t
+                if not "name" in data: EXCEPTION.fatal("You have to set a name for button type.")
             elif data["type"] == "progress_bar_adjuster":
                 #确认按钮存在
                 try:
@@ -152,41 +156,21 @@ class Converter:
                 self.__make_sure_size(data["indicator"], "height", data["height"])
                 if "mode" not in data: data["mode"] = "horizontal"
                 #生成ProgressBarAdjuster
-                bar_t = ProgressBarAdjuster(
+                item_t = ProgressBarAdjuster(
                     data["src"][0], data["src"][1], data["indicator"]["src"],
                     0, 0, data["width"], data["height"], data["indicator"]["width"], data["indicator"]["height"], data["mode"]
                     )
-                if "name" in data:
-                    bar_t.tag = data["name"]
-                else:
-                    EXCEPTION.fatal("You have to set a name for progress_bar_adjuster type.")
-                #转换坐标
-                self.__make_sure_pos(data, "x", int((max_width-bar_t.get_width())/2), max_width)
-                self.__make_sure_pos(data, "y", int((max_height-bar_t.get_height())/2), max_height)
-                #设置坐标
-                bar_t.set_pos(data["x"], data["y"])
-                #返回图片
-                return bar_t
-            elif data["type"] == "drop_down_single_choice_list":
-                drop_down_t = DropDownSingleChoiceList(None, 0, 0, data["font_size"])
-                #转换坐标
-                self.__make_sure_pos(data, "x", int((max_width-drop_down_t.get_width())/2), max_width)
-                self.__make_sure_pos(data, "y", int((max_height-drop_down_t.get_height())/2), max_height)
-                #设置坐标
-                drop_down_t.set_pos(data["x"], data["y"])
-                #返回图片
-                return drop_down_t
+                if not "name" in data: EXCEPTION.fatal("You have to set a name for button type.")
             elif data["type"] == "image":
-                image_t = DynamicImage(data["src"], 0, 0, data["width"], data["height"])
-                if "name" in data: image_t.tag = data["name"]
-                #转换坐标
-                self.__make_sure_pos(data, "x", int((max_width-image_t.get_width())/2), max_width)
-                self.__make_sure_pos(data, "y", int((max_height-image_t.get_height())/2), max_height)
-                #设置坐标
-                image_t.set_pos(data["x"],data["y"])
-                #返回图片
-                return image_t
+                item_t = DynamicImage(data["src"], 0, 0, data["width"], data["height"])
             else:
                 EXCEPTION.fatal("Current type is not supported")
+        #如果有名字，则以tag的形式进行标注
+        if "name" in data: item_t.tag = data["name"]
+        #转换坐标
+        self.__make_sure_pos(data, "x", int((max_width-item_t.get_width())/2), max_width)
+        self.__make_sure_pos(data, "y", int((max_height-item_t.get_height())/2), max_height)
+        item_t.set_pos(data["x"], data["y"])
+        return item_t
 
-converter:Converter = Converter()
+UI:UiGenerator = UiGenerator()

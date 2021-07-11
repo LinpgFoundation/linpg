@@ -1,7 +1,7 @@
 # cython: language_level=3
 """
 结构:
-base -> setting -> glob -> ui -> info
+base -> setting -> ui -> info
 """
 from .info import *
 

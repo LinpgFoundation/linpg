@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .ui import *
+from .glob import *
 
 #版本信息管理模块
 class InfoManager:

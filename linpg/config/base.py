@@ -31,7 +31,7 @@ class LinpgExceptionHandler:
         with open(os.path.join(self.__CRASH_REPORTS_PATH, "crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))), "w", encoding='utf-8') as f:
             f.write("Error Message From Linpg: {}".format(info))
         # 打印出错误
-        raise LinpgError('LinpgEngine-Error: {}'.format(info))
+        raise LinpgError(info)
     #警告开发者非严重错误
     def warn(self, info:str) -> None:
         # 生成错误报告

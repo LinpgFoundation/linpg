@@ -1,6 +1,6 @@
 # cython: language_level=3
 """
 结构:
-system -> module -> shape -> surface -> window -> font
+system -> module -> shape -> surface -> window -> font -> video
 """
-from .font import *
+from .video import *

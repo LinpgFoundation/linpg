@@ -36,14 +36,14 @@ class SoundManagement(AbstractSoundManager):
             self.__sounds_list[i].set_volume(volume)
 
 #获取视频的音频 （返回路径）
-def _split_audio_from_video(input_path:str) -> str:
+def _split_audio_from_video(input_path:str, audio_type="ogg") -> str:
     output_folder:str = os.path.dirname(input_path)
     #产生不重名的output文件名称
-    output_file_name_t:str = os.path.basename(input_path).replace(".","_") + "{}.ogg"
+    output_file_name_t:str = os.path.basename(input_path).replace(".","_") + "{0}.{1}"
     output_file_name:str
     index = 0
     while True:
-        output_file_name = output_file_name_t.format(index)
+        output_file_name = output_file_name_t.format(index, audio_type)
         if not os.path.exists(output_file_name):
             break
         else:
@@ -95,16 +95,11 @@ class MusicController:
     #加载背景音乐（但不播放）
     def load(self, path:str) -> None: pygame.mixer.music.load(path)
     #从一个视频中加载音乐
-    def load_from_video(self, path:str) -> bool:
+    def load_from_video(self, path:str) -> str:
         self.unload()
-        try:
-            path_of_music:str = _split_audio_from_video(path)
-            self.load(path_of_music)
-            os.remove(path_of_music)
-            return True
-        except Exception:
-            EXCEPTION.warn("Cannot load music from {}!\nIf this vedio has no sound, then just ignore this warning.".format(path))
-            return False
+        path_of_music:str = _split_audio_from_video(path, "mp3")
+        self.load(path_of_music)
+        return path_of_music
     #卸载背景音乐
     def unload(self) -> None: pygame.mixer.music.unload()
     #播放背景音乐

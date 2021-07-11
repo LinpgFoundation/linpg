@@ -1,28 +1,11 @@
 # cython: language_level=3
 from .inputbox import *
 
-#进度条
-class ProgressBar(AbstractImage):
-    def __init__(self, x: number, y: number, max_width: int, height: int, color: color_liked, tag:str=""):
-        super().__init__(None, x, y, max_width, height, tag)
-        self.percentage = 0
-        self.color:tuple = Color.get(color)
-    def display(self, surface: ImageSurface, offSet: pos_liked = Origin) -> None:
-        if not self.hidden:
-            draw_rect(surface, self.color, new_rect(add_pos(self.pos, offSet), (int(self._width*self.percentage), self._height)))
-
-#进度条Surface
-class ProgressBarSurface(AbstractImage):
-    def __init__(
-        self, imgOnTop: Union[str, ImageSurface], imgOnBottom: Union[str, ImageSurface],
-        x: number, y: number, max_width: int, height: int, mode: str = "horizontal", tag:str=""
-        ):
-        if imgOnTop is not None: imgOnTop = quickly_load_img(imgOnTop)
-        super().__init__(imgOnTop, x, y, max_width, height, tag)
-        self.img2 = quickly_load_img(imgOnBottom) if imgOnBottom is not None else None
+#进度条泛型
+class AbstractProgressBar(AbstractImage):
+    def __init__(self, img: any, x: number, y: number, width: int_f, height: int_f, tag: str):
+        super().__init__(img, x, y, width, height, tag)
         self.__current_percentage:float = 0.0
-        self._mode:bool = True
-        self.set_mode(mode)
     #百分比
     @property
     def percentage(self) -> float: return self.__current_percentage
@@ -32,6 +15,27 @@ class ProgressBarSurface(AbstractImage):
             self.__current_percentage = value
         else:
             EXCEPTION.fatal("The percentage must be <= 1 and >= 0!")
+
+#进度条简单形式的实现
+class ProgressBar(AbstractProgressBar):
+    def __init__(self, x: number, y: number, max_width: int, height: int, color: color_liked, tag:str=""):
+        super().__init__(None, x, y, max_width, height, tag)
+        self.color:tuple = Color.get(color)
+    def display(self, surface: ImageSurface, offSet: pos_liked = Origin) -> None:
+        if not self.hidden:
+            draw_rect(surface, self.color, new_rect(add_pos(self.pos, offSet), (int(self._width*self.percentage), self._height)))
+
+#进度条Surface
+class ProgressBarSurface(AbstractProgressBar):
+    def __init__(
+        self, imgOnTop: Union[str, ImageSurface], imgOnBottom: Union[str, ImageSurface],
+        x: number, y: number, max_width: int, height: int, mode: str = "horizontal", tag:str=""
+        ):
+        if imgOnTop is not None: imgOnTop = quickly_load_img(imgOnTop)
+        super().__init__(imgOnTop, x, y, max_width, height, tag)
+        self.img2 = quickly_load_img(imgOnBottom) if imgOnBottom is not None else None
+        self._mode:bool = True
+        self.set_mode(mode)
     #模式
     @property
     def mode(self) -> str: return self.get_mode()
@@ -51,12 +55,12 @@ class ProgressBarSurface(AbstractImage):
         if not self.hidden:
             pos = add_pos(self.pos, offSet)
             surface.blit(resize_img(self.img2,self.size),pos)
-            if self.__current_percentage > 0:
+            if self.percentage > 0:
                 imgOnTop = resize_img(self.img,self.size)
                 if self._mode:
-                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self.__current_percentage),self._height)),pos)
+                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self.percentage),self._height)),pos)
                 else:
-                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self.__current_percentage))),pos)
+                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self.percentage))),pos)
 
 #进度条形式的调整器
 class ProgressBarAdjuster(ProgressBarSurface):

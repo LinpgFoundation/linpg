@@ -1,6 +1,6 @@
 # cython: language_level=3
 """
 结构:
-basic -> key -> color -> img -> controller -> display -> mixer
+basic -> key -> color -> img -> controller -> display -> mixer -> font
 """
-from .mixer import *
+from .font import *

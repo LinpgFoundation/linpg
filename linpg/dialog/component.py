@@ -11,53 +11,58 @@ class DialogButtons:
     def initialize(self) -> None:
         #从设置中读取信息
         window_x,window_y = Display.get_size()
-        self.FONTSIZE:int = int(window_x*0.0175)
-        self.FONT = create_font(self.FONTSIZE)
+        self.FONT = Font.create(window_x*0.0175)
         #从语言文件中读取按钮文字
         dialog_txt:dict = Lang.get_text("Dialog")
         #生成跳过按钮
-        tempButtonIcon = load_img(os.path.join(DIALOG_UI_PATH,"dialog_skip.png"),(self.FONTSIZE,self.FONTSIZE))
-        tempButtonTxt = self.FONT.render(dialog_txt["skip"],Setting.antialias,(255, 255, 255))
-        temp_w = tempButtonTxt.get_width()+self.FONTSIZE*1.5
+        tempButtonIcon = load_img(os.path.join(DIALOG_UI_PATH,"dialog_skip.png"),(self.FONT.get_size(),self.FONT.get_size()))
+        tempButtonTxt = self.FONT.render(dialog_txt["skip"], Color.WHITE)
+        temp_w = tempButtonTxt.get_width()+self.FONT.get_size()*1.5
         self.choiceTxt = dialog_txt["choice"]
         self.skipButton = new_transparent_surface((temp_w,tempButtonTxt.get_height()))
         self.skipButtonHovered = new_transparent_surface((temp_w,tempButtonTxt.get_height()))
         self.icon_y = (tempButtonTxt.get_height()-tempButtonIcon.get_height())/2
-        self.skipButtonHovered.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONTSIZE*0.5,self.icon_y))
+        self.skipButtonHovered.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONT.get_size()*0.5,self.icon_y))
         self.skipButtonHovered.blit(tempButtonTxt,(0,0))
-        tempButtonTxt = self.FONT.render(dialog_txt["skip"],Setting.antialias,(105, 105, 105))
+        tempButtonTxt = self.FONT.render(dialog_txt["skip"], Color.GRAY)
         tempButtonIcon = add_darkness(tempButtonIcon, 100)
-        self.skipButton.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONTSIZE*0.5,self.icon_y))
+        self.skipButton.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONT.get_size()*0.5,self.icon_y))
         self.skipButton.blit(tempButtonTxt,(0,0))
         self.skipButton = StaticImage(self.skipButton, window_x*0.9, window_y*0.05)
         self.skipButtonHovered = StaticImage(self.skipButtonHovered, window_x*0.9, window_y*0.05)
         #生成自动播放按钮
-        self.autoIconHovered = load_img(os.path.join(DIALOG_UI_PATH,"dialog_auto.png"),(self.FONTSIZE,self.FONTSIZE))
+        self.autoIconHovered = load_img(os.path.join(DIALOG_UI_PATH,"dialog_auto.png"),(self.FONT.get_size(),self.FONT.get_size()))
         self.autoIcon = add_darkness(self.autoIconHovered, 100)
         self.autoIconDegree = 0
-        self.autoIconDegreeChange = (2**0.5-1)*self.FONTSIZE/45
+        self.autoIconDegreeChange = (2**0.5-1)*self.FONT.get_size()/45
         self.autoMode:bool = False
-        tempButtonTxt = self.FONT.render(dialog_txt["auto"],Setting.antialias,(105, 105, 105))
-        temp_w = tempButtonTxt.get_width()+self.FONTSIZE*1.5
+        tempButtonTxt = self.FONT.render(dialog_txt["auto"], Color.GRAY)
+        temp_w = tempButtonTxt.get_width()+self.FONT.get_size()*1.5
         self.autoButton = new_transparent_surface((temp_w,tempButtonTxt.get_height()))
         self.autoButtonHovered = new_transparent_surface((temp_w,tempButtonTxt.get_height()))
         self.autoButton.blit(tempButtonTxt,(0,0))
-        self.autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"],Setting.antialias,(255, 255, 255)),(0,0))
+        self.autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"], Color.WHITE), (0,0))
         self.autoButton = DynamicImage(self.autoButton, window_x*0.8, window_y*0.05)
-        self.autoButton.tag = int(self.autoButton.x+self.autoButton.img.get_width()-self.FONTSIZE)
+        self.autoButton.tag = int(self.autoButton.x+self.autoButton.img.get_width()-self.FONT.get_size())
         self.autoButtonHovered = DynamicImage(self.autoButtonHovered, window_x*0.8, window_y*0.05)
-        self.autoButtonHovered.tag = int(self.autoButtonHovered.x+self.autoButtonHovered.img.get_width()-self.FONTSIZE)
+        self.autoButtonHovered.tag = int(self.autoButtonHovered.x+self.autoButtonHovered.img.get_width()-self.FONT.get_size())
         #隐藏按钮
         self.hideButton = load_button(
-            os.path.join(DIALOG_UI_PATH,"dialog_hide.png"), (window_x*0.05, window_y*0.05),(self.FONTSIZE,self.FONTSIZE), 150
+            os.path.join(DIALOG_UI_PATH, "dialog_hide.png"),
+            (window_x*0.05, window_y*0.05),
+            (self.FONT.get_size(), self.FONT.get_size()), 150
             )
         #取消隐藏按钮
         self.showButton = load_button(
-            os.path.join(DIALOG_UI_PATH,"dialog_show.png"), (window_x*0.05, window_y*0.05),(self.FONTSIZE,self.FONTSIZE), 150
+            os.path.join(DIALOG_UI_PATH, "dialog_show.png"),
+            (window_x*0.05, window_y*0.05),
+            (self.FONT.get_size(), self.FONT.get_size()), 150
         )
         #历史回溯按钮
         self.historyButton = load_button(
-            os.path.join(DIALOG_UI_PATH,"dialog_history.png"), (window_x*0.1, window_y*0.05),(self.FONTSIZE,self.FONTSIZE), 150
+            os.path.join(DIALOG_UI_PATH, "dialog_history.png"),
+            (window_x*0.1, window_y*0.05),
+            (self.FONT.get_size(), self.FONT.get_size()), 150
         )
     @property
     def item_hovered(self) -> str:

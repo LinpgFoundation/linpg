@@ -349,3 +349,49 @@ class GifImage(AdvancedAbstractImage):
                     self.imgId = 0
             else:
                 self.countDown += 1
+
+#基础文字类
+class TextSurface(GameObject2d):
+    def __init__(self, font_surface:ImageSurface, x:number, y:number):
+        super().__init__(x,y)
+        self.font_surface = font_surface
+    def get_width(self) -> int:
+        return self.font_surface.get_width()
+    def get_height(self) -> int:
+        return self.font_surface.get_height()
+    #透明度
+    @property
+    def alpha(self) -> int: return self.get_alpha()
+    def get_alpha(self) -> int: return self.font_surface.get_alpha()
+    def set_alpha(self, value:int) -> None: self.font_surface.set_alpha(value)
+    #画出
+    def display(self, surface:ImageSurface, offSet:tuple=Origin) -> None:
+        surface.blit(self.font_surface,add_pos(self.pos,offSet))
+
+#动态文字类
+class DynamicTextSurface(TextSurface):
+    def __init__(self, n:ImageSurface, b:ImageSurface, x:number, y:number):
+        super().__init__(n,x,y)
+        self.big_font_surface = b
+        self.__is_hovered:bool = False
+    #设置透明度
+    def set_alpha(self, value:int) -> None:
+        super().set_alpha(value)
+        self.big_font_surface.set_alpha(value)
+    #用于检测触碰的快捷
+    def has_been_hovered(self) -> bool: return self.__is_hovered
+    #画出
+    def display(self, surface:ImageSurface, offSet:tuple=Origin) -> None:
+        self.__is_hovered = self.is_hover(subtract_pos(Controller.mouse.pos,offSet))
+        if self.__is_hovered:
+            surface.blit(
+                self.big_font_surface,
+                (int(self.x-(self.big_font_surface.get_width()-self.font_surface.get_width())/2+offSet[0]),
+                int(self.y-(self.big_font_surface.get_height()-self.font_surface.get_height())/2+offSet[1]))
+                )
+        else:
+            surface.blit(self.font_surface,add_pos(self.pos,offSet))
+
+#高级文字制作模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
+def load_dynamic_text(txt:any, color: color_liked, pos:tuple, size:int=50, ifBold:bool=False, ifItalic:bool=False) -> DynamicTextSurface:
+    return DynamicTextSurface(Font.render(txt,color,size,ifBold,ifItalic),Font.render(txt,color,size*1.5,ifBold,ifItalic),pos[0],pos[1])

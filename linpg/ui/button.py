@@ -52,7 +52,7 @@ def load_button_with_text_in_center(
     position: tuple,
     alpha_when_not_hover: int = 255
     ) -> Button:
-    txt_surface = render_font_without_bounding(txt, Color.get(font_color), font_size)
+    txt_surface = Font.render(txt, Color.get(font_color), font_size)
     panding: int = int(font_size * 0.3)
     img = load_img(path,size=(txt_surface.get_width()+panding*2,txt_surface.get_height()+panding*2))
     img.blit(txt_surface, (panding, panding))
@@ -63,7 +63,7 @@ class ButtonWithDes(Button):
     def __init__(self, img: ImageSurface, des: str, x: int, y: int, width: int = -1, height: int = -1, tag:str=""):
         super().__init__(img, x, y, width, height, tag)
         self.des = des
-        font_surface = render_font_without_bounding(des, "black", self._height * 0.5)
+        font_surface = Font.render(des, "black", self._height * 0.5)
         panding: int = int(font_surface.get_height() / 2)
         self.des_surface = new_surface((font_surface.get_width()+panding*2, font_surface.get_height()+panding*2)).convert_alpha()
         self.des_surface.fill(Color.WHITE)
@@ -79,7 +79,7 @@ class ButtonWithDes(Button):
     def __init__(self, img: ImageSurface, des: str, x: int, y: int, width: int = -1, height: int = -1, tag:str=""):
         super().__init__(img, x, y, width, height, tag)
         self.des = des
-        font_surface = render_font_without_bounding(des, "black", self._height * 0.5)
+        font_surface = Font.render(des, "black", self._height * 0.5)
         panding: int = int(font_surface.get_height() / 2)
         self.des_surface = new_surface((font_surface.get_width()+panding*2, font_surface.get_height()+panding*2)).convert_alpha()
         self.des_surface.fill(Color.WHITE)

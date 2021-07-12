@@ -127,7 +127,7 @@ class DialogSystem(AbstractDialogSystem):
                 self._is_showing_history = False
             else:
                 progress_saved_text = StaticImage(
-                    self._dialog_txt_system.FONT.render(Lang.get_text("Global","progress_has_been_saved"),Setting.antialias,(255, 255, 255)),0,0
+                    self._dialog_txt_system.FONT.render(Lang.get_text("Global","progress_has_been_saved"), Color.WHITE),0,0
                     )
                 progress_saved_text.set_alpha(0)
                 progress_saved_text.set_center(surface.get_width()/2, surface.get_height()/2)
@@ -170,7 +170,7 @@ class DialogSystem(AbstractDialogSystem):
             optionBox_height = int(Display.get_width()*0.05)
             nextDialogId = None
             for i in range(len(currentDialogContent["next_dialog_id"]["target"])):
-                option_txt = self._dialog_txt_system.render_font(currentDialogContent["next_dialog_id"]["target"][i]["txt"],Color.WHITE)
+                option_txt = self._dialog_txt_system.FONT.render(currentDialogContent["next_dialog_id"]["target"][i]["txt"], Color.WHITE)
                 optionBox_width = int(option_txt.get_width()+Display.get_width()*0.05) 
                 optionBox_x = (Display.get_width()-optionBox_width)/2
                 optionBox_y = (i+1)*2*Display.get_width()*0.03+optionBox_y_base
@@ -201,21 +201,32 @@ class DialogSystem(AbstractDialogSystem):
                 local_y = self._history_surface_local_y
                 while dialogIdTemp is not None:
                     if self.dialog_content[dialogIdTemp]["narrator"] is not None:
-                        narratorTemp = self._dialog_txt_system.render_font(self.dialog_content[dialogIdTemp]["narrator"]+': ["',(255, 255, 255))
-                        self._history_surface.blit(narratorTemp,(Display.get_width()*0.15-narratorTemp.get_width(),Display.get_height()*0.1+local_y))
+                        narratorTemp = self._dialog_txt_system.FONT.render(
+                            self.dialog_content[dialogIdTemp]["narrator"] + ':', Color.WHITE
+                            )
+                        self._history_surface.blit(
+                            narratorTemp, (Display.get_width()*0.14-narratorTemp.get_width(), Display.get_height()*0.1+local_y)
+                            )
                     for i in range(len(self.dialog_content[dialogIdTemp]["content"])):
                         txt = self.dialog_content[dialogIdTemp]["content"][i]
-                        txt += '"]' if i == len(self.dialog_content[dialogIdTemp]["content"])-1 and self.dialog_content[dialogIdTemp]["narrator"] is not None else ""
-                        self._history_surface.blit(self._dialog_txt_system.render_font(txt,(255, 255, 255)),(Display.get_width()*0.15,Display.get_height()*0.1+local_y))
-                        local_y+=self._dialog_txt_system.FONTSIZE*1.5
+                        if self.dialog_content[dialogIdTemp]["narrator"] is not None:
+                            if i == 0:
+                                txt = '[ "' + txt
+                            elif i == len(self.dialog_content[dialogIdTemp]["content"])-1:
+                                txt += '" ]'
+                        self._history_surface.blit(
+                            self._dialog_txt_system.FONT.render(txt, Color.WHITE),
+                            (Display.get_width()*0.15, Display.get_height()*0.1+local_y)
+                            )
+                        local_y+=self._dialog_txt_system.FONT.get_size()*1.5
                     if dialogIdTemp != self._dialog_id:
                         if self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "default" or self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "changeScene":
                             dialogIdTemp = self.dialog_content[dialogIdTemp]["next_dialog_id"]["target"]
                         elif self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "option":
-                            narratorTemp = self._dialog_txt_system.render_font(self._buttons_mananger.choiceTxt+" - ",(0,191,255))
+                            narratorTemp = self._dialog_txt_system.FONT.render(self._buttons_mananger.choiceTxt+" - ",(0,191,255))
                             self._history_surface.blit(narratorTemp,(Display.get_width()*0.15-narratorTemp.get_width(),Display.get_height()*0.1+local_y))
-                            self._history_surface.blit(self._dialog_txt_system.render_font(str(self._dialog_options[dialogIdTemp]["target"]),(0,191,255)),(Display.get_width()*0.15,Display.get_height()*0.1+local_y))
-                            local_y+=self._dialog_txt_system.FONTSIZE*1.5
+                            self._history_surface.blit(self._dialog_txt_system.FONT.render(str(self._dialog_options[dialogIdTemp]["target"]),(0,191,255)),(Display.get_width()*0.15,Display.get_height()*0.1+local_y))
+                            local_y+=self._dialog_txt_system.FONT.get_size()*1.5
                             dialogIdTemp = self._dialog_options[dialogIdTemp]["target"]
                         else:
                             dialogIdTemp = None

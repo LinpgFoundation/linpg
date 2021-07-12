@@ -14,7 +14,7 @@ class AbstractProgressBar(AbstractImage):
         if 0 <= value <= 1:
             self.__current_percentage = value
         else:
-            EXCEPTION.fatal("The percentage must be <= 1 and >= 0!")
+            EXCEPTION.fatal("The percentage must be <= 1 and >= 0, not {}!".format(value))
 
 #进度条简单形式的实现
 class ProgressBar(AbstractProgressBar):
@@ -83,7 +83,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
                     ))
                 self.__indicator.set_pos(x, y)
                 self.__indicator.draw(surface)
-                value_font = render_font_without_bounding(str(round(self.percentage*100)), Color.WHITE, self._height)
+                value_font = Font.render(str(round(self.percentage*100)), Color.WHITE, self._height)
                 surface.blit(
                     value_font,
                     int_pos(add_pos(abs_pos, (self._width+self.__indicator.width*0.7, (self._height-value_font.get_height())/2)))
@@ -95,7 +95,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
                     ))
                 self.__indicator.set_pos(x, y)
                 self.__indicator.draw(surface)
-                value_font = render_font_without_bounding(str(round(self.percentage*100)), Color.WHITE, self._width)
+                value_font = Font.render(str(round(self.percentage*100)), Color.WHITE, self._width)
                 surface.blit(
                     value_font,
                     int_pos(add_pos(abs_pos, ((self._width-value_font.get_width())/2, self._height+self.__indicator.height*0.7)))
@@ -130,16 +130,16 @@ class DynamicProgressBarSurface(ProgressBarSurface):
     def set_percentage(self, value:float) -> None:
         if 0 <= value <= 1:
             self._percentage_to_be = value*self.accuracy
-            self.__perecent_update_each_time = (self._percentage_to_be-self.percentage)/self.__total_update_intervals
+            self.__perecent_update_each_time = (self._percentage_to_be - super().get_percentage()*self.accuracy)/self.__total_update_intervals
         else:
             EXCEPTION.fatal("The percentage must be <= 1 and >= 0, not {}!".format(value))
     def copy(self): return DynamicProgressBarSurface(self.img.copy(),self.img2.copy(),self.x,self.y,self._width,self._height,self.get_mode())
     def light_copy(self): return DynamicProgressBarSurface(self.img,self.img2,self.x,self.y,self._width,self._height,self.get_mode())
     #检查并更新百分比
     def _check_and_update_percentage(self) -> None:
-        if self.percentage < self._percentage_to_be and self.__perecent_update_each_time > 0 or\
-            self.percentage > self._percentage_to_be and self.__perecent_update_each_time < 0:
-            self.set_percentage(self.percentage+self.__perecent_update_each_time)
+        if super().get_percentage()*self.accuracy < self._percentage_to_be and self.__perecent_update_each_time > 0 or\
+            super().get_percentage()*self.accuracy > self._percentage_to_be and self.__perecent_update_each_time < 0:
+            super().set_percentage(super().get_percentage()+self.__perecent_update_each_time/self.accuracy)
     #展示
     def display(self, surface:ImageSurface, offSet:pos_liked = Origin) -> None:
         if not self.hidden:

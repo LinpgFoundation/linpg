@@ -1,6 +1,6 @@
 # cython: language_level=3
 import cv2
-from .font import *
+from .window import *
 
 class AbstractVedio(threading.Thread):
     def __init__(self, path: str, buffer_num: int, play_range: tuple[int] = (0, -1)):

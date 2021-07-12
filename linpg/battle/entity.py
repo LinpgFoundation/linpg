@@ -6,7 +6,7 @@ _CHARACTERS_IMAGE_SYS:object = EntityImageManager()
 #储存角色音效的常量
 _CHARACTERS_SOUND_SYSTEM:object = EntitySoundManager(5)
 #角色UI的文字数据
-_ENTITY_UI_FONT:object = create_font(Display.get_width()/192)
+_ENTITY_UI_FONT:object = Font.create(Display.get_width()/192)
 
 #濒死回合限制
 DYING_ROUND_LIMIT:int = 3
@@ -424,14 +424,14 @@ class Entity(GameObject):
             self.__hp_bar.set_percentage(self.__current_hp/self.__max_hp)
             self.__hp_bar.draw(surface,False)
             display_in_center(
-                _ENTITY_UI_FONT.render("{0}/{1}".format(self.__current_hp,self.__max_hp),Setting.antialias,(0,0,0)),
+                _ENTITY_UI_FONT.render("{0}/{1}".format(self.__current_hp,self.__max_hp), Color.BLACK),
                 self.__hp_bar,xTemp,yTemp,surface
                 )
         else:
             self.__hp_bar.set_percentage(self.dying/DYING_ROUND_LIMIT)
             self.__hp_bar.draw(surface,True)
             display_in_center(
-                _ENTITY_UI_FONT.render("{0}/{1}".format(self.dying,DYING_ROUND_LIMIT),Setting.antialias,(0,0,0))
+                _ENTITY_UI_FONT.render("{0}/{1}".format(self.dying,DYING_ROUND_LIMIT), Color.BLACK)
                 ,self.__hp_bar,xTemp,yTemp,surface
                 )
         return xTemp,yTemp

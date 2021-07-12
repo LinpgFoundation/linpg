@@ -97,7 +97,7 @@ class UiGenerator:
             #生成文字图层
             if data["type"] == "text":
                 item_t = TextSurface(
-                    render_font_without_bounding(data["src"], data["color"], data["font_size"], data["bold"], data["italic"]), 0, 0
+                    Font.render(data["src"], data["color"], data["font_size"], data["bold"], data["italic"]), 0, 0
                     ) 
             elif data["type"] == "dynamic_text":
                 item_t = load_dynamic_text(

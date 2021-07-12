@@ -100,7 +100,7 @@ class OptionMenuInterface(AbstractImage):
         self.bar_y2 = self.y + self.__item_height*12
         self.bar_y3 = self.y + self.__item_height*16
         #字体渲染器
-        self.__NORMAL_FONT = create_font(self.__item_height)
+        self.__NORMAL_FONT = Font.create(self.__item_height)
         self.settingTitleTxt = None
         #语言
         self.current_lang = None
@@ -121,10 +121,10 @@ class OptionMenuInterface(AbstractImage):
             #加载设置菜单的背景图片
             baseImgPath:str = os.path.join(self.__ui_image_folder_path,"setting_baseImg.png")
             if os.path.exists(baseImgPath):
-                baseImg = smoothly_resize_img(load_img(baseImgPath), (self.width,self.height))
+                baseImg = smoothly_resize_img(load_img(baseImgPath), self.size)
             else:
-                baseImg = new_surface((self.width,self.height)).convert()
-                baseImg.fill((255,255,255))
+                baseImg = new_surface(self.size).convert()
+                baseImg.fill(Color.WHITE)
                 draw_rect(baseImg, Color.GRAY, Rect(self.width*0.05, self.height*0.05, self.width*0.9, self.height*0.9))
             self.img = baseImg
             self.button = load_img(os.path.join(self.__ui_image_folder_path,"setting_bar_circle.png"),(self.__item_height,self.__item_height*2))
@@ -133,9 +133,9 @@ class OptionMenuInterface(AbstractImage):
                 os.path.join(self.__ui_image_folder_path,"setting_bar_empty.png"),
                 0, 0, self.bar_width, self.__item_height
                 )
-            self.settingTitleTxt = TextSurface(render_font(Lang.get_text("OptionMenu","setting"),"white",self.__item_height*1.5),0,self.height*0.05)
+            self.settingTitleTxt = TextSurface(Font.render(Lang.get_text("OptionMenu","setting"),"white",self.__item_height*1.5),0,self.height*0.05)
             self.settingTitleTxt.set_centerx(self.width/2)
-            self.current_lang = TextSurface(render_font("{}: ".format(Lang.get_text("OptionMenu","language")), "white", self.__item_height),self.bar_x, self.bar_y0)
+            self.current_lang = TextSurface(Font.render("{}: ".format(Lang.get_text("OptionMenu","language")), "white", self.__item_height),self.bar_x, self.bar_y0)
             self.language_choice = DropDownSingleChoiceList(None, self.bar_x, self.bar_y0, self.__item_height)
             for lang_choice in Lang.get_available_languages():
                 self.language_choice.append(lang_choice)
@@ -150,9 +150,9 @@ class OptionMenuInterface(AbstractImage):
         Lang.reload()
         #设置UI中的文字
         langTxt = Lang.get_text("OptionMenu")
-        self.settingTitleTxt.font_surface = render_font(langTxt["setting"],"white",self.__item_height*1.5)
+        self.settingTitleTxt.font_surface = Font.render(langTxt["setting"],"white",self.__item_height*1.5)
         #语言
-        self.current_lang = TextSurface(render_font("{}: ".format(langTxt["language"]), "white", self.__item_height),self.bar_x, self.bar_y0)
+        self.current_lang = TextSurface(Font.render("{}: ".format(langTxt["language"]), "white", self.__item_height),self.bar_x, self.bar_y0)
         #背景音乐
         self.backgroundMusicTxt = langTxt["background_music"]
         #音效
@@ -172,8 +172,8 @@ class OptionMenuInterface(AbstractImage):
             surface.blit(self.img,(self.x,self.y))
             self.settingTitleTxt.display(surface,self.pos)
             #背景音乐
-            surface.blit(self.__NORMAL_FONT.render(
-                self.backgroundMusicTxt+": "+str(Media.volume.background_music),True,(255,255,255)),
+            surface.blit(
+                self.__NORMAL_FONT.render(self.backgroundMusicTxt+": "+str(Media.volume.background_music), Color.WHITE),
                 (self.bar_x,self.bar_y1-self.__item_height*1.6)
             )
             self.__bar_input.set_pos(self.bar_x,self.bar_y1)
@@ -185,8 +185,8 @@ class OptionMenuInterface(AbstractImage):
                 )
             )
             #音效
-            surface.blit(self.__NORMAL_FONT.render(
-                self.soundEffectsTxt+": "+str(Media.volume.effects),True,(255, 255, 255)),
+            surface.blit(
+                self.__NORMAL_FONT.render(self.soundEffectsTxt+": "+str(Media.volume.effects), Color.WHITE),
                 (self.bar_x,self.bar_y2-self.__item_height*1.6)
             )
             self.__bar_input.set_pos(self.bar_x,self.bar_y2)
@@ -198,8 +198,8 @@ class OptionMenuInterface(AbstractImage):
                 )
             )
             #环境声
-            surface.blit(self.__NORMAL_FONT.render(
-                self.soundEnvironmentTxt+": "+str(Media.volume.environment),True,(255, 255, 255)),
+            surface.blit(
+                self.__NORMAL_FONT.render(self.soundEnvironmentTxt+": "+str(Media.volume.environment), Color.WHITE),
                 (self.bar_x,self.bar_y3-self.__item_height*1.6)
             )
             self.__bar_input.set_pos(self.bar_x,self.bar_y3)

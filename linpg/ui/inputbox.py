@@ -6,27 +6,24 @@ from .container import *
 class AbstractInputBox(GameObject2d):
     def __init__(self, x:number, y:number, font_size:int, txt_color:color_liked, default_width:int):
         super().__init__(x,y)
-        self.FONTSIZE:int = int(font_size)
-        self.FONT = create_font(self.FONTSIZE)
+        self.FONT = Font.create(font_size)
         self.default_width = default_width
-        self.deafult_height = int(self.FONTSIZE*1.5)
+        self.deafult_height = int(self.FONT.get_size()*1.5)
         self.input_box = Rect(x, y, default_width, self.deafult_height)
         self.color = Color.get("lightskyblue3")
         self.txt_color = Color.get(txt_color)
         self.active:bool = False
         self._text = None
-        self._holder = self.FONT.render("|",Setting.antialias,self.txt_color)
+        self._holder = self.FONT.render("|", self.txt_color)
         self.holderIndex = 0
         self.need_save = False
     def get_width(self) -> int: return self.input_box.width
     def get_height(self) -> int: return self.input_box.height
-    def get_fontsize(self) -> int: return self.FONTSIZE
-    def set_fontsize(self, font_size:int) -> None:
-        self.FONTSIZE = int(font_size)
-        self.FONT = create_font(self.FONTSIZE)
+    def get_fontsize(self) -> int: return self.FONT.get_size()
+    def set_fontsize(self, font_size:int) -> None: self.FONT.update(font_size)
     def set_pos(self, x:number, y:number) -> None:
         super().set_pos(x,y)
-        self.input_box = Rect(x, y, self.default_width, self.FONTSIZE*1.5)
+        self.input_box = Rect(x, y, self.default_width, self.FONT.get_size()*1.5)
 
 #单行输入框
 class SingleLineInputBox(AbstractInputBox):
@@ -72,7 +69,7 @@ class SingleLineInputBox(AbstractInputBox):
         new_width = 0
         i = 0
         for i in range(len(self._text)):
-            new_width = self.FONT.size(self._text[:i])[0]+self.FONTSIZE*0.25
+            new_width = self.FONT.estimate_text_width(self._text[:i])+self.FONT.get_size()*0.25
             if new_width>local_x:
                 break
             else:
@@ -83,7 +80,7 @@ class SingleLineInputBox(AbstractInputBox):
             self.holderIndex = i-1
     def _reset_inputbox_width(self)  -> None:
         if self._text is not None and len(self._text)>0:
-            self.input_box.set_width(max(self.default_width, self.FONT.size(self._text)[0]+self.FONTSIZE*0.6))
+            self.input_box.set_width(max(self.default_width, self.FONT.estimate_text_width(self._text)+self.FONT.get_size()*0.6))
         else:
             self.input_box.set_width(self.default_width)
     def _check_key_down(self, event:object) -> bool:
@@ -125,13 +122,13 @@ class SingleLineInputBox(AbstractInputBox):
                 self._reset_holderIndex(Controller.mouse.x)
         # 画出文字
         if self._text is not None and len(self._text) > 0:
-            screen.blit(self.FONT.render(self._text,Setting.antialias,Color.get(self.txt_color)), (self.x+self.FONTSIZE*0.25,self.y))
+            screen.blit(self.FONT.render(self._text, self.txt_color), (self.x+self.FONT.get_size()*0.25,self.y))
         #画出输入框
         if self.active:
             draw_rect(screen, self.color, self.input_box, 2)
             #画出 “|” 符号
             if int(time.time()%2)==0 or len(Controller.events)>0:
-                screen.blit(self._holder, (self.x+self.FONTSIZE*0.25+self.FONT.size(self._text[:self.holderIndex])[0], self.y))
+                screen.blit(self._holder, (self.x+self.FONT.get_size()*0.25+self.FONT.estimate_text_width(self._text[:self.holderIndex]), self.y))
 
 #多行输入框
 class MultipleLinesInputBox(AbstractInputBox):
@@ -160,7 +157,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         if self._text is not None and len(self._text) > 0:
             width = self.default_width
             for txtTmp in self._text:
-                new_width = self.FONT.size(txtTmp)[0]+self.FONTSIZE/2
+                new_width = self.FONT.estimate_text_width(txtTmp)+self.FONT.get_size()/2
                 if new_width > width:
                     width = new_width
         else:
@@ -220,7 +217,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             EXCEPTION.fatal("Action has to be either 'ahead' or 'behind'!")
         self._reset_inputbox_size()
     def _reset_holderIndex(self, mouse_x:int, mouse_y:int) -> None:
-        self.lineId = round((mouse_y-self.y)/self.FONTSIZE)-1
+        self.lineId = round((mouse_y-self.y)/self.FONT.get_size())-1
         if self.lineId < 0:
             self.lineId = 0
         elif self.lineId >= len(self._text):
@@ -230,7 +227,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         new_width = 0
         i = 0
         for i in range(len(self._text[self.lineId])):
-            new_width = self.FONT.size(self._text[self.lineId][:i])[0]+self.FONTSIZE*0.25
+            new_width = self.FONT.estimate_text_width(self._text[self.lineId][:i])+self.FONT.get_size()*0.25
             if new_width>local_x:
                 break
             else:
@@ -290,13 +287,18 @@ class MultipleLinesInputBox(AbstractInputBox):
         if self._text is not None:
             for i in range(len(self._text)): 
                 # 画出文字
-                screen.blit(self.FONT.render(self._text[i],Setting.antialias,Color.get(self.txt_color)),(self.x+self.FONTSIZE*0.25,self.y+i*self.deafult_height))
+                screen.blit(self.FONT.render(self._text[i], self.txt_color),(self.x+self.FONT.get_size()*0.25,self.y+i*self.deafult_height))
         if self.active:
             # 画出输入框
             draw_rect(screen, self.color, self.input_box, 2)
             #画出 “|” 符号
-            if int(time.time()%2)==0 or len(Controller.events)>0:
-                screen.blit(self._holder, (self.x+self.FONTSIZE*0.1+self.FONT.size(self._text[self.lineId][:self.holderIndex])[0], self.y+self.lineId*self.deafult_height))
+            if int(time.time()%2)== 0 or len(Controller.events) > 0:
+                screen.blit(
+                    self._holder, (
+                        self.x+self.FONT.get_size()*0.1+self.FONT.estimate_text_width(self._text[self.lineId][:self.holderIndex]),
+                        self.y+self.lineId*self.deafult_height
+                        )
+                    )
 
 #控制台
 class Console(SingleLineInputBox):
@@ -417,12 +419,12 @@ class Console(SingleLineInputBox):
                             self.set_text()
             #画出输出信息
             for i in range(len(self._txt_output)):
-                screen.blit(self.FONT.render(self._txt_output[i],Setting.antialias,self.color),(self.x+self.FONTSIZE*0.25, self.y-(len(self._txt_output)-i)*self.FONTSIZE*1.5))
+                screen.blit(self.FONT.render(self._txt_output[i], self.color),(self.x+self.FONT.get_size()*0.25, self.y-(len(self._txt_output)-i)*self.FONT.get_size()*1.5))
             # 画出文字
             if self._text is not None and len(self._text) > 0:
-                screen.blit(self.FONT.render(self._text,Setting.antialias,self.color),(self.x+self.FONTSIZE*0.25, self.y))
+                screen.blit(self.FONT.render(self._text, self.color),(self.x+self.FONT.get_size()*0.25, self.y))
             #画出输入框
             draw_rect(screen, self.color, self.input_box, 2)
             #画出 “|” 符号
             if int(time.time()%2)==0 or len(Controller.events)>0:
-                screen.blit(self._holder, (self.x+self.FONTSIZE*0.25+self.FONT.size(self._text[:self.holderIndex])[0], self.y))
+                screen.blit(self._holder, (self.x+self.FONT.get_size()*0.25+self.FONT.estimate_text_width(self._text[:self.holderIndex]), self.y))

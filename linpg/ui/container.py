@@ -41,40 +41,40 @@ class DropDownSingleChoiceList(GameObjectContainer):
         super().__init__(bg_img, x, y, 0, 0, tag)
         self.chosen_id:int = 0
         self.__DEFAULT_CONTENT:str = ""
-        self.__font_size:int = int(font_size)
         self.__block_height:int = int(font_size*1.5)
         self.__font_color:tuple = Color.get(font_color)
-        self.__FONT = create_font(self.__font_size)
+        self.__FONT = Font.create(font_size)
         self.__fold_choice:bool = True
         self.outline_thickness:int = 1
     #重新计算宽度
     def _update_width(self) -> None:
         self.set_width(0)
         for item in self.items:
-            item_width:int = int(self.__FONT.size(item)[0]*1.5)
+            item_width:int = int(self.__FONT.estimate_text_width(item)*1.5)
             if self.get_width() < item_width: self.set_width(item_width)
     #更新font的尺寸
     def update_font_size(self, font_size:int) -> None:
-        self.__font_size = int(font_size)
         self.__block_height:int = int(font_size*1.5)
-        self.__FONT = create_font(self.__font_size)
+        self.__FONT.update(font_size)
         self._update_width()
     #更新font的颜色
     def update_font_color(self, font_color:int) -> None: self.__font_color = Color.get(font_color)
     #新增一个物品
     def append(self, new_item:Union[str,int]) -> None:
         self.items.append(new_item)
-        new_item_width:int = int(self.__FONT.size(new_item)[0]*2)
+        new_item_width:int = int(self.__FONT.estimate_text_width(new_item)*2)
         if self.get_width() < new_item_width: self.set_width(new_item_width)
     #获取一个物品
     def get(self, index:int) -> Union[str,int]: return self.items[index] if len(self.items) > 0 else self.__DEFAULT_CONTENT
     #获取当前选中的物品
-    def get_current_selected_item(self) -> Union[str,int]: return self.items[self.chosen_id] if len(self.items) > 0 else self.__DEFAULT_CONTENT
+    def get_current_selected_item(self) -> Union[str,int]:
+        return self.items[self.chosen_id] if len(self.items) > 0 else self.__DEFAULT_CONTENT
     #设置当前选中的物品
     def set_current_selected_item(self, exist_item:Union[str,int]) -> None: self.chosen_id = self.items.index(exist_item)
     #获取高度
     def get_height(self) -> int:
-        return int((len(self.items) + 1) * self.__font_size * 1.5) if not self.__fold_choice else int(self.__font_size * 1.5)
+        return int((len(self.items) + 1) * self.__FONT.get_size() * 1.5) if not self.__fold_choice \
+            else int(self.__FONT.get_size() * 1.5)
     #移除一个物品
     def pop(self, index:int) -> None:
         super().pop(index)
@@ -94,14 +94,14 @@ class DropDownSingleChoiceList(GameObjectContainer):
                 draw_rect(surface, Color.WHITE, (current_abs_pos,self.size))
             #列出当前选中的选项
             current_pos:tuple = current_abs_pos
-            font_surface:ImageSurface = cope_bounding(self.__FONT.render(self.get_current_selected_item(), Setting.antialias, self.__font_color))
+            font_surface:ImageSurface = self.__FONT.render(self.get_current_selected_item(), self.__font_color)
             surface.blit(
                 font_surface,
                 add_pos(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))
                 )
             rect_of_outline = new_rect(current_pos, (self.width, self.__block_height))
             draw_rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
-            font_surface = flip_img(cope_bounding(self.__FONT.render("^", Setting.antialias, self.__font_color)), False, True)
+            font_surface = flip_img(self.__FONT.render("^", self.__font_color), False, True)
             surface.blit(
                 font_surface,
                 add_pos(current_pos, (int(self.width-font_surface.get_width()*1.5), int((self.__block_height-font_surface.get_height())/2)))
@@ -115,7 +115,7 @@ class DropDownSingleChoiceList(GameObjectContainer):
             if not self.__fold_choice:
                 for i in range(len(self.items)):
                     current_pos = add_pos(current_abs_pos, (0,(i+1)*self.__block_height))
-                    font_surface = cope_bounding(self.__FONT.render(self.items[i], Setting.antialias, self.__font_color))
+                    font_surface = self.__FONT.render(self.items[i], self.__font_color)
                     surface.blit(
                         font_surface,
                         add_pos(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))

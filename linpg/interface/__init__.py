@@ -16,3 +16,4 @@ media = Media
 controller = Controller
 option_menu = OptionMenu
 ui = UI
+font = Font

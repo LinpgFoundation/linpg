@@ -34,10 +34,16 @@ class FontGenerator:
             if ifItalic is True: self.__FONT.set_italic(ifItalic)
         else:
             EXCEPTION.fatal("FontType option in setting file is incorrect!")
-    def render(self, txt:any, color: color_liked):
+    def render(self, txt: any, color: color_liked) -> ImageSurface:
         if self.__SIZE > 0:
             font_surface_t = self.__FONT.render(txt, Setting.antialias, Color.get(color))
             return font_surface_t.subsurface(font_surface_t.get_bounding_rect())
+        else:
+            EXCEPTION.fatal("Standard font is not initialized!")
+    def render_to(self, surface:ImageSurface, pos: tuple, txt: any, color: color_liked) -> None:
+        if self.__SIZE > 0:
+            font_surface_t = self.__FONT.render(txt, Setting.antialias, Color.get(color))
+            surface.blit(font_surface_t.subsurface(font_surface_t.get_bounding_rect()), pos)
         else:
             EXCEPTION.fatal("Standard font is not initialized!")
     def get_size(self) -> int:
@@ -96,7 +102,14 @@ class FontManage:
     #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
     def render(self, txt:any, color: color_liked, size:int_f, ifBold:bool=False, ifItalic:bool=False) -> ImageSurface:
         self.__LINPG_LAST_FONT.check_for_update(size, ifBold, ifItalic)
-        return self.__LINPG_LAST_FONT.render(txt, Color.get(color))
+        return self.__LINPG_LAST_FONT.render(txt, color)
+    #文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
+    def render_to(
+        self, surface: ImageSurface, pos: tuple, txt: any, color: color_liked, size: int_f,
+        ifBold: bool=False, ifItalic: bool=False
+        ) -> None:
+        self.__LINPG_LAST_FONT.check_for_update(size, ifBold, ifItalic)
+        return self.__LINPG_LAST_FONT.render_to(surface, pos, txt, color)
     """
     #创建FreeType字体
     def create_freetype_font(self, size:number, ifBold:bool=False, ifItalic:bool=False) -> any:

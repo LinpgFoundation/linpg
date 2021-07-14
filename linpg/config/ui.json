@@ -78,7 +78,6 @@
     },
     "option_menu": {
         "height": "75%",
-        "hidden": true,
         "items": [
             {
                 "color": "white",
@@ -87,20 +86,6 @@
                 "type": "text",
                 "x": "center",
                 "y": "5%"
-            },
-            {
-                "color": "white",
-                "font_size": "5%",
-                "src": "{OptionMenu,language}",
-                "type": "text",
-                "x": "22.5%",
-                "y": "20%"
-            },
-            {
-                "font_size": "5%",
-                "type": "drop_down_single_choice_list",
-                "x": "40%",
-                "y": "20%"
             },
             {
                 "color": "white",
@@ -208,7 +193,23 @@
                 "src": "{Global,back}",
                 "type": "dynamic_text",
                 "x": "center",
-                "y": "90%"
+                "y": "90%",
+                "name": "back_button"
+            },
+            {
+                "color": "white",
+                "font_size": "5%",
+                "src": "{OptionMenu,language}",
+                "type": "text",
+                "x": "22.5%",
+                "y": "20%"
+            },
+            {
+                "font_size": "5%",
+                "type": "drop_down_single_choice_list",
+                "x": "45%",
+                "y": "19%",
+                "name": "lang_drop_down"
             }
         ],
         "src": "Assets/image/UI/setting_baseImg.png",

@@ -56,7 +56,7 @@ class DisplayController:
         if is_using_pygame() is True:
             if flags is None:
                 if self.__screen_scale >= 100:
-                    flags = pygame.DOUBLEBUF | pygame.FULLSCREEN | pygame.HWSURFACE
+                    flags = pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE | pygame.SCALED
                 else:
                     flags =  pygame.SCALED
             self.__SCREEN_WINDOW = pygame.display.set_mode(

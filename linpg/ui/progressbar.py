@@ -106,9 +106,9 @@ class ProgressBarAdjuster(ProgressBarSurface):
                 if Controller.mouse.get_pressed(0):
                     self.set_percentage((mouse_x-self.x)/self._width if self._mode else (mouse_y-self.y)/self._height)
                 elif Controller.get_event("scroll_down"):
-                    self.set_percentage(min(self.percentage+0.01, 1.0))
+                    self.set_percentage(min(round(self.percentage+0.01,2), 1.0))
                 elif Controller.get_event("scroll_up"):
-                    self.set_percentage(max(self.percentage-0.01, 0.0))
+                    self.set_percentage(max(round(self.percentage-0.01,2), 0.0))
 
 # 动态进度条Surface
 class DynamicProgressBarSurface(ProgressBarSurface):

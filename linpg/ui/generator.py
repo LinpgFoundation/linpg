@@ -1,6 +1,6 @@
 # cython: language_level=3
 from collections import deque
-from .menu import *
+from .progressbar import *
 
 class UiGenerator:
     def __init__(self) -> None:
@@ -77,7 +77,7 @@ class UiGenerator:
             ui_dict_t:dict = self.__DEFAULT_UI[name]
         except KeyError:
             EXCEPTION.fatal('The ui called "{}" does not exist!'.format(name))
-        return self.generate(ui_dict_t)
+        return self.generate(deepcopy(ui_dict_t))
     #生成UI
     def generate(self, data:dict, max_width:int=-1, max_height:int=-1) -> GameObject2d:
         #如果没有提供最大高度，则默认使用屏幕高度
@@ -117,20 +117,17 @@ class UiGenerator:
                 self.__make_sure_pos(data, "x", int((max_width-data["width"])/2), max_width)
                 self.__make_sure_pos(data, "y", int((max_height-data["height"])/2), max_height)
                 #生成容器
-                container_t = GameObjectContainer(data["src"],data["x"],data["y"],data["width"],data["height"])
+                container_t = GameObjectsContainer(data["src"],data["x"],data["y"],data["width"],data["height"])
                 #加载数据
                 if "hidden" in data:
                     container_t.hidden = data["hidden"]
                 if "items" in data:
                     for each_item in data["items"]:
-                        container_t.append(self.generate(each_item, container_t.get_width(), container_t.get_height()))
-                elif "item" in data:
-                    #警告用户是items而不是item
-                    EXCEPTION.warn('I think you mean "items" instead of "item", right?\
-                        We will try to load it this time, but please double check ASAP!')
-                    #好吧，我们还是会至少尝试加载
-                    for each_item in data["item"]:
-                        container_t.append(self.generate(each_item, container_t.get_width(), container_t.get_height()))
+                        item_r = self.generate(each_item, container_t.get_width(), container_t.get_height())
+                        if item_r.tag != "":
+                            container_t.set(item_r.tag, item_r)
+                        else:
+                            container_t.set("item{}".format(container_t.item_num), item_r)
                 return container_t
             elif data["type"] == "button":
                 if "alpha_when_not_hover" not in data: data["alpha_when_not_hover"] = 255
@@ -166,7 +163,7 @@ class UiGenerator:
             else:
                 EXCEPTION.fatal("Current type is not supported")
         #如果有名字，则以tag的形式进行标注
-        if "name" in data: item_t.tag = data["name"]
+        item_t.tag = data["name"] if "name" in data else ""
         #转换坐标
         self.__make_sure_pos(data, "x", int((max_width-item_t.get_width())/2), max_width)
         self.__make_sure_pos(data, "y", int((max_height-item_t.get_height())/2), max_height)

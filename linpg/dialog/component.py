@@ -65,7 +65,7 @@ class DialogButtons:
             (self.FONT.get_size(), self.FONT.get_size()), 150
         )
     @property
-    def item_hovered(self) -> str:
+    def item_being_hovered(self) -> str:
         if self.__button_hovered == 1:
             return "hide"
         elif self.__button_hovered == 2:

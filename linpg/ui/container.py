@@ -2,19 +2,32 @@
 from .button import *
 
 #用于储存游戏对象的容器，类似html的div
-class GameObjectContainer(AbstractImage):
+class GameObjectsContainer(AbstractImage):
     def __init__(self, bg_img:Union[str,ImageSurface,None], x:number, y:number, width:int, height:int, tag:str=""):
         super().__init__(StaticImage(bg_img, 0, 0, width, height) if bg_img is not None else bg_img, x, y, width, height, tag)
-        self.items:list = []
-        self.item_hovered = None
+        self._items_container:dict = {}
+        self._item_being_hovered:str = None
+    @property
+    def item_being_hovered(self) -> Union[str, None]: return self._item_being_hovered
+    @property
+    def item_num(self) -> int: return len(self._items_container)
     #新增一个物品
-    def append(self, new_item:GameObject) -> None: self.items.append(new_item)
+    def set(self, key:str, new_item:any) -> None: self._items_container[key] = new_item
     #获取一个物品
-    def get(self, index:int) -> GameObject: return self.items[index]
+    def get(self, key:str) -> any: return self._items_container[key]
+    #交换2个key名下的图片
+    def swap(self, key1:str, key2:str) -> None:
+        temp_reference = self._items_container[key1]
+        self._items_container[key1] = self._items_container[key2]
+        self._items_container[key2] = temp_reference
     #移除一个物品
-    def pop(self, index:int) -> None: self.items.pop(index)
+    def remove(self, key:str) -> None: del self._items_container[key]
     #清空物品栏
-    def clear(self) -> None: self.items.clear()
+    def clear(self) -> None: self._items_container.clear()
+    #是否为空
+    def is_empty(self) -> bool: return self.item_num <= 0
+    #是否包括
+    def contain(self, key:str) -> bool: return key in self._items_container
     #设置尺寸
     def set_width(self, value:number) -> None:
         super().set_width(value)
@@ -24,22 +37,24 @@ class GameObjectContainer(AbstractImage):
         if self.img is not None: self.img.set_height(value)
     #把物品画到surface上
     def display(self, surface:ImageSurface, offSet:tuple=Origin) -> None:
-        self.item_hovered = None
+        self._item_being_hovered = None
         if not self.hidden:
             current_abs_pos:tuple = add_pos(self.pos, offSet)
             #画出背景
             if self.img is not None: self.img.display(surface, current_abs_pos)
             #画出物品
-            for item in self.items:
-                item.display(surface, current_abs_pos)
-                if isinstance(item,Button) and item.has_been_hovered():
-                    self.item_hovered = item.tag
+            for key_of_game_object, game_object_t in self._items_container.items():
+                game_object_t.display(surface, current_abs_pos)
+                if isinstance(game_object_t, Button) and game_object_t.has_been_hovered():
+                    self._item_being_hovered = key_of_game_object
+                elif isinstance(game_object_t, GameObject) and game_object_t.is_hover(subtract_pos(Controller.mouse.pos, current_abs_pos)):
+                    self._item_being_hovered = key_of_game_object
 
 #下拉选项菜单
-class DropDownSingleChoiceList(GameObjectContainer):
+class DropDownSingleChoiceList(GameObjectsContainer):
     def __init__(self, bg_img: Union[str, ImageSurface, None], x: number, y: number, font_size: int, font_color: any="black", tag:str=""):
         super().__init__(bg_img, x, y, 0, 0, tag)
-        self.chosen_id:int = 0
+        self.__chosen_item_key:str = ""
         self.__DEFAULT_CONTENT:str = ""
         self.__block_height:int = int(font_size*1.5)
         self.__font_color:tuple = Color.get(font_color)
@@ -49,7 +64,7 @@ class DropDownSingleChoiceList(GameObjectContainer):
     #重新计算宽度
     def _update_width(self) -> None:
         self.set_width(0)
-        for item in self.items:
+        for item in self._items_container.values():
             item_width:int = int(self.__FONT.estimate_text_width(item)*1.5)
             if self.get_width() < item_width: self.set_width(item_width)
     #更新font的尺寸
@@ -60,20 +75,20 @@ class DropDownSingleChoiceList(GameObjectContainer):
     #更新font的颜色
     def update_font_color(self, font_color:int) -> None: self.__font_color = Color.get(font_color)
     #新增一个物品
-    def append(self, new_item:Union[str,int]) -> None:
-        self.items.append(new_item)
+    def set(self, key:str, new_item:Union[str,int]) -> None:
+        super().set(key, new_item)
         new_item_width:int = int(self.__FONT.estimate_text_width(new_item)*2)
         if self.get_width() < new_item_width: self.set_width(new_item_width)
     #获取一个物品
-    def get(self, index:int) -> Union[str,int]: return self.items[index] if len(self.items) > 0 else self.__DEFAULT_CONTENT
+    def get(self, key:str) -> Union[str,int]: return super().get(key) if not self.is_empty() else self.__DEFAULT_CONTENT
     #获取当前选中的物品
     def get_current_selected_item(self) -> Union[str,int]:
-        return self.items[self.chosen_id] if len(self.items) > 0 else self.__DEFAULT_CONTENT
+        return self.get(self.__chosen_item_key) if not self.is_empty() else self.__DEFAULT_CONTENT
     #设置当前选中的物品
-    def set_current_selected_item(self, exist_item:Union[str,int]) -> None: self.chosen_id = self.items.index(exist_item)
+    def set_current_selected_item(self, key:str) -> None: self.__chosen_item_key = key
     #获取高度
     def get_height(self) -> int:
-        return int((len(self.items) + 1) * self.__FONT.get_size() * 1.5) if not self.__fold_choice \
+        return int((len(self._items_container) + 1) * self.__FONT.get_size() * 1.5) if not self.__fold_choice \
             else int(self.__FONT.get_size() * 1.5)
     #移除一个物品
     def pop(self, index:int) -> None:
@@ -113,27 +128,28 @@ class DropDownSingleChoiceList(GameObjectContainer):
                     self.__fold_choice = True
             #列出选择
             if not self.__fold_choice:
-                for i in range(len(self.items)):
-                    current_pos = add_pos(current_abs_pos, (0,(i+1)*self.__block_height))
-                    font_surface = self.__FONT.render(self.items[i], self.__font_color)
+                index:int = 0
+                for key_of_game_object, game_object_t in self._items_container.items():
+                    current_pos = add_pos(current_abs_pos, (0,(index+1)*self.__block_height))
+                    font_surface = self.__FONT.render(game_object_t, self.__font_color)
                     surface.blit(
                         font_surface,
                         add_pos(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))
                     )
                     rect_of_outline = new_rect(current_pos, (self.width, self.__block_height))
                     draw_rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
-                    if is_hover(rect_of_outline) and Controller.mouse.get_pressed(0): self.chosen_id = i
-                    if i != self.chosen_id:
-                        draw_circle(surface, self.__font_color, add_pos(current_pos,(self.width*0.1, self.__block_height/2)), 3, self.outline_thickness)
-                    else:
-                        draw_circle(surface, self.__font_color, add_pos(current_pos,(self.width*0.1, self.__block_height/2)), 3)
+                    if is_hover(rect_of_outline) and Controller.mouse.get_pressed(0): self.__chosen_item_key = key_of_game_object
+                    draw_circle(
+                        surface, self.__font_color, add_pos(current_pos, (self.width*0.1, self.__block_height/2)), 3, 
+                        self.outline_thickness if key_of_game_object != self.__chosen_item_key else 0
+                        )
+                    index += 1
 
 #带有滚动条的Surface容器
-class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
+class SurfaceContainerWithScrollbar(GameObjectsContainer):
     def __init__(self, img:Union[str,ImageSurface,None], x:number, y:number, width:int, height:int, mode:str="horizontal", tag:str=""):
         super().__init__(load_img(img, (width, height)) if img is not None else img, x, y, width, height, tag)
         self.panding:int = 0
-        self.__items_dict:dict = {}
         self.distance_between_item:int = 20
         self.move_speed:int = 20
         self.button_tickness = 20
@@ -145,7 +161,6 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
         self.__mode:bool = False
         self.set_mode(mode)
         self.__scroll_bar_pos:bool = True
-        self.__current_hovered_item:any = None
         self.__item_per_line:int = 1
     #模式
     @property
@@ -193,23 +208,6 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                 EXCEPTION.fatal("You cannot put the scroll bar on the bottom during vertical mode!")
         else:
             EXCEPTION.fatal('Scroll bar position "{}" is not supported! Try sth like "right" or "bottom" instead.'.format(pos))
-    #添加一个物品
-    def set(self, key:Union[str,int], value:Union[AbstractImage, ImageSurface, None]) -> None: self.__items_dict[key] = value
-    #获取一个物品
-    def get(self, key:Union[str,int]) -> Union[AbstractImage, ImageSurface, None]: return self.__items_dict[key]
-    #移除一个物品
-    def remove(self, key:Union[str,int]) -> None: del self.__items_dict[key]
-    #交换2个key名下的图片
-    def swap(self, key1:Union[str,int], key2:Union[str,int]) -> None:
-        temp_reference = self.__items_dict[key1]
-        self.__items_dict[key1] = self.__items_dict[key2]
-        self.__items_dict[key2] = temp_reference
-    #清除所有物品
-    def clear(self) -> None:
-        self.__items_dict.clear()
-    #正在被触碰的物品
-    @property
-    def current_hovered_item(self) -> Union[str,int,None]: return self.__current_hovered_item
     #获取滚动条按钮的Rect
     def __get_scroll_button_rect(self, off_set_x:number, off_set_y:number) -> Union[Rect, None]:
         if not self.__mode:
@@ -265,7 +263,7 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
     def set_item_per_line(self, value:int) -> None: self.__item_per_line = int(value)
     #把素材画到屏幕上
     def display(self, surface:ImageSurface, off_set:tuple=Origin) -> None:
-        self.__current_hovered_item = None
+        self._item_being_hovered = None
         if not self.hidden:
             """画出"""
             #如果有背景图片，则画出
@@ -282,7 +280,7 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
             abs_local_x:int; crop_width:int; new_width:int
             item_has_been_dawn_on_this_line:int = 0
             #画出物品栏里的图片
-            for key,item in self.__items_dict.items():
+            for key,item in self._items_container.items():
                 if item is not None:
                     if not self.__mode:
                         abs_local_y = int(current_y-self.y)
@@ -296,7 +294,7 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                             subsurface_rect = Rect(0,0,new_width,new_height)
                             surface.blit(get_img_subsurface(item,subsurface_rect),(current_x,current_y))
                             if is_hover(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
-                                self.__current_hovered_item = key
+                                self._item_being_hovered = key
                         elif -(item.get_height()) <= abs_local_y < 0:
                             crop_height = -abs_local_y
                             new_height = item.get_height()-crop_height
@@ -308,7 +306,7 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                             subsurface_rect = Rect(0,crop_height,new_width,new_height)
                             surface.blit(get_img_subsurface(item,subsurface_rect),(current_x,current_y+crop_height))
                             if is_hover(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
-                                self.__current_hovered_item = key
+                                self._item_being_hovered = key
                         #换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line-1:
                             current_y += self.distance_between_item + item.get_height()
@@ -329,7 +327,7 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                             subsurface_rect = Rect(0,0,new_width,new_height)
                             surface.blit(get_img_subsurface(item,subsurface_rect),(current_x,current_y))
                             if is_hover(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
-                                self.__current_hovered_item = key
+                                self._item_being_hovered = key
                         elif -(item.get_width()) <= abs_local_x < 0:
                             crop_width = -abs_local_x
                             new_width = item.get_width()-crop_width
@@ -341,7 +339,7 @@ class SurfaceContainerWithScrollbar(AdvancedAbstractImage):
                             subsurface_rect = Rect(crop_width,0,new_width,new_height)
                             surface.blit(get_img_subsurface(item,subsurface_rect),(current_x+crop_width,current_y))
                             if is_hover(subsurface_rect,off_set_x=current_x,off_set_y=current_y):
-                                self.__current_hovered_item = key
+                                self._item_being_hovered = key
                         #换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line-1:
                             current_x += self.distance_between_item + item.get_width()

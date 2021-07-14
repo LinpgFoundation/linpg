@@ -57,17 +57,17 @@ class DialogSystem(AbstractDialogSystem):
         self._load_content()
     def __check_button_event(self, surface:ImageSurface) -> bool:
         if self._buttons_mananger is not None and not self._is_showing_history:
-            if self._buttons_mananger.item_hovered == "hide":
+            if self._buttons_mananger.item_being_hovered == "hide":
                 self._buttons_mananger.hidden = not self._buttons_mananger.hidden
                 self._dialog_txt_system.hidden = self._buttons_mananger.hidden
             #如果接来下没有文档了或者玩家按到了跳过按钮, 则准备淡出并停止播放
-            elif self._buttons_mananger.item_hovered == "skip":
+            elif self._buttons_mananger.item_being_hovered == "skip":
                 self.fade(surface)
                 self.stop()
-            elif self._buttons_mananger.item_hovered == "auto":
+            elif self._buttons_mananger.item_being_hovered == "auto":
                 self._buttons_mananger.autoModeSwitch()
                 self._dialog_txt_system.autoMode = self._buttons_mananger.autoMode
-            elif self._buttons_mananger.item_hovered == "history":
+            elif self._buttons_mananger.item_being_hovered == "history":
                 self._is_showing_history = True
             else:
                 return False

@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .progressbar import *
+from .generator import *
 
 #暂停菜单
 class PauseMenu:
@@ -77,168 +77,71 @@ class PauseMenu:
         return ""
 
 #设置UI
-class OptionMenuInterface(AbstractImage):
+class OptionMenuInterface:
     def __init__(self):
-        width = int(Display.get_width()*0.5)
-        height = int(Display.get_height()*0.75)
-        x = int((Display.get_width()-width)/2)
-        y = int((Display.get_height()-height)/2)
-        self.__ui_image_folder_path:str = "Assets/image/UI"
-        super().__init__(None, x, y, width, height, "")
-        #默认隐藏
-        self.hidden = True
-        #物品尺寸
-        self.__item_height:int = int(self.height*0.05)
-        #划动条的宽度
-        self.bar_width:int = int(self.width*0.6)
-        self.button = None
-        self.__bar_input = None
-        self.bar_x = int(self.x+(width-self.bar_width)/2)
-        edge_panding = height*0.05
-        self.bar_y0 = self.y + self.__item_height*4
-        self.bar_y1 = self.y + self.__item_height*8
-        self.bar_y2 = self.y + self.__item_height*12
-        self.bar_y3 = self.y + self.__item_height*16
-        #字体渲染器
-        self.__NORMAL_FONT = Font.create(self.__item_height)
-        self.settingTitleTxt = None
-        #语言
-        self.current_lang = None
-        self.language_choice = None
-        #设置UI中的文字
-        langTxt = Lang.get_text("OptionMenu")
-        #背景音乐
-        self.backgroundMusicTxt:str = langTxt["background_music"]
-        #音效
-        self.soundEffectsTxt:str = langTxt["sound_effects"]
-        #环境声效
-        self.soundEnvironmentTxt:str = langTxt["environmental_sound"]
-        #返回
-        self.__back_button = None
-        self.need_update:dict = {}
-    def __init(self) -> None:
-        if self.__bar_input is None:
-            #加载设置菜单的背景图片
-            baseImgPath:str = os.path.join(self.__ui_image_folder_path,"setting_baseImg.png")
-            if os.path.exists(baseImgPath):
-                baseImg = smoothly_resize_img(load_img(baseImgPath), self.size)
-            else:
-                baseImg = new_surface(self.size).convert()
-                baseImg.fill(Color.WHITE)
-                draw_rect(baseImg, Color.GRAY, Rect(self.width*0.05, self.height*0.05, self.width*0.9, self.height*0.9))
-            self.img = baseImg
-            self.button = load_img(os.path.join(self.__ui_image_folder_path,"setting_bar_circle.png"),(self.__item_height,self.__item_height*2))
-            self.__bar_input = DynamicProgressBarSurface(
-                os.path.join(self.__ui_image_folder_path,"setting_bar_full.png"),
-                os.path.join(self.__ui_image_folder_path,"setting_bar_empty.png"),
-                0, 0, self.bar_width, self.__item_height
-                )
-            self.settingTitleTxt = TextSurface(Font.render(Lang.get_text("OptionMenu","setting"),"white",self.__item_height*1.5),0,self.height*0.05)
-            self.settingTitleTxt.set_centerx(self.width/2)
-            self.current_lang = TextSurface(Font.render("{}: ".format(Lang.get_text("OptionMenu","language")), "white", self.__item_height),self.bar_x, self.bar_y0)
-            self.language_choice = DropDownSingleChoiceList(None, self.bar_x, self.bar_y0, self.__item_height)
-            for lang_choice in Lang.get_available_languages():
-                self.language_choice.append(lang_choice)
-            self.language_choice.set_current_selected_item(Lang.get_current_language())
-            self.__back_button = load_dynamic_text(Lang.get_text("Global","back"),"white",(0,0),self.__item_height)
-            self.__back_button.set_bottom(self.height-self.height*0.05)
-            self.__back_button.set_centerx(self.width/2)
-    #更新语言
-    def __update_lang(self, lang:str) -> None:
-        #更新语言并保存新的参数到本地
-        Setting.set_and_save("Language", value=Lang.get_language_id(lang))
-        Lang.reload()
-        #设置UI中的文字
-        langTxt = Lang.get_text("OptionMenu")
-        self.settingTitleTxt.font_surface = Font.render(langTxt["setting"],"white",self.__item_height*1.5)
-        #语言
-        self.current_lang = TextSurface(Font.render("{}: ".format(langTxt["language"]), "white", self.__item_height),self.bar_x, self.bar_y0)
-        #背景音乐
-        self.backgroundMusicTxt = langTxt["background_music"]
-        #音效
-        self.soundEffectsTxt = langTxt["sound_effects"]
-        #环境声效
-        self.soundEnvironmentTxt = langTxt["environmental_sound"]
-        #返回
-        self.__back_button = load_dynamic_text(Lang.get_text("Global","back"), "white", self.__back_button.pos, self.__item_height)
+        self.__CONTENT = None
+        self.__initialized:bool = False
+        self.need_update:bool = {}
+        self.hidden:bool = True
     def draw(self, surface:ImageSurface) -> None:
         self.need_update = {
             "volume": False,
             "language": False
             }
         if not self.hidden:
-            self.__init()
-            #底部图
-            surface.blit(self.img,(self.x,self.y))
-            self.settingTitleTxt.display(surface,self.pos)
-            #背景音乐
-            surface.blit(
-                self.__NORMAL_FONT.render(self.backgroundMusicTxt+": "+str(Media.volume.background_music), Color.WHITE),
-                (self.bar_x,self.bar_y1-self.__item_height*1.6)
-            )
-            self.__bar_input.set_pos(self.bar_x,self.bar_y1)
-            self.__bar_input.set_percentage(Media.volume.background_music/100)
-            self.__bar_input.draw(surface)
-            surface.blit(self.button,(
-                self.bar_x+self.__bar_input.percentage*self.__bar_input.width-self.button.get_width()/2,
-                self.bar_y1-self.__item_height/2
-                )
-            )
-            #音效
-            surface.blit(
-                self.__NORMAL_FONT.render(self.soundEffectsTxt+": "+str(Media.volume.effects), Color.WHITE),
-                (self.bar_x,self.bar_y2-self.__item_height*1.6)
-            )
-            self.__bar_input.set_pos(self.bar_x,self.bar_y2)
-            self.__bar_input.set_percentage(Media.volume.effects/100)
-            self.__bar_input.draw(surface)
-            surface.blit(self.button,(
-                self.bar_x+self.__bar_input.percentage*self.__bar_input.width-self.button.get_width()/2,
-                self.bar_y2-self.__item_height/2
-                )
-            )
-            #环境声
-            surface.blit(
-                self.__NORMAL_FONT.render(self.soundEnvironmentTxt+": "+str(Media.volume.environment), Color.WHITE),
-                (self.bar_x,self.bar_y3-self.__item_height*1.6)
-            )
-            self.__bar_input.set_pos(self.bar_x,self.bar_y3)
-            self.__bar_input.set_percentage(Media.volume.environment/100)
-            self.__bar_input.draw(surface)
-            surface.blit(self.button,(
-                self.bar_x+self.__bar_input.percentage*self.__bar_input.width-self.button.get_width()/2,
-                self.bar_y3-self.__item_height/2
-                )
-            )
-            #返回按钮
-            self.__back_button.display(surface, self.pos)
-            #语言
-            self.current_lang.draw(surface)
-            self.language_choice.display(surface, (self.current_lang.get_width(),0))
-            #如果需要，则更新语言
-            if self.language_choice.get_current_selected_item() != Lang.get_current_language():
-                self.__update_lang(self.language_choice.get_current_selected_item())
+            #检查是否初始化
+            if not self.__initialized:
+                self.__CONTENT = UI.generate_deault("option_menu")
+                lang_drop_down = self.__CONTENT.get("lang_drop_down")
+                for lang_choice in Lang.get_available_languages():
+                    lang_drop_down.set(lang_choice, lang_choice)
+                    lang_drop_down.set_current_selected_item(Lang.get_current_language())
+                self.__initialized = True
+            else:
+                lang_drop_down = self.__CONTENT.get("lang_drop_down")
+            #更新百分比
+            self.__CONTENT.get("global_sound_volume").set_percentage(Setting.get("Sound", "global_value")/100)
+            self.__CONTENT.get("background_music_sound_volume").set_percentage(Setting.get("Sound", "background_music")/100)
+            self.__CONTENT.get("effects_sound_volume").set_percentage(Setting.get("Sound", "effects")/100)
+            self.__CONTENT.get("environment_sound_volume").set_percentage(Setting.get("Sound", "environment")/100)
+            #画出
+            self.__CONTENT.draw(surface)
+            #如果需要更新语言
+            if lang_drop_down.get_current_selected_item() != Lang.get_current_language():
+                #更新语言并保存新的参数到本地
+                Setting.set_and_save("Language", value=Lang.get_language_id(lang_drop_down.get_current_selected_item()))
+                Lang.reload()
+                self.__initialized = False
                 self.need_update["language"] = True
             #按键的判定按钮
-            if Controller.mouse.get_pressed(0) and 0 <= Controller.mouse.x-self.bar_x <= self.bar_width and not self.language_choice.is_hover():
-                    #如果碰到背景音乐的音量条
-                    if -self.__item_height/2<Controller.mouse.y-self.bar_y1<self.__item_height*1.5:
-                        Setting.set("Sound", "background_music", round(100*(Controller.mouse.x-self.bar_x)/self.bar_width))
+            if self.__CONTENT.item_being_hovered is not None and not lang_drop_down.is_hover():
+                #如果碰到全局音量条
+                if self.__CONTENT.item_being_hovered == "global_sound_volume":
+                    item_percentage_t = int(self.__CONTENT.get("global_sound_volume").percentage*100)
+                    if item_percentage_t != Setting.get("Sound", "global_value"):
+                        Setting.set("Sound", "global_value", item_percentage_t)
+                        self.need_update["volume"] = True
+                elif self.__CONTENT.item_being_hovered == "background_music_sound_volume":
+                    item_percentage_t = int(self.__CONTENT.get("background_music_sound_volume").percentage*100)
+                    if item_percentage_t != Setting.get("Sound", "background_music"):
+                        Setting.set("Sound", "background_music", item_percentage_t)
                         Music.set_volume(Media.volume.background_music/100.0)
                         self.need_update["volume"] = True
-                    #如果碰到音效的音量条
-                    elif -self.__item_height/2<Controller.mouse.y-self.bar_y2<self.__item_height*1.5:
-                        Setting.set("Sound", "effects", round(100*(Controller.mouse.x-self.bar_x)/self.bar_width))
+                #如果碰到音效的音量条
+                elif self.__CONTENT.item_being_hovered == "effects_sound_volume":
+                    item_percentage_t = int(self.__CONTENT.get("effects_sound_volume").percentage*100)
+                    if item_percentage_t != Setting.get("Sound", "effects"):
+                        Setting.set("Sound", "effects", item_percentage_t)
                         self.need_update["volume"] = True
-                    #如果碰到环境声的音量条
-                    elif -self.__item_height/2<Controller.mouse.y-self.bar_y3<self.__item_height*1.5:
-                        Setting.set("Sound", "environment", round(100*(Controller.mouse.x-self.bar_x)/self.bar_width))
+                #如果碰到环境声的音量条
+                elif self.__CONTENT.item_being_hovered == "environment_sound_volume":
+                    item_percentage_t = int(self.__CONTENT.get("environment_sound_volume").percentage*100)
+                    if item_percentage_t != Setting.get("Sound", "environment"):
+                        Setting.set("Sound", "environment", item_percentage_t)
                         self.need_update["volume"] = True
-                    #保存新的参数
-                    if self.need_update["volume"] is True: Setting.save()
-                    #判定返回按钮 
-                    if self.__back_button.has_been_hovered():
-                        self.hidden = True
+                #保存新的参数
+                if self.need_update["volume"] is True: Setting.save()
+            if Controller.mouse.get_pressed(0) and self.__CONTENT.item_being_hovered == "back_button": self.hidden = True
 
 #引擎本体的选项菜单
 OptionMenu:OptionMenuInterface = OptionMenuInterface()

@@ -405,7 +405,7 @@ class DialogEditor(AbstractDialogSystem):
             #检测是否有物品被选中需要更新
             if leftClick is True:
                 if not self.UIContainerRight_bg.hidden:
-                    imgName = self.UIContainerRight_bg.current_hovered_item
+                    imgName = self.UIContainerRight_bg.item_being_hovered
                     if imgName is not None:
                         if imgName != "current_select":
                             currentDialogContent["background_img"] = imgName
@@ -414,7 +414,7 @@ class DialogEditor(AbstractDialogSystem):
                             currentDialogContent["background_img"] = None
                             self._update_background_image(None)
                 elif not self.UIContainerRight_npc.hidden:
-                    imgName = self.UIContainerRight_npc.current_hovered_item
+                    imgName = self.UIContainerRight_npc.item_being_hovered
                     if imgName is not None:
                         if currentDialogContent["characters_img"] is None:
                             currentDialogContent["characters_img"] = []
@@ -424,14 +424,14 @@ class DialogEditor(AbstractDialogSystem):
         
         #未保存离开时的警告
         self.__no_save_warning.draw(surface)
-        if leftClick is True and self.__no_save_warning.item_hovered != "":
+        if leftClick is True and self.__no_save_warning.item_being_hovered != "":
             #保存并离开
-            if self.__no_save_warning.item_hovered == "save":
+            if self.__no_save_warning.item_being_hovered == "save":
                 self.save_progress()
                 self.stop()
             #取消
-            elif self.__no_save_warning.item_hovered == "cancel":
+            elif self.__no_save_warning.item_being_hovered == "cancel":
                 self.__no_save_warning.hidden = True
             #不保存并离开
-            elif self.__no_save_warning.item_hovered == "dont_save":
+            elif self.__no_save_warning.item_being_hovered == "dont_save":
                 self.stop()

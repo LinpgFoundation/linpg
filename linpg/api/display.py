@@ -35,9 +35,9 @@ class DisplayController:
     #设置窗口图标
     def set_icon(self, path:str) -> None:
         if is_using_pygame():
-            pygame.display.set_icon(quickly_load_img(path, False))
+            pygame.display.set_icon(IMG.quickly_load(path, False))
         else:
-            self.__SCREEN_WINDOW.set_icon(quickly_load_img(path, False))
+            self.__SCREEN_WINDOW.set_icon(IMG.quickly_load(path, False))
     #窗口尺寸
     @property
     def width(self) -> int: return self.__standard_width

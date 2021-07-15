@@ -29,6 +29,8 @@ number = Union[int, float]
 pos_liked = Union[tuple, list, numpy.ndarray]
 size_liked = Union[tuple, list, numpy.ndarray]
 color_liked = Union[tuple[int], str, list[int]]
+#图形类
+ImageSurface = pygame.Surface if not _LIBRARY_INDICATOR else pyglet.image
 """linpg自带常量"""
 Origin:tuple[int] = (0, 0)
 NoSize:tuple[int] = (-1, -1)
@@ -103,3 +105,61 @@ def convert_percentage(percentage:Union[str, float]) -> float:
 
 #获取帧数控制器
 def get_clock() -> pygame.time.Clock: return pygame.time.Clock()
+
+#获取Surface
+def new_surface(size:size_liked, surface_flags:any=None) -> ImageSurface:
+    return pygame.Surface(size, flags=surface_flags) if surface_flags is not None else pygame.Surface(size)
+
+#获取透明的Surface
+def new_transparent_surface(size:size_liked) -> ImageSurface:
+    return new_surface(size, pygame.SRCALPHA).convert_alpha()
+
+#获取材质缺失的临时警示材质
+def get_texture_missing_surface(size:size_liked) -> ImageSurface:
+    texture_missing_surface:ImageSurface = new_surface(size).convert()
+    texture_missing_surface.fill(Color.BLACK)
+    half_width:int = int(size[0]/2)
+    half_height:int = int(size[1]/2)
+    purple_color_rbga:tuple = Color.VIOLET
+    pygame.draw.rect(
+        texture_missing_surface, purple_color_rbga, pygame.Rect(half_width, 0, texture_missing_surface.get_width()-half_width, half_height)
+        )
+    pygame.draw.rect(
+        texture_missing_surface, purple_color_rbga, pygame.Rect(0, half_height, half_width, texture_missing_surface.get_height()-half_height)
+        )
+    return texture_missing_surface
+
+#中心展示模块1：接受两个item和item2的x和y，将item1展示在item2的中心位置,但不展示item2：
+def display_in_center(
+    item1:ImageSurface, item2:ImageSurface, x:number, y:number, screen:ImageSurface, off_set_x:number = 0, off_set_y:number = 0
+    ) -> None:
+    added_x = (item2.get_width()-item1.get_width())/2
+    added_y = (item2.get_height()-item1.get_height())/2
+    screen.blit(item1,(x+added_x+off_set_x,y+added_y+off_set_y))
+
+#中心展示模块2：接受两个item和item2的x和y，展示item2后，将item1展示在item2的中心位置：
+def display_within_center(
+    item1:ImageSurface, item2:ImageSurface, x:number, y:number, screen:ImageSurface, off_set_x:number = 0, off_set_y:number = 0
+    ) -> None:
+    added_x = (item2.get_width()-item1.get_width())/2
+    added_y = (item2.get_height()-item1.get_height())/2
+    screen.blit(item2,(x+off_set_x,y+off_set_y))
+    screen.blit(item1,(x+added_x+off_set_x,y+added_y+off_set_y))
+
+# 将array转换并画到surface上
+def draw_array(surface: ImageSurface, array: any) -> None:
+    pygame.surfarray.blit_array(surface, array)
+
+#是否触碰pygame类
+def is_hover_pygame_object(imgObject:object, objectPos:pos_liked=Origin, off_set_x:number=0, off_set_y:number=0) -> bool:
+    mouse_x,mouse_y = pygame.mouse.get_pos()
+    #如果是pygame的Surface类
+    if isinstance(imgObject, ImageSurface):
+        return True if 0 < mouse_x-off_set_x-objectPos[0] < imgObject.get_width() and 0 < mouse_y-off_set_y-objectPos[1] < imgObject.get_height()\
+            else False
+    #如果是Rect类
+    elif isinstance(imgObject,pygame.Rect):
+        return True if 0 < mouse_x-off_set_x-imgObject.x < imgObject.width and 0 < mouse_y-off_set_y-imgObject.y < imgObject.height\
+            else False
+    else:
+        EXCEPTION.fatal("Unable to check current object: {0} (type:{1})".format(imgObject,type(imgObject)))

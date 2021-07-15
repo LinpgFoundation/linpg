@@ -116,7 +116,7 @@ class DropDownSingleChoiceList(GameObjectsContainer):
                 )
             rect_of_outline = new_rect(current_pos, (self.width, self.__block_height))
             draw_rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
-            font_surface = flip_img(self.__FONT.render("^", self.__font_color), False, True)
+            font_surface = IMG.flip(self.__FONT.render("^", self.__font_color), False, True)
             surface.blit(
                 font_surface,
                 add_pos(current_pos, (int(self.width-font_surface.get_width()*1.5), int((self.__block_height-font_surface.get_height())/2)))
@@ -148,7 +148,7 @@ class DropDownSingleChoiceList(GameObjectsContainer):
 #带有滚动条的Surface容器
 class SurfaceContainerWithScrollbar(GameObjectsContainer):
     def __init__(self, img:Union[str,ImageSurface,None], x:number, y:number, width:int, height:int, mode:str="horizontal", tag:str=""):
-        super().__init__(load_img(img, (width, height)) if img is not None else img, x, y, width, height, tag)
+        super().__init__(IMG.load(img, (width, height)) if img is not None else img, x, y, width, height, tag)
         self.panding:int = 0
         self.distance_between_item:int = 20
         self.move_speed:int = 20

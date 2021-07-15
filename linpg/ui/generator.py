@@ -132,14 +132,14 @@ class UiGenerator:
             elif data["type"] == "button":
                 if "alpha_when_not_hover" not in data: data["alpha_when_not_hover"] = 255
                 item_t = load_button_with_text_in_center(
-                    load_img(data["src"]),
+                    IMG.load(data["src"]),
                     self.convert_text(data["text"]["src"]),
                     data["text"]["color"],
                     data["height"],
                     Origin,
                     data["alpha_when_not_hover"]
                     ) if "text" in data else load_button(
-                        load_img(data["src"]), Origin, (data["width"], data["height"]), data["alpha_when_not_hover"]
+                        IMG.load(data["src"]), Origin, (data["width"], data["height"]), data["alpha_when_not_hover"]
                     )
                 if not "name" in data: EXCEPTION.fatal("You have to set a name for button type.")
             elif data["type"] == "progress_bar_adjuster":

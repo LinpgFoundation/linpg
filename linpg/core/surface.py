@@ -27,18 +27,18 @@ class AbstractImage(Rect):
     def get_image_copy(self) -> any: return self.img.copy()
     #更新图片
     def update_image(self, img_path:Union[str, ImageSurface], ifConvertAlpha:bool=True) -> None:
-        self.img = quickly_load_img(img_path, ifConvertAlpha)
+        self.img = IMG.quickly_load(img_path, ifConvertAlpha)
     #淡入
     def fade_in(self, value:int) -> None: self.set_alpha(self.get_alpha()+value)
     #淡出
     def fade_out(self, value:int) -> None: self.set_alpha(self.get_alpha()-value)
     #旋转
-    def rotate(self, angle:int) -> None: self.img = rotate_img(self.img, angle)
+    def rotate(self, angle:int) -> None: self.img = IMG.rotate(self.img, angle)
 
 #高级图形类
 class DynamicImage(AbstractImage):
     def __init__(self, img: Union[str,ImageSurface], x: number, y: number, width: int_f=-1, height: int_f=-1, tag: str=""):
-        super().__init__(quickly_load_img(img), x, y, width, height, tag)
+        super().__init__(IMG.quickly_load(img), x, y, width, height, tag)
     #返回一个复制
     def copy(self):
         replica = DynamicImage(self.get_image_copy(), self.x, self.y, self._width, self._height, self.tag)
@@ -50,7 +50,7 @@ class DynamicImage(AbstractImage):
     def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = flip_img(self.img, vertical, horizontal)
     #展示
     def display(self, surface:ImageSurface, offSet:pos_liked=Origin) -> None:
-        if not self.hidden: surface.blit(resize_img(self.img, self.size), add_pos(self.pos, offSet))
+        if not self.hidden: surface.blit(IMG.resize(self.img, self.size), add_pos(self.pos, offSet))
 
 #有本地坐标的图形接口
 class AdvancedAbstractImage(AbstractImage):
@@ -98,7 +98,7 @@ class AdvancedAbstractImage(AbstractImage):
 #用于静态图片的surface
 class StaticImage(AdvancedAbstractImage):
     def __init__(self, img:Union[str,ImageSurface], x:number, y:number, width:int_f=-1, height:int_f=-1, tag:str="default"):
-        super().__init__(quickly_load_img(img), x, y, width, height, tag)
+        super().__init__(IMG.quickly_load(img), x, y, width, height, tag)
         self.__processed_img:ImageSurface = None
         self.__is_flipped:bool = False
         self.__need_update:bool = True if self._width >= 0 and self._height >= 0 else False
@@ -150,7 +150,7 @@ class StaticImage(AdvancedAbstractImage):
             EXCEPTION.fatal("You have to input either a None or a Rect, not {}".format(type(rect)))
     #更新图片
     def _update_img(self) -> None:
-        imgTmp = smoothly_resize_img(self.img, self.size) if Setting.antialias is True else resize_img(self.img, self.size)
+        imgTmp = IMG.smoothly_resize(self.img, self.size) if Setting.antialias is True else IMG.resize(self.img, self.size)
         rect = imgTmp.get_bounding_rect()
         if self.width != rect.width or self.height != rect.height or self.__crop_rect is not None:
             if self.__crop_rect is not None:
@@ -171,7 +171,7 @@ class StaticImage(AdvancedAbstractImage):
         self.flip_original_img()
     #反转原图
     def flip_original_img(self, horizontal:bool=True, vertical:bool=False) -> None:
-        self.img = flip_img(self.img, horizontal, vertical)
+        self.img = IMG.flip(self.img, horizontal, vertical)
         self.__need_update = True
     #如果不处于反转状态，则反转
     def flip_if_not(self) -> None:
@@ -195,10 +195,10 @@ class StaticImage(AdvancedAbstractImage):
     def light_copy(self): return StaticImage(self.img,self.x,self.y,self._width,self._height)
     #加暗度
     def add_darkness(self, value:int) -> None:
-        self.img = add_darkness(self.img, value)
+        self.img = IMG.add_darkness(self.img, value)
         self.__need_update = True
     def subtract_darkness(self, value:int) -> None:
-        self.img = subtract_darkness(self.img, value)
+        self.img = IMG.subtract_darkness(self.img, value)
         self.__need_update = True
     #展示
     def display(self, surface:ImageSurface, offSet:pos_liked=Origin) -> None:

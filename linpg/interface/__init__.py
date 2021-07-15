@@ -1,5 +1,5 @@
 # cython: language_level=3
-from .convert import *
+from .transform import *
 
 """创建小写的模块引用名称，以方便使用"""
 display = Display
@@ -17,3 +17,4 @@ controller = Controller
 option_menu = OptionMenu
 ui = UI
 font = Font
+img = IMG

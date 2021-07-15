@@ -48,7 +48,7 @@ class MouseController:
             self.__icon_img = None
         else:
             pygame.mouse.set_visible(False)
-            self.__icon_img = load_img(
+            self.__icon_img = IMG.load(
                 os.path.join("Assets/image/UI","mouse_icon.png"),
                 (int(Setting.get("MouseIconWidth")), int(Setting.get("MouseIconWidth")*1.3))
                 )

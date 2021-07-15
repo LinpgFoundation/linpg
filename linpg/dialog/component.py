@@ -15,7 +15,7 @@ class DialogButtons:
         #从语言文件中读取按钮文字
         dialog_txt:dict = Lang.get_text("Dialog")
         #生成跳过按钮
-        tempButtonIcon = load_img(os.path.join(DIALOG_UI_PATH,"dialog_skip.png"),(self.FONT.get_size(),self.FONT.get_size()))
+        tempButtonIcon = IMG.load(os.path.join(DIALOG_UI_PATH,"dialog_skip.png"),(self.FONT.get_size(),self.FONT.get_size()))
         tempButtonTxt = self.FONT.render(dialog_txt["skip"], Color.WHITE)
         temp_w = tempButtonTxt.get_width()+self.FONT.get_size()*1.5
         self.choiceTxt = dialog_txt["choice"]
@@ -25,14 +25,14 @@ class DialogButtons:
         self.skipButtonHovered.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONT.get_size()*0.5,self.icon_y))
         self.skipButtonHovered.blit(tempButtonTxt,(0,0))
         tempButtonTxt = self.FONT.render(dialog_txt["skip"], Color.GRAY)
-        tempButtonIcon = add_darkness(tempButtonIcon, 100)
+        tempButtonIcon = IMG.add_darkness(tempButtonIcon, 100)
         self.skipButton.blit(tempButtonIcon,(tempButtonTxt.get_width()+self.FONT.get_size()*0.5,self.icon_y))
         self.skipButton.blit(tempButtonTxt,(0,0))
         self.skipButton = StaticImage(self.skipButton, window_x*0.9, window_y*0.05)
         self.skipButtonHovered = StaticImage(self.skipButtonHovered, window_x*0.9, window_y*0.05)
         #生成自动播放按钮
-        self.autoIconHovered = load_img(os.path.join(DIALOG_UI_PATH,"dialog_auto.png"),(self.FONT.get_size(),self.FONT.get_size()))
-        self.autoIcon = add_darkness(self.autoIconHovered, 100)
+        self.autoIconHovered = IMG.load(os.path.join(DIALOG_UI_PATH,"dialog_auto.png"),(self.FONT.get_size(),self.FONT.get_size()))
+        self.autoIcon = IMG.add_darkness(self.autoIconHovered, 100)
         self.autoIconDegree = 0
         self.autoIconDegreeChange = (2**0.5-1)*self.FONT.get_size()/45
         self.autoMode:bool = False
@@ -92,7 +92,7 @@ class DialogButtons:
             if self.autoButton.is_hover():
                 self.autoButtonHovered.draw(surface)
                 if self.autoMode:
-                    rotatedIcon = rotate_img(self.autoIconHovered, self.autoIconDegree)
+                    rotatedIcon = IMG.rotate(self.autoIconHovered, self.autoIconDegree)
                     surface.blit(rotatedIcon,(
                         self.autoButtonHovered.tag+self.autoIconHovered.get_width()/2-rotatedIcon.get_width()/2,
                         self.autoButtonHovered.y+self.icon_y+self.autoIconHovered.get_height()/2-rotatedIcon.get_height()/2
@@ -107,7 +107,7 @@ class DialogButtons:
             else:
                 if self.autoMode:
                     self.autoButtonHovered.draw(surface)
-                    rotatedIcon = rotate_img(self.autoIconHovered,self.autoIconDegree)
+                    rotatedIcon = IMG.rotate(self.autoIconHovered,self.autoIconDegree)
                     surface.blit(rotatedIcon,(
                         self.autoButtonHovered.tag+self.autoIconHovered.get_width()/2-rotatedIcon.get_width()/2,
                         self.autoButtonHovered.y+self.icon_y+self.autoIconHovered.get_height()/2-rotatedIcon.get_height()/2

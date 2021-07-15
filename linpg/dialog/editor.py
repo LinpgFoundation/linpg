@@ -13,18 +13,18 @@ class DialogEditor(AbstractDialogSystem):
         self._npc_manager.dev_mode = True
         #加载容器
         container_width = int(Display.get_width()*0.2)
-        self.UIContainerRightImage = load_img(os.path.join(DIALOG_UI_PATH,"container.png"),(container_width,Display.get_height()))
+        self.UIContainerRightImage = IMG.load(os.path.join(DIALOG_UI_PATH,"container.png"),(container_width,Display.get_height()))
         #背景容器
         self.UIContainerRight_bg = SurfaceContainerWithScrollbar(
             None, int(container_width*0.075), int(Display.get_height()*0.1), int(container_width*0.85), int(Display.get_height()*0.85), "vertical"
             )
         self.UIContainerRight_bg.set_scroll_bar_pos("right")
         #加载背景图片
-        self.background_deselect = load_img(os.path.join(DIALOG_UI_PATH,"deselect.png"))
+        self.background_deselect = IMG.load(os.path.join(DIALOG_UI_PATH,"deselect.png"))
         self.UIContainerRight_bg.set("current_select",None)
         for imgPath in glob(os.path.join(self._background_image_folder_path,"*")):
-            self.UIContainerRight_bg.set(os.path.basename(imgPath),load_img(imgPath,(container_width*0.8,None)))
-        self.UIContainerRight_bg.set("<transparent>",get_texture_missing_surface((container_width*0.8, container_width*0.45)))
+            self.UIContainerRight_bg.set(os.path.basename(imgPath),IMG.load(imgPath,(container_width*0.8,None)))
+        self.UIContainerRight_bg.set("<transparent>", get_texture_missing_surface((container_width*0.8, container_width*0.45)))
         self.UIContainerRight_bg.distance_between_item = int(Display.get_height()*0.02)
         self.__current_select_bg_name = None
         self.__current_select_bg_copy = None
@@ -35,7 +35,7 @@ class DialogEditor(AbstractDialogSystem):
         self.UIContainerRight_npc.set_scroll_bar_pos("right")
         #加载npc立绘
         for imgPath in glob(os.path.join(self._npc_manager.image_folder_path,"*")):
-            self.UIContainerRight_npc.set(os.path.basename(imgPath),load_img(imgPath,(container_width*0.8,None)))
+            self.UIContainerRight_npc.set(os.path.basename(imgPath),IMG.load(imgPath,(container_width*0.8,None)))
         self.UIContainerRight_npc.hidden = True
         self.UIContainerRight_npc.distance_between_item = 0
         #容器按钮
@@ -121,7 +121,7 @@ class DialogEditor(AbstractDialogSystem):
             self.__current_select_bg_name = image_name
             current_select_bg = self.UIContainerRight_bg.get("current_select")
             self.__current_select_bg_copy = current_select_bg.copy()
-            current_select_bg.blit(smoothly_resize_img(self.background_deselect,current_select_bg.get_size()),(0,0))
+            current_select_bg.blit(IMG.smoothly_resize(self.background_deselect,current_select_bg.get_size()),(0,0))
         else:
             self.UIContainerRight_bg.set(self.__current_select_bg_name,self.__current_select_bg_copy)
             self.UIContainerRight_bg.set("current_select",None)

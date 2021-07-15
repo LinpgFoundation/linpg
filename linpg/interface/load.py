@@ -7,7 +7,7 @@ class Loader:
         pass
     # 原始图片
     def img(self, path: str, size: tuple = tuple(), alpha: int = 255, ifConvertAlpha: bool = True) -> ImageSurface:
-        return load_img(path, size, alpha, ifConvertAlpha)
+        return IMG.load(path, size, alpha, ifConvertAlpha)
     # 静态图片
     def static_image(self, path: str, position: tuple, size: tuple = NoSize, tag: str = "deafult") -> StaticImage:
         return StaticImage(path, position[0], position[1], size[0], size[1], tag)

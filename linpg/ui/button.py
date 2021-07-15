@@ -16,7 +16,7 @@ class Button(AbstractImage):
         return self.__is_hovered
     def display(self, surface: ImageSurface, offSet: pos_liked = Origin) -> None:
         self.__is_hovered = self.is_hover(subtract_pos(Controller.mouse.pos, offSet))
-        surface.blit(resize_img(
+        surface.blit(IMG.resize(
             self.img2 if self.__is_hovered is True and self.img2 is not None else self.img,
             self.size
             ),
@@ -32,7 +32,7 @@ def load_button(
     ) -> Button:
     if alpha_when_not_hover < 255:
         fading_button = Button(
-            load_img(path, alpha=alpha_when_not_hover),
+            IMG.load(path, alpha=alpha_when_not_hover),
             position[0], position[1],
             size[0], size[1]
             )
@@ -41,7 +41,7 @@ def load_button(
         fading_button.set_hover_img(img2)
         return fading_button
     else:
-        return Button(load_img(path), position[0], position[1], size[0], size[1])
+        return Button(IMG.load(path), position[0], position[1], size[0], size[1])
 
 # 加载中间有文字按钮
 def load_button_with_text_in_center(
@@ -54,7 +54,7 @@ def load_button_with_text_in_center(
     ) -> Button:
     txt_surface = Font.render(txt, Color.get(font_color), font_size)
     panding: int = int(font_size * 0.3)
-    img = load_img(path,size=(txt_surface.get_width()+panding*2,txt_surface.get_height()+panding*2))
+    img = IMG.load(path,size=(txt_surface.get_width()+panding*2,txt_surface.get_height()+panding*2))
     img.blit(txt_surface, (panding, panding))
     return load_button(img, position, img.get_size(), alpha_when_not_hover)
 
@@ -99,7 +99,7 @@ def load_button_with_des(
     ) -> ButtonWithDes:
     if alpha_when_not_hover < 255:
         fading_button = ButtonWithDes(
-            load_img(path, alpha=alpha_when_not_hover),
+            IMG.load(path, alpha=alpha_when_not_hover),
             tag,
             position[0],
             position[1],
@@ -111,4 +111,4 @@ def load_button_with_des(
         fading_button.set_hover_img(img2)
         return fading_button
     else:
-        return ButtonWithDes(load_img(path), tag, position[0], position[1], size[0], size[1])
+        return ButtonWithDes(IMG.load(path), tag, position[0], position[1], size[0], size[1])

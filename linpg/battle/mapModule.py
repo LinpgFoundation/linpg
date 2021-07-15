@@ -14,7 +14,7 @@ class EnvImagesManagement:
         self.__DECORATION_IMAGE_DICT_DARK:dict = None if not darkMode else {}
         #背景图片
         self.__BACKGROUND_IMAGE_PATH:str = "Assets/image/dialog_background"
-        self.__BACKGROUND_IMAGE:ImageSurface = quickly_load_img(os.path.join(self.__BACKGROUND_IMAGE_PATH,bgImgName), False).convert() if bgImgName is not None else None
+        self.__BACKGROUND_IMAGE:ImageSurface = IMG.quickly_load(os.path.join(self.__BACKGROUND_IMAGE_PATH,bgImgName), False).convert() if bgImgName is not None else None
         #背景图层
         self.__BACKGROUND_SURFACE = None
         self.__MAP_SURFACE = None
@@ -106,7 +106,7 @@ class EnvImagesManagement:
     def get_decoration_num(self, decorationType:str) -> int: return len(self.__DECORATION_IMAGE_DICT[decorationType])
     #新图层
     def new_surface(self, screen_size:tuple, map_size:tuple) -> None:
-        self.__BACKGROUND_SURFACE = resize_img(self.__BACKGROUND_IMAGE, screen_size) if self.__BACKGROUND_IMAGE is not None \
+        self.__BACKGROUND_SURFACE = IMG.resize(self.__BACKGROUND_IMAGE, screen_size) if self.__BACKGROUND_IMAGE is not None \
             else new_surface(screen_size).convert()
         if self.__MAP_SURFACE is not None:
             self.__MAP_SURFACE.fill((0,0,0,0))
@@ -168,7 +168,7 @@ class WeatherSystem:
     def init(self, weather:str, entityNum:int=50) -> None:
         self.__initialized = True
         self.name = 0
-        self.__img_list = [load_img(imgPath) for imgPath in glob(os.path.join("Assets/image/environment", weather, "*.png"))]
+        self.__img_list = [IMG.load(imgPath) for imgPath in glob(os.path.join("Assets/image/environment", weather, "*.png"))]
         self.__items = tuple([Snow(
                 imgId = get_random_int(0,len(self.__img_list)-1),
                 size = get_random_int(5,10),
@@ -187,7 +187,7 @@ class WeatherSystem:
         self.__speed_unit:int = int(perBlockWidth/15)
         for item in self.__items:
             if 0 <= item.x < surface.get_width() and 0 <= item.y < surface.get_height():
-                surface.blit(resize_img(self.__img_list[item.imgId],(perBlockWidth/item.size,perBlockWidth/item.size)),item.pos)
+                surface.blit(IMG.resize(self.__img_list[item.imgId],(perBlockWidth/item.size,perBlockWidth/item.size)),item.pos)
             item.move(self.__speed_unit)
             if item.x <= 0 or item.y >= surface.get_height():
                 item.y = get_random_int(-50,0)

@@ -14,14 +14,14 @@ class EntityGetHurtImage(GameObject):
         self.alpha:int = 255
         self.add(self_type)
     def draw(self, screen:ImageSurface, characterType:str) -> None:
-        GetHurtImage = resize_img(_CHARACTERS_GET_HURT_IMAGE_DICT[characterType],(self.width,self.width))
+        GetHurtImage = IMG.resize(_CHARACTERS_GET_HURT_IMAGE_DICT[characterType],(self.width,self.width))
         if self.alpha != 255:
             GetHurtImage.set_alpha(self.alpha)
         screen.blit(GetHurtImage,(self.x,self.y))
     def add(self, characterType:str) -> None:
         global _CHARACTERS_GET_HURT_IMAGE_DICT
         if characterType not in _CHARACTERS_GET_HURT_IMAGE_DICT:
-            _CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = quickly_load_img(
+            _CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = IMG.quickly_load(
                 os.path.join(_IMAGE_FOLDER_PATH, "{}_hurt.png".format(characterType))
                 )
 
@@ -39,41 +39,41 @@ class EntityDynamicProgressBarSurface(DynamicProgressBarSurface):
     def load_image(self):
         global _BEING_NOTICED_IMG,_FULLY_EXPOSED_IMG,_ORANGE_VIGILANCE_IMG,_RED_VIGILANCE_IMG
         #被察觉图标
-        if _BEING_NOTICED_IMG is None: _BEING_NOTICED_IMG = quickly_load_img(r"Assets/image/UI/eye_orange.png")
-        if _FULLY_EXPOSED_IMG is None: _FULLY_EXPOSED_IMG = quickly_load_img(r"Assets/image/UI/eye_red.png")
+        if _BEING_NOTICED_IMG is None: _BEING_NOTICED_IMG = IMG.quickly_load(r"Assets/image/UI/eye_orange.png")
+        if _FULLY_EXPOSED_IMG is None: _FULLY_EXPOSED_IMG = IMG.quickly_load(r"Assets/image/UI/eye_red.png")
         #警觉图标
-        if _ORANGE_VIGILANCE_IMG is None: _ORANGE_VIGILANCE_IMG = quickly_load_img(r"Assets/image/UI/vigilance_orange.png")
-        if _RED_VIGILANCE_IMG is None: _RED_VIGILANCE_IMG = quickly_load_img(r"Assets/image/UI/vigilance_red.png")
+        if _ORANGE_VIGILANCE_IMG is None: _ORANGE_VIGILANCE_IMG = IMG.quickly_load(r"Assets/image/UI/vigilance_orange.png")
+        if _RED_VIGILANCE_IMG is None: _RED_VIGILANCE_IMG = IMG.quickly_load(r"Assets/image/UI/vigilance_red.png")
     def draw(self, surface:ImageSurface, isFriendlyCharacter:bool=True) -> None:
         global _BEING_NOTICED_IMG,_FULLY_EXPOSED_IMG,_ORANGE_VIGILANCE_IMG,_RED_VIGILANCE_IMG
         if not isFriendlyCharacter:
-            surface.blit(resize_img(_ORANGE_VIGILANCE_IMG,self.size),self.pos)
+            surface.blit(IMG.resize(_ORANGE_VIGILANCE_IMG,self.size),self.pos)
         else:
-            surface.blit(resize_img(_BEING_NOTICED_IMG,self.size),self.pos)
+            surface.blit(IMG.resize(_BEING_NOTICED_IMG,self.size),self.pos)
         self._check_and_update_percentage()
         if self._current_percentage > 0:
-            imgOnTop = resize_img(_FULLY_EXPOSED_IMG,self.size) if isFriendlyCharacter is True else resize_img(_RED_VIGILANCE_IMG,self.size)
+            imgOnTop = IMG.resize(_FULLY_EXPOSED_IMG,self.size) if isFriendlyCharacter is True else IMG.resize(_RED_VIGILANCE_IMG,self.size)
             if self._mode:
                 if self._current_percentage < self._percentage_to_be:
-                    img2 = crop_img(imgOnTop,size=(int(self._width*self._percentage_to_be/self.accuracy),self._height))
+                    img2 = IMG.crop(imgOnTop,size=(int(self._width*self._percentage_to_be/self.accuracy),self._height))
                     img2.set_alpha(100)
                     surface.blit(img2,self.pos)
                     surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),self.pos)
                 else:
                     if self._current_percentage > self._percentage_to_be:
-                        img2 = crop_img(imgOnTop,size=(int(self._width*self._current_percentage/self.accuracy),self._height))
+                        img2 = IMG.crop(imgOnTop,size=(int(self._width*self._current_percentage/self.accuracy),self._height))
                         img2.set_alpha(100)
                         surface.blit(img2,self.pos)
                     surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._percentage_to_be/self.accuracy),self._height)),self.pos)
             else:
                 if self._current_percentage < self._percentage_to_be:
-                    img2 = crop_img(imgOnTop,size=(self._width,int(self._height*self._percentage_to_be/self.accuracy)))
+                    img2 = IMG.crop(imgOnTop,size=(self._width,int(self._height*self._percentage_to_be/self.accuracy)))
                     img2.set_alpha(100)
                     surface.blit(img2,self.pos)
                     surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),self.pos)
                 else:
                     if self._current_percentage > self._percentage_to_be:
-                        img2 = crop_img(imgOnTop,size=(self._width,int(self._height*self._current_percentage/self.accuracy)))
+                        img2 = IMG.crop(imgOnTop,size=(self._width,int(self._height*self._current_percentage/self.accuracy)))
                         img2.set_alpha(100)
                         surface.blit(img2,self.pos)
                     surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._percentage_to_be/self.accuracy))),self.pos)
@@ -90,36 +90,36 @@ class EntityHpBar(DynamicProgressBarSurface):
     #检测被察觉的图标是否生产，如果没有则生成
     def load_image(self):
         global _HP_GREEN_IMG,_HP_RED_IMG,_HP_EMPTY_IMG
-        if _HP_GREEN_IMG is None: _HP_GREEN_IMG = quickly_load_img(r"Assets/image/UI/hp_green.png")
-        if _HP_RED_IMG is None: _HP_RED_IMG = quickly_load_img(r"Assets/image/UI/hp_red.png")
-        if  _HP_EMPTY_IMG is None: _HP_EMPTY_IMG = quickly_load_img(r"Assets/image/UI/hp_empty.png")
+        if _HP_GREEN_IMG is None: _HP_GREEN_IMG = IMG.quickly_load(r"Assets/image/UI/hp_green.png")
+        if _HP_RED_IMG is None: _HP_RED_IMG = IMG.quickly_load(r"Assets/image/UI/hp_red.png")
+        if  _HP_EMPTY_IMG is None: _HP_EMPTY_IMG = IMG.quickly_load(r"Assets/image/UI/hp_empty.png")
     def draw(self, surface:ImageSurface, isDying:bool) -> None:
         global _HP_GREEN_IMG,_HP_RED_IMG,_HP_EMPTY_IMG
-        surface.blit(resize_img(_HP_EMPTY_IMG,self.size),self.pos)
+        surface.blit(IMG.resize(_HP_EMPTY_IMG,self.size),self.pos)
         self._check_and_update_percentage()
         if self._current_percentage > 0:
-            imgOnTop = resize_img(_HP_GREEN_IMG,self.size) if not isDying else resize_img(_HP_RED_IMG,self.size)
+            imgOnTop = IMG.resize(_HP_GREEN_IMG,self.size) if not isDying else IMG.resize(_HP_RED_IMG,self.size)
             if self._mode:
                 if self._current_percentage < self._percentage_to_be:
-                    img2 = crop_img(imgOnTop,size=(int(self._width*self._percentage_to_be/self.accuracy),self._height))
+                    img2 = IMG.crop(imgOnTop,size=(int(self._width*self._percentage_to_be/self.accuracy),self._height))
                     img2.set_alpha(100)
                     surface.blit(img2,self.pos)
                     surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),self.pos)
                 else:
                     if self._current_percentage > self._percentage_to_be:
-                        img2 = crop_img(imgOnTop,size=(int(self._width*self._current_percentage/self.accuracy),self._height))
+                        img2 = IMG.crop(imgOnTop,size=(int(self._width*self._current_percentage/self.accuracy),self._height))
                         img2.set_alpha(100)
                         surface.blit(img2,self.pos)
                     surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._percentage_to_be/self.accuracy),self._height)),self.pos)
             else:
                 if self._current_percentage < self._percentage_to_be:
-                    img2 = crop_img(imgOnTop,size=(self._width,int(self._height*self._percentage_to_be/self.accuracy)))
+                    img2 = IMG.crop(imgOnTop,size=(self._width,int(self._height*self._percentage_to_be/self.accuracy)))
                     img2.set_alpha(100)
                     surface.blit(img2,self.pos)
                     surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),self.pos)
                 else:
                     if self._current_percentage > self._percentage_to_be:
-                        img2 = crop_img(imgOnTop,size=(self._width,int(self._height*self._current_percentage/self.accuracy)))
+                        img2 = IMG.crop(imgOnTop,size=(self._width,int(self._height*self._current_percentage/self.accuracy)))
                         img2.set_alpha(100)
                         surface.blit(img2,self.pos)
                     surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._percentage_to_be/self.accuracy))),self.pos)

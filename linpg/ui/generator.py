@@ -9,10 +9,10 @@ class UiGenerator:
     #检测尺寸是否合法
     def __make_sure_size(self, item:dict, key:str, value_in_case_percentage:int) -> None:
         if key not in item:
-            if "name" in item:
-                EXCEPTION.fatal('You have to set "{0}" for "{1}".'.format(key, item["name"]))
-            else:
-                EXCEPTION.fatal('You have to set "{}".'.format(key))
+            EXCEPTION.fatal(
+                'You have to set "{0}" for "{1}".'.format(key, item["name"])
+                if "name" in item else 'You have to set "{}".'.format(key)
+                )
         elif isinstance(item[key], float):
             item[key] = int(item[key])
         elif not isinstance(item[key], int):
@@ -20,18 +20,18 @@ class UiGenerator:
                 try:
                     item[key] = int(convert_percentage(item[key])*value_in_case_percentage)
                 except Exception:
-                    if "name" in item:
-                        EXCEPTION.fatal('Cannot convert "{0}" because it is not a valid percentage for "{1}".'.format(item[key], item["name"]))
-                    else:
-                        EXCEPTION.fatal('Cannot convert "{}" because it is not a valid percentage.'.format(item[key]))
+                    EXCEPTION.fatal(
+                        'Cannot convert "{0}" because it is not a valid percentage for "{1}".'.format(item[key], item["name"])
+                        if "name" in item else 'Cannot convert "{}" because it is not a valid percentage.'.format(item[key])
+                        )
             else:
                 try:
                     item[key] = int(item[key])
                 except Exception:
-                    if "name" in item:
-                        EXCEPTION.fatal('The "{0}" for "{1}" needs to an interger instead of "{2}".'.format(key, item["name"], item[key]))
-                    else:
-                        EXCEPTION.fatal('The "{0}" needs to an interger instead of "{1}".'.format(key, item[key]))
+                    EXCEPTION.fatal(
+                        'The "{0}" for "{1}" needs to an interger instead of "{2}".'.format(key, item["name"], item[key])
+                        if "name" in item else 'The "{0}" needs to an interger instead of "{1}".'.format(key, item[key])
+                        )
     #检测坐标是否合法
     def __make_sure_pos(self, item:dict, key:str, value_in_case_center:int, value_in_case_percentage:int) -> None:
         if key not in item:
@@ -43,10 +43,10 @@ class UiGenerator:
                 try:
                     item[key] = int(convert_percentage(item[key])*value_in_case_percentage)
                 except Exception:
-                    if "name" in item:
-                        EXCEPTION.fatal('Cannot convert "{0}" because it is not a valid percentage for "{1}".'.format(item[key], item["name"]))
-                    else:
-                        EXCEPTION.fatal('Cannot convert "{}" because it is not a valid percentage.'.format(item[key]))
+                    EXCEPTION.fatal(
+                        'Cannot convert "{0}" because it is not a valid percentage for "{1}".'.format(item[key], item["name"])
+                        if "name" in item else 'Cannot convert "{}" because it is not a valid percentage.'.format(item[key])
+                        )
             else:
                 EXCEPTION.fatal("Valid value for {0}: {1}.".format(key, item[key]))
     #转换文字

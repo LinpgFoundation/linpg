@@ -95,11 +95,11 @@ class MusicController:
     #加载背景音乐（但不播放）
     def load(self, path:str) -> None: pygame.mixer.music.load(path)
     #从一个视频中加载音乐
-    def load_from_video(self, path:str) -> str:
+    def load_from_video(self, path:str) -> None:
         self.unload()
         path_of_music:str = _split_audio_from_video(path, "mp3")
         self.load(path_of_music)
-        return path_of_music
+        os.remove(path_of_music)
     #卸载背景音乐
     def unload(self) -> None: pygame.mixer.music.unload()
     #播放背景音乐

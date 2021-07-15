@@ -153,7 +153,7 @@ def cutscene(surface:ImageSurface, videoPath:str, fade_out_in_ms:int = 3000) -> 
     VIDEO:object = VedioPlayer(videoPath)
     VIDEO.start()
     #播放主循环
-    while is_playing is True and VIDEO.is_alive() is True:
+    while is_playing is True and VIDEO.is_playing() is True:
         VIDEO.draw(surface)
         skip_button.draw(surface)
         white_progress_bar.set_percentage(VIDEO.get_percentage_played())

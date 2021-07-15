@@ -141,7 +141,7 @@ class OptionMenuInterface:
                         self.need_update["volume"] = True
                 #保存新的参数
                 if self.need_update["volume"] is True: Setting.save()
-            if Controller.mouse.get_pressed(0) and self.__CONTENT.item_being_hovered == "back_button": self.hidden = True
+                if Controller.mouse.get_pressed(0) and self.__CONTENT.item_being_hovered == "back_button": self.hidden = True
 
 #引擎本体的选项菜单
 OptionMenu:OptionMenuInterface = OptionMenuInterface()

@@ -190,11 +190,11 @@
             {
                 "color": "white",
                 "font_size": "5%",
+                "name": "back_button",
                 "src": "{Global,back}",
                 "type": "dynamic_text",
                 "x": "center",
-                "y": "90%",
-                "name": "back_button"
+                "y": "90%"
             },
             {
                 "color": "white",
@@ -206,15 +206,60 @@
             },
             {
                 "font_size": "5%",
+                "name": "lang_drop_down",
                 "type": "drop_down_single_choice_list",
                 "x": "45%",
-                "y": "19%",
-                "name": "lang_drop_down"
+                "y": "19%"
             }
         ],
         "src": "Assets/image/UI/setting_baseImg.png",
         "type": "container",
         "width": "50%",
+        "x": "center",
+        "y": "center"
+    },
+    "pause_menu": {
+        "height": "100%",
+        "items": [
+            {
+                "color": "white",
+                "font_size": "7.5%",
+                "name": "resume",
+                "src": "{Global,resume}",
+                "type": "dynamic_text",
+                "x": "10%",
+                "y": "35%"
+            },
+            {
+                "color": "white",
+                "font_size": "7.5%",
+                "name": "save",
+                "src": "{Global,save_current_progress}",
+                "type": "dynamic_text",
+                "x": "10%",
+                "y": "45%"
+            },
+            {
+                "color": "white",
+                "font_size": "7.5%",
+                "name": "option_menu",
+                "src": "{OptionMenu,option_menu}",
+                "type": "dynamic_text",
+                "x": "10%",
+                "y": "55%"
+            },
+            {
+                "color": "white",
+                "font_size": "7.5%",
+                "name": "back_to_mainMenu",
+                "src": "{Global,back}",
+                "type": "dynamic_text",
+                "x": "10%",
+                "y": "65%"
+            }
+        ],
+        "type": "container",
+        "width": "100%",
         "x": "center",
         "y": "center"
     }

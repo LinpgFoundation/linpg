@@ -103,9 +103,6 @@ def convert_percentage(percentage:Union[str, float]) -> float:
     else:
         EXCEPTION.fatal('"{}" is not a valid percentage that can be converted'.format(percentage))
 
-#获取帧数控制器
-def get_clock() -> pygame.time.Clock: return pygame.time.Clock()
-
 #获取Surface
 def new_surface(size:size_liked, surface_flags:any=None) -> ImageSurface:
     return pygame.Surface(size, flags=surface_flags) if surface_flags is not None else pygame.Surface(size)
@@ -145,10 +142,6 @@ def display_within_center(
     added_y = (item2.get_height()-item1.get_height())/2
     screen.blit(item2,(x+off_set_x,y+off_set_y))
     screen.blit(item1,(x+added_x+off_set_x,y+added_y+off_set_y))
-
-# 将array转换并画到surface上
-def draw_array(surface: ImageSurface, array: any) -> None:
-    pygame.surfarray.blit_array(surface, array)
 
 #是否触碰pygame类
 def is_hover_pygame_object(imgObject:object, objectPos:pos_liked=Origin, off_set_x:number=0, off_set_y:number=0) -> bool:

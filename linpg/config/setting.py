@@ -44,6 +44,8 @@ class SettingSystem:
                 self.__SETTING_DATA[key][key2] = value
         else:
             EXCEPTION.fatal("You need to enter a valid value!")
+    def set_by_keys(self, keys:tuple, value:any=None) -> None: set_value_by_keys(self.__SETTING_DATA, keys, value)
+    #设置参数并立即保存
     def set_and_save(self, key:str, key2:str=None, value:any=None) -> None:
         self.set(key, key2, value)
         self.save()

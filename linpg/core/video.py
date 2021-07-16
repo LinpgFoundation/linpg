@@ -21,7 +21,6 @@ class AbstractVedio:
         self.__stopped:bool = False
         self.__started:bool = False
         self.__frame_index_to_set:int = -1
-        self._clock = get_clock()
     #初始化
     def _init(self) -> None:
         #加载视频流
@@ -89,7 +88,7 @@ class AbstractVedio:
                 current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2RGB)
                 if current_frame.shape[0] != surface.get_width() or current_frame.shape[1] != surface.get_height():
                     current_frame = cv2.resize(current_frame, surface.get_size())
-                draw_array(surface, current_frame.swapaxes(0,1))
+                pygame.surfarray.blit_array(surface, current_frame.swapaxes(0,1))
 
 #类似Wallpaper Engine的视频背景，但音乐不与画面同步
 class VedioSurface(AbstractVedio):
@@ -147,6 +146,7 @@ class VedioSurface(AbstractVedio):
 class VedioPlayer(AbstractVedio):
     def __init__(self, path: str, buffer_num: int = 6):
         super().__init__(path, buffer_num=buffer_num)
+        self.__clock = pygame.time.Clock()
     #返回一个复制
     def copy(self) -> object: return VedioPlayer(self._path, self._frame_buffer_num)
     #设置帧坐标
@@ -173,6 +173,6 @@ class VedioPlayer(AbstractVedio):
                     self.set_frame_index(current_frame_index_based_on_music)
                 #如果播放速度太快
                 elif frame_difference < 0:
-                    self._clock.tick(self._frame_rate)
+                    self.__clock.tick(self._frame_rate)
             else:
                 self.stop()

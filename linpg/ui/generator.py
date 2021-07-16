@@ -116,6 +116,7 @@ class UiGenerator:
                 #转换坐标
                 self.__make_sure_pos(data, "x", int((max_width-data["width"])/2), max_width)
                 self.__make_sure_pos(data, "y", int((max_height-data["height"])/2), max_height)
+                if "src" not in data: data["src"] = None
                 #生成容器
                 container_t = GameObjectsContainer(data["src"],data["x"],data["y"],data["width"],data["height"])
                 #加载数据

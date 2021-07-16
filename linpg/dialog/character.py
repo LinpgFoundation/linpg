@@ -191,18 +191,20 @@ class CharacterImageDatabase:
     def __init__(self):
         self.__DATA_PATH:str = os.path.join("Data", "npcImageDatabase.yaml")
         self.__DATA:dict = {}
-        try:
+        if os.path.exists(self.__DATA_PATH):
             self.__DATA = Config.load(self.__DATA_PATH)
-        except FileNotFoundError:
-            self.__DATA = {}
+        else:
             Config.save(self.__DATA_PATH, self.__DATA)
             EXCEPTION.warn("Cannot find 'npcImageDatabase.yaml' in 'Data' file, a new one is created.")
     def is_the_same_character(self, fileName1:str, fileName2:str) -> bool:
         fileName1 = fileName1.replace("<c>","").replace("<d>","")
         fileName2 = fileName2.replace("<c>","").replace("<d>","")
-        for key in self.__DATA:
-            if fileName1 in self.__DATA[key]:
-                return fileName2 in self.__DATA[key]
-            elif fileName2 in self.__DATA[key]:
-                return fileName1 in self.__DATA[key]
-        return False
+        if fileName1 == fileName2:
+            return True
+        else:
+            for key in self.__DATA:
+                if fileName1 in self.__DATA[key]:
+                    return fileName2 in self.__DATA[key]
+                elif fileName2 in self.__DATA[key]:
+                    return fileName1 in self.__DATA[key]
+            return False

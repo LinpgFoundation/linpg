@@ -5,7 +5,7 @@ from .controller import *
 class DisplayController:
     def __init__(self):
         self.__fps:int = max(int(Setting.get("FPS")), 1)
-        self.__clock:object = get_clock()
+        self.__clock:object = pygame.time.Clock()
         self.__standard_fps:int = 60
         #默认尺寸
         self.__screen_scale:int = keep_in_range(int(Setting.get("ScreenScale")), 0, 100)

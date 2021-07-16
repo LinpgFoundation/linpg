@@ -43,56 +43,42 @@ class SystemWithBackgroundMusic(AbstractSystem):
         super().__init__()
         self.__bgm_path = None
         self.__bgm_volume:float = 1.0
-        self.__if_stop_playing_bgm:bool = False
-    #获取bgm名称（非路径）
-    @property
-    def bgm(self) -> Union[str,None]: self.get_bgm()
-    def get_bgm(self) -> Union[str,None]: return os.path.basename(self.__bgm_path) if self.__bgm_path is not None else None
-    #设置bgm路径
-    def set_bgm(self, path:Union[str,None], forced:bool=False) -> None:
+        self.__audio = None
+        self.__audio_channel = None
+    #卸载bgm
+    def unload_bgm(self):
+        self.__bgm_path = None
+        self.__audio = None
+        if self.__audio_channel is not None:
+            self.__audio_channel.stop()
+            self.__audio_channel = None
+    #设置bgm
+    def set_bgm(self, path:Union[str, None], forced:bool=False) -> None:
+        #如果path是None,则
         if path is None:
-            self.__bgm_path = None
-            Music.unload()
+            if self.__bgm_path is not None:
+                self.unload_bgm()
         #如果路径存在
         elif os.path.exists(path):
             #只有在音乐路径不一致或者强制更新的情况下才会更新路径（同时卸载现有音乐）
             if self.__bgm_path != path or forced is True:
                 self.__bgm_path = path
-                Music.unload()
-            else:
-                #同一首曲子，不更新任何内容
-                pass
+                self.__audio_channel = Sound.find_channel()
+                self.__audio = Sound.load(self.__bgm_path, self.__bgm_volume)
         else:
             EXCEPTION.fatal("Path '{}' does not exist!".format(path))
-    #获取bgm音量
-    @property
-    def bgm_volume(self) -> float: return self.__bgm_volume
-    def get_bgm_volume(self) -> float: return self.__bgm_volume
     #设置bgm音量
     def set_bgm_volume(self, volume:number) -> None:
         if 1 >= volume >= 0:
-            if self.__bgm_path is not None and Music.get_busy():
-                Music.set_volume(volume)
             self.__bgm_volume = volume
+            if self.__bgm_path is not None and self.__audio_channel.get_busy():
+                self.__audio.set_volume(self.__bgm_volume)
         else:
             EXCEPTION.fatal("Volume '{}' is out of the range! (must between 0 and 1)".format(volume))
     #播放bgm
-    def play_bgm(self, loops:int=0) -> None:
-        if self.__bgm_path is not None and not Music.get_busy() and not self.__if_stop_playing_bgm:
-            Music.load(self.__bgm_path)
-            Music.set_volume(self.__bgm_volume)
-            Music.play(loops)
-    #停止播放bgm
-    def stop_playing_bgm(self) -> None:
-        self.__if_stop_playing_bgm = True
-        Music.stop()
-    #继续播放bgm
-    def continue_playing_bgm(self) -> None:
-        self.__if_stop_playing_bgm = False
-    #卸载bgm，释放内存
-    def unload_bgm(self) -> None:
-        self.__bgm_path = None
-        Music.unload()
+    def play_bgm(self) -> None:
+        if self.__bgm_path is not None and not self.__audio_channel.get_busy():
+            self.__audio_channel.play(self.__audio)
     #把内容画到surface上（子类必须实现）
     def draw(self, surface:ImageSurface) -> None:
         EXCEPTION.fatal("The child class needs to implement draw() function!")
@@ -118,8 +104,6 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
     @property
     def file_path(self) -> str: return os.path.join(self.folder_for_save_file,self.name_for_save_file)
     #是否初始化
-    @property
-    def isInitialized(self) -> bool: return self.__initialized
     def is_initialized(self) -> bool: return self.__initialized
     #初始化关键参数
     def _initialize(self, chapterType:str, chapterId:int, projectName:str) -> None:

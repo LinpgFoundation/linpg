@@ -173,7 +173,7 @@ class AbstractDialogSystem(AbstractGameSystem):
             if currentDialogContent["background_music"] is not None:
                 self.set_bgm(os.path.join(self._background_music_folder_path,currentDialogContent["background_music"]))
             else:
-                self.set_bgm(None)
+                self.unload_bgm()
     #更新语言
     def updated_language(self, surface:ImageSurface) -> None:
         super().updated_language()

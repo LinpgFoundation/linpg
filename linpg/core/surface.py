@@ -47,7 +47,7 @@ class DynamicImage(AbstractImage):
     #返回一个浅复制品
     def light_copy(self): return DynamicImage(self.get_image_pointer(), self.x, self.y, self._width, self._height, self.tag)
     #反转
-    def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = flip_img(self.img, vertical, horizontal)
+    def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = IMG.flip(self.img, vertical, horizontal)
     #展示
     def display(self, surface:ImageSurface, offSet:pos_liked=Origin) -> None:
         if not self.hidden: surface.blit(IMG.resize(self.img, self.size), add_pos(self.pos, offSet))
@@ -181,7 +181,7 @@ class StaticImage(AdvancedAbstractImage):
         if self.__is_flipped: self.flip()
     #画出轮廓
     def draw_outline(self, surface:ImageSurface, offSet:pos_liked=Origin, color:any="red", line_width:int=2) -> None:
-        draw_rect(surface, Color.get(color), (add_pos(self.abs_pos,offSet), self.__processed_img.get_size()), line_width)
+        draw_rect(surface, color, (add_pos(self.abs_pos,offSet), self.__processed_img.get_size()), line_width)
     #是否被鼠标触碰
     def is_hover(self, mouse_pos:pos_liked=NoSize) -> bool:
         if mouse_pos is NoSize: mouse_pos = Controller.mouse.pos

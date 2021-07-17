@@ -22,7 +22,7 @@ class Square(GameObject2d):
     def get_rect(self) -> tuple: return self.x, self.y, self._width, self._width
     #画出轮廓
     def draw_outline(self, surface:ImageSurface, offSet:pos_liked=Origin, color:str="red", thickness:int=2) -> None:
-        draw_rect(surface, Color.get(color), (add_pos(self.pos,offSet),self.size), thickness)
+        draw_rect(surface, color, (add_pos(self.pos,offSet),self.size), thickness)
 
 # 用于兼容的长方类
 class Rect(Square):
@@ -109,7 +109,7 @@ class Circle(Square):
     def radius(self) -> number: return self._width/2
     #画出轮廓
     def draw_outline(self, surface:ImageSurface, offSet:pos_liked=Origin, color:str="red", thickness:int=2) -> None:
-        draw_circle(surface, Color.get(color), add_pos(self.center, offSet), self.radius, thickness)
+        draw_circle(surface, color, add_pos(self.center, offSet), self.radius, thickness)
 
 # 画圆形
 def draw_circle(surface:ImageSurface, color:any, center_pos:tuple, radius:int, thickness:int=0):

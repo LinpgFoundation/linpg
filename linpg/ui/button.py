@@ -52,7 +52,7 @@ def load_button_with_text_in_center(
     position: tuple,
     alpha_when_not_hover: int = 255
     ) -> Button:
-    txt_surface = Font.render(txt, Color.get(font_color), font_size)
+    txt_surface = Font.render(txt, font_color, font_size)
     panding: int = int(font_size * 0.3)
     img = IMG.load(path,size=(txt_surface.get_width()+panding*2,txt_surface.get_height()+panding*2))
     img.blit(txt_surface, (panding, panding))

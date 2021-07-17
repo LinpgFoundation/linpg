@@ -52,12 +52,16 @@ class GameObjectsContainer(AbstractImage):
 
 #下拉选项菜单
 class DropDownSingleChoiceList(GameObjectsContainer):
-    def __init__(self, bg_img: Union[str, ImageSurface, None], x: number, y: number, font_size: int, font_color: any="black", tag:str=""):
+    def __init__(
+        self, bg_img: Union[str, ImageSurface, None], x: number, y: number, font_size: int,
+        font_color: color_liked = "black", tag: str = ""
+        ) -> None:
         super().__init__(bg_img, x, y, 0, 0, tag)
         self.__chosen_item_key:str = ""
         self.__DEFAULT_CONTENT:str = ""
         self.__block_height:int = int(font_size*1.5)
-        self.__font_color:tuple = Color.get(font_color)
+        self.__font_color:tuple = None
+        self.update_font_color(font_color)
         self.__FONT = Font.create(font_size)
         self.__fold_choice:bool = True
         self.outline_thickness:int = 1
@@ -73,7 +77,7 @@ class DropDownSingleChoiceList(GameObjectsContainer):
         self.__FONT.update(font_size)
         self._update_width()
     #更新font的颜色
-    def update_font_color(self, font_color:int) -> None: self.__font_color = Color.get(font_color)
+    def update_font_color(self, font_color: color_liked) -> None: self.__font_color = Color.get(font_color)
     #新增一个物品
     def set(self, key:str, new_item:Union[str,int]) -> None:
         super().set(key, new_item)

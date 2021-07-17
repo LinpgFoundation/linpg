@@ -336,7 +336,7 @@ class Entity(GameObject):
     #根据坐标反转角色
     def set_flip_based_on_pos(self, pos:any):
         #转换坐标
-        x,y = convert_pos(pos)
+        x,y = Pos.convert(pos)
         #检测坐标
         if self.x > x:
             self.set_flip(True)

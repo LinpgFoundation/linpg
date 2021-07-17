@@ -51,29 +51,29 @@ class EntityDynamicProgressBarSurface(DynamicProgressBarSurface):
         else:
             surface.blit(IMG.resize(_BEING_NOTICED_IMG,self.size),self.pos)
         self._check_and_update_percentage()
-        if self._current_percentage > 0:
+        if self.percentage > 0:
             imgOnTop = IMG.resize(_FULLY_EXPOSED_IMG,self.size) if isFriendlyCharacter is True else IMG.resize(_RED_VIGILANCE_IMG,self.size)
             if self._mode:
-                if self._current_percentage < self._percentage_to_be:
+                if self.percentage < self._percentage_to_be:
                     img2 = IMG.crop(imgOnTop,size=(int(self._width*self._percentage_to_be/self.accuracy),self._height))
                     img2.set_alpha(100)
                     surface.blit(img2,self.pos)
-                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self.percentage/self.accuracy),self._height)),self.pos)
                 else:
-                    if self._current_percentage > self._percentage_to_be:
-                        img2 = IMG.crop(imgOnTop,size=(int(self._width*self._current_percentage/self.accuracy),self._height))
+                    if self.percentage > self._percentage_to_be:
+                        img2 = IMG.crop(imgOnTop,size=(int(self._width*self.percentage/self.accuracy),self._height))
                         img2.set_alpha(100)
                         surface.blit(img2,self.pos)
                     surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._percentage_to_be/self.accuracy),self._height)),self.pos)
             else:
-                if self._current_percentage < self._percentage_to_be:
+                if self.percentage < self._percentage_to_be:
                     img2 = IMG.crop(imgOnTop,size=(self._width,int(self._height*self._percentage_to_be/self.accuracy)))
                     img2.set_alpha(100)
                     surface.blit(img2,self.pos)
-                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self.percentage/self.accuracy))),self.pos)
                 else:
-                    if self._current_percentage > self._percentage_to_be:
-                        img2 = IMG.crop(imgOnTop,size=(self._width,int(self._height*self._current_percentage/self.accuracy)))
+                    if self.percentage > self._percentage_to_be:
+                        img2 = IMG.crop(imgOnTop,size=(self._width,int(self._height*self.percentage/self.accuracy)))
                         img2.set_alpha(100)
                         surface.blit(img2,self.pos)
                     surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._percentage_to_be/self.accuracy))),self.pos)
@@ -97,29 +97,29 @@ class EntityHpBar(DynamicProgressBarSurface):
         global _HP_GREEN_IMG,_HP_RED_IMG,_HP_EMPTY_IMG
         surface.blit(IMG.resize(_HP_EMPTY_IMG,self.size),self.pos)
         self._check_and_update_percentage()
-        if self._current_percentage > 0:
+        if self.percentage > 0:
             imgOnTop = IMG.resize(_HP_GREEN_IMG,self.size) if not isDying else IMG.resize(_HP_RED_IMG,self.size)
             if self._mode:
-                if self._current_percentage < self._percentage_to_be:
+                if self.percentage < self._percentage_to_be:
                     img2 = IMG.crop(imgOnTop,size=(int(self._width*self._percentage_to_be/self.accuracy),self._height))
                     img2.set_alpha(100)
                     surface.blit(img2,self.pos)
-                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._current_percentage/self.accuracy),self._height)),self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,int(self._width*self.percentage/self.accuracy),self._height)),self.pos)
                 else:
-                    if self._current_percentage > self._percentage_to_be:
-                        img2 = IMG.crop(imgOnTop,size=(int(self._width*self._current_percentage/self.accuracy),self._height))
+                    if self.percentage > self._percentage_to_be:
+                        img2 = IMG.crop(imgOnTop,size=(int(self._width*self.percentage/self.accuracy),self._height))
                         img2.set_alpha(100)
                         surface.blit(img2,self.pos)
                     surface.blit(imgOnTop.subsurface((0,0,int(self._width*self._percentage_to_be/self.accuracy),self._height)),self.pos)
             else:
-                if self._current_percentage < self._percentage_to_be:
+                if self.percentage < self._percentage_to_be:
                     img2 = IMG.crop(imgOnTop,size=(self._width,int(self._height*self._percentage_to_be/self.accuracy)))
                     img2.set_alpha(100)
                     surface.blit(img2,self.pos)
-                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._current_percentage/self.accuracy))),self.pos)
+                    surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self.percentage/self.accuracy))),self.pos)
                 else:
-                    if self._current_percentage > self._percentage_to_be:
-                        img2 = IMG.crop(imgOnTop,size=(self._width,int(self._height*self._current_percentage/self.accuracy)))
+                    if self.percentage > self._percentage_to_be:
+                        img2 = IMG.crop(imgOnTop,size=(self._width,int(self._height*self.percentage/self.accuracy)))
                         img2.set_alpha(100)
                         surface.blit(img2,self.pos)
                     surface.blit(imgOnTop.subsurface((0,0,self._width,int(self._height*self._percentage_to_be/self.accuracy))),self.pos)

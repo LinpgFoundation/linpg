@@ -137,10 +137,10 @@ class UiGenerator:
                     self.convert_text(data["text"]["src"]),
                     data["text"]["color"],
                     data["height"],
-                    Origin,
+                    Pos.ORIGIN,
                     data["alpha_when_not_hover"]
                     ) if "text" in data else load_button(
-                        IMG.load(data["src"]), Origin, (data["width"], data["height"]), data["alpha_when_not_hover"]
+                        IMG.load(data["src"]), Pos.ORIGIN, (data["width"], data["height"]), data["alpha_when_not_hover"]
                     )
                 if not "name" in data: EXCEPTION.fatal("You have to set a name for button type.")
             elif data["type"] == "progress_bar_adjuster":

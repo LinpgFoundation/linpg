@@ -14,13 +14,13 @@ class Button(AbstractImage):
         self.img2 = img
     def has_been_hovered(self) -> bool:
         return self.__is_hovered
-    def display(self, surface: ImageSurface, offSet: pos_liked = Origin) -> None:
-        self.__is_hovered = self.is_hover(subtract_pos(Controller.mouse.pos, offSet))
+    def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
+        self.__is_hovered = self.is_hover(Pos.subtract(Controller.mouse.pos, offSet))
         surface.blit(IMG.resize(
             self.img2 if self.__is_hovered is True and self.img2 is not None else self.img,
             self.size
             ),
-            add_pos(self.pos, offSet)
+            Pos.add(self.pos, offSet)
             )
 
 # 加载按钮
@@ -69,7 +69,7 @@ class ButtonWithDes(Button):
         self.des_surface.fill(Color.WHITE)
         draw_rect(self.des_surface, Color.BLACK, new_rect((0, 0), self.des_surface.get_size()), 2)
         self.des_surface.blit(font_surface, (panding, panding))
-    def display(self, surface: ImageSurface, offSet: pos_liked = Origin) -> None:
+    def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
         super().display(surface, offSet)
         if self.has_been_hovered():
             surface.blit(self.des_surface, Controller.mouse.pos)
@@ -85,7 +85,7 @@ class ButtonWithDes(Button):
         self.des_surface.fill(Color.WHITE)
         draw_rect(self.des_surface, Color.BLACK, new_rect((0, 0), self.des_surface.get_size()), 2)
         self.des_surface.blit(font_surface, (panding, panding))
-    def display(self, surface: ImageSurface, offSet: pos_liked = Origin) -> None:
+    def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
         super().display(surface, offSet)
         if self.has_been_hovered(): surface.blit(self.des_surface, Controller.mouse.pos)
 

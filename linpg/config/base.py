@@ -25,7 +25,8 @@ class LinpgExceptionHandler:
         # 错误报告存储的路径
         self.__CRASH_REPORTS_PATH: str = "crash_reports"
     # 告知不严重但建议查看的问题
-    def inform(self, info: str) -> None:
+    @staticmethod
+    def inform(info: str) -> None:
         print("LinpgEngine-Inform: {}".format(info))
     # 警告开发者非严重错误
     def warn(self, info: str) -> None:
@@ -91,7 +92,8 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: any, warning: boo
 # 配置文件管理模块
 class ConfigManager:
     # 加载配置文件
-    def load(self, path: str, *key: str) -> any:
+    @staticmethod
+    def load(path: str, *key: str) -> any:
         # 检测配置文件是否存在
         if not os.path.exists(path):
             EXCEPTION.fatal("Cannot find file on path: {}".format(path))
@@ -120,7 +122,8 @@ class ConfigManager:
         Data_t = self.load(os.path.join(os.path.dirname(__file__), path))
         return Data_t if len(key) == 0 else get_value_by_keys(Data_t, key)
     # 配置文件保存
-    def save(self, path: str, data: any) -> None:
+    @staticmethod
+    def save(path: str, data: any) -> None:
         # 确保用于储存的文件夹存在
         dir_path: str = os.path.dirname(path)
         if len(dir_path) > 0 and not os.path.exists(dir_path):
@@ -144,7 +147,8 @@ class ConfigManager:
     def organize_internal(self) -> None:
         self.organize(os.path.join(os.path.dirname(__file__), "*.json"))
     # 优化中文文档
-    def optimize_cn_content(self, filePath: str) -> None:
+    @staticmethod
+    def optimize_cn_content(filePath: str) -> None:
         # 读取原文件的数据
         with open(filePath, "r", encoding="utf-8") as f:
             file_lines = f.readlines()

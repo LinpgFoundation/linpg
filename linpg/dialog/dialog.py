@@ -219,7 +219,7 @@ class DialogSystem(AbstractDialogSystem):
                             self._dialog_txt_system.FONT.render(txt, Color.WHITE),
                             (Display.get_width()*0.15, Display.get_height()*0.1+local_y)
                             )
-                        local_y+=self._dialog_txt_system.FONT.get_size()*1.5
+                        local_y+=self._dialog_txt_system.FONT.size*1.5
                     if dialogIdTemp != self._dialog_id:
                         if self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "default" or self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "changeScene":
                             dialogIdTemp = self.dialog_content[dialogIdTemp]["next_dialog_id"]["target"]
@@ -227,7 +227,7 @@ class DialogSystem(AbstractDialogSystem):
                             narratorTemp = self._dialog_txt_system.FONT.render(self._buttons_mananger.choiceTxt+" - ",(0,191,255))
                             self._history_surface.blit(narratorTemp,(Display.get_width()*0.15-narratorTemp.get_width(),Display.get_height()*0.1+local_y))
                             self._history_surface.blit(self._dialog_txt_system.FONT.render(str(self._dialog_options[dialogIdTemp]["target"]),(0,191,255)),(Display.get_width()*0.15,Display.get_height()*0.1+local_y))
-                            local_y+=self._dialog_txt_system.FONT.get_size()*1.5
+                            local_y+=self._dialog_txt_system.FONT.size*1.5
                             dialogIdTemp = self._dialog_options[dialogIdTemp]["target"]
                         else:
                             dialogIdTemp = None

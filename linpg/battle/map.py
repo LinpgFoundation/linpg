@@ -104,7 +104,7 @@ class MapObject(AdvancedAbstractImage):
     def find_decoration_on(self, pos:any) -> Union[DecorationObject,None]:
         for decoration in self.__decorations:
             #如果坐标一致，则应该是当前装饰物了
-            if is_same_pos(decoration.get_pos(),pos): return decoration
+            if Pos.is_same(decoration.get_pos(),pos): return decoration
         return None
     #与给定Index的场景装饰物进行互动
     def interact_decoration_with_id(self, index:int) -> None: self.__decorations[index].switch()
@@ -364,9 +364,9 @@ class MapObject(AdvancedAbstractImage):
     #以下是A星寻路功能
     def findPath(self, startPosition:any, endPosition:any, friendData:dict, enemyData:dict, routeLen:int=-1, ignoreEnemyCharacters:list=[]) -> list:
         #检测起点
-        start_pos:tuple = convert_pos(startPosition)
+        start_pos:tuple = Pos.convert(startPosition)
         #检测终点
-        end_pos:tuple = convert_pos(endPosition)
+        end_pos:tuple = Pos.convert(endPosition)
         #建立寻路地图
         self.map2d = numpy.zeros((self.column,self.row), dtype=numpy.int8)
         # 可行走标记

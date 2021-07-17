@@ -1,7 +1,7 @@
 # cython: language_level=3
 from .mixer import *
 
-_FONT_IS_NOT_INITIALIZED_MSG:str = "Font is not initialized!"
+_FONT_IS_NOT_INITIALIZED_MSG: str = "Font is not initialized!"
 
 # 文字渲染模块
 class FontGenerator:
@@ -24,8 +24,7 @@ class FontGenerator:
             EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
     # 文字大小
     @property
-    def size(self) -> int: return self.get_size()
-    def get_size(self) -> int:
+    def size(self) -> int:
         if self.__SIZE > 0:
             return self.__SIZE
         else:
@@ -73,8 +72,8 @@ class FontGenerator:
         return self.__FONT.size(text)[0]
     # 检测是否需要更新
     def check_for_update(self, size: int, ifBold: bool = False, ifItalic: bool = False) -> None:
-        if self.__FONT is None or self.get_size() != size or self.bold != ifBold or self.italic != ifItalic:
-            self.update(size)
+        if self.__FONT is None or self.__SIZE != size or self.__FONT.bold != ifBold or self.__FONT.italic != ifItalic:
+            self.update(size, ifBold, ifItalic)
 
 # 文字渲染器管理模块
 class FontManage:
@@ -99,7 +98,7 @@ class FontManage:
             EXCEPTION.fatal('You did not set any font named "{}".'.format(key))
     # 获取全局文字
     def get_global_font_size(self, key: str) -> int:
-        return self.get_global_font(key).get_size()
+        return self.get_global_font(key).size
     # 获取全局文字
     def render_global_font(self, key: str, txt: str, color: color_liked) -> ImageSurface:
         return self.get_global_font(key).render(txt, color)
@@ -112,7 +111,8 @@ class FontManage:
             EXCEPTION.warn('Cannot find font named "{}" when trying to remove the font.'.format(key))
             return False
     # 创建字体
-    def create(self, size: int_f, ifBold: bool = False, ifItalic: bool = False) -> FontGenerator:
+    @staticmethod
+    def create(size: int_f, ifBold: bool = False, ifItalic: bool = False) -> FontGenerator:
         new_font_t = FontGenerator()
         new_font_t.update(size, ifBold, ifItalic)
         return new_font_t

@@ -18,3 +18,4 @@ option_menu = OptionMenu
 ui = UI
 font = Font
 img = IMG
+pos = Pos

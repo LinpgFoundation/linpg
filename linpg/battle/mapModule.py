@@ -146,7 +146,7 @@ class DecorationObject(GameObject):
         self.image = image
         self.alpha = None
         self.triggered = True
-    def is_on_pos(self, pos:any) -> bool: return is_same_pos(self.get_pos(),pos)
+    def is_on_pos(self, pos:any) -> bool: return Pos.is_same(self.get_pos(),pos)
     def switch(self) -> None: self.triggered = not self.triggered
 
 #描述AStar算法中的节点数据

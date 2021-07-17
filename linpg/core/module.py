@@ -14,7 +14,7 @@ class Coordinate:
         self.x = int(x)
         self.y = int(y)
     #检测是否在给定的位置上
-    def on_pos(self, pos:any) -> bool: return is_same_pos(self.pos,pos)
+    def on_pos(self, pos:any) -> bool: return Pos.is_same(self.pos,pos)
 
 #游戏对象接口
 class GameObject(Coordinate):
@@ -82,10 +82,10 @@ class GameObject2d(GameObject):
     #将图片直接画到屏幕上
     def draw_on_screen(self) -> None: self.display(Display.window)
     #根据offSet将图片展示到surface的对应位置上 - 子类必须实现
-    def display(self, surface:ImageSurface, offSet:pos_liked=Origin) -> None:
+    def display(self, surface:ImageSurface, offSet:pos_liked=Pos.ORIGIN) -> None:
         EXCEPTION.fatal("The child class does not implement display() function!")
     #根据offSet将图片展示到屏幕的对应位置上
-    def display_on_screen(self, offSet:pos_liked=Origin) -> None:
+    def display_on_screen(self, offSet:pos_liked=Pos.ORIGIN) -> None:
         self.display(Display.window, offSet)
     #忽略现有坐标，将图片画到surface的指定位置上
     def blit(self, surface:ImageSurface, pos:pos_liked) -> None: 
@@ -136,7 +136,7 @@ class ItemNeedBlit(GameObject2point5d):
         self.offSet = offSet
     def draw(self, surface:ImageSurface) -> None:
         if isinstance(self.image, pygame.Surface):
-            surface.blit(self.image,add_pos(self.pos,self.offSet))
+            surface.blit(self.image,Pos.add(self.pos,self.offSet))
         else:
             try:
                 self.image.display(surface,self.offSet)

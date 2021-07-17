@@ -21,8 +21,8 @@ class Square(GameObject2d):
     #获取rect
     def get_rect(self) -> tuple: return self.x, self.y, self._width, self._width
     #画出轮廓
-    def draw_outline(self, surface:ImageSurface, offSet:pos_liked=Origin, color:str="red", thickness:int=2) -> None:
-        draw_rect(surface, color, (add_pos(self.pos,offSet),self.size), thickness)
+    def draw_outline(self, surface:ImageSurface, offSet:pos_liked=Pos.ORIGIN, color:str="red", thickness:int=2) -> None:
+        draw_rect(surface, color, (Pos.add(self.pos,offSet),self.size), thickness)
 
 # 用于兼容的长方类
 class Rect(Square):
@@ -92,14 +92,23 @@ def is_same_rect(rect1: RectLiked, rect2: RectLiked) -> bool:
     return rect1.x == rect2.x and rect1.y == rect2.y and rect1.width == rect2.width and rect1.height == rect2.height
 
 # 检测图片是否被点击
-def is_hover(
-    imgObject: object, objectPos: pos_liked = Origin, off_set_x: number = 0, off_set_y: number = 0
-    ) -> bool:
+def is_hover(imgObject: object, objectPos: pos_liked = Pos.ORIGIN, off_set_x: number = 0, off_set_y: number = 0) -> bool:
     # 如果是Linpg引擎的GameObject2d类(所有2d物品的父类)
     if isinstance(imgObject, GameObject2d):
-        return imgObject.is_hover((Controller.mouse.x - off_set_x, Controller.mouse.y - off_set_y))
+        return imgObject.is_hover(Pos.subtract(Controller.mouse.pos, (off_set_x, off_set_y)))
+    # 如果是pygame类
     else:
-        return is_hover_pygame_object(imgObject, objectPos, off_set_x, off_set_y)
+        mouse_pos: tuple[number]
+        # 如果是Surface类
+        if isinstance(imgObject, ImageSurface):
+            mouse_pos = Pos.subtract(Controller.mouse.pos, (off_set_x, off_set_y), objectPos)
+        # 如果是Rect类
+        elif isinstance(imgObject, pygame.Rect):
+            mouse_pos = Pos.subtract(Controller.mouse.pos, (off_set_x, off_set_y), (imgObject.x, imgObject.y))
+        else:
+            EXCEPTION.fatal("Unable to check current object: {0} (type:{1})".format(imgObject, type(imgObject)))
+        # 返回结果
+        return 0 < mouse_pos[0] < imgObject.get_width() and 0 < mouse_pos[1] < imgObject.get_height()
 
 # 圆形类
 class Circle(Square):
@@ -108,8 +117,8 @@ class Circle(Square):
     @property
     def radius(self) -> number: return self._width/2
     #画出轮廓
-    def draw_outline(self, surface:ImageSurface, offSet:pos_liked=Origin, color:str="red", thickness:int=2) -> None:
-        draw_circle(surface, color, add_pos(self.center, offSet), self.radius, thickness)
+    def draw_outline(self, surface:ImageSurface, offSet:pos_liked=Pos.ORIGIN, color:str="red", thickness:int=2) -> None:
+        draw_circle(surface, color, Pos.add(self.center, offSet), self.radius, thickness)
 
 # 画圆形
 def draw_circle(surface:ImageSurface, color:any, center_pos:tuple, radius:int, thickness:int=0):

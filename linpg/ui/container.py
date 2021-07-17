@@ -36,10 +36,10 @@ class GameObjectsContainer(AbstractImage):
         super().set_height(value)
         if self.img is not None: self.img.set_height(value)
     #把物品画到surface上
-    def display(self, surface:ImageSurface, offSet:tuple=Origin) -> None:
+    def display(self, surface:ImageSurface, offSet:tuple=Pos.ORIGIN) -> None:
         self._item_being_hovered = None
         if not self.hidden:
-            current_abs_pos:tuple = add_pos(self.pos, offSet)
+            current_abs_pos:tuple = Pos.add(self.pos, offSet)
             #画出背景
             if self.img is not None: self.img.display(surface, current_abs_pos)
             #画出物品
@@ -47,7 +47,7 @@ class GameObjectsContainer(AbstractImage):
                 game_object_t.display(surface, current_abs_pos)
                 if isinstance(game_object_t, Button) and game_object_t.has_been_hovered():
                     self._item_being_hovered = key_of_game_object
-                elif isinstance(game_object_t, GameObject) and game_object_t.is_hover(subtract_pos(Controller.mouse.pos, current_abs_pos)):
+                elif isinstance(game_object_t, GameObject) and game_object_t.is_hover(Pos.subtract(Controller.mouse.pos, current_abs_pos)):
                     self._item_being_hovered = key_of_game_object
 
 #下拉选项菜单
@@ -92,8 +92,8 @@ class DropDownSingleChoiceList(GameObjectsContainer):
     def set_current_selected_item(self, key:str) -> None: self.__chosen_item_key = key
     #获取高度
     def get_height(self) -> int:
-        return int((len(self._items_container) + 1) * self.__FONT.get_size() * 1.5) if not self.__fold_choice \
-            else int(self.__FONT.get_size() * 1.5)
+        return int((len(self._items_container) + 1) * self.__FONT.size * 1.5) if not self.__fold_choice \
+            else int(self.__FONT.size * 1.5)
     #移除一个物品
     def pop(self, index:int) -> None:
         super().pop(index)
@@ -103,9 +103,9 @@ class DropDownSingleChoiceList(GameObjectsContainer):
         super().clear()
         self._update_width()
     #把物品画到surface上
-    def display(self, surface:ImageSurface, offSet:tuple=Origin) -> None:
+    def display(self, surface:ImageSurface, offSet:tuple=Pos.ORIGIN) -> None:
         if not self.hidden:
-            current_abs_pos:tuple = add_pos(self.pos, offSet)
+            current_abs_pos:tuple = Pos.add(self.pos, offSet)
             #画出背景
             if self.img is not None:
                 self.img.display(surface, current_abs_pos)
@@ -116,14 +116,14 @@ class DropDownSingleChoiceList(GameObjectsContainer):
             font_surface:ImageSurface = self.__FONT.render(self.get_current_selected_item(), self.__font_color)
             surface.blit(
                 font_surface,
-                add_pos(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))
+                Pos.add(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))
                 )
             rect_of_outline = new_rect(current_pos, (self.width, self.__block_height))
             draw_rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
             font_surface = IMG.flip(self.__FONT.render("^", self.__font_color), False, True)
             surface.blit(
                 font_surface,
-                add_pos(current_pos, (int(self.width-font_surface.get_width()*1.5), int((self.__block_height-font_surface.get_height())/2)))
+                Pos.add(current_pos, (int(self.width-font_surface.get_width()*1.5), int((self.__block_height-font_surface.get_height())/2)))
                 )
             if Controller.get_event("confirm"):
                 if is_hover(rect_of_outline):
@@ -134,17 +134,17 @@ class DropDownSingleChoiceList(GameObjectsContainer):
             if not self.__fold_choice:
                 index:int = 0
                 for key_of_game_object, game_object_t in self._items_container.items():
-                    current_pos = add_pos(current_abs_pos, (0,(index+1)*self.__block_height))
+                    current_pos = Pos.add(current_abs_pos, (0,(index+1)*self.__block_height))
                     font_surface = self.__FONT.render(game_object_t, self.__font_color)
                     surface.blit(
                         font_surface,
-                        add_pos(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))
+                        Pos.add(current_pos, (int(self.width*0.2), int((self.__block_height-font_surface.get_height())/2)))
                     )
                     rect_of_outline = new_rect(current_pos, (self.width, self.__block_height))
                     draw_rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
                     if is_hover(rect_of_outline) and Controller.mouse.get_pressed(0): self.__chosen_item_key = key_of_game_object
                     draw_circle(
-                        surface, self.__font_color, add_pos(current_pos, (self.width*0.1, self.__block_height/2)), 3, 
+                        surface, self.__font_color, Pos.add(current_pos, (self.width*0.1, self.__block_height/2)), 3, 
                         self.outline_thickness if key_of_game_object != self.__chosen_item_key else 0
                         )
                     index += 1
@@ -266,12 +266,12 @@ class SurfaceContainerWithScrollbar(GameObjectsContainer):
     def get_item_per_line(self) -> int: return self.__item_per_line
     def set_item_per_line(self, value:int) -> None: self.__item_per_line = int(value)
     #把素材画到屏幕上
-    def display(self, surface:ImageSurface, off_set:tuple=Origin) -> None:
+    def display(self, surface:ImageSurface, off_set:tuple=Pos.ORIGIN) -> None:
         self._item_being_hovered = None
         if not self.hidden:
             """画出"""
             #如果有背景图片，则画出
-            if self.img is not None: surface.blit(self.img,add_pos(self.pos,off_set))
+            if self.img is not None: surface.blit(self.img,Pos.add(self.pos,off_set))
             #计算出基础坐标
             current_x:int = int(self.x+self._local_x+off_set[0])
             current_y:int = int(self.y+self._local_y+off_set[1])
@@ -363,7 +363,7 @@ class SurfaceContainerWithScrollbar(GameObjectsContainer):
                 self.__total_height = self._height
             """处理事件"""
             #获取鼠标坐标
-            if self.is_hover(subtract_pos(Controller.mouse.pos,off_set)):
+            if self.is_hover(Pos.subtract(Controller.mouse.pos,off_set)):
                 if not self.__mode and self.__total_height > self._height or self.__mode is True and self.__total_width > self._width:
                     #查看与鼠标有关的事件
                     for event in Controller.events:

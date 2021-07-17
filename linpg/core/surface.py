@@ -49,8 +49,8 @@ class DynamicImage(AbstractImage):
     #反转
     def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = IMG.flip(self.img, vertical, horizontal)
     #展示
-    def display(self, surface:ImageSurface, offSet:pos_liked=Origin) -> None:
-        if not self.hidden: surface.blit(IMG.resize(self.img, self.size), add_pos(self.pos, offSet))
+    def display(self, surface:ImageSurface, offSet:pos_liked=Pos.ORIGIN) -> None:
+        if not self.hidden: surface.blit(IMG.resize(self.img, self.size), Pos.add(self.pos, offSet))
 
 #有本地坐标的图形接口
 class AdvancedAbstractImage(AbstractImage):
@@ -180,8 +180,8 @@ class StaticImage(AdvancedAbstractImage):
     def flip_back_to_normal(self) -> None:
         if self.__is_flipped: self.flip()
     #画出轮廓
-    def draw_outline(self, surface:ImageSurface, offSet:pos_liked=Origin, color:any="red", line_width:int=2) -> None:
-        draw_rect(surface, color, (add_pos(self.abs_pos,offSet), self.__processed_img.get_size()), line_width)
+    def draw_outline(self, surface:ImageSurface, offSet:pos_liked=Pos.ORIGIN, color:any="red", line_width:int=2) -> None:
+        draw_rect(surface, color, (Pos.add(self.abs_pos,offSet), self.__processed_img.get_size()), line_width)
     #是否被鼠标触碰
     def is_hover(self, mouse_pos:pos_liked=NoSize) -> bool:
         if mouse_pos is NoSize: mouse_pos = Controller.mouse.pos
@@ -201,12 +201,12 @@ class StaticImage(AdvancedAbstractImage):
         self.img = IMG.subtract_darkness(self.img, value)
         self.__need_update = True
     #展示
-    def display(self, surface:ImageSurface, offSet:pos_liked=Origin) -> None:
+    def display(self, surface:ImageSurface, offSet:pos_liked=Pos.ORIGIN) -> None:
         if not self.hidden:
             #如果图片需要更新，则先更新
             if self.__need_update is True: self._update_img()
             #将已经处理好的图片画在给定的图层上
-            surface.blit(self.__processed_img, add_pos(self.abs_pos, offSet))
+            surface.blit(self.__processed_img, Pos.add(self.abs_pos, offSet))
 
 #需要移动的动态图片
 class MovableImage(StaticImage):
@@ -250,7 +250,7 @@ class MovableImage(StaticImage):
         return self.x == self.__target_x and self.y == self.__target_y if self.__is_moving_toward_target is True \
             else self.x == self.__default_x and self.y == self.__default_y
     #画出
-    def display(self, surface:ImageSurface, offSet:pos_liked=Origin) -> None:
+    def display(self, surface:ImageSurface, offSet:pos_liked=Pos.ORIGIN) -> None:
         if not self.hidden:
             super().display(surface, offSet)
             if self.__is_moving_toward_target is True:
@@ -337,11 +337,11 @@ class GifImage(AdvancedAbstractImage):
     def current_image(self) -> StaticImage:
         return self.img[self.imgId]
     # 展示
-    def display(self, surface: ImageSurface, offSet: pos_liked = Origin):
+    def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN):
         if not self.hidden:
             self.current_image.set_size(self.get_width(), self.get_height())
             self.current_image.set_alpha(self._alpha)
-            self.current_image.display(surface, add_pos(self.pos, offSet))
+            self.current_image.display(surface, Pos.add(self.pos, offSet))
             if self.countDown >= self.updateGap:
                 self.countDown = 0
                 self.imgId += 1
@@ -365,8 +365,8 @@ class TextSurface(GameObject2d):
     def get_alpha(self) -> int: return self.font_surface.get_alpha()
     def set_alpha(self, value:int) -> None: self.font_surface.set_alpha(value)
     #画出
-    def display(self, surface:ImageSurface, offSet:tuple=Origin) -> None:
-        surface.blit(self.font_surface,add_pos(self.pos,offSet))
+    def display(self, surface:ImageSurface, offSet:tuple=Pos.ORIGIN) -> None:
+        surface.blit(self.font_surface,Pos.add(self.pos,offSet))
 
 #动态文字类
 class DynamicTextSurface(TextSurface):
@@ -381,8 +381,8 @@ class DynamicTextSurface(TextSurface):
     #用于检测触碰的快捷
     def has_been_hovered(self) -> bool: return self.__is_hovered
     #画出
-    def display(self, surface:ImageSurface, offSet:tuple=Origin) -> None:
-        self.__is_hovered = self.is_hover(subtract_pos(Controller.mouse.pos,offSet))
+    def display(self, surface:ImageSurface, offSet:tuple=Pos.ORIGIN) -> None:
+        self.__is_hovered = self.is_hover(Pos.subtract(Controller.mouse.pos,offSet))
         if self.__is_hovered:
             surface.blit(
                 self.big_font_surface,
@@ -390,7 +390,7 @@ class DynamicTextSurface(TextSurface):
                 int(self.y-(self.big_font_surface.get_height()-self.font_surface.get_height())/2+offSet[1]))
                 )
         else:
-            surface.blit(self.font_surface,add_pos(self.pos,offSet))
+            surface.blit(self.font_surface,Pos.add(self.pos,offSet))
 
 #高级文字制作模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
 def load_dynamic_text(txt:any, color: color_liked, pos:tuple, size:int=50, ifBold:bool=False, ifItalic:bool=False) -> DynamicTextSurface:

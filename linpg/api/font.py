@@ -54,17 +54,15 @@ class FontGenerator:
                 self.__FONT.set_italic(ifItalic)
         else:
             EXCEPTION.fatal("FontType option in setting file is incorrect!")
-    # 渲染文字
+    # 渲染（无边框的）文字
     def render(self, txt: any, color: color_liked) -> ImageSurface:
+        font_surface_t = self.render_with_bounding(txt, color)
+        bounding_rect = font_surface_t.get_bounding_rect()
+        return font_surface_t.subsurface(pygame.Rect(0, bounding_rect.y, font_surface_t.get_width(), bounding_rect.height))
+    # 渲染有边框的文字
+    def render_with_bounding(self, txt: any, color: color_liked) -> ImageSurface:
         if self.__SIZE > 0:
-            font_surface_t = self.__FONT.render(txt, Setting.antialias, Color.get(color))
-            return font_surface_t.subsurface(font_surface_t.get_bounding_rect())
-        else:
-            EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
-    def render_to(self, surface: ImageSurface, pos: tuple[number], txt: any, color: color_liked) -> None:
-        if self.__SIZE > 0:
-            font_surface_t = self.__FONT.render(txt, Setting.antialias, Color.get(color))
-            surface.blit(font_surface_t.subsurface(font_surface_t.get_bounding_rect()), pos)
+            return self.__FONT.render(txt, Setting.antialias, Color.get(color))
         else:
             EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
     # 估计文字的宽度
@@ -120,12 +118,5 @@ class FontManage:
     def render(self, txt: any, color: color_liked, size: int_f, ifBold: bool = False, ifItalic: bool = False) -> ImageSurface:
         self.__LINPG_LAST_FONT.check_for_update(size, ifBold, ifItalic)
         return self.__LINPG_LAST_FONT.render(txt, color)
-    # 文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
-    def render_to(
-        self, surface: ImageSurface, pos: tuple[number], txt: any, color: color_liked, size: int_f,
-        ifBold: bool = False, ifItalic: bool = False
-        ) -> None:
-        self.__LINPG_LAST_FONT.check_for_update(size, ifBold, ifItalic)
-        return self.__LINPG_LAST_FONT.render_to(surface, pos, txt, color)
 
 Font: FontManage = FontManage()

@@ -2,10 +2,11 @@
 from __future__ import annotations
 import json
 import os
+import shutil
 from copy import deepcopy
 from datetime import datetime
 from glob import glob
-import shutil
+import cython
 # 尝试导入yaml库
 _YAML_INITIALIZED: bool = False
 try:
@@ -15,15 +16,18 @@ except Exception:
     pass
 
 # Linpg本身错误类
+@cython.cclass
 class LinpgError(Exception):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
 
 # Linpg错误类管理器
+@cython.cclass
 class LinpgExceptionHandler:
+    __CRASH_REPORTS_PATH: cython.p_char
     def __init__(self):
         # 错误报告存储的路径
-        self.__CRASH_REPORTS_PATH: str = "crash_reports"
+        self.__CRASH_REPORTS_PATH = "crash_reports"
     # 告知不严重但建议查看的问题
     @staticmethod
     def inform(info: str) -> None:
@@ -73,21 +77,22 @@ def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) ->
 # 根据keys查找被设置对应对应对象为指定值
 def set_value_by_keys(dict_to_check: dict, keys: tuple, value: any, warning: bool = True) -> None:
     pointer = dict_to_check
-    key_range: int = len(keys)
-    last_key_index: int = key_range - 1
-    for i in range(key_range):
+    key_range: cython.int = len(keys)
+    last_key_index: cython.int = key_range - 1
+    index: cython.int = 0
+    for index in range(key_range):
         try:
-            if i < last_key_index:
-                pointer = pointer[keys[i]]
+            if index < last_key_index:
+                pointer = pointer[keys[index]]
             else:
-                pointer[keys[i]] = value
+                pointer[keys[index]] = value
         except KeyError:
             if warning is True:
                 EXCEPTION.warn(
                     'Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'
-                    .format(keys[i])
+                    .format(keys[index])
                 )
-            return keys[i]
+            return keys[index]
 
 # 配置文件管理模块
 class ConfigManager:

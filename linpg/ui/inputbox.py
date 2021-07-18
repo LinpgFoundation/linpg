@@ -105,7 +105,8 @@ class SingleLineInputBox(AbstractInputBox):
     # 画出文字内容
     def _draw_content(self, surface: ImageSurface, with_holder: bool = True) -> None:
         if self._text is not None and len(self._text) > 0:
-            surface.blit(self.FONT.render(self._text, self.txt_color), (self.x+self._padding,self.y+self._padding))
+            font_t = self.FONT.render_with_bounding(self._text, self.txt_color)
+            surface.blit(font_t, (self.x+self._padding, self.y+int((self.input_box.height-font_t.get_height())/2)))
         if with_holder is True:
             if int(time.time()%2) == 0 or len(Controller.events)>0:
                 surface.blit(
@@ -360,7 +361,9 @@ class Console(SingleLineInputBox):
         return False
     def _check_command(self, conditions:list) -> None:
         if conditions[0] == "cheat":
-            if conditions[1] == "on":
+            if len(conditions) < 2:
+                self._txt_output.append("Unknown status for cheat command.")
+            elif conditions[1] == "on":
                 if "cheat" in self.__events and self.__events["cheat"] is True:
                     self._txt_output.append("Cheat mode has already been activated!")
                 else:
@@ -377,7 +380,9 @@ class Console(SingleLineInputBox):
         elif conditions[0] == "say":
             self._txt_output.append(self._text[len(self.command_indicator)+4:])
         elif conditions[0] == "dev":
-            if conditions[1] == "on":
+            if len(conditions) < 2:
+                self._txt_output.append("Unknown status for dev command.")
+            elif conditions[1] == "on":
                 if Setting.developer_mode is True:
                     self._txt_output.append("Developer mode has been activated!")
                 else:
@@ -391,7 +396,7 @@ class Console(SingleLineInputBox):
                     self._txt_output.append("Developer mode is deactivated.")
             else:
                 self._txt_output.append("Unknown status for dev command.")
-        elif conditions[0] == "linpg" and conditions[1] == "info":
+        elif conditions[0] == "linpg" and len(conditions) > 1 and conditions[1] == "info":
             self._txt_output.append("Linpg Version: {}".format(Info.current_version))
         elif conditions[0] == "quit":
             Display.quit()

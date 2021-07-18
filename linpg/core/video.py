@@ -83,8 +83,7 @@ class AbstractVedio:
                 self.__video_stream.set(cv2.CAP_PROP_POS_FRAMES, self.__frame_index_to_set)
                 self.__frame_index_to_set = -1
             #处理当前Frame
-            current_frame = self.__video_stream.read()[1]
-            if current_frame is not None:
+            if (current_frame := self.__video_stream.read()[1]) is not None:
                 current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2RGB)
                 if current_frame.shape[0] != surface.get_width() or current_frame.shape[1] != surface.get_height():
                     current_frame = cv2.resize(current_frame, surface.get_size())

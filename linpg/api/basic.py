@@ -83,8 +83,8 @@ def new_transparent_surface(size: size_liked) -> ImageSurface:
 def get_texture_missing_surface(size: size_liked) -> ImageSurface:
     texture_missing_surface: ImageSurface = new_surface(size).convert()
     texture_missing_surface.fill(Color.BLACK)
-    half_width: int = int(size[0] / 2)
-    half_height: int = int(size[1] / 2)
+    half_width: cython.int = int(size[0] / 2)
+    half_height: cython.int = int(size[1] / 2)
     purple_color_rbga: tuple = Color.VIOLET
     pygame.draw.rect(
         texture_missing_surface,
@@ -111,5 +111,7 @@ def display_in_center(
 def display_within_center(
     item1:ImageSurface, item2:ImageSurface, x:number, y:number, screen:ImageSurface, off_set_x:number = 0, off_set_y:number = 0
     ) -> None:
-    screen.blit(item2,(x+off_set_x,y+off_set_y))
-    screen.blit(item1,(x+(item2.get_width()-item1.get_width())/2+off_set_x,y+(item2.get_height()-item1.get_height())/2+off_set_y))
+    screen.blits(
+        (item2, (int(x+off_set_x), int(y+off_set_y))),
+        (item1, (int(x+(item2.get_width()-item1.get_width())/2+off_set_x), int(y+(item2.get_height()-item1.get_height())/2+off_set_y)))
+        )

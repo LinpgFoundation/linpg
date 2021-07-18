@@ -132,7 +132,7 @@ class DropDownSingleChoiceList(GameObjectsContainer):
                     self.__fold_choice = True
             #列出选择
             if not self.__fold_choice:
-                index:int = 0
+                index: cython.int  = 0
                 for key_of_game_object, game_object_t in self._items_container.items():
                     current_pos = Pos.add(current_abs_pos, (0,(index+1)*self.__block_height))
                     font_surface = self.__FONT.render(game_object_t, self.__font_color)
@@ -273,16 +273,16 @@ class SurfaceContainerWithScrollbar(GameObjectsContainer):
             #如果有背景图片，则画出
             if self.img is not None: surface.blit(self.img,Pos.add(self.pos,off_set))
             #计算出基础坐标
-            current_x:int = int(self.x+self._local_x+off_set[0])
-            current_y:int = int(self.y+self._local_y+off_set[1])
+            current_x: cython.int = int(self.x+self._local_x+off_set[0])
+            current_y: cython.int = int(self.y+self._local_y+off_set[1])
             if not self.__mode:
                 current_x += self.panding
             else:
                 current_y += self.panding
             #定义部分用到的变量
-            abs_local_y:int; crop_height:int; new_height:int
-            abs_local_x:int; crop_width:int; new_width:int
-            item_has_been_dawn_on_this_line:int = 0
+            abs_local_y: cython.int; crop_height: cython.int; new_height: cython.int
+            abs_local_x: cython.int; crop_width: cython.int; new_width: cython.int
+            item_has_been_dawn_on_this_line: cython.int = 0
             #画出物品栏里的图片
             for key,item in self._items_container.items():
                 if item is not None:
@@ -416,17 +416,16 @@ class SurfaceContainerWithScrollbar(GameObjectsContainer):
                 if self._local_y > 0:
                     self._local_y = 0
                 elif self.__total_height > self._height:
-                    local_y_max = self._height-self.__total_height
-                    if self._local_y < local_y_max: self._local_y = local_y_max
+                    if (local_y_max := self._height-self.__total_height) > self._local_y:
+                        self._local_y = local_y_max
             else:
                 if self._local_x > 0:
                     self._local_x = 0
                 elif self.__total_width > self._width:
-                    local_x_max = self._width-self.__total_width
-                    if self._local_x < local_x_max: self._local_x = local_x_max
-            
+                    if (local_x_max := self._width-self.__total_width) > self._local_x:
+                        self._local_x = local_x_max
             #画出滚动条
-            scroll_button_rect = self.__get_scroll_button_rect(off_set[0],off_set[1])
-            if scroll_button_rect is not None: draw_rect(surface,Color.WHITE,scroll_button_rect)
-            scroll_bar_rect = self.__get_scroll_bar_rect(off_set[0],off_set[1])
-            if scroll_bar_rect is not None: draw_rect(surface,Color.WHITE,scroll_bar_rect,2)
+            if (scroll_button_rect := self.__get_scroll_button_rect(off_set[0],off_set[1])) is not None:
+                draw_rect(surface,Color.WHITE,scroll_button_rect)
+            if (scroll_bar_rect := self.__get_scroll_bar_rect(off_set[0],off_set[1])) is not None:
+                draw_rect(surface,Color.WHITE,scroll_bar_rect,2)

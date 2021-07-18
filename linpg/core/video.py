@@ -1,7 +1,5 @@
 # cython: language_level=3
 import cv2
-from numpy import e
-from pygame.event import peek
 from .window import *
 
 class AbstractVedio:

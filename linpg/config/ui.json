@@ -223,7 +223,7 @@
         "items": [
             {
                 "color": "white",
-                "font_size": "7.5%",
+                "font_size": "5%",
                 "name": "resume",
                 "src": "{Global,resume}",
                 "type": "dynamic_text",
@@ -232,7 +232,7 @@
             },
             {
                 "color": "white",
-                "font_size": "7.5%",
+                "font_size": "5%",
                 "name": "save",
                 "src": "{Global,save_current_progress}",
                 "type": "dynamic_text",
@@ -241,7 +241,7 @@
             },
             {
                 "color": "white",
-                "font_size": "7.5%",
+                "font_size": "5%",
                 "name": "option_menu",
                 "src": "{OptionMenu,option_menu}",
                 "type": "dynamic_text",
@@ -250,7 +250,7 @@
             },
             {
                 "color": "white",
-                "font_size": "7.5%",
+                "font_size": "5%",
                 "name": "back_to_mainMenu",
                 "src": "{Global,back}",
                 "type": "dynamic_text",

@@ -133,7 +133,6 @@ class DialogButtons:
 #过场动画
 def cutscene(surface:ImageSurface, videoPath:str, fade_out_in_ms:int = 3000) -> None:
     #初始化部分参数
-    surface_size:tuple = surface.get_size()
     is_skip:bool = False
     is_playing:bool = True
     #初始化跳过按钮的参数
@@ -142,16 +141,18 @@ def cutscene(surface:ImageSurface, videoPath:str, fade_out_in_ms:int = 3000) -> 
         int(surface.get_width()*0.92), int(surface.get_height()*0.05),
         int(surface.get_width()*0.055), int(surface.get_height()*0.06)
         )
-    #生成黑色帘幕
-    black_bg:ImageSurface = new_surface(surface_size).convert()
-    black_bg.fill(Color.BLACK)
-    black_bg.set_alpha(0)
     #进度条
     bar_height:int = 10
-    white_progress_bar:object = ProgressBar(bar_height,surface_size[1]-bar_height*2,surface_size[0]-bar_height*2,bar_height,"white")
+    white_progress_bar:object = ProgressBar(
+        bar_height, surface.get_height()-bar_height*2, surface.get_width()-bar_height*2, bar_height, "white"
+        )
+    #生成黑色帘幕
+    img_t:ImageSurface = new_surface(surface.get_size()).convert()
+    img_t.fill(Color.BLACK)
+    BLACK_CURTAIN = DynamicImage(img_t, 0, 0, 0, 0)
+    BLACK_CURTAIN.set_alpha(0)
     #创建视频文件
     VIDEO:object = VedioPlayer(videoPath)
-    VIDEO.start()
     #播放主循环
     while is_playing is True and VIDEO.is_playing() is True:
         VIDEO.draw(surface)
@@ -162,11 +163,11 @@ def cutscene(surface:ImageSurface, videoPath:str, fade_out_in_ms:int = 3000) -> 
             is_skip = True
             Music.fade_out(fade_out_in_ms)
         if is_skip is True:
-            temp_alpha:int = black_bg.get_alpha()
+            temp_alpha:int = BLACK_CURTAIN.get_alpha()
             if temp_alpha < 255:
-                black_bg.set_alpha(temp_alpha+5)
+                BLACK_CURTAIN.set_alpha(temp_alpha+5)
             else:
                 is_playing = False
                 VIDEO.stop()
-            surface.blit(black_bg,(0,0))
+            surface.blit(BLACK_CURTAIN,(0,0))
         Display.flip()

@@ -5,6 +5,7 @@
     "Font": "MicrosoftYaHei-2",
     "FontType": "custom",
     "Language": null,
+    "LowMemoryMode": false,
     "MouseIconWidth": 18,
     "MouseMoveSpeed": 30,
     "ReadingSpeed": 0.5,

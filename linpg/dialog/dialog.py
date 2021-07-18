@@ -150,6 +150,7 @@ class DialogSystem(AbstractDialogSystem):
                             progress_saved_text.set_alpha(0)
                             self.fade(surface)
                             self.pause_menu.hidden = True
+                            GlobalValue.set("BackToMainMenu",True)
                             self.stop()
                     else:
                         #展示设置UI
@@ -160,7 +161,7 @@ class DialogSystem(AbstractDialogSystem):
                         if OptionMenu.need_update["language"] is True: self.updated_language(surface)
                     #显示进度已保存的文字
                     progress_saved_text.draw(surface)
-                    progress_saved_text.fade_out(5)
+                    progress_saved_text.subtract_alpha(5)
                 del progress_saved_text
                 self.pause_menu.screenshot = None
         #显示对话选项

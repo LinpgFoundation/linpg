@@ -69,5 +69,9 @@ class SettingSystem:
     @property
     def developer_mode(self) -> bool:
         return self.__SETTING_DATA["DeveloperMode"]
+    # 低内存模式
+    @property
+    def low_memory_mode(self) -> bool:
+        return self.__SETTING_DATA["LowMemoryMode"]
 
 Setting: SettingSystem = SettingSystem()

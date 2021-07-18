@@ -145,12 +145,12 @@ class AbstractDialogSystem(AbstractGameSystem):
                     #如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
                     elif os.path.exists(os.path.join(self._dynamic_background_folder_path,self.__background_image_name)):
                         self.__background_image_surface = VedioSurface(
-                            os.path.join(self._dynamic_background_folder_path,self.__background_image_name),
-                            with_audio=False
+                            os.path.join(self._dynamic_background_folder_path, self.__background_image_name)
                             )
-                        self.__background_image_surface.start()
                     else:
-                        EXCEPTION.fatal("Cannot find a background image or video file called '{}'.".format(self.__background_image_name))
+                        EXCEPTION.fatal(
+                            "Cannot find a background image or video file called '{}'.".format(self.__background_image_name)
+                            )
                 elif self.dev_mode is True:
                     self.__background_image_surface = StaticImage(get_texture_missing_surface(Display.get_size()), 0, 0)
                 else:

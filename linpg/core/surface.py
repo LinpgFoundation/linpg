@@ -15,42 +15,57 @@ class AbstractImage(Rect):
             self.set_width(self._height/self.img.get_height()*self.img.get_width())
         elif self._width >= 0 and self._height < 0:
             self.set_height(self._width/self.img.get_width()*self.img.get_height())
-    #透明度
+    """透明度"""
     @property
     def alpha(self) -> int: return self.get_alpha()
     def get_alpha(self) -> int: return self.img.get_alpha()
     def set_alpha(self, value:int) -> None: self.img.set_alpha(value)
     def add_alpha(self, value:int) -> None: self.set_alpha(self.get_alpha()+value)
     def subtract_alpha(self, value:int) -> None: self.set_alpha(self.get_alpha()-value)
-    #获取图片
-    def get_image_pointer(self) -> any: return self.img
+    #获取图片复制品
     def get_image_copy(self) -> any: return self.img.copy()
     #更新图片
     def update_image(self, img_path:Union[str, ImageSurface], ifConvertAlpha:bool=True) -> None:
         self.img = IMG.quickly_load(img_path, ifConvertAlpha)
-    #淡入
-    def fade_in(self, value:int) -> None: self.set_alpha(self.get_alpha()+value)
-    #淡出
-    def fade_out(self, value:int) -> None: self.set_alpha(self.get_alpha()-value)
     #旋转
     def rotate(self, angle:int) -> None: self.img = IMG.rotate(self.img, angle)
 
-#高级图形类
+#动态图形类
 class DynamicImage(AbstractImage):
     def __init__(self, img: Union[str,ImageSurface], x: number, y: number, width: int_f=-1, height: int_f=-1, tag: str=""):
         super().__init__(IMG.quickly_load(img), x, y, width, height, tag)
+        self.__processed_img:ImageSurface = None
     #返回一个复制
     def copy(self):
         replica = DynamicImage(self.get_image_copy(), self.x, self.y, self._width, self._height, self.tag)
         self.img.set_alpha(255)
         return replica
     #返回一个浅复制品
-    def light_copy(self): return DynamicImage(self.get_image_pointer(), self.x, self.y, self._width, self._height, self.tag)
+    def light_copy(self): return DynamicImage(self.img, self.x, self.y, self._width, self._height, self.tag)
     #反转
     def flip(self, vertical:bool=False, horizontal:bool=False) -> None: self.img = IMG.flip(self.img, vertical, horizontal)
+    #设置透明度
+    def set_alpha(self, value:int) -> None:
+        super().set_alpha(value)
+        if self.__processed_img is not None:
+            self.__processed_img.set_alpha(self.get_alpha())
+    #更新图片
+    def update_image(self, img_path: Union[str, ImageSurface], ifConvertAlpha: bool) -> None:
+        super().update_image(img_path, ifConvertAlpha=ifConvertAlpha)
+        self.__processed_img = None
+    #旋转
+    def rotate(self, angle: int) -> None:
+        super().rotate(angle)
+        self.__processed_img = None
     #展示
     def display(self, surface:ImageSurface, offSet:pos_liked=Pos.ORIGIN) -> None:
-        if not self.hidden: surface.blit(IMG.resize(self.img, self.size), Pos.add(self.pos, offSet))
+        if not self.hidden:
+            if not Setting.low_memory_mode:
+                if self.__processed_img is None:
+                    self.__processed_img = IMG.smoothly_resize(self.img, self.size)
+                surface.blit(self.__processed_img, Pos.add(self.pos, offSet))
+            else:
+                surface.blit(IMG.resize(self.img, self.size), Pos.add(self.pos, offSet))
 
 #有本地坐标的图形接口
 class AdvancedAbstractImage(AbstractImage):
@@ -235,7 +250,7 @@ class MovableImage(StaticImage):
         )
     #返回一个浅复制品
     def light_copy(self): return MovableImage(
-        self.get_image_pointer(), self.x, self.y,
+        self.img, self.x, self.y,
         self.__target_x, self.__target_y,
         self.__move_speed_x, self.__move_speed_y,
         self._width, self._height, self.tag
@@ -325,7 +340,7 @@ class GifImage(AdvancedAbstractImage):
     # 返回一个浅复制品
     def light_copy(self):
         return GifImage(
-            self.get_image_pointer(),
+            self.img,
             self.x,
             self.y,
             self._width,

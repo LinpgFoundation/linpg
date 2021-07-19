@@ -1,4 +1,3 @@
-# cython: language_level=3
 """
 结构:
 base -> setting -> ui -> info

@@ -71,7 +71,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
     def set_bgm_volume(self, volume:number) -> None:
         if 1 >= volume >= 0:
             self.__bgm_volume = volume
-            if self.__bgm_path is not None and self.__audio_channel.get_busy():
+            if self.__bgm_path is not None:
                 self.__audio.set_volume(self.__bgm_volume)
         else:
             EXCEPTION.fatal("Volume '{}' is out of the range! (must between 0 and 1)".format(volume))

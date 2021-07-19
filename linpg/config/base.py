@@ -1,4 +1,3 @@
-# cython: language_level=3
 from __future__ import annotations
 import json
 import os
@@ -7,55 +6,67 @@ from copy import deepcopy
 from datetime import datetime
 from glob import glob
 import cython
+
 # 尝试导入yaml库
 _YAML_INITIALIZED: bool = False
 try:
     import yaml
+
     _YAML_INITIALIZED = True
 except Exception:
     pass
 
 # Linpg本身错误类
-@cython.cclass
 class LinpgError(Exception):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
 
+
 # Linpg错误类管理器
-@cython.cclass
 class LinpgExceptionHandler:
-    __CRASH_REPORTS_PATH: cython.p_char
     def __init__(self):
         # 错误报告存储的路径
-        self.__CRASH_REPORTS_PATH = "crash_reports"
+        self.__CRASH_REPORTS_PATH: str = "crash_reports"
+
     # 告知不严重但建议查看的问题
     @staticmethod
     def inform(info: str) -> None:
         print("LinpgEngine-Inform: {}".format(info))
+
     # 警告开发者非严重错误
     def warn(self, info: str) -> None:
         # 生成错误报告
         if not os.path.exists(self.__CRASH_REPORTS_PATH):
             os.mkdir(self.__CRASH_REPORTS_PATH)
         with open(
-            os.path.join(self.__CRASH_REPORTS_PATH, "crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))),
-            "w", encoding="utf-8"
-            ) as f:
+            os.path.join(
+                self.__CRASH_REPORTS_PATH,
+                "crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S")),
+            ),
+            "w",
+            encoding="utf-8",
+        ) as f:
             f.write("Warning Message From Linpg: {}".format(info))
         # 打印出警告
         print("LinpgEngine-Warning: {}".format(info))
+
     # 严重错误
     def fatal(self, info: str):
         # 生成错误报告
         if not os.path.exists(self.__CRASH_REPORTS_PATH):
             os.mkdir(self.__CRASH_REPORTS_PATH)
         with open(
-            os.path.join(self.__CRASH_REPORTS_PATH, "crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))),
-            "w", encoding="utf-8"
-            ) as f:
+            os.path.join(
+                self.__CRASH_REPORTS_PATH,
+                "crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S")),
+            ),
+            "w",
+            encoding="utf-8",
+        ) as f:
             f.write("Error Message From Linpg: {}".format(info))
         # 打印出错误
         raise LinpgError(info)
+
 
 EXCEPTION = LinpgExceptionHandler()
 
@@ -68,14 +79,18 @@ def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) ->
         except KeyError:
             if warning is True:
                 EXCEPTION.warn(
-                    'Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'
-                    .format(key)
+                    'Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'.format(
+                        key
+                    )
                 )
             return key
     return deepcopy(pointer)
 
+
 # 根据keys查找被设置对应对应对象为指定值
-def set_value_by_keys(dict_to_check: dict, keys: tuple, value: any, warning: bool = True) -> None:
+def set_value_by_keys(
+    dict_to_check: dict, keys: tuple, value: any, warning: bool = True
+) -> None:
     pointer = dict_to_check
     key_range: cython.int = len(keys)
     last_key_index: cython.int = key_range - 1
@@ -89,10 +104,12 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: any, warning: boo
         except KeyError:
             if warning is True:
                 EXCEPTION.warn(
-                    'Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'
-                    .format(keys[index])
+                    'Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'.format(
+                        keys[index]
+                    )
                 )
             return keys[index]
+
 
 # 配置文件管理模块
 class ConfigManager:
@@ -114,18 +131,24 @@ class ConfigManager:
                         # 使用非安全模式加载yaml配置文件
                         Data = yaml.load(f.read(), Loader=yaml.UnsafeLoader)
                 else:
-                    EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.")
+                    EXCEPTION.fatal(
+                        "You cannot load YAML file because yaml is not imported successfully."
+                    )
             # 使用json模块加载配置文件
             elif path.endswith(".json"):
                 Data = json.load(f)
             else:
-                EXCEPTION.fatal("Linpg can only load json and yaml (when pyyaml is installed).")
+                EXCEPTION.fatal(
+                    "Linpg can only load json and yaml (when pyyaml is installed)."
+                )
         # 返回配置文件中的数据
         return Data if len(key) == 0 else get_value_by_keys(Data, key)
+
     # 加载内部配置文件保存
     def load_internal(self, path: str, *key: str) -> any:
         Data_t = self.load(os.path.join(os.path.dirname(__file__), path))
         return Data_t if len(key) == 0 else get_value_by_keys(Data_t, key)
+
     # 配置文件保存
     @staticmethod
     def save(path: str, data: any) -> None:
@@ -139,18 +162,25 @@ class ConfigManager:
                 if _YAML_INITIALIZED is True:
                     yaml.dump(data, f, allow_unicode=True)
                 else:
-                    EXCEPTION.fatal("You cannot save .yaml file because yaml is not imported successfully.")
+                    EXCEPTION.fatal(
+                        "You cannot save .yaml file because yaml is not imported successfully."
+                    )
             elif path.endswith(".json"):
                 json.dump(data, f, indent=4, ensure_ascii=False, sort_keys=True)
             else:
-                EXCEPTION.fatal("Linpg cannot save this kind of config, and can only save json and yaml (if pyyaml is installed).")
+                EXCEPTION.fatal(
+                    "Linpg cannot save this kind of config, and can only save json and yaml (if pyyaml is installed)."
+                )
+
     # 整理配置文件（读取了再存）
     def organize(self, pathname: str) -> None:
         for configFilePath in glob(pathname):
             self.save(configFilePath, self.load(configFilePath))
+
     # 整理内部配置文件
     def organize_internal(self) -> None:
         self.organize(os.path.join(os.path.dirname(__file__), "*.json"))
+
     # 优化中文文档
     @staticmethod
     def optimize_cn_content(filePath: str) -> None:
@@ -192,12 +222,16 @@ class ConfigManager:
         # 创建并写入新数据
         with open(filePath, "w", encoding="utf-8") as f:
             f.writelines(file_lines)
+
     # 优化文件夹中特定文件的中文字符串
     def optimize_cn_content_in_folder(self, pathname: str) -> None:
         for configFilePath in glob(pathname):
             self.optimize_cn_content(configFilePath)
+
     # 删除特定文件夹
-    def search_and_remove_folder(self, folder_to_search: str, stuff_to_remove: str) -> None:
+    def search_and_remove_folder(
+        self, folder_to_search: str, stuff_to_remove: str
+    ) -> None:
         # 确保folder_to_search是一个目录
         try:
             assert os.path.isdir(folder_to_search)
@@ -209,5 +243,6 @@ class ConfigManager:
                 shutil.rmtree(path)
             elif os.path.isdir(path):
                 self.search_and_remove_folder(path, stuff_to_remove)
+
 
 Config: ConfigManager = ConfigManager()

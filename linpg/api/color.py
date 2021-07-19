@@ -1,9 +1,8 @@
-# cython: language_level=3
 from PIL import ImageColor
 from .key import *
 
-#加载颜色字典
-THECOLORS:dict
+# 加载颜色字典
+THECOLORS: dict
 if is_using_pygame():
     try:
         from pygame.colordict import THECOLORS
@@ -34,44 +33,64 @@ _INDIGO: tuple[int] = (75, 0, 130, 255)
 # 紫色
 _VIOLET: tuple[int] = (148, 0, 211, 255)
 
-#颜色管理
+# 颜色管理
 class ColorManager:
     # 白色
     @property
-    def WHITE(self) -> tuple[int]: return _WHITE
+    def WHITE(self) -> tuple[int]:
+        return _WHITE
+
     # 灰色
     @property
-    def GRAY(self) -> tuple[int]: return _GRAY
+    def GRAY(self) -> tuple[int]:
+        return _GRAY
+
     # 黑色
     @property
-    def BLACK(self) -> tuple[int]: return _BLACK
+    def BLACK(self) -> tuple[int]:
+        return _BLACK
+
     # 红色
     @property
-    def RED(self) -> tuple[int]: return _RED
+    def RED(self) -> tuple[int]:
+        return _RED
+
     # 橙色
     @property
-    def ORANGE(self) -> tuple[int]: return _ORANGE
+    def ORANGE(self) -> tuple[int]:
+        return _ORANGE
+
     # 黄色
     @property
-    def YELLOW(self) -> tuple[int]: return _YELLOW
+    def YELLOW(self) -> tuple[int]:
+        return _YELLOW
+
     # 绿色
     @property
-    def GREEN(self) -> tuple[int]: return _GREEN
+    def GREEN(self) -> tuple[int]:
+        return _GREEN
+
     # 蓝色
     @property
-    def BLUE(self) -> tuple[int]: return _BLUE
+    def BLUE(self) -> tuple[int]:
+        return _BLUE
+
     # 靛蓝色
     @property
-    def INDIGO(self) -> tuple[int]: return _INDIGO
+    def INDIGO(self) -> tuple[int]:
+        return _INDIGO
+
     # 紫色
     @property
-    def VIOLET(self) -> tuple[int]: return _VIOLET
+    def VIOLET(self) -> tuple[int]:
+        return _VIOLET
+
     """获取颜色"""
-    #给定一个颜色的名字或序号，返回对应的RGB列表
+    # 给定一个颜色的名字或序号，返回对应的RGB列表
     @staticmethod
-    def get(color:color_liked) -> tuple[int]:
+    def get(color: color_liked) -> tuple[int]:
         if isinstance(color, str):
-            if color[0] == "#":
+            if color.startswith("#"):
                 return ImageColor.getrgb(color)
             elif color == "gray" or color == "grey":
                 return _GRAY
@@ -79,10 +98,17 @@ class ColorManager:
                 try:
                     return tuple(THECOLORS[color])
                 except KeyError:
-                    EXCEPTION.fatal('The color "{}" is currently not available!'.format(color))
+                    EXCEPTION.fatal(
+                        'The color "{}" is currently not available!'.format(color)
+                    )
         elif isinstance(color, (tuple, list)):
             return tuple(color)
         else:
-            EXCEPTION.fatal("The color has to be a string, tuple or list, and {0} (type:{1}) is not acceptable!".format(color, type(color)))
+            EXCEPTION.fatal(
+                "The color has to be a string, tuple or list, and {0} (type:{1}) is not acceptable!".format(
+                    color, type(color)
+                )
+            )
+
 
 Color: ColorManager = ColorManager()

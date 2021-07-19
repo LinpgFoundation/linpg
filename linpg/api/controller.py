@@ -1,4 +1,3 @@
-# cython: language_level=3
 from .img import *
 
 # 手柄控制组件
@@ -10,9 +9,11 @@ class JoystickController:
         self.__input = None
         # 初始化
         self.update()
+
     # 手柄是否初始化
     def get_init(self) -> bool:
         return self.__input.get_init() if self.__input is not None else False
+
     # 获取该按钮的详情
     def get_button(self, buttonId: int) -> bool:
         return (
@@ -20,15 +21,18 @@ class JoystickController:
             if self.__input is not None and self.__input.get_init()
             else False
         )
+
     def get_axis(self, buttonId: int) -> float:
         return (
             self.__input.get_axis(buttonId)
             if self.__input is not None and self.__input.get_init()
             else 0.0
         )
+
     # 是否启动
     def is_active(self) -> bool:
         return self.__input is not None
+
     # 更新设备
     def update(self) -> None:
         # 有新的手柄连接了
@@ -50,6 +54,7 @@ class JoystickController:
                     "Joystick changed! New joystick is detected and initialized successfully."
                 )
 
+
 # 鼠标控制
 class MouseController:
     def __init__(self) -> None:
@@ -70,37 +75,47 @@ class MouseController:
                 ),
             )
         self.update()
+
     # 灵敏度
     @property
     def moving_speed(self) -> int:
         return self.__moving_speed
+
     # 鼠标坐标
     @property
     def x(self) -> int:
         return self.__x
+
     @property
     def y(self) -> int:
         return self.__y
+
     @property
     def pos(self) -> tuple[int]:
         return self.__x, self.__y
+
     def get_pos(self) -> tuple[int]:
         return self.__x, self.__y
+
     # 设置坐标
     def set_pos(self, pos: pos_liked) -> None:
         self.__x, self.__y = Pos.convert(pos)
         pygame.mouse.set_pos(self.pos)
+
     # 是否鼠标按钮被点击
     def get_pressed(self, button_id: int) -> bool:
         return pygame.mouse.get_pressed()[button_id]
+
     # 更新设备
     def update(self) -> None:
         # 更新鼠标坐标
         self.__x, self.__y = pygame.mouse.get_pos()
+
     # 画出自定义的鼠标图标
     def draw_custom_icon(self, surface: ImageSurface) -> None:
         if self.__icon_img is not None:
             surface.blit(self.__icon_img, self.pos)
+
 
 # 输入管理组件
 class GameController:
@@ -120,27 +135,33 @@ class GameController:
             "scroll_down": False,
             "previous": False,
         }
+
     # 手柄模块
     @property
     def joystick(self) -> JoystickController:
         return self.__joystick
+
     # 鼠标模块
     @property
     def mouse(self) -> MouseController:
         return self.__mouse
+
     # 输入事件
     @property
     def events(self):
         return self.__INPUT_EVENTS
+
     # 获取所有输入事件
     def get_events(self):
         return self.__INPUT_EVENTS
+
     # 获取单个事件
     def get_event(self, event_type: str) -> bool:
         try:
             return self.__SPECIFIC_EVENTS[event_type]
         except KeyError:
             EXCEPTION.fatal('The event type "{}" is not supported!'.format(event_type))
+
     # 更新输入
     def update(self):
         # 更新输入事件
@@ -185,6 +206,7 @@ class GameController:
                     else self.mouse.y,
                 )
             )
+
 
 # 控制器输入组件初始化
 Controller: GameController = GameController()

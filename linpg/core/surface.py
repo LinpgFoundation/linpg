@@ -61,7 +61,7 @@ class DynamicImage(AbstractImage):
     def display(self, surface:ImageSurface, offSet:pos_liked=Pos.ORIGIN) -> None:
         if not self.hidden:
             if not Setting.low_memory_mode:
-                if self.__processed_img is None:
+                if self.__processed_img is None or self.__processed_img.get_size() != self.size:
                     self.__processed_img = IMG.smoothly_resize(self.img, self.size)
                 surface.blit(self.__processed_img, Pos.add(self.pos, offSet))
             else:
@@ -132,24 +132,18 @@ class StaticImage(AdvancedAbstractImage):
         if self.__processed_img is not None: self.__processed_img.set_alpha(self.get_alpha())
     #宽度
     def set_width(self, value:number) -> None:
-        value = int(value)
-        if self._width != value:
+        if (value := int(value)) != self._width:
             super().set_width(value)
             self.__need_update = True
     def set_width_with_size_locked(self, width:number) -> None:
-        height:int = int(width/self.img.get_width()*self.img.get_height())
-        width = int(width)
-        self.set_size(width, height)
+        self.set_size(width, width/self.img.get_width()*self.img.get_height())
     #高度
     def set_height(self, value:number) -> None:
-        value = int(value)
-        if self._height != value:
+        if (value := int(value)) != self._height:
             super().set_height(value)
             self.__need_update = True
     def set_height_with_size_locked(self, height:number) -> None:
-        width:int = int(height/self.img.get_height()*self.img.get_width())
-        height = int(height)
-        self.set_size(width, height)
+        self.set_size(height/self.img.get_height()*self.img.get_width(), height)
     #截图的范围
     @property
     def crop_rect(self) -> object: return self.__crop_rect

@@ -1,4 +1,3 @@
-# cython: language_level=3
 from .generator import *
 
 # 内部菜单模块的抽象

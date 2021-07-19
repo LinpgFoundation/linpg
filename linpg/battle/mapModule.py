@@ -134,8 +134,6 @@ class BlockObject:
 class Point(GameObject):
     def __init__(self, x:int, y:int):
         super().__init__(x,y)
-        self.x = x
-        self.y = y
     def __eq__(self, other:object) -> bool: return True if self.x == other.x and self.y == other.y else False
 
 #管理场景装饰物的类

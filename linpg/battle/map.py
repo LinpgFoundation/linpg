@@ -59,7 +59,7 @@ class MapObject(AdvancedAbstractImage):
     def dev_mode(self) -> None:
         if self.__debug_win is None:
             unit:int = 10
-            self.__debug_win = RenderedWindow("debug window",(int(self.row*unit+unit/4*(self.row+1)),int(self.column*unit+unit/4*(self.row+1))),True)
+            self.__debug_win = RenderedWindow(int(self.row*unit+unit/4*(self.row+1)), int(self.column*unit+unit/4*(self.row+1)), "debug window", True)
             self.__debug_win.unit = unit
         else:
             self.__debug_win = None

@@ -55,7 +55,7 @@ class AbstractDialogSystem(AbstractGameSystem):
             else Config.load(os.path.join(self._dialog_folder_path,self._chapter_type,self._project_name,"info.yaml"),"default_lang")
     #返回需要保存数据
     def _get_data_need_to_save(self) -> dict: return {
-        **self.data_of_parent_game_system,
+        **self.get_data_of_parent_game_system(),
         **{"dialog_id": self._dialog_id, "dialog_options": self._dialog_options, "type": self._part}
         }
     @property

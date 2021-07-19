@@ -12,9 +12,11 @@ _ENTITY_UI_FONT:object = Font.create(Display.get_width()/192)
 DYING_ROUND_LIMIT:int = 3
 
 #人形模块
-class Entity(GameObject):
+class Entity:
     def __init__(self, DATA:dict, faction:str, mode:str):
-        super().__init__(DATA["x"],DATA["y"])
+        # 坐标（注意，与传统GameObject不同，Entity坐标使用浮点数）
+        self.x: number = DATA["x"]
+        self.y: number = DATA["y"]
         #最大行动值
         self.max_action_point = DATA["action_point"]
         #当前行动值
@@ -77,6 +79,15 @@ class Entity(GameObject):
         self.__if_invincible:bool = False
         #血条图片
         self.__hp_bar = EntityHpBar()
+    """坐标参数"""
+    @property
+    def pos(self) -> tuple[number]:
+        return self.x, self.y
+    def get_pos(self) -> tuple[number]:
+        return self.x, self.y
+    def set_pos(self, x: number, y: number) -> None:
+        self.x = x
+        self.y = y
     """角色动作参数管理"""
     #当前动作
     @property

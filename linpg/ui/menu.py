@@ -36,10 +36,7 @@ class PauseMenu(AbstractInternalMenu):
         if not self.hidden:
             if Controller.get_event("back"):
                 return "resume"
-            elif (
-                Controller.get_event("confirm")
-                and self._CONTENT.item_being_hovered is not None
-            ):
+            elif Controller.get_event("confirm") and self._CONTENT.item_being_hovered is not None:
                 return self._CONTENT.item_being_hovered
         return ""
 
@@ -76,18 +73,10 @@ class DefaultOptionMenu(AbstractInternalMenu):
             else:
                 lang_drop_down = self._CONTENT.get("lang_drop_down")
             # 更新百分比
-            self._CONTENT.get("global_sound_volume").set_percentage(
-                Setting.get("Sound", "global_value") / 100
-            )
-            self._CONTENT.get("background_music_sound_volume").set_percentage(
-                Setting.get("Sound", "background_music") / 100
-            )
-            self._CONTENT.get("effects_sound_volume").set_percentage(
-                Setting.get("Sound", "effects") / 100
-            )
-            self._CONTENT.get("environment_sound_volume").set_percentage(
-                Setting.get("Sound", "environment") / 100
-            )
+            self._CONTENT.get("global_sound_volume").set_percentage(Setting.get("Sound", "global_value") / 100)
+            self._CONTENT.get("background_music_sound_volume").set_percentage(Setting.get("Sound", "background_music") / 100)
+            self._CONTENT.get("effects_sound_volume").set_percentage(Setting.get("Sound", "effects") / 100)
+            self._CONTENT.get("environment_sound_volume").set_percentage(Setting.get("Sound", "environment") / 100)
             # 画出
             super().draw(surface)
             # 如果需要更新语言
@@ -95,71 +84,47 @@ class DefaultOptionMenu(AbstractInternalMenu):
                 # 更新语言并保存新的参数到本地
                 Setting.set(
                     "Language",
-                    value=Lang.get_language_id(
-                        lang_drop_down.get_current_selected_item()
-                    ),
+                    value=Lang.get_language_id(lang_drop_down.get_current_selected_item()),
                 )
                 Setting.save()
                 Lang.reload()
                 self._initialized = False
                 self.need_update["language"] = True
             # 按键的判定按钮
-            if (
-                self._CONTENT.item_being_hovered is not None
-                and not lang_drop_down.is_hover()
-            ):
+            if self._CONTENT.item_being_hovered is not None and not lang_drop_down.is_hover():
                 item_percentage_t: cython.int
                 # 如果碰到全局音量条
                 if self._CONTENT.item_being_hovered == "global_sound_volume":
-                    if (
-                        item_percentage_t := int(
-                            self._CONTENT.get("global_sound_volume").percentage * 100
-                        )
-                    ) != Setting.get("Sound", "global_value"):
+                    if (item_percentage_t := int(self._CONTENT.get("global_sound_volume").percentage * 100)) != Setting.get(
+                        "Sound", "global_value"
+                    ):
                         Setting.set("Sound", "global_value", value=item_percentage_t)
                         self.need_update["volume"] = True
-                elif (
-                    self._CONTENT.item_being_hovered == "background_music_sound_volume"
-                ):
+                elif self._CONTENT.item_being_hovered == "background_music_sound_volume":
                     if (
-                        item_percentage_t := int(
-                            self._CONTENT.get(
-                                "background_music_sound_volume"
-                            ).percentage
-                            * 100
-                        )
+                        item_percentage_t := int(self._CONTENT.get("background_music_sound_volume").percentage * 100)
                     ) != Setting.get("Sound", "background_music"):
-                        Setting.set(
-                            "Sound", "background_music", value=item_percentage_t
-                        )
+                        Setting.set("Sound", "background_music", value=item_percentage_t)
                         Music.set_volume(Media.volume.background_music / 100.0)
                         self.need_update["volume"] = True
                 # 如果碰到音效的音量条
                 elif self._CONTENT.item_being_hovered == "effects_sound_volume":
-                    if (
-                        item_percentage_t := int(
-                            self._CONTENT.get("effects_sound_volume").percentage * 100
-                        )
-                    ) != Setting.get("Sound", "effects"):
+                    if (item_percentage_t := int(self._CONTENT.get("effects_sound_volume").percentage * 100)) != Setting.get(
+                        "Sound", "effects"
+                    ):
                         Setting.set("Sound", "effects", value=item_percentage_t)
                         self.need_update["volume"] = True
                 # 如果碰到环境声的音量条
                 elif self._CONTENT.item_being_hovered == "environment_sound_volume":
                     if (
-                        item_percentage_t := int(
-                            self._CONTENT.get("environment_sound_volume").percentage
-                            * 100
-                        )
+                        item_percentage_t := int(self._CONTENT.get("environment_sound_volume").percentage * 100)
                     ) != Setting.get("Sound", "environment"):
                         Setting.set("Sound", "environment", value=item_percentage_t)
                         self.need_update["volume"] = True
                 # 保存新的参数
                 if self.need_update["volume"] is True:
                     Setting.save()
-                if (
-                    Controller.mouse.get_pressed(0)
-                    and self._CONTENT.item_being_hovered == "back_button"
-                ):
+                if Controller.mouse.get_pressed(0) and self._CONTENT.item_being_hovered == "back_button":
                     self.hidden = True
 
 

@@ -8,9 +8,7 @@ class InfoManager:
     # 获取当前版本号
     @property
     def current_version(self) -> str:
-        return "{0}.{1}.{2}".format(
-            self.__INFO["version"], self.__INFO["revision"], self.__INFO["patch"]
-        )
+        return "{0}.{1}.{2}".format(self.__INFO["version"], self.__INFO["revision"], self.__INFO["patch"])
 
     # 获取作者邮箱
     @property

@@ -2,10 +2,7 @@ import os
 import shutil
 
 # 先编译py文件
-if (
-    not os.path.exists("src")
-    or input("Do you want to recompile everything (Y/n):") == "Y"
-):
+if not os.path.exists("src") or input("Do you want to recompile everything (Y/n):") == "Y":
     # 如果linpg文件夹不存在，则新建一个
     if not os.path.exists("../linpg"):
         os.makedirs("../linpg")

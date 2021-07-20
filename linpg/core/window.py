@@ -68,9 +68,7 @@ class RenderedWindow(Rect):
 
     # 更新窗口
     def __update_window(self) -> None:
-        self.__win = Renderer(
-            Window(self.title, self.size, always_on_top=self.always_on_top)
-        )
+        self.__win = Renderer(Window(self.title, self.size, always_on_top=self.always_on_top))
 
     def draw_rect(self, rect_pos: pos_liked, color: color_liked) -> None:
         self.__win.draw_color = Color.get(color)

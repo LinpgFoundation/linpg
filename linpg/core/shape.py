@@ -66,9 +66,7 @@ def new_rect(pos: tuple, size: tuple) -> Rect:
 
 
 # 画正方形（的方块）
-def draw_rect(
-    surface: ImageSurface, color: any, rect: RectLiked, thickness: int = 0
-) -> None:
+def draw_rect(surface: ImageSurface, color: any, rect: RectLiked, thickness: int = 0) -> None:
     if isinstance(rect, (pygame.Rect, tuple)):
         pygame.draw.rect(surface, Color.get(color), rect, thickness)
     elif isinstance(rect, Rect):
@@ -92,9 +90,7 @@ def convert_rect(rect: RectLiked) -> Rect:
     elif isinstance(rect, Rect):
         return rect
     else:
-        EXCEPTION.fatal(
-            'The rect has to be RectLiked object, not "{}".'.format(type(rect))
-        )
+        EXCEPTION.fatal('The rect has to be RectLiked object, not "{}".'.format(type(rect)))
 
 
 # 转换linpg.Rect至pygame.Rect
@@ -114,9 +110,7 @@ def convert_to_pygame_rect(rect: RectLiked) -> pygame.Rect:
         else:
             EXCEPTION.fatal("Invalid length for forming a rect.")
     else:
-        EXCEPTION.fatal(
-            'The rect has to be RectLiked object, not "{}".'.format(type(rect))
-        )
+        EXCEPTION.fatal('The rect has to be RectLiked object, not "{}".'.format(type(rect)))
 
 
 # 是否形状一样
@@ -127,12 +121,7 @@ def is_same_rect(rect1: RectLiked, rect2: RectLiked) -> bool:
     if isinstance(rect2, tuple):
         convert_rect(rect2)
     # 比较并返回结果
-    return (
-        rect1.x == rect2.x
-        and rect1.y == rect2.y
-        and rect1.width == rect2.width
-        and rect1.height == rect2.height
-    )
+    return rect1.x == rect2.x and rect1.y == rect2.y and rect1.width == rect2.width and rect1.height == rect2.height
 
 
 # 检测图片是否被点击
@@ -144,33 +133,20 @@ def is_hover(
 ) -> bool:
     # 如果是Linpg引擎的GameObject2d类(所有2d物品的父类)
     if isinstance(imgObject, GameObject2d):
-        return imgObject.is_hover(
-            Pos.subtract(Controller.mouse.pos, (off_set_x, off_set_y))
-        )
+        return imgObject.is_hover(Pos.subtract(Controller.mouse.pos, (off_set_x, off_set_y)))
     # 如果是pygame类
     else:
         mouse_pos: tuple[number]
         # 如果是Surface类
         if isinstance(imgObject, ImageSurface):
-            mouse_pos = Pos.subtract(
-                Controller.mouse.pos, (off_set_x, off_set_y), objectPos
-            )
+            mouse_pos = Pos.subtract(Controller.mouse.pos, (off_set_x, off_set_y), objectPos)
         # 如果是Rect类
         elif isinstance(imgObject, pygame.Rect):
-            mouse_pos = Pos.subtract(
-                Controller.mouse.pos, (off_set_x, off_set_y), (imgObject.x, imgObject.y)
-            )
+            mouse_pos = Pos.subtract(Controller.mouse.pos, (off_set_x, off_set_y), (imgObject.x, imgObject.y))
         else:
-            EXCEPTION.fatal(
-                "Unable to check current object: {0} (type:{1})".format(
-                    imgObject, type(imgObject)
-                )
-            )
+            EXCEPTION.fatal("Unable to check current object: {0} (type:{1})".format(imgObject, type(imgObject)))
         # 返回结果
-        return (
-            0 < mouse_pos[0] < imgObject.get_width()
-            and 0 < mouse_pos[1] < imgObject.get_height()
-        )
+        return 0 < mouse_pos[0] < imgObject.get_width() and 0 < mouse_pos[1] < imgObject.get_height()
 
 
 # 圆形类
@@ -190,9 +166,7 @@ class Circle(Square):
         color: str = "red",
         thickness: int = 2,
     ) -> None:
-        draw_circle(
-            surface, color, Pos.add(self.center, offSet), self.radius, thickness
-        )
+        draw_circle(surface, color, Pos.add(self.center, offSet), self.radius, thickness)
 
 
 # 画圆形

@@ -24,9 +24,7 @@ class KeySystem:
 
     # key是否被按下
     def get_pressed(self, key_name: any) -> bool:
-        return pygame.key.get_pressed()[
-            self.get_key_code(key_name) if isinstance(key_name, str) else key_name
-        ]
+        return pygame.key.get_pressed()[self.get_key_code(key_name) if isinstance(key_name, str) else key_name]
 
     # 获取key的代号
     @staticmethod

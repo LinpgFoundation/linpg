@@ -2,9 +2,7 @@ from .inputbox import *
 
 # 进度条泛型
 class AbstractProgressBar(AbstractImage):
-    def __init__(
-        self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str
-    ):
+    def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str):
         super().__init__(img, x, y, width, height, tag)
         self.__current_percentage: float = 0.0
 
@@ -20,9 +18,7 @@ class AbstractProgressBar(AbstractImage):
         if 0 <= value <= 1:
             self.__current_percentage = value
         else:
-            EXCEPTION.fatal(
-                "The percentage must be <= 1 and >= 0, not {}!".format(value)
-            )
+            EXCEPTION.fatal("The percentage must be <= 1 and >= 0, not {}!".format(value))
 
 
 # 进度条简单形式的实现
@@ -119,16 +115,12 @@ class ProgressBarSurface(AbstractProgressBar):
                 imgOnTop = IMG.resize(self.img, self.size)
                 if self._mode:
                     surface.blit(
-                        imgOnTop.subsurface(
-                            (0, 0, int(self._width * self.percentage), self._height)
-                        ),
+                        imgOnTop.subsurface((0, 0, int(self._width * self.percentage), self._height)),
                         pos,
                     )
                 else:
                     surface.blit(
-                        imgOnTop.subsurface(
-                            (0, 0, self._width, int(self._height * self.percentage))
-                        ),
+                        imgOnTop.subsurface((0, 0, self._width, int(self._height * self.percentage))),
                         pos,
                     )
 
@@ -149,12 +141,8 @@ class ProgressBarAdjuster(ProgressBarSurface):
         mode: str = "horizontal",
         tag: str = "",
     ) -> None:
-        super().__init__(
-            imgOnTop, imgOnBottom, x, y, max_width, height, mode=mode, tag=tag
-        )
-        self.__indicator: StaticImage = StaticImage(
-            indicator_img, 0, 0, indicator_width, indicator_height
-        )
+        super().__init__(imgOnTop, imgOnBottom, x, y, max_width, height, mode=mode, tag=tag)
+        self.__indicator: StaticImage = StaticImage(indicator_img, 0, 0, indicator_width, indicator_height)
 
     # 展示
     def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
@@ -167,10 +155,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
                 x, y = Pos.int(
                     Pos.add(
                         (
-                            int(
-                                self._width * self.percentage
-                                - self.__indicator.width / 2
-                            ),
+                            int(self._width * self.percentage - self.__indicator.width / 2),
                             int((self._height - self.__indicator.height) / 2),
                         ),
                         abs_pos,
@@ -178,9 +163,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
                 )
                 self.__indicator.set_pos(x, y)
                 self.__indicator.draw(surface)
-                value_font = Font.render(
-                    str(round(self.percentage * 100)), Color.WHITE, self._height
-                )
+                value_font = Font.render(str(round(self.percentage * 100)), Color.WHITE, self._height)
                 surface.blit(
                     value_font,
                     Pos.int(
@@ -198,19 +181,14 @@ class ProgressBarAdjuster(ProgressBarSurface):
                     Pos.add(
                         (
                             int((self._width - self.__indicator.width) / 2),
-                            int(
-                                self._height * self.percentage
-                                - self.__indicator.height / 2
-                            ),
+                            int(self._height * self.percentage - self.__indicator.height / 2),
                         ),
                         abs_pos,
                     )
                 )
                 self.__indicator.set_pos(x, y)
                 self.__indicator.draw(surface)
-                value_font = Font.render(
-                    str(round(self.percentage * 100)), Color.WHITE, self._width
-                )
+                value_font = Font.render(str(round(self.percentage * 100)), Color.WHITE, self._width)
                 surface.blit(
                     value_font,
                     Pos.int(
@@ -229,9 +207,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
             if self.is_hover((mouse_x, mouse_y)):
                 if Controller.mouse.get_pressed(0):
                     self.set_percentage(
-                        (mouse_x - self.x) / self._width
-                        if self._mode
-                        else (mouse_y - self.y) / self._height
+                        (mouse_x - self.x) / self._width if self._mode else (mouse_y - self.y) / self._height
                     )
                 elif Controller.get_event("scroll_down"):
                     self.set_percentage(min(round(self.percentage + 0.01, 2), 1.0))
@@ -276,9 +252,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                 self._percentage_to_be - super().get_percentage() * self.accuracy
             ) / self.__total_update_intervals
         else:
-            EXCEPTION.fatal(
-                "The percentage must be <= 1 and >= 0, not {}!".format(value)
-            )
+            EXCEPTION.fatal("The percentage must be <= 1 and >= 0, not {}!".format(value))
 
     def copy(self):
         return DynamicProgressBarSurface(
@@ -310,10 +284,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
             or super().get_percentage() * self.accuracy > self._percentage_to_be
             and self.__perecent_update_each_time < 0
         ):
-            super().set_percentage(
-                super().get_percentage()
-                + self.__perecent_update_each_time / self.accuracy
-            )
+            super().set_percentage(super().get_percentage() + self.__perecent_update_each_time / self.accuracy)
 
     # 展示
     def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
@@ -328,9 +299,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                         img2 = IMG.crop(
                             imgOnTop,
                             size=(
-                                int(
-                                    self._width * self._percentage_to_be / self.accuracy
-                                ),
+                                int(self._width * self._percentage_to_be / self.accuracy),
                                 self._height,
                             ),
                         )
@@ -363,11 +332,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                                 (
                                     0,
                                     0,
-                                    int(
-                                        self._width
-                                        * self._percentage_to_be
-                                        / self.accuracy
-                                    ),
+                                    int(self._width * self._percentage_to_be / self.accuracy),
                                     self._height,
                                 )
                             ),
@@ -379,11 +344,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                             imgOnTop,
                             size=(
                                 self._width,
-                                int(
-                                    self._height
-                                    * self._percentage_to_be
-                                    / self.accuracy
-                                ),
+                                int(self._height * self._percentage_to_be / self.accuracy),
                             ),
                         )
                         img2.set_alpha(100)
@@ -416,11 +377,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                                     0,
                                     0,
                                     self._width,
-                                    int(
-                                        self._height
-                                        * self._percentage_to_be
-                                        / self.accuracy
-                                    ),
+                                    int(self._height * self._percentage_to_be / self.accuracy),
                                 )
                             ),
                             pos,

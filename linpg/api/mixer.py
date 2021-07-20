@@ -30,18 +30,9 @@ class SoundManagement(AbstractSoundManager):
 
     # 播放音乐
     def play(self, sound_id: int = -1) -> None:
-        if (
-            len(self.__sounds_list) > 0
-            and not pygame.mixer.Channel(self._channel_id).get_busy()
-        ):
-            self.sound_id = (
-                get_random_int(0, len(self.__sounds_list) - 1)
-                if sound_id < 0
-                else sound_id
-            )
-            pygame.mixer.Channel(self._channel_id).play(
-                self.__sounds_list[self.sound_id]
-            )
+        if len(self.__sounds_list) > 0 and not pygame.mixer.Channel(self._channel_id).get_busy():
+            self.sound_id = get_random_int(0, len(self.__sounds_list) - 1) if sound_id < 0 else sound_id
+            pygame.mixer.Channel(self._channel_id).play(self.__sounds_list[self.sound_id])
 
     # 停止播放
     def stop(self) -> None:
@@ -77,9 +68,7 @@ def _split_audio_from_video(input_path: str, audio_type="ogg") -> str:
     # 生成output路径
     output_path: str = os.path.join(output_folder, output_file_name)
     # 让linpgtoolkit生成视频文件
-    convert_status: str = linpgtoolkit.ffmpeg.convert_from_vedio_to_audio(
-        input_path, output_path
-    )
+    convert_status: str = linpgtoolkit.ffmpeg.convert_from_vedio_to_audio(input_path, output_path)
     # 如果一切正常，返回output路径
     if len(convert_status) < 1:
         return output_path
@@ -87,13 +76,9 @@ def _split_audio_from_video(input_path: str, audio_type="ogg") -> str:
     elif convert_status == "FILE_NOT_EXIST":
         EXCEPTION.fatal('Cannot find media file on path "{}".'.format(input_path))
     elif convert_status == "FFMPEG_MISSING":
-        EXCEPTION.fatal(
-            'LinpgToolKit cannot find its "ffmpeg.exe" file. You may need to reinstall the toolkit.'
-        )
+        EXCEPTION.fatal('LinpgToolKit cannot find its "ffmpeg.exe" file. You may need to reinstall the toolkit.')
     else:
-        EXCEPTION.fatal(
-            "Unexpected convert status, you need to report this issue to the developers."
-        )
+        EXCEPTION.fatal("Unexpected convert status, you need to report this issue to the developers.")
 
 
 # 音效管理
@@ -200,16 +185,12 @@ class SoundVolumeManger:
 
     @property
     def global_value(self) -> int:
-        return round(
-            keep_in_range(Setting.get("Sound", "global_value"), 0, self.__sound_unit)
-        )
+        return round(keep_in_range(Setting.get("Sound", "global_value"), 0, self.__sound_unit))
 
     @property
     def background_music(self) -> int:
         return round(
-            keep_in_range(
-                Setting.get("Sound", "background_music"), 0, self.__sound_unit
-            )
+            keep_in_range(Setting.get("Sound", "background_music"), 0, self.__sound_unit)
             * self.global_value
             / self.__sound_unit
         )
@@ -217,17 +198,13 @@ class SoundVolumeManger:
     @property
     def effects(self) -> int:
         return round(
-            keep_in_range(Setting.get("Sound", "effects"), 0, self.__sound_unit)
-            * self.global_value
-            / self.__sound_unit
+            keep_in_range(Setting.get("Sound", "effects"), 0, self.__sound_unit) * self.global_value / self.__sound_unit
         )
 
     @property
     def environment(self) -> int:
         return round(
-            keep_in_range(Setting.get("Sound", "environment"), 0, self.__sound_unit)
-            * self.global_value
-            / self.__sound_unit
+            keep_in_range(Setting.get("Sound", "environment"), 0, self.__sound_unit) * self.global_value / self.__sound_unit
         )
 
 

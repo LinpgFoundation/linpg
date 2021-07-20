@@ -141,10 +141,7 @@ class GameObject2d(GameObject):
     def is_hover(self, mouse_pos: pos_liked = NoPos) -> bool:
         if mouse_pos is NoPos:
             mouse_pos = Controller.mouse.pos
-        return (
-            0 < mouse_pos[0] - self.x < self.get_width()
-            and 0 < mouse_pos[1] - self.y < self.get_height()
-        )
+        return 0 < mouse_pos[0] - self.x < self.get_width() and 0 < mouse_pos[1] - self.y < self.get_height()
 
     # 将图片直接画到surface上
     def draw(self, surface: ImageSurface) -> None:
@@ -206,9 +203,7 @@ class GameObject2point5d(GameObject):
 
 # 需要被打印的物品
 class ItemNeedBlit(GameObject2point5d):
-    def __init__(
-        self, image: object, weight: number, pos: pos_liked, offSet: pos_liked
-    ):
+    def __init__(self, image: object, weight: number, pos: pos_liked, offSet: pos_liked):
         super().__init__(pos[0], pos[1], weight)
         self.image = image
         self.offSet = offSet

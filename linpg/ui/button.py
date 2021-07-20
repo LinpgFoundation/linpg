@@ -30,9 +30,7 @@ class Button(AbstractImage):
         self.__is_hovered = self.is_hover(Pos.subtract(Controller.mouse.pos, offSet))
         surface.blit(
             IMG.resize(
-                self.img2
-                if self.__is_hovered is True and self.img2 is not None
-                else self.img,
+                self.img2 if self.__is_hovered is True and self.img2 is not None else self.img,
                 self.size,
             ),
             Pos.add(self.pos, offSet),
@@ -180,6 +178,4 @@ def load_button_with_des(
         fading_button.set_hover_img(img2)
         return fading_button
     else:
-        return ButtonWithDes(
-            IMG.load(path), tag, position[0], position[1], size[0], size[1]
-        )
+        return ButtonWithDes(IMG.load(path), tag, position[0], position[1], size[0], size[1])

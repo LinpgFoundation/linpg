@@ -72,9 +72,7 @@ def convert_percentage(percentage: Union[str, float]) -> float:
     elif isinstance(percentage, float):
         return percentage
     else:
-        EXCEPTION.fatal(
-            '"{}" is not a valid percentage that can be converted'.format(percentage)
-        )
+        EXCEPTION.fatal('"{}" is not a valid percentage that can be converted'.format(percentage))
 
 
 # 获取Surface
@@ -100,9 +98,7 @@ def get_texture_missing_surface(size: size_liked) -> ImageSurface:
     pygame.draw.rect(
         texture_missing_surface,
         purple_color_rbga,
-        pygame.Rect(
-            half_width, 0, texture_missing_surface.get_width() - half_width, half_height
-        ),
+        pygame.Rect(half_width, 0, texture_missing_surface.get_width() - half_width, half_height),
     )
     pygame.draw.rect(
         texture_missing_surface,

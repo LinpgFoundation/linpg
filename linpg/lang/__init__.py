@@ -9,9 +9,7 @@ class LanguageManager:
         # 可选的语言
         self.__LANG_AVAILABLE: list = []
         # 语言储存路径
-        self.__LANG_PATH_PATTERN: str = os.path.join(
-            os.path.dirname(__file__), "*.json"
-        )
+        self.__LANG_PATH_PATTERN: str = os.path.join(os.path.dirname(__file__), "*.json")
         # 储存额外语言数据的文件夹
         self.__EX_LANG_FOLDER: str = "Lang"
         # 初始化
@@ -20,9 +18,7 @@ class LanguageManager:
     # 当前语言的文件路径
     @property
     def internal_lang_file_path(self) -> str:
-        return os.path.join(
-            os.path.dirname(__file__), "{}.json".format(Setting.language)
-        )
+        return os.path.join(os.path.dirname(__file__), "{}.json".format(Setting.language))
 
     # 重新加载语言文件
     def reload(self) -> None:
@@ -31,27 +27,22 @@ class LanguageManager:
         # 加载游戏自定义的外部语言文件
         path_t: str
         if os.path.exists(
-            path_t := os.path.join(
-                self.__EX_LANG_FOLDER, "{}.yaml".format(Setting.language)
-            )
-        ) or os.path.exists(
-            path_t := os.path.join(
-                self.__EX_LANG_FOLDER, "{}.json".format(Setting.language)
-            )
-        ):
+            path_t := os.path.join(self.__EX_LANG_FOLDER, "{}.yaml".format(Setting.language))
+        ) or os.path.exists(path_t := os.path.join(self.__EX_LANG_FOLDER, "{}.json".format(Setting.language))):
             self.__LANG_DATA.update(Config.load(path_t))
         else:
             EXCEPTION.warn("Linpg cannot load additional language file.")
         # 获取当前所有完整的可用语言的列表
         self.__LANG_AVAILABLE.clear()
         for lang_file in glob(os.path.join(self.__LANG_PATH_PATTERN)):
-            if os.path.exists(
-                os.path.join(
-                    self.__EX_LANG_FOLDER,
-                    os.path.basename(lang_file).replace(".json", ".yaml"),
+            if (
+                os.path.exists(
+                    os.path.join(
+                        self.__EX_LANG_FOLDER,
+                        os.path.basename(lang_file).replace(".json", ".yaml"),
+                    )
                 )
-            ) or os.path.exists(
-                os.path.join(self.__EX_LANG_FOLDER, os.path.basename(lang_file))
+                or os.path.exists(os.path.join(self.__EX_LANG_FOLDER, os.path.basename(lang_file)))
             ):
                 self.__LANG_AVAILABLE.append(Config.load(lang_file, "Language"))
 

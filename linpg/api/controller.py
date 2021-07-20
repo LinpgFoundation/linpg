@@ -16,18 +16,10 @@ class JoystickController:
 
     # 获取该按钮的详情
     def get_button(self, buttonId: int) -> bool:
-        return (
-            self.__input.get_button(buttonId)
-            if self.__input is not None and self.__input.get_init()
-            else False
-        )
+        return self.__input.get_button(buttonId) if self.__input is not None and self.__input.get_init() else False
 
     def get_axis(self, buttonId: int) -> float:
-        return (
-            self.__input.get_axis(buttonId)
-            if self.__input is not None and self.__input.get_init()
-            else 0.0
-        )
+        return self.__input.get_axis(buttonId) if self.__input is not None and self.__input.get_init() else 0.0
 
     # 是否启动
     def is_active(self) -> bool:
@@ -50,9 +42,7 @@ class JoystickController:
             elif self.__input.get_id() != pygame.joystick.Joystick(0).get_id():
                 self.__input = pygame.joystick.Joystick(0)
                 self.__input.init()
-                EXCEPTION.inform(
-                    "Joystick changed! New joystick is detected and initialized successfully."
-                )
+                EXCEPTION.inform("Joystick changed! New joystick is detected and initialized successfully.")
 
 
 # 鼠标控制
@@ -192,16 +182,10 @@ class GameController:
         if self.__joystick.is_active():
             self.mouse.set_pos(
                 (
-                    int(
-                        self.mouse.x
-                        + self.mouse.moving_speed * self.__joystick.get_axis(0)
-                    )
+                    int(self.mouse.x + self.mouse.moving_speed * self.__joystick.get_axis(0))
                     if not 0.1 < self.__joystick.get_axis(0) < -0.1
                     else self.mouse.x,
-                    int(
-                        self.mouse.y
-                        + self.mouse.moving_speed * self.__joystick.get_axis(1)
-                    )
+                    int(self.mouse.y + self.mouse.moving_speed * self.__joystick.get_axis(1))
                     if not 0.1 < self.__joystick.get_axis(1) < -0.1
                     else self.mouse.y,
                 )

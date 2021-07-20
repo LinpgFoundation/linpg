@@ -39,30 +39,18 @@ class FontGenerator:
         self.__SIZE = int(size)
         # 根据类型处理
         if Setting.font_type == "default":
-            self.__FONT = pygame.font.SysFont(
-                Setting.font, self.__SIZE, ifBold, ifItalic
-            )
+            self.__FONT = pygame.font.SysFont(Setting.font, self.__SIZE, ifBold, ifItalic)
         elif Setting.font_type == "custom":
             font_path: str
-            if os.path.exists(
-                (
-                    font_path := os.path.join(
-                        "Assets", "font", "{}.ttf".format(Setting.font)
-                    )
-                )
-            ):
+            if os.path.exists((font_path := os.path.join("Assets", "font", "{}.ttf".format(Setting.font)))):
                 self.__FONT = pygame.font.Font(font_path, self.__SIZE)
             else:
                 EXCEPTION.warn(
-                    "Cannot find the {}.ttf file, the engine's font has been changed to default.".format(
-                        Setting.font
-                    )
+                    "Cannot find the {}.ttf file, the engine's font has been changed to default.".format(Setting.font)
                 )
                 Setting.set_font("arial")
                 Setting.set_font_type("default")
-                self.__FONT = pygame.font.SysFont(
-                    Setting.font, self.__SIZE, ifBold, ifItalic
-                )
+                self.__FONT = pygame.font.SysFont(Setting.font, self.__SIZE, ifBold, ifItalic)
             # 加粗
             if ifBold is True:
                 self.__FONT.set_bold(ifBold)
@@ -89,15 +77,8 @@ class FontGenerator:
         return self.__FONT.size(text)[0]
 
     # 检测是否需要更新
-    def check_for_update(
-        self, size: int, ifBold: bool = False, ifItalic: bool = False
-    ) -> None:
-        if (
-            self.__FONT is None
-            or self.__SIZE != size
-            or self.__FONT.bold != ifBold
-            or self.__FONT.italic != ifItalic
-        ):
+    def check_for_update(self, size: int, ifBold: bool = False, ifItalic: bool = False) -> None:
+        if self.__FONT is None or self.__SIZE != size or self.__FONT.bold != ifBold or self.__FONT.italic != ifItalic:
             self.update(size, ifBold, ifItalic)
 
 
@@ -110,9 +91,7 @@ class FontManage:
         self.__LINPG_LAST_FONT: object = FontGenerator()
 
     # 设置全局文字
-    def set_global_font(
-        self, key: str, size: int, ifBold: bool = False, ifItalic: bool = False
-    ) -> None:
+    def set_global_font(self, key: str, size: int, ifBold: bool = False, ifItalic: bool = False) -> None:
         if isinstance(size, int) and size > 0:
             if key not in self.__LINPG_GLOBAL_FONTS:
                 self.__LINPG_GLOBAL_FONTS[key] = FontGenerator()
@@ -132,9 +111,7 @@ class FontManage:
         return self.get_global_font(key).size
 
     # 获取全局文字
-    def render_global_font(
-        self, key: str, txt: str, color: color_liked
-    ) -> ImageSurface:
+    def render_global_font(self, key: str, txt: str, color: color_liked) -> ImageSurface:
         return self.get_global_font(key).render(txt, color)
 
     # 删除全局文字
@@ -143,18 +120,12 @@ class FontManage:
             del self.__LINPG_GLOBAL_FONTS[key]
             return True
         except KeyError:
-            EXCEPTION.warn(
-                'Cannot find font named "{}" when trying to remove the font.'.format(
-                    key
-                )
-            )
+            EXCEPTION.warn('Cannot find font named "{}" when trying to remove the font.'.format(key))
             return False
 
     # 创建字体
     @staticmethod
-    def create(
-        size: int_f, ifBold: bool = False, ifItalic: bool = False
-    ) -> FontGenerator:
+    def create(size: int_f, ifBold: bool = False, ifItalic: bool = False) -> FontGenerator:
         new_font_t = FontGenerator()
         new_font_t.update(size, ifBold, ifItalic)
         return new_font_t

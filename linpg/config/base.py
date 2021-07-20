@@ -88,9 +88,7 @@ def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) ->
 
 
 # 根据keys查找被设置对应对应对象为指定值
-def set_value_by_keys(
-    dict_to_check: dict, keys: tuple, value: any, warning: bool = True
-) -> None:
+def set_value_by_keys(dict_to_check: dict, keys: tuple, value: any, warning: bool = True) -> None:
     pointer = dict_to_check
     key_range: cython.int = len(keys)
     last_key_index: cython.int = key_range - 1
@@ -131,16 +129,12 @@ class ConfigManager:
                         # 使用非安全模式加载yaml配置文件
                         Data = yaml.load(f.read(), Loader=yaml.UnsafeLoader)
                 else:
-                    EXCEPTION.fatal(
-                        "You cannot load YAML file because yaml is not imported successfully."
-                    )
+                    EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.")
             # 使用json模块加载配置文件
             elif path.endswith(".json"):
                 Data = json.load(f)
             else:
-                EXCEPTION.fatal(
-                    "Linpg can only load json and yaml (when pyyaml is installed)."
-                )
+                EXCEPTION.fatal("Linpg can only load json and yaml (when pyyaml is installed).")
         # 返回配置文件中的数据
         return Data if len(key) == 0 else get_value_by_keys(Data, key)
 
@@ -162,9 +156,7 @@ class ConfigManager:
                 if _YAML_INITIALIZED is True:
                     yaml.dump(data, f, allow_unicode=True)
                 else:
-                    EXCEPTION.fatal(
-                        "You cannot save .yaml file because yaml is not imported successfully."
-                    )
+                    EXCEPTION.fatal("You cannot save .yaml file because yaml is not imported successfully.")
             elif path.endswith(".json"):
                 json.dump(data, f, indent=4, ensure_ascii=False, sort_keys=True)
             else:
@@ -229,9 +221,7 @@ class ConfigManager:
             self.optimize_cn_content(configFilePath)
 
     # 删除特定文件夹
-    def search_and_remove_folder(
-        self, folder_to_search: str, stuff_to_remove: str
-    ) -> None:
+    def search_and_remove_folder(self, folder_to_search: str, stuff_to_remove: str) -> None:
         # 确保folder_to_search是一个目录
         try:
             assert os.path.isdir(folder_to_search)

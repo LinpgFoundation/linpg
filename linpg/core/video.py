@@ -56,11 +56,7 @@ class AbstractVedio:
         return self.get_frame_num()
 
     def get_frame_num(self) -> int:
-        return (
-            self.__video_stream.get(cv2.CAP_PROP_FRAME_COUNT)
-            if self.__video_stream is not None
-            else 0
-        )
+        return self.__video_stream.get(cv2.CAP_PROP_FRAME_COUNT) if self.__video_stream is not None else 0
 
     # 当前帧坐标
     @property
@@ -68,19 +64,11 @@ class AbstractVedio:
         return self.get_frame_index()
 
     def get_frame_index(self) -> int:
-        return (
-            int(self.__video_stream.get(cv2.CAP_PROP_POS_FRAMES))
-            if self.__video_stream is not None
-            else 0
-        )
+        return int(self.__video_stream.get(cv2.CAP_PROP_POS_FRAMES)) if self.__video_stream is not None else 0
 
     def set_frame_index(self, num: int) -> None:
         if num > self.get_frame_num():
-            EXCEPTION.fatal(
-                'Frame index "{1}" is out of range "{2}"'.format(
-                    num, self.get_frame_num()
-                )
-            )
+            EXCEPTION.fatal('Frame index "{1}" is out of range "{2}"'.format(num, self.get_frame_num()))
         elif num < 0:
             EXCEPTION.fatal("You cannot set negative frame index.")
         else:
@@ -120,17 +108,12 @@ class AbstractVedio:
             self._init()
         if not self.__stopped:
             if self.__frame_index_to_set >= 0:
-                self.__video_stream.set(
-                    cv2.CAP_PROP_POS_FRAMES, self.__frame_index_to_set
-                )
+                self.__video_stream.set(cv2.CAP_PROP_POS_FRAMES, self.__frame_index_to_set)
                 self.__frame_index_to_set = -1
             # 处理当前Frame
             if (current_frame := self.__video_stream.read()[1]) is not None:
                 current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2RGB)
-                if (
-                    current_frame.shape[0] != surface.get_width()
-                    or current_frame.shape[1] != surface.get_height()
-                ):
+                if current_frame.shape[0] != surface.get_width() or current_frame.shape[1] != surface.get_height():
                     current_frame = cv2.resize(current_frame, surface.get_size())
                 pygame.surfarray.blit_array(surface, current_frame.swapaxes(0, 1))
 
@@ -189,10 +172,7 @@ class VedioSurface(AbstractVedio):
             # 检测循环
             if self.get_frame_index() < self.get_frame_num():
                 # 如果有设置末端且当前已经超出末端
-                if (
-                    self._ending_point >= 0
-                    and self.get_frame_index() >= self._ending_point
-                ):
+                if self._ending_point >= 0 and self.get_frame_index() >= self._ending_point:
                     self.__looped_times += 1
                     if not self.__loop:
                         self.stop()
@@ -237,12 +217,8 @@ class VedioPlayer(AbstractVedio):
         super().draw(surface)
         if self.is_playing():
             if self.get_frame_index() <= self.get_frame_num():
-                current_frame_index_based_on_music: int = round(
-                    Music.get_pos() / 1000 * self._frame_rate
-                )
-                frame_difference: int = (
-                    current_frame_index_based_on_music - self.get_frame_index()
-                )
+                current_frame_index_based_on_music: int = round(Music.get_pos() / 1000 * self._frame_rate)
+                frame_difference: int = current_frame_index_based_on_music - self.get_frame_index()
                 # 如果播放速度太慢
                 if frame_difference >= self._frame_buffer_num:
                     self.set_frame_index(current_frame_index_based_on_music)

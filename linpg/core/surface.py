@@ -2,9 +2,7 @@ from .shape import *
 
 # 图形接口
 class AbstractImage(Rect):
-    def __init__(
-        self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str
-    ):
+    def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str):
         super().__init__(x, y, width, height)
         self.img: any = img
         self.hidden: bool = False
@@ -40,9 +38,7 @@ class AbstractImage(Rect):
         return self.img.copy()
 
     # 更新图片
-    def update_image(
-        self, img_path: Union[str, ImageSurface], ifConvertAlpha: bool = True
-    ) -> None:
+    def update_image(self, img_path: Union[str, ImageSurface], ifConvertAlpha: bool = True) -> None:
         self.img = IMG.quickly_load(img_path, ifConvertAlpha)
 
     # 旋转
@@ -66,17 +62,13 @@ class DynamicImage(AbstractImage):
 
     # 返回一个复制
     def copy(self):
-        replica = DynamicImage(
-            self.get_image_copy(), self.x, self.y, self._width, self._height, self.tag
-        )
+        replica = DynamicImage(self.get_image_copy(), self.x, self.y, self._width, self._height, self.tag)
         self.img.set_alpha(255)
         return replica
 
     # 返回一个浅复制品
     def light_copy(self):
-        return DynamicImage(
-            self.img, self.x, self.y, self._width, self._height, self.tag
-        )
+        return DynamicImage(self.img, self.x, self.y, self._width, self._height, self.tag)
 
     # 反转
     def flip(self, vertical: bool = False, horizontal: bool = False) -> None:
@@ -89,9 +81,7 @@ class DynamicImage(AbstractImage):
             self.__processed_img.set_alpha(self.get_alpha())
 
     # 更新图片
-    def update_image(
-        self, img_path: Union[str, ImageSurface], ifConvertAlpha: bool
-    ) -> None:
+    def update_image(self, img_path: Union[str, ImageSurface], ifConvertAlpha: bool) -> None:
         super().update_image(img_path, ifConvertAlpha=ifConvertAlpha)
         self.__processed_img = None
 
@@ -104,10 +94,7 @@ class DynamicImage(AbstractImage):
     def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
         if not self.hidden:
             if not Setting.low_memory_mode:
-                if (
-                    self.__processed_img is None
-                    or self.__processed_img.get_size() != self.size
-                ):
+                if self.__processed_img is None or self.__processed_img.get_size() != self.size:
                     self.__processed_img = IMG.smoothly_resize(self.img, self.size)
                 surface.blit(self.__processed_img, Pos.add(self.pos, offSet))
             else:
@@ -116,9 +103,7 @@ class DynamicImage(AbstractImage):
 
 # 有本地坐标的图形接口
 class AdvancedAbstractImage(AbstractImage):
-    def __init__(
-        self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""
-    ):
+    def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         super().__init__(img, x, y, width, height, tag)
         self._local_x: int = 0
         self._local_y: int = 0
@@ -208,15 +193,11 @@ class StaticImage(AdvancedAbstractImage):
         super().__init__(IMG.quickly_load(img), x, y, width, height, tag)
         self.__processed_img: ImageSurface = None
         self.__is_flipped: bool = False
-        self.__need_update: bool = (
-            True if self._width >= 0 and self._height >= 0 else False
-        )
+        self.__need_update: bool = True if self._width >= 0 and self._height >= 0 else False
         self.__crop_rect: object = None
 
     # 更新图片
-    def update_image(
-        self, img_path: Union[str, ImageSurface], ifConvertAlpha: bool = True
-    ) -> None:
+    def update_image(self, img_path: Union[str, ImageSurface], ifConvertAlpha: bool = True) -> None:
         super().update_image(img_path, ifConvertAlpha)
         self.__need_update = True
 
@@ -265,23 +246,13 @@ class StaticImage(AdvancedAbstractImage):
             else:
                 pass
         else:
-            EXCEPTION.fatal(
-                "You have to input either a None or a Rect, not {}".format(type(rect))
-            )
+            EXCEPTION.fatal("You have to input either a None or a Rect, not {}".format(type(rect)))
 
     # 更新图片
     def _update_img(self) -> None:
-        imgTmp = (
-            IMG.smoothly_resize(self.img, self.size)
-            if Setting.antialias is True
-            else IMG.resize(self.img, self.size)
-        )
+        imgTmp = IMG.smoothly_resize(self.img, self.size) if Setting.antialias is True else IMG.resize(self.img, self.size)
         rect = imgTmp.get_bounding_rect()
-        if (
-            self.width != rect.width
-            or self.height != rect.height
-            or self.__crop_rect is not None
-        ):
+        if self.width != rect.width or self.height != rect.height or self.__crop_rect is not None:
             if self.__crop_rect is not None:
                 new_x: int = max(rect.x, self.__crop_rect.x)
                 new_y: int = max(rect.y, self.__crop_rect.y)
@@ -306,9 +277,7 @@ class StaticImage(AdvancedAbstractImage):
         self.flip_original_img()
 
     # 反转原图
-    def flip_original_img(
-        self, horizontal: bool = True, vertical: bool = False
-    ) -> None:
+    def flip_original_img(self, horizontal: bool = True, vertical: bool = False) -> None:
         self.img = IMG.flip(self.img, horizontal, vertical)
         self.__need_update = True
 
@@ -343,12 +312,8 @@ class StaticImage(AdvancedAbstractImage):
             mouse_pos = Controller.mouse.pos
         if self.__processed_img is not None:
             return (
-                0
-                < mouse_pos[0] - self.x - self._local_x
-                < self.__processed_img.get_width()
-                and 0
-                < mouse_pos[1] - self.y - self._local_y
-                < self.__processed_img.get_height()
+                0 < mouse_pos[0] - self.x - self._local_x < self.__processed_img.get_width()
+                and 0 < mouse_pos[1] - self.y - self._local_y < self.__processed_img.get_height()
             )
         else:
             return False
@@ -632,24 +597,8 @@ class DynamicTextSurface(TextSurface):
             surface.blit(
                 self.big_font_surface,
                 (
-                    int(
-                        self.x
-                        - (
-                            self.big_font_surface.get_width()
-                            - self.font_surface.get_width()
-                        )
-                        / 2
-                        + offSet[0]
-                    ),
-                    int(
-                        self.y
-                        - (
-                            self.big_font_surface.get_height()
-                            - self.font_surface.get_height()
-                        )
-                        / 2
-                        + offSet[1]
-                    ),
+                    int(self.x - (self.big_font_surface.get_width() - self.font_surface.get_width()) / 2 + offSet[0]),
+                    int(self.y - (self.big_font_surface.get_height() - self.font_surface.get_height()) / 2 + offSet[1]),
                 ),
             )
         else:

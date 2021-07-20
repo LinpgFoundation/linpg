@@ -52,16 +52,13 @@ if __name__ == "__main__":
                             ext_modules=cythonize(
                                 path,
                                 show_all_warnings=True,
-                                annotate=True,
+                                annotate=keep_html_files,
                                 language_level="3",
                             )
                         )
                         # 删除c文件
                         if not keep_c_files:
                             os.remove(path.replace(".py", ".c"))
-                        # 删除html文件
-                        if not keep_html_files:
-                            os.remove(path.replace(".py", ".html"))
                     # 如果是文本文件
                     else:
                         files_for_setup.append(path)

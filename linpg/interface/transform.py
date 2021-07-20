@@ -12,15 +12,9 @@ class Transformer:
         return IMG.rotate(img, angle)
 
     def resize(self, img: ImageSurface, size: tuple[number]) -> ImageSurface:
-        return (
-            IMG.smoothly_resize(img, size)
-            if Setting.antialias is True
-            else IMG.resize(img, size)
-        )
+        return IMG.smoothly_resize(img, size) if Setting.antialias is True else IMG.resize(img, size)
 
-    def crop(
-        self, img: ImageSurface, pos: tuple[number], size: tuple[number]
-    ) -> ImageSurface:
+    def crop(self, img: ImageSurface, pos: tuple[number], size: tuple[number]) -> ImageSurface:
         return IMG.crop(img, pos, size)
 
     # 移除掉图片周围的透明像素

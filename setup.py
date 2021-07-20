@@ -9,9 +9,7 @@ if not os.path.exists(info_json_path):
 with open(info_json_path, "r", encoding="utf-8") as f:
     Data = json.load(f)
     INFO: dict = {
-        "version": "{0}.{1}.{2}".format(
-            Data["version"], Data["revision"], Data["patch"]
-        ),
+        "version": "{0}.{1}.{2}".format(Data["version"], Data["revision"], Data["patch"]),
         "author_email": Data["author_email"],
         "description": Data["short_description"],
         "url": Data["repository_url"],

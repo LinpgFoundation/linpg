@@ -91,9 +91,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
             if self.__bgm_path is not None:
                 self.__audio.set_volume(self.__bgm_volume)
         else:
-            EXCEPTION.fatal(
-                "Volume '{}' is out of the range! (must between 0 and 1)".format(volume)
-            )
+            EXCEPTION.fatal("Volume '{}' is out of the range! (must between 0 and 1)".format(volume))
 
     # 播放bgm
     def play_bgm(self) -> None:
@@ -154,9 +152,7 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
 
     # 获取需要保存的数据（子类必须实现）
     def _get_data_need_to_save(self) -> dict:
-        EXCEPTION.fatal(
-            "The child class needs to implement _get_data_need_to_save() function!"
-        )
+        EXCEPTION.fatal("The child class needs to implement _get_data_need_to_save() function!")
 
     # 保存进度
     def save_progress(self) -> None:

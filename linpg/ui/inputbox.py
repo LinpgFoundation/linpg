@@ -54,9 +54,7 @@ class SingleLineInputBox(AbstractInputBox):
         super().__init__(x, y, font_size, txt_color, default_width)
         self._text: str = ""
         self._left_ctrl_pressing: bool = False
-        self._padding: int = int(
-            (self.input_box.height - self._holder.get_height()) / 2
-        )
+        self._padding: int = int((self.input_box.height - self._holder.get_height()) / 2)
 
     def get_text(self) -> str:
         self.need_save = False
@@ -76,9 +74,7 @@ class SingleLineInputBox(AbstractInputBox):
 
     def _add_char(self, char: str) -> None:
         if len(char) > 0:
-            self._text = (
-                self._text[: self.holderIndex] + char + self._text[self.holderIndex :]
-            )
+            self._text = self._text[: self.holderIndex] + char + self._text[self.holderIndex :]
             self.holderIndex += len(char)
             self._reset_inputbox_width()
         else:
@@ -87,15 +83,11 @@ class SingleLineInputBox(AbstractInputBox):
     def _remove_char(self, action: str) -> None:
         if action == "ahead":
             if self.holderIndex > 0:
-                self._text = (
-                    self._text[: self.holderIndex - 1] + self._text[self.holderIndex :]
-                )
+                self._text = self._text[: self.holderIndex - 1] + self._text[self.holderIndex :]
                 self.holderIndex -= 1
         elif action == "behind":
             if self.holderIndex < len(self._text):
-                self._text = (
-                    self._text[: self.holderIndex] + self._text[self.holderIndex + 1 :]
-                )
+                self._text = self._text[: self.holderIndex] + self._text[self.holderIndex + 1 :]
         else:
             EXCEPTION.fatal("Action has to be either 'ahead' or 'behind'!")
         self._reset_inputbox_width()
@@ -106,9 +98,7 @@ class SingleLineInputBox(AbstractInputBox):
         new_width = 0
         i = 0
         for i in range(len(self._text)):
-            new_width = (
-                self.FONT.estimate_text_width(self._text[:i]) + self.FONT.size * 0.25
-            )
+            new_width = self.FONT.estimate_text_width(self._text[:i]) + self.FONT.size * 0.25
             if new_width > local_x:
                 break
             else:
@@ -170,9 +160,7 @@ class SingleLineInputBox(AbstractInputBox):
                 surface.blit(
                     self._holder,
                     (
-                        self.x
-                        + self._padding
-                        + self.FONT.estimate_text_width(self._text[: self.holderIndex]),
+                        self.x + self._padding + self.FONT.estimate_text_width(self._text[: self.holderIndex]),
                         self.y + self._padding,
                     ),
                 )
@@ -188,11 +176,7 @@ class SingleLineInputBox(AbstractInputBox):
                     self.need_save = True
                 else:
                     self._add_char(event.unicode)
-            elif (
-                event.type == MOUSE_BUTTON_DOWN
-                and event.button == 1
-                and self.active is True
-            ):
+            elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and self.active is True:
                 if (
                     self.x <= Controller.mouse.x <= self.x + self.input_box.width
                     and self.y <= Controller.mouse.y <= self.y + self.input_box.height
@@ -243,9 +227,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             self._text = new_txt
             self._reset_inputbox_size()
         else:
-            EXCEPTION.fatal(
-                "The new_txt for MultipleLinesInputBox.set_text() must be a list!"
-            )
+            EXCEPTION.fatal("The new_txt for MultipleLinesInputBox.set_text() must be a list!")
 
     def set_fontsize(self, font_size: int) -> None:
         super().set_fontsize(font_size)
@@ -273,9 +255,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         if len(char) > 0:
             if "\n" not in char:
                 self._text[self.lineId] = (
-                    self._text[self.lineId][: self.holderIndex]
-                    + char
-                    + self._text[self.lineId][self.holderIndex :]
+                    self._text[self.lineId][: self.holderIndex] + char + self._text[self.lineId][self.holderIndex :]
                 )
                 self.holderIndex += len(char)
                 self._reset_inputbox_width()
@@ -300,8 +280,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         if action == "ahead":
             if self.holderIndex > 0:
                 self._text[self.lineId] = (
-                    self._text[self.lineId][: self.holderIndex - 1]
-                    + self._text[self.lineId][self.holderIndex :]
+                    self._text[self.lineId][: self.holderIndex - 1] + self._text[self.lineId][self.holderIndex :]
                 )
                 self.holderIndex -= 1
             elif self.lineId > 0:
@@ -318,8 +297,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         elif action == "behind":
             if self.holderIndex < len(self._text[self.lineId]):
                 self._text[self.lineId] = (
-                    self._text[self.lineId][: self.holderIndex]
-                    + self._text[self.lineId][self.holderIndex + 1 :]
+                    self._text[self.lineId][: self.holderIndex] + self._text[self.lineId][self.holderIndex + 1 :]
                 )
             elif self.lineId < len(self._text) - 1:
                 # 如果下一行有内容
@@ -341,10 +319,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         new_width = 0
         i = 0
         for i in range(len(self._text[self.lineId])):
-            new_width = (
-                self.FONT.estimate_text_width(self._text[self.lineId][:i])
-                + self.FONT.size * 0.25
-            )
+            new_width = self.FONT.estimate_text_width(self._text[self.lineId][:i]) + self.FONT.size * 0.25
             if new_width > local_x:
                 break
             else:
@@ -364,18 +339,13 @@ class MultipleLinesInputBox(AbstractInputBox):
                         self._remove_char("behind")
                     elif event.key == Key.ARROW_LEFT and self.holderIndex > 0:
                         self.holderIndex -= 1
-                    elif event.key == Key.ARROW_RIGHT and self.holderIndex < len(
-                        self._text[self.lineId]
-                    ):
+                    elif event.key == Key.ARROW_RIGHT and self.holderIndex < len(self._text[self.lineId]):
                         self.holderIndex += 1
                     elif event.key == Key.ARROW_UP and self.lineId > 0:
                         self.lineId -= 1
                         if self.holderIndex > len(self._text[self.lineId]) - 1:
                             self.holderIndex = len(self._text[self.lineId]) - 1
-                    elif (
-                        event.key == Key.ARROW_DOWN
-                        and self.lineId < len(self._text) - 1
-                    ):
+                    elif event.key == Key.ARROW_DOWN and self.lineId < len(self._text) - 1:
                         self.lineId += 1
                         if self.holderIndex > len(self._text[self.lineId]) - 1:
                             self.holderIndex = len(self._text[self.lineId]) - 1
@@ -401,9 +371,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                                 self.lineId + 1,
                                 self._text[self.lineId][self.holderIndex :],
                             )
-                            self._text[self.lineId] = self._text[self.lineId][
-                                : self.holderIndex
-                            ]
+                            self._text[self.lineId] = self._text[self.lineId][: self.holderIndex]
                         self.lineId += 1
                         self.holderIndex = 0
                         self._reset_inputbox_size()
@@ -412,9 +380,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                 elif event.type == MOUSE_BUTTON_DOWN and event.button == 1:
                     if (
                         self.x <= Controller.mouse.x <= self.x + self.input_box.width
-                        and self.y
-                        <= Controller.mouse.y
-                        <= self.y + self.input_box.height
+                        and self.y <= Controller.mouse.y <= self.y + self.input_box.height
                     ):
                         self._reset_holderIndex(Controller.mouse.x, Controller.mouse.y)
                     else:
@@ -445,9 +411,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                     (
                         self.x
                         + self.FONT.size * 0.1
-                        + self.FONT.estimate_text_width(
-                            self._text[self.lineId][: self.holderIndex]
-                        ),
+                        + self.FONT.estimate_text_width(self._text[self.lineId][: self.holderIndex]),
                         self.y + self.lineId * self.deafult_height,
                     ),
                 )
@@ -455,9 +419,7 @@ class MultipleLinesInputBox(AbstractInputBox):
 
 # 控制台
 class Console(SingleLineInputBox):
-    def __init__(
-        self, x: int_f, y: int_f, font_size: int = 32, default_width: int = 150
-    ):
+    def __init__(self, x: int_f, y: int_f, font_size: int = 32, default_width: int = 150):
         self.color_inactive = Color.get("lightskyblue3")
         self.color_active = Color.get("dodgerblue2")
         super().__init__(x, y, font_size, self.color_active, default_width)
@@ -493,9 +455,7 @@ class Console(SingleLineInputBox):
         elif event.key == Key.RETURN:
             if len(self._text) > 0:
                 if self._text.startswith(self.command_indicator):
-                    self._check_command(
-                        self._text[len(self.command_indicator) :].split()
-                    )
+                    self._check_command(self._text[len(self.command_indicator) :].split())
                 else:
                     self._txt_output.append(self._text)
                 self._text_history.append(self._text)
@@ -549,9 +509,7 @@ class Console(SingleLineInputBox):
                     self._txt_output.append("Developer mode is deactivated.")
             else:
                 self._txt_output.append("Unknown status for dev command.")
-        elif (
-            conditions[0] == "linpg" and len(conditions) > 1 and conditions[1] == "info"
-        ):
+        elif conditions[0] == "linpg" and len(conditions) > 1 and conditions[1] == "info":
             self._txt_output.append("Linpg Version: {}".format(Info.current_version))
         elif conditions[0] == "quit":
             Display.quit()
@@ -569,15 +527,11 @@ class Console(SingleLineInputBox):
                 if event.type == MOUSE_BUTTON_DOWN:
                     if (
                         self.x <= Controller.mouse.x <= self.x + self.input_box.width
-                        and self.y
-                        <= Controller.mouse.y
-                        <= self.y + self.input_box.height
+                        and self.y <= Controller.mouse.y <= self.y + self.input_box.height
                     ):
                         self.active = not self.active
                         # Change the current color of the input box.
-                        self.color = (
-                            self.color_active if self.active else self.color_inactive
-                        )
+                        self.color = self.color_active if self.active else self.color_inactive
                     else:
                         self.active = False
                         self.color = self.color_inactive

@@ -49,13 +49,7 @@ class AbstractImage(Rect):
 # 动态图形类
 class DynamicImage(AbstractImage):
     def __init__(
-        self,
-        img: Union[str, ImageSurface],
-        x: int_f,
-        y: int_f,
-        width: int_f = -1,
-        height: int_f = -1,
-        tag: str = "",
+        self, img: Union[str, ImageSurface], x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = ""
     ):
         super().__init__(IMG.quickly_load(img), x, y, width, height, tag)
         self.__processed_img: ImageSurface = None
@@ -182,13 +176,7 @@ class AdvancedAbstractImage(AbstractImage):
 # 用于静态图片的surface
 class StaticImage(AdvancedAbstractImage):
     def __init__(
-        self,
-        img: Union[str, ImageSurface],
-        x: int_f,
-        y: int_f,
-        width: int_f = -1,
-        height: int_f = -1,
-        tag: str = "default",
+        self, img: Union[str, ImageSurface], x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = "default"
     ):
         super().__init__(IMG.quickly_load(img), x, y, width, height, tag)
         self.__processed_img: ImageSurface = None
@@ -293,11 +281,7 @@ class StaticImage(AdvancedAbstractImage):
 
     # 画出轮廓
     def draw_outline(
-        self,
-        surface: ImageSurface,
-        offSet: pos_liked = Pos.ORIGIN,
-        color: any = "red",
-        line_width: int = 2,
+        self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN, color: any = "red", line_width: int = 2
     ) -> None:
         draw_rect(
             surface,
@@ -468,25 +452,6 @@ class MovableImage(StaticImage):
                         self.set_top(self.__default_y)
 
 
-# 获取图片的subsurface
-def get_img_subsurface(img: ImageSurface, rect: RectLiked) -> ImageSurface:
-    if isinstance(rect, pygame.Rect):
-        return img.subsurface(rect)
-    else:
-        return img.subsurface(convert_to_pygame_rect(rect))
-
-
-# 获取特定颜色的表面
-def get_single_color_surface(color, size=None) -> StaticImage:
-    # 如果size是none，则使用屏幕的尺寸
-    if size is None:
-        size = Display.get_size()
-    # 获取surface
-    surfaceTmp = new_surface(size).convert()
-    surfaceTmp.fill(color)
-    return StaticImage(surfaceTmp, 0, 0, size[0], size[1])
-
-
 # gif图片管理
 class GifImage(AdvancedAbstractImage):
     def __init__(
@@ -603,20 +568,3 @@ class DynamicTextSurface(TextSurface):
             )
         else:
             surface.blit(self.font_surface, Pos.add(self.pos, offSet))
-
-
-# 高级文字制作模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
-def load_dynamic_text(
-    txt: any,
-    color: color_liked,
-    pos: tuple,
-    size: int = 50,
-    ifBold: bool = False,
-    ifItalic: bool = False,
-) -> DynamicTextSurface:
-    return DynamicTextSurface(
-        Font.render(txt, color, size, ifBold, ifItalic),
-        Font.render(txt, color, size * 1.5, ifBold, ifItalic),
-        pos[0],
-        pos[1],
-    )

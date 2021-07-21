@@ -102,10 +102,10 @@ class DisplayController:
     # 退出
     @staticmethod
     def quit() -> None:
-        from sys import exit
+        from sys import exit as CLOSE
 
         # 退出游戏
-        exit()
+        CLOSE()
 
 
 # 帧率控制器

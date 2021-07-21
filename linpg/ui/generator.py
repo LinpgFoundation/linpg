@@ -131,13 +131,11 @@ class UiGenerator:
                     0,
                 )
             elif data["type"] == "dynamic_text":
-                item_t = load_dynamic_text(
-                    data["src"],
-                    data["color"],
-                    (0, 0),
-                    data["font_size"],
-                    data["bold"],
-                    data["italic"],
+                item_t = DynamicTextSurface(
+                    Font.render(data["src"], data["color"], data["font_size"], data["bold"], data["italic"]),
+                    Font.render(data["src"], data["color"], data["font_size"] * 1.5, data["bold"], data["italic"]),
+                    0,
+                    0,
                 )
             else:
                 item_t = DropDownSingleChoiceList(data["src"], 0, 0, data["font_size"], data["color"])

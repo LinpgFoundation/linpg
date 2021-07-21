@@ -35,15 +35,9 @@ class LanguageManager:
         # 获取当前所有完整的可用语言的列表
         self.__LANG_AVAILABLE.clear()
         for lang_file in glob(os.path.join(self.__LANG_PATH_PATTERN)):
-            if (
-                os.path.exists(
-                    os.path.join(
-                        self.__EX_LANG_FOLDER,
-                        os.path.basename(lang_file).replace(".json", ".yaml"),
-                    )
-                )
-                or os.path.exists(os.path.join(self.__EX_LANG_FOLDER, os.path.basename(lang_file)))
-            ):
+            if os.path.exists(
+                os.path.join(self.__EX_LANG_FOLDER, os.path.basename(lang_file).replace(".json", ".yaml"))
+            ) or os.path.exists(os.path.join(self.__EX_LANG_FOLDER, os.path.basename(lang_file))):
                 self.__LANG_AVAILABLE.append(Config.load(lang_file, "Language"))
 
     # 整理语言文件
@@ -72,10 +66,7 @@ class LanguageManager:
         return get_value_by_keys(self.__LANG_DATA, key)
 
     def get_text_by_keys(self, keys: Union[tuple, list]) -> any:
-        if isinstance(keys, tuple):
-            return get_value_by_keys(self.__LANG_DATA, keys)
-        else:
-            return get_value_by_keys(self.__LANG_DATA, tuple(keys))
+        return get_value_by_keys(self.__LANG_DATA, keys if isinstance(keys, tuple) else tuple(keys))
 
     # 尝试根据key(s)获取对应的语言
     def try_to_get_text(self, *key: str) -> any:

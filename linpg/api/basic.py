@@ -27,6 +27,11 @@ def is_using_pyglet() -> bool:
     return _LIBRARY_INDICATOR
 
 
+# 获取正在使用的库的信息
+def get_library_info() -> str:
+    return "pygame {}".format(pygame.version.ver) if not _LIBRARY_INDICATOR else "pyglet {}".format(pyglet.version)
+
+
 """linpg自带属性"""
 # int_f指参数推荐输入int, 但一开始接受时可以为float，但最后会转换为int
 int_f = Union[int, float]
@@ -77,10 +82,7 @@ def convert_percentage(percentage: Union[str, float]) -> float:
 
 # 获取Surface
 def new_surface(size: size_liked, surface_flags: any = None) -> ImageSurface:
-    if surface_flags is not None:
-        return pygame.Surface(size, flags=surface_flags)
-    else:
-        return pygame.Surface(size)
+    return pygame.Surface(size, flags=surface_flags) if surface_flags is not None else pygame.Surface(size)
 
 
 # 获取透明的Surface

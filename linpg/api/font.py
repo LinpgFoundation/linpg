@@ -132,12 +132,7 @@ class FontManage:
 
     # 文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
     def render(
-        self,
-        txt: any,
-        color: color_liked,
-        size: int_f,
-        ifBold: bool = False,
-        ifItalic: bool = False,
+        self, txt: any, color: color_liked, size: int_f, ifBold: bool = False, ifItalic: bool = False
     ) -> ImageSurface:
         self.__LINPG_LAST_FONT.check_for_update(size, ifBold, ifItalic)
         return self.__LINPG_LAST_FONT.render(txt, color)

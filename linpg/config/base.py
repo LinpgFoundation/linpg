@@ -39,10 +39,7 @@ class LinpgExceptionHandler:
         if not os.path.exists(self.__CRASH_REPORTS_PATH):
             os.mkdir(self.__CRASH_REPORTS_PATH)
         with open(
-            os.path.join(
-                self.__CRASH_REPORTS_PATH,
-                "crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S")),
-            ),
+            os.path.join(self.__CRASH_REPORTS_PATH, "crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))),
             "w",
             encoding="utf-8",
         ) as f:
@@ -56,10 +53,7 @@ class LinpgExceptionHandler:
         if not os.path.exists(self.__CRASH_REPORTS_PATH):
             os.mkdir(self.__CRASH_REPORTS_PATH)
         with open(
-            os.path.join(
-                self.__CRASH_REPORTS_PATH,
-                "crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S")),
-            ),
+            os.path.join(self.__CRASH_REPORTS_PATH, "crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))),
             "w",
             encoding="utf-8",
         ) as f:

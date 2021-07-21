@@ -5,21 +5,21 @@ _CHARACTERS_GET_HURT_IMAGE_DICT: dict = {}
 _IMAGE_FOLDER_PATH: str = "Assets/image/npc"
 
 # 角色受伤立绘图形模块
-class EntityGetHurtImage(GameObject):
+class EntityGetHurtImage(Square):
     def __init__(self, self_type: str, y: number, width: int):
-        super().__init__(None, y)
+        super().__init__(None, y, width)
         self.yToGo = None
-        self.width = int(width)
         self.alpha: int = 255
         self.add(self_type)
 
     def draw(self, screen: ImageSurface, characterType: str) -> None:
-        GetHurtImage = IMG.resize(_CHARACTERS_GET_HURT_IMAGE_DICT[characterType], (self.width, self.width))
+        GetHurtImage = IMG.resize(_CHARACTERS_GET_HURT_IMAGE_DICT[characterType], self.size)
         if self.alpha != 255:
             GetHurtImage.set_alpha(self.alpha)
-        screen.blit(GetHurtImage, (self.x, self.y))
+        screen.blit(GetHurtImage, self.pos)
 
-    def add(self, characterType: str) -> None:
+    @staticmethod
+    def add(characterType: str) -> None:
         global _CHARACTERS_GET_HURT_IMAGE_DICT
         if characterType not in _CHARACTERS_GET_HURT_IMAGE_DICT:
             _CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = IMG.quickly_load(
@@ -40,7 +40,8 @@ class EntityDynamicProgressBarSurface(DynamicProgressBarSurface):
         self.load_image()
 
     # 检测被察觉的图标是否生产，如果没有则生成
-    def load_image(self):
+    @staticmethod
+    def load_image():
         global _BEING_NOTICED_IMG, _FULLY_EXPOSED_IMG, _ORANGE_VIGILANCE_IMG, _RED_VIGILANCE_IMG
         # 被察觉图标
         if _BEING_NOTICED_IMG is None:
@@ -116,7 +117,8 @@ class EntityHpBar(DynamicProgressBarSurface):
         self.load_image()
 
     # 检测被察觉的图标是否生产，如果没有则生成
-    def load_image(self):
+    @staticmethod
+    def load_image():
         global _HP_GREEN_IMG, _HP_RED_IMG, _HP_EMPTY_IMG
         if _HP_GREEN_IMG is None:
             _HP_GREEN_IMG = IMG.quickly_load(r"Assets/image/UI/hp_green.png")
@@ -263,7 +265,7 @@ def calculate_range(effective_range_dic: dict) -> int:
 # 角色图片管理模块
 class EntityImageManager:
     def __init__(self):
-        self.__CHARACTERS_IMAGE_DICT = {}
+        self.__CHARACTERS_IMAGE_DICT: dict = {}
 
     def get_img(self, characterType: str, action: str, imgId: int) -> ImageSurface:
         return self.__CHARACTERS_IMAGE_DICT[characterType][action]["img"][imgId]

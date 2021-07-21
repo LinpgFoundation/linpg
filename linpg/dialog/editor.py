@@ -67,8 +67,8 @@ class DialogEditor(AbstractDialogSystem):
         self.UIContainerRightButton.rotate(90)
         # UI按钮
         CONFIG = Lang.get_text("DialogCreator")
-        button_y = int(Display.get_height() * 0.03)
-        font_size = int(button_width / 3)
+        button_y: int = int(Display.get_height() * 0.03)
+        font_size: int = int(button_width / 3)
         # 控制容器转换的按钮
         self.button_select_background = load_button_with_text_in_center(
             os.path.join(DIALOG_UI_PATH, "menu.png"), CONFIG["background"], "black", font_size, (0, button_y * 2), 150
@@ -243,8 +243,7 @@ class DialogEditor(AbstractDialogSystem):
 
     # 检查是否有任何改动
     def __no_changes_were_made(self) -> bool:
-        dialog_file_location_t: str = self.get_dialog_file_location()
-        if os.path.exists(dialog_file_location_t):
+        if os.path.exists((dialog_file_location_t := self.get_dialog_file_location())):
             return Config.load(dialog_file_location_t, "dialogs") == self.__slipt_the_stuff_need_save()
         else:
             return False
@@ -308,54 +307,55 @@ class DialogEditor(AbstractDialogSystem):
 
     # 获取下一个对话的ID
     def __get_next_id(self, surface: ImageSurface) -> Union[str, int, None]:
-        if "next_dialog_id" in self.dialog_content[self._dialog_id]:
-            theNext: dict = self.dialog_content[self._dialog_id]["next_dialog_id"]
-            if theNext is not None:
-                if theNext["type"] == "default" or theNext["type"] == "changeScene":
-                    return theNext["target"]
-                elif theNext["type"] == "option":
-                    optionBox_y_base = (
-                        surface.get_height() * 3 / 4 - (len(theNext["target"])) * 2 * surface.get_width() * 0.03
-                    ) / 4
-                    option_button_height = surface.get_width() * 0.05
-                    screenshot = surface.copy()
-                    # 等待玩家选择一个选项
-                    while True:
-                        surface.blit(screenshot, (0, 0))
-                        for i in range(len(theNext["target"])):
-                            button = theNext["target"][i]
-                            option_txt = self._dialog_txt_system.FONT.render(button["txt"], Color.WHITE)
-                            option_button_width = int(option_txt.get_width() + surface.get_width() * 0.05)
-                            option_button_x = int((surface.get_width() - option_button_width) / 2)
-                            option_button_y = int((i + 1) * 2 * surface.get_width() * 0.03 + optionBox_y_base)
-                            if (
-                                0 < Controller.mouse.x - option_button_x < option_button_width
-                                and 0 < Controller.mouse.y - option_button_y < option_button_height
-                            ):
-                                self._option_box_selected_surface.set_size(option_button_width, option_button_height)
-                                self._option_box_selected_surface.set_pos(option_button_x, option_button_y)
-                                self._option_box_selected_surface.draw(surface)
-                                display_in_center(
-                                    option_txt,
-                                    self._option_box_selected_surface,
-                                    self._option_box_selected_surface.x,
-                                    self._option_box_selected_surface.y,
-                                    surface,
-                                )
-                                if Controller.get_event("confirm"):
-                                    return button["id"]
-                            else:
-                                self._option_box_surface.set_size(option_button_width, option_button_height)
-                                self._option_box_surface.set_pos(option_button_x, option_button_y)
-                                self._option_box_surface.draw(surface)
-                                display_in_center(
-                                    option_txt,
-                                    self._option_box_surface,
-                                    self._option_box_surface.x,
-                                    self._option_box_surface.y,
-                                    surface,
-                                )
-                        Display.flip()
+        if (
+            "next_dialog_id" in self.dialog_content[self._dialog_id]
+            and (theNext := self.dialog_content[self._dialog_id]["next_dialog_id"]) is not None
+        ):
+            if theNext["type"] == "default" or theNext["type"] == "changeScene":
+                return theNext["target"]
+            elif theNext["type"] == "option":
+                optionBox_y_base = (
+                    surface.get_height() * 3 / 4 - (len(theNext["target"])) * 2 * surface.get_width() * 0.03
+                ) / 4
+                option_button_height = surface.get_width() * 0.05
+                screenshot = surface.copy()
+                # 等待玩家选择一个选项
+                while True:
+                    surface.blit(screenshot, (0, 0))
+                    for i in range(len(theNext["target"])):
+                        button = theNext["target"][i]
+                        option_txt = self._dialog_txt_system.FONT.render(button["txt"], Color.WHITE)
+                        option_button_width = int(option_txt.get_width() + surface.get_width() * 0.05)
+                        option_button_x = int((surface.get_width() - option_button_width) / 2)
+                        option_button_y = int((i + 1) * 2 * surface.get_width() * 0.03 + optionBox_y_base)
+                        if (
+                            0 < Controller.mouse.x - option_button_x < option_button_width
+                            and 0 < Controller.mouse.y - option_button_y < option_button_height
+                        ):
+                            self._option_box_selected_surface.set_size(option_button_width, option_button_height)
+                            self._option_box_selected_surface.set_pos(option_button_x, option_button_y)
+                            self._option_box_selected_surface.draw(surface)
+                            display_in_center(
+                                option_txt,
+                                self._option_box_selected_surface,
+                                self._option_box_selected_surface.x,
+                                self._option_box_selected_surface.y,
+                                surface,
+                            )
+                            if Controller.get_event("confirm"):
+                                return button["id"]
+                        else:
+                            self._option_box_surface.set_size(option_button_width, option_button_height)
+                            self._option_box_surface.set_pos(option_button_x, option_button_y)
+                            self._option_box_surface.draw(surface)
+                            display_in_center(
+                                option_txt,
+                                self._option_box_surface,
+                                self._option_box_surface.x,
+                                self._option_box_surface.y,
+                                surface,
+                            )
+                    Display.flip()
         return None
 
     def draw(self, surface: ImageSurface) -> None:

@@ -142,10 +142,7 @@ def is_hover(imgObject: object, objectPos: pos_liked = Pos.ORIGIN, off_set_x: nu
 
 # 获取图片的subsurface
 def get_img_subsurface(img: ImageSurface, rect: RectLiked) -> ImageSurface:
-    if isinstance(rect, pygame.Rect):
-        return img.subsurface(rect)
-    else:
-        return img.subsurface(convert_to_pygame_rect(rect))
+    return img.subsurface(rect if isinstance(rect, pygame.Rect) else convert_to_pygame_rect(rect))
 
 
 # 圆形类

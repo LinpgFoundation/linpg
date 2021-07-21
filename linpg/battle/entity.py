@@ -19,7 +19,7 @@ class Entity:
         # 最大行动值
         self.max_action_point = DATA["action_point"]
         # 当前行动值
-        self.__current_action_point = DATA["action_point"]
+        self.__current_action_point: int = int(DATA["action_point"])
         # 攻击范围
         self.attack_range = DATA["attack_range"]
         # 当前弹夹的子弹数
@@ -67,8 +67,6 @@ class Entity:
         self.__if_action_loop: bool = True
         # 动作是正序列播放还是反序播放
         self._if_play_action_in_reversing: bool = False
-        # 是否动作已经播放一遍
-        self.__if_action_has_played_once: bool = False
         # 需要移动的路径
         self.__moving_path = None
         # 是否需要重新渲染地图
@@ -108,7 +106,6 @@ class Entity:
         self.reset_imgId(self.__current_action)
         self.__current_action = action
         self.__if_action_loop = ifLoop
-        self.__if_action_has_played_once = False
 
     # 是否闲置
     def is_idle(self) -> bool:
@@ -336,9 +333,9 @@ class Entity:
     # 查看是否一个Entity在该角色的附近
     def near(self, otherEntity: object) -> bool:
         if self.x == otherEntity.x:
-            return True if abs(self.y - otherEntity.y) <= 1 else False
+            return abs(self.y - otherEntity.y) <= 1
         elif self.y == otherEntity.y:
-            return True if abs(self.x - otherEntity.x) <= 1 else False
+            return abs(self.x - otherEntity.x) <= 1
         else:
             return False
 
@@ -526,11 +523,10 @@ class Entity:
                 self.__imgId_dict[self.__current_action]["imgId"] += 1
             # 如果角色图片播放完需要重新播
             elif self.__if_action_loop is True:
-                self.__if_action_has_played_once = True
                 self.__imgId_dict[self.__current_action]["imgId"] = 0
             # 如果角色图片播放完但不打算重新播
             elif self.__if_action_loop is None:
-                self.__if_action_has_played_once = True
+                pass
             # 如果角色图片播放完需要回到待机状态
             elif not self.__if_action_loop:
                 self.set_action()

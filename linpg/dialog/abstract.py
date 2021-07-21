@@ -93,9 +93,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 检测是否缺少关键key
         if safe_mode is True:
             for key in ("characters_img", "background_img", "narrator", "content"):
-                try:
-                    assert key in currentDialogContent
-                except AssertionError:
+                if key not in currentDialogContent:
                     print(currentDialogContent)
                     EXCEPTION.fatal(
                         'Cannot find critical key "{0}" in part "{1}" with id "{2}".'.format(
@@ -124,15 +122,13 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 载入数据
     def _load_content(self) -> None:
-        # 获取该项目的默认语言
-        default_lang_of_dialog: str = self.get_default_lang()
         # 读取目标对话文件的数据
         if os.path.exists(self.get_dialog_file_location()):
             try:
                 dialogDataDict: dict = Config.load(self.get_dialog_file_location(), "dialogs", self._part)
                 assert isinstance(dialogDataDict, dict)
                 # 如果该dialog文件是另一个语言dialog文件的子类
-                if default_lang_of_dialog != Setting.language:
+                if (default_lang_of_dialog := self.get_default_lang()) != Setting.language:
                     self._dialog_data[self._part] = Config.load(
                         self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._part
                     )
@@ -157,7 +153,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                 EXCEPTION.fatal('Cannot load part "{0}" from "{1}"!'.format(self._part, self.get_dialog_file_location()))
         else:
             self._dialog_data[self._part] = Config.load(
-                self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._part
+                self.get_dialog_file_location(self.get_default_lang()), "dialogs", self._part
             )
         # 确认dialog数据合法
         if len(self.dialog_content) == 0:
@@ -180,8 +176,9 @@ class AbstractDialogSystem(AbstractGameSystem):
             if self.__background_image_name is not None:
                 if self.__background_image_name != "<transparent>":
                     # 尝试加载图片式的背景
-                    img_path: str = os.path.join(self._background_image_folder_path, self.__background_image_name)
-                    if os.path.exists(img_path):
+                    if os.path.exists(
+                        (img_path := os.path.join(self._background_image_folder_path, self.__background_image_name))
+                    ):
                         self.__background_image_surface = StaticImage(img_path, 0, 0)
                     # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
                     elif os.path.exists(os.path.join(self._dynamic_background_folder_path, self.__background_image_name)):

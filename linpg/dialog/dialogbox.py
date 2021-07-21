@@ -100,7 +100,6 @@ class DialogBox:
         self.__fade_out_stage = False
         self.dialoguebox_height = 0
         self.dialoguebox_y = None
-        self.__txt_alpha = 255
 
     # 获取文字播放时的音效的音量
     def get_sound_volume(self) -> float:

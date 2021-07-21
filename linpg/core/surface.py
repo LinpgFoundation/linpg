@@ -283,12 +283,7 @@ class StaticImage(AdvancedAbstractImage):
     def draw_outline(
         self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN, color: any = "red", line_width: int = 2
     ) -> None:
-        draw_rect(
-            surface,
-            color,
-            (Pos.add(self.abs_pos, offSet), self.__processed_img.get_size()),
-            line_width,
-        )
+        draw_rect(surface, color, (Pos.add(self.abs_pos, offSet), self.__processed_img.get_size()), line_width)
 
     # 是否被鼠标触碰
     def is_hover(self, mouse_pos: pos_liked = NoSize) -> bool:
@@ -455,15 +450,8 @@ class MovableImage(StaticImage):
 # gif图片管理
 class GifImage(AdvancedAbstractImage):
     def __init__(
-        self,
-        imgList: numpy.ndarray,
-        x: int_f,
-        y: int_f,
-        width: int_f,
-        height: int_f,
-        updateGap: int_f,
-        tag: str = "default",
-    ):
+        self, imgList: numpy.ndarray, x: int_f, y: int_f, width: int_f, height: int_f, updateGap: int_f, tag: str = "default"
+    ) -> None:
         super().__init__(imgList, x, y, width, height, tag)
         self.imgId: int = 0
         self.updateGap: int = max(int(updateGap), 0)
@@ -471,25 +459,11 @@ class GifImage(AdvancedAbstractImage):
 
     # 返回一个复制
     def copy(self):
-        return GifImage(
-            self.get_image_copy(),
-            self.x,
-            self.y,
-            self._width,
-            self._height,
-            self.updateGap,
-        )
+        return GifImage(self.get_image_copy(), self.x, self.y, self._width, self._height, self.updateGap)
 
     # 返回一个浅复制品
     def light_copy(self):
-        return GifImage(
-            self.img,
-            self.x,
-            self.y,
-            self._width,
-            self._height,
-            self.updateGap,
-        )
+        return GifImage(self.img, self.x, self.y, self._width, self._height, self.updateGap)
 
     # 当前图片
     @property

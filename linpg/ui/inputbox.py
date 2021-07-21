@@ -3,14 +3,7 @@ from .container import *
 
 # 输入框Abstract，请勿实体化
 class AbstractInputBox(GameObject2d):
-    def __init__(
-        self,
-        x: int_f,
-        y: int_f,
-        font_size: int,
-        txt_color: color_liked,
-        default_width: int,
-    ):
+    def __init__(self, x: int_f, y: int_f, font_size: int, txt_color: color_liked, default_width: int) -> None:
         super().__init__(x, y)
         self.FONT = Font.create(font_size)
         self.default_width = default_width
@@ -43,14 +36,7 @@ class AbstractInputBox(GameObject2d):
 
 # 单行输入框
 class SingleLineInputBox(AbstractInputBox):
-    def __init__(
-        self,
-        x: int_f,
-        y: int_f,
-        font_size: int,
-        txt_color: color_liked,
-        default_width: int = 150,
-    ):
+    def __init__(self, x: int_f, y: int_f, font_size: int, txt_color: color_liked, default_width: int = 150) -> None:
         super().__init__(x, y, font_size, txt_color, default_width)
         self._text: str = ""
         self._left_ctrl_pressing: bool = False
@@ -93,10 +79,10 @@ class SingleLineInputBox(AbstractInputBox):
         self._reset_inputbox_width()
 
     def _reset_holderIndex(self, mouse_x: int) -> None:
-        last_width = 0
-        local_x = mouse_x - self.x
-        new_width = 0
-        i = 0
+        last_width: cython.int = 0
+        local_x: cython.int = mouse_x - self.x
+        new_width: cython.int = 0
+        i: cython.int = 0
         for i in range(len(self._text)):
             new_width = self.FONT.estimate_text_width(self._text[:i]) + self.FONT.size * 0.25
             if new_width > local_x:
@@ -111,10 +97,7 @@ class SingleLineInputBox(AbstractInputBox):
     def _reset_inputbox_width(self) -> None:
         if self._text is not None and len(self._text) > 0:
             self.input_box.set_width(
-                max(
-                    self.default_width,
-                    self.FONT.estimate_text_width(self._text) + self.FONT.size * 0.6,
-                )
+                max(self.default_width, self.FONT.estimate_text_width(self._text) + self.FONT.size * 0.6)
             )
         else:
             self.input_box.set_width(self.default_width)
@@ -148,13 +131,7 @@ class SingleLineInputBox(AbstractInputBox):
     def _draw_content(self, surface: ImageSurface, with_holder: bool = True) -> None:
         if self._text is not None and len(self._text) > 0:
             font_t = self.FONT.render_with_bounding(self._text, self.txt_color)
-            surface.blit(
-                font_t,
-                (
-                    self.x + self._padding,
-                    self.y + int((self.input_box.height - font_t.get_height()) / 2),
-                ),
-            )
+            surface.blit(font_t, (self.x + self._padding, self.y + int((self.input_box.height - font_t.get_height()) / 2)))
         if with_holder is True:
             if int(time.time() % 2) == 0 or len(Controller.events) > 0:
                 surface.blit(
@@ -201,14 +178,7 @@ class SingleLineInputBox(AbstractInputBox):
 
 # 多行输入框
 class MultipleLinesInputBox(AbstractInputBox):
-    def __init__(
-        self,
-        x: int_f,
-        y: int_f,
-        font_size: int,
-        txt_color: color_liked,
-        default_width: int = 150,
-    ):
+    def __init__(self, x: int_f, y: int_f, font_size: int, txt_color: color_liked, default_width: int = 150) -> None:
         super().__init__(x, y, font_size, txt_color, default_width)
         self._text = [""]
         self.lineId = 0
@@ -314,10 +284,10 @@ class MultipleLinesInputBox(AbstractInputBox):
             self.lineId = 0
         elif self.lineId >= len(self._text):
             self.lineId = len(self._text) - 1
-        last_width = 0
-        local_x = mouse_x - self.x
-        new_width = 0
-        i = 0
+        last_width: cython.int = 0
+        local_x: cython.int = mouse_x - self.x
+        new_width: cython.int = 0
+        i: cython.int = 0
         for i in range(len(self._text[self.lineId])):
             new_width = self.FONT.estimate_text_width(self._text[self.lineId][:i]) + self.FONT.size * 0.25
             if new_width > local_x:
@@ -549,10 +519,7 @@ class Console(SingleLineInputBox):
             for i in range(len(self._txt_output)):
                 screen.blit(
                     self.FONT.render(self._txt_output[i], self.color),
-                    (
-                        self.x + self.FONT.size * 0.25,
-                        self.y - (len(self._txt_output) - i) * self.FONT.size * 1.5,
-                    ),
+                    (self.x + self.FONT.size * 0.25, self.y - (len(self._txt_output) - i) * self.FONT.size * 1.5),
                 )
             # 画出输入框
             draw_rect(screen, self.color, self.input_box, 2)

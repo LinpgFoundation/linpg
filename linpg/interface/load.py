@@ -22,12 +22,7 @@ class Loader:
     # 可自行移动的图片
     @staticmethod
     def movable_image(
-        path: str,
-        position: tuple,
-        target_position: tuple,
-        move_speed: tuple = (0, 0),
-        size: tuple = NoSize,
-        tag="default",
+        path: str, position: tuple, target_position: tuple, move_speed: tuple = (0, 0), size: tuple = NoSize, tag="default"
     ) -> MovableImage:
         return MovableImage(
             path,
@@ -45,12 +40,7 @@ class Loader:
     # 进度条Surface
     @staticmethod
     def progress_bar_surface(
-        img_on_top_path: str,
-        img_on_bottom_path: str,
-        position: tuple,
-        size: tuple,
-        mode: str = "horizontal",
-        tag: str = "",
+        img_on_top_path: str, img_on_bottom_path: str, position: tuple, size: tuple, mode: str = "horizontal", tag: str = ""
     ) -> ProgressBarSurface:
         return ProgressBarSurface(img_on_top_path, img_on_bottom_path, position[0], position[1], size[0], size[1], mode, tag)
 

@@ -8,7 +8,8 @@ class UiGenerator:
         self.__DEFAULT_UI: dict = Config.load_internal("ui.json")
 
     # 检测尺寸是否合法
-    def __make_sure_size(self, item: dict, key: str, value_in_case_percentage: int) -> None:
+    @staticmethod
+    def __make_sure_size(item: dict, key: str, value_in_case_percentage: int) -> None:
         if key not in item:
             EXCEPTION.fatal(
                 'You have to set "{0}" for "{1}".'.format(key, item["name"])
@@ -40,13 +41,7 @@ class UiGenerator:
                     )
 
     # 检测坐标是否合法
-    def __make_sure_pos(
-        self,
-        item: dict,
-        key: str,
-        value_in_case_center: int,
-        value_in_case_percentage: int,
-    ) -> None:
+    def __make_sure_pos(self, item: dict, key: str, value_in_case_center: int, value_in_case_percentage: int) -> None:
         if key not in item:
             item[key] = self.__default_pos
         elif not isinstance(item[key], int):
@@ -120,15 +115,7 @@ class UiGenerator:
             # 生成文字图层
             if data["type"] == "text":
                 item_t = TextSurface(
-                    Font.render(
-                        data["src"],
-                        data["color"],
-                        data["font_size"],
-                        data["bold"],
-                        data["italic"],
-                    ),
-                    0,
-                    0,
+                    Font.render(data["src"], data["color"], data["font_size"], data["bold"], data["italic"]), 0, 0
                 )
             elif data["type"] == "dynamic_text":
                 item_t = DynamicTextSurface(

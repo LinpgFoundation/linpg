@@ -61,9 +61,9 @@ class EnvImagesManagement:
 
     # 加载场景装饰物图片
     def __add_decoration_image(self, decorationType: str, fileName: str) -> None:
-        imgPath: str = os.path.join(self.__DECORATION_IMAGE_PATH, "{}.png".format(fileName))
+        imgPath: str
         # 常规装饰物
-        if os.path.exists(imgPath):
+        if os.path.exists((imgPath := os.path.join(self.__DECORATION_IMAGE_PATH, "{}.png".format(fileName)))):
             # 如果是未被加载过的类型
             if decorationType not in self.__DECORATION_IMAGE_DICT:
                 self.__DECORATION_IMAGE_DICT[decorationType] = {}
@@ -81,8 +81,7 @@ class EnvImagesManagement:
                     self.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName].add_darkness(self.__DARKNESS)
         # 类Gif形式，decorationType应该与fileName一致
         elif decorationType not in self.__DECORATION_IMAGE_DICT:
-            imgPath = os.path.join(self.__DECORATION_IMAGE_PATH, decorationType)
-            if os.path.exists(imgPath):
+            if os.path.exists((imgPath := os.path.join(self.__DECORATION_IMAGE_PATH, decorationType))):
                 self.__DECORATION_IMAGE_DICT[decorationType] = [
                     StaticImage(img_id, 0, 0) for img_id in natural_sort(glob(os.path.join(imgPath, "*.png")))
                 ]
@@ -157,7 +156,7 @@ class EnvImagesManagement:
             else new_surface(screen_size).convert()
         )
         if self.__MAP_SURFACE is not None:
-            self.__MAP_SURFACE.fill((0, 0, 0, 0))
+            self.__MAP_SURFACE.fill(Color.TRANSPARENT)
         else:
             self.__MAP_SURFACE = new_transparent_surface(map_size)
 
@@ -187,7 +186,7 @@ class Point(GameObject):
         super().__init__(x, y)
 
     def __eq__(self, other: object) -> bool:
-        return True if self.x == other.x and self.y == other.y else False
+        return self.x == other.x and self.y == other.y
 
 
 # 管理场景装饰物的类
@@ -228,6 +227,7 @@ class WeatherSystem:
         self.__initialized = True
         self.name = 0
         self.__img_list = [IMG.load(imgPath) for imgPath in glob(os.path.join("Assets/image/environment", weather, "*.png"))]
+        i: cython.int
         self.__items = tuple(
             [
                 Snow(

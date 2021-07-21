@@ -80,9 +80,9 @@ class CharacterImageManager:
                 self.character_get_click = name
 
     def draw(self, surface: ImageSurface) -> None:
-        window_x = surface.get_width()
-        window_y = surface.get_height()
-        npcImg_y = window_y - window_x / 2
+        window_x: cython.int = surface.get_width()
+        window_y: cython.int = surface.get_height()
+        npcImg_y: cython.int = int(window_y - window_x / 2)
         # 调整alpha值
         if self.__last_round_image_alpha > 0:
             self.__last_round_image_alpha -= 15

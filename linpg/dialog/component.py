@@ -10,8 +10,7 @@ class DialogButtons:
     # 初始化
     def initialize(self) -> None:
         # 从设置中读取信息
-        window_x, window_y = Display.get_size()
-        self.FONT = Font.create(window_x * 0.0175)
+        self.FONT = Font.create(Display.get_width() * 0.0175)
         # 从语言文件中读取按钮文字
         dialog_txt: dict = Lang.get_text("Dialog")
         # 生成跳过按钮
@@ -28,8 +27,8 @@ class DialogButtons:
         tempButtonIcon = IMG.add_darkness(tempButtonIcon, 100)
         self.skipButton.blit(tempButtonIcon, (tempButtonTxt.get_width() + self.FONT.size * 0.5, self.icon_y))
         self.skipButton.blit(tempButtonTxt, (0, 0))
-        self.skipButton = StaticImage(self.skipButton, window_x * 0.9, window_y * 0.05)
-        self.skipButtonHovered = StaticImage(self.skipButtonHovered, window_x * 0.9, window_y * 0.05)
+        self.skipButton = StaticImage(self.skipButton, Display.get_width() * 0.9, Display.get_height() * 0.05)
+        self.skipButtonHovered = StaticImage(self.skipButtonHovered, Display.get_width() * 0.9, Display.get_height() * 0.05)
         # 生成自动播放按钮
         self.autoIconHovered = IMG.load(os.path.join(DIALOG_UI_PATH, "dialog_auto.png"), (self.FONT.size, self.FONT.size))
         self.autoIcon = IMG.add_darkness(self.autoIconHovered, 100)
@@ -42,28 +41,28 @@ class DialogButtons:
         self.autoButtonHovered = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
         self.autoButton.blit(tempButtonTxt, (0, 0))
         self.autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"], Color.WHITE), (0, 0))
-        self.autoButton = DynamicImage(self.autoButton, window_x * 0.8, window_y * 0.05)
+        self.autoButton = DynamicImage(self.autoButton, Display.get_width() * 0.8, Display.get_height() * 0.05)
         self.autoButton.tag = int(self.autoButton.x + self.autoButton.img.get_width() - self.FONT.size)
-        self.autoButtonHovered = DynamicImage(self.autoButtonHovered, window_x * 0.8, window_y * 0.05)
+        self.autoButtonHovered = DynamicImage(self.autoButtonHovered, Display.get_width() * 0.8, Display.get_height() * 0.05)
         self.autoButtonHovered.tag = int(self.autoButtonHovered.x + self.autoButtonHovered.img.get_width() - self.FONT.size)
         # 隐藏按钮
         self.hideButton = load_button(
             os.path.join(DIALOG_UI_PATH, "dialog_hide.png"),
-            (window_x * 0.05, window_y * 0.05),
+            (Display.get_width() * 0.05, Display.get_height() * 0.05),
             (self.FONT.size, self.FONT.size),
             150,
         )
         # 取消隐藏按钮
         self.showButton = load_button(
             os.path.join(DIALOG_UI_PATH, "dialog_show.png"),
-            (window_x * 0.05, window_y * 0.05),
+            (Display.get_width() * 0.05, Display.get_height() * 0.05),
             (self.FONT.size, self.FONT.size),
             150,
         )
         # 历史回溯按钮
         self.historyButton = load_button(
             os.path.join(DIALOG_UI_PATH, "dialog_history.png"),
-            (window_x * 0.1, window_y * 0.05),
+            (Display.get_width() * 0.1, Display.get_height() * 0.05),
             (self.FONT.size, self.FONT.size),
             150,
         )

@@ -199,9 +199,9 @@ class DialogSystem(AbstractDialogSystem):
                 option_txt = self._dialog_txt_system.FONT.render(
                     currentDialogContent["next_dialog_id"]["target"][i]["txt"], Color.WHITE
                 )
-                optionBox_width = int(option_txt.get_width() + Display.get_width() * 0.05)
-                optionBox_x = (Display.get_width() - optionBox_width) / 2
-                optionBox_y = (i + 1) * 2 * Display.get_width() * 0.03 + optionBox_y_base
+                optionBox_width: int = int(option_txt.get_width() + Display.get_width() * 0.05)
+                optionBox_x: int = int((Display.get_width() - optionBox_width) / 2)
+                optionBox_y: int = int((i + 1) * 2 * Display.get_width() * 0.03 + optionBox_y_base)
                 if (
                     0 < Controller.mouse.x - optionBox_x < optionBox_width
                     and 0 < Controller.mouse.y - optionBox_y < optionBox_height

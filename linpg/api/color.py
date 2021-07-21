@@ -32,6 +32,8 @@ _BLUE: tuple[int] = (0, 0, 255, 255)
 _INDIGO: tuple[int] = (75, 0, 130, 255)
 # 紫色
 _VIOLET: tuple[int] = (148, 0, 211, 255)
+# 透明
+_TRANSPARENT: tuple[int] = (0, 0, 0, 0)
 
 # 颜色管理
 class ColorManager:
@@ -84,6 +86,11 @@ class ColorManager:
     @property
     def VIOLET(self) -> tuple[int]:
         return _VIOLET
+
+    # 透明
+    @property
+    def TRANSPARENT(self) -> tuple[int]:
+        return _TRANSPARENT
 
     """获取颜色"""
     # 给定一个颜色的名字或序号，返回对应的RGB列表

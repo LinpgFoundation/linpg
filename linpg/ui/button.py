@@ -2,15 +2,7 @@ from ..core import *
 
 # 按钮
 class Button(AbstractImage):
-    def __init__(
-        self,
-        img: ImageSurface,
-        x: int,
-        y: int,
-        width: int = -1,
-        height: int = -1,
-        tag: str = "",
-    ):
+    def __init__(self, img: ImageSurface, x: int, y: int, width: int = -1, height: int = -1, tag: str = ""):
         if width < 0:
             width = img.get_width()
         if height < 0:
@@ -29,29 +21,15 @@ class Button(AbstractImage):
     def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
         self.__is_hovered = self.is_hover(Pos.subtract(Controller.mouse.pos, offSet))
         surface.blit(
-            IMG.resize(
-                self.img2 if self.__is_hovered is True and self.img2 is not None else self.img,
-                self.size,
-            ),
+            IMG.resize(self.img2 if self.__is_hovered is True and self.img2 is not None else self.img, self.size),
             Pos.add(self.pos, offSet),
         )
 
 
 # 加载按钮
-def load_button(
-    path: Union[str, ImageSurface],
-    position: tuple,
-    size: tuple,
-    alpha_when_not_hover: int = 255,
-) -> Button:
+def load_button(path: Union[str, ImageSurface], position: tuple, size: tuple, alpha_when_not_hover: int = 255) -> Button:
     if alpha_when_not_hover < 255:
-        fading_button = Button(
-            IMG.load(path, alpha=alpha_when_not_hover),
-            position[0],
-            position[1],
-            size[0],
-            size[1],
-        )
+        fading_button = Button(IMG.load(path, alpha=alpha_when_not_hover), position[0], position[1], size[0], size[1])
         img2 = fading_button.get_image_copy()
         img2.set_alpha(255)
         fading_button.set_hover_img(img2)
@@ -71,13 +49,7 @@ def load_button_with_text_in_center(
 ) -> Button:
     txt_surface = Font.render(txt, font_color, font_size)
     panding: int = int(font_size * 0.3)
-    img = IMG.load(
-        path,
-        size=(
-            txt_surface.get_width() + panding * 2,
-            txt_surface.get_height() + panding * 2,
-        ),
-    )
+    img = IMG.load(path, size=(txt_surface.get_width() + panding * 2, txt_surface.get_height() + panding * 2))
     img.blit(txt_surface, (panding, panding))
     return load_button(img, position, img.get_size(), alpha_when_not_hover)
 
@@ -85,32 +57,17 @@ def load_button_with_text_in_center(
 # 带描述的按钮
 class ButtonWithDes(Button):
     def __init__(
-        self,
-        img: ImageSurface,
-        des: str,
-        x: int,
-        y: int,
-        width: int = -1,
-        height: int = -1,
-        tag: str = "",
-    ):
+        self, img: ImageSurface, des: str, x: int, y: int, width: int = -1, height: int = -1, tag: str = ""
+    ) -> None:
         super().__init__(img, x, y, width, height, tag)
         self.des: str = des
         font_surface = Font.render(des, "black", self._height * 0.5)
         panding: int = int(font_surface.get_height() / 2)
         self.des_surface = new_surface(
-            (
-                font_surface.get_width() + panding * 2,
-                font_surface.get_height() + panding * 2,
-            )
+            (font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2)
         ).convert_alpha()
         self.des_surface.fill(Color.WHITE)
-        draw_rect(
-            self.des_surface,
-            Color.BLACK,
-            new_rect((0, 0), self.des_surface.get_size()),
-            2,
-        )
+        draw_rect(self.des_surface, Color.BLACK, new_rect((0, 0), self.des_surface.get_size()), 2)
         self.des_surface.blit(font_surface, (panding, panding))
 
     def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
@@ -122,32 +79,17 @@ class ButtonWithDes(Button):
 # 带描述的按钮
 class ButtonWithDes(Button):
     def __init__(
-        self,
-        img: ImageSurface,
-        des: str,
-        x: int,
-        y: int,
-        width: int = -1,
-        height: int = -1,
-        tag: str = "",
-    ):
+        self, img: ImageSurface, des: str, x: int, y: int, width: int = -1, height: int = -1, tag: str = ""
+    ) -> None:
         super().__init__(img, x, y, width, height, tag)
         self.des = des
         font_surface = Font.render(des, "black", self._height * 0.5)
         panding: int = int(font_surface.get_height() / 2)
         self.des_surface = new_surface(
-            (
-                font_surface.get_width() + panding * 2,
-                font_surface.get_height() + panding * 2,
-            )
+            (font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2)
         ).convert_alpha()
         self.des_surface.fill(Color.WHITE)
-        draw_rect(
-            self.des_surface,
-            Color.BLACK,
-            new_rect((0, 0), self.des_surface.get_size()),
-            2,
-        )
+        draw_rect(self.des_surface, Color.BLACK, new_rect((0, 0), self.des_surface.get_size()), 2)
         self.des_surface.blit(font_surface, (panding, panding))
 
     def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
@@ -158,20 +100,11 @@ class ButtonWithDes(Button):
 
 # 加载按钮
 def load_button_with_des(
-    path: Union[str, ImageSurface],
-    tag: str,
-    position: tuple,
-    size: tuple,
-    alpha_when_not_hover: int = 255,
+    path: Union[str, ImageSurface], tag: str, position: tuple, size: tuple, alpha_when_not_hover: int = 255
 ) -> ButtonWithDes:
     if alpha_when_not_hover < 255:
         fading_button = ButtonWithDes(
-            IMG.load(path, alpha=alpha_when_not_hover),
-            tag,
-            position[0],
-            position[1],
-            size[0],
-            size[1],
+            IMG.load(path, alpha=alpha_when_not_hover), tag, position[0], position[1], size[0], size[1]
         )
         img2 = fading_button.get_image_copy()
         img2.set_alpha(255)

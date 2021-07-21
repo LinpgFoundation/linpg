@@ -82,10 +82,10 @@ class FriendlyCharacter(Entity):
         # 展示被察觉的程度
         if self._detection > 0:
             # 参数
-            eyeImgWidth = round(MapClass.block_width / 6)
-            eyeImgHeight = round(MapClass.block_width / 10)
-            numberX = (eyeImgWidth - MapClass.block_width / 6) / 2
-            numberY = (eyeImgHeight - MapClass.block_width / 10) / 2
+            eyeImgWidth: int = round(MapClass.block_width / 6)
+            eyeImgHeight: int = round(MapClass.block_width / 10)
+            numberX: float = (eyeImgWidth - MapClass.block_width / 6) / 2
+            numberY: float = (eyeImgHeight - MapClass.block_width / 10) / 2
             # 根据参数调整图片
             self.__beNoticedImage.set_size(eyeImgWidth, eyeImgHeight)
             self.__beNoticedImage.set_pos(blit_pos[0] + MapClass.block_width * 0.51 - numberX, blit_pos[1] - numberY)
@@ -145,10 +145,10 @@ class HostileCharacter(Entity):
         # 展示警觉的程度
         if self._vigilance > 0:
             # 参数
-            eyeImgWidth = round(MapClass.block_width / 6)
-            eyeImgHeight = round(MapClass.block_width / 6)
-            numberX = (eyeImgWidth - MapClass.block_width / 6) / 2
-            numberY = (eyeImgHeight - MapClass.block_width / 10) / 2
+            eyeImgWidth: int = round(MapClass.block_width / 6)
+            eyeImgHeight: int = round(MapClass.block_width / 6)
+            numberX: float = (eyeImgWidth - MapClass.block_width / 6) / 2
+            numberY: float = (eyeImgHeight - MapClass.block_width / 10) / 2
             # 根据参数调整图片
             self.__vigilanceImage.set_size(eyeImgWidth, eyeImgHeight)
             self.__vigilanceImage.set_pos(blit_pos[0] + MapClass.block_width * 0.51 - numberX, blit_pos[1] - numberY)
@@ -168,7 +168,7 @@ class HostileCharacter(Entity):
                 weight += self.current_hp * self.hp_precentage
                 target_value_board.append((name, weight))
         # 最大移动距离
-        blocks_can_move = int((self.max_action_point) / AP_IS_NEEDED_TO_MOVE_ONE_BLOCK)
+        blocks_can_move: int = int((self.max_action_point) / AP_IS_NEEDED_TO_MOVE_ONE_BLOCK)
         # 角色将会在该回合采取的行动
         actions: deque = deque()
         # 如果角色有可以攻击的对象，且角色至少有足够的行动点数攻击

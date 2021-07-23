@@ -94,8 +94,8 @@ def new_transparent_surface(size: size_liked) -> ImageSurface:
 def get_texture_missing_surface(size: size_liked) -> ImageSurface:
     texture_missing_surface: ImageSurface = new_surface(size).convert()
     texture_missing_surface.fill(Color.BLACK)
-    half_width: cython.int = int(size[0] / 2)
-    half_height: cython.int = int(size[1] / 2)
+    half_width: int = int(size[0] / 2)
+    half_height: int = int(size[1] / 2)
     purple_color_rbga: tuple = Color.VIOLET
     pygame.draw.rect(
         texture_missing_surface,

@@ -189,7 +189,7 @@ class DropDownSingleChoiceList(GameObjectsContainer):
                     self.__fold_choice = True
             # 列出选择
             if not self.__fold_choice:
-                index: cython.int = 0
+                index: int = 0
                 for key_of_game_object, game_object_t in self._items_container.items():
                     current_pos = Pos.add(current_abs_pos, (0, (index + 1) * self.__block_height))
                     font_surface = self.__FONT.render(game_object_t, self.__font_color)
@@ -394,20 +394,20 @@ class SurfaceContainerWithScrollbar(GameObjectsContainer):
             if self.img is not None:
                 surface.blit(self.img, Pos.add(self.pos, off_set))
             # 计算出基础坐标
-            current_x: cython.int = int(self.x + self._local_x + off_set[0])
-            current_y: cython.int = int(self.y + self._local_y + off_set[1])
+            current_x: int = int(self.x + self._local_x + off_set[0])
+            current_y: int = int(self.y + self._local_y + off_set[1])
             if not self.__mode:
                 current_x += self.panding
             else:
                 current_y += self.panding
             # 定义部分用到的变量
-            abs_local_y: cython.int
-            crop_height: cython.int
-            new_height: cython.int
-            abs_local_x: cython.int
-            crop_width: cython.int
-            new_width: cython.int
-            item_has_been_dawn_on_this_line: cython.int = 0
+            abs_local_y: int
+            crop_height: int
+            new_height: int
+            abs_local_x: int
+            crop_width: int
+            new_width: int
+            item_has_been_dawn_on_this_line: int = 0
             # 画出物品栏里的图片
             for key, item in self._items_container.items():
                 if item is not None:

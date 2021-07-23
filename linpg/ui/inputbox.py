@@ -79,10 +79,10 @@ class SingleLineInputBox(AbstractInputBox):
         self._reset_inputbox_width()
 
     def _reset_holderIndex(self, mouse_x: int) -> None:
-        last_width: cython.int = 0
-        local_x: cython.int = mouse_x - self.x
-        new_width: cython.int = 0
-        i: cython.int = 0
+        last_width: int = 0
+        local_x: int = mouse_x - self.x
+        new_width: int = 0
+        i: int = 0
         for i in range(len(self._text)):
             new_width = self.FONT.estimate_text_width(self._text[:i]) + self.FONT.size * 0.25
             if new_width > local_x:
@@ -284,10 +284,10 @@ class MultipleLinesInputBox(AbstractInputBox):
             self.lineId = 0
         elif self.lineId >= len(self._text):
             self.lineId = len(self._text) - 1
-        last_width: cython.int = 0
-        local_x: cython.int = mouse_x - self.x
-        new_width: cython.int = 0
-        i: cython.int = 0
+        last_width: int = 0
+        local_x: int = mouse_x - self.x
+        new_width: int = 0
+        i: int = 0
         for i in range(len(self._text[self.lineId])):
             new_width = self.FONT.estimate_text_width(self._text[self.lineId][:i]) + self.FONT.size * 0.25
             if new_width > local_x:
@@ -398,15 +398,8 @@ class Console(SingleLineInputBox):
         self.hidden: bool = True
         self._text_history: list = []
         self.__backward_id: int = 1
-        self.__events: dict = {"cheat": False}
         self._txt_output: list = []
         self.command_indicator: str = "/"
-
-    def get_events(self, key: Union[int, str]) -> any:
-        try:
-            return self.__events[key]
-        except KeyError:
-            EXCEPTION.fatal('Console cannot find key "{}"!'.format(key))
 
     def _check_key_down(self, event: object) -> bool:
         if super()._check_key_down(event):
@@ -447,16 +440,16 @@ class Console(SingleLineInputBox):
             if len(conditions) < 2:
                 self._txt_output.append("Unknown status for cheat command.")
             elif conditions[1] == "on":
-                if "cheat" in self.__events and self.__events["cheat"] is True:
+                if Setting.cheat_mode is True:
                     self._txt_output.append("Cheat mode has already been activated!")
                 else:
-                    self.__events["cheat"] = True
+                    Setting.set_cheat_mode(True)
                     self._txt_output.append("Cheat mode is activated.")
             elif conditions[1] == "off":
-                if "cheat" in self.__events and not self.__events["cheat"]:
+                if not Setting.cheat_mode:
                     self._txt_output.append("Cheat mode has already been deactivated!")
                 else:
-                    self.__events["cheat"] = False
+                    Setting.set_cheat_mode(False)
                     self._txt_output.append("Cheat mode is deactivated.")
             else:
                 self._txt_output.append("Unknown status for cheat command.")

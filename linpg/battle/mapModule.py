@@ -227,7 +227,7 @@ class WeatherSystem:
         self.__initialized = True
         self.name = 0
         self.__img_list = [IMG.load(imgPath) for imgPath in glob(os.path.join("Assets/image/environment", weather, "*.png"))]
-        i: cython.int
+        i: int
         self.__items = tuple(
             [
                 Snow(

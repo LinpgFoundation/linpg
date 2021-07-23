@@ -92,7 +92,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
                 self.need_update["language"] = True
             # 按键的判定按钮
             if self._CONTENT.item_being_hovered is not None and not lang_drop_down.is_hover():
-                item_percentage_t: cython.int
+                item_percentage_t: int
                 # 如果碰到全局音量条
                 if self._CONTENT.item_being_hovered == "global_sound_volume":
                     if (item_percentage_t := int(self._CONTENT.get("global_sound_volume").percentage * 100)) != Setting.get(

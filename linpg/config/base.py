@@ -5,7 +5,6 @@ import shutil
 from copy import deepcopy
 from datetime import datetime
 from glob import glob
-import cython
 
 # 尝试导入yaml库
 _YAML_INITIALIZED: bool = False
@@ -15,6 +14,8 @@ try:
     _YAML_INITIALIZED = True
 except Exception:
     pass
+
+__all__ = ["os", "deepcopy", "datetime", "glob", "EXCEPTION", "Config", "get_value_by_keys", "set_value_by_keys"]
 
 # Linpg本身错误类
 class LinpgError(Exception):
@@ -84,9 +85,9 @@ def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) ->
 # 根据keys查找被设置对应对应对象为指定值
 def set_value_by_keys(dict_to_check: dict, keys: tuple, value: any, warning: bool = True) -> None:
     pointer = dict_to_check
-    key_range: cython.int = len(keys)
-    last_key_index: cython.int = key_range - 1
-    index: cython.int = 0
+    key_range: int = len(keys)
+    last_key_index: int = key_range - 1
+    index: int = 0
     for index in range(key_range):
         try:
             if index < last_key_index:

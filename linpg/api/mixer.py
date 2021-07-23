@@ -58,7 +58,7 @@ def _split_audio_from_video(input_path: str, audio_type="ogg") -> str:
     # 产生不重名的output文件名称
     output_file_name_t: str = os.path.basename(input_path).replace(".", "_") + "{0}.{1}"
     output_file_name: str
-    index: cython.int = 0
+    index: int = 0
     while True:
         output_file_name = output_file_name_t.format(index, audio_type)
         if not os.path.exists(output_file_name):

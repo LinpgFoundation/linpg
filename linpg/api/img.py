@@ -4,7 +4,7 @@ from .color import *
 class RawImageManafer:
     # 识快速加载图片
     @staticmethod
-    def quickly_load(path: Union[str, ImageSurface], convert_alpha: bool = True) -> ImageSurface:
+    def quickly_load(path: PoI, convert_alpha: bool = True) -> ImageSurface:
         if isinstance(path, ImageSurface):
             return path
         elif isinstance(path, str):
@@ -29,9 +29,7 @@ class RawImageManafer:
             EXCEPTION.fatal("The path '{}' has to be a string or at least a ImageSurface!".format(path))
 
     # 图片加载模块：接收图片路径,长,高,返回对应图片
-    def load(
-        self, path: Union[str, ImageSurface], size: size_liked = tuple(), alpha: int = 255, convert_alpha: bool = True
-    ) -> ImageSurface:
+    def load(self, path: PoI, size: size_liked = tuple(), alpha: int = 255, convert_alpha: bool = True) -> ImageSurface:
         # 加载图片
         img = IMG.quickly_load(path, convert_alpha)
         # 根据参数编辑图片

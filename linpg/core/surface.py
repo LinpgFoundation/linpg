@@ -38,7 +38,7 @@ class AbstractImage(Rect):
         return self.img.copy()
 
     # 更新图片
-    def update_image(self, img_path: Union[str, ImageSurface], ifConvertAlpha: bool = True) -> None:
+    def update_image(self, img_path: PoI, ifConvertAlpha: bool = True) -> None:
         self.img = IMG.quickly_load(img_path, ifConvertAlpha)
 
     # 旋转
@@ -48,9 +48,7 @@ class AbstractImage(Rect):
 
 # 动态图形类
 class DynamicImage(AbstractImage):
-    def __init__(
-        self, img: Union[str, ImageSurface], x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = ""
-    ):
+    def __init__(self, img: PoI, x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = ""):
         super().__init__(IMG.quickly_load(img), x, y, width, height, tag)
         self.__processed_img: ImageSurface = None
 
@@ -75,7 +73,7 @@ class DynamicImage(AbstractImage):
             self.__processed_img.set_alpha(self.get_alpha())
 
     # 更新图片
-    def update_image(self, img_path: Union[str, ImageSurface], ifConvertAlpha: bool) -> None:
+    def update_image(self, img_path: PoI, ifConvertAlpha: bool) -> None:
         super().update_image(img_path, ifConvertAlpha=ifConvertAlpha)
         self.__processed_img = None
 
@@ -175,9 +173,7 @@ class AdvancedAbstractImage(AbstractImage):
 
 # 用于静态图片的surface
 class StaticImage(AdvancedAbstractImage):
-    def __init__(
-        self, img: Union[str, ImageSurface], x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = "default"
-    ):
+    def __init__(self, img: PoI, x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = "default"):
         super().__init__(IMG.quickly_load(img), x, y, width, height, tag)
         self.__processed_img: ImageSurface = None
         self.__is_flipped: bool = False
@@ -185,7 +181,7 @@ class StaticImage(AdvancedAbstractImage):
         self.__crop_rect: object = None
 
     # 更新图片
-    def update_image(self, img_path: Union[str, ImageSurface], ifConvertAlpha: bool = True) -> None:
+    def update_image(self, img_path: PoI, ifConvertAlpha: bool = True) -> None:
         super().update_image(img_path, ifConvertAlpha)
         self.__need_update = True
 
@@ -328,7 +324,7 @@ class StaticImage(AdvancedAbstractImage):
 class MovableImage(StaticImage):
     def __init__(
         self,
-        img: Union[str, ImageSurface],
+        img: PoI,
         x: int_f,
         y: int_f,
         target_x: int_f,

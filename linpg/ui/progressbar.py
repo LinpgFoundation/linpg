@@ -38,8 +38,8 @@ class ProgressBar(AbstractProgressBar):
 class ProgressBarSurface(AbstractProgressBar):
     def __init__(
         self,
-        imgOnTop: Union[str, ImageSurface],
-        imgOnBottom: Union[str, ImageSurface],
+        imgOnTop: PoI,
+        imgOnBottom: PoI,
         x: int_f,
         y: int_f,
         max_width: int,
@@ -96,9 +96,9 @@ class ProgressBarSurface(AbstractProgressBar):
 class ProgressBarAdjuster(ProgressBarSurface):
     def __init__(
         self,
-        imgOnTop: Union[str, ImageSurface],
-        imgOnBottom: Union[str, ImageSurface],
-        indicator_img: Union[str, ImageSurface],
+        imgOnTop: PoI,
+        imgOnBottom: PoI,
+        indicator_img: PoI,
         x: int_f,
         y: int_f,
         max_width: int,
@@ -183,8 +183,8 @@ class ProgressBarAdjuster(ProgressBarSurface):
 class DynamicProgressBarSurface(ProgressBarSurface):
     def __init__(
         self,
-        imgOnTop: Union[str, ImageSurface],
-        imgOnBottom: Union[str, ImageSurface],
+        imgOnTop: PoI,
+        imgOnBottom: PoI,
         x: int_f,
         y: int_f,
         max_width: int,

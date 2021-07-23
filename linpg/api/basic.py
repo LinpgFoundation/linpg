@@ -29,7 +29,7 @@ def is_using_pyglet() -> bool:
 
 # 获取正在使用的库的信息
 def get_library_info() -> str:
-    return "pygame {}".format(pygame.version.ver) if not _LIBRARY_INDICATOR else "pyglet {}".format(pyglet.version)
+    return "Pygame {}".format(pygame.version.ver) if not _LIBRARY_INDICATOR else "Pyglet {}".format(pyglet.version)
 
 
 """linpg自带属性"""
@@ -45,6 +45,7 @@ ImageSurface = pygame.Surface if not _LIBRARY_INDICATOR else pyglet.image
 """linpg自带常量"""
 NoSize: tuple[int] = (-1, -1)
 NoPos: tuple[int] = (-1, -1)
+PoI = Union[str, ImageSurface]
 
 """指向pygame事件的指针"""
 # 鼠标

@@ -27,7 +27,7 @@ class Button(AbstractImage):
 
 
 # 加载按钮
-def load_button(path: Union[str, ImageSurface], position: tuple, size: tuple, alpha_when_not_hover: int = 255) -> Button:
+def load_button(path: PoI, position: tuple, size: tuple, alpha_when_not_hover: int = 255) -> Button:
     if alpha_when_not_hover < 255:
         fading_button = Button(IMG.load(path, alpha=alpha_when_not_hover), position[0], position[1], size[0], size[1])
         img2 = fading_button.get_image_copy()
@@ -40,7 +40,7 @@ def load_button(path: Union[str, ImageSurface], position: tuple, size: tuple, al
 
 # 加载中间有文字按钮
 def load_button_with_text_in_center(
-    path: Union[str, ImageSurface],
+    path: PoI,
     txt: any,
     font_color: any,
     font_size: int,
@@ -100,7 +100,7 @@ class ButtonWithDes(Button):
 
 # 加载按钮
 def load_button_with_des(
-    path: Union[str, ImageSurface], tag: str, position: tuple, size: tuple, alpha_when_not_hover: int = 255
+    path: PoI, tag: str, position: tuple, size: tuple, alpha_when_not_hover: int = 255
 ) -> ButtonWithDes:
     if alpha_when_not_hover < 255:
         fading_button = ButtonWithDes(

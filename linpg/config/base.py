@@ -1,10 +1,9 @@
 from __future__ import annotations
 import json
-import os
-import shutil
 from copy import deepcopy
-from datetime import datetime
 from glob import glob
+from shutil import rmtree
+from ..exception import EXCEPTION, os
 
 # 尝试导入yaml库
 _YAML_INITIALIZED: bool = False
@@ -15,55 +14,7 @@ try:
 except Exception:
     pass
 
-__all__ = ["os", "deepcopy", "datetime", "glob", "EXCEPTION", "Config", "get_value_by_keys", "set_value_by_keys"]
-
-# Linpg本身错误类
-class LinpgError(Exception):
-    def __init__(self, *args: object) -> None:
-        super().__init__(*args)
-
-
-# Linpg错误类管理器
-class LinpgExceptionHandler:
-    def __init__(self):
-        # 错误报告存储的路径
-        self.__CRASH_REPORTS_PATH: str = "crash_reports"
-
-    # 告知不严重但建议查看的问题
-    @staticmethod
-    def inform(info: str) -> None:
-        print("LinpgEngine-Inform: {}".format(info))
-
-    # 警告开发者非严重错误
-    def warn(self, info: str) -> None:
-        # 生成错误报告
-        if not os.path.exists(self.__CRASH_REPORTS_PATH):
-            os.mkdir(self.__CRASH_REPORTS_PATH)
-        with open(
-            os.path.join(self.__CRASH_REPORTS_PATH, "crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))),
-            "w",
-            encoding="utf-8",
-        ) as f:
-            f.write("Warning Message From Linpg: {}".format(info))
-        # 打印出警告
-        print("LinpgEngine-Warning: {}".format(info))
-
-    # 严重错误
-    def fatal(self, info: str):
-        # 生成错误报告
-        if not os.path.exists(self.__CRASH_REPORTS_PATH):
-            os.mkdir(self.__CRASH_REPORTS_PATH)
-        with open(
-            os.path.join(self.__CRASH_REPORTS_PATH, "crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))),
-            "w",
-            encoding="utf-8",
-        ) as f:
-            f.write("Error Message From Linpg: {}".format(info))
-        # 打印出错误
-        raise LinpgError(info)
-
-
-EXCEPTION = LinpgExceptionHandler()
+__all__ = ["os", "deepcopy", "glob", "EXCEPTION", "Config", "get_value_by_keys", "set_value_by_keys"]
 
 # 根据keys查找值，最后返回一个复制的对象
 def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) -> any:
@@ -225,7 +176,7 @@ class ConfigManager:
         # 移除当前文件夹符合条件的目录/文件
         for path in glob(os.path.join(folder_to_search, "*")):
             if path.endswith(stuff_to_remove):
-                shutil.rmtree(path)
+                rmtree(path)
             elif os.path.isdir(path):
                 self.search_and_remove_folder(path, stuff_to_remove)
 

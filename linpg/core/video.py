@@ -121,12 +121,7 @@ class AbstractVedio:
 # 类似Wallpaper Engine的视频背景，但音乐不与画面同步
 class VedioSurface(AbstractVedio):
     def __init__(
-        self,
-        path: str,
-        loop: bool = True,
-        with_audio: bool = True,
-        play_range: tuple[int] = (0, -1),
-        buffer_num: int = 10,
+        self, path: str, loop: bool = True, with_audio: bool = True, play_range: tuple[int] = (0, -1), buffer_num: int = 10
     ) -> None:
         super().__init__(path, buffer_num, play_range)
         self.__loop: bool = loop
@@ -200,7 +195,7 @@ class VedioPlayer(AbstractVedio):
     # 设置帧坐标
     def set_frame_index(self, num: int) -> None:
         super().set_frame_index(num)
-        pygame.mixer.music.rewind()
+        Music.restart()
         Music.set_pos(self.get_frame_index() / self._frame_rate)
 
     def stop(self) -> None:

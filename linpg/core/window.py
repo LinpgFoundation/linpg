@@ -72,11 +72,11 @@ class RenderedWindow(Rect):
 
     def draw_rect(self, rect_pos: pos_liked, color: color_liked) -> None:
         self.__win.draw_color = Color.get(color)
-        self.__win.draw_rect(pygame.Rect(rect_pos))
+        self.__win.draw_rect(convert_to_pygame_rect(rect_pos))
 
     def fill_rect(self, rect_pos: pos_liked, color: color_liked) -> None:
         self.__win.draw_color = Color.get(color)
-        self.__win.fill_rect(pygame.Rect(rect_pos))
+        self.__win.fill_rect(convert_to_pygame_rect(rect_pos))
 
     def fill(self, color: color_liked) -> None:
         self.fill_rect((0, 0, self.__size[0], self.__size[1]), color)

@@ -107,7 +107,7 @@ class AdvancedAbstractImage(AbstractImage):
 
     def set_alpha(self, value: int, update_original: bool = True) -> None:
         self._alpha = keep_in_range(int(value), 0, 255)
-        if update_original is True and isinstance(self.img, pygame.Surface):
+        if update_original is True and isinstance(self.img, ImageSurface):
             super().set_alpha(self._alpha)
 
     # 获取本地坐标

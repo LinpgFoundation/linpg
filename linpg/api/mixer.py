@@ -135,6 +135,11 @@ class MusicController:
     def unload() -> None:
         pygame.mixer.music.unload()
 
+    # 重新开始播放背景音乐
+    @staticmethod
+    def restart() -> None:
+        pygame.mixer.music.rewind()
+
     # 播放背景音乐
     @staticmethod
     def play(loops: int = 0, start: float = 0.0, fade_ms: int = 0) -> None:

@@ -209,7 +209,7 @@ class ItemNeedBlit(GameObject2point5d):
         self.offSet = offSet
 
     def draw(self, surface: ImageSurface) -> None:
-        if isinstance(self.image, pygame.Surface):
+        if isinstance(self.image, ImageSurface):
             surface.blit(self.image, Pos.add(self.pos, self.offSet))
         else:
             try:

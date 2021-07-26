@@ -187,6 +187,7 @@ class VedioPlayer(AbstractVedio):
     def __init__(self, path: str, buffer_num: int = 6):
         super().__init__(path, buffer_num=buffer_num)
         self.__clock = pygame.time.Clock()
+        self.__audio_path: str = ""
 
     # 返回一个复制
     def copy(self) -> object:
@@ -201,19 +202,27 @@ class VedioPlayer(AbstractVedio):
     def stop(self) -> None:
         super().stop()
         Music.unload()
+        os.remove(self.__audio_path)
 
     def _init(self) -> None:
         super()._init()
-        Music.load_from_video(self._path)
+        self.__audio_path = Music.load_from_video(self._path)
         Music.play()
+
+    # 提前初始化
+    def pre_init(self) -> None:
+        self._init()
 
     # 把画面画到surface上
     def draw(self, surface: ImageSurface) -> None:
         super().draw(surface)
         if self.is_playing():
-            if self.get_frame_index() <= self.get_frame_num():
-                current_frame_index_based_on_music: int = round(Music.get_pos() / 1000 * self._frame_rate)
-                frame_difference: int = current_frame_index_based_on_music - self.get_frame_index()
+            if (
+                self.get_frame_index() <= self.get_frame_num()
+                and (current_frame_index_based_on_music := round(Music.get_pos() / 1000 * self._frame_rate))
+                <= self.get_frame_num()
+            ):
+                frame_difference: int = int(current_frame_index_based_on_music - self.get_frame_index())
                 # 如果播放速度太慢
                 if frame_difference >= self._frame_buffer_num:
                     self.set_frame_index(current_frame_index_based_on_music)

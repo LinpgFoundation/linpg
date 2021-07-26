@@ -168,12 +168,12 @@ def cutscene(surface: ImageSurface, videoPath: str, fade_out_in_ms: int = 3000) 
         bar_height, surface.get_height() - bar_height * 2, surface.get_width() - bar_height * 2, bar_height, "white"
     )
     # 生成黑色帘幕
-    img_t: ImageSurface = new_surface(surface.get_size()).convert()
-    img_t.fill(Color.BLACK)
-    BLACK_CURTAIN = DynamicImage(img_t, 0, 0, 0, 0)
+    BLACK_CURTAIN: ImageSurface = new_surface(surface.get_size()).convert()
+    BLACK_CURTAIN.fill(Color.BLACK)
     BLACK_CURTAIN.set_alpha(0)
     # 创建视频文件
     VIDEO: object = VedioPlayer(videoPath)
+    VIDEO.pre_init()
     # 播放主循环
     while is_playing is True and VIDEO.is_playing() is True:
         VIDEO.draw(surface)

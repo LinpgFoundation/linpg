@@ -183,7 +183,8 @@ class AbstractDialogSystem(AbstractGameSystem):
                     # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
                     elif os.path.exists(os.path.join(self._dynamic_background_folder_path, self.__background_image_name)):
                         self.__background_image_surface = VedioSurface(
-                            os.path.join(self._dynamic_background_folder_path, self.__background_image_name)
+                            os.path.join(self._dynamic_background_folder_path, self.__background_image_name),
+                            with_audio=False,
                         )
                     else:
                         EXCEPTION.fatal(
@@ -218,7 +219,7 @@ class AbstractDialogSystem(AbstractGameSystem):
     def updated_language(self, surface: ImageSurface) -> None:
         super().updated_language()
         if self.pause_menu is not None:
-            self.pause_menu.initialize(surface)
+            self.pause_menu.initialize()
         if self._buttons_mananger is not None:
             self._buttons_mananger.initialize()
         self._load_content()

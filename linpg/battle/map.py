@@ -331,16 +331,18 @@ class MapObject(AdvancedAbstractImage):
         return self.__Map_Data[pos["y"]][pos["x"]].canPassThrough
 
     # 计算在地图中的方块
-    def calBlockInMap(self, mouse_x: int, mouse_y: int):
+    def calBlockInMap(self, pos: tuple[int] = None):
+        if pos is None:
+            pos = Controller.mouse.pos
         guess_x: int = int(
             (
-                (mouse_x - self._local_x - self.row * self.block_width * 0.43) / 0.43
-                + (mouse_y - self._local_y - self.block_width * 0.4) / 0.22
+                (pos[0] - self._local_x - self.row * self.block_width * 0.43) / 0.43
+                + (pos[1] - self._local_y - self.block_width * 0.4) / 0.22
             )
             / 2
             / self.block_width
         )
-        guess_y: int = int((mouse_y - self._local_y - self.block_width * 0.4) / self.block_width / 0.22) - guess_x
+        guess_y: int = int((pos[1] - self._local_y - self.block_width * 0.4) / self.block_width / 0.22) - guess_x
         x: int
         y: int
         posTupleTemp: tuple
@@ -351,8 +353,8 @@ class MapObject(AdvancedAbstractImage):
             for x in range(guess_x - 1, guess_x + 4):
                 posTupleTemp = self.calPosInMap(x, y)
                 if (
-                    lenUnitW < mouse_x - posTupleTemp[0] - self.block_width * 0.05 < lenUnitW * 3
-                    and 0 < mouse_y - posTupleTemp[1] < lenUnitH
+                    lenUnitW < pos[0] - posTupleTemp[0] - self.block_width * 0.05 < lenUnitW * 3
+                    and 0 < pos[1] - posTupleTemp[1] < lenUnitH
                 ):
                     if 0 <= x < self.column and 0 <= y < self.row:
                         block_get_click = {"x": x, "y": y}

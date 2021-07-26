@@ -55,54 +55,12 @@ class EntityDynamicProgressBarSurface(DynamicProgressBarSurface):
             _RED_VIGILANCE_IMG = IMG.quickly_load(r"Assets/image/UI/vigilance_red.png")
 
     def draw(self, surface: ImageSurface, isFriendlyCharacter: bool = True) -> None:
-        global _BEING_NOTICED_IMG, _FULLY_EXPOSED_IMG, _ORANGE_VIGILANCE_IMG, _RED_VIGILANCE_IMG
         if not isFriendlyCharacter:
-            surface.blit(IMG.resize(_ORANGE_VIGILANCE_IMG, self.size), self.pos)
+            global _ORANGE_VIGILANCE_IMG, _RED_VIGILANCE_IMG
+            self._draw_bar(surface, _RED_VIGILANCE_IMG, _ORANGE_VIGILANCE_IMG, self.pos)
         else:
-            surface.blit(IMG.resize(_BEING_NOTICED_IMG, self.size), self.pos)
-        self._check_and_update_percentage()
-        if self.percentage > 0:
-            imgOnTop = (
-                IMG.resize(_FULLY_EXPOSED_IMG, self.size)
-                if isFriendlyCharacter is True
-                else IMG.resize(_RED_VIGILANCE_IMG, self.size)
-            )
-            if self._mode:
-                if self.percentage < self._percentage_to_be:
-                    img2 = IMG.crop(imgOnTop, size=(int(self._width * self._percentage_to_be / self.accuracy), self._height))
-                    img2.set_alpha(100)
-                    surface.blit(img2, self.pos)
-                    surface.blit(
-                        imgOnTop.subsurface((0, 0, int(self._width * self.percentage / self.accuracy), self._height)),
-                        self.pos,
-                    )
-                else:
-                    if self.percentage > self._percentage_to_be:
-                        img2 = IMG.crop(imgOnTop, size=(int(self._width * self.percentage / self.accuracy), self._height))
-                        img2.set_alpha(100)
-                        surface.blit(img2, self.pos)
-                    surface.blit(
-                        imgOnTop.subsurface((0, 0, int(self._width * self._percentage_to_be / self.accuracy), self._height)),
-                        self.pos,
-                    )
-            else:
-                if self.percentage < self._percentage_to_be:
-                    img2 = IMG.crop(imgOnTop, size=(self._width, int(self._height * self._percentage_to_be / self.accuracy)))
-                    img2.set_alpha(100)
-                    surface.blit(img2, self.pos)
-                    surface.blit(
-                        imgOnTop.subsurface((0, 0, self._width, int(self._height * self.percentage / self.accuracy))),
-                        self.pos,
-                    )
-                else:
-                    if self.percentage > self._percentage_to_be:
-                        img2 = IMG.crop(imgOnTop, size=(self._width, int(self._height * self.percentage / self.accuracy)))
-                        img2.set_alpha(100)
-                        surface.blit(img2, self.pos)
-                    surface.blit(
-                        imgOnTop.subsurface((0, 0, self._width, int(self._height * self._percentage_to_be / self.accuracy))),
-                        self.pos,
-                    )
+            global _BEING_NOTICED_IMG, _FULLY_EXPOSED_IMG
+            self._draw_bar(surface, _FULLY_EXPOSED_IMG, _BEING_NOTICED_IMG, self.pos)
 
 
 # 指向储存血条图片的指针（不初始化直到Entity或其子类被调用）
@@ -129,46 +87,7 @@ class EntityHpBar(DynamicProgressBarSurface):
 
     def draw(self, surface: ImageSurface, isDying: bool) -> None:
         global _HP_GREEN_IMG, _HP_RED_IMG, _HP_EMPTY_IMG
-        surface.blit(IMG.resize(_HP_EMPTY_IMG, self.size), self.pos)
-        self._check_and_update_percentage()
-        if self.percentage > 0:
-            imgOnTop = IMG.resize(_HP_GREEN_IMG, self.size) if not isDying else IMG.resize(_HP_RED_IMG, self.size)
-            if self._mode:
-                if self.percentage < self._percentage_to_be:
-                    img2 = IMG.crop(imgOnTop, size=(int(self._width * self._percentage_to_be / self.accuracy), self._height))
-                    img2.set_alpha(100)
-                    surface.blit(img2, self.pos)
-                    surface.blit(
-                        imgOnTop.subsurface((0, 0, int(self._width * self.percentage / self.accuracy), self._height)),
-                        self.pos,
-                    )
-                else:
-                    if self.percentage > self._percentage_to_be:
-                        img2 = IMG.crop(imgOnTop, size=(int(self._width * self.percentage / self.accuracy), self._height))
-                        img2.set_alpha(100)
-                        surface.blit(img2, self.pos)
-                    surface.blit(
-                        imgOnTop.subsurface((0, 0, int(self._width * self._percentage_to_be / self.accuracy), self._height)),
-                        self.pos,
-                    )
-            else:
-                if self.percentage < self._percentage_to_be:
-                    img2 = IMG.crop(imgOnTop, size=(self._width, int(self._height * self._percentage_to_be / self.accuracy)))
-                    img2.set_alpha(100)
-                    surface.blit(img2, self.pos)
-                    surface.blit(
-                        imgOnTop.subsurface((0, 0, self._width, int(self._height * self.percentage / self.accuracy))),
-                        self.pos,
-                    )
-                else:
-                    if self.percentage > self._percentage_to_be:
-                        img2 = IMG.crop(imgOnTop, size=(self._width, int(self._height * self.percentage / self.accuracy)))
-                        img2.set_alpha(100)
-                        surface.blit(img2, self.pos)
-                    surface.blit(
-                        imgOnTop.subsurface((0, 0, self._width, int(self._height * self._percentage_to_be / self.accuracy))),
-                        self.pos,
-                    )
+        self._draw_bar(surface, _HP_GREEN_IMG if not isDying else _HP_RED_IMG, _HP_EMPTY_IMG, self.pos)
 
 
 # 音效管理模块-字典

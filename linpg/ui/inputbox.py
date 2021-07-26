@@ -13,7 +13,7 @@ class AbstractInputBox(GameObject2d):
         self.txt_color = Color.get(txt_color)
         self.active: bool = False
         self._text = None
-        self._holder = self.FONT.render("|", self.txt_color)
+        self._holder = self.FONT.render_with_bounding("|", self.txt_color)
         self.holderIndex = 0
         self.need_save = False
 
@@ -368,7 +368,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             for i in range(len(self._text)):
                 # 画出文字
                 screen.blit(
-                    self.FONT.render(self._text[i], self.txt_color),
+                    self.FONT.render_with_bounding(self._text[i], self.txt_color),
                     (self.x + self.FONT.size * 0.25, self.y + i * self.deafult_height),
                 )
         if self.active:
@@ -511,7 +511,7 @@ class Console(SingleLineInputBox):
             # 画出输出信息
             for i in range(len(self._txt_output)):
                 screen.blit(
-                    self.FONT.render(self._txt_output[i], self.color),
+                    self.FONT.render_with_bounding(self._txt_output[i], self.color),
                     (self.x + self.FONT.size * 0.25, self.y - (len(self._txt_output) - i) * self.FONT.size * 1.5),
                 )
             # 画出输入框

@@ -2,19 +2,20 @@ import linpgtoolkit
 from .display import *
 
 # 根据设置参数改变声道数量
-pygame.mixer.set_num_channels(max(Setting.get("NumberOfChannels"), 16))
+MIXER_CHANNEL_NUM: int = Setting.get("NumberOfChannels") + 4
+pygame.mixer.set_num_channels(MIXER_CHANNEL_NUM)
 
 """设置linpg引擎保留的"""
 # 背景音乐
-_RESERVED_BACKGROUND_MUSIC_CHANNEL_ID: int = 13
+_RESERVED_BACKGROUND_MUSIC_CHANNEL_ID: int = MIXER_CHANNEL_NUM - 3
 LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL = pygame.mixer.Channel(_RESERVED_BACKGROUND_MUSIC_CHANNEL_ID)
 pygame.mixer.set_reserved(_RESERVED_BACKGROUND_MUSIC_CHANNEL_ID)
 # 音效
-_RESERVED_SOUND_EFFECTS_CHANNEL_ID: int = 14
+_RESERVED_SOUND_EFFECTS_CHANNEL_ID: int = MIXER_CHANNEL_NUM - 2
 LINPG_RESERVED_SOUND_EFFECTS_CHANNEL = pygame.mixer.Channel(_RESERVED_SOUND_EFFECTS_CHANNEL_ID)
 pygame.mixer.set_reserved(_RESERVED_SOUND_EFFECTS_CHANNEL_ID)
 # 环境
-_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID: int = 15
+_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID: int = MIXER_CHANNEL_NUM - 1
 LINPG_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL = pygame.mixer.Channel(_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID)
 pygame.mixer.set_reserved(_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID)
 
@@ -141,11 +142,11 @@ class MusicController:
         pygame.mixer.music.load(path)
 
     # 从一个视频中加载音乐
-    def load_from_video(self, path: str) -> None:
+    def load_from_video(self, path: str) -> str:
         self.unload()
         path_of_music: str = _split_audio_from_video(path, "mp3")
         self.load(path_of_music)
-        os.remove(path_of_music)
+        return path_of_music
 
     # 卸载背景音乐
     @staticmethod

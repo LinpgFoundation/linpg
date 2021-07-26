@@ -78,14 +78,14 @@ class RawImageManafer:
             EXCEPTION.fatal("The size '{}' is not acceptable.".format(size))
         # 编辑图片
         if height is not None and height >= 0 and width is None:
-            img = pygame.transform.scale(img, (round(height / img.get_height() * img.get_width()), round(height)))
+            img2 = pygame.transform.scale(img, (round(height / img.get_height() * img.get_width()), round(height)))
         elif height is None and width is not None and width >= 0:
-            img = pygame.transform.scale(img, (round(width), round(width / img.get_width() * img.get_height())))
+            img2 = pygame.transform.scale(img, (round(width), round(width / img.get_width() * img.get_height())))
         elif width >= 0 and height >= 0:
-            img = pygame.transform.scale(img, (round(width), round(height)))
+            img2 = pygame.transform.scale(img, (round(width), round(height)))
         elif width < 0 or height < 0:
             EXCEPTION.fatal("Both width and height must be positive interger!")
-        return img
+        return img2
 
     # 精准地缩放尺寸
     @staticmethod

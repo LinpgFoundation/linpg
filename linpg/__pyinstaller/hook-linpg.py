@@ -8,7 +8,7 @@ datas: list = []
 folder_ignore: tuple = ("__pyinstaller", "__pycache__", ".git")
 
 for file_name in os.listdir(LINPG_PATH):
-    #文件夹
+    # 文件夹
     if os.path.isdir(os.path.join(LINPG_PATH, file_name)):
         ingore_this_folder: bool = False
         for folder_name_t in folder_ignore:
@@ -17,7 +17,7 @@ for file_name in os.listdir(LINPG_PATH):
                 break
         if not ingore_this_folder:
             datas.append((os.path.join(LINPG_PATH, file_name, "*"), os.path.join(LINPG_NAME, file_name)))
-    #文件
+    # 文件
     else:
         if ".gitignore" not in file_name:
             datas.append((os.path.join(LINPG_PATH, file_name), os.path.join(LINPG_NAME)))

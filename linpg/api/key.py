@@ -1,6 +1,5 @@
-# cython: language_level=3
-from .basic import *
-from tkinter import Tk
+from .pos import *
+
 
 class KeySystem:
     def __init__(self) -> None:
@@ -17,17 +16,24 @@ class KeySystem:
         self.ARROW_RIGHT = pygame.K_RIGHT
         self.RETURN = pygame.K_RETURN
         self.BACKQUOTE = pygame.K_BACKQUOTE
+        # 粘贴板内容模块
+        from tkinter import Tk
+
         self.__root = Tk()
         self.__root.withdraw()
-    def get_pressed(self, key_name:any) -> bool:
-        if isinstance(key_name, str):
-            return pygame.key.get_pressed()[self.get_key_code(key_name)]
-        else:
-            return pygame.key.get_pressed()[key_name]
-    def get_key_code(self, key_name:str) -> any: return pygame.key.key_code(key_name)
-    def get_clipboard(self) -> str: return self.__root.clipboard_get()
 
-"""即将弃置"""
-KEY = KeySystem()
+    # key是否被按下
+    def get_pressed(self, key_name: any) -> bool:
+        return pygame.key.get_pressed()[self.get_key_code(key_name) if isinstance(key_name, str) else key_name]
 
-Key = KeySystem()
+    # 获取key的代号
+    @staticmethod
+    def get_key_code(key_name: str) -> any:
+        return pygame.key.key_code(key_name)
+
+    # 获取粘贴板内容
+    def get_clipboard(self) -> str:
+        return self.__root.clipboard_get()
+
+
+Key: KeySystem = KeySystem()

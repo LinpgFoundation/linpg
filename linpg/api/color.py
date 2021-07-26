@@ -1,6 +1,8 @@
-# cython: language_level=3
 from PIL import ImageColor
 from .key import *
+
+# 加载颜色字典
+THECOLORS: dict
 if is_using_pygame():
     try:
         from pygame.colordict import THECOLORS
@@ -9,69 +11,109 @@ if is_using_pygame():
 else:
     THECOLORS = {}
 
+"""常用颜色"""
+# 白色
+_WHITE: tuple[int] = (255, 255, 255, 255)
+# 灰色
+_GRAY: tuple[int] = (105, 105, 105, 255)
+# 黑色
+_BLACK: tuple[int] = (0, 0, 0, 255)
+# 红色
+_RED: tuple[int] = (255, 0, 0, 255)
+# 橙色
+_ORANGE: tuple[int] = (255, 127, 0, 255)
+# 黄色
+_YELLOW: tuple[int] = (255, 255, 0, 255)
+# 绿色
+_GREEN: tuple[int] = (0, 255, 0, 255)
+# 蓝色
+_BLUE: tuple[int] = (0, 0, 255, 255)
+# 靛蓝色
+_INDIGO: tuple[int] = (75, 0, 130, 255)
+# 紫色
+_VIOLET: tuple[int] = (148, 0, 211, 255)
+# 透明
+_TRANSPARENT: tuple[int] = (0, 0, 0, 0)
+
+# 颜色管理
 class ColorManager:
-    def __init__(self) -> None:
-        # 白色
-        self.__WHITE: tuple = (255, 255, 255, 255)
-        # 灰色
-        self.__GRAY: tuple = (105, 105, 105, 255)
-        # 黑色
-        self.__BLACK: tuple = (0, 0, 0, 255)
-        # 红色
-        self.__RED: tuple = (255, 0, 0, 255)
-        # 橙色
-        self.__ORANGE: tuple = (255, 127, 0, 255)
-        # 黄色
-        self.__YELLOW: tuple = (255, 255, 0, 255)
-        # 绿色
-        self.__GREEN: tuple = (0, 255, 0, 255)
-        # 蓝色
-        self.__BLUE: tuple = (0, 0, 255, 255)
-        # 靛蓝色
-        self.__INDIGO: tuple = (75, 0, 130, 255)
-        # 紫色
-        self.__VIOLET: tuple = (148, 0, 211, 255)
-    """常用颜色"""
+    # 白色
     @property
-    def WHITE(self) -> tuple: return self.__WHITE
+    def WHITE(self) -> tuple[int]:
+        return _WHITE
+
+    # 灰色
     @property
-    def GRAY(self) -> tuple: return self.__GRAY
+    def GRAY(self) -> tuple[int]:
+        return _GRAY
+
+    # 黑色
     @property
-    def BLACK(self) -> tuple: return self.__BLACK
+    def BLACK(self) -> tuple[int]:
+        return _BLACK
+
+    # 红色
     @property
-    def RED(self) -> tuple: return self.__RED
+    def RED(self) -> tuple[int]:
+        return _RED
+
+    # 橙色
     @property
-    def ORANGE(self) -> tuple: return self.__ORANGE
+    def ORANGE(self) -> tuple[int]:
+        return _ORANGE
+
+    # 黄色
     @property
-    def YELLOW(self) -> tuple: return self.__YELLOW
+    def YELLOW(self) -> tuple[int]:
+        return _YELLOW
+
+    # 绿色
     @property
-    def GREEN(self) -> tuple: return self.__GREEN
+    def GREEN(self) -> tuple[int]:
+        return _GREEN
+
+    # 蓝色
     @property
-    def BLUE(self) -> tuple: return self.__BLUE
+    def BLUE(self) -> tuple[int]:
+        return _BLUE
+
+    # 靛蓝色
     @property
-    def INDIGO(self) -> tuple: return self.__INDIGO
+    def INDIGO(self) -> tuple[int]:
+        return _INDIGO
+
+    # 紫色
     @property
-    def VIOLET(self) -> tuple: return self.__VIOLET
+    def VIOLET(self) -> tuple[int]:
+        return _VIOLET
+
+    # 透明
+    @property
+    def TRANSPARENT(self) -> tuple[int]:
+        return _TRANSPARENT
+
     """获取颜色"""
-    #给定一个颜色的名字或序号，返回对应的RGB列表
-    def get(self, color:color_liked) -> tuple:
+    # 给定一个颜色的名字或序号，返回对应的RGB列表
+    @staticmethod
+    def get(color: color_liked) -> tuple[int]:
         if isinstance(color, str):
-            if color[0] == "#":
+            if color.startswith("#"):
                 return ImageColor.getrgb(color)
             elif color == "gray" or color == "grey":
-                return self.__GRAY
+                return _GRAY
             else:
                 try:
                     return tuple(THECOLORS[color])
                 except KeyError:
-                    EXCEPTION.throw("error", 'The color "{}" is currently not available!'.format(color))
+                    EXCEPTION.fatal('The color "{}" is currently not available!'.format(color))
         elif isinstance(color, (tuple, list)):
             return tuple(color)
         else:
-            EXCEPTION.throw("error", "The color has to be a string, tuple or list, and {0} (type:{1}) is not acceptable!".format(color, type(color)))
+            EXCEPTION.fatal(
+                "The color has to be a string, tuple or list, and {0} (type:{1}) is not acceptable!".format(
+                    color, type(color)
+                )
+            )
+
 
 Color: ColorManager = ColorManager()
-
-"""即将弃置"""
-#给定一个颜色的名字，返回对应的RGB列表
-def get_color_rbga(color:color_liked) -> tuple: return Color.get(color)

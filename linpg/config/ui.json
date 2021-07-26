@@ -2,7 +2,6 @@
     "leave_without_saving_warning": {
         "height": "25%",
         "hidden": true,
-        "type": "container",
         "items": [
             {
                 "color": "white",
@@ -29,50 +28,238 @@
                 "y": "40%"
             },
             {
+                "alpha_when_not_hover": 150,
                 "height": "10%",
-                "width": "10%",
                 "name": "save",
-                "text": {
-                    "src": "{Global,save}",
-                    "color": "black"
-                },
                 "src": "Assets/image/UI/menu.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Global,save}"
+                },
                 "type": "button",
+                "width": "10%",
                 "x": "10%",
-                "y": "70%",
-                "alpha_when_not_hover": 150
+                "y": "70%"
             },
             {
+                "alpha_when_not_hover": 150,
                 "height": "10%",
-                "width": "10%",
                 "name": "cancel",
-                "text": {
-                    "src": "{Global,cancel}",
-                    "color": "black"
-                },
                 "src": "Assets/image/UI/menu.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Global,cancel}"
+                },
                 "type": "button",
+                "width": "10%",
                 "x": "40%",
-                "y": "70%",
-                "alpha_when_not_hover": 150
+                "y": "70%"
             },
             {
+                "alpha_when_not_hover": 150,
                 "height": "10%",
-                "width": "10%",
                 "name": "dont_save",
-                "text": {
-                    "src": "{Global,dont_save}",
-                    "color": "black"
-                },
                 "src": "Assets/image/UI/menu.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Global,dont_save}"
+                },
                 "type": "button",
+                "width": "10%",
                 "x": "70%",
-                "y": "70%",
-                "alpha_when_not_hover": 150
+                "y": "70%"
             }
         ],
         "src": "Assets/image/UI/container.png",
+        "type": "container",
         "width": "50%",
+        "x": "center",
+        "y": "center"
+    },
+    "option_menu": {
+        "height": "75%",
+        "items": [
+            {
+                "color": "white",
+                "font_size": "7.5%",
+                "src": "{OptionMenu,setting}",
+                "type": "text",
+                "x": "center",
+                "y": "5%"
+            },
+            {
+                "color": "white",
+                "font_size": "5%",
+                "src": "{OptionMenu,global_volume}",
+                "type": "text",
+                "x": "22.5%",
+                "y": "29%"
+            },
+            {
+                "height": "5%",
+                "indicator": {
+                    "height": "150%",
+                    "src": "Assets/image/UI/setting_bar_circle.png",
+                    "width": "7.5%"
+                },
+                "name": "global_sound_volume",
+                "src": [
+                    "Assets/image/UI/setting_bar_full.png",
+                    "Assets/image/UI/setting_bar_empty.png"
+                ],
+                "type": "progress_bar_adjuster",
+                "width": "50%",
+                "x": "22.5%",
+                "y": "35%"
+            },
+            {
+                "color": "white",
+                "font_size": "5%",
+                "src": "{OptionMenu,background_music}",
+                "type": "text",
+                "x": "22.5%",
+                "y": "44%"
+            },
+            {
+                "height": "5%",
+                "indicator": {
+                    "height": "150%",
+                    "src": "Assets/image/UI/setting_bar_circle.png",
+                    "width": "7.5%"
+                },
+                "name": "background_music_sound_volume",
+                "src": [
+                    "Assets/image/UI/setting_bar_full.png",
+                    "Assets/image/UI/setting_bar_empty.png"
+                ],
+                "type": "progress_bar_adjuster",
+                "width": "50%",
+                "x": "22.5%",
+                "y": "50%"
+            },
+            {
+                "color": "white",
+                "font_size": "5%",
+                "src": "{OptionMenu,sound_effects}",
+                "type": "text",
+                "x": "22.5%",
+                "y": "59%"
+            },
+            {
+                "height": "5%",
+                "indicator": {
+                    "height": "150%",
+                    "src": "Assets/image/UI/setting_bar_circle.png",
+                    "width": "7.5%"
+                },
+                "name": "effects_sound_volume",
+                "src": [
+                    "Assets/image/UI/setting_bar_full.png",
+                    "Assets/image/UI/setting_bar_empty.png"
+                ],
+                "type": "progress_bar_adjuster",
+                "width": "50%",
+                "x": "22.5%",
+                "y": "65%"
+            },
+            {
+                "color": "white",
+                "font_size": "5%",
+                "src": "{OptionMenu,environmental_sound}",
+                "type": "text",
+                "x": "22.5%",
+                "y": "74%"
+            },
+            {
+                "height": "5%",
+                "indicator": {
+                    "height": "150%",
+                    "src": "Assets/image/UI/setting_bar_circle.png",
+                    "width": "7.5%"
+                },
+                "name": "environment_sound_volume",
+                "src": [
+                    "Assets/image/UI/setting_bar_full.png",
+                    "Assets/image/UI/setting_bar_empty.png"
+                ],
+                "type": "progress_bar_adjuster",
+                "width": "50%",
+                "x": "22.5%",
+                "y": "80%"
+            },
+            {
+                "color": "white",
+                "font_size": "5%",
+                "name": "back_button",
+                "src": "{Global,back}",
+                "type": "dynamic_text",
+                "x": "center",
+                "y": "90%"
+            },
+            {
+                "color": "white",
+                "font_size": "5%",
+                "src": "{OptionMenu,language}",
+                "type": "text",
+                "x": "22.5%",
+                "y": "20%"
+            },
+            {
+                "font_size": "5%",
+                "name": "lang_drop_down",
+                "type": "drop_down_single_choice_list",
+                "x": "45%",
+                "y": "19%"
+            }
+        ],
+        "src": "Assets/image/UI/setting_baseImg.png",
+        "type": "container",
+        "width": "50%",
+        "x": "center",
+        "y": "center"
+    },
+    "pause_menu": {
+        "height": "100%",
+        "items": [
+            {
+                "color": "white",
+                "font_size": "5%",
+                "name": "resume",
+                "src": "{Global,resume}",
+                "type": "dynamic_text",
+                "x": "10%",
+                "y": "35%"
+            },
+            {
+                "color": "white",
+                "font_size": "5%",
+                "name": "save",
+                "src": "{Global,save_current_progress}",
+                "type": "dynamic_text",
+                "x": "10%",
+                "y": "45%"
+            },
+            {
+                "color": "white",
+                "font_size": "5%",
+                "name": "option_menu",
+                "src": "{OptionMenu,option_menu}",
+                "type": "dynamic_text",
+                "x": "10%",
+                "y": "55%"
+            },
+            {
+                "color": "white",
+                "font_size": "5%",
+                "name": "back_to_mainMenu",
+                "src": "{Global,back}",
+                "type": "dynamic_text",
+                "x": "10%",
+                "y": "65%"
+            }
+        ],
+        "type": "container",
+        "width": "100%",
         "x": "center",
         "y": "center"
     }

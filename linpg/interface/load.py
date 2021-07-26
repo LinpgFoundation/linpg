@@ -1,27 +1,52 @@
-# cython: language_level=3
 from PIL import Image as ImageLoader
 from ..battle import *
 
+
 class Loader:
-    def __init__(self) -> None:
-        pass
+
     # 原始图片
-    def img(self, path: str, size: tuple = tuple(), alpha: int = 255, ifConvertAlpha: bool = True) -> ImageSurface:
-        return load_img(path, size, alpha, ifConvertAlpha)
+    @staticmethod
+    def img(path: str, size: tuple = tuple(), alpha: int = 255, ifConvertAlpha: bool = True) -> ImageSurface:
+        return IMG.load(path, size, alpha, ifConvertAlpha)
+
     # 静态图片
-    def static_image(self, path: str, position: tuple, size: tuple = NoSize, tag: str = "deafult") -> StaticImage:
+    @staticmethod
+    def static_image(path: str, position: tuple, size: tuple = NoSize, tag: str = "deafult") -> StaticImage:
         return StaticImage(path, position[0], position[1], size[0], size[1], tag)
+
     # 动态图片
-    def dynamic_image(self, path: str, position: tuple, size: tuple = NoSize, tag: str = "deafult") -> DynamicImage:
+    @staticmethod
+    def dynamic_image(path: str, position: tuple, size: tuple = NoSize, tag: str = "deafult") -> DynamicImage:
         return DynamicImage(path, position[0], position[1], size[0], size[1], tag)
+
     # 可自行移动的图片
-    def movable_image(self, path: str, position: tuple, target_position: tuple, move_speed: tuple = (0, 0), size: tuple = NoSize, tag = "default") -> MovableImage:
-        return MovableImage(path, position[0], position[1], target_position[0], target_position[1], move_speed[0], move_speed[1], size[0], size[1], tag)
-    #进度条Surface
-    def progress_bar_surface(self, img_on_top_path: str, img_on_bottom_path: str, position: tuple, size: tuple, mode: str = "horizontal", tag:str="") -> ProgressBarSurface:
+    @staticmethod
+    def movable_image(
+        path: str, position: tuple, target_position: tuple, move_speed: tuple = (0, 0), size: tuple = NoSize, tag="default"
+    ) -> MovableImage:
+        return MovableImage(
+            path,
+            position[0],
+            position[1],
+            target_position[0],
+            target_position[1],
+            move_speed[0],
+            move_speed[1],
+            size[0],
+            size[1],
+            tag,
+        )
+
+    # 进度条Surface
+    @staticmethod
+    def progress_bar_surface(
+        img_on_top_path: str, img_on_bottom_path: str, position: tuple, size: tuple, mode: str = "horizontal", tag: str = ""
+    ) -> ProgressBarSurface:
         return ProgressBarSurface(img_on_top_path, img_on_bottom_path, position[0], position[1], size[0], size[1], mode, tag)
+
     # gif图片
-    def gif(self, gif_path_or_img_list: Union[str, tuple, list], position: tuple, size: tuple, updateGap: int = 1) -> GifImage:
+    @staticmethod
+    def gif(gif_path_or_img_list: Union[str, tuple, list], position: tuple, size: tuple, updateGap: int = 1) -> GifImage:
         imgList: list = []
         # 如果是gif文件
         if isinstance(gif_path_or_img_list, str) and gif_path_or_img_list.endswith(".gif"):
@@ -38,11 +63,30 @@ class Loader:
             for image_path in gif_path_or_img_list:
                 imgList.append(StaticImage(image_path, 0, 0, size[0], size[1]))
         else:
-            EXCEPTION.throw("error", 'Invalid input for "gif_path_or_img_list": {}'.format(gif_path_or_img_list))
+            EXCEPTION.fatal('Invalid input for "gif_path_or_img_list": {}'.format(gif_path_or_img_list))
         return GifImage(numpy.asarray(imgList), position[0], position[1], size[0], size[1], updateGap)
-    def button(self, path: str, position: tuple, size: tuple, alpha_when_not_hover: int = 255) -> Button:
+
+    @staticmethod
+    def button(path: str, position: tuple, size: tuple, alpha_when_not_hover: int = 255) -> Button:
         return load_button(path, position, size, alpha_when_not_hover)
-    def button_with_text_in_center(self, path: str, txt: any, font_color: color_liked, font_size: int, position: tuple, alpha_when_not_hover: int = 255) -> Button:
+
+    @staticmethod
+    def button_with_text_in_center(
+        path: str, txt: any, font_color: color_liked, font_size: int, position: tuple, alpha_when_not_hover: int = 255
+    ) -> Button:
         return load_button_with_text_in_center(path, txt, font_color, font_size, position, alpha_when_not_hover)
+
+    # 高级文字制作模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
+    @staticmethod
+    def dynamic_text(
+        txt: any, color: color_liked, pos: tuple, size: int = 50, ifBold: bool = False, ifItalic: bool = False
+    ) -> DynamicTextSurface:
+        return DynamicTextSurface(
+            Font.render(txt, color, size, ifBold, ifItalic),
+            Font.render(txt, color, size * 1.5, ifBold, ifItalic),
+            pos[0],
+            pos[1],
+        )
+
 
 load: Loader = Loader()

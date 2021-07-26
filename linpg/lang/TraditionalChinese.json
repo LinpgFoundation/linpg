@@ -57,10 +57,11 @@
     ],
     "OptionMenu": {
         "background_music": "背景音樂",
+        "environmental_sound": "環境聲效",
+        "global_volume": "全局音量",
         "language": "語言",
         "option_menu": "選項菜單",
         "setting": "設置",
-        "sound_effects": "音效",
-        "sound_environment": "環境聲效"
+        "sound_effects": "音效"
     }
 }

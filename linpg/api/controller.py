@@ -90,7 +90,8 @@ class MouseController:
         pygame.mouse.set_pos(self.pos)
 
     # 是否鼠标按钮被点击
-    def get_pressed(self, button_id: int) -> bool:
+    @staticmethod
+    def get_pressed(button_id: int) -> bool:
         return pygame.mouse.get_pressed()[button_id]
 
     # 更新设备

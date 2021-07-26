@@ -48,9 +48,9 @@ class PositionSystem:
         return x, y
 
     # int化坐标
-    @staticmethod
-    def int(pos: tuple[number]) -> tuple[int]:
-        return int(pos[0]), int(pos[1])
+    def int(self, pos: any) -> tuple[int]:
+        coverted_pos: tuple[number] = self.convert(pos)
+        return int(coverted_pos[0]), int(coverted_pos[1])
 
 
 Pos: PositionSystem = PositionSystem()

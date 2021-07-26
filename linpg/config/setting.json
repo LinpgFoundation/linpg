@@ -8,6 +8,7 @@
     "LowMemoryMode": false,
     "MouseIconWidth": 18,
     "MouseMoveSpeed": 30,
+    "NumberOfChannels": 16,
     "ReadingSpeed": 0.5,
     "ScreenScale": 100,
     "Sound": {

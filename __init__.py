@@ -4,7 +4,7 @@ from .linpg import *
 print("Warning: You are importing from dev build of linpg!")
 
 """整理linpg内部"""
-clean_up: bool = False
+clean_up: bool = True
 
 if clean_up is True:
     # 移除__pycache__文件（debug用途）

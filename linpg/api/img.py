@@ -1,5 +1,24 @@
 from .color import *
 
+# 获取材质缺失的临时警示材质
+def get_texture_missing_surface(size: size_liked) -> ImageSurface:
+    texture_missing_surface: ImageSurface = new_surface(size).convert()
+    texture_missing_surface.fill(Color.BLACK)
+    half_width: int = int(size[0] / 2)
+    half_height: int = int(size[1] / 2)
+    pygame.draw.rect(
+        texture_missing_surface,
+        Color.VIOLET,
+        pygame.Rect(half_width, 0, texture_missing_surface.get_width() - half_width, half_height),
+    )
+    pygame.draw.rect(
+        texture_missing_surface,
+        Color.VIOLET,
+        pygame.Rect(0, half_height, half_width, texture_missing_surface.get_height() - half_height),
+    )
+    return texture_missing_surface
+
+
 # 源图形处理
 class RawImageManafer:
     # 识快速加载图片

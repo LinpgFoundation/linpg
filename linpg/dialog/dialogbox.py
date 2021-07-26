@@ -27,6 +27,7 @@ class DialogBox:
             EXCEPTION.warn(
                 "Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!\nAs a result, the text playing sound will be disabled."
             )
+        self.__channel = None
         self.READINGSPEED = Setting.get("ReadingSpeed")
         # 鼠标图标
         self.mouseImg = GifImage(
@@ -111,7 +112,7 @@ class DialogBox:
     # 修改文字播放时的音效的音量
     def set_sound_volume(self, volume: number) -> None:
         if self.__textPlayingSound is not None:
-            self.__textPlayingSound.set_volume(volume / 100.0)
+            self.__textPlayingSound.set_volume(volume)
 
     # 是否需要更新
     def needUpdate(self) -> bool:
@@ -119,8 +120,8 @@ class DialogBox:
 
     # 如果音效还在播放则停止播放文字音效
     def stop_playing_text_sound(self) -> None:
-        if Media.get_busy() and self.__textPlayingSound is not None:
-            self.__textPlayingSound.stop()
+        if LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy():
+            LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.stop()
 
     # 将文字画到屏幕上
     def __draw_text(self, surface: ImageSurface) -> None:
@@ -132,21 +133,20 @@ class DialogBox:
                 surface.blit(self.FONT.render(self.narrator, Color.WHITE), (x, self.dialoguebox_y + self.FONT.size))
             # 对话框已播放的内容
             for i in range(self.displayedLine):
-                surface.blit(self.FONT.render(self.content[i], Color.WHITE), (x, y + self.FONT.size * 1.5 * i))
+                surface.blit(self.FONT.render_with_bounding(self.content[i], Color.WHITE), (x, y + self.FONT.size * 1.5 * i))
             # 对话框正在播放的内容
             surface.blit(
-                self.FONT.render(self.content[self.displayedLine][: self.textIndex], Color.WHITE),
+                self.FONT.render_with_bounding(self.content[self.displayedLine][: self.textIndex], Color.WHITE),
                 (x, y + self.FONT.size * 1.5 * self.displayedLine),
             )
             # 如果当前行的字符还没有完全播出
             if self.textIndex < len(self.content[self.displayedLine]):
-                if not Media.get_busy() and self.__textPlayingSound is not None:
-                    self.__textPlayingSound.play()
+                # 播放文字音效
+                if not LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy() and self.__textPlayingSound is not None:
+                    LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.play(self.__textPlayingSound)
                 self.textIndex += 1
             # 当前行的所有字都播出后，播出下一行
             elif self.displayedLine < len(self.content) - 1:
-                if not Media.get_busy() and self.__textPlayingSound is not None:
-                    self.__textPlayingSound.play()
                 self.textIndex = 1
                 self.displayedLine += 1
             # 当所有行都播出后

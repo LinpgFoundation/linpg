@@ -1,9 +1,29 @@
 import linpgtoolkit
 from .display import *
 
+# 根据设置参数改变声道数量
+pygame.mixer.set_num_channels(max(Setting.get("NumberOfChannels"), 16))
+
+"""设置linpg引擎保留的"""
+# 背景音乐
+_RESERVED_BACKGROUND_MUSIC_CHANNEL_ID: int = 13
+LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL = pygame.mixer.Channel(_RESERVED_BACKGROUND_MUSIC_CHANNEL_ID)
+pygame.mixer.set_reserved(_RESERVED_BACKGROUND_MUSIC_CHANNEL_ID)
+# 音效
+_RESERVED_SOUND_EFFECTS_CHANNEL_ID: int = 14
+LINPG_RESERVED_SOUND_EFFECTS_CHANNEL = pygame.mixer.Channel(_RESERVED_SOUND_EFFECTS_CHANNEL_ID)
+pygame.mixer.set_reserved(_RESERVED_SOUND_EFFECTS_CHANNEL_ID)
+# 环境
+_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID: int = 15
+LINPG_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL = pygame.mixer.Channel(_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID)
+pygame.mixer.set_reserved(_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID)
+
+
 # 音效管理模块接口
 class AbstractSoundManager:
-    def __init__(self, channel_id: int):
+    def __init__(self, channel_id: int = -1):
+        if channel_id < 0:
+            self._channel_id = pygame.mixer.find_channel()
         self._channel_id: int = int(channel_id)
 
     @property
@@ -12,9 +32,6 @@ class AbstractSoundManager:
 
     def get_channel_id(self) -> int:
         return self._channel_id
-
-    def set_channel_id(self, channel_id: int) -> None:
-        self.channel_id = int(channel_id)
 
 
 # 音效管理模块-列表

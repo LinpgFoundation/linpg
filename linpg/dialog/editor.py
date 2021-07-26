@@ -141,7 +141,7 @@ class DialogEditor(AbstractDialogSystem):
         # 切换准备编辑的dialog部分
         self.dialog_key_select = DropDownSingleChoiceList(None, button_width * 9, button_y + font_size, font_size)
         for key in self._dialog_data:
-            self.dialog_key_select.append(key)
+            self.dialog_key_select.set(key, key)
         self.dialog_key_select.set_current_selected_item(self._part)
 
     # 返回需要保存数据

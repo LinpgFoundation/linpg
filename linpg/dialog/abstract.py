@@ -226,7 +226,7 @@ class AbstractDialogSystem(AbstractGameSystem):
     # 更新音量
     def _update_sound_volume(self) -> None:
         self.set_bgm_volume(Media.volume.background_music / 100)
-        self._dialog_txt_system.set_sound_volume(Media.volume.effects)
+        self._dialog_txt_system.set_sound_volume(Media.volume.effects / 100)
 
     # 停止播放
     def stop(self) -> None:

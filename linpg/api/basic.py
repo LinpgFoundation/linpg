@@ -2,7 +2,7 @@ import random, re, numpy
 from ..lang import *
 
 # 用于辨识基础游戏库的参数，True为默认的pyglet，False则为Pygame
-_LIBRARY_INDICATOR: bool = False
+_LIBRARY_INDICATOR: int = 0
 
 # 默认使用pygame库（直到引擎完全支持pyglet）
 try:
@@ -15,21 +15,21 @@ try:
 except ModuleNotFoundError:
     import pyglet
 
-    _LIBRARY_INDICATOR = True
+    _LIBRARY_INDICATOR = 1
 
 # 是否正在使用pygame库
 def is_using_pygame() -> bool:
-    return _LIBRARY_INDICATOR is False
+    return _LIBRARY_INDICATOR == 0
 
 
 # 是否正在使用pyglet库
 def is_using_pyglet() -> bool:
-    return _LIBRARY_INDICATOR
+    return _LIBRARY_INDICATOR == 1
 
 
 # 获取正在使用的库的信息
 def get_library_info() -> str:
-    return "Pygame {}".format(pygame.version.ver) if not _LIBRARY_INDICATOR else "Pyglet {}".format(pyglet.version)
+    return "Pygame {}".format(pygame.version.ver) if _LIBRARY_INDICATOR == 0 else "Pyglet {}".format(pyglet.version)
 
 
 """linpg自带属性"""
@@ -41,7 +41,7 @@ pos_liked = Union[tuple, list, numpy.ndarray]
 size_liked = Union[tuple, list, numpy.ndarray]
 color_liked = Union[tuple[int], str, list[int]]
 # 图形类
-ImageSurface = pygame.Surface if not _LIBRARY_INDICATOR else pyglet.image
+ImageSurface = pygame.Surface if _LIBRARY_INDICATOR == 0 else pyglet.image
 """linpg自带常量"""
 NoSize: tuple[int] = (-1, -1)
 NoPos: tuple[int] = (-1, -1)

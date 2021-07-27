@@ -1,8 +1,19 @@
-import linpgtoolkit
+# 尝试导入linpgtoolkit
+TOOlKIT_INSTALLED: int
+try:
+    import linpgtoolkit
+
+    # 导入成功
+    TOOlKIT_INSTALLED = 1
+# 导入失败
+except ModuleNotFoundError:
+    EXCEPTION.inform("Cannot import linpgtoolkit, some features are disabled.")
+    TOOlKIT_INSTALLED = 0
+
 from .display import *
 
 # 根据设置参数改变声道数量
-MIXER_CHANNEL_NUM: int = Setting.get("NumberOfChannels") + 4
+MIXER_CHANNEL_NUM: int = max(Setting.get("NumberOfChannels"), 8) + 3
 pygame.mixer.set_num_channels(MIXER_CHANNEL_NUM)
 
 """设置linpg引擎保留的"""
@@ -72,31 +83,34 @@ class SoundManagement(AbstractSoundManager):
 
 # 获取视频的音频 （返回路径）
 def _split_audio_from_video(input_path: str, audio_type="ogg") -> str:
-    output_folder: str = os.path.dirname(input_path)
-    # 产生不重名的output文件名称
-    output_file_name_t: str = os.path.basename(input_path).replace(".", "_") + "{0}.{1}"
-    output_file_name: str
-    index: int = 0
-    while True:
-        output_file_name = output_file_name_t.format(index, audio_type)
-        if not os.path.exists(output_file_name):
-            break
+    if TOOlKIT_INSTALLED == 1:
+        output_folder: str = os.path.dirname(input_path)
+        # 产生不重名的output文件名称
+        output_file_name_t: str = os.path.basename(input_path).replace(".", "_") + "{0}.{1}"
+        output_file_name: str
+        index: int = 0
+        while True:
+            output_file_name = output_file_name_t.format(index, audio_type)
+            if not os.path.exists(output_file_name):
+                break
+            else:
+                index += 1
+        # 生成output路径
+        output_path: str = os.path.join(output_folder, output_file_name)
+        # 让linpgtoolkit生成视频文件
+        convert_status: str = linpgtoolkit.ffmpeg.convert_from_vedio_to_audio(input_path, output_path)
+        # 如果一切正常，返回output路径
+        if len(convert_status) < 1:
+            return output_path
+        # 如果不正常...
+        elif convert_status == "FILE_NOT_EXIST":
+            EXCEPTION.fatal('Cannot find media file on path "{}".'.format(input_path))
+        elif convert_status == "FFMPEG_MISSING":
+            EXCEPTION.fatal('LinpgToolKit cannot find its "ffmpeg.exe" file. You may need to reinstall the toolkit.')
         else:
-            index += 1
-    # 生成output路径
-    output_path: str = os.path.join(output_folder, output_file_name)
-    # 让linpgtoolkit生成视频文件
-    convert_status: str = linpgtoolkit.ffmpeg.convert_from_vedio_to_audio(input_path, output_path)
-    # 如果一切正常，返回output路径
-    if len(convert_status) < 1:
-        return output_path
-    # 如果不正常...
-    elif convert_status == "FILE_NOT_EXIST":
-        EXCEPTION.fatal('Cannot find media file on path "{}".'.format(input_path))
-    elif convert_status == "FFMPEG_MISSING":
-        EXCEPTION.fatal('LinpgToolKit cannot find its "ffmpeg.exe" file. You may need to reinstall the toolkit.')
+            EXCEPTION.fatal("Unexpected convert status, you need to report this issue to the developers.")
     else:
-        EXCEPTION.fatal("Unexpected convert status, you need to report this issue to the developers.")
+        EXCEPTION.fatal("You have to install linpgtoolkit if you want to load audio from vedio")
 
 
 # 音效管理
@@ -130,6 +144,18 @@ class SoundController:
     @staticmethod
     def find_channel(force: bool = False) -> pygame.mixer.Channel:
         return pygame.mixer.find_channel(force)
+
+    # 获取频道的数量
+    @staticmethod
+    def get_num_channels() -> int:
+        return int(pygame.mixer.get_num_channels() - 3)
+
+    # 获取对应id的频道
+    def get_channel(self, channel_id: int) -> pygame.mixer.Channel:
+        if channel_id < self.get_num_channels():
+            return pygame.mixer.Channel(channel_id)
+        else:
+            EXCEPTION.fatal('The channel_id "{0}" is out of bound of {1}'.format(channel_id, self.get_num_channels()))
 
 
 Sound: SoundController = SoundController()

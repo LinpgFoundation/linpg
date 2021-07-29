@@ -1,7 +1,7 @@
 from ..core import *
 
 # 按钮
-class Button(AbstractImage):
+class Button(AbstractImageSurface):
     def __init__(self, img: ImageSurface, x: int, y: int, width: int = -1, height: int = -1, tag: str = ""):
         if width < 0:
             width = img.get_width()

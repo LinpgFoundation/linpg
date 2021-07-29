@@ -1,5 +1,5 @@
 from pygame._sdl2 import Renderer, Window, messagebox
-from .surface import *
+from .image import *
 
 # 提示窗口
 class Message:

@@ -1,7 +1,7 @@
 from .inputbox import *
 
 # 进度条抽象，请勿直接初始化
-class AbstractProgressBar(AbstractImage):
+class AbstractProgressBar(AbstractImageSurface):
     def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str):
         super().__init__(img, x, y, width, height, tag)
         self.__current_percentage: float = 0.0

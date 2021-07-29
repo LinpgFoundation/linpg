@@ -7,8 +7,8 @@ class AbstractInputBox(GameObject2d):
         super().__init__(x, y)
         self.FONT = Font.create(font_size)
         self.default_width = default_width
-        self.deafult_height = int(self.FONT.size * 1.5)
-        self.input_box = Rect(x, y, default_width, self.deafult_height)
+        self.default_height = int(self.FONT.size * 1.5)
+        self.input_box = Rect(x, y, default_width, self.default_height)
         self.color = Color.get("lightskyblue3")
         self.txt_color = Color.get(txt_color)
         self.active: bool = False
@@ -215,7 +215,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         self.input_box.set_width(width)
 
     def _reset_inputbox_height(self) -> None:
-        self.input_box.set_height(self.deafult_height * len(self._text))
+        self.input_box.set_height(self.default_height * len(self._text))
 
     def _reset_inputbox_size(self) -> None:
         self._reset_inputbox_width()
@@ -369,7 +369,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                 # 画出文字
                 screen.blit(
                     self.FONT.render_with_bounding(self._text[i], self.txt_color),
-                    (self.x + self.FONT.size * 0.25, self.y + i * self.deafult_height),
+                    (self.x + self.FONT.size * 0.25, self.y + i * self.default_height),
                 )
         if self.active:
             # 画出输入框
@@ -382,7 +382,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                         self.x
                         + self.FONT.size * 0.1
                         + self.FONT.estimate_text_width(self._text[self.lineId][: self.holderIndex]),
-                        self.y + self.lineId * self.deafult_height,
+                        self.y + self.lineId * self.default_height,
                     ),
                 )
 

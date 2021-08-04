@@ -123,7 +123,11 @@ class DialogEditor(AbstractDialogSystem):
                 150,
             ),
             "back": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "back.png"), CONFIG["back"], (button_width, button_y), button_size, 150
+                os.path.join(DIALOG_UI_PATH, "back.png"),
+                Lang.get_text("Global", "back_to_main_menu"),
+                (button_width, button_y),
+                button_size,
+                150,
             ),
         }
         self.please_enter_content = CONFIG["please_enter_content"]

@@ -9,7 +9,7 @@ class DynamicImage(AbstractImageSurface):
     # 返回一个复制
     def copy(self):
         replica = DynamicImage(self.get_image_copy(), self.x, self.y, self._width, self._height, self.tag)
-        self.img.set_alpha(255)
+        replica.set_alpha(255)
         return replica
 
     # 返回一个浅复制品
@@ -205,19 +205,19 @@ class MovableImage(StaticImage):
         y: int_f,
         target_x: int_f,
         target_y: int_f,
-        move_speed_x: int_f,
-        move_speed_y: int_f,
+        move_speed_x: number,
+        move_speed_y: number,
         width: int_f = -1,
         height: int_f = -1,
         tag: str = "",
     ):
         super().__init__(img, x, y, width, height, tag)
-        self.__default_x = x
-        self.__default_y = y
-        self.__target_x = target_x
-        self.__target_y = target_y
-        self.__move_speed_x = move_speed_x
-        self.__move_speed_y = move_speed_y
+        self.__default_x: int = int(self.x)
+        self.__default_y: int = int(self.y)
+        self.__target_x: int = int(target_x)
+        self.__target_y: int = int(target_y)
+        self.__move_speed_x: number = move_speed_x
+        self.__move_speed_y: number = move_speed_y
         self.__is_moving_toward_target: bool = False
 
     # 返回一个复制
@@ -249,6 +249,22 @@ class MovableImage(StaticImage):
             self._height,
             self.tag,
         )
+
+    # 设置初始坐标
+    def set_pos(self, x: int_f, y: int_f) -> None:
+        self.__default_x = int(x)
+        self.__default_y = int(y)
+
+    # 设置当前的所在坐标
+    def set_real_pos(self, x: int_f, y: int_f) -> None:
+        super().set_pos(x, y)
+
+    # 设置目标坐标
+    def set_target(self, target_x: int_f, target_y: int_f, move_speed_x: number, move_speed_y: number):
+        self.__target_x = int(target_x)
+        self.__target_y = int(target_y)
+        self.__move_speed_x = move_speed_x
+        self.__move_speed_y = move_speed_y
 
     # 控制
     def switch(self) -> None:

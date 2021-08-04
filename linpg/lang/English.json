@@ -8,7 +8,6 @@
     },
     "DialogCreator": {
         "add": "New dialog",
-        "back": "Back to main menu",
         "background": "Background Image",
         "delete": "Delete current dialog",
         "next": "Next dialog",
@@ -20,6 +19,7 @@
     },
     "Global": {
         "back": "Back",
+        "back_to_main_menu": "Back to Main Menu",
         "cancel": "Cancel",
         "delete": "Delete",
         "dont_save": "Don't Save",
@@ -58,6 +58,7 @@
     "OptionMenu": {
         "background_music": "Background Music",
         "environmental_sound": "Environmental Sounds",
+        "exit_to_desktop": "Exit To Desktop",
         "global_volume": "Global Volume",
         "language": "Language",
         "option_menu": "Option Menu",

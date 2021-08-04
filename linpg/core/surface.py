@@ -25,7 +25,7 @@ class AbstractImageSurface(Rect):
         return self.img.get_alpha()
 
     def set_alpha(self, value: int) -> None:
-        self.img.set_alpha(value)
+        self.img.set_alpha(keep_in_range(int(value), 0, 255))
 
     def add_alpha(self, value: int) -> None:
         self.set_alpha(self.get_alpha() + value)

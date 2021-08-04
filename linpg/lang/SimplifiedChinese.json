@@ -8,7 +8,6 @@
     },
     "DialogCreator": {
         "add": "新增对话",
-        "back": "返回主菜单",
         "background": "背景图片",
         "delete": "删除当前对话",
         "next": "下一个对话",
@@ -20,6 +19,7 @@
     },
     "Global": {
         "back": "返回",
+        "back_to_main_menu": "返回主菜单",
         "cancel": "取消",
         "delete": " 删除",
         "dont_save": "不要保存",
@@ -58,6 +58,7 @@
     "OptionMenu": {
         "background_music": "背景音乐",
         "environmental_sound": "环境声效",
+        "exit_to_desktop": "退回桌面",
         "global_volume": "全局音量",
         "language": "语言",
         "option_menu": "选项菜单",

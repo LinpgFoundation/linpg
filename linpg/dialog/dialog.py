@@ -168,6 +168,8 @@ class DialogSystem(AbstractDialogSystem):
                             self.pause_menu.hidden = True
                             GlobalValue.set("BackToMainMenu", True)
                             self.stop()
+                        elif result == "exit_to_desktop":
+                            Display.quit()
                     else:
                         # 展示设置UI
                         OptionMenu.draw(surface)

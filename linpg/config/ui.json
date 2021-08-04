@@ -228,7 +228,7 @@
                 "src": "{Global,resume}",
                 "type": "dynamic_text",
                 "x": "10%",
-                "y": "35%"
+                "y": "30%"
             },
             {
                 "color": "white",
@@ -237,7 +237,7 @@
                 "src": "{Global,save_current_progress}",
                 "type": "dynamic_text",
                 "x": "10%",
-                "y": "45%"
+                "y": "40%"
             },
             {
                 "color": "white",
@@ -246,7 +246,7 @@
                 "src": "{OptionMenu,option_menu}",
                 "type": "dynamic_text",
                 "x": "10%",
-                "y": "55%"
+                "y": "50%"
             },
             {
                 "color": "white",
@@ -255,7 +255,16 @@
                 "src": "{Global,back}",
                 "type": "dynamic_text",
                 "x": "10%",
-                "y": "65%"
+                "y": "60%"
+            },
+            {
+                "color": "white",
+                "font_size": "5%",
+                "name": "exit_to_desktop",
+                "src": "{OptionMenu,exit_to_desktop}",
+                "type": "dynamic_text",
+                "x": "10%",
+                "y": "70%"
             }
         ],
         "type": "container",

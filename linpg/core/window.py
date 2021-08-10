@@ -70,11 +70,11 @@ class RenderedWindow(Rect):
     def __update_window(self) -> None:
         self.__win = Renderer(Window(self.title, self.size, always_on_top=self.always_on_top))
 
-    def draw_rect(self, rect_pos: pos_liked, color: color_liked) -> None:
+    def draw_rect(self, rect_pos: Iterable, color: color_liked) -> None:
         self.__win.draw_color = Color.get(color)
         self.__win.draw_rect(convert_to_pygame_rect(rect_pos))
 
-    def fill_rect(self, rect_pos: pos_liked, color: color_liked) -> None:
+    def fill_rect(self, rect_pos: Iterable, color: color_liked) -> None:
         self.__win.draw_color = Color.get(color)
         self.__win.fill_rect(convert_to_pygame_rect(rect_pos))
 

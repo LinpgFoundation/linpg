@@ -15,15 +15,10 @@ class LanguageManager:
         # 初始化
         self.reload()
 
-    # 当前语言的文件路径
-    @property
-    def internal_lang_file_path(self) -> str:
-        return os.path.join(os.path.dirname(__file__), "{}.json".format(Setting.language))
-
     # 重新加载语言文件
     def reload(self) -> None:
         # 加载引擎内部的默认语言文件
-        self.__LANG_DATA = dict(Config.load(self.internal_lang_file_path))
+        self.__LANG_DATA = dict(Config.load(os.path.join(os.path.dirname(__file__), "{}.json".format(Setting.language))))
         # 加载游戏自定义的外部语言文件
         path_t: str
         if os.path.exists(
@@ -34,10 +29,15 @@ class LanguageManager:
             EXCEPTION.warn("Linpg cannot load additional language file.")
         # 获取当前所有完整的可用语言的列表
         self.__LANG_AVAILABLE.clear()
-        for lang_file in glob(os.path.join(self.__LANG_PATH_PATTERN)):
-            if os.path.exists(
-                os.path.join(self.__EX_LANG_FOLDER, os.path.basename(lang_file).replace(".json", ".yaml"))
-            ) or os.path.exists(os.path.join(self.__EX_LANG_FOLDER, os.path.basename(lang_file))):
+        # 如果有开发者自带的语言文件
+        if os.path.exists("Lang"):
+            for lang_file in glob(os.path.join(self.__LANG_PATH_PATTERN)):
+                if os.path.exists(
+                    os.path.join(self.__EX_LANG_FOLDER, os.path.basename(lang_file).replace(".json", ".yaml"))
+                ) or os.path.exists(os.path.join(self.__EX_LANG_FOLDER, os.path.basename(lang_file))):
+                    self.__LANG_AVAILABLE.append(Config.load(lang_file, "Language"))
+        else:
+            for lang_file in glob(os.path.join(self.__LANG_PATH_PATTERN)):
                 self.__LANG_AVAILABLE.append(Config.load(lang_file, "Language"))
 
     # 整理语言文件

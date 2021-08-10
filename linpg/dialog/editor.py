@@ -141,7 +141,7 @@ class DialogEditor(AbstractDialogSystem):
         surfaceTmp.blit(self.removeNpcButton, (self.removeNpcButton.get_width() * 0.1, 0))
         self.removeNpcButton = surfaceTmp
         # 未保存离开时的警告
-        self.__no_save_warning = UI.generate_deault("leave_without_saving_warning")
+        self.__no_save_warning = UI.generate("leave_without_saving_warning")
         # 切换准备编辑的dialog部分
         self.dialog_key_select = DropDownSingleChoiceList(None, button_width * 9, button_y + font_size, font_size)
         for key in self._dialog_data:

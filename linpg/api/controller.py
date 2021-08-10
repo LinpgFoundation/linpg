@@ -85,7 +85,7 @@ class MouseController:
         return self.__x, self.__y
 
     # 设置坐标
-    def set_pos(self, pos: pos_liked) -> None:
+    def set_pos(self, pos: Iterable) -> None:
         self.__x, self.__y = Pos.convert(pos)
         pygame.mouse.set_pos(self.pos)
 

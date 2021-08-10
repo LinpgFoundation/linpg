@@ -112,5 +112,5 @@ class DisplayController:
 Display: DisplayController = DisplayController()
 
 # 直接画到屏幕上
-def draw_on_screen(surface_to_draw: ImageSurface, pos: pos_liked) -> None:
+def draw_on_screen(surface_to_draw: ImageSurface, pos: Iterable) -> None:
     Display.window.blit(surface_to_draw, Pos.convert(pos))

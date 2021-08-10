@@ -13,7 +13,7 @@ class PositionSystem:
     @staticmethod
     def convert(pos: any) -> tuple:
         # 检测坐标
-        if isinstance(pos, (list, tuple, numpy.ndarray)):
+        if isinstance(pos, Iterable):
             return pos[0], pos[1]
         elif isinstance(pos, dict):
             return pos["x"], pos["y"]

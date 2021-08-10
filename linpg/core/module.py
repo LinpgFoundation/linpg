@@ -138,7 +138,7 @@ class GameObject2d(GameObject):
         self.set_centery(centery)
 
     # 是否被鼠标触碰
-    def is_hover(self, mouse_pos: pos_liked = NoPos) -> bool:
+    def is_hover(self, mouse_pos: Iterable = NoPos) -> bool:
         if mouse_pos is NoPos:
             mouse_pos = Controller.mouse.pos
         return 0 < mouse_pos[0] - self.x < self.get_width() and 0 < mouse_pos[1] - self.y < self.get_height()
@@ -152,22 +152,22 @@ class GameObject2d(GameObject):
         self.display(Display.window)
 
     # 根据offSet将图片展示到surface的对应位置上 - 子类必须实现
-    def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
         EXCEPTION.fatal("The child class does not implement display() function!")
 
     # 根据offSet将图片展示到屏幕的对应位置上
-    def display_on_screen(self, offSet: pos_liked = Pos.ORIGIN) -> None:
+    def display_on_screen(self, offSet: Iterable = Pos.ORIGIN) -> None:
         self.display(Display.window, offSet)
 
     # 忽略现有坐标，将图片画到surface的指定位置上
-    def blit(self, surface: ImageSurface, pos: pos_liked) -> None:
+    def blit(self, surface: ImageSurface, pos: Iterable) -> None:
         old_pos = self.get_pos()
         self.set_pos(pos[0], pos[1])
         self.draw(surface)
         self.set_pos(old_pos[0], old_pos[1])
 
     # 忽略现有坐标，将图片画到surface的指定位置上
-    def blit_on_screen(self, pos: pos_liked) -> None:
+    def blit_on_screen(self, pos: Iterable) -> None:
         old_pos = self.get_pos()
         self.set_pos(pos[0], pos[1])
         self.draw(Display.window)
@@ -203,7 +203,7 @@ class GameObject2point5d(GameObject):
 
 # 需要被打印的物品
 class ItemNeedBlit(GameObject2point5d):
-    def __init__(self, image: object, weight: number, pos: pos_liked, offSet: pos_liked):
+    def __init__(self, image: object, weight: number, pos: Iterable, offSet: Iterable):
         super().__init__(pos[0], pos[1], weight)
         self.image = image
         self.offSet = offSet

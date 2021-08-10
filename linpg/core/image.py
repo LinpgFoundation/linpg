@@ -37,7 +37,7 @@ class DynamicImage(AbstractImageSurface):
         self.__processed_img = None
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
         if not self.hidden:
             if not Setting.low_memory_mode:
                 if self.__processed_img is None or self.__processed_img.get_size() != self.size:
@@ -153,12 +153,12 @@ class StaticImage(AdvancedAbstractImageSurface):
 
     # 画出轮廓
     def draw_outline(
-        self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN, color: any = "red", line_width: int = 2
+        self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN, color: any = "red", line_width: int = 2
     ) -> None:
         draw_rect(surface, color, (Pos.add(self.abs_pos, offSet), self.__processed_img.get_size()), line_width)
 
     # 是否被鼠标触碰
-    def is_hover(self, mouse_pos: pos_liked = NoSize) -> bool:
+    def is_hover(self, mouse_pos: Iterable = NoSize) -> bool:
         if mouse_pos is NoSize:
             mouse_pos = Controller.mouse.pos
         if self.__processed_img is not None:
@@ -187,7 +187,7 @@ class StaticImage(AdvancedAbstractImageSurface):
         self.__need_update = True
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
         if not self.hidden:
             # 如果图片需要更新，则先更新
             if self.__need_update is True:
@@ -288,7 +288,7 @@ class MovableImage(StaticImage):
         )
 
     # 画出
-    def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
         if not self.hidden:
             super().display(surface, offSet)
             if self.__is_moving_toward_target is True:
@@ -359,7 +359,7 @@ class GifImage(AdvancedAbstractImageSurface):
         return self.img[self.imgId]
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN):
+    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN):
         if not self.hidden:
             self.current_image.set_size(self.get_width(), self.get_height())
             self.current_image.set_alpha(self._alpha)

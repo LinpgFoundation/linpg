@@ -1,7 +1,7 @@
 from .color import *
 
 # 获取材质缺失的临时警示材质
-def get_texture_missing_surface(size: size_liked) -> ImageSurface:
+def get_texture_missing_surface(size: Iterable) -> ImageSurface:
     texture_missing_surface: ImageSurface = new_surface(size).convert()
     texture_missing_surface.fill(Color.BLACK)
     half_width: int = int(size[0] / 2)
@@ -48,7 +48,7 @@ class RawImageManafer:
             EXCEPTION.fatal("The path '{}' has to be a string or at least a ImageSurface!".format(path))
 
     # 图片加载模块：接收图片路径,长,高,返回对应图片
-    def load(self, path: PoI, size: size_liked = tuple(), alpha: int = 255, convert_alpha: bool = True) -> ImageSurface:
+    def load(self, path: PoI, size: Iterable = tuple(), alpha: int = 255, convert_alpha: bool = True) -> ImageSurface:
         # 加载图片
         img = IMG.quickly_load(path, convert_alpha)
         # 根据参数编辑图片
@@ -62,7 +62,7 @@ class RawImageManafer:
 
     # 重新编辑尺寸
     @staticmethod
-    def resize(img: ImageSurface, size: size_liked = (None, None)) -> ImageSurface:
+    def resize(img: ImageSurface, size: Iterable = (None, None)) -> ImageSurface:
         # 转换尺寸
         if isinstance(size, (list, tuple)):
             if len(size) == 1:
@@ -89,7 +89,7 @@ class RawImageManafer:
 
     # 精准地缩放尺寸
     @staticmethod
-    def smoothly_resize(img: ImageSurface, size: size_liked = (None, None)):
+    def smoothly_resize(img: ImageSurface, size: Iterable = (None, None)):
         # 转换尺寸
         if isinstance(size, (list, tuple)):
             if len(size) == 1:
@@ -140,7 +140,7 @@ class RawImageManafer:
 
     # 按照给定的位置对图片进行剪裁
     @staticmethod
-    def crop(img: ImageSurface, pos: pos_liked = Pos.ORIGIN, size: size_liked = (1, 1)) -> ImageSurface:
+    def crop(img: ImageSurface, pos: Iterable = Pos.ORIGIN, size: Iterable = (1, 1)) -> ImageSurface:
         if isinstance(pos, pygame.Rect):
             cropped = new_transparent_surface(pos.size)
             cropped.blit(img, (-pos.x, -pos.y))

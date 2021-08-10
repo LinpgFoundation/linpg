@@ -2,8 +2,6 @@
     "Dialog": {
         "auto": "自动",
         "choice": "选项",
-        "leave_without_save1": "你还没有保存你的修改!",
-        "leave_without_save2": "请问你想要保存你的修改吗?",
         "skip": "跳过"
     },
     "DialogCreator": {
@@ -21,7 +19,9 @@
         "back": "返回",
         "back_to_main_menu": "返回主菜单",
         "cancel": "取消",
+        "confirm": "是",
         "delete": " 删除",
+        "deny": "否",
         "dont_save": "不要保存",
         "no_translation": "暂无翻译",
         "progress_has_been_saved": "进度已保存",
@@ -29,9 +29,17 @@
         "resume": "继续游戏",
         "save": "保存",
         "save_current_progress": "保存当前进度",
+        "tip": "提示",
         "warning": "警告"
     },
     "Language": "简体中文",
+    "LeavingWithoutSavingWarning": {
+        "exit_confirm": "你确认要退出游戏吗?",
+        "exiting_without_saving_progress": "警告: 你即将退出游戏, 并失去任何未被保存的进度!",
+        "leaving_without_saving_progress": "警告: 你即将返回主菜单, 并失去任何未被保存的进度!",
+        "leaving_without_saving_work1": "你还没有保存你的修改!",
+        "leaving_without_saving_work2": "请问你想要保存你的修改吗?"
+    },
     "Numbers": [
         "零",
         "一",

@@ -10,7 +10,7 @@ class AbstractInternalMenu:
 
     # 初始化
     def initialize(self) -> None:
-        self._CONTENT = UI.generate_deault(self._menu_name)
+        self._CONTENT = UI.generate(self._menu_name)
         self._initialized = True
 
     # 菜单是否被触碰
@@ -80,7 +80,10 @@ class DefaultOptionMenu(AbstractInternalMenu):
             # 画出
             super().draw(surface)
             # 如果需要更新语言
-            if lang_drop_down.get_current_selected_item() != Lang.current_language:
+            if (
+                lang_drop_down.get_current_selected_item() != Lang.current_language
+                and lang_drop_down.get_current_selected_item() != ""
+            ):
                 # 更新语言并保存新的参数到本地
                 Setting.set(
                     "Language",

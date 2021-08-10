@@ -2,8 +2,6 @@
     "Dialog": {
         "auto": "Auto",
         "choice": "Choice",
-        "leave_without_save1": "You are about to leave without saving your work!",
-        "leave_without_save2": "Do you ant to save your changes?",
         "skip": "Skip"
     },
     "DialogCreator": {
@@ -21,7 +19,9 @@
         "back": "Back",
         "back_to_main_menu": "Back to Main Menu",
         "cancel": "Cancel",
+        "confirm": "Yes",
         "delete": "Delete",
+        "deny": "No",
         "dont_save": "Don't Save",
         "no_translation": "Translation is not available",
         "progress_has_been_saved": "The progress has been saved.",
@@ -29,9 +29,17 @@
         "resume": "Resume",
         "save": "Save",
         "save_current_progress": "Save Current Progress",
+        "tip": "Tip",
         "warning": "Warning"
     },
     "Language": "English",
+    "LeavingWithoutSavingWarning": {
+        "exit_confirm": "Are you sure you want to quit the game?",
+        "exiting_without_saving_progress": "Warning: You are about to exit, and any unsaved progress will be discarded!",
+        "leaving_without_saving_progress": "Warning: You are about to leave, and any unsaved progress will be discarded!",
+        "leaving_without_saving_work1": "You are about to leave without saving your work!",
+        "leaving_without_saving_work2": "Do you ant to save your changes?"
+    },
     "Numbers": [
         "Zero",
         "One",

@@ -1,4 +1,81 @@
 {
+    "leave_without_saving_progress_warning": {
+        "height": "25%",
+        "hidden": true,
+        "items": [
+            {
+                "color": "white",
+                "font_size": "10%",
+                "src": "{Global,warning}",
+                "type": "text",
+                "x": "center",
+                "y": "10%"
+            },
+            {
+                "color": "white",
+                "font_size": "10%",
+                "src": "{LeavingWithoutSavingWarning,leave_without_save1}",
+                "type": "text",
+                "x": "center",
+                "y": "25%"
+            },
+            {
+                "color": "white",
+                "font_size": "10%",
+                "src": "{LeavingWithoutSavingWarning,leave_without_save2}",
+                "type": "text",
+                "x": "center",
+                "y": "40%"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "10%",
+                "name": "save",
+                "src": "Assets/image/UI/menu.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Global,save}"
+                },
+                "type": "button",
+                "width": "10%",
+                "x": "10%",
+                "y": "70%"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "10%",
+                "name": "cancel",
+                "src": "Assets/image/UI/menu.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Global,cancel}"
+                },
+                "type": "button",
+                "width": "10%",
+                "x": "40%",
+                "y": "70%"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "10%",
+                "name": "dont_save",
+                "src": "Assets/image/UI/menu.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Global,dont_save}"
+                },
+                "type": "button",
+                "width": "10%",
+                "x": "70%",
+                "y": "70%"
+            }
+        ],
+        "src": "Assets/image/UI/container.png",
+        "type": "container",
+        "width": "50%",
+        "x": "center",
+        "y": "center"
+    },
     "leave_without_saving_warning": {
         "height": "25%",
         "hidden": true,
@@ -14,7 +91,7 @@
             {
                 "color": "white",
                 "font_size": "10%",
-                "src": "{Dialog,leave_without_save1}",
+                "src": "{LeavingWithoutSavingWarning,leaving_without_saving_work1}",
                 "type": "text",
                 "x": "center",
                 "y": "25%"
@@ -22,7 +99,7 @@
             {
                 "color": "white",
                 "font_size": "10%",
-                "src": "{Dialog,leave_without_save2}",
+                "src": "{LeavingWithoutSavingWarning,leaving_without_saving_work1}",
                 "type": "text",
                 "x": "center",
                 "y": "40%"

@@ -1,4 +1,6 @@
-import random, re, numpy
+from collections.abc import Iterable
+from random import randint as RANDINT
+from re import split as RE_SPLIT
 from ..lang import *
 
 # 用于辨识基础游戏库的参数，True为默认的pyglet，False则为Pygame
@@ -37,9 +39,7 @@ def get_library_info() -> str:
 int_f = Union[int, float]
 # number，即数字，建议int但接受float
 number = Union[int, float]
-pos_liked = Union[tuple, list, numpy.ndarray]
-size_liked = Union[tuple, list, numpy.ndarray]
-color_liked = Union[tuple[int], str, list[int]]
+color_liked = Union[Iterable[int], str]
 # 图形类
 ImageSurface = pygame.Surface if _LIBRARY_INDICATOR == 0 else pyglet.image
 """linpg自带常量"""
@@ -56,13 +56,13 @@ JOYSTICK_BUTTON_DOWN = pygame.JOYBUTTONDOWN
 
 # 随机数
 def get_random_int(start: int, end: int) -> int:
-    return random.randint(start, end)
+    return RANDINT(start, end)
 
 
 # 多段数字字符串排序 - by Jeff Atwood
 def natural_sort(l: list) -> list:
     convert = lambda text: int(text) if text.isdigit() else text.lower()
-    alphanum_key = lambda key: [convert(c) for c in re.split("([0-9] )", key)]
+    alphanum_key = lambda key: [convert(c) for c in RE_SPLIT("([0-9] )", key)]
     return sorted(l, key=alphanum_key)
 
 
@@ -82,12 +82,12 @@ def convert_percentage(percentage: Union[str, float]) -> float:
 
 
 # 获取Surface
-def new_surface(size: size_liked, surface_flags: any = None) -> ImageSurface:
+def new_surface(size: Iterable, surface_flags: any = None) -> ImageSurface:
     return pygame.Surface(size, flags=surface_flags) if surface_flags is not None else pygame.Surface(size)
 
 
 # 获取透明的Surface
-def new_transparent_surface(size: size_liked) -> ImageSurface:
+def new_transparent_surface(size: Iterable) -> ImageSurface:
     return new_surface(size, pygame.SRCALPHA).convert_alpha()
 
 

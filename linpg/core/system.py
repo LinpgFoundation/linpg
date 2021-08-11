@@ -139,11 +139,7 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
 
     # 获取本模块的信息
     def get_data_of_parent_game_system(self) -> dict:
-        return {
-            "chapter_type": self._chapter_type,
-            "chapter_id": self._chapter_id,
-            "project_name": self._project_name,
-        }
+        return {"chapter_type": self._chapter_type, "chapter_id": self._chapter_id, "project_name": self._project_name}
 
     # 获取需要保存的数据（子类必须实现）
     def _get_data_need_to_save(self) -> dict:

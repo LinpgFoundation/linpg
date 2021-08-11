@@ -168,8 +168,6 @@ class DialogSystem(AbstractDialogSystem):
                             self.pause_menu.hidden = True
                             GlobalValue.set("BackToMainMenu", True)
                             self.stop()
-                        elif result == "exit_to_desktop":
-                            Display.quit()
                     else:
                         # 展示设置UI
                         OptionMenu.draw(surface)
@@ -183,7 +181,7 @@ class DialogSystem(AbstractDialogSystem):
                     progress_saved_text.draw(surface)
                     progress_saved_text.subtract_alpha(5)
                 del progress_saved_text
-                self.pause_menu.screenshot = None
+                self.pause_menu.hide()
         # 显示对话选项
         if (
             self._dialog_txt_system.is_all_played()

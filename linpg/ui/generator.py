@@ -64,7 +64,10 @@ class UiGenerator:
                         else 'Cannot convert "{}" because it is not a valid percentage.'.format(item[key])
                     )
             else:
-                EXCEPTION.fatal("Valid value for {0}: {1}.".format(key, item[key]))
+                try:
+                    item[key] = int(item[key])
+                except Exception:
+                    EXCEPTION.fatal("Valid value for {0}: {1}.".format(key, item[key]))
 
     # 转换文字
     def convert_text(self, text: str) -> str:

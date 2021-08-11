@@ -85,9 +85,7 @@ class DisplayController:
                 else:
                     flags = pygame.SCALED
             self.__SCREEN_WINDOW = pygame.display.set_mode(
-                self.get_size(),
-                flags,
-                vsync=1 if Setting.get("VerticalSync") is True else 0,
+                self.get_size(), flags, vsync=1 if Setting.get("VerticalSync") is True else 0
             )
             self.__SCREEN_WINDOW.set_alpha(None)
         else:

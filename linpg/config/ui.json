@@ -1,11 +1,10 @@
 {
-    "leave_without_saving_progress_warning": {
-        "height": "25%",
-        "hidden": true,
+    "exit_without_saving_progress_warning": {
+        "height": "20%",
         "items": [
             {
                 "color": "white",
-                "font_size": "10%",
+                "font_size": "15%",
                 "src": "{Global,warning}",
                 "type": "text",
                 "x": "center",
@@ -13,37 +12,37 @@
             },
             {
                 "color": "white",
-                "font_size": "10%",
-                "src": "{LeavingWithoutSavingWarning,leave_without_save1}",
+                "font_size": "15%",
+                "src": "{LeavingWithoutSavingWarning,about_to_exit}",
                 "type": "text",
                 "x": "center",
-                "y": "25%"
+                "y": "30%"
             },
             {
                 "color": "white",
-                "font_size": "10%",
-                "src": "{LeavingWithoutSavingWarning,leave_without_save2}",
+                "font_size": "15%",
+                "src": "{LeavingWithoutSavingWarning,progress_will_lost}",
                 "type": "text",
                 "x": "center",
-                "y": "40%"
+                "y": "50%"
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "10%",
-                "name": "save",
+                "height": "15%",
+                "name": "confirm",
                 "src": "Assets/image/UI/menu.png",
                 "text": {
                     "color": "black",
-                    "src": "{Global,save}"
+                    "src": "{Global,confirm}"
                 },
                 "type": "button",
                 "width": "10%",
-                "x": "10%",
+                "x": "20%",
                 "y": "70%"
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "10%",
+                "height": "15%",
                 "name": "cancel",
                 "src": "Assets/image/UI/menu.png",
                 "text": {
@@ -52,17 +51,65 @@
                 },
                 "type": "button",
                 "width": "10%",
-                "x": "40%",
+                "x": "70%",
+                "y": "70%"
+            }
+        ],
+        "src": "Assets/image/UI/container.png",
+        "type": "container",
+        "width": "50%",
+        "x": "center",
+        "y": "center"
+    },
+    "leave_without_saving_progress_warning": {
+        "height": "20%",
+        "items": [
+            {
+                "color": "white",
+                "font_size": "15%",
+                "src": "{Global,warning}",
+                "type": "text",
+                "x": "center",
+                "y": "10%"
+            },
+            {
+                "color": "white",
+                "font_size": "15%",
+                "src": "{LeavingWithoutSavingWarning,about_to_leave}",
+                "type": "text",
+                "x": "center",
+                "y": "30%"
+            },
+            {
+                "color": "white",
+                "font_size": "15%",
+                "src": "{LeavingWithoutSavingWarning,progress_will_lost}",
+                "type": "text",
+                "x": "center",
+                "y": "50%"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "15%",
+                "name": "confirm",
+                "src": "Assets/image/UI/menu.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Global,confirm}"
+                },
+                "type": "button",
+                "width": "10%",
+                "x": "20%",
                 "y": "70%"
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "10%",
-                "name": "dont_save",
+                "height": "15%",
+                "name": "cancel",
                 "src": "Assets/image/UI/menu.png",
                 "text": {
                     "color": "black",
-                    "src": "{Global,dont_save}"
+                    "src": "{Global,cancel}"
                 },
                 "type": "button",
                 "width": "10%",
@@ -329,7 +376,7 @@
                 "color": "white",
                 "font_size": "5%",
                 "name": "back_to_mainMenu",
-                "src": "{Global,back}",
+                "src": "{Global,back_to_main_menu}",
                 "type": "dynamic_text",
                 "x": "10%",
                 "y": "60%"

@@ -270,8 +270,8 @@ class Entity:
         _CHARACTERS_SOUND_SYSTEM.play(self.type, kind_of_sound)
 
     # 设置需要移动的路径
-    def move_follow(self, path: Union[tuple, list]) -> None:
-        if isinstance(path, (list, tuple)) and len(path) > 0:
+    def move_follow(self, path: Iterable) -> None:
+        if isinstance(path, Iterable) and len(path) > 0:
             self.__moving_path = deque(path)
             self.set_action("move")
         else:

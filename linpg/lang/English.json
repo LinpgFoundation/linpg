@@ -19,10 +19,10 @@
         "back": "Back",
         "back_to_main_menu": "Back to Main Menu",
         "cancel": "Cancel",
-        "confirm": "Yes",
+        "confirm": "Confirm",
         "delete": "Delete",
-        "deny": "No",
         "dont_save": "Don't Save",
+        "no": "No",
         "no_translation": "Translation is not available",
         "progress_has_been_saved": "The progress has been saved.",
         "reload_file": "Reload the file",
@@ -30,15 +30,17 @@
         "save": "Save",
         "save_current_progress": "Save Current Progress",
         "tip": "Tip",
-        "warning": "Warning"
+        "warning": "Warning",
+        "yes": "Yes"
     },
     "Language": "English",
     "LeavingWithoutSavingWarning": {
+        "about_to_exit": "You are about to exit",
+        "about_to_leave": "You are about to leave",
         "exit_confirm": "Are you sure you want to quit the game?",
-        "exiting_without_saving_progress": "Warning: You are about to exit, and any unsaved progress will be discarded!",
-        "leaving_without_saving_progress": "Warning: You are about to leave, and any unsaved progress will be discarded!",
         "leaving_without_saving_work1": "You are about to leave without saving your work!",
-        "leaving_without_saving_work2": "Do you ant to save your changes?"
+        "leaving_without_saving_work2": "Do you ant to save your changes?",
+        "progress_will_lost": "Any unsaved progress will be discarded"
     },
     "Numbers": [
         "Zero",

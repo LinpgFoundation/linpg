@@ -65,7 +65,7 @@ class LanguageManager:
     def get_text(self, *key: str) -> any:
         return get_value_by_keys(self.__LANG_DATA, key)
 
-    def get_text_by_keys(self, keys: Union[tuple, list]) -> any:
+    def get_text_by_keys(self, keys: tuple) -> any:
         return get_value_by_keys(self.__LANG_DATA, keys if isinstance(keys, tuple) else tuple(keys))
 
     # 尝试根据key(s)获取对应的语言

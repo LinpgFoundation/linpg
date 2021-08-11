@@ -190,7 +190,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         else:
             return self._text
 
-    def set_text(self, new_txt: Union[tuple, list] = None) -> None:
+    def set_text(self, new_txt: Iterable = None) -> None:
         if new_txt is None or len(self._text) == 0:
             self._text = [""]
         elif isinstance(new_txt, list):

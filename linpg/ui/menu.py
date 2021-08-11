@@ -30,17 +30,34 @@ class PauseMenu(AbstractInternalMenu):
     def __init__(self) -> None:
         super().__init__("pause_menu")
         self.screenshot = None
+        # 返回确认菜单
+        self.__leave_warning = None
+        # 退出确认菜单
+        self.__exit_warning = None
+        # 记录被按下的按钮
+        self.__button_hovered: str = ""
 
     # 被点击的按钮
     def get_button_clicked(self) -> str:
-        if not self.hidden:
-            if Controller.get_event("back"):
-                return "resume"
-            elif Controller.get_event("confirm") and self._CONTENT.item_being_hovered is not None:
-                return self._CONTENT.item_being_hovered
-        return ""
+        return self.__button_hovered
+
+    def initialize(self) -> None:
+        super().initialize()
+        # 加载返回确认菜单
+        self.__leave_warning = UI.generate("leave_without_saving_progress_warning")
+        self.__leave_warning.hidden = True
+        # 加载退出确认菜单
+        self.__exit_warning = UI.generate("exit_without_saving_progress_warning")
+        self.__exit_warning.hidden = True
+
+    def hide(self) -> None:
+        self.hidden = True
+        self.__exit_warning.hidden = True
+        self.__leave_warning.hidden = True
+        self.screenshot = None
 
     def draw(self, surface: ImageSurface) -> None:
+        self.__button_hovered = ""
         if not self.hidden:
             if not self._initialized:
                 self.initialize()
@@ -49,8 +66,38 @@ class PauseMenu(AbstractInternalMenu):
                 self.screenshot = IMG.add_darkness(surface, 10)
             # 画出原先的背景
             surface.blit(self.screenshot, (0, 0))
-            # 画出UI
-            super().draw(surface)
+            # 画出选项
+            if self.__leave_warning.hidden is True and self.__exit_warning.hidden is True:
+                super().draw(surface)
+            # 画出退出确认
+            self.__leave_warning.draw(surface)
+            self.__exit_warning.draw(surface)
+            # 处理事件
+            if Controller.get_event("back"):
+                if not self.__leave_warning.hidden:
+                    self.__leave_warning.hidden = True
+                elif not self.__exit_warning.hidden:
+                    self.__exit_warning.hidden = True
+                else:
+                    self.__button_hovered = "resume"
+            elif Controller.get_event("confirm"):
+                if not self.__leave_warning.hidden:
+                    if self.__leave_warning.item_being_hovered == "confirm":
+                        self.__button_hovered = "back_to_mainMenu"
+                    elif self.__leave_warning.item_being_hovered == "cancel":
+                        self.__leave_warning.hidden = True
+                elif not self.__exit_warning.hidden:
+                    if self.__exit_warning.item_being_hovered == "confirm":
+                        Display.quit()
+                    elif self.__exit_warning.item_being_hovered == "cancel":
+                        self.__exit_warning.hidden = True
+                elif self._CONTENT.item_being_hovered is not None:
+                    if self._CONTENT.item_being_hovered == "back_to_mainMenu":
+                        self.__leave_warning.hidden = False
+                    elif self._CONTENT.item_being_hovered == "exit_to_desktop":
+                        self.__exit_warning.hidden = False
+                    else:
+                        self.__button_hovered = self._CONTENT.item_being_hovered
 
 
 # 设置UI

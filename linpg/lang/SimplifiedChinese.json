@@ -2,13 +2,10 @@
     "Dialog": {
         "auto": "自动",
         "choice": "选项",
-        "leave_without_save1": "你还没有保存你的修改!",
-        "leave_without_save2": "请问你想要保存你的修改吗?",
         "skip": "跳过"
     },
     "DialogCreator": {
         "add": "新增对话",
-        "back": "返回主菜单",
         "background": "背景图片",
         "delete": "删除当前对话",
         "next": "下一个对话",
@@ -20,18 +17,31 @@
     },
     "Global": {
         "back": "返回",
+        "back_to_main_menu": "返回主菜单",
         "cancel": "取消",
+        "confirm": "确认",
         "delete": " 删除",
         "dont_save": "不要保存",
+        "no": "否",
         "no_translation": "暂无翻译",
         "progress_has_been_saved": "进度已保存",
         "reload_file": "重新加载文件",
         "resume": "继续游戏",
         "save": "保存",
         "save_current_progress": "保存当前进度",
-        "warning": "警告"
+        "tip": "提示",
+        "warning": "警告",
+        "yes": "是"
     },
     "Language": "简体中文",
+    "LeavingWithoutSavingWarning": {
+        "about_to_exit": "你即将退出游戏",
+        "about_to_leave": "你即将返回主菜单",
+        "exit_confirm": "你确认要退出游戏吗?",
+        "leaving_without_saving_work1": "你还没有保存你的修改!",
+        "leaving_without_saving_work2": "请问你想要保存你的修改吗?",
+        "progress_will_lost": "任何未被保存的进度将会被弃置"
+    },
     "Numbers": [
         "零",
         "一",
@@ -58,6 +68,7 @@
     "OptionMenu": {
         "background_music": "背景音乐",
         "environmental_sound": "环境声效",
+        "exit_to_desktop": "退回桌面",
         "global_volume": "全局音量",
         "language": "语言",
         "option_menu": "选项菜单",

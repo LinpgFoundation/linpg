@@ -85,9 +85,7 @@ class DisplayController:
                 else:
                     flags = pygame.SCALED
             self.__SCREEN_WINDOW = pygame.display.set_mode(
-                self.get_size(),
-                flags,
-                vsync=1 if Setting.get("VerticalSync") is True else 0,
+                self.get_size(), flags, vsync=1 if Setting.get("VerticalSync") is True else 0
             )
             self.__SCREEN_WINDOW.set_alpha(None)
         else:
@@ -112,5 +110,5 @@ class DisplayController:
 Display: DisplayController = DisplayController()
 
 # 直接画到屏幕上
-def draw_on_screen(surface_to_draw: ImageSurface, pos: pos_liked) -> None:
+def draw_on_screen(surface_to_draw: ImageSurface, pos: Iterable) -> None:
     Display.window.blit(surface_to_draw, Pos.convert(pos))

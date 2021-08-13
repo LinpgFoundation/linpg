@@ -31,11 +31,9 @@ class DialogBox:
         self.READINGSPEED = Setting.get("ReadingSpeed")
         # 鼠标图标
         self.mouseImg = GifImage(
-            numpy.asarray(
-                (
-                    StaticImage(os.path.join(DIALOG_UI_PATH, "mouse_none.png"), 0, 0, self.FONT.size, self.FONT.size),
-                    StaticImage(os.path.join(DIALOG_UI_PATH, "mouse.png"), 0, 0, self.FONT.size, self.FONT.size),
-                )
+            (
+                StaticImage(os.path.join(DIALOG_UI_PATH, "mouse_none.png"), 0, 0, self.FONT.size, self.FONT.size),
+                StaticImage(os.path.join(DIALOG_UI_PATH, "mouse.png"), 0, 0, self.FONT.size, self.FONT.size),
             ),
             int(Display.get_width() * 0.82),
             int(Display.get_height() * 0.83),

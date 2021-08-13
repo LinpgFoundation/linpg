@@ -1,4 +1,128 @@
 {
+    "exit_without_saving_progress_warning": {
+        "height": "20%",
+        "items": [
+            {
+                "color": "white",
+                "font_size": "15%",
+                "src": "{Global,warning}",
+                "type": "text",
+                "x": "center",
+                "y": "10%"
+            },
+            {
+                "color": "white",
+                "font_size": "15%",
+                "src": "{LeavingWithoutSavingWarning,about_to_exit}",
+                "type": "text",
+                "x": "center",
+                "y": "30%"
+            },
+            {
+                "color": "white",
+                "font_size": "15%",
+                "src": "{LeavingWithoutSavingWarning,progress_will_lost}",
+                "type": "text",
+                "x": "center",
+                "y": "50%"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "15%",
+                "name": "confirm",
+                "src": "Assets/image/UI/menu.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Global,confirm}"
+                },
+                "type": "button",
+                "width": "10%",
+                "x": "20%",
+                "y": "70%"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "15%",
+                "name": "cancel",
+                "src": "Assets/image/UI/menu.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Global,cancel}"
+                },
+                "type": "button",
+                "width": "10%",
+                "x": "70%",
+                "y": "70%"
+            }
+        ],
+        "src": "Assets/image/UI/container.png",
+        "type": "container",
+        "width": "50%",
+        "x": "center",
+        "y": "center"
+    },
+    "leave_without_saving_progress_warning": {
+        "height": "20%",
+        "items": [
+            {
+                "color": "white",
+                "font_size": "15%",
+                "src": "{Global,warning}",
+                "type": "text",
+                "x": "center",
+                "y": "10%"
+            },
+            {
+                "color": "white",
+                "font_size": "15%",
+                "src": "{LeavingWithoutSavingWarning,about_to_leave}",
+                "type": "text",
+                "x": "center",
+                "y": "30%"
+            },
+            {
+                "color": "white",
+                "font_size": "15%",
+                "src": "{LeavingWithoutSavingWarning,progress_will_lost}",
+                "type": "text",
+                "x": "center",
+                "y": "50%"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "15%",
+                "name": "confirm",
+                "src": "Assets/image/UI/menu.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Global,confirm}"
+                },
+                "type": "button",
+                "width": "10%",
+                "x": "20%",
+                "y": "70%"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "15%",
+                "name": "cancel",
+                "src": "Assets/image/UI/menu.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Global,cancel}"
+                },
+                "type": "button",
+                "width": "10%",
+                "x": "70%",
+                "y": "70%"
+            }
+        ],
+        "src": "Assets/image/UI/container.png",
+        "type": "container",
+        "width": "50%",
+        "x": "center",
+        "y": "center"
+    },
     "leave_without_saving_warning": {
         "height": "25%",
         "hidden": true,
@@ -14,7 +138,7 @@
             {
                 "color": "white",
                 "font_size": "10%",
-                "src": "{Dialog,leave_without_save1}",
+                "src": "{LeavingWithoutSavingWarning,leaving_without_saving_work1}",
                 "type": "text",
                 "x": "center",
                 "y": "25%"
@@ -22,7 +146,7 @@
             {
                 "color": "white",
                 "font_size": "10%",
-                "src": "{Dialog,leave_without_save2}",
+                "src": "{LeavingWithoutSavingWarning,leaving_without_saving_work2}",
                 "type": "text",
                 "x": "center",
                 "y": "40%"
@@ -228,7 +352,7 @@
                 "src": "{Global,resume}",
                 "type": "dynamic_text",
                 "x": "10%",
-                "y": "35%"
+                "y": "30%"
             },
             {
                 "color": "white",
@@ -237,7 +361,7 @@
                 "src": "{Global,save_current_progress}",
                 "type": "dynamic_text",
                 "x": "10%",
-                "y": "45%"
+                "y": "40%"
             },
             {
                 "color": "white",
@@ -246,16 +370,25 @@
                 "src": "{OptionMenu,option_menu}",
                 "type": "dynamic_text",
                 "x": "10%",
-                "y": "55%"
+                "y": "50%"
             },
             {
                 "color": "white",
                 "font_size": "5%",
                 "name": "back_to_mainMenu",
-                "src": "{Global,back}",
+                "src": "{Global,back_to_main_menu}",
                 "type": "dynamic_text",
                 "x": "10%",
-                "y": "65%"
+                "y": "60%"
+            },
+            {
+                "color": "white",
+                "font_size": "5%",
+                "name": "exit_to_desktop",
+                "src": "{OptionMenu,exit_to_desktop}",
+                "type": "dynamic_text",
+                "x": "10%",
+                "y": "70%"
             }
         ],
         "type": "container",

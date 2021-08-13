@@ -1,7 +1,7 @@
 from .inputbox import *
 
 # 进度条抽象，请勿直接初始化
-class AbstractProgressBar(AbstractImage):
+class AbstractProgressBar(AbstractImageSurface):
     def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str):
         super().__init__(img, x, y, width, height, tag)
         self.__current_percentage: float = 0.0
@@ -24,7 +24,7 @@ class ProgressBar(AbstractProgressBar):
         super().__init__(None, x, y, max_width, height, tag)
         self.color: tuple = Color.get(color)
 
-    def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
         if not self.hidden:
             draw_rect(
                 surface, self.color, new_rect(Pos.add(self.pos, offSet), (int(self._width * self.percentage), self._height))
@@ -77,7 +77,7 @@ class ProgressBarSurface(AbstractProgressBar):
         return ProgressBarSurface(self.img, self.img2, self.x, self.y, self._width, self._height, self.get_mode())
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
         if not self.hidden:
             pos = Pos.add(self.pos, offSet)
             surface.blit(IMG.resize(self.img2, self.size), pos)
@@ -109,7 +109,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
         self.__indicator: StaticImage = StaticImage(indicator_img, 0, 0, indicator_width, indicator_height)
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
         if not self.hidden:
             super().display(surface, offSet)
             abs_pos: tuple[number] = Pos.add(self.pos, offSet)
@@ -286,6 +286,6 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                         pos,
                     )
 
-    def display(self, surface: ImageSurface, offSet: pos_liked = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
         if not self.hidden:
             self._draw_bar(surface, self.img, self.img2, Pos.add(self.pos, offSet))

@@ -1,7 +1,7 @@
 from .button import *
 
 # 用于储存游戏对象的容器，类似html的div
-class GameObjectsContainer(AbstractImage):
+class GameObjectsContainer(AbstractImageSurface):
     def __init__(
         self, bg_img: Union[str, ImageSurface, None], x: int_f, y: int_f, width: int, height: int, tag: str = ""
     ) -> None:

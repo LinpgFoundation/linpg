@@ -10,7 +10,7 @@ except Exception:
     _BLOCKS_DATABASE = {}
 
 # 地图模块
-class MapObject(AdvancedAbstractImage):
+class MapObject(AdvancedAbstractImageSurface):
     def __init__(self, mapDataDic: dict, perBlockWidth: int_f, perBlockHeight: int_f):
         # 初始化地图数据
         self.__Map_Data = mapDataDic["map"]

@@ -58,15 +58,11 @@ class SystemWithBackgroundMusic(AbstractSystem):
         self.__bgm_path = None
         self.__bgm_volume: float = 1.0
         self.__audio = None
-        self.__audio_channel = None
 
     # 卸载bgm
     def unload_bgm(self):
         self.__bgm_path = None
         self.__audio = None
-        if self.__audio_channel is not None:
-            self.__audio_channel.stop()
-            self.__audio_channel = None
 
     # 设置bgm
     def set_bgm(self, path: Union[str, None], forced: bool = False) -> None:
@@ -79,7 +75,6 @@ class SystemWithBackgroundMusic(AbstractSystem):
             # 只有在音乐路径不一致或者强制更新的情况下才会更新路径（同时卸载现有音乐）
             if self.__bgm_path != path or forced is True:
                 self.__bgm_path = path
-                self.__audio_channel = Sound.find_channel()
                 self.__audio = Sound.load(self.__bgm_path, self.__bgm_volume)
         else:
             EXCEPTION.fatal("Path '{}' does not exist!".format(path))
@@ -95,8 +90,8 @@ class SystemWithBackgroundMusic(AbstractSystem):
 
     # 播放bgm
     def play_bgm(self) -> None:
-        if self.__bgm_path is not None and not self.__audio_channel.get_busy():
-            self.__audio_channel.play(self.__audio)
+        if self.__bgm_path is not None and not LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.get_busy():
+            LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.play(self.__audio)
 
     # 把内容画到surface上（子类必须实现）
     def draw(self, surface: ImageSurface) -> None:
@@ -144,11 +139,7 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
 
     # 获取本模块的信息
     def get_data_of_parent_game_system(self) -> dict:
-        return {
-            "chapter_type": self._chapter_type,
-            "chapter_id": self._chapter_id,
-            "project_name": self._project_name,
-        }
+        return {"chapter_type": self._chapter_type, "chapter_id": self._chapter_id, "project_name": self._project_name}
 
     # 获取需要保存的数据（子类必须实现）
     def _get_data_need_to_save(self) -> dict:

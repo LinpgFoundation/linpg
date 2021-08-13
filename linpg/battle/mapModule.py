@@ -1,3 +1,4 @@
+import numpy
 from ..dialog import *
 
 # 地图场景模块

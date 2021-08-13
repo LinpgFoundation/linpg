@@ -11,18 +11,18 @@ class Loader:
 
     # 静态图片
     @staticmethod
-    def static_image(path: str, position: tuple, size: tuple = NoSize, tag: str = "deafult") -> StaticImage:
+    def static_image(path: str, position: tuple, size: tuple = NoSize, tag: str = "") -> StaticImage:
         return StaticImage(path, position[0], position[1], size[0], size[1], tag)
 
     # 动态图片
     @staticmethod
-    def dynamic_image(path: str, position: tuple, size: tuple = NoSize, tag: str = "deafult") -> DynamicImage:
+    def dynamic_image(path: str, position: tuple, size: tuple = NoSize, tag: str = "") -> DynamicImage:
         return DynamicImage(path, position[0], position[1], size[0], size[1], tag)
 
     # 可自行移动的图片
     @staticmethod
     def movable_image(
-        path: str, position: tuple, target_position: tuple, move_speed: tuple = (0, 0), size: tuple = NoSize, tag="default"
+        path: str, position: tuple, target_position: tuple, move_speed: tuple = (0, 0), size: tuple = NoSize, tag=""
     ) -> MovableImage:
         return MovableImage(
             path,
@@ -46,7 +46,7 @@ class Loader:
 
     # gif图片
     @staticmethod
-    def gif(gif_path_or_img_list: Union[str, tuple, list], position: tuple, size: tuple, updateGap: int = 1) -> GifImage:
+    def gif(gif_path_or_img_list: Union[str, Iterable], position: tuple, size: tuple, updateGap: int = 1) -> GifImage:
         imgList: list = []
         # 如果是gif文件
         if isinstance(gif_path_or_img_list, str) and gif_path_or_img_list.endswith(".gif"):
@@ -59,12 +59,12 @@ class Loader:
                 imgList.append(StaticImage(pathTmp, 0, 0, size[0], size[1]))
                 os.remove(pathTmp)
         # 如果是一个列表的文件路径
-        elif isinstance(gif_path_or_img_list, (tuple, list)):
+        elif isinstance(gif_path_or_img_list, Iterable):
             for image_path in gif_path_or_img_list:
                 imgList.append(StaticImage(image_path, 0, 0, size[0], size[1]))
         else:
             EXCEPTION.fatal('Invalid input for "gif_path_or_img_list": {}'.format(gif_path_or_img_list))
-        return GifImage(numpy.asarray(imgList), position[0], position[1], size[0], size[1], updateGap)
+        return GifImage(tuple(imgList), position[0], position[1], size[0], size[1], updateGap)
 
     @staticmethod
     def button(path: str, position: tuple, size: tuple, alpha_when_not_hover: int = 255) -> Button:
@@ -76,10 +76,17 @@ class Loader:
     ) -> Button:
         return load_button_with_text_in_center(path, txt, font_color, font_size, position, alpha_when_not_hover)
 
-    # 高级文字制作模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
+    # 普通文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class
+    @staticmethod
+    def text(
+        txt: any, color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False
+    ) -> TextSurface:
+        return TextSurface(Font.render(txt, color, size, ifBold, ifItalic), pos[0], pos[1])
+
+    # 高级文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
     @staticmethod
     def dynamic_text(
-        txt: any, color: color_liked, pos: tuple, size: int = 50, ifBold: bool = False, ifItalic: bool = False
+        txt: any, color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False
     ) -> DynamicTextSurface:
         return DynamicTextSurface(
             Font.render(txt, color, size, ifBold, ifItalic),

@@ -14,4 +14,4 @@ if clean_up is True:
     # 整理内部设置配置文件
     config.organize_internal()
     # 整理代码
-    os.system("black linpg -l 125")
+    os.system('black "{}" -l 125'.format(os.path.join(os.path.dirname(__file__), "linpg")))

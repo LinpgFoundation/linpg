@@ -106,7 +106,7 @@ class ColorManager:
                     return tuple(THECOLORS[color])
                 except KeyError:
                     EXCEPTION.fatal('The color "{}" is currently not available!'.format(color))
-        elif isinstance(color, (tuple, list)):
+        elif isinstance(color, Iterable):
             return tuple(color)
         else:
             EXCEPTION.fatal(

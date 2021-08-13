@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from typing import Iterable
 from random import randint as RANDINT
 from re import split as RE_SPLIT
 from ..lang import *

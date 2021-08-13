@@ -14,14 +14,15 @@ class PositionSystem:
     def convert(pos: any) -> tuple:
         # 检测坐标
         if isinstance(pos, Iterable):
-            return pos[0], pos[1]
-        elif isinstance(pos, dict):
-            return pos["x"], pos["y"]
+            if isinstance(pos, dict):
+                return pos["x"], pos["y"]
+            else:
+                return pos[0], pos[1]
         else:
             try:
                 return pos.x, pos.y
             except Exception:
-                EXCEPTION.fatal('Cannot convert position "{}".'.format(pos))
+                EXCEPTION.fatal('Unable to convert position "{}".'.format(pos))
 
     # 判断2个坐标是否相同
     def is_same(self, pos1: any, pos2: any) -> bool:

@@ -146,7 +146,7 @@
             {
                 "color": "white",
                 "font_size": "10%",
-                "src": "{LeavingWithoutSavingWarning,leaving_without_saving_work1}",
+                "src": "{LeavingWithoutSavingWarning,leaving_without_saving_work2}",
                 "type": "text",
                 "x": "center",
                 "y": "40%"

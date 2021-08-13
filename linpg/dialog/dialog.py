@@ -1,14 +1,15 @@
 from .abstract import *
 
 # 视觉小说系统模块
-class DialogSystem(AbstractDialogSystem):
+class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
     def __init__(self, basic_features_only: bool = False) -> None:
-        super().__init__()
+        AbstractDialogSystem.__init__(self)
+        PauseMenuModuleForGameSystem.__init__(self)
         if not basic_features_only:
             # UI按钮
             self._buttons_mananger = DialogButtons()
             # 暂停菜单
-            self.pause_menu = PauseMenu()
+            self._enable_pause_menu()
         # 更新音效
         self._update_sound_volume()
         # 是否要显示历史对白页面
@@ -57,6 +58,10 @@ class DialogSystem(AbstractDialogSystem):
                 self.save_progress()
         else:
             EXCEPTION.fatal("The dialog id {} does not exist!".format(theNextDialogId))
+
+    def updated_language(self) -> None:
+        super().updated_language()
+        self._initialize_pause_menu()
 
     def continue_scene(self, theNextDialogId: Union[str, int]) -> None:
         self._continue()
@@ -136,52 +141,11 @@ class DialogSystem(AbstractDialogSystem):
         if Controller.get_event("previous") and currentDialogContent["last_dialog_id"] is not None:
             self._update_scene(currentDialogContent["last_dialog_id"])
         # 暂停菜单
-        if Controller.get_event("back") and self.pause_menu is not None:
+        if Controller.get_event("back") and self.is_pause_menu_enabled():
             if self._is_showing_history is True:
                 self._is_showing_history = False
             else:
-                progress_saved_text = StaticImage(
-                    self._dialog_txt_system.FONT.render(Lang.get_text("Global", "progress_has_been_saved"), Color.WHITE),
-                    0,
-                    0,
-                )
-                progress_saved_text.set_alpha(0)
-                progress_saved_text.set_center(surface.get_width() / 2, surface.get_height() / 2)
-                self.pause_menu.hidden = False
-                Display.flip()
-                while not self.pause_menu.hidden:
-                    Display.flip()
-                    if OptionMenu.hidden is True:
-                        self.pause_menu.draw(surface)
-                        result: str = self.pause_menu.get_button_clicked()
-                        if result == "resume":
-                            OptionMenu.hidden = True
-                            self.pause_menu.hidden = True
-                        elif result == "save":
-                            self.save_progress()
-                            progress_saved_text.set_alpha(255)
-                        elif result == "option_menu":
-                            OptionMenu.hidden = False
-                        elif result == "back_to_mainMenu":
-                            progress_saved_text.set_alpha(0)
-                            self.fade(surface)
-                            self.pause_menu.hidden = True
-                            GlobalValue.set("BackToMainMenu", True)
-                            self.stop()
-                    else:
-                        # 展示设置UI
-                        OptionMenu.draw(surface)
-                        # 更新音量
-                        if OptionMenu.need_update["volume"] is True:
-                            self._update_sound_volume()
-                        # 更新语言
-                        if OptionMenu.need_update["language"] is True:
-                            self.updated_language(surface)
-                    # 显示进度已保存的文字
-                    progress_saved_text.draw(surface)
-                    progress_saved_text.subtract_alpha(5)
-                del progress_saved_text
-                self.pause_menu.hide()
+                self._show_pause_menu(surface)
         # 显示对话选项
         if (
             self._dialog_txt_system.is_all_played()

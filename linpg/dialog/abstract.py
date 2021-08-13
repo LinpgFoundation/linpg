@@ -28,8 +28,6 @@ class AbstractDialogSystem(AbstractGameSystem):
             self._option_box_selected_surface = self._option_box_surface.copy()
         # UI按钮
         self._buttons_mananger = None
-        # 暂停菜单
-        self.pause_menu = None
         # 对话文件路径
         self._dialog_folder_path: str = "Data"
         # 背景音乐路径
@@ -216,10 +214,8 @@ class AbstractDialogSystem(AbstractGameSystem):
                 self.unload_bgm()
 
     # 更新语言
-    def updated_language(self, surface: ImageSurface) -> None:
+    def updated_language(self) -> None:
         super().updated_language()
-        if self.pause_menu is not None:
-            self.pause_menu.initialize()
         if self._buttons_mananger is not None:
             self._buttons_mananger.initialize()
         self._load_content()

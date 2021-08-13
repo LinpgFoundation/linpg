@@ -271,6 +271,16 @@ class MediaController:
     def get_busy() -> bool:
         return pygame.mixer.get_busy()
 
+    # 暂停正在播放的音乐
+    @staticmethod
+    def pause() -> None:
+        pygame.mixer.pause()
+
+    # 继续播放暂停的音乐
+    @staticmethod
+    def unpause() -> None:
+        pygame.mixer.unpause()
+
     # 卸载所有音乐
     @staticmethod
     def unload() -> None:

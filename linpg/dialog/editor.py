@@ -2,6 +2,18 @@ from .dialog import *
 
 # 对话制作器
 class DialogEditor(AbstractDialogSystem):
+    def __init__(self):
+        super().__init__()
+        # 存储视觉小说默认数据的参数
+        self._dialog_data_default: dict = {}
+        # 是否是父类
+        self._is_default_dialog: bool = True
+        # 默认内容
+        self.please_enter_content: str = ""
+        # 默认叙述者名
+        self.please_enter_name: str = ""
+
+    # 加载数据
     def load(self, chapterType: str, chapterId: int, part: str, projectName: str = None):
         self._initialize(chapterType, chapterId, part, projectName)
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_dialog_file_location())
@@ -177,54 +189,31 @@ class DialogEditor(AbstractDialogSystem):
     # 读取章节信息
     def _load_content(self) -> None:
         self._dialog_data = (
-            Config.load(self.get_dialog_file_location(), "dialogs")
+            dict(Config.load(self.get_dialog_file_location(), "dialogs"))
             if os.path.exists(self.get_dialog_file_location())
             else {}
         )
-        # 获取默认语言
-        default_lang_of_dialog: str = self.get_default_lang()
-        # 如果dialogs字典是空的
-        if len(list(self._dialog_data.keys())) <= 0:
-            # 如果不是默认主语言，则尝试加载主语言
-            if default_lang_of_dialog != Setting.language:
-                self.is_default = False
-                # 读取原始数据
-                self._dialog_data_default = Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs")
+        # 如果不是默认主语言
+        if (default_lang_of_dialog := self.get_default_lang()) != Setting.language:
+            self._is_default_dialog = False
+            # 读取原始数据
+            self._dialog_data_default = dict(Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs"))
+            # 如果当前dialogs是空的，则完全使用默认语言的数据
+            if len(self._dialog_data) <= 0:
                 self._dialog_data = deepcopy(self._dialog_data_default)
-        else:
-            # 如果不是默认主语言
-            if default_lang_of_dialog != Setting.language:
-                self.is_default = False
-                # 读取原始数据
-                self._dialog_data_default = Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs")
-                # 填入未被填入的数据
-                for part in self._dialog_data_default:
-                    for key, DIALOG_DATA_TEMP in self._dialog_data_default[part].items():
-                        if key in self._dialog_data[part]:
-                            for key2, dataNeedReplace in DIALOG_DATA_TEMP.items():
-                                if key2 not in self._dialog_data[part][key]:
-                                    self._dialog_data[part][key][key2] = deepcopy(dataNeedReplace)
-                        else:
-                            self._dialog_data[part][key] = deepcopy(DIALOG_DATA_TEMP)
+            # 如果当前dialogs不为空的，则填入未被填入的数据
             else:
-                self.is_default = True
-                self._dialog_data_default = None
+                dialog_data_t = deepcopy(self._dialog_data_default)
+                dialog_data_t.update(self._dialog_data)
+                self._dialog_data = dialog_data_t
+        # 如果是默认主语言，则不进行任何额外操作
+        else:
+            self._is_default_dialog = True
+            self._dialog_data_default.clear()
         # 则尝试加载后仍然出现内容为空的情况
-        if len(list(self._dialog_data.keys())) <= 0:
+        if len(self._dialog_data) <= 0:
             self._part = "example_dialog"
             self._dialog_data[self._part] = {}
-        if len(list(self._dialog_data[self._part].keys())) <= 0:
-            self._dialog_data[self._part]["head"] = {
-                "background_img": None,
-                "background_music": None,
-                "characters_img": [],
-                "content": [self.please_enter_content],
-                "last_dialog_id": None,
-                "narrator": self.please_enter_name,
-                "next_dialog_id": None,
-            }
-            self.is_default = True
-            self._dialog_data_default = None
         # 更新场景
         self._update_scene(self._dialog_id)
 
@@ -233,7 +222,7 @@ class DialogEditor(AbstractDialogSystem):
         self.current_dialog_content["narrator"] = self._dialog_txt_system.narrator.get_text()
         self.current_dialog_content["content"] = self._dialog_txt_system.content.get_text()
         data_need_save: dict = deepcopy(self._dialog_data)
-        if not self.is_default:
+        if not self._is_default_dialog:
             # 移除掉相似的内容
             for part in self._dialog_data_default:
                 for dialogId, defaultDialogData in self._dialog_data_default[part].items():
@@ -254,8 +243,18 @@ class DialogEditor(AbstractDialogSystem):
 
     # 更新场景
     def _update_scene(self, theNextDialogId: Union[str, int]) -> None:
+        # 确保当前版块有对话数据。如果当前版块为空，则加载默认模板
+        if len(self.dialog_content) <= 0:
+            self.dialog_content.update(Config.load_internal("template.json", "dialog_example"))
+            for key in self.dialog_content:
+                self.dialog_content[key]["content"].append(self.please_enter_content)
+                self.dialog_content[key]["narrator"] = self.please_enter_name
+            self._is_default_dialog = True
+            self._dialog_data_default.clear()
+        # 如果id存在，则加载对应数据
         if theNextDialogId in self.dialog_content:
             super()._update_scene(theNextDialogId)
+        # 如果id不存在，则新增一个
         else:
             self.__add_dialog(theNextDialogId)
 

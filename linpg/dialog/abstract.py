@@ -87,7 +87,7 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 获取当前对话的信息
     def get_current_dialog_content(self, safe_mode: bool = False) -> dict:
-        currentDialogContent: dict = self._dialog_data[self._part][self._dialog_id]
+        currentDialogContent: dict = self.dialog_content[self._dialog_id]
         # 检测是否缺少关键key
         if safe_mode is True:
             for key in ("characters_img", "background_img", "narrator", "content"):
@@ -122,36 +122,19 @@ class AbstractDialogSystem(AbstractGameSystem):
     def _load_content(self) -> None:
         # 读取目标对话文件的数据
         if os.path.exists(self.get_dialog_file_location()):
-            try:
-                dialogDataDict: dict = Config.load(self.get_dialog_file_location(), "dialogs", self._part)
-                assert isinstance(dialogDataDict, dict)
-                # 如果该dialog文件是另一个语言dialog文件的子类
-                if (default_lang_of_dialog := self.get_default_lang()) != Setting.language:
-                    self._dialog_data[self._part] = Config.load(
-                        self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._part
-                    )
-                    try:
-                        assert isinstance(self._dialog_data[self._part], dict)
-                        for dialog_id in dialogDataDict:
-                            if dialog_id in self._dialog_data[self._part]:
-                                for key in dialogDataDict[dialog_id]:
-                                    self._dialog_data[self._part][dialog_id][key] = dialogDataDict[dialog_id][key]
-                            else:
-                                self._dialog_data[self._part][dialog_id] = dialogDataDict[dialog_id]
-                    except AssertionError:
-                        EXCEPTION.fatal(
-                            'Cannot load part "{}" from default language dialog! Worst case scenario, it needs to be empty!'.format(
-                                self._part
-                            )
-                        )
-                # 如果该dialog文件是主语言
-                else:
-                    self._dialog_data[self._part] = dialogDataDict
-            except AssertionError:
-                EXCEPTION.fatal('Cannot load part "{0}" from "{1}"!'.format(self._part, self.get_dialog_file_location()))
+            # 获取目标对话数据
+            dialogData_t: dict = dict(Config.load(self.get_dialog_file_location(), "dialogs", self._part))
+            # 如果该dialog文件是另一个语言dialog文件的子类
+            if (default_lang_of_dialog := self.get_default_lang()) != Setting.language:
+                self._dialog_data[self._part] = dict(
+                    Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._part)
+                )
+                self._dialog_data[self._part].update(dialogData_t)
+            else:
+                self._dialog_data[self._part] = dialogData_t
         else:
-            self._dialog_data[self._part] = Config.load(
-                self.get_dialog_file_location(self.get_default_lang()), "dialogs", self._part
+            self._dialog_data[self._part] = dict(
+                Config.load(self.get_dialog_file_location(self.get_default_lang()), "dialogs", self._part)
             )
         # 确认dialog数据合法
         if len(self.dialog_content) == 0:

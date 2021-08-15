@@ -1,31 +1,25 @@
 {
-    "dialog": {
-        "example": {
-            "head": {
-                "background_img": null,
-                "background_music": null,
-                "characters_img": null,
-                "content": [
-                    "Put Content Here"
-                ],
-                "last_dialog_id": null,
-                "narrator": "Name",
-                "next_dialog_id": {
-                    "target": "id_1",
-                    "type": "default"
-                }
-            },
-            "id_1": {
-                "background_img": null,
-                "background_music": null,
-                "characters_img": null,
-                "content": [
-                    "Put Content Here"
-                ],
-                "last_dialog_id": "head",
-                "narrator": "Name",
-                "next_dialog_id": null
+    "dialog_example": {
+        "head": {
+            "background_img": null,
+            "background_music": null,
+            "characters_img": [],
+            "content": [],
+            "last_dialog_id": null,
+            "narrator": "",
+            "next_dialog_id": {
+                "target": "id_1",
+                "type": "default"
             }
+        },
+        "id_1": {
+            "background_img": null,
+            "background_music": null,
+            "characters_img": [],
+            "content": [],
+            "last_dialog_id": "head",
+            "narrator": "",
+            "next_dialog_id": null
         }
     },
     "info": {

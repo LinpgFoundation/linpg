@@ -1,4 +1,5 @@
 from .controller import *
+from datetime import datetime
 
 # 画面更新控制器
 class DisplayController:
@@ -31,6 +32,14 @@ class DisplayController:
     def flip(self) -> None:
         self.__clock.tick(self.fps)
         pygame.display.flip()
+        # 如果需要截图
+        if Controller.NEED_TO_TAKE_SCREENSHOT is True:
+            Controller.NEED_TO_TAKE_SCREENSHOT = False
+            if not os.path.exists("screenshots"):
+                os.mkdir("screenshots")
+            pygame.image.save(
+                self.__SCREEN_WINDOW, os.path.join("screenshots", "{}.png".format(datetime.now().strftime("%Y%m%d%H%M%S")))
+            )
         # 更新控制器
         Controller.update()
         Controller.mouse.draw_custom_icon(self.__SCREEN_WINDOW)

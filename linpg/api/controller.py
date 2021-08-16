@@ -123,6 +123,8 @@ class GameController:
             "scroll_down": False,
             "previous": False,
         }
+        # 是否需要截图
+        self.NEED_TO_TAKE_SCREENSHOT: bool = False
 
     # 手柄模块
     @property
@@ -174,8 +176,11 @@ class GameController:
                     self.__SPECIFIC_EVENTS["confirm"] = True
                 elif self.__joystick.get_button(1) is True:
                     self.__SPECIFIC_EVENTS["previous"] = True
-            elif event.type == Key.DOWN and event.key == Key.ESCAPE:
-                self.__SPECIFIC_EVENTS["back"] = True
+            elif event.type == Key.DOWN:
+                if event.key == Key.ESCAPE:
+                    self.__SPECIFIC_EVENTS["back"] = True
+                elif event.key == Key.F3:
+                    self.NEED_TO_TAKE_SCREENSHOT = True
         # 根据手柄情况调整鼠标位置（如果手柄启动）
         if self.__joystick.is_active():
             self.mouse.set_pos(

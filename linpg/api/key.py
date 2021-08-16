@@ -16,6 +16,7 @@ class KeySystem:
         self.ARROW_RIGHT = pygame.K_RIGHT
         self.RETURN = pygame.K_RETURN
         self.BACKQUOTE = pygame.K_BACKQUOTE
+        self.F3 = pygame.K_F3
         # 粘贴板内容模块
         from tkinter import Tk
 

@@ -1,7 +1,7 @@
 import cv2
 from .window import *
 
-
+# 视频抽象类
 class AbstractVedio:
     def __init__(self, path: str, buffer_num: int, play_range: tuple[int] = (0, -1)):
         self._path: str = path
@@ -81,6 +81,7 @@ class AbstractVedio:
     # 停止
     def stop(self) -> None:
         self.__stopped = True
+        self.__video_stream.release()
         self.__video_stream = None
 
     # 是否已经开始
@@ -231,3 +232,15 @@ class VedioPlayer(AbstractVedio):
                     self.__clock.tick(self._frame_rate)
             else:
                 self.stop()
+
+
+# 获取视频封面
+def get_preview_of_vedio(path: str, size: tuple[int] = NoSize) -> ImageSurface:
+    video_stream = cv2.VideoCapture(path)
+    video_stream.set(cv2.CAP_PROP_POS_FRAMES, int(video_stream.get(cv2.CAP_PROP_FRAME_COUNT) * 0.1))
+    current_frame = cv2.cvtColor(video_stream.read()[1], cv2.COLOR_BGR2RGB)
+    video_stream.release()
+    del video_stream
+    if size is not NoSize and (current_frame.shape[0] != size[0] or current_frame.shape[1] != size[1]):
+        current_frame = cv2.resize(current_frame, size)
+    return pygame.surfarray.make_surface(current_frame.swapaxes(0, 1))

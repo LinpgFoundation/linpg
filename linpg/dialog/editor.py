@@ -40,8 +40,16 @@ class DialogEditor(AbstractDialogSystem):
         # 加载背景图片
         self.background_deselect = IMG.load(os.path.join(DIALOG_UI_PATH, "deselect.png"))
         self.UIContainerRight_bg.set("current_select", None)
+        # 加载静态背景图片
         for imgPath in glob(os.path.join(self._background_image_folder_path, "*")):
             self.UIContainerRight_bg.set(os.path.basename(imgPath), IMG.load(imgPath, (container_width * 0.8, None)))
+        # 加载动态背景图片
+        if os.path.exists(self._dynamic_background_folder_path):
+            for imgPath in glob(os.path.join(self._dynamic_background_folder_path, "*")):
+                self.UIContainerRight_bg.set(
+                    os.path.basename(imgPath), IMG.resize(get_preview_of_vedio(imgPath), (container_width * 0.8, None))
+                )
+        # 加载透明图片
         self.UIContainerRight_bg.set(
             "<transparent>", get_texture_missing_surface((container_width * 0.8, container_width * 0.45))
         )

@@ -92,7 +92,6 @@ class AbstractDialogSystem(AbstractGameSystem):
         if safe_mode is True:
             for key in ("characters_img", "background_img", "narrator", "content"):
                 if key not in currentDialogContent:
-                    print(currentDialogContent)
                     EXCEPTION.fatal(
                         'Cannot find critical key "{0}" in part "{1}" with id "{2}".'.format(
                             key, self._part, self._dialog_id
@@ -129,7 +128,8 @@ class AbstractDialogSystem(AbstractGameSystem):
                 self._dialog_data[self._part] = dict(
                     Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._part)
                 )
-                self._dialog_data[self._part].update(dialogData_t)
+                for key,values in dialogData_t.items():
+                    self._dialog_data[self._part][key].update(values)
             else:
                 self._dialog_data[self._part] = dialogData_t
         else:

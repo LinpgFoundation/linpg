@@ -81,8 +81,9 @@ class AbstractVedio:
     # 停止
     def stop(self) -> None:
         self.__stopped = True
-        self.__video_stream.release()
-        self.__video_stream = None
+        if self.__video_stream is not None:
+            self.__video_stream.release()
+            self.__video_stream = None
 
     # 是否已经开始
     @property

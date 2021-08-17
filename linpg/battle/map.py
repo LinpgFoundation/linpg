@@ -5,7 +5,7 @@ _MAP_ENV_IMAGE: object = None
 # 方块数据
 _BLOCKS_DATABASE: dict = None
 try:
-    _BLOCKS_DATABASE = Config.load(os.path.join("Data", "blocks.yaml"), "blocks")
+    _BLOCKS_DATABASE = dict(Config.load(os.path.join("Data", "database.yaml"), "Blocks"))
 except Exception:
     _BLOCKS_DATABASE = {}
 

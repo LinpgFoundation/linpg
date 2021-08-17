@@ -196,11 +196,17 @@ class DialogEditor(AbstractDialogSystem):
 
     # 读取章节信息
     def _load_content(self) -> None:
-        self._dialog_data = (
-            dict(Config.load(self.get_dialog_file_location(), "dialogs"))
-            if os.path.exists(self.get_dialog_file_location())
-            else {}
-        )
+        if os.path.exists(path := self.get_dialog_file_location()):
+            if "dialogs" in (data_t := Config.load(path)):
+                try:
+                    self._dialog_data = dict(data_t["dialogs"])
+                except Exception:
+                    EXCEPTION.warn("Cannot load dialogs due to invalid data type.")
+                    self._dialog_data = {}
+            else:
+                self._dialog_data = {}
+        else:
+            self._dialog_data = {}
         # 如果不是默认主语言
         if (default_lang_of_dialog := self.get_default_lang()) != Setting.language:
             self._is_default_dialog = False
@@ -212,7 +218,9 @@ class DialogEditor(AbstractDialogSystem):
             # 如果当前dialogs不为空的，则填入未被填入的数据
             else:
                 dialog_data_t = deepcopy(self._dialog_data_default)
-                dialog_data_t.update(self._dialog_data)
+                for part in self._dialog_data:
+                    for key, value in self._dialog_data[part].items():
+                        dialog_data_t[part][key].update(value)
                 self._dialog_data = dialog_data_t
         # 如果是默认主语言，则不进行任何额外操作
         else:

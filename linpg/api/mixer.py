@@ -97,18 +97,17 @@ def _split_audio_from_video(input_path: str, audio_type="ogg") -> str:
                 index += 1
         # 生成output路径
         output_path: str = os.path.join(output_folder, output_file_name)
-        # 让linpgtoolkit生成视频文件
-        convert_status: str = linpgtoolkit.ffmpeg.convert_from_vedio_to_audio(input_path, output_path)
-        # 如果一切正常，返回output路径
-        if len(convert_status) < 1:
+        try:
+            # 让linpgtoolkit生成视频文件
+            linpgtoolkit.FFmpeg.convert_from_vedio_to_audio(input_path, output_path)
+            # 如果一切正常，返回output路径
             return output_path
         # 如果不正常...
-        elif convert_status == "FILE_NOT_EXIST":
+        except linpgtoolkit.FileNotExists:
             EXCEPTION.fatal('Cannot find media file on path "{}".'.format(input_path))
-        elif convert_status == "FFMPEG_MISSING":
+        except linpgtoolkit.ToolIsMissing:
             EXCEPTION.fatal('LinpgToolKit cannot find its "ffmpeg.exe" file. You may need to reinstall the toolkit.')
-        else:
-            EXCEPTION.fatal("Unexpected convert status, you need to report this issue to the developers.")
+
     else:
         EXCEPTION.fatal("You have to install linpgtoolkit if you want to load audio from vedio")
 

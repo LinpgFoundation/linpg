@@ -128,7 +128,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                 self._dialog_data[self._part] = dict(
                     Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._part)
                 )
-                for key,values in dialogData_t.items():
+                for key, values in dialogData_t.items():
                     self._dialog_data[self._part][key].update(values)
             else:
                 self._dialog_data[self._part] = dialogData_t

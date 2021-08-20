@@ -243,7 +243,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                 self._text[self.lineId] += theStringAfterHolderIndex
                 self._reset_inputbox_size()
         else:
-            EXCEPTION.warn("The value of event.unicode is empty!")
+            EXCEPTION.inform("The value of event.unicode is empty!")
 
     # 删除对应字符
     def _remove_char(self, action: str) -> None:
@@ -425,7 +425,7 @@ class Console(SingleLineInputBox):
                 self.__backward_id = 0
                 self.set_text()
             else:
-                EXCEPTION.warn("The input box is empty!")
+                EXCEPTION.inform("The input box is empty!")
             return True
         # ESC，关闭
         elif event.key == Key.ESCAPE:

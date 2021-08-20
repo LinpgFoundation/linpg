@@ -24,7 +24,7 @@ class DialogBox:
             self.__textPlayingSound = Sound.load(r"Assets/sound/ui/dialog_words_playing.ogg")
         except FileNotFoundError:
             self.__textPlayingSound = None
-            EXCEPTION.warn(
+            EXCEPTION.inform(
                 "Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!\nAs a result, the text playing sound will be disabled."
             )
         self.__channel = None

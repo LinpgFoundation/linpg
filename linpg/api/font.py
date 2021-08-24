@@ -88,7 +88,7 @@ class FontManager:
         # 引擎标准文件渲染器
         self.__LINPG_GLOBAL_FONTS: dict = {}
         # 上一次render的字体
-        self.__LINPG_LAST_FONT: object = FontGenerator()
+        self.__LINPG_LAST_FONT: FontGenerator = FontGenerator()
 
     # 设置全局文字
     def set_global_font(self, key: str, size: int, ifBold: bool = False, ifItalic: bool = False) -> None:

@@ -23,7 +23,7 @@ class MapObject(AdvancedAbstractImageSurface):
         self.row, self.column = self.__Map_Data.shape
         # 现已可以计算尺寸，初始化父类
         super().__init__(
-            mapDataDic["backgroundImage"],  # self.img:str储存了背景图片的信息
+            mapDataDic["background_image"],  # self.img:str储存了背景图片的信息
             0,
             0,
             int(perBlockWidth * 0.9 * ((self.row + self.column + 1) / 2)),

@@ -1,3 +1,15 @@
+# 尝试导入linpgtoolkit
+TOOlKIT_INSTALLED: int
+try:
+    import linpgtoolkit
+
+    # 导入成功
+    TOOlKIT_INSTALLED = 1
+# 导入失败
+except ModuleNotFoundError:
+    EXCEPTION.inform("Cannot import linpgtoolkit, some features are disabled.")
+    TOOlKIT_INSTALLED = 0
+
 from .color import *
 
 # 获取材质缺失的临时警示材质
@@ -148,6 +160,14 @@ class RawImageManafer:
             cropped = new_transparent_surface((round(size[0]), round(size[1])))
             cropped.blit(img, (-pos[0], -pos[1]))
         return cropped
+
+    # 使用linpgtoolkit的ImageMagick组件修复或优化png
+    @staticmethod
+    def fix(path: str) -> None:
+        if TOOlKIT_INSTALLED == 1:
+            linpgtoolkit.ImageMagick.fix(path)
+        else:
+            EXCEPTION.fatal("You have to install linpgtoolkit if you want to fix the image with png error.")
 
 
 IMG = RawImageManafer()

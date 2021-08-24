@@ -9,11 +9,11 @@ class Error(Exception):
 
 # Linpg错误类管理器
 class LinpgExceptionHandler:
-    def __init__(self) -> None:
-        # 错误报告存储的路径
-        self.__CRASH_REPORTS_PATH: str = "crash_reports"
-        # 引擎启动时的时间戳
-        self.__TIME_STAMP_WHEN_LINPG_STARTED: str = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    # 错误报告存储的路径
+    __CRASH_REPORTS_PATH: str = "crash_reports"
+    # 引擎启动时的时间戳
+    __TIME_STAMP_WHEN_LINPG_STARTED: str = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     # 生成错误报告
     def __log(self, msg: str) -> None:

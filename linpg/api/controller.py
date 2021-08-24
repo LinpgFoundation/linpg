@@ -47,11 +47,14 @@ class JoystickController:
 
 # 鼠标控制
 class MouseController:
+
+    # 鼠标位置
+    __x: int = 0
+    __y: int = 0
+    # 鼠标移动速度（使用手柄时）
+    __moving_speed: int = int(max(Setting.get("MouseMoveSpeed"), 1))
+
     def __init__(self) -> None:
-        # 鼠标位置
-        self.__x: int = 0
-        self.__y: int = 0
-        self.__moving_speed: int = int(max(Setting.get("MouseMoveSpeed"), 1))
         custom: bool = False
         if not custom:
             self.__icon_img = None
@@ -107,24 +110,25 @@ class MouseController:
 
 # 输入管理组件
 class GameController:
-    def __init__(self):
-        self.__joystick: JoystickController = JoystickController()
-        self.__mouse: MouseController = MouseController()
-        # 输入事件
-        self.__INPUT_EVENTS: list = []
-        # 检测特定事件
-        self.__SPECIFIC_EVENTS: dict = {
-            # 是否有确认事件
-            "confirm": False,
-            # 是否有返回事件
-            "back": False,
-            # 鼠标滚轮
-            "scroll_up": False,
-            "scroll_down": False,
-            "previous": False,
-        }
-        # 是否需要截图
-        self.NEED_TO_TAKE_SCREENSHOT: bool = False
+
+    # 模块
+    __joystick: JoystickController = JoystickController()
+    __mouse: MouseController = MouseController()
+    # 输入事件
+    __INPUT_EVENTS: list = []
+    # 检测特定事件
+    __SPECIFIC_EVENTS: dict = {
+        # 是否有确认事件
+        "confirm": False,
+        # 是否有返回事件
+        "back": False,
+        # 鼠标滚轮
+        "scroll_up": False,
+        "scroll_down": False,
+        "previous": False,
+    }
+    # 是否需要截图
+    NEED_TO_TAKE_SCREENSHOT: bool = False
 
     # 手柄模块
     @property

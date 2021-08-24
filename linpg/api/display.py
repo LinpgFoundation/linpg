@@ -3,17 +3,17 @@ from datetime import datetime
 
 # 画面更新控制器
 class DisplayController:
-    def __init__(self):
-        self.__fps: int = max(int(Setting.get("FPS")), 1)
-        self.__clock: object = pygame.time.Clock()
-        self.__standard_fps: int = 60
-        # 窗口比例
-        self.__screen_scale: int = int(keep_in_range(Setting.get("ScreenScale"), 0, 100))
-        # 窗口尺寸
-        self.__standard_width: int = round(1920 * self.__screen_scale / 100)
-        self.__standard_height: int = round(1080 * self.__screen_scale / 100)
-        # 主要的窗口
-        self.__SCREEN_WINDOW: object = None
+
+    __fps: int = max(int(Setting.get("FPS")), 1)
+    __clock: pygame.time.Clock = pygame.time.Clock()
+    __standard_fps: int = 60
+    # 窗口比例
+    __screen_scale: int = int(keep_in_range(Setting.get("ScreenScale"), 0, 100))
+    # 主要的窗口
+    __SCREEN_WINDOW: object = None
+    # 窗口尺寸
+    __standard_width: int = round(1920 * __screen_scale / 100)
+    __standard_height: int = round(1080 * __screen_scale / 100)
 
     # 帧数
     @property

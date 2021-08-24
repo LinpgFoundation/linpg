@@ -155,7 +155,7 @@ def cutscene(surface: ImageSurface, videoPath: str, fade_out_in_ms: int = 3000) 
     is_skip: bool = False
     is_playing: bool = True
     # 初始化跳过按钮的参数
-    skip_button: object = StaticImage(
+    skip_button: StaticImage = StaticImage(
         r"Assets/image/UI/dialog_skip.png",
         int(surface.get_width() * 0.92),
         int(surface.get_height() * 0.05),
@@ -164,7 +164,7 @@ def cutscene(surface: ImageSurface, videoPath: str, fade_out_in_ms: int = 3000) 
     )
     # 进度条
     bar_height: int = 10
-    white_progress_bar: object = ProgressBar(
+    white_progress_bar: ProgressBar = ProgressBar(
         bar_height, surface.get_height() - bar_height * 2, surface.get_width() - bar_height * 2, bar_height, "white"
     )
     # 生成黑色帘幕
@@ -172,7 +172,7 @@ def cutscene(surface: ImageSurface, videoPath: str, fade_out_in_ms: int = 3000) 
     BLACK_CURTAIN.fill(Color.BLACK)
     BLACK_CURTAIN.set_alpha(0)
     # 创建视频文件
-    VIDEO: object = VedioPlayer(videoPath)
+    VIDEO: VedioPlayer = VedioPlayer(videoPath)
     VIDEO.pre_init()
     # 播放主循环
     while is_playing is True and VIDEO.is_playing() is True:

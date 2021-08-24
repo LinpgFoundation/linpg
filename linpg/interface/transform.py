@@ -2,9 +2,6 @@ from .convert import *
 
 
 class Transformer:
-    def __init__(self) -> None:
-        pass
-
     def flip(self, img: ImageSurface, horizontal: bool, vertical: bool) -> ImageSurface:
         return IMG.flip(img, horizontal, vertical)
 

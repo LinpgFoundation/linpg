@@ -1,15 +1,3 @@
-# 尝试导入linpgtoolkit
-TOOlKIT_INSTALLED: int
-try:
-    import linpgtoolkit
-
-    # 导入成功
-    TOOlKIT_INSTALLED = 1
-# 导入失败
-except ModuleNotFoundError:
-    EXCEPTION.inform("Cannot import linpgtoolkit, some features are disabled.")
-    TOOlKIT_INSTALLED = 0
-
 from .display import *
 
 # 根据设置参数改变声道数量
@@ -33,9 +21,7 @@ pygame.mixer.set_reserved(_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID)
 
 # 音效管理模块接口
 class AbstractSoundManager:
-    def __init__(self, channel_id: int = -1):
-        if channel_id < 0:
-            self._channel_id = pygame.mixer.find_channel()
+    def __init__(self, channel_id: int):
         self._channel_id: int = int(channel_id)
 
     @property
@@ -117,7 +103,7 @@ class SoundController:
     # 加载音效
     @staticmethod
     def load(path: str, volume: float = 1.0) -> pygame.mixer.Sound:
-        soundTmp: object = pygame.mixer.Sound(path)
+        soundTmp: pygame.mixer.Sound = pygame.mixer.Sound(path)
         if volume != 1.0:
             soundTmp.set_volume(volume)
         return soundTmp

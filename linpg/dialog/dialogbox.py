@@ -1,7 +1,5 @@
 from ..ui import *
-
-# ui路径
-DIALOG_UI_PATH: str = os.path.join("Assets", "image", "UI")
+from ..asset import LINPG_INTERNAL_UI_IMAGE_PATH, resolve_ui_path
 
 # 对话框和对话框内容
 class DialogBox:
@@ -13,7 +11,7 @@ class DialogBox:
         self.dialoguebox_max_y: int = int(Display.get_height() * 0.65)
         # 对胡框图片
         self.dialoguebox: StaticImage = StaticImage(
-            os.path.join(DIALOG_UI_PATH, "dialoguebox.png"), int(Display.get_width() * 0.13), 0, Display.get_width() * 0.74
+            resolve_ui_path("dialoguebox.png"), int(Display.get_width() * 0.13), 0, Display.get_width() * 0.74
         )
         self.FONT: int = Font.create(fontSize)
         self.content = []
@@ -32,8 +30,10 @@ class DialogBox:
         # 鼠标图标
         self.mouseImg = GifImage(
             (
-                StaticImage(os.path.join(DIALOG_UI_PATH, "mouse_none.png"), 0, 0, self.FONT.size, self.FONT.size),
-                StaticImage(os.path.join(DIALOG_UI_PATH, "mouse.png"), 0, 0, self.FONT.size, self.FONT.size),
+                StaticImage(
+                    os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "mouse_none.png"), 0, 0, self.FONT.size, self.FONT.size
+                ),
+                StaticImage(os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "mouse.png"), 0, 0, self.FONT.size, self.FONT.size),
             ),
             int(Display.get_width() * 0.82),
             int(Display.get_height() * 0.83),

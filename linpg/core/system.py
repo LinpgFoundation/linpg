@@ -61,6 +61,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
 
     # 卸载bgm
     def unload_bgm(self):
+        self.stop_bgm()
         self.__bgm_path = None
         self.__audio = None
 
@@ -92,6 +93,10 @@ class SystemWithBackgroundMusic(AbstractSystem):
     def play_bgm(self) -> None:
         if self.__bgm_path is not None and not LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.get_busy():
             LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.play(self.__audio)
+
+    # 停止播放
+    def stop_bgm(self) -> None:
+        LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.stop()
 
     # 把内容画到surface上（子类必须实现）
     def draw(self, surface: ImageSurface) -> None:

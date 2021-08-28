@@ -12,6 +12,8 @@ class DialogEditor(AbstractDialogSystem):
         self.please_enter_content: str = ""
         # 默认叙述者名
         self.please_enter_name: str = ""
+        # 默认不播放音乐
+        self._is_muted = True
 
     # 加载数据
     def load(self, chapterType: str, chapterId: int, part: str, projectName: str = None):
@@ -19,14 +21,11 @@ class DialogEditor(AbstractDialogSystem):
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_dialog_file_location())
         # 加载对话框系统
         self._dialog_txt_system.dev_mode()
-        # 将自身和npc立绘系统设置为开发者模式
-        self.dev_mode = True
+        # 将npc立绘系统设置为开发者模式
         self._npc_manager.dev_mode = True
         # 加载容器
         container_width = int(Display.get_width() * 0.2)
-        self.UIContainerRightImage = IMG.load(
-            os.path.join(DIALOG_UI_PATH, "container.png"), (container_width, Display.get_height())
-        )
+        self.UIContainerRightImage = IMG.load(resolve_ui_path("container.png"), (container_width, Display.get_height()))
         # 背景容器
         self.UIContainerRight_bg = SurfaceContainerWithScrollbar(
             None,
@@ -38,7 +37,7 @@ class DialogEditor(AbstractDialogSystem):
         )
         self.UIContainerRight_bg.set_scroll_bar_pos("right")
         # 加载背景图片
-        self.background_deselect = IMG.load(os.path.join(DIALOG_UI_PATH, "deselect.png"))
+        self.background_deselect = IMG.load(os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "deselect.png"))
         self.UIContainerRight_bg.set("current_select", None)
         # 加载静态背景图片
         for imgPath in glob(os.path.join(self._background_image_folder_path, "*")):
@@ -74,7 +73,7 @@ class DialogEditor(AbstractDialogSystem):
         # 容器按钮
         button_width: int = int(Display.get_width() * 0.04)
         self.UIContainerRightButton = MovableImage(
-            os.path.join(DIALOG_UI_PATH, "container_button.png"),
+            resolve_ui_path("container_button.png"),
             int(Display.get_width() - button_width),
             int(Display.get_height() * 0.4),
             int(Display.get_width() - button_width - container_width),
@@ -91,10 +90,10 @@ class DialogEditor(AbstractDialogSystem):
         font_size: int = int(button_width / 3)
         # 控制容器转换的按钮
         self.button_select_background = load_button_with_text_in_center(
-            os.path.join(DIALOG_UI_PATH, "menu.png"), CONFIG["background"], "black", font_size, (0, button_y * 2), 150
+            resolve_ui_path("menu.png"), CONFIG["background"], "black", font_size, (0, button_y * 2), 150
         )
         self.button_select_npc = load_button_with_text_in_center(
-            os.path.join(DIALOG_UI_PATH, "menu.png"), CONFIG["npc"], "black", font_size, (0, button_y * 2), 150
+            resolve_ui_path("menu.png"), CONFIG["npc"], "black", font_size, (0, button_y * 2), 150
         )
         panding: int = int(
             (container_width - self.button_select_background.get_width() - self.button_select_npc.get_width()) / 3
@@ -104,46 +103,57 @@ class DialogEditor(AbstractDialogSystem):
         button_size: tuple = (button_width, button_width)
         # 页面右上方的一排按钮
         self.buttonsUI = {
+            "mute": load_button_with_des(
+                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "mute.png"),
+                Lang.get_text("Global", "mute"),
+                (button_width * 8.5, button_y),
+                button_size,
+                150,
+            ),
             "save": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "save.png"),
+                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "save.png"),
                 Lang.get_text("Global", "save"),
                 (button_width * 7.25, button_y),
                 button_size,
                 150,
             ),
             "reload": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "reload.png"),
+                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "reload.png"),
                 Lang.get_text("Global", "reload_file"),
                 (button_width * 6, button_y),
                 button_size,
                 150,
             ),
             "add": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "add.png"), CONFIG["add"], (button_width * 4.75, button_y), button_size, 150
+                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "add.png"),
+                CONFIG["add"],
+                (button_width * 4.75, button_y),
+                button_size,
+                150,
             ),
             "next": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "dialog_skip.png"),
+                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "next.png"),
                 CONFIG["next"],
                 (button_width * 4.75, button_y),
                 button_size,
                 150,
             ),
             "previous": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "previous.png"),
+                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "previous.png"),
                 CONFIG["previous"],
                 (button_width * 3.5, button_y),
                 button_size,
                 150,
             ),
             "delete": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "delete.png"),
+                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "delete.png"),
                 CONFIG["delete"],
                 (button_width * 2.25, button_y),
                 button_size,
                 150,
             ),
             "back": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "back.png"),
+                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "back.png"),
                 Lang.get_text("Global", "back_to_main_menu"),
                 (button_width, button_y),
                 button_size,
@@ -163,7 +173,7 @@ class DialogEditor(AbstractDialogSystem):
         # 未保存离开时的警告
         self.__no_save_warning = UI.generate("leave_without_saving_warning")
         # 切换准备编辑的dialog部分
-        self.dialog_key_select = DropDownSingleChoiceList(None, button_width * 9, button_y + font_size, font_size)
+        self.dialog_key_select = DropDownSingleChoiceList(None, button_width * 11, button_y + font_size, font_size)
         for key in self._dialog_data:
             self.dialog_key_select.set(key, key)
         self.dialog_key_select.set_current_selected_item(self._part)
@@ -479,6 +489,10 @@ class DialogEditor(AbstractDialogSystem):
                         self.save_progress()
                     elif buttonHovered == "reload":
                         self._load_content()
+                    elif buttonHovered == "mute":
+                        self._is_muted = not self._is_muted
+                        if self._is_muted is True:
+                            self.stop_bgm()
                     else:
                         leftClick = True
                 # 鼠标右键

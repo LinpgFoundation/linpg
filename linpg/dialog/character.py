@@ -17,7 +17,7 @@ class CharacterImageManager:
                 int(self.__img_width * 0.25), 0, int(self.__img_width * 0.5), int(self.__img_width * 0.56)
             )
             self.__communication = StaticImage(
-                os.path.join(DIALOG_UI_PATH, "communication.png"),
+                os.path.join(r"Assets/image/UI/communication.png"),
                 0,
                 0,
                 self.__communication_surface_rect.width,

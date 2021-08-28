@@ -15,17 +15,9 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 加载对话框系统
         self._dialog_txt_system = DialogBox(int(Display.get_width() * 0.015))
         # 选项栏
-        self._option_box_surface = StaticImage(os.path.join(DIALOG_UI_PATH, "option.png"), 0, 0)
+        self._option_box_surface = StaticImage(resolve_ui_path("option.png"), 0, 0)
         # 选项栏-选中
-        try:
-            self._option_box_selected_surface = StaticImage(os.path.join(DIALOG_UI_PATH, "option_selected.png"), 0, 0)
-        except Exception:
-            EXCEPTION.inform(
-                "Cannot find or load 'option_selected.png' in '{}' file, 'option.png' will be used instead.".format(
-                    DIALOG_UI_PATH
-                )
-            )
-            self._option_box_selected_surface = self._option_box_surface.copy()
+        self._option_box_selected_surface = StaticImage(resolve_ui_path("option_selected.png"), 0, 0)
         # UI按钮
         self._buttons_mananger = None
         # 对话文件路径
@@ -38,10 +30,10 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 背景图片
         self.__background_image_name = None
         self.__background_image_surface = self._black_bg.copy()
-        # 编辑器模式模式
-        self.dev_mode: bool = False
         # 是否开启自动保存
         self.auto_save: bool = False
+        # 是否静音
+        self._is_muted: bool = False
 
     # 获取对话文件所在的具体路径
     def get_dialog_file_location(self, lang: str = "") -> str:
@@ -171,7 +163,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                         EXCEPTION.fatal(
                             "Cannot find a background image or video file called '{}'.".format(self.__background_image_name)
                         )
-                elif self.dev_mode is True:
+                elif self._npc_manager.dev_mode is True:
                     self.__background_image_surface = StaticImage(get_texture_missing_surface(Display.get_size()), 0, 0)
                 else:
                     self.__background_image_surface = None
@@ -190,11 +182,10 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 更新对话框
         self._dialog_txt_system.update(currentDialogContent["narrator"], currentDialogContent["content"])
         # 更新背景音乐
-        if not self.dev_mode:
-            if currentDialogContent["background_music"] is not None:
-                self.set_bgm(os.path.join(self._background_music_folder_path, currentDialogContent["background_music"]))
-            else:
-                self.unload_bgm()
+        if currentDialogContent["background_music"] is not None:
+            self.set_bgm(os.path.join(self._background_music_folder_path, currentDialogContent["background_music"]))
+        else:
+            self.unload_bgm()
 
     # 更新语言
     def updated_language(self) -> None:
@@ -232,3 +223,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self.display_background_image(surface)
         self._npc_manager.draw(surface)
         self._dialog_txt_system.draw(surface)
+        # 如果不处于静音状态
+        if not self._is_muted:
+            # 播放背景音乐
+            self.play_bgm()

@@ -19,7 +19,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         # 展示历史界面-返回按钮
         self.history_back = (
             load_button(
-                os.path.join(DIALOG_UI_PATH, "back.png"),
+                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "back.png"),
                 (Display.get_width() * 0.04, Display.get_height() * 0.04),
                 (Display.get_width() * 0.03, Display.get_height() * 0.04),
                 150,
@@ -112,13 +112,9 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
 
     def draw(self, surface: ImageSurface) -> None:
         super().draw(surface)
-        # 背景音乐
-        self.play_bgm()
         # 按钮
         if self._buttons_mananger is not None:
             self._buttons_mananger.draw(surface)
-        # 获取当前dialog数据
-        currentDialogContent = self.get_current_dialog_content()
         # 按键判定
         leftClick: bool = False
         if Controller.get_event("confirm"):
@@ -138,8 +134,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         if Controller.get_event("scroll_down"):
             self._history_surface = None
             self._history_surface_local_y -= Display.get_height() * 0.1
-        if Controller.get_event("previous") and currentDialogContent["last_dialog_id"] is not None:
-            self._update_scene(currentDialogContent["last_dialog_id"])
+        if Controller.get_event("previous") and self.current_dialog_content["last_dialog_id"] is not None:
+            self._update_scene(self.current_dialog_content["last_dialog_id"])
         # 暂停菜单
         if Controller.get_event("back") and self.is_pause_menu_enabled():
             if self._is_showing_history is True:
@@ -150,18 +146,18 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         if (
             self._dialog_txt_system.is_all_played()
             and not self._dialog_txt_system.hidden
-            and currentDialogContent["next_dialog_id"] is not None
-            and currentDialogContent["next_dialog_id"]["type"] == "option"
+            and self.current_dialog_content["next_dialog_id"] is not None
+            and self.current_dialog_content["next_dialog_id"]["type"] == "option"
         ):
             optionBox_y_base = (
                 Display.get_height() * 3 / 4
-                - (len(currentDialogContent["next_dialog_id"]["target"])) * 2 * Display.get_width() * 0.03
+                - (len(self.current_dialog_content["next_dialog_id"]["target"])) * 2 * Display.get_width() * 0.03
             ) / 4
             optionBox_height = int(Display.get_width() * 0.05)
             nextDialogId = None
-            for i in range(len(currentDialogContent["next_dialog_id"]["target"])):
+            for i in range(len(self.current_dialog_content["next_dialog_id"]["target"])):
                 option_txt = self._dialog_txt_system.FONT.render(
-                    currentDialogContent["next_dialog_id"]["target"][i]["txt"], Color.WHITE
+                    self.current_dialog_content["next_dialog_id"]["target"][i]["txt"], Color.WHITE
                 )
                 optionBox_width: int = int(option_txt.get_width() + Display.get_width() * 0.05)
                 optionBox_x: int = int((Display.get_width() - optionBox_width) / 2)
@@ -182,7 +178,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                     )
                     # 保存选取的选项
                     if leftClick and not self._is_showing_history:
-                        nextDialogId = currentDialogContent["next_dialog_id"]["target"][i]["id"]
+                        nextDialogId = self.current_dialog_content["next_dialog_id"]["target"][i]["id"]
                 else:
                     self._option_box_surface.set_size(optionBox_width, optionBox_height)
                     self._option_box_surface.set_pos(optionBox_x, optionBox_y)
@@ -262,14 +258,14 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             pass
         # 如果操作或自动播放系统告知需要更新
         elif self._dialog_txt_system.needUpdate() or leftClick:
-            if currentDialogContent["next_dialog_id"] is None:
+            if self.current_dialog_content["next_dialog_id"] is None:
                 self.fade(surface)
                 self.stop()
             else:
-                next_dialog_type: str = str(currentDialogContent["next_dialog_id"]["type"])
+                next_dialog_type: str = str(self.current_dialog_content["next_dialog_id"]["type"])
                 # 默认转到下一个对话
                 if next_dialog_type == "default":
-                    self._update_scene(currentDialogContent["next_dialog_id"]["target"])
+                    self._update_scene(self.current_dialog_content["next_dialog_id"]["target"])
                 # 如果是多选项，则不用处理
                 elif next_dialog_type == "option":
                     pass
@@ -277,7 +273,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 elif next_dialog_type == "changeScene":
                     self.fade(surface)
                     # 更新场景
-                    self._update_scene(currentDialogContent["next_dialog_id"]["target"])
+                    self._update_scene(self.current_dialog_content["next_dialog_id"]["target"])
                     self._dialog_txt_system.reset()
                     self.fade(surface, "$in")
                 # 如果是需要播放过程动画
@@ -286,7 +282,9 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                     self.stop()
                     cutscene(
                         surface,
-                        os.path.join(self._dynamic_background_folder_path, currentDialogContent["next_dialog_id"]["target"]),
+                        os.path.join(
+                            self._dynamic_background_folder_path, self.current_dialog_content["next_dialog_id"]["target"]
+                        ),
                     )
                 # break被视为立刻退出，没有淡出动画
                 elif next_dialog_type == "break":

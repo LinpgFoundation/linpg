@@ -13,7 +13,7 @@ class DialogEditor(AbstractDialogSystem):
         # 默认叙述者名
         self.please_enter_name: str = ""
         # 默认不播放音乐
-        self._is_muted = True
+        # self._is_muted = True
 
     # 加载数据
     def load(self, chapterType: str, chapterId: int, part: str, projectName: str = None):
@@ -26,14 +26,16 @@ class DialogEditor(AbstractDialogSystem):
         # 加载容器
         container_width = int(Display.get_width() * 0.2)
         self.UIContainerRightImage = IMG.load(resolve_ui_path("container.png"), (container_width, Display.get_height()))
-        # 背景容器
-        self.UIContainerRight_bg = SurfaceContainerWithScrollbar(
-            None,
+        # 右侧容器尺寸
+        RightContainerRect: Rect = Rect(
             int(container_width * 0.075),
             int(Display.get_height() * 0.1),
             int(container_width * 0.85),
             int(Display.get_height() * 0.85),
-            "vertical",
+        )
+        # 背景图片编辑模块
+        self.UIContainerRight_bg = SurfaceContainerWithScrollbar(
+            None, RightContainerRect.x, RightContainerRect.y, RightContainerRect.width, RightContainerRect.height, "vertical"
         )
         self.UIContainerRight_bg.set_scroll_bar_pos("right")
         # 加载背景图片
@@ -55,14 +57,9 @@ class DialogEditor(AbstractDialogSystem):
         self.UIContainerRight_bg.distance_between_item = int(Display.get_height() * 0.02)
         self.__current_select_bg_name = None
         self.__current_select_bg_copy = None
-        # npc立绘容器
+        # npc立绘编辑模块
         self.UIContainerRight_npc = SurfaceContainerWithScrollbar(
-            None,
-            int(container_width * 0.075),
-            int(Display.get_height() * 0.1),
-            int(container_width * 0.85),
-            int(Display.get_height() * 0.85),
-            "vertical",
+            None, RightContainerRect.x, RightContainerRect.y, RightContainerRect.width, RightContainerRect.height, "vertical"
         )
         self.UIContainerRight_npc.set_scroll_bar_pos("right")
         # 加载npc立绘
@@ -162,10 +159,15 @@ class DialogEditor(AbstractDialogSystem):
         }
         self.please_enter_content = CONFIG["please_enter_content"]
         self.please_enter_name = CONFIG["please_enter_name"]
+        # 背景音乐
+        self.dialog_bgm_select = DropDownSingleChoiceList(None, button_width * 11, button_y + font_size * 3, font_size)
+        self.dialog_bgm_select.set("null", Lang.get_text("DialogCreator", "no_bgm"))
+        for file_name in os.listdir("Assets\music"):
+            self.dialog_bgm_select.set(file_name, file_name)
         # 从配置文件中加载数据
         self._load_content()
         # 移除按钮
-        self.removeNpcButton = self._dialog_txt_system.FONT.render(CONFIG["removeNpc"], Color.BLACK)
+        self.removeNpcButton = self._dialog_txt_system.FONT.render(CONFIG["remove_npc"], Color.BLACK)
         surfaceTmp = new_surface((self.removeNpcButton.get_width() * 1.2, self.removeNpcButton.get_height() * 1.2)).convert()
         surfaceTmp.fill(Color.WHITE)
         surfaceTmp.blit(self.removeNpcButton, (self.removeNpcButton.get_width() * 0.1, 0))
@@ -283,6 +285,11 @@ class DialogEditor(AbstractDialogSystem):
         # 如果id不存在，则新增一个
         else:
             self.__add_dialog(theNextDialogId)
+        # 更新背景音乐选项菜单
+        if (file_name := self.get_current_background_music_name()) is not None:
+            self.dialog_bgm_select.set_current_selected_item(file_name)
+        else:
+            self.dialog_bgm_select.set_current_selected_item("null")
 
     # 添加新的对话
     def __add_dialog(self, dialogId: Union[str, int]) -> None:
@@ -409,7 +416,20 @@ class DialogEditor(AbstractDialogSystem):
                 if self.buttonsUI[button].is_hover():
                     buttonHovered = button
                 self.buttonsUI[button].draw(surface)
-        # 展示出当前可供编辑的dialog章节
+        # 展示出当前可供使用的背景音乐
+        self.dialog_bgm_select.draw(surface)
+        if (current_bgm := self.get_current_background_music_name()) != self.dialog_bgm_select.get_current_selected_item():
+            if self.dialog_bgm_select.get_current_selected_item() == "null" and current_bgm is None:
+                pass
+            else:
+                if self.dialog_bgm_select.get_current_selected_item() == "null" and current_bgm is not None:
+                    self.current_dialog_content["background_music"] = None
+                else:
+                    self.current_dialog_content["background_music"] = self.dialog_bgm_select.get(
+                    self.dialog_bgm_select.get_current_selected_item()
+                )
+                self._update_scene(self._dialog_id)
+        # 展示出当前可供编辑的dialog部分
         self.dialog_key_select.draw(surface)
         # 切换当前正在浏览编辑的dialog部分
         if self.dialog_key_select.get_current_selected_item() != self._part:

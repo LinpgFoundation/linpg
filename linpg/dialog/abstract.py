@@ -91,6 +91,10 @@ class AbstractDialogSystem(AbstractGameSystem):
                     )
         return currentDialogContent
 
+    # 获取当前正在播放的背景音乐名称
+    def get_current_background_music_name(self) -> Union[str, None]:
+        return self.current_dialog_content["background_music"] if "background_music" in self.current_dialog_content else None
+
     # 初始化关键参数
     def _initialize(
         self,
@@ -182,8 +186,8 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 更新对话框
         self._dialog_txt_system.update(currentDialogContent["narrator"], currentDialogContent["content"])
         # 更新背景音乐
-        if currentDialogContent["background_music"] is not None:
-            self.set_bgm(os.path.join(self._background_music_folder_path, currentDialogContent["background_music"]))
+        if (current_bgm := self.get_current_background_music_name()) is not None:
+            self.set_bgm(os.path.join(self._background_music_folder_path, current_bgm))
         else:
             self.unload_bgm()
 

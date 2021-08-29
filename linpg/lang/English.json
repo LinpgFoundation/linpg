@@ -9,11 +9,12 @@
         "background": "Background Image",
         "delete": "Delete current dialog",
         "next": "Next dialog",
+        "no_bgm": "No background music",
         "npc": "Npc",
         "please_enter_content": "Content",
         "please_enter_name": "Name",
         "previous": "Previous dialog",
-        "removeNpc": "Remove this npc"
+        "remove_npc": "Remove this npc"
     },
     "Global": {
         "back": "Back",

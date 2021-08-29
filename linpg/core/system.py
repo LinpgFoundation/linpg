@@ -59,6 +59,11 @@ class SystemWithBackgroundMusic(AbstractSystem):
         self.__bgm_volume: float = 1.0
         self.__audio = None
 
+    # 系统退出时，需卸载bgm
+    def stop(self) -> None:
+        super().stop()
+        self.unload_bgm()
+
     # 卸载bgm
     def unload_bgm(self):
         self.stop_bgm()
@@ -75,6 +80,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
         elif os.path.exists(path):
             # 只有在音乐路径不一致或者强制更新的情况下才会更新路径（同时卸载现有音乐）
             if self.__bgm_path != path or forced is True:
+                self.unload_bgm()
                 self.__bgm_path = path
                 self.__audio = Sound.load(self.__bgm_path, self.__bgm_volume)
         else:

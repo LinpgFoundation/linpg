@@ -30,7 +30,7 @@
                 "alpha_when_not_hover": 150,
                 "height": "15%",
                 "name": "confirm",
-                "src": "Assets/image/UI/menu.png",
+                "src": "<!ui>button.png",
                 "text": {
                     "color": "black",
                     "src": "{Global,confirm}"
@@ -44,7 +44,7 @@
                 "alpha_when_not_hover": 150,
                 "height": "15%",
                 "name": "cancel",
-                "src": "Assets/image/UI/menu.png",
+                "src": "<!ui>button.png",
                 "text": {
                     "color": "black",
                     "src": "{Global,cancel}"
@@ -92,7 +92,7 @@
                 "alpha_when_not_hover": 150,
                 "height": "15%",
                 "name": "confirm",
-                "src": "Assets/image/UI/menu.png",
+                "src": "<!ui>button.png",
                 "text": {
                     "color": "black",
                     "src": "{Global,confirm}"
@@ -106,7 +106,7 @@
                 "alpha_when_not_hover": 150,
                 "height": "15%",
                 "name": "cancel",
-                "src": "Assets/image/UI/menu.png",
+                "src": "<!ui>button.png",
                 "text": {
                     "color": "black",
                     "src": "{Global,cancel}"
@@ -155,7 +155,7 @@
                 "alpha_when_not_hover": 150,
                 "height": "10%",
                 "name": "save",
-                "src": "Assets/image/UI/menu.png",
+                "src": "<!ui>button.png",
                 "text": {
                     "color": "black",
                     "src": "{Global,save}"
@@ -169,7 +169,7 @@
                 "alpha_when_not_hover": 150,
                 "height": "10%",
                 "name": "cancel",
-                "src": "Assets/image/UI/menu.png",
+                "src": "<!ui>button.png",
                 "text": {
                     "color": "black",
                     "src": "{Global,cancel}"
@@ -183,7 +183,7 @@
                 "alpha_when_not_hover": 150,
                 "height": "10%",
                 "name": "dont_save",
-                "src": "Assets/image/UI/menu.png",
+                "src": "<!ui>button.png",
                 "text": {
                     "color": "black",
                     "src": "{Global,dont_save}"

@@ -87,10 +87,10 @@ class DialogEditor(AbstractDialogSystem):
         font_size: int = int(button_width / 3)
         # 控制容器转换的按钮
         self.button_select_background = load_button_with_text_in_center(
-            "<!ui>menu.png", CONFIG["background"], "black", font_size, (0, button_y * 2), 150
+            "<!ui>button.png", CONFIG["background"], "black", font_size, (0, button_y * 2), 150
         )
         self.button_select_npc = load_button_with_text_in_center(
-            "<!ui>menu.png", CONFIG["npc"], "black", font_size, (0, button_y * 2), 150
+            "<!ui>button.png", CONFIG["npc"], "black", font_size, (0, button_y * 2), 150
         )
         panding: int = int(
             (container_width - self.button_select_background.get_width() - self.button_select_npc.get_width()) / 3

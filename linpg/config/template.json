@@ -32,5 +32,26 @@
             "TraditionalChinese": "演示項目"
         },
         "version": 0
+    },
+    "setting": {
+        "Antialias": true,
+        "DeveloperMode": false,
+        "FPS": 60,
+        "Font": "MicrosoftYaHei-2",
+        "FontType": "custom",
+        "Language": null,
+        "LowMemoryMode": false,
+        "MouseIconWidth": 18,
+        "MouseMoveSpeed": 30,
+        "NumberOfChannels": 8,
+        "ReadingSpeed": 0.5,
+        "ScreenScale": 100,
+        "Sound": {
+            "background_music": 100,
+            "effects": 100,
+            "environment": 100,
+            "global_value": 100
+        },
+        "VerticalSync": true
     }
 }

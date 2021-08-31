@@ -10,6 +10,7 @@ except ModuleNotFoundError:
     EXCEPTION.inform("Cannot import linpgtoolkit, some features are disabled.")
     TOOlKIT_INSTALLED = 0
 
+from ..asset import ASSET
 from .color import *
 
 # 获取材质缺失的临时警示材质
@@ -39,21 +40,21 @@ class RawImageManafer:
         if isinstance(path, ImageSurface):
             return path
         elif isinstance(path, str):
-            path = os.path.join(path)
+            path_t: str = ASSET.resolve_path(path)
             if convert_alpha is True:
                 try:
-                    return pygame.image.load(path).convert_alpha() if is_using_pygame() else pyglet.image.load(path)
+                    return pygame.image.load(path_t).convert_alpha() if is_using_pygame() else pyglet.image.load(path_t)
                 except Exception:
                     if Setting.developer_mode is True:
-                        EXCEPTION.fatal("Cannot load image from path: {}".format(path))
+                        EXCEPTION.fatal("Cannot load image from path: {}".format(path_t))
                     else:
                         return get_texture_missing_surface((192, 108))
             else:
                 try:
-                    return pygame.image.load(path) if is_using_pygame() else pyglet.image.load(path)
+                    return pygame.image.load(path_t) if is_using_pygame() else pyglet.image.load(path_t)
                 except Exception:
                     if Setting.developer_mode is True:
-                        EXCEPTION.fatal("Cannot load image from path: {}".format(path))
+                        EXCEPTION.fatal("Cannot load image from path: {}".format(path_t))
                     else:
                         return get_texture_missing_surface((192, 108))
         else:

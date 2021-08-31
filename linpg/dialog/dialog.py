@@ -19,7 +19,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         # 展示历史界面-返回按钮
         self.history_back = (
             load_button(
-                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "back.png"),
+                "<!ui>back.png",
                 (Display.get_width() * 0.04, Display.get_height() * 0.04),
                 (Display.get_width() * 0.03, Display.get_height() * 0.04),
                 150,

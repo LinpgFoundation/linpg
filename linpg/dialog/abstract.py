@@ -15,9 +15,9 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 加载对话框系统
         self._dialog_txt_system = DialogBox(int(Display.get_width() * 0.015))
         # 选项栏
-        self._option_box_surface = StaticImage(resolve_ui_path("option.png"), 0, 0)
+        self._option_box_surface = StaticImage("<!ui>option.png", 0, 0)
         # 选项栏-选中
-        self._option_box_selected_surface = StaticImage(resolve_ui_path("option_selected.png"), 0, 0)
+        self._option_box_selected_surface = StaticImage("<!ui>option_selected.png", 0, 0)
         # UI按钮
         self._buttons_mananger = None
         # 对话文件路径

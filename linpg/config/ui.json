@@ -55,7 +55,7 @@
                 "y": "70%"
             }
         ],
-        "src": "Assets/image/UI/container.png",
+        "src": "<!ui>container.png",
         "type": "container",
         "width": "50%",
         "x": "center",
@@ -117,7 +117,7 @@
                 "y": "70%"
             }
         ],
-        "src": "Assets/image/UI/container.png",
+        "src": "<!ui>container.png",
         "type": "container",
         "width": "50%",
         "x": "center",
@@ -194,7 +194,7 @@
                 "y": "70%"
             }
         ],
-        "src": "Assets/image/UI/container.png",
+        "src": "<!ui>container.png",
         "type": "container",
         "width": "50%",
         "x": "center",
@@ -223,13 +223,13 @@
                 "height": "5%",
                 "indicator": {
                     "height": "150%",
-                    "src": "Assets/image/UI/setting_bar_circle.png",
+                    "src": "<!ui>setting_bar_circle.png",
                     "width": "7.5%"
                 },
                 "name": "global_sound_volume",
                 "src": [
-                    "Assets/image/UI/setting_bar_full.png",
-                    "Assets/image/UI/setting_bar_empty.png"
+                    "<!ui>setting_bar_full.png",
+                    "<!ui>setting_bar_empty.png"
                 ],
                 "type": "progress_bar_adjuster",
                 "width": "50%",
@@ -248,13 +248,13 @@
                 "height": "5%",
                 "indicator": {
                     "height": "150%",
-                    "src": "Assets/image/UI/setting_bar_circle.png",
+                    "src": "<!ui>setting_bar_circle.png",
                     "width": "7.5%"
                 },
                 "name": "background_music_sound_volume",
                 "src": [
-                    "Assets/image/UI/setting_bar_full.png",
-                    "Assets/image/UI/setting_bar_empty.png"
+                    "<!ui>setting_bar_full.png",
+                    "<!ui>setting_bar_empty.png"
                 ],
                 "type": "progress_bar_adjuster",
                 "width": "50%",
@@ -273,13 +273,13 @@
                 "height": "5%",
                 "indicator": {
                     "height": "150%",
-                    "src": "Assets/image/UI/setting_bar_circle.png",
+                    "src": "<!ui>setting_bar_circle.png",
                     "width": "7.5%"
                 },
                 "name": "effects_sound_volume",
                 "src": [
-                    "Assets/image/UI/setting_bar_full.png",
-                    "Assets/image/UI/setting_bar_empty.png"
+                    "<!ui>setting_bar_full.png",
+                    "<!ui>setting_bar_empty.png"
                 ],
                 "type": "progress_bar_adjuster",
                 "width": "50%",
@@ -298,13 +298,13 @@
                 "height": "5%",
                 "indicator": {
                     "height": "150%",
-                    "src": "Assets/image/UI/setting_bar_circle.png",
+                    "src": "<!ui>setting_bar_circle.png",
                     "width": "7.5%"
                 },
                 "name": "environment_sound_volume",
                 "src": [
-                    "Assets/image/UI/setting_bar_full.png",
-                    "Assets/image/UI/setting_bar_empty.png"
+                    "<!ui>setting_bar_full.png",
+                    "<!ui>setting_bar_empty.png"
                 ],
                 "type": "progress_bar_adjuster",
                 "width": "50%",
@@ -336,7 +336,7 @@
                 "y": "19%"
             }
         ],
-        "src": "Assets/image/UI/setting_baseImg.png",
+        "src": "<!ui>setting_bg.png",
         "type": "container",
         "width": "50%",
         "x": "center",

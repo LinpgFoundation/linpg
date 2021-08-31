@@ -25,7 +25,7 @@ class DialogEditor(AbstractDialogSystem):
         self._npc_manager.dev_mode = True
         # 加载容器
         container_width = int(Display.get_width() * 0.2)
-        self.UIContainerRightImage = IMG.load(resolve_ui_path("container.png"), (container_width, Display.get_height()))
+        self.UIContainerRightImage = IMG.load("<!ui>container.png", (container_width, Display.get_height()))
         # 右侧容器尺寸
         RightContainerRect: Rect = Rect(
             int(container_width * 0.075),
@@ -39,7 +39,7 @@ class DialogEditor(AbstractDialogSystem):
         )
         self.UIContainerRight_bg.set_scroll_bar_pos("right")
         # 加载背景图片
-        self.background_deselect = IMG.load(os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "deselect.png"))
+        self.background_deselect = IMG.load("<!ui>deselect.png")
         self.UIContainerRight_bg.set("current_select", None)
         # 加载静态背景图片
         for imgPath in glob(os.path.join(self._background_image_folder_path, "*")):
@@ -70,7 +70,7 @@ class DialogEditor(AbstractDialogSystem):
         # 容器按钮
         button_width: int = int(Display.get_width() * 0.04)
         self.UIContainerRightButton = MovableImage(
-            resolve_ui_path("container_button.png"),
+            "<!ui>container_button.png",
             int(Display.get_width() - button_width),
             int(Display.get_height() * 0.4),
             int(Display.get_width() - button_width - container_width),
@@ -87,10 +87,10 @@ class DialogEditor(AbstractDialogSystem):
         font_size: int = int(button_width / 3)
         # 控制容器转换的按钮
         self.button_select_background = load_button_with_text_in_center(
-            resolve_ui_path("menu.png"), CONFIG["background"], "black", font_size, (0, button_y * 2), 150
+            "<!ui>menu.png", CONFIG["background"], "black", font_size, (0, button_y * 2), 150
         )
         self.button_select_npc = load_button_with_text_in_center(
-            resolve_ui_path("menu.png"), CONFIG["npc"], "black", font_size, (0, button_y * 2), 150
+            "<!ui>menu.png", CONFIG["npc"], "black", font_size, (0, button_y * 2), 150
         )
         panding: int = int(
             (container_width - self.button_select_background.get_width() - self.button_select_npc.get_width()) / 3
@@ -101,60 +101,24 @@ class DialogEditor(AbstractDialogSystem):
         # 页面右上方的一排按钮
         self.buttonsUI = {
             "mute": load_button_with_des(
-                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "mute.png"),
-                Lang.get_text("Global", "mute"),
-                (button_width * 8.5, button_y),
-                button_size,
-                150,
+                "<!ui>mute.png", Lang.get_text("Global", "mute"), (button_width * 8.5, button_y), button_size, 150
             ),
             "save": load_button_with_des(
-                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "save.png"),
-                Lang.get_text("Global", "save"),
-                (button_width * 7.25, button_y),
-                button_size,
-                150,
+                "<!ui>save.png", Lang.get_text("Global", "save"), (button_width * 7.25, button_y), button_size, 150
             ),
             "reload": load_button_with_des(
-                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "reload.png"),
-                Lang.get_text("Global", "reload_file"),
-                (button_width * 6, button_y),
-                button_size,
-                150,
+                "<!ui>reload.png", Lang.get_text("Global", "reload_file"), (button_width * 6, button_y), button_size, 150
             ),
-            "add": load_button_with_des(
-                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "add.png"),
-                CONFIG["add"],
-                (button_width * 4.75, button_y),
-                button_size,
-                150,
-            ),
-            "next": load_button_with_des(
-                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "next.png"),
-                CONFIG["next"],
-                (button_width * 4.75, button_y),
-                button_size,
-                150,
-            ),
+            "add": load_button_with_des("<!ui>add.png", CONFIG["add"], (button_width * 4.75, button_y), button_size, 150),
+            "next": load_button_with_des("<!ui>next.png", CONFIG["next"], (button_width * 4.75, button_y), button_size, 150),
             "previous": load_button_with_des(
-                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "previous.png"),
-                CONFIG["previous"],
-                (button_width * 3.5, button_y),
-                button_size,
-                150,
+                "<!ui>previous.png", CONFIG["previous"], (button_width * 3.5, button_y), button_size, 150
             ),
             "delete": load_button_with_des(
-                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "delete.png"),
-                CONFIG["delete"],
-                (button_width * 2.25, button_y),
-                button_size,
-                150,
+                "<!ui>delete.png", CONFIG["delete"], (button_width * 2.25, button_y), button_size, 150
             ),
             "back": load_button_with_des(
-                os.path.join(LINPG_INTERNAL_UI_IMAGE_PATH, "back.png"),
-                Lang.get_text("Global", "back_to_main_menu"),
-                (button_width, button_y),
-                button_size,
-                150,
+                "<!ui>back.png", Lang.get_text("Global", "back_to_main_menu"), (button_width, button_y), button_size, 150
             ),
         }
         self.please_enter_content = CONFIG["please_enter_content"]
@@ -426,8 +390,8 @@ class DialogEditor(AbstractDialogSystem):
                     self.current_dialog_content["background_music"] = None
                 else:
                     self.current_dialog_content["background_music"] = self.dialog_bgm_select.get(
-                    self.dialog_bgm_select.get_current_selected_item()
-                )
+                        self.dialog_bgm_select.get_current_selected_item()
+                    )
                 self._update_scene(self._dialog_id)
         # 展示出当前可供编辑的dialog部分
         self.dialog_key_select.draw(surface)

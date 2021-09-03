@@ -2,48 +2,64 @@ from .dialog import *
 
 # 对话制作器
 class DialogEditor(AbstractDialogSystem):
+    def __init__(self):
+        super().__init__()
+        # 存储视觉小说默认数据的参数
+        self._dialog_data_default: dict = {}
+        # 是否是父类
+        self._is_default_dialog: bool = True
+        # 默认内容
+        self.please_enter_content: str = ""
+        # 默认叙述者名
+        self.please_enter_name: str = ""
+        # 默认不播放音乐
+        # self._is_muted = True
+
+    # 加载数据
     def load(self, chapterType: str, chapterId: int, part: str, projectName: str = None):
         self._initialize(chapterType, chapterId, part, projectName)
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_dialog_file_location())
         # 加载对话框系统
         self._dialog_txt_system.dev_mode()
-        # 将自身和npc立绘系统设置为开发者模式
-        self.dev_mode = True
+        # 将npc立绘系统设置为开发者模式
         self._npc_manager.dev_mode = True
         # 加载容器
         container_width = int(Display.get_width() * 0.2)
-        self.UIContainerRightImage = IMG.load(
-            os.path.join(DIALOG_UI_PATH, "container.png"), (container_width, Display.get_height())
-        )
-        # 背景容器
-        self.UIContainerRight_bg = SurfaceContainerWithScrollbar(
-            None,
+        self.UIContainerRightImage = IMG.load("<!ui>container.png", (container_width, Display.get_height()))
+        # 右侧容器尺寸
+        RightContainerRect: Rect = Rect(
             int(container_width * 0.075),
             int(Display.get_height() * 0.1),
             int(container_width * 0.85),
             int(Display.get_height() * 0.85),
-            "vertical",
+        )
+        # 背景图片编辑模块
+        self.UIContainerRight_bg = SurfaceContainerWithScrollbar(
+            None, RightContainerRect.x, RightContainerRect.y, RightContainerRect.width, RightContainerRect.height, "vertical"
         )
         self.UIContainerRight_bg.set_scroll_bar_pos("right")
         # 加载背景图片
-        self.background_deselect = IMG.load(os.path.join(DIALOG_UI_PATH, "deselect.png"))
+        self.background_deselect = IMG.load("<!ui>deselect.png")
         self.UIContainerRight_bg.set("current_select", None)
+        # 加载静态背景图片
         for imgPath in glob(os.path.join(self._background_image_folder_path, "*")):
             self.UIContainerRight_bg.set(os.path.basename(imgPath), IMG.load(imgPath, (container_width * 0.8, None)))
+        # 加载动态背景图片
+        if os.path.exists(self._dynamic_background_folder_path):
+            for imgPath in glob(os.path.join(self._dynamic_background_folder_path, "*")):
+                self.UIContainerRight_bg.set(
+                    os.path.basename(imgPath), IMG.resize(get_preview_of_vedio(imgPath), (container_width * 0.8, None))
+                )
+        # 加载透明图片
         self.UIContainerRight_bg.set(
             "<transparent>", get_texture_missing_surface((container_width * 0.8, container_width * 0.45))
         )
         self.UIContainerRight_bg.distance_between_item = int(Display.get_height() * 0.02)
         self.__current_select_bg_name = None
         self.__current_select_bg_copy = None
-        # npc立绘容器
+        # npc立绘编辑模块
         self.UIContainerRight_npc = SurfaceContainerWithScrollbar(
-            None,
-            int(container_width * 0.075),
-            int(Display.get_height() * 0.1),
-            int(container_width * 0.85),
-            int(Display.get_height() * 0.85),
-            "vertical",
+            None, RightContainerRect.x, RightContainerRect.y, RightContainerRect.width, RightContainerRect.height, "vertical"
         )
         self.UIContainerRight_npc.set_scroll_bar_pos("right")
         # 加载npc立绘
@@ -54,7 +70,7 @@ class DialogEditor(AbstractDialogSystem):
         # 容器按钮
         button_width: int = int(Display.get_width() * 0.04)
         self.UIContainerRightButton = MovableImage(
-            os.path.join(DIALOG_UI_PATH, "container_button.png"),
+            "<!ui>container_button.png",
             int(Display.get_width() - button_width),
             int(Display.get_height() * 0.4),
             int(Display.get_width() - button_width - container_width),
@@ -71,10 +87,10 @@ class DialogEditor(AbstractDialogSystem):
         font_size: int = int(button_width / 3)
         # 控制容器转换的按钮
         self.button_select_background = load_button_with_text_in_center(
-            os.path.join(DIALOG_UI_PATH, "menu.png"), CONFIG["background"], "black", font_size, (0, button_y * 2), 150
+            "<!ui>button.png", CONFIG["background"], "black", font_size, (0, button_y * 2), 150
         )
         self.button_select_npc = load_button_with_text_in_center(
-            os.path.join(DIALOG_UI_PATH, "menu.png"), CONFIG["npc"], "black", font_size, (0, button_y * 2), 150
+            "<!ui>button.png", CONFIG["npc"], "black", font_size, (0, button_y * 2), 150
         )
         panding: int = int(
             (container_width - self.button_select_background.get_width() - self.button_select_npc.get_width()) / 3
@@ -84,58 +100,38 @@ class DialogEditor(AbstractDialogSystem):
         button_size: tuple = (button_width, button_width)
         # 页面右上方的一排按钮
         self.buttonsUI = {
+            "mute": load_button_with_des(
+                "<!ui>mute.png", Lang.get_text("Global", "mute"), (button_width * 8.5, button_y), button_size, 150
+            ),
             "save": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "save.png"),
-                Lang.get_text("Global", "save"),
-                (button_width * 7.25, button_y),
-                button_size,
-                150,
+                "<!ui>save.png", Lang.get_text("Global", "save"), (button_width * 7.25, button_y), button_size, 150
             ),
             "reload": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "reload.png"),
-                Lang.get_text("Global", "reload_file"),
-                (button_width * 6, button_y),
-                button_size,
-                150,
+                "<!ui>reload.png", Lang.get_text("Global", "reload_file"), (button_width * 6, button_y), button_size, 150
             ),
-            "add": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "add.png"), CONFIG["add"], (button_width * 4.75, button_y), button_size, 150
-            ),
-            "next": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "dialog_skip.png"),
-                CONFIG["next"],
-                (button_width * 4.75, button_y),
-                button_size,
-                150,
-            ),
+            "add": load_button_with_des("<!ui>add.png", CONFIG["add"], (button_width * 4.75, button_y), button_size, 150),
+            "next": load_button_with_des("<!ui>next.png", CONFIG["next"], (button_width * 4.75, button_y), button_size, 150),
             "previous": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "previous.png"),
-                CONFIG["previous"],
-                (button_width * 3.5, button_y),
-                button_size,
-                150,
+                "<!ui>previous.png", CONFIG["previous"], (button_width * 3.5, button_y), button_size, 150
             ),
             "delete": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "delete.png"),
-                CONFIG["delete"],
-                (button_width * 2.25, button_y),
-                button_size,
-                150,
+                "<!ui>delete.png", CONFIG["delete"], (button_width * 2.25, button_y), button_size, 150
             ),
             "back": load_button_with_des(
-                os.path.join(DIALOG_UI_PATH, "back.png"),
-                Lang.get_text("Global", "back_to_main_menu"),
-                (button_width, button_y),
-                button_size,
-                150,
+                "<!ui>back.png", Lang.get_text("Global", "back_to_main_menu"), (button_width, button_y), button_size, 150
             ),
         }
         self.please_enter_content = CONFIG["please_enter_content"]
         self.please_enter_name = CONFIG["please_enter_name"]
+        # 背景音乐
+        self.dialog_bgm_select = DropDownSingleChoiceList(None, button_width * 11, button_y + font_size * 3, font_size)
+        self.dialog_bgm_select.set("null", Lang.get_text("DialogCreator", "no_bgm"))
+        for file_name in os.listdir("Assets\music"):
+            self.dialog_bgm_select.set(file_name, file_name)
         # 从配置文件中加载数据
         self._load_content()
         # 移除按钮
-        self.removeNpcButton = self._dialog_txt_system.FONT.render(CONFIG["removeNpc"], Color.BLACK)
+        self.removeNpcButton = self._dialog_txt_system.FONT.render(CONFIG["remove_npc"], Color.BLACK)
         surfaceTmp = new_surface((self.removeNpcButton.get_width() * 1.2, self.removeNpcButton.get_height() * 1.2)).convert()
         surfaceTmp.fill(Color.WHITE)
         surfaceTmp.blit(self.removeNpcButton, (self.removeNpcButton.get_width() * 0.1, 0))
@@ -143,7 +139,7 @@ class DialogEditor(AbstractDialogSystem):
         # 未保存离开时的警告
         self.__no_save_warning = UI.generate("leave_without_saving_warning")
         # 切换准备编辑的dialog部分
-        self.dialog_key_select = DropDownSingleChoiceList(None, button_width * 9, button_y + font_size, font_size)
+        self.dialog_key_select = DropDownSingleChoiceList(None, button_width * 11, button_y + font_size, font_size)
         for key in self._dialog_data:
             self.dialog_key_select.set(key, key)
         self.dialog_key_select.set_current_selected_item(self._part)
@@ -176,55 +172,40 @@ class DialogEditor(AbstractDialogSystem):
 
     # 读取章节信息
     def _load_content(self) -> None:
-        self._dialog_data = (
-            Config.load(self.get_dialog_file_location(), "dialogs")
-            if os.path.exists(self.get_dialog_file_location())
-            else {}
-        )
-        # 获取默认语言
-        default_lang_of_dialog: str = self.get_default_lang()
-        # 如果dialogs字典是空的
-        if len(list(self._dialog_data.keys())) <= 0:
-            # 如果不是默认主语言，则尝试加载主语言
-            if default_lang_of_dialog != Setting.language:
-                self.is_default = False
-                # 读取原始数据
-                self._dialog_data_default = Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs")
-                self._dialog_data = deepcopy(self._dialog_data_default)
-        else:
-            # 如果不是默认主语言
-            if default_lang_of_dialog != Setting.language:
-                self.is_default = False
-                # 读取原始数据
-                self._dialog_data_default = Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs")
-                # 填入未被填入的数据
-                for part in self._dialog_data_default:
-                    for key, DIALOG_DATA_TEMP in self._dialog_data_default[part].items():
-                        if key in self._dialog_data[part]:
-                            for key2, dataNeedReplace in DIALOG_DATA_TEMP.items():
-                                if key2 not in self._dialog_data[part][key]:
-                                    self._dialog_data[part][key][key2] = deepcopy(dataNeedReplace)
-                        else:
-                            self._dialog_data[part][key] = deepcopy(DIALOG_DATA_TEMP)
+        if os.path.exists(path := self.get_dialog_file_location()):
+            if "dialogs" in (data_t := Config.load(path)):
+                try:
+                    self._dialog_data = dict(data_t["dialogs"])
+                except Exception:
+                    EXCEPTION.warn("Cannot load dialogs due to invalid data type.")
+                    self._dialog_data = {}
             else:
-                self.is_default = True
-                self._dialog_data_default = None
+                self._dialog_data = {}
+        else:
+            self._dialog_data = {}
+        # 如果不是默认主语言
+        if (default_lang_of_dialog := self.get_default_lang()) != Setting.language:
+            self._is_default_dialog = False
+            # 读取原始数据
+            self._dialog_data_default = dict(Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs"))
+            # 如果当前dialogs是空的，则完全使用默认语言的数据
+            if len(self._dialog_data) <= 0:
+                self._dialog_data = deepcopy(self._dialog_data_default)
+            # 如果当前dialogs不为空的，则填入未被填入的数据
+            else:
+                dialog_data_t = deepcopy(self._dialog_data_default)
+                for part in self._dialog_data:
+                    for key, value in self._dialog_data[part].items():
+                        dialog_data_t[part][key].update(value)
+                self._dialog_data = dialog_data_t
+        # 如果是默认主语言，则不进行任何额外操作
+        else:
+            self._is_default_dialog = True
+            self._dialog_data_default.clear()
         # 则尝试加载后仍然出现内容为空的情况
-        if len(list(self._dialog_data.keys())) <= 0:
+        if len(self._dialog_data) <= 0:
             self._part = "example_dialog"
             self._dialog_data[self._part] = {}
-        if len(list(self._dialog_data[self._part].keys())) <= 0:
-            self._dialog_data[self._part]["head"] = {
-                "background_img": None,
-                "background_music": None,
-                "characters_img": [],
-                "content": [self.please_enter_content],
-                "last_dialog_id": None,
-                "narrator": self.please_enter_name,
-                "next_dialog_id": None,
-            }
-            self.is_default = True
-            self._dialog_data_default = None
         # 更新场景
         self._update_scene(self._dialog_id)
 
@@ -233,7 +214,7 @@ class DialogEditor(AbstractDialogSystem):
         self.current_dialog_content["narrator"] = self._dialog_txt_system.narrator.get_text()
         self.current_dialog_content["content"] = self._dialog_txt_system.content.get_text()
         data_need_save: dict = deepcopy(self._dialog_data)
-        if not self.is_default:
+        if not self._is_default_dialog:
             # 移除掉相似的内容
             for part in self._dialog_data_default:
                 for dialogId, defaultDialogData in self._dialog_data_default[part].items():
@@ -254,10 +235,25 @@ class DialogEditor(AbstractDialogSystem):
 
     # 更新场景
     def _update_scene(self, theNextDialogId: Union[str, int]) -> None:
+        # 确保当前版块有对话数据。如果当前版块为空，则加载默认模板
+        if len(self.dialog_content) <= 0:
+            self.dialog_content.update(Config.load_internal("template.json", "dialog_example"))
+            for key in self.dialog_content:
+                self.dialog_content[key]["content"].append(self.please_enter_content)
+                self.dialog_content[key]["narrator"] = self.please_enter_name
+            self._is_default_dialog = True
+            self._dialog_data_default.clear()
+        # 如果id存在，则加载对应数据
         if theNextDialogId in self.dialog_content:
             super()._update_scene(theNextDialogId)
+        # 如果id不存在，则新增一个
         else:
             self.__add_dialog(theNextDialogId)
+        # 更新背景音乐选项菜单
+        if (file_name := self.get_current_background_music_name()) is not None:
+            self.dialog_bgm_select.set_current_selected_item(file_name)
+        else:
+            self.dialog_bgm_select.set_current_selected_item("null")
 
     # 添加新的对话
     def __add_dialog(self, dialogId: Union[str, int]) -> None:
@@ -384,7 +380,20 @@ class DialogEditor(AbstractDialogSystem):
                 if self.buttonsUI[button].is_hover():
                     buttonHovered = button
                 self.buttonsUI[button].draw(surface)
-        # 展示出当前可供编辑的dialog章节
+        # 展示出当前可供使用的背景音乐
+        self.dialog_bgm_select.draw(surface)
+        if (current_bgm := self.get_current_background_music_name()) != self.dialog_bgm_select.get_current_selected_item():
+            if self.dialog_bgm_select.get_current_selected_item() == "null" and current_bgm is None:
+                pass
+            else:
+                if self.dialog_bgm_select.get_current_selected_item() == "null" and current_bgm is not None:
+                    self.current_dialog_content["background_music"] = None
+                else:
+                    self.current_dialog_content["background_music"] = self.dialog_bgm_select.get(
+                        self.dialog_bgm_select.get_current_selected_item()
+                    )
+                self._update_scene(self._dialog_id)
+        # 展示出当前可供编辑的dialog部分
         self.dialog_key_select.draw(surface)
         # 切换当前正在浏览编辑的dialog部分
         if self.dialog_key_select.get_current_selected_item() != self._part:
@@ -464,6 +473,10 @@ class DialogEditor(AbstractDialogSystem):
                         self.save_progress()
                     elif buttonHovered == "reload":
                         self._load_content()
+                    elif buttonHovered == "mute":
+                        self._is_muted = not self._is_muted
+                        if self._is_muted is True:
+                            self.stop_bgm()
                     else:
                         leftClick = True
                 # 鼠标右键

@@ -52,9 +52,10 @@ class Loader:
         if isinstance(gif_path_or_img_list, str) and gif_path_or_img_list.endswith(".gif"):
             gif_image: object = ImageLoader.open(gif_path_or_img_list)
             theFilePath: str = os.path.dirname(gif_path_or_img_list)
-            for i in range(gif_image.n_frames):
-                gif_image.seek(i)
-                pathTmp = os.path.join(theFilePath, "gifTempFileForLoading_{}.png".format(i))
+            frame_index: int = 0
+            for frame_index in range(gif_image.n_frames):
+                gif_image.seek(frame_index)
+                pathTmp = os.path.join(theFilePath, "gifTempFileForLoading_{}.png".format(frame_index))
                 gif_image.save(pathTmp)
                 imgList.append(StaticImage(pathTmp, 0, 0, size[0], size[1]))
                 os.remove(pathTmp)

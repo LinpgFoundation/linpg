@@ -2,25 +2,28 @@ from .pos import *
 
 
 class KeySystem:
-    def __init__(self) -> None:
-        self.DOWN = pygame.KEYDOWN
-        self.UP = pygame.KEYUP
-        self.ESCAPE = pygame.K_ESCAPE
-        self.SPACE = pygame.K_SPACE
-        self.BACKSPACE = pygame.K_BACKSPACE
-        self.DELETE = pygame.K_DELETE
-        self.LEFT_CTRL = pygame.K_LCTRL
-        self.ARROW_UP = pygame.K_UP
-        self.ARROW_DOWN = pygame.K_DOWN
-        self.ARROW_LEFT = pygame.K_LEFT
-        self.ARROW_RIGHT = pygame.K_RIGHT
-        self.RETURN = pygame.K_RETURN
-        self.BACKQUOTE = pygame.K_BACKQUOTE
-        # 粘贴板内容模块
-        from tkinter import Tk
 
-        self.__root = Tk()
-        self.__root.withdraw()
+    # 按键常量
+    DOWN: int = pygame.KEYDOWN
+    UP: int = pygame.KEYUP
+    ESCAPE: int = pygame.K_ESCAPE
+    SPACE: int = pygame.K_SPACE
+    BACKSPACE: int = pygame.K_BACKSPACE
+    DELETE: int = pygame.K_DELETE
+    LEFT_CTRL: int = pygame.K_LCTRL
+    ARROW_UP: int = pygame.K_UP
+    ARROW_DOWN: int = pygame.K_DOWN
+    ARROW_LEFT: int = pygame.K_LEFT
+    ARROW_RIGHT: int = pygame.K_RIGHT
+    RETURN: int = pygame.K_RETURN
+    BACKQUOTE: int = pygame.K_BACKQUOTE
+    F3: int = pygame.K_F3
+
+    # 粘贴板内容模块
+    from tkinter import Tk
+
+    __root: Tk = Tk()
+    __root.withdraw()
 
     # key是否被按下
     def get_pressed(self, key_name: any) -> bool:

@@ -9,9 +9,11 @@ class Error(Exception):
 
 # Linpg错误类管理器
 class LinpgExceptionHandler:
-    def __init__(self) -> None:
-        # 错误报告存储的路径
-        self.__CRASH_REPORTS_PATH: str = "crash_reports"
+
+    # 错误报告存储的路径
+    __CRASH_REPORTS_PATH: str = "crash_reports"
+    # 引擎启动时的时间戳
+    __TIME_STAMP_WHEN_LINPG_STARTED: str = datetime.now().strftime("%Y%m%d_%H%M%S")
 
     # 生成错误报告
     def __log(self, msg: str) -> None:
@@ -20,16 +22,16 @@ class LinpgExceptionHandler:
             os.mkdir(self.__CRASH_REPORTS_PATH)
         # 写入讯息
         with open(
-            os.path.join(self.__CRASH_REPORTS_PATH, "crash_{}.txt".format(datetime.now().strftime("%m-%d-%Y_%H-%M-%S"))),
-            "w",
+            os.path.join(self.__CRASH_REPORTS_PATH, "crash_{}.txt".format(self.__TIME_STAMP_WHEN_LINPG_STARTED)),
+            "a",
             encoding="utf-8",
         ) as f:
-            f.write(msg)
+            f.write("[{0}]\n{1}\n".format(datetime.now().strftime("%Y/%m/%d %H:%M:%S"), msg))
 
     # 告知不严重但建议查看的问题
     @staticmethod
     def inform(info: str) -> None:
-        print("LinpgEngine-Inform: {}".format(info))
+        print("LinpgEngine wants to inform you: {}".format(info))
 
     # 警告开发者非严重错误
     def warn(self, info: str) -> None:

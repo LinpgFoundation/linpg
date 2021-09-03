@@ -83,12 +83,12 @@ class FontGenerator:
 
 
 # 文字渲染器管理模块
-class FontManage:
+class FontManager:
     def __init__(self) -> None:
         # 引擎标准文件渲染器
         self.__LINPG_GLOBAL_FONTS: dict = {}
         # 上一次render的字体
-        self.__LINPG_LAST_FONT: object = FontGenerator()
+        self.__LINPG_LAST_FONT: FontGenerator = FontGenerator()
 
     # 设置全局文字
     def set_global_font(self, key: str, size: int, ifBold: bool = False, ifItalic: bool = False) -> None:
@@ -138,4 +138,4 @@ class FontManage:
         return self.__LINPG_LAST_FONT.render(txt, color)
 
 
-Font: FontManage = FontManage()
+Font: FontManager = FontManager()

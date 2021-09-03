@@ -24,9 +24,10 @@ class LanguageManager:
         if os.path.exists(
             path_t := os.path.join(self.__EX_LANG_FOLDER, "{}.yaml".format(Setting.language))
         ) or os.path.exists(path_t := os.path.join(self.__EX_LANG_FOLDER, "{}.json".format(Setting.language))):
-            self.__LANG_DATA.update(Config.load(path_t))
-        else:
-            EXCEPTION.warn("Linpg cannot load additional language file.")
+            try:
+                self.__LANG_DATA.update(Config.load(path_t))
+            except Exception:
+                EXCEPTION.warn("Linpg cannot load additional language file.")
         # 获取当前所有完整的可用语言的列表
         self.__LANG_AVAILABLE.clear()
         # 如果有开发者自带的语言文件

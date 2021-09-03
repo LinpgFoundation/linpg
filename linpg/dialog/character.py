@@ -17,7 +17,7 @@ class CharacterImageManager:
                 int(self.__img_width * 0.25), 0, int(self.__img_width * 0.5), int(self.__img_width * 0.56)
             )
             self.__communication = StaticImage(
-                os.path.join(DIALOG_UI_PATH, "communication.png"),
+                os.path.join(r"Assets/image/UI/communication.png"),
                 0,
                 0,
                 self.__communication_surface_rect.width,
@@ -338,23 +338,27 @@ class CharacterImageManager:
 # 立绘配置信息数据库
 class CharacterImageDatabase:
     def __init__(self):
-        self.__DATA_PATH: str = os.path.join("Data", "npcImageDatabase.yaml")
+        self.__is_disabled: bool = False
         self.__DATA: dict = {}
-        if os.path.exists(self.__DATA_PATH):
-            self.__DATA = Config.load(self.__DATA_PATH)
+        if os.path.exists(path := os.path.join("Data", "database.yaml")):
+            if "Npc" in (data_t := Config.load(path)):
+                self.__DATA = dict(data_t["Npc"])
+            else:
+                self.__is_disabled = True
         else:
-            Config.save(self.__DATA_PATH, self.__DATA)
-            EXCEPTION.warn("Cannot find 'npcImageDatabase.yaml' in 'Data' file, a new one is created.")
+            self.__is_disabled = True
 
+    # 根据文件名判断是否是同一角色名下的图片
     def is_the_same_character(self, fileName1: str, fileName2: str) -> bool:
-        fileName1 = fileName1.replace("<c>", "").replace("<d>", "")
-        fileName2 = fileName2.replace("<c>", "").replace("<d>", "")
-        if fileName1 == fileName2:
-            return True
-        else:
-            for key in self.__DATA:
-                if fileName1 in self.__DATA[key]:
-                    return fileName2 in self.__DATA[key]
-                elif fileName2 in self.__DATA[key]:
-                    return fileName1 in self.__DATA[key]
-            return False
+        if not self.__is_disabled:
+            fileName1 = fileName1.replace("<c>", "").replace("<d>", "")
+            fileName2 = fileName2.replace("<c>", "").replace("<d>", "")
+            if fileName1 == fileName2:
+                return True
+            else:
+                for key in self.__DATA:
+                    if fileName1 in self.__DATA[key]:
+                        return fileName2 in self.__DATA[key]
+                    elif fileName2 in self.__DATA[key]:
+                        return fileName1 in self.__DATA[key]
+        return False

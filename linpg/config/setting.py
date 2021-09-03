@@ -24,7 +24,7 @@ class SettingSystem:
     # 重新加载设置数据
     def reload(self) -> None:
         # 加载内部默认的设置配置文件
-        self.__SETTING_DATA = dict(Config.load_internal("setting.json"))
+        self.__SETTING_DATA = dict(Config.load_internal("template.json", "setting"))
         # 如果自定义的设置配置文件存在，则加载
         if os.path.exists(self.get_config_path()):
             self.__SETTING_DATA.update(Config.load(self.get_config_path()))
@@ -86,6 +86,9 @@ class SettingSystem:
     @property
     def developer_mode(self) -> bool:
         return self.__SETTING_DATA["DeveloperMode"]
+
+    def set_developer_mode(self, value: bool) -> None:
+        self.__SETTING_DATA["Cheat"] = bool(value)
 
     # 低内存模式
     @property

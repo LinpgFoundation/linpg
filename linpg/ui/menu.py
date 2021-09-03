@@ -41,7 +41,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
                 lang_drop_down = self._CONTENT.get("lang_drop_down")
                 for lang_choice in Lang.get_available_languages():
                     lang_drop_down.set(lang_choice, lang_choice)
-                    lang_drop_down.set_current_selected_item(Lang.current_language)
+                lang_drop_down.set_current_selected_item(Lang.current_language)
             else:
                 lang_drop_down = self._CONTENT.get("lang_drop_down")
             # 更新百分比

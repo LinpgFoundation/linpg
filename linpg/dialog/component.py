@@ -14,7 +14,7 @@ class DialogButtons:
         # 从语言文件中读取按钮文字
         dialog_txt: dict = Lang.get_text("Dialog")
         # 生成跳过按钮
-        tempButtonIcon = IMG.load(os.path.join(DIALOG_UI_PATH, "dialog_skip.png"), (self.FONT.size, self.FONT.size))
+        tempButtonIcon = IMG.load("<!ui>next.png", (self.FONT.size, self.FONT.size))
         tempButtonTxt = self.FONT.render(dialog_txt["skip"], Color.WHITE)
         temp_w = tempButtonTxt.get_width() + self.FONT.size * 1.5
         self.choiceTxt = dialog_txt["choice"]
@@ -30,7 +30,7 @@ class DialogButtons:
         self.skipButton = StaticImage(self.skipButton, Display.get_width() * 0.9, Display.get_height() * 0.05)
         self.skipButtonHovered = StaticImage(self.skipButtonHovered, Display.get_width() * 0.9, Display.get_height() * 0.05)
         # 生成自动播放按钮
-        self.autoIconHovered = IMG.load(os.path.join(DIALOG_UI_PATH, "dialog_auto.png"), (self.FONT.size, self.FONT.size))
+        self.autoIconHovered = IMG.load("<!ui>auto.png", (self.FONT.size, self.FONT.size))
         self.autoIcon = IMG.add_darkness(self.autoIconHovered, 100)
         self.autoIconDegree = 0
         self.autoIconDegreeChange = (2 ** 0.5 - 1) * self.FONT.size / 45
@@ -47,21 +47,15 @@ class DialogButtons:
         self.autoButtonHovered.tag = int(self.autoButtonHovered.x + self.autoButtonHovered.img.get_width() - self.FONT.size)
         # 隐藏按钮
         self.hideButton = load_button(
-            os.path.join(DIALOG_UI_PATH, "dialog_hide.png"),
-            (Display.get_width() * 0.05, Display.get_height() * 0.05),
-            (self.FONT.size, self.FONT.size),
-            150,
+            "<!ui>hide.png", (Display.get_width() * 0.05, Display.get_height() * 0.05), (self.FONT.size, self.FONT.size), 150
         )
         # 取消隐藏按钮
         self.showButton = load_button(
-            os.path.join(DIALOG_UI_PATH, "dialog_show.png"),
-            (Display.get_width() * 0.05, Display.get_height() * 0.05),
-            (self.FONT.size, self.FONT.size),
-            150,
+            "<!ui>show.png", (Display.get_width() * 0.05, Display.get_height() * 0.05), (self.FONT.size, self.FONT.size), 150
         )
         # 历史回溯按钮
         self.historyButton = load_button(
-            os.path.join(DIALOG_UI_PATH, "dialog_history.png"),
+            "<!ui>history.png",
             (Display.get_width() * 0.1, Display.get_height() * 0.05),
             (self.FONT.size, self.FONT.size),
             150,
@@ -155,8 +149,8 @@ def cutscene(surface: ImageSurface, videoPath: str, fade_out_in_ms: int = 3000) 
     is_skip: bool = False
     is_playing: bool = True
     # 初始化跳过按钮的参数
-    skip_button: object = StaticImage(
-        r"Assets/image/UI/dialog_skip.png",
+    skip_button: StaticImage = StaticImage(
+        "<!ui>next.png",
         int(surface.get_width() * 0.92),
         int(surface.get_height() * 0.05),
         int(surface.get_width() * 0.055),
@@ -164,7 +158,7 @@ def cutscene(surface: ImageSurface, videoPath: str, fade_out_in_ms: int = 3000) 
     )
     # 进度条
     bar_height: int = 10
-    white_progress_bar: object = ProgressBar(
+    white_progress_bar: ProgressBar = ProgressBar(
         bar_height, surface.get_height() - bar_height * 2, surface.get_width() - bar_height * 2, bar_height, "white"
     )
     # 生成黑色帘幕
@@ -172,7 +166,7 @@ def cutscene(surface: ImageSurface, videoPath: str, fade_out_in_ms: int = 3000) 
     BLACK_CURTAIN.fill(Color.BLACK)
     BLACK_CURTAIN.set_alpha(0)
     # 创建视频文件
-    VIDEO: object = VedioPlayer(videoPath)
+    VIDEO: VedioPlayer = VedioPlayer(videoPath)
     VIDEO.pre_init()
     # 播放主循环
     while is_playing is True and VIDEO.is_playing() is True:

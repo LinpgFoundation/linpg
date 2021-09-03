@@ -83,7 +83,9 @@ class UiGenerator:
                         break
                 if find_close_bracket is True:
                     find_close_bracket = False
-                    final_text_list.append(Lang.get_text_by_keys(tuple([b.strip() for b in text[text_index + 1 : a].split(",")])))
+                    final_text_list.append(
+                        Lang.get_text_by_keys(tuple([b.strip() for b in text[text_index + 1 : a].split(",")]))
+                    )
                     text_index = a
                 else:
                     EXCEPTION.fatal("Cannot find close bracket for text: {}".format())

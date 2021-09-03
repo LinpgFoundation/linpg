@@ -12,14 +12,14 @@ class JoystickController:
 
     # 手柄是否初始化
     def get_init(self) -> bool:
-        return self.__input.get_init() if self.__input is not None else False
+        return self.__input.get_init() if self.is_active() is True else False
 
     # 获取该按钮的详情
     def get_button(self, buttonId: int) -> bool:
-        return self.__input.get_button(buttonId) if self.__input is not None and self.__input.get_init() else False
+        return self.__input.get_button(buttonId) if self.get_init() is True else False
 
     def get_axis(self, buttonId: int) -> float:
-        return self.__input.get_axis(buttonId) if self.__input is not None and self.__input.get_init() else 0.0
+        return round(self.__input.get_axis(buttonId), 1) if self.get_init() is True else 0.0
 
     # 是否启动
     def is_active(self) -> bool:
@@ -32,12 +32,13 @@ class JoystickController:
             if pygame.joystick.get_count() > 0:
                 self.__input = pygame.joystick.Joystick(0)
                 self.__input.init()
-                EXCEPTION.inform("Joystick is detected and initialized successfully.")
+                EXCEPTION.inform("A joystick is detected and initialized successfully.")
         # 当目前有手柄在连接
         else:
             # 失去与当前手柄的连接
             if pygame.joystick.get_count() == 0:
                 self.__input = None
+                EXCEPTION.inform("Lost connection with the joystick.")
             # 有新的手柄
             elif self.__input.get_id() != pygame.joystick.Joystick(0).get_id():
                 self.__input = pygame.joystick.Joystick(0)
@@ -47,19 +48,21 @@ class JoystickController:
 
 # 鼠标控制
 class MouseController:
+
+    # 鼠标位置
+    __x: int = 0
+    __y: int = 0
+    # 鼠标移动速度（使用手柄时）
+    __moving_speed: int = int(max(Setting.get("MouseMoveSpeed"), 1))
+
     def __init__(self) -> None:
-        # 鼠标位置
-        self.__x: int = 0
-        self.__y: int = 0
-        self.__moving_speed: int = int(max(Setting.get("MouseMoveSpeed"), 1))
         custom: bool = False
         if not custom:
             self.__icon_img = None
         else:
             pygame.mouse.set_visible(False)
             self.__icon_img = IMG.load(
-                os.path.join("Assets/image/UI", "mouse_icon.png"),
-                (int(Setting.get("MouseIconWidth")), int(Setting.get("MouseIconWidth") * 1.3)),
+                "<!ui>mouse_icon.png", (int(Setting.get("MouseIconWidth")), int(Setting.get("MouseIconWidth") * 1.3))
             )
         self.update()
 
@@ -107,22 +110,25 @@ class MouseController:
 
 # 输入管理组件
 class GameController:
-    def __init__(self):
-        self.__joystick: JoystickController = JoystickController()
-        self.__mouse: MouseController = MouseController()
-        # 输入事件
-        self.__INPUT_EVENTS: list = []
-        # 检测特定事件
-        self.__SPECIFIC_EVENTS: dict = {
-            # 是否有确认事件
-            "confirm": False,
-            # 是否有返回事件
-            "back": False,
-            # 鼠标滚轮
-            "scroll_up": False,
-            "scroll_down": False,
-            "previous": False,
-        }
+
+    # 模块
+    __joystick: JoystickController = JoystickController()
+    __mouse: MouseController = MouseController()
+    # 输入事件
+    __INPUT_EVENTS: list = []
+    # 检测特定事件
+    __SPECIFIC_EVENTS: dict = {
+        # 是否有确认事件
+        "confirm": False,
+        # 是否有返回事件
+        "back": False,
+        # 鼠标滚轮
+        "scroll_up": False,
+        "scroll_down": False,
+        "previous": False,
+    }
+    # 是否需要截图
+    NEED_TO_TAKE_SCREENSHOT: bool = False
 
     # 手柄模块
     @property
@@ -152,9 +158,28 @@ class GameController:
 
     # 更新输入
     def update(self):
-        # 更新输入事件
+        # 更新手柄输入事件
         self.__joystick.update()
+        # 更新鼠标输入事件
         self.__mouse.update()
+        # 根据手柄情况调整鼠标位置（如果手柄启动）
+        if self.__joystick.is_active():
+            x_axis_value: float = self.__joystick.get_axis(0)
+            is_x_need_update: bool = not 0.5 > x_axis_value > -0.5
+            y_axis_value: float = self.__joystick.get_axis(1)
+            is_y_need_update: bool = not 0.5 > y_axis_value > -0.5
+            if is_x_need_update is True and is_y_need_update is True:
+                self.mouse.set_pos(
+                    (
+                        int(self.mouse.x + self.mouse.moving_speed * x_axis_value),
+                        int(self.mouse.y + self.mouse.moving_speed * y_axis_value),
+                    )
+                )
+            elif is_x_need_update is True:
+                self.mouse.set_pos((int(self.mouse.x + self.mouse.moving_speed * x_axis_value), self.mouse.y))
+            elif is_y_need_update is True:
+                self.mouse.set_pos((self.mouse.x, int(self.mouse.y + self.mouse.moving_speed * y_axis_value)))
+        # 更新综合输入事件
         self.__INPUT_EVENTS = pygame.event.get()
         # 重设用于判断常见事件的参数
         for key in self.__SPECIFIC_EVENTS:
@@ -174,20 +199,11 @@ class GameController:
                     self.__SPECIFIC_EVENTS["confirm"] = True
                 elif self.__joystick.get_button(1) is True:
                     self.__SPECIFIC_EVENTS["previous"] = True
-            elif event.type == Key.DOWN and event.key == Key.ESCAPE:
-                self.__SPECIFIC_EVENTS["back"] = True
-        # 根据手柄情况调整鼠标位置（如果手柄启动）
-        if self.__joystick.is_active():
-            self.mouse.set_pos(
-                (
-                    int(self.mouse.x + self.mouse.moving_speed * self.__joystick.get_axis(0))
-                    if not 0.1 < self.__joystick.get_axis(0) < -0.1
-                    else self.mouse.x,
-                    int(self.mouse.y + self.mouse.moving_speed * self.__joystick.get_axis(1))
-                    if not 0.1 < self.__joystick.get_axis(1) < -0.1
-                    else self.mouse.y,
-                )
-            )
+            elif event.type == Key.DOWN:
+                if event.key == Key.ESCAPE:
+                    self.__SPECIFIC_EVENTS["back"] = True
+                elif event.key == Key.F3:
+                    self.NEED_TO_TAKE_SCREENSHOT = True
 
 
 # 控制器输入组件初始化

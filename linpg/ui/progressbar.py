@@ -1,4 +1,4 @@
-from .inputbox import *
+from .console import *
 
 # 进度条抽象，请勿直接初始化
 class AbstractProgressBar(AbstractImageSurface):

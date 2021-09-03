@@ -5,7 +5,7 @@ _MAP_ENV_IMAGE: object = None
 # 方块数据
 _BLOCKS_DATABASE: dict = None
 try:
-    _BLOCKS_DATABASE = Config.load(os.path.join("Data", "blocks.yaml"), "blocks")
+    _BLOCKS_DATABASE = dict(Config.load(os.path.join("Data", "database.yaml"), "Blocks"))
 except Exception:
     _BLOCKS_DATABASE = {}
 
@@ -23,7 +23,7 @@ class MapObject(AdvancedAbstractImageSurface):
         self.row, self.column = self.__Map_Data.shape
         # 现已可以计算尺寸，初始化父类
         super().__init__(
-            mapDataDic["backgroundImage"],  # self.img:str储存了背景图片的信息
+            mapDataDic["background_image"],  # self.img:str储存了背景图片的信息
             0,
             0,
             int(perBlockWidth * 0.9 * ((self.row + self.column + 1) / 2)),

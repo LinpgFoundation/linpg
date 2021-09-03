@@ -118,7 +118,7 @@ class EnvImagesManagement:
         try:
             return self.__ENV_IMAGE_DICT_DARK[key] if darkMode is True else self.__ENV_IMAGE_DICT[key]
         except Exception:
-            EXCEPTION.warn(
+            EXCEPTION.inform(
                 "Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(key)
             )
             self.__add_evn_image(key)
@@ -133,7 +133,7 @@ class EnvImagesManagement:
             )
         # 如果图片没找到
         except Exception:
-            EXCEPTION.warn(
+            EXCEPTION.inform(
                 "Cannot find decoration image '{0}' in type '{1}', we will try to load it for you right now, but please by aware.".format(
                     key, decorationType
                 )
@@ -183,9 +183,6 @@ class BlockObject:
 
 # 点
 class Point(GameObject):
-    def __init__(self, x: int, y: int):
-        super().__init__(x, y)
-
     def __eq__(self, other: object) -> bool:
         return self.x == other.x and self.y == other.y
 

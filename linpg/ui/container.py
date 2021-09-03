@@ -101,17 +101,21 @@ class DropDownSingleChoiceList(GameObjectsContainer):
         self.outline_thickness: int = 1
 
     # 重新计算宽度
-    def _update_width(self) -> None:
+    def __recalculate_width(self) -> None:
         self.set_width(0)
         for item in self._items_container.values():
-            if self.get_width() < (item_width := int(self.__FONT.estimate_text_width(item) * 1.5)):
-                self.set_width(item_width)
+            self.__update_width(item)
+
+    # 根据物品判定是否需要更新宽度
+    def __update_width(self, item: Union[str, int]) -> None:
+        if self.get_width() < (new_item_width := int(self.__FONT.estimate_text_width(item) + self.__FONT.size * 7)):
+            self.set_width(new_item_width)
 
     # 更新font的尺寸
     def update_font_size(self, font_size: int) -> None:
         self.__block_height: int = int(font_size * 1.5)
         self.__FONT.update(font_size)
-        self._update_width()
+        self.__recalculate_width()
 
     # 更新font的颜色
     def update_font_color(self, font_color: color_liked) -> None:
@@ -120,16 +124,15 @@ class DropDownSingleChoiceList(GameObjectsContainer):
     # 新增一个物品
     def set(self, key: str, new_item: Union[str, int]) -> None:
         super().set(key, new_item)
-        if self.get_width() < (new_item_width := int(self.__FONT.estimate_text_width(new_item) * 2)):
-            self.set_width(new_item_width)
+        self.__update_width(new_item)
 
     # 获取一个物品
     def get(self, key: str) -> Union[str, int]:
         return super().get(key) if not self.is_empty() else self.__DEFAULT_CONTENT
 
     # 获取当前选中的物品
-    def get_current_selected_item(self) -> Union[str, int]:
-        return self.get(self.__chosen_item_key) if not self.is_empty() else self.__DEFAULT_CONTENT
+    def get_current_selected_item(self) -> str:
+        return self.__chosen_item_key
 
     # 设置当前选中的物品
     def set_current_selected_item(self, key: str) -> None:
@@ -146,12 +149,12 @@ class DropDownSingleChoiceList(GameObjectsContainer):
     # 移除一个物品
     def pop(self, index: int) -> None:
         super().pop(index)
-        self._update_width()
+        self.__recalculate_width()
 
     # 清空物品栏
     def clear(self) -> None:
         super().clear()
-        self._update_width()
+        self.__recalculate_width()
 
     # 把物品画到surface上
     def display(self, surface: ImageSurface, offSet: tuple = Pos.ORIGIN) -> None:
@@ -164,10 +167,12 @@ class DropDownSingleChoiceList(GameObjectsContainer):
                 draw_rect(surface, Color.WHITE, (current_abs_pos, self.size))
             # 列出当前选中的选项
             current_pos: tuple = current_abs_pos
-            font_surface: ImageSurface = self.__FONT.render(self.get_current_selected_item(), self.__font_color)
+            font_surface: ImageSurface = self.__FONT.render_with_bounding(
+                self.get_current_selected_item(), self.__font_color
+            )
             surface.blit(
                 font_surface,
-                Pos.add(current_pos, (int(self.width * 0.2), int((self.__block_height - font_surface.get_height()) / 2))),
+                Pos.add(current_pos, (self.__FONT.size * 3, int((self.__block_height - font_surface.get_height()) / 2))),
             )
             rect_of_outline = new_rect(current_pos, (self.width, self.__block_height))
             draw_rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
@@ -192,11 +197,11 @@ class DropDownSingleChoiceList(GameObjectsContainer):
                 index: int = 0
                 for key_of_game_object, game_object_t in self._items_container.items():
                     current_pos = Pos.add(current_abs_pos, (0, (index + 1) * self.__block_height))
-                    font_surface = self.__FONT.render(game_object_t, self.__font_color)
+                    font_surface = self.__FONT.render_with_bounding(game_object_t, self.__font_color)
                     surface.blit(
                         font_surface,
                         Pos.add(
-                            current_pos, (int(self.width * 0.2), int((self.__block_height - font_surface.get_height()) / 2))
+                            current_pos, (self.__FONT.size * 3, int((self.__block_height - font_surface.get_height()) / 2))
                         ),
                     )
                     rect_of_outline = new_rect(current_pos, (self.width, self.__block_height))
@@ -206,8 +211,8 @@ class DropDownSingleChoiceList(GameObjectsContainer):
                     draw_circle(
                         surface,
                         self.__font_color,
-                        Pos.add(current_pos, (self.width * 0.1, self.__block_height / 2)),
-                        3,
+                        Pos.add(current_pos, (self.__FONT.size * 2, self.__block_height / 2)),
+                        int(self.__block_height * 0.15),
                         self.outline_thickness if key_of_game_object != self.__chosen_item_key else 0,
                     )
                     index += 1

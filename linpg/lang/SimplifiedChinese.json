@@ -9,11 +9,12 @@
         "background": "背景图片",
         "delete": "删除当前对话",
         "next": "下一个对话",
+        "no_bgm": "无背景音乐",
         "npc": "立绘",
         "please_enter_content": "对话内容",
         "please_enter_name": "角色名",
         "previous": "上一个对话",
-        "removeNpc": "移除该角色"
+        "remove_npc": "移除该角色"
     },
     "Global": {
         "back": "返回",
@@ -22,6 +23,7 @@
         "confirm": "确认",
         "delete": " 删除",
         "dont_save": "不要保存",
+        "mute": "静音",
         "no": "否",
         "no_translation": "暂无翻译",
         "progress_has_been_saved": "进度已保存",

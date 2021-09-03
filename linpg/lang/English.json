@@ -9,11 +9,12 @@
         "background": "Background Image",
         "delete": "Delete current dialog",
         "next": "Next dialog",
+        "no_bgm": "No background music",
         "npc": "Npc",
         "please_enter_content": "Content",
         "please_enter_name": "Name",
         "previous": "Previous dialog",
-        "removeNpc": "Remove this npc"
+        "remove_npc": "Remove this npc"
     },
     "Global": {
         "back": "Back",
@@ -22,6 +23,7 @@
         "confirm": "Confirm",
         "delete": "Delete",
         "dont_save": "Don't Save",
+        "mute": "Mute",
         "no": "No",
         "no_translation": "Translation is not available",
         "progress_has_been_saved": "The progress has been saved.",

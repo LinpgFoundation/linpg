@@ -1,8 +1,5 @@
 from ..ui import *
 
-# ui路径
-DIALOG_UI_PATH: str = os.path.join("Assets", "image", "UI")
-
 # 对话框和对话框内容
 class DialogBox:
     def __init__(self, fontSize: int_f):
@@ -13,7 +10,7 @@ class DialogBox:
         self.dialoguebox_max_y: int = int(Display.get_height() * 0.65)
         # 对胡框图片
         self.dialoguebox: StaticImage = StaticImage(
-            os.path.join(DIALOG_UI_PATH, "dialoguebox.png"), int(Display.get_width() * 0.13), 0, Display.get_width() * 0.74
+            "<!ui>dialoguebox.png", int(Display.get_width() * 0.13), 0, Display.get_width() * 0.74
         )
         self.FONT: int = Font.create(fontSize)
         self.content = []
@@ -24,7 +21,7 @@ class DialogBox:
             self.__textPlayingSound = Sound.load(r"Assets/sound/ui/dialog_words_playing.ogg")
         except FileNotFoundError:
             self.__textPlayingSound = None
-            EXCEPTION.warn(
+            EXCEPTION.inform(
                 "Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!\nAs a result, the text playing sound will be disabled."
             )
         self.__channel = None
@@ -32,8 +29,8 @@ class DialogBox:
         # 鼠标图标
         self.mouseImg = GifImage(
             (
-                StaticImage(os.path.join(DIALOG_UI_PATH, "mouse_none.png"), 0, 0, self.FONT.size, self.FONT.size),
-                StaticImage(os.path.join(DIALOG_UI_PATH, "mouse.png"), 0, 0, self.FONT.size, self.FONT.size),
+                StaticImage("<!ui>mouse_none.png", 0, 0, self.FONT.size, self.FONT.size),
+                StaticImage("<!ui>mouse.png", 0, 0, self.FONT.size, self.FONT.size),
             ),
             int(Display.get_width() * 0.82),
             int(Display.get_height() * 0.83),

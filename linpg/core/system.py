@@ -29,7 +29,7 @@ class AbstractSystem:
     def __init__(self):
         # 判定用于判定是否还在播放的参数
         self.__is_playing: bool = True
-        self._language_when_initialize: str = Lang.current_language
+        self.__current_language: str = Lang.current_language
 
     # 是否正在播放
     def is_playing(self) -> bool:
@@ -44,11 +44,11 @@ class AbstractSystem:
 
     # 是否本体语言和当前一致
     def language_need_update(self) -> bool:
-        return self._language_when_initialize != Lang.current_language
+        return self.__current_language != Lang.current_language
 
     # 更新语言
     def updated_language(self) -> None:
-        self._language_when_initialize = Lang.current_language
+        self.__current_language = Lang.current_language
 
 
 # 拥有背景音乐的系统模块接口
@@ -59,8 +59,14 @@ class SystemWithBackgroundMusic(AbstractSystem):
         self.__bgm_volume: float = 1.0
         self.__audio = None
 
+    # 系统退出时，需卸载bgm
+    def stop(self) -> None:
+        super().stop()
+        self.unload_bgm()
+
     # 卸载bgm
     def unload_bgm(self):
+        self.stop_bgm()
         self.__bgm_path = None
         self.__audio = None
 
@@ -74,6 +80,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
         elif os.path.exists(path):
             # 只有在音乐路径不一致或者强制更新的情况下才会更新路径（同时卸载现有音乐）
             if self.__bgm_path != path or forced is True:
+                self.unload_bgm()
                 self.__bgm_path = path
                 self.__audio = Sound.load(self.__bgm_path, self.__bgm_volume)
         else:
@@ -92,6 +99,10 @@ class SystemWithBackgroundMusic(AbstractSystem):
     def play_bgm(self) -> None:
         if self.__bgm_path is not None and not LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.get_busy():
             LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.play(self.__audio)
+
+    # 停止播放
+    def stop_bgm(self) -> None:
+        LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.stop()
 
     # 把内容画到surface上（子类必须实现）
     def draw(self, surface: ImageSurface) -> None:

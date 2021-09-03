@@ -19,7 +19,7 @@ class AbstractBattleSystem(AbstractGameSystem):
         # 地图数据
         self.MAP: object = None
         # 视觉小说系统与参数
-        self._DIALOG: object = DialogSystem(True)
+        self._DIALOG: DialogSystem = DialogSystem(True)
         self.dialog_parameters: dict = None
         self._is_dialog_updated: bool = False
         self._dialog_dictionary: dict = {}

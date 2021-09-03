@@ -1,5 +1,5 @@
 """
 结构:
-button -> container -> inputbox -> progressbar -> generator -> menu
+button -> container -> inputbox -> console -> progressbar -> generator -> menu
 """
 from .menu import *

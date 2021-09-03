@@ -87,6 +87,9 @@ class SettingSystem:
     def developer_mode(self) -> bool:
         return self.__SETTING_DATA["DeveloperMode"]
 
+    def set_developer_mode(self, value: bool) -> None:
+        self.__SETTING_DATA["Cheat"] = bool(value)
+
     # 低内存模式
     @property
     def low_memory_mode(self) -> bool:

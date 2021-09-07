@@ -1,9 +1,41 @@
-import cv2
 from .window import *
+
+# 尝试导入opencv库
+_OPENCV_INITIALIZED: bool = False
+try:
+    import cv2
+
+    _OPENCV_INITIALIZED = True
+except Exception:
+    pass
+
+# 视频模块专属的错误检测器
+def _vedio_validator(path: str) -> None:
+    # 如果opencv没有成功地导入
+    if not _OPENCV_INITIALIZED:
+        EXCEPTION.fatal("You cannot use any vedio module unless you intall opencv!")
+    # 确保路径存在
+    elif not os.path.exists(path):
+        EXCEPTION.fatal('Cannot find file on path: "{}"'.format(path))
+
+
+# 获取视频封面
+def get_preview_of_vedio(path: str, size: tuple[int] = NoSize) -> ImageSurface:
+    _vedio_validator(path)
+    video_stream = cv2.VideoCapture(path)
+    video_stream.set(cv2.CAP_PROP_POS_FRAMES, int(video_stream.get(cv2.CAP_PROP_FRAME_COUNT) * 0.1))
+    current_frame = cv2.cvtColor(video_stream.read()[1], cv2.COLOR_BGR2RGB)
+    video_stream.release()
+    del video_stream
+    if size is not NoSize and (current_frame.shape[0] != size[0] or current_frame.shape[1] != size[1]):
+        current_frame = cv2.resize(current_frame, size)
+    return pygame.surfarray.make_surface(current_frame.swapaxes(0, 1))
+
 
 # 视频抽象类
 class AbstractVedio:
     def __init__(self, path: str, buffer_num: int, play_range: tuple[int] = (0, -1)):
+        _vedio_validator(path)
         self._path: str = path
         # 确保路径存在
         if not os.path.exists(self._path):
@@ -233,15 +265,3 @@ class VedioPlayer(AbstractVedio):
                     self.__clock.tick(self._frame_rate)
             else:
                 self.stop()
-
-
-# 获取视频封面
-def get_preview_of_vedio(path: str, size: tuple[int] = NoSize) -> ImageSurface:
-    video_stream = cv2.VideoCapture(path)
-    video_stream.set(cv2.CAP_PROP_POS_FRAMES, int(video_stream.get(cv2.CAP_PROP_FRAME_COUNT) * 0.1))
-    current_frame = cv2.cvtColor(video_stream.read()[1], cv2.COLOR_BGR2RGB)
-    video_stream.release()
-    del video_stream
-    if size is not NoSize and (current_frame.shape[0] != size[0] or current_frame.shape[1] != size[1]):
-        current_frame = cv2.resize(current_frame, size)
-    return pygame.surfarray.make_surface(current_frame.swapaxes(0, 1))

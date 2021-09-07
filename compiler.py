@@ -4,12 +4,38 @@ import glob
 import os
 import shutil
 
-if __name__ == "__main__":
+# py编译模块
+class PythonCompiler:
+    def __init__(self, keep_c: bool, keep_html: bool) -> None:
+        # 是否保留c文件
+        self.__keep_c: bool = keep_c
+        # 是否产生html文件
+        self.__keep_html: bool = keep_html
+        # 展示所有警告
+        self.__show_all_warnings: bool = True
+        # 语言版本
+        self.__language_level: str = "3"
 
-    # 是否保留c文件
-    keep_c_files: bool = False
-    # 是否产生html文件
-    keep_html_files: bool = False
+    # 编译
+    def compile(self, path_of_py: str) -> None:
+        print("Start compiling file: {}".format(path_of_py))
+        setup(
+            ext_modules=cythonize(
+                path_of_py,
+                show_all_warnings=self.__show_all_warnings,
+                annotate=self.__keep_html,
+                language_level=self.__language_level,
+            )
+        )
+        # 删除c文件
+        if not self.__keep_c:
+            os.remove(path_of_py.replace(".py", ".c"))
+
+
+if __name__ == "__main__":
+    # 初始化py编译模块
+    PyCompiler = PythonCompiler(False, False)
+
     # 是否在编译后删除现有的pyd文件
     remove_all_pyd_at_the_end: bool = True
     if os.path.exists("../linpg/building_key.txt"):
@@ -38,30 +64,28 @@ if __name__ == "__main__":
         shutil.rmtree("linpgdev")
 
     # 不需要编译的本体文件
-    files_for_setup = ["linpg/__init__.py", "linpg/__pyinstaller"]
+    files_for_setup = ["linpg/__pyinstaller"]
 
     """编译python文件"""
     for folder_name in glob.glob(r"linpg/*"):
-        if os.path.isdir(folder_name) and "__pyinstaller" not in folder_name:
-            # 生成pyd文件
-            for path in glob.glob(os.path.join(folder_name, "*")):
-                if "__pycache__" not in path:
-                    # 如果是需要编译的py文件
-                    if path.endswith(".py"):
-                        setup(
-                            ext_modules=cythonize(
-                                path,
-                                show_all_warnings=True,
-                                annotate=keep_html_files,
-                                language_level="3",
-                            )
-                        )
-                        # 删除c文件
-                        if not keep_c_files:
-                            os.remove(path.replace(".py", ".c"))
-                    # 如果是文本文件
-                    else:
-                        files_for_setup.append(path)
+        if os.path.isdir(folder_name):
+            if "pyinstaller" not in folder_name and "pycache" not in folder_name:
+                # 生成pyd文件
+                for path in glob.glob(os.path.join(folder_name, "*")):
+                    if "pycache" not in path:
+                        # 如果是需要编译的py文件
+                        if path.endswith(".py"):
+                            PyCompiler.compile(path)
+                        # 如果是文本文件
+                        else:
+                            files_for_setup.append(path)
+        else:
+            # 如果是需要编译的py文件
+            if folder_name.endswith(".py"):
+                PyCompiler.compile(folder_name)
+            # 如果是文本文件
+            else:
+                files_for_setup.append(folder_name)
 
     """把不需要编译的文件拷贝到linpgdev/linpg中,等待复制"""
     for the_file in files_for_setup:

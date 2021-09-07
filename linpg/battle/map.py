@@ -3,9 +3,9 @@ from .mapModule import *
 # 地图场景图片管理
 _MAP_ENV_IMAGE: object = None
 # 方块数据
-_BLOCKS_DATABASE: dict = None
+_BLOCKS_DATABASE: dict
 try:
-    _BLOCKS_DATABASE = dict(Config.load(os.path.join("Data", "database.yaml"), "Blocks"))
+    _BLOCKS_DATABASE = dict(Config.try_load(os.path.join("Data", "database.yaml"), "Blocks"))
 except Exception:
     _BLOCKS_DATABASE = {}
 

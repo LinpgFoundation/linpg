@@ -57,12 +57,14 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: any, warning: boo
 
 # 配置文件管理模块
 class ConfigManager:
-    # 加载配置文件
-    @staticmethod
-    def load(path: str, *key: str) -> any:
-        # 检测配置文件是否存在
+    # 加载配置文件的程序
+    def __load(self, path: str, keys: list[str], warning: bool = True) -> any:
+        # 如果路径不存在
         if not os.path.exists(path):
-            EXCEPTION.fatal("Cannot find file on path: {}".format(path))
+            if warning is True:
+                EXCEPTION.fatal("Cannot find file on path: {}".format(path))
+            else:
+                return None
         # 按照类型加载配置文件
         with open(path, "r", encoding="utf-8") as f:
             # 使用yaml模块加载配置文件
@@ -74,20 +76,31 @@ class ConfigManager:
                     except yaml.constructor.ConstructorError:
                         # 使用非安全模式加载yaml配置文件
                         Data = yaml.load(f.read(), Loader=yaml.UnsafeLoader)
-                else:
+                elif warning is True:
                     EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.")
+                else:
+                    return None
             # 使用json模块加载配置文件
             elif path.endswith(".json"):
                 Data = json.load(f)
-            else:
+            elif warning is True:
                 EXCEPTION.fatal("Linpg can only load json and yaml (when pyyaml is installed).")
+            else:
+                return None
         # 返回配置文件中的数据
-        return Data if len(key) == 0 else get_value_by_keys(Data, key)
+        return Data if len(keys) == 0 else get_value_by_keys(Data, keys)
+
+    # 加载配置文件
+    def load(self, path: str, *key: str) -> any:
+        return self.__load(path, key)
+
+    # 加载配置文件
+    def try_load(self, path: str, *key: str) -> any:
+        return self.__load(path, key, False)
 
     # 加载内部配置文件保存
     def load_internal(self, path: str, *key: str) -> any:
-        Data_t = self.load(os.path.join(os.path.dirname(__file__), path))
-        return Data_t if len(key) == 0 else get_value_by_keys(Data_t, key)
+        return self.__load(os.path.join(os.path.dirname(__file__), path), key)
 
     # 配置文件保存
     @staticmethod

@@ -19,15 +19,15 @@ class AssetManager:
     @staticmethod
     def resolve_path(file_path: str) -> str:
         file_path = PATH.join(file_path)
-        file_name: str
         if not file_path.startswith("<!"):
             return file_path
         elif file_path.startswith("<!ui>"):
-            file_name = file_path[5:]
-            if PATH.exists((internal_path := PATH.join(_CUSTOM_UI_IMAGE_PATH, file_name))) or PATH.exists(
-                (internal_path := PATH.join(_LINPG_INTERNAL_UI_IMAGE_PATH, file_name))
+            file_name: str = file_path[5:]
+            true_path: str
+            if PATH.exists(true_path := PATH.join(_CUSTOM_UI_IMAGE_PATH, file_name)) or PATH.exists(
+                true_path := PATH.join(_LINPG_INTERNAL_UI_IMAGE_PATH, file_name)
             ):
-                return internal_path
+                return true_path
             else:
                 EXCEPTION.fatal('Cannot find (essential) ui file "{}"'.format(file_name))
         else:

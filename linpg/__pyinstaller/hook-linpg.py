@@ -16,7 +16,7 @@ for file_name in os.listdir(LINPG_PATH):
                 ingore_this_folder = True
                 break
         if not ingore_this_folder:
-            datas.append((os.path.join(LINPG_PATH, file_name, "*"), os.path.join(LINPG_NAME, file_name)))
+            datas.append((os.path.join(LINPG_PATH, file_name), os.path.join(LINPG_NAME, file_name)))
     # 文件
     else:
         if ".gitignore" not in file_name:

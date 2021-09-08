@@ -34,6 +34,10 @@ class AbstractDialogSystem(AbstractGameSystem):
         self.auto_save: bool = False
         # 是否静音
         self._is_muted: bool = False
+        # 指向当前对话的数据的指针
+        self._current_dialog_content: dict = {}
+        # 初始化音量
+        self._update_sound_volume()
 
     # 获取对话文件所在的具体路径
     def get_dialog_file_location(self, lang: str = "") -> str:
@@ -73,12 +77,8 @@ class AbstractDialogSystem(AbstractGameSystem):
     def dialog_content(self) -> dict:
         return self._dialog_data[self._part]
 
-    @property
-    def current_dialog_content(self) -> dict:
-        return self.get_current_dialog_content()
-
     # 获取当前对话的信息
-    def get_current_dialog_content(self, safe_mode: bool = False) -> dict:
+    def __get_current_dialog_content(self, safe_mode: bool = False) -> dict:
         currentDialogContent: dict = self.dialog_content[self._dialog_id]
         # 检测是否缺少关键key
         if safe_mode is True:
@@ -92,8 +92,11 @@ class AbstractDialogSystem(AbstractGameSystem):
         return currentDialogContent
 
     # 获取当前正在播放的背景音乐名称
-    def get_current_background_music_name(self) -> Union[str, None]:
-        return self.current_dialog_content["background_music"] if "background_music" in self.current_dialog_content else None
+    def get_current_background_music_name(self) -> str:
+        try:
+            return self.dialog_content[self._dialog_id]["background_music"]
+        except KeyError:
+            return None
 
     # 初始化关键参数
     def _initialize(
@@ -102,7 +105,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         chapterId: int,
         part: str,
         projectName: str,
-        dialogId: Union[str, int] = "head",
+        dialogId: strint = "head",
         dialog_options: dict = {},
     ) -> None:
         super()._initialize(chapterType, chapterId, projectName)
@@ -175,11 +178,11 @@ class AbstractDialogSystem(AbstractGameSystem):
                 self.__background_image_surface = self._black_bg.copy()
 
     # 更新场景
-    def _update_scene(self, theNextDialogId: Union[str, int]) -> None:
+    def _update_scene(self, dialog_id: strint) -> None:
         # 更新dialogId
-        self._dialog_id = theNextDialogId
+        self._dialog_id = dialog_id
         # 获取当前对话的内容
-        currentDialogContent: dict = self.get_current_dialog_content(True)
+        currentDialogContent: dict = self.__get_current_dialog_content(True)
         # 更新立绘和背景
         self._npc_manager.update(currentDialogContent["characters_img"])
         self._update_background_image(currentDialogContent["background_img"])
@@ -223,6 +226,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 检测章节是否初始化
         if self._chapter_id is None:
             raise EXCEPTION.fatal("The dialog has not been initialized!")
+        self._current_dialog_content = self.__get_current_dialog_content()
         # 展示背景图片和npc立绘
         self.display_background_image(surface)
         self._npc_manager.draw(surface)

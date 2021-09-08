@@ -123,7 +123,7 @@ class MapObject(AdvancedAbstractImageSurface):
         return self.__decorations[index]
 
     # 根据坐标寻找装饰物
-    def find_decoration_on(self, pos: any) -> Union[DecorationObject, None]:
+    def find_decoration_on(self, pos: any) -> DecorationObject:
         for decoration in self.__decorations:
             # 如果坐标一致，则应该是当前装饰物了
             if Pos.is_same(decoration.get_pos(), pos):
@@ -525,13 +525,13 @@ class MapObject(AdvancedAbstractImageSurface):
                 return True
         return False
 
-    def __pointInOpenList(self, point: Point) -> Union[Node, None]:
+    def __pointInOpenList(self, point: Point) -> Node:
         for node in self.openList:
             if node.point == point:
                 return node
         return None
 
-    def __endPointInCloseList(self) -> Union[Node, None]:
+    def __endPointInCloseList(self) -> Node:
         for node in self.openList:
             if node.point == self.endPoint:
                 return node

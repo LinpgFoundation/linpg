@@ -39,13 +39,17 @@ def get_library_info() -> str:
 int_f = Union[int, float]
 # number，即数字，建议int但接受float
 number = Union[int, float]
+# 颜色类
 color_liked = Union[Iterable[int], str]
+# 名称类
+strint = Union[str, int]
 # 图形类
 ImageSurface = pygame.Surface if _LIBRARY_INDICATOR == 0 else pyglet.image
+PoI = Union[str, ImageSurface]
+
 """linpg自带常量"""
 NoSize: tuple[int] = (-1, -1)
 NoPos: tuple[int] = (-1, -1)
-PoI = Union[str, ImageSurface]
 
 """指向pygame事件的指针"""
 # 鼠标

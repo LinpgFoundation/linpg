@@ -98,7 +98,7 @@ class StaticImage(AdvancedAbstractImageSurface):
     def get_crop_rect(self) -> object:
         return self.__crop_rect
 
-    def set_crop_rect(self, rect: Union[Rect, None]) -> None:
+    def set_crop_rect(self, rect: Rect) -> None:
         if rect is None or isinstance(rect, Rect):
             if self.__crop_rect != rect:
                 self.__crop_rect = rect

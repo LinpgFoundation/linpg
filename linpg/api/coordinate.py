@@ -3,7 +3,7 @@ from .basic import *
 _ORIGIN: tuple[int] = (0, 0)
 
 
-class PositionSystem:
+class CoordinateSystem:
     # 原点
     @property
     def ORIGIN(self) -> tuple[int]:
@@ -54,4 +54,4 @@ class PositionSystem:
         return int(coverted_pos[0]), int(coverted_pos[1])
 
 
-Pos: PositionSystem = PositionSystem()
+Pos: CoordinateSystem = CoordinateSystem()

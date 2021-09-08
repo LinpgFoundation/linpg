@@ -124,7 +124,7 @@ class EnvImagesManagement:
             self.__add_evn_image(key)
             return self.__ENV_IMAGE_DICT_DARK[key] if darkMode is True else self.__ENV_IMAGE_DICT[key]
 
-    def get_decoration_image(self, decorationType: str, key: Union[str, int], darkMode: bool) -> any:
+    def get_decoration_image(self, decorationType: str, key: strint, darkMode: bool) -> any:
         try:
             return (
                 self.__DECORATION_IMAGE_DICT_DARK[decorationType][key]

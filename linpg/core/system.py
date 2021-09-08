@@ -71,7 +71,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
         self.__audio = None
 
     # 设置bgm
-    def set_bgm(self, path: Union[str, None], forced: bool = False) -> None:
+    def set_bgm(self, path: str, forced: bool = False) -> None:
         # 如果path是None,则
         if path is None:
             if self.__bgm_path is not None:

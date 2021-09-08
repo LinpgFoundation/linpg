@@ -27,7 +27,7 @@ class LanguageManager:
             try:
                 self.__LANG_DATA.update(Config.load(path_t))
             except Exception:
-                EXCEPTION.warn("Linpg cannot load additional language file.")
+                EXCEPTION.inform("Linpg cannot load additional language file.")
         # 获取当前所有完整的可用语言的列表
         self.__LANG_AVAILABLE.clear()
         # 如果有开发者自带的语言文件

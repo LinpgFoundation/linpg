@@ -7,9 +7,7 @@ class UiGenerator:
         self.__default_pos: int = 0
         self.__DEFAULT_UI: dict = dict(Config.load_internal("ui.json"))
         # 加载自定义的ui数据（如果存在）
-        if os.path.exists((path := os.path.join("Data", "ui.json"))) or os.path.exists(
-            (path := os.path.join("Data", "ui.yaml"))
-        ):
+        if len(path := Config.resolve_path(os.path.join("Data", "ui"))) > 0:
             self.__DEFAULT_UI.update(Config.load(path))
 
     # 检测尺寸是否合法

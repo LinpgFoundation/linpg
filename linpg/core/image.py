@@ -7,13 +7,13 @@ class DynamicImage(AbstractImageSurface):
         self.__processed_img: ImageSurface = None
 
     # 返回一个复制
-    def copy(self):
+    def copy(self) -> AbstractImageSurface:
         replica = DynamicImage(self.get_image_copy(), self.x, self.y, self._width, self._height, self.tag)
         replica.set_alpha(255)
         return replica
 
     # 返回一个浅复制品
-    def light_copy(self):
+    def light_copy(self) -> AbstractImageSurface:
         return DynamicImage(self.img, self.x, self.y, self._width, self._height, self.tag)
 
     # 反转
@@ -170,11 +170,11 @@ class StaticImage(AdvancedAbstractImageSurface):
             return False
 
     # 返回一个复制品
-    def copy(self):
+    def copy(self) -> AdvancedAbstractImageSurface:
         return StaticImage(self.img.copy(), self.x, self.y, self._width, self._height)
 
     # 返回一个浅复制品
-    def light_copy(self):
+    def light_copy(self) -> AdvancedAbstractImageSurface:
         return StaticImage(self.img, self.x, self.y, self._width, self._height)
 
     # 加暗度
@@ -221,7 +221,7 @@ class MovableImage(StaticImage):
         self.__is_moving_toward_target: bool = False
 
     # 返回一个复制
-    def copy(self):
+    def copy(self) -> StaticImage:
         return MovableImage(
             self.get_image_copy(),
             self.x,
@@ -236,7 +236,7 @@ class MovableImage(StaticImage):
         )
 
     # 返回一个浅复制品
-    def light_copy(self):
+    def light_copy(self) -> StaticImage:
         return MovableImage(
             self.img,
             self.x,
@@ -260,7 +260,7 @@ class MovableImage(StaticImage):
         super().set_pos(x, y)
 
     # 设置目标坐标
-    def set_target(self, target_x: int_f, target_y: int_f, move_speed_x: number, move_speed_y: number):
+    def set_target(self, target_x: int_f, target_y: int_f, move_speed_x: number, move_speed_y: number) -> None:
         self.__target_x = int(target_x)
         self.__target_y = int(target_y)
         self.__move_speed_x = move_speed_x
@@ -346,11 +346,11 @@ class GifImage(AdvancedAbstractImageSurface):
         self.countDown: int = 0
 
     # 返回一个复制
-    def copy(self):
+    def copy(self) -> AdvancedAbstractImageSurface:
         return GifImage(self.get_image_copy(), self.x, self.y, self._width, self._height, self.updateGap)
 
     # 返回一个浅复制品
-    def light_copy(self):
+    def light_copy(self) -> AdvancedAbstractImageSurface:
         return GifImage(self.img, self.x, self.y, self._width, self._height, self.updateGap)
 
     # 当前图片
@@ -359,7 +359,7 @@ class GifImage(AdvancedAbstractImageSurface):
         return self.img[self.imgId]
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN):
+    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
         if not self.hidden:
             self.current_image.set_size(self.get_width(), self.get_height())
             self.current_image.set_alpha(self._alpha)

@@ -340,7 +340,7 @@ class CharacterImageDatabase:
     def __init__(self):
         self.__is_disabled: bool = False
         self.__DATA: dict = {}
-        if os.path.exists(path := os.path.join("Data", "database.yaml")):
+        if len(path := Config.resolve_path(os.path.join("Data", "database"))) > 0:
             if "Npc" in (data_t := Config.load(path)):
                 self.__DATA = dict(data_t["Npc"])
             else:

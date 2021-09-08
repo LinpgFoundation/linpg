@@ -1,9 +1,10 @@
-from datetime import datetime
 import os
+from datetime import datetime
+from typing import NoReturn
 
 # Linpg本身错误类
 class Error(Exception):
-    def __init__(self, *args: object) -> None:
+    def __init__(self, *args: object) -> NoReturn:
         super().__init__(*args)
 
 
@@ -40,7 +41,7 @@ class LinpgExceptionHandler:
         print("LinpgEngine-Warning: {}".format(info))
 
     # 严重错误
-    def fatal(self, info: str) -> None:
+    def fatal(self, info: str) -> NoReturn:
         self.__log("Error Message From Linpg: {}".format(info))
         # 打印出错误，并停止进程
         raise Error(info)

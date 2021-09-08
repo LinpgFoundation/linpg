@@ -193,5 +193,17 @@ class ConfigManager:
             elif os.path.isdir(path):
                 self.search_and_remove_folder(path, stuff_to_remove)
 
+    # 解决路径冲突
+    def resolve_path(self, file_location: str) -> str:
+        path: str
+        if (
+            os.path.exists(path := file_location + ".yml")
+            or os.path.exists(path := file_location + ".yaml")
+            or os.path.exists(path := file_location + ".json")
+        ):
+            return path
+        else:
+            return ""
+
 
 Config: ConfigManager = ConfigManager()

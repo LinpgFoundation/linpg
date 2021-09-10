@@ -63,13 +63,6 @@ def get_random_int(start: int, end: int) -> int:
     return RANDINT(start, end)
 
 
-# 多段数字字符串排序 - by Jeff Atwood
-def natural_sort(l: list) -> list:
-    convert = lambda text: int(text) if text.isdigit() else text.lower()
-    alphanum_key = lambda key: [convert(c) for c in RE_SPLIT("([0-9] )", key)]
-    return sorted(l, key=alphanum_key)
-
-
 # 检测数值是否越界
 def keep_in_range(number: number, min_value: number, max_value: number) -> number:
     return max(min(max_value, number), min_value)

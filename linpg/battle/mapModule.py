@@ -3,7 +3,26 @@ from ..dialog import *
 
 # 地图场景模块
 class EnvImagesManagement:
-    def __init__(
+    def __init__(self):
+        # 背景图层
+        self.__BACKGROUND_SURFACE: object = None
+        self.__MAP_SURFACE: object = None
+        # 方块尺寸
+        self.__BLOCK_WIDTH: int = 0
+        self.__BLOCK_HEIGHT: int = 0
+        # 环境
+        self.__ENV_IMAGE_DICT: dict = {}
+        self.__ENV_IMAGE_DICT_DARK: dict = {}
+        # 场景装饰物
+        self.__DECORATION_IMAGE_DICT: dict = {}
+        self.__DECORATION_IMAGE_DICT_DARK: dict = {}
+        # 背景图片
+        self.__BACKGROUND_IMAGE_PATH: str = "Assets/image/dialog_background"
+        # 暗度（仅黑夜场景有效，为0时视为白天）
+        self.__DARKNESS: int = 0
+
+    # 更新数据
+    def update(
         self,
         theMap: numpy.ndarray,
         decorationData: numpy.ndarray,
@@ -13,28 +32,28 @@ class EnvImagesManagement:
         darkness: int = 150,
     ):
         # 环境
-        self.__ENV_IMAGE_PATH: str = "Assets/image/environment/block"
-        self.__ENV_IMAGE_DICT: dict = {}
-        self.__ENV_IMAGE_DICT_DARK: dict = None if not darkMode else {}
+        self.__ENV_IMAGE_DICT.clear()
+        self.__ENV_IMAGE_DICT_DARK.clear()
         # 场景装饰物
-        self.__DECORATION_IMAGE_PATH: str = "Assets/image/environment/decoration"
-        self.__DECORATION_IMAGE_DICT: dict = {}
-        self.__DECORATION_IMAGE_DICT_DARK: dict = None if not darkMode else {}
+        self.__DECORATION_IMAGE_DICT.clear()
+        self.__DECORATION_IMAGE_DICT_DARK.clear()
         # 背景图片
-        self.__BACKGROUND_IMAGE_PATH: str = "Assets/image/dialog_background"
         self.__BACKGROUND_IMAGE: ImageSurface = (
             IMG.quickly_load(os.path.join(self.__BACKGROUND_IMAGE_PATH, bgImgName), False).convert()
             if bgImgName is not None
             else None
         )
-        # 背景图层
-        self.__BACKGROUND_SURFACE = None
-        self.__MAP_SURFACE = None
-        # 方块尺寸
-        self.__BLOCK_WIDTH: int = round(blockSize[0])
-        self.__BLOCK_HEIGHT: int = round(blockSize[1])
+        # 更新尺寸
+        self.__BLOCK_WIDTH = round(blockSize[0])
+        self.__BLOCK_HEIGHT = round(blockSize[1])
         # 暗度（仅黑夜场景有效）
-        self.__DARKNESS: int = darkness if darkMode else None
+        if darkMode is True:
+            if darkness > 0:
+                self.__DARKNESS = darkness
+            else:
+                EXCEPTION.fatal("Darkness needs to be greater than 0, not {}".format(darkness))
+        else:
+            self.__DARKNESS = 0
         # 确认场景需要用到素材
         all_images_needed: list = []
         for y in range(len(theMap)):
@@ -49,31 +68,37 @@ class EnvImagesManagement:
 
     # 加载环境图片
     def __add_evn_image(self, fileName: str) -> None:
-        imgPath: str = os.path.join(self.__ENV_IMAGE_PATH, "{}.png".format(fileName))
+        imgPath: str = os.path.join(ASSET.get_internal_environment_image_path("block"), "{}.png".format(fileName))
         if os.path.exists(imgPath):
             self.__ENV_IMAGE_DICT[fileName] = StaticImage(imgPath, 0, 0)
             self.__ENV_IMAGE_DICT[fileName].set_width_with_size_locked(self.__BLOCK_WIDTH)
             # 如果是夜战模式
-            if self.__ENV_IMAGE_DICT_DARK is not None:
+            if self.__DARKNESS > 0:
                 self.__ENV_IMAGE_DICT_DARK[fileName] = self.__ENV_IMAGE_DICT[fileName].copy()
                 self.__ENV_IMAGE_DICT_DARK[fileName].add_darkness(self.__DARKNESS)
         else:
-            EXCEPTION.fatal('Cannot find image "{0}" in folder "{1}"'.format(fileName, self.__ENV_IMAGE_PATH))
+            EXCEPTION.fatal(
+                'Cannot find image "{0}" in folder "{1}"'.format(
+                    fileName, ASSET.get_internal_environment_image_path("block")
+                )
+            )
 
     # 加载场景装饰物图片
     def __add_decoration_image(self, decorationType: str, fileName: str) -> None:
         imgPath: str
+        # 如果是未被加载过的类型
+        if decorationType not in self.__DECORATION_IMAGE_DICT:
+            self.__DECORATION_IMAGE_DICT[decorationType] = {}
         # 常规装饰物
-        if os.path.exists((imgPath := os.path.join(self.__DECORATION_IMAGE_PATH, "{}.png".format(fileName)))):
-            # 如果是未被加载过的类型
-            if decorationType not in self.__DECORATION_IMAGE_DICT:
-                self.__DECORATION_IMAGE_DICT[decorationType] = {}
+        if os.path.exists(
+            (imgPath := os.path.join(ASSET.get_internal_environment_image_path("decoration"), "{}.png".format(fileName)))
+        ):
             # 最后确认一下是不是需要加载
             if fileName not in self.__DECORATION_IMAGE_DICT[decorationType]:
                 # 生成图片
                 self.__DECORATION_IMAGE_DICT[decorationType][fileName] = StaticImage(imgPath, 0, 0)
                 # 如果是夜战模式
-                if self.__DECORATION_IMAGE_DICT_DARK is not None:
+                if self.__DARKNESS > 0:
                     if decorationType not in self.__DECORATION_IMAGE_DICT_DARK:
                         self.__DECORATION_IMAGE_DICT_DARK[decorationType] = {}
                     self.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName] = self.__DECORATION_IMAGE_DICT[
@@ -81,19 +106,26 @@ class EnvImagesManagement:
                     ][fileName].copy()
                     self.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName].add_darkness(self.__DARKNESS)
         # 类Gif形式，decorationType应该与fileName一致
-        elif decorationType not in self.__DECORATION_IMAGE_DICT:
-            if os.path.exists((imgPath := os.path.join(self.__DECORATION_IMAGE_PATH, decorationType))):
-                self.__DECORATION_IMAGE_DICT[decorationType] = [
-                    StaticImage(img_id, 0, 0) for img_id in natural_sort(glob(os.path.join(imgPath, "*.png")))
-                ]
-                if self.__DECORATION_IMAGE_DICT_DARK is not None:
-                    self.__DECORATION_IMAGE_DICT_DARK[decorationType] = {}
-                    self.__DECORATION_IMAGE_DICT_DARK[decorationType][decorationType] = self.__DECORATION_IMAGE_DICT[
-                        decorationType
-                    ][-1].copy()
-                    self.__DECORATION_IMAGE_DICT_DARK[decorationType][decorationType].add_darkness(self.__DARKNESS)
-            else:
-                EXCEPTION.fatal('Cannot find image "{0}" in folder "{1}"'.format(fileName, self.__DECORATION_IMAGE_PATH))
+        elif os.path.exists(
+            (imgPath := os.path.join(ASSET.get_internal_environment_image_path("decoration"), decorationType))
+        ):
+            for img_path in glob(os.path.join(imgPath, "*.png")):
+                self.__DECORATION_IMAGE_DICT[decorationType][os.path.basename(img_path).replace(".png", "")] = StaticImage(
+                    img_path, 0, 0
+                )
+            if self.__DARKNESS > 0:
+                self.__DECORATION_IMAGE_DICT_DARK[decorationType] = {}
+                for key in self.__DECORATION_IMAGE_DICT[decorationType]:
+                    self.__DECORATION_IMAGE_DICT_DARK[decorationType][key] = self.__DECORATION_IMAGE_DICT[decorationType][
+                        key
+                    ].copy()
+                    self.__DECORATION_IMAGE_DICT_DARK[decorationType][key].add_darkness(self.__DARKNESS)
+        else:
+            EXCEPTION.fatal(
+                'Cannot find image "{0}" in folder "{1}"'.format(
+                    fileName, ASSET.get_internal_environment_image_path("decoration")
+                )
+            )
 
     # 获取方块尺寸
     def get_block_width(self) -> int:
@@ -110,7 +142,7 @@ class EnvImagesManagement:
         for key in self.__ENV_IMAGE_DICT:
             self.__ENV_IMAGE_DICT[key].set_width_with_size_locked(self.__BLOCK_WIDTH)
         # 如果是黑夜模式，则应该调整黑夜模式下的地图方块尺寸
-        if self.__ENV_IMAGE_DICT_DARK is not None:
+        if self.__DARKNESS > 0:
             for key in self.__ENV_IMAGE_DICT_DARK:
                 self.__ENV_IMAGE_DICT_DARK[key].set_width_with_size_locked(self.__BLOCK_WIDTH)
 
@@ -170,6 +202,9 @@ class EnvImagesManagement:
         screen.blits(((self.__BACKGROUND_SURFACE, (0, 0)), (self.__MAP_SURFACE, pos)))
 
 
+# 地图场景图片管理
+MAP_ENV_IMAGE: object = EnvImagesManagement()
+
 # 方块类
 class BlockObject:
     def __init__(self, name: str, canPassThrough: bool):
@@ -192,15 +227,66 @@ class DecorationObject(GameObject):
     def __init__(self, x: int, y: int, itemType: str, image: str):
         super().__init__(x, y)
         self.type = itemType
-        self.image = image
-        self.alpha = None
-        self.triggered = True
+        self.image: str = image
+        self.__status: dict = {}
+        self.scale: float = 0.5
 
     def is_on_pos(self, pos: any) -> bool:
         return Pos.is_same(self.get_pos(), pos)
 
-    def switch(self) -> None:
-        self.triggered = not self.triggered
+    def get_status(self, key: str) -> any:
+        return self.__status[key]
+
+    def set_status(self, key: str, value: any) -> None:
+        self.__status[key] = value
+
+    def remove_status(self, key: str) -> None:
+        try:
+            del self.__status[key]
+        except KeyError:
+            EXCEPTION.warn('Cannot remove status "{}" because it does not exist'.format(key))
+
+    def blit(self, surface: ImageSurface, pos: tuple[int], is_dark: bool, alpha: int) -> None:
+        imgToBlit = MAP_ENV_IMAGE.get_decoration_image(self.type, self.image, is_dark)
+        imgToBlit.set_size(MAP_ENV_IMAGE.get_block_width() * self.scale, MAP_ENV_IMAGE.get_block_width() * self.scale)
+        imgToBlit.set_alpha(alpha)
+        imgToBlit.set_pos(pos[0], pos[1])
+        imgToBlit.draw(surface)
+
+
+class CampfireDecorationObject(DecorationObject):
+    def __init__(self, x: int, y: int, itemType: str, lit_range: int):
+        super().__init__(x, y, itemType, "campfire")
+        self.range: int = lit_range
+        self.__alpha: int = 255
+        self.__img_id: int = get_random_int(0, 90)
+        self.set_status("lit", True)
+
+    @property
+    def img_id(self) -> float:
+        return self.__img_id / 10.0
+
+    # 画出篝火（注意，alpha不会被使用，它只因为兼容性和一致性而存在）
+    def blit(self, surface: ImageSurface, pos: tuple[int], is_dark: bool, alpha: int) -> None:
+        # 查看篝火的状态是否正在变化，并调整对应的alpha值
+        if self.get_status("lit") is True:
+            if self.__alpha < 255:
+                self.__alpha += 15
+        else:
+            if self.__alpha > 0:
+                self.__alpha -= 15
+        # 底层 - 未燃烧的图片
+        if self.__alpha < 255:
+            self.image = "extinguished"
+            super().blit(surface, pos, is_dark, 255)
+        # 顶层 - 燃烧的图片
+        if self.__alpha > 0:
+            self.image = "lit_{}".format(int(self.img_id))
+            super().blit(surface, pos, is_dark, self.__alpha)
+            if self.img_id >= MAP_ENV_IMAGE.get_decoration_num(self.type) - 2:
+                self.__img_id = 0
+            else:
+                self.__img_id += 1
 
 
 # 描述AStar算法中的节点数据
@@ -224,7 +310,10 @@ class WeatherSystem:
     def init(self, weather: str, entityNum: int = 50) -> None:
         self.__initialized = True
         self.name = 0
-        self.__img_list = [IMG.load(imgPath) for imgPath in glob(os.path.join("Assets/image/environment", weather, "*.png"))]
+        self.__img_list = [
+            IMG.load(imgPath)
+            for imgPath in glob(os.path.join(ASSET.get_internal_environment_image_path("weather"), weather, "*.png"))
+        ]
         i: int
         self.__items = tuple(
             [

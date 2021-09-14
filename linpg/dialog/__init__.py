@@ -14,6 +14,7 @@ def create_new_project(dir_path: str, config_type: str = "json") -> None:
         # 根据模块生成项目信息
         info_data: dict = dict(Config.load_internal("template.json", "info"))
         info_data["default_lang"] = Setting.language
+        info_data["linpg_version"] = Info.current_version
         Config.save(os.path.join(dir_path, "info.{}".format(config_type)), info_data)
     else:
         EXCEPTION.fatal('Target path "{}" cannot be a file path!'.format(dir_path))

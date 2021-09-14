@@ -61,19 +61,22 @@ class FontGenerator:
             EXCEPTION.fatal("FontType option in setting file is incorrect!")
 
     # 渲染（无边框的）文字
-    def render(self, txt: any, color: color_liked) -> ImageSurface:
-        font_surface_t = self.render_with_bounding(txt, color)
+    def render(self, txt: strint, color: color_liked, background_color: color_liked = None) -> ImageSurface:
+        font_surface_t = self.render_with_bounding(txt, color, background_color)
         return font_surface_t.subsurface(font_surface_t.get_bounding_rect())
 
     # 渲染有边框的文字
-    def render_with_bounding(self, txt: any, color: color_liked) -> ImageSurface:
+    def render_with_bounding(self, txt: strint, color: color_liked, background_color: color_liked = None) -> ImageSurface:
         if self.__SIZE > 0:
-            return self.__FONT.render(txt, Setting.antialias, Color.get(color))
+            if background_color is None:
+                return self.__FONT.render(txt, Setting.antialias, Color.get(color))
+            else:
+                return self.__FONT.render(txt, Setting.antialias, Color.get(color), Color.get(background_color))
         else:
             EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
 
     # 估计文字的宽度
-    def estimate_text_width(self, text: any) -> int:
+    def estimate_text_width(self, text: strint) -> int:
         return self.__FONT.size(text)[0]
 
     # 检测是否需要更新
@@ -111,8 +114,10 @@ class FontManager:
         return self.get_global_font(key).size
 
     # 获取全局文字
-    def render_global_font(self, key: str, txt: str, color: color_liked) -> ImageSurface:
-        return self.get_global_font(key).render(txt, color)
+    def render_global_font(
+        self, key: str, txt: str, color: color_liked, background_color: color_liked = None
+    ) -> ImageSurface:
+        return self.get_global_font(key).render(txt, color, background_color)
 
     # 删除全局文字
     def remove_global_font(self, key: str) -> bool:
@@ -132,10 +137,42 @@ class FontManager:
 
     # 文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
     def render(
-        self, txt: any, color: color_liked, size: int_f, ifBold: bool = False, ifItalic: bool = False
+        self,
+        txt: strint,
+        color: color_liked,
+        size: int_f,
+        ifBold: bool = False,
+        ifItalic: bool = False,
+        background_color: color_liked = None,
     ) -> ImageSurface:
         self.__LINPG_LAST_FONT.check_for_update(size, ifBold, ifItalic)
-        return self.__LINPG_LAST_FONT.render(txt, color)
+        return self.__LINPG_LAST_FONT.render(txt, color, background_color)
+
+    def render_description_box(
+        self,
+        txt: strint,
+        color: color_liked,
+        size: int_f,
+        panding: int,
+        background_color: color_liked,
+        ifBold: bool = False,
+        ifItalic: bool = False,
+        outline_color: color_liked = None,
+        thickness: int = 2,
+    ) -> ImageSurface:
+        font_surface = self.render(txt, color, size, ifBold, ifItalic)
+        des_surface = new_surface(
+            (font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2)
+        ).convert()
+        des_surface.fill(Color.get(background_color))
+        pygame.draw.rect(
+            des_surface,
+            Color.get(color if outline_color is None else outline_color),
+            ((0, 0), des_surface.get_size()),
+            thickness,
+        )
+        des_surface.blit(font_surface, (panding, panding))
+        return des_surface
 
 
 Font: FontManager = FontManager()

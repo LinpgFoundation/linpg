@@ -17,9 +17,13 @@ class Coordinate:
     def get_pos(self) -> tuple[int]:
         return int(self.x), int(self.y)
 
+    # 设置坐标
     def set_pos(self, x: int_f, y: int_f) -> None:
         self.x = int(x)
         self.y = int(y)
+
+    def move_to(self, pos: tuple) -> None:
+        self.set_pos(pos[0], pos[1])
 
     # 检测是否在给定的位置上
     def on_pos(self, pos: any) -> bool:
@@ -156,16 +160,16 @@ class GameObject2d(GameObject):
     # 忽略现有坐标，将图片画到surface的指定位置上
     def blit(self, surface: ImageSurface, pos: Iterable) -> None:
         old_pos = self.get_pos()
-        self.set_pos(pos[0], pos[1])
+        self.move_to(pos)
         self.draw(surface)
-        self.set_pos(old_pos[0], old_pos[1])
+        self.move_to(old_pos)
 
     # 忽略现有坐标，将图片画到surface的指定位置上
     def blit_on_screen(self, pos: Iterable) -> None:
         old_pos = self.get_pos()
-        self.set_pos(pos[0], pos[1])
+        self.move_to(pos)
         self.draw(Display.window)
-        self.set_pos(old_pos[0], old_pos[1])
+        self.move_to(old_pos)
 
 
 # 2.5d游戏对象接口 - 使用z轴判断图案的图层

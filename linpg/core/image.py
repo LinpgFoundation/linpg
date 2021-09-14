@@ -153,7 +153,7 @@ class StaticImage(AdvancedAbstractImageSurface):
 
     # 画出轮廓
     def draw_outline(
-        self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN, color: any = "red", line_width: int = 2
+        self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN, color: color_liked = "red", line_width: int = 2
     ) -> None:
         draw_rect(surface, color, (Pos.add(self.abs_pos, offSet), self.__processed_img.get_size()), line_width)
 

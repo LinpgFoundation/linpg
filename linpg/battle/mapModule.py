@@ -250,7 +250,7 @@ class DecorationObject(GameObject):
         imgToBlit = MAP_ENV_IMAGE.get_decoration_image(self.type, self.image, is_dark)
         imgToBlit.set_size(MAP_ENV_IMAGE.get_block_width() * self.scale, MAP_ENV_IMAGE.get_block_width() * self.scale)
         imgToBlit.set_alpha(alpha)
-        imgToBlit.set_pos(pos[0], pos[1])
+        imgToBlit.move_to(pos)
         imgToBlit.draw(surface)
 
 

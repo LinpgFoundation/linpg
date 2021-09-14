@@ -73,21 +73,21 @@ class Loader:
 
     @staticmethod
     def button_with_text_in_center(
-        path: str, txt: any, font_color: color_liked, font_size: int, position: tuple, alpha_when_not_hover: int = 255
+        path: str, txt: strint, font_color: color_liked, font_size: int, position: tuple, alpha_when_not_hover: int = 255
     ) -> Button:
         return load_button_with_text_in_center(path, txt, font_color, font_size, position, alpha_when_not_hover)
 
     # 普通文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class
     @staticmethod
     def text(
-        txt: any, color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False
+        txt: strint, color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False
     ) -> TextSurface:
         return TextSurface(Font.render(txt, color, size, ifBold, ifItalic), pos[0], pos[1])
 
     # 高级文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
     @staticmethod
     def dynamic_text(
-        txt: any, color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False
+        txt: strint, color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False
     ) -> DynamicTextSurface:
         return DynamicTextSurface(
             Font.render(txt, color, size, ifBold, ifItalic),

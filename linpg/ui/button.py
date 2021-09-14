@@ -40,12 +40,7 @@ def load_button(path: PoI, position: tuple, size: tuple, alpha_when_not_hover: i
 
 # 加载中间有文字按钮
 def load_button_with_text_in_center(
-    path: PoI,
-    txt: any,
-    font_color: any,
-    font_size: int,
-    position: tuple,
-    alpha_when_not_hover: int = 255,
+    path: PoI, txt: str, font_color: color_liked, font_size: int, position: tuple, alpha_when_not_hover: int = 255
 ) -> Button:
     txt_surface = Font.render(txt, font_color, font_size)
     panding: int = int(font_size * 0.5)
@@ -60,37 +55,10 @@ class ButtonWithDes(Button):
         self, img: ImageSurface, des: str, x: int, y: int, width: int = -1, height: int = -1, tag: str = ""
     ) -> None:
         super().__init__(img, x, y, width, height, tag)
-        self.des: str = des
-        font_surface = Font.render(des, "black", self._height * 0.5)
-        panding: int = int(font_surface.get_height() / 2)
-        self.des_surface = new_surface(
-            (font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2)
-        ).convert_alpha()
-        self.des_surface.fill(Color.WHITE)
-        draw_rect(self.des_surface, Color.BLACK, new_rect((0, 0), self.des_surface.get_size()), 2)
-        self.des_surface.blit(font_surface, (panding, panding))
-
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
-        super().display(surface, offSet)
-        if self.has_been_hovered():
-            surface.blit(self.des_surface, Controller.mouse.pos)
-
-
-# 带描述的按钮
-class ButtonWithDes(Button):
-    def __init__(
-        self, img: ImageSurface, des: str, x: int, y: int, width: int = -1, height: int = -1, tag: str = ""
-    ) -> None:
-        super().__init__(img, x, y, width, height, tag)
-        self.des = des
-        font_surface = Font.render(des, "black", self._height * 0.5)
-        panding: int = int(font_surface.get_height() / 2)
-        self.des_surface = new_surface(
-            (font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2)
-        ).convert_alpha()
-        self.des_surface.fill(Color.WHITE)
-        draw_rect(self.des_surface, Color.BLACK, new_rect((0, 0), self.des_surface.get_size()), 2)
-        self.des_surface.blit(font_surface, (panding, panding))
+        self.des: str = str(des)
+        self.des_surface = Font.render_description_box(
+            self.des, Color.BLACK, self._height * 0.4, self._height * 0.2, Color.WHITE
+        )
 
     def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
         super().display(surface, offSet)

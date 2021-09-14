@@ -1,21 +1,18 @@
 from .mapModule import *
 
-# 方块数据
-_BLOCKS_DATABASE: dict
-try:
-    _BLOCKS_DATABASE = dict(Config.try_load(os.path.join("Data", "database.yaml"), "Blocks"))
-except Exception:
-    _BLOCKS_DATABASE = {}
-
 # 地图模块
 class MapObject(AdvancedAbstractImageSurface):
+
+    # 获取方块数据库
+    __BLOCKS_DATABASE: dict = DataBase.get("Blocks")
+
     def __init__(self, mapDataDic: dict, perBlockWidth: int_f, perBlockHeight: int_f):
         # 初始化地图数据
         self.__Map_Data = mapDataDic["map"]
         for y in range(len(self.__Map_Data)):
             for x in range(len(self.__Map_Data[y])):
                 item = self.__Map_Data[y][x]
-                self.__Map_Data[y][x] = BlockObject(item, _BLOCKS_DATABASE[item]["canPassThrough"])
+                self.__Map_Data[y][x] = BlockObject(item, self.__BLOCKS_DATABASE[item]["canPassThrough"])
         self.__Map_Data = numpy.asarray(self.__Map_Data)
         # 使用numpy的shape决定self.row和self.column
         self.row, self.column = self.__Map_Data.shape
@@ -101,14 +98,15 @@ class MapObject(AdvancedAbstractImageSurface):
         for decorationType, itemsThatType in decorationData.items():
             for itemData in itemsThatType.values():
                 if decorationType == "campfire":
-                    new_decoration = CampfireDecorationObject(
-                        itemData["x"], itemData["y"], decorationType, itemData["range"]
-                    )
+                    new_decoration = CampfireObject(itemData["x"], itemData["y"], decorationType, itemData["range"])
                 elif decorationType == "chest":
-                    new_decoration = DecorationObject(itemData["x"], itemData["y"], decorationType, decorationType)
-                    new_decoration.items = itemData["items"] if "items" in itemData else []
-                    # 是否箱子有白名单（只能被特定角色拾取）
-                    new_decoration.whitelist = itemData["whitelist"] if "whitelist" in itemData else None
+                    new_decoration = ChestObject(
+                        itemData["x"],
+                        itemData["y"],
+                        decorationType,
+                        itemData["items"] if "items" in itemData else [],
+                        itemData["whitelist"] if "whitelist" in itemData else [],
+                    )
                 else:
                     new_decoration = DecorationObject(itemData["x"], itemData["y"], decorationType, itemData["image"])
                     if decorationType == "tree":
@@ -276,7 +274,7 @@ class MapObject(AdvancedAbstractImageSurface):
 
     # 更新方块
     def update_block(self, pos: dict, name: str) -> None:
-        self.__Map_Data[pos["y"]][pos["x"]].update(name, _BLOCKS_DATABASE[name]["canPassThrough"])
+        self.__Map_Data[pos["y"]][pos["x"]].update(name, self.__BLOCKS_DATABASE[name]["canPassThrough"])
         self.__need_update_surface = True
         self.__block_on_surface = None
 

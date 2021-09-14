@@ -1,6 +1,6 @@
 """
 结构:
-base -> setting -> ui -> info
+base -> setting -> glob -> info
 """
 from .info import *
 

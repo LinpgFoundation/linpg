@@ -1,13 +1,14 @@
 from .basic import *
 
-_ORIGIN: tuple[int] = (0, 0)
-
 
 class CoordinateSystem:
+
+    __ORIGIN: tuple[int] = (0, 0)
+
     # 原点
     @property
     def ORIGIN(self) -> tuple[int]:
-        return _ORIGIN
+        return self.__ORIGIN
 
     # 转换坐标
     @staticmethod

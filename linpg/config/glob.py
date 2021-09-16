@@ -2,8 +2,8 @@ from .setting import *
 
 # 全局数据
 class GlobalValueManager:
-    def __init__(self) -> None:
-        self.__DATA: dict = {}
+
+    __DATA: dict = {}
 
     # 获取特定的全局数据
     def get(self, key: str) -> any:

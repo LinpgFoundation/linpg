@@ -41,8 +41,7 @@ int_f = Union[int, float]
 number = Union[int, float]
 # 颜色类
 color_liked = Union[Iterable[int], str]
-# 名称类
-strint = Union[str, int]
+
 # 图形类
 ImageSurface = pygame.Surface if _LIBRARY_INDICATOR == 0 else pyglet.image
 PoI = Union[str, ImageSurface]

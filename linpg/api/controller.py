@@ -2,11 +2,13 @@ from .img import *
 
 # 手柄控制组件
 class JoystickController:
+
+    __input: object = None
+
     def __init__(self):
         # 如果pygame的手柄组件没有初始化，则初始化
         if not pygame.joystick.get_init():
             pygame.joystick.init()
-        self.__input = None
         # 初始化
         self.update()
 

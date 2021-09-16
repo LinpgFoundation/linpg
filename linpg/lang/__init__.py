@@ -1,6 +1,9 @@
 from typing import Union
 from ..config import *
 
+# 名称类
+strint = Union[str, int]
+
 
 class LanguageManager:
     def __init__(self) -> None:
@@ -74,7 +77,7 @@ class LanguageManager:
         return get_value_by_keys(self.__LANG_DATA, key, False)
 
     # 获取本地化的数字
-    def get_num_in_local_text(self, num: Union[int, str]) -> str:
+    def get_num_in_local_text(self, num: strint) -> str:
         try:
             return deepcopy(self.__LANG_DATA["Numbers"][int(num)])
         except Exception:

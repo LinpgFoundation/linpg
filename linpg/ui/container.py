@@ -2,9 +2,7 @@ from .button import *
 
 # 用于储存游戏对象的容器，类似html的div
 class GameObjectsContainer(AbstractImageSurface):
-    def __init__(
-        self, bg_img: Union[str, ImageSurface, None], x: int_f, y: int_f, width: int, height: int, tag: str = ""
-    ) -> None:
+    def __init__(self, bg_img: PoI, x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
         super().__init__(
             StaticImage(bg_img, 0, 0, width, height) if bg_img is not None else bg_img, x, y, width, height, tag
         )
@@ -12,7 +10,7 @@ class GameObjectsContainer(AbstractImageSurface):
         self._item_being_hovered: str = None
 
     @property
-    def item_being_hovered(self) -> Union[str, None]:
+    def item_being_hovered(self) -> str:
         return self._item_being_hovered
 
     @property
@@ -82,13 +80,7 @@ class GameObjectsContainer(AbstractImageSurface):
 # 下拉选项菜单
 class DropDownSingleChoiceList(GameObjectsContainer):
     def __init__(
-        self,
-        bg_img: Union[str, ImageSurface, None],
-        x: int_f,
-        y: int_f,
-        font_size: int,
-        font_color: color_liked = "black",
-        tag: str = "",
+        self, bg_img: PoI, x: int_f, y: int_f, font_size: int, font_color: color_liked = "black", tag: str = ""
     ) -> None:
         super().__init__(bg_img, x, y, 0, 0, tag)
         self.__chosen_item_key: str = ""
@@ -107,7 +99,7 @@ class DropDownSingleChoiceList(GameObjectsContainer):
             self.__update_width(item)
 
     # 根据物品判定是否需要更新宽度
-    def __update_width(self, item: Union[str, int]) -> None:
+    def __update_width(self, item: strint) -> None:
         if self.get_width() < (new_item_width := int(self.__FONT.estimate_text_width(item) + self.__FONT.size * 7)):
             self.set_width(new_item_width)
 
@@ -122,12 +114,12 @@ class DropDownSingleChoiceList(GameObjectsContainer):
         self.__font_color = Color.get(font_color)
 
     # 新增一个物品
-    def set(self, key: str, new_item: Union[str, int]) -> None:
+    def set(self, key: str, new_item: strint) -> None:
         super().set(key, new_item)
         self.__update_width(new_item)
 
     # 获取一个物品
-    def get(self, key: str) -> Union[str, int]:
+    def get(self, key: str) -> strint:
         return super().get(key) if not self.is_empty() else self.__DEFAULT_CONTENT
 
     # 获取当前选中的物品
@@ -221,14 +213,7 @@ class DropDownSingleChoiceList(GameObjectsContainer):
 # 带有滚动条的Surface容器
 class SurfaceContainerWithScrollbar(GameObjectsContainer):
     def __init__(
-        self,
-        img: Union[str, ImageSurface, None],
-        x: int_f,
-        y: int_f,
-        width: int,
-        height: int,
-        mode: str = "horizontal",
-        tag: str = "",
+        self, img: PoI, x: int_f, y: int_f, width: int, height: int, mode: str = "horizontal", tag: str = ""
     ) -> None:
         super().__init__(IMG.load(img, (width, height)) if img is not None else img, x, y, width, height, tag)
         self.panding: int = 0
@@ -306,7 +291,7 @@ class SurfaceContainerWithScrollbar(GameObjectsContainer):
             )
 
     # 获取滚动条按钮的Rect
-    def __get_scroll_button_rect(self, off_set_x: number, off_set_y: number) -> Union[Rect, None]:
+    def __get_scroll_button_rect(self, off_set_x: number, off_set_y: number) -> Rect:
         if not self.__mode:
             if self.__total_height > self._height:
                 return (
@@ -344,7 +329,7 @@ class SurfaceContainerWithScrollbar(GameObjectsContainer):
         return None
 
     # 获取滚动条的Rect
-    def __get_scroll_bar_rect(self, off_set_x: number, off_set_y: number) -> Union[Rect, None]:
+    def __get_scroll_bar_rect(self, off_set_x: number, off_set_y: number) -> Rect:
         if not self.__mode:
             if self.__total_height > self._height:
                 return (

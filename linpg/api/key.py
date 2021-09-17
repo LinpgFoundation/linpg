@@ -1,4 +1,4 @@
-from .pos import *
+from .coordinate import *
 
 
 class KeySystem:

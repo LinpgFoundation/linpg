@@ -1,6 +1,6 @@
 import json
 import os
-import setuptools
+from setuptools import setup, find_packages
 
 # 读取信息
 info_json_path: str = "info.json"
@@ -20,7 +20,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 # 生成.whl文件
-setuptools.setup(
+setup(
     name="linpg",
     version=INFO["version"],
     author="Tigeia-Workshop",
@@ -38,7 +38,7 @@ setuptools.setup(
     ],
     package_dir={"": "src"},
     include_package_data=True,
-    packages=setuptools.find_packages(where="src"),
+    packages=find_packages(where="src"),
     python_requires=">=3.9",
     install_requires=[
         "linpgtoolkit",

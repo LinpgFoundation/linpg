@@ -62,7 +62,7 @@ def new_rect(pos: tuple, size: tuple) -> Rect:
 
 
 # 画正方形（的方块）
-def draw_rect(surface: ImageSurface, color: any, rect: RectLiked, thickness: int = 0) -> None:
+def draw_rect(surface: ImageSurface, color: color_liked, rect: RectLiked, thickness: int = 0) -> None:
     if isinstance(rect, (pygame.Rect, tuple)):
         pygame.draw.rect(surface, Color.get(color), rect, thickness)
     elif isinstance(rect, Rect):
@@ -162,5 +162,5 @@ class Circle(Square):
 
 
 # 画圆形
-def draw_circle(surface: ImageSurface, color: any, center_pos: tuple, radius: int, thickness: int = 0):
+def draw_circle(surface: ImageSurface, color: color_liked, center_pos: tuple, radius: int, thickness: int = 0):
     pygame.draw.circle(surface, Color.get(color), center_pos, radius, thickness)

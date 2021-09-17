@@ -39,13 +39,16 @@ def get_library_info() -> str:
 int_f = Union[int, float]
 # number，即数字，建议int但接受float
 number = Union[int, float]
+# 颜色类
 color_liked = Union[Iterable[int], str]
+
 # 图形类
 ImageSurface = pygame.Surface if _LIBRARY_INDICATOR == 0 else pyglet.image
+PoI = Union[str, ImageSurface]
+
 """linpg自带常量"""
 NoSize: tuple[int] = (-1, -1)
 NoPos: tuple[int] = (-1, -1)
-PoI = Union[str, ImageSurface]
 
 """指向pygame事件的指针"""
 # 鼠标
@@ -57,13 +60,6 @@ JOYSTICK_BUTTON_DOWN = pygame.JOYBUTTONDOWN
 # 随机数
 def get_random_int(start: int, end: int) -> int:
     return RANDINT(start, end)
-
-
-# 多段数字字符串排序 - by Jeff Atwood
-def natural_sort(l: list) -> list:
-    convert = lambda text: int(text) if text.isdigit() else text.lower()
-    alphanum_key = lambda key: [convert(c) for c in RE_SPLIT("([0-9] )", key)]
-    return sorted(l, key=alphanum_key)
 
 
 # 检测数值是否越界

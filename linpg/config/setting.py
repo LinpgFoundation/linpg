@@ -2,15 +2,17 @@ from .base import *
 
 
 class SettingSystem:
+
+    # 储存设置配置文件的数据
+    __SETTING_DATA: dict = {}
+    # 内部的配置参数，每次启动初始化
+    __INTERNAL_SETTING: dict = {"Cheat": False}
+    # 当前配置文件保存路径的参数
+    __SETTING_FOLDER_PATH: str = "Save"
+    __SETTING_FILE_NAME: str = "setting.yaml"
+
+    # 初始化
     def __init__(self) -> None:
-        # 储存设置配置文件的数据
-        self.__SETTING_DATA: dict = {}
-        # 内部的配置参数，每次启动初始化
-        self.__INTERNAL_SETTING: dict = {"Cheat": False}
-        # 当前配置文件保存路径的参数
-        self.__SETTING_FOLDER_PATH: str = "Save"
-        self.__SETTING_FILE_NAME: str = "setting.yaml"
-        # 初始化
         self.reload()
 
     # 获取配置文件保存的路径

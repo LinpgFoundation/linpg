@@ -28,10 +28,16 @@ class CharacterImageManager:
         except Exception:
             self.__communication = None
             self.__communication_dark = None
-        self.__CHARACTER_IMAGE_DATABASE: CharacterImageDatabase = CharacterImageDatabase()
+        # 立绘配置信息数据库
+        self.__CHARACTER_IMAGE_DATABASE: dict = DataBase.get("Npc")
+        self.__IS_CHARACTER_IMAGE_DATABASE_ENABLED: bool = len(self.__CHARACTER_IMAGE_DATABASE) > 0
+        # 移动的x
         self.__move_x: int = 0
+        # 开发者模式
         self.dev_mode: bool = False
+        # 被点击的角色
         self.character_get_click = None
+        # npc立绘路径
         self.image_folder_path: str = os.path.join("Assets", "image", "npc")
 
     # 确保角色存在
@@ -78,6 +84,21 @@ class CharacterImageManager:
             if self.dev_mode is True and is_hover(img, (x, y)):
                 img.draw_outline(surface)
                 self.character_get_click = name
+
+    # 根据文件名判断是否是同一角色名下的图片
+    def __is_the_same_character(self, fileName1: str, fileName2: str) -> bool:
+        if self.__IS_CHARACTER_IMAGE_DATABASE_ENABLED:
+            fileName1 = fileName1.replace("<c>", "").replace("<d>", "")
+            fileName2 = fileName2.replace("<c>", "").replace("<d>", "")
+            if fileName1 == fileName2:
+                return True
+            else:
+                for key in self.__CHARACTER_IMAGE_DATABASE:
+                    if fileName1 in self.__CHARACTER_IMAGE_DATABASE[key]:
+                        return fileName2 in self.__CHARACTER_IMAGE_DATABASE[key]
+                    elif fileName2 in self.__CHARACTER_IMAGE_DATABASE[key]:
+                        return fileName1 in self.__CHARACTER_IMAGE_DATABASE[key]
+        return False
 
     def draw(self, surface: ImageSurface) -> None:
         window_x: int = surface.get_width()
@@ -146,9 +167,7 @@ class CharacterImageManager:
                 )
             elif len(self.__characters_this_round) == 2:
                 # 如果之前的中间变成了现在的左边，则立绘应该先向左移动
-                if self.__CHARACTER_IMAGE_DATABASE.is_the_same_character(
-                    self.__characters_last_round[0], self.__characters_this_round[0]
-                ):
+                if self.__is_the_same_character(self.__characters_last_round[0], self.__characters_this_round[0]):
                     if self.__move_x + window_x / 4 > 0:
                         self.__move_x -= int(window_x / 40)
                     # 显示左边立绘
@@ -171,9 +190,7 @@ class CharacterImageManager:
                         self.__characters_this_round[1], window_x / 2, npcImg_y, self.__this_round_image_alpha, surface
                     )
                 # 如果之前的中间变成了现在的右边，则立绘应该先向右移动 - checked
-                elif self.__CHARACTER_IMAGE_DATABASE.is_the_same_character(
-                    self.__characters_last_round[0], self.__characters_this_round[1]
-                ):
+                elif self.__is_the_same_character(self.__characters_last_round[0], self.__characters_this_round[1]):
                     if self.__move_x + window_x / 4 < window_x / 2:
                         self.__move_x += int(window_x / 40)
                     # 显示左边立绘
@@ -228,9 +245,7 @@ class CharacterImageManager:
                 )
             elif len(self.__characters_this_round) == 1:
                 # 如果之前的左边变成了现在的中间，则立绘应该先向右边移动
-                if self.__CHARACTER_IMAGE_DATABASE.is_the_same_character(
-                    self.__characters_last_round[0], self.__characters_this_round[0]
-                ):
+                if self.__is_the_same_character(self.__characters_last_round[0], self.__characters_this_round[0]):
                     if self.__move_x < window_x / 4:
                         self.__move_x += int(window_x / 40)
                     # 左边立绘向右移动
@@ -245,9 +260,7 @@ class CharacterImageManager:
                         self.__characters_last_round[1], window_x / 2, npcImg_y, self.__last_round_image_alpha, surface
                     )
                 # 如果之前的右边变成了现在的中间，则立绘应该先向左边移动
-                elif self.__CHARACTER_IMAGE_DATABASE.is_the_same_character(
-                    self.__characters_last_round[1], self.__characters_this_round[0]
-                ):
+                elif self.__is_the_same_character(self.__characters_last_round[1], self.__characters_this_round[0]):
                     if self.__move_x + window_x / 2 > window_x / 4:
                         self.__move_x -= int(window_x / 40)
                     # 左边立绘消失
@@ -283,11 +296,9 @@ class CharacterImageManager:
                             self.__characters_this_round[0], window_x / 4, npcImg_y, self.__this_round_image_alpha, surface
                         )
             elif len(self.__characters_this_round) == 2:
-                if self.__CHARACTER_IMAGE_DATABASE.is_the_same_character(
+                if self.__is_the_same_character(
                     self.__characters_last_round[0], self.__characters_this_round[1]
-                ) and self.__CHARACTER_IMAGE_DATABASE.is_the_same_character(
-                    self.__characters_last_round[1], self.__characters_this_round[0]
-                ):
+                ) and self.__is_the_same_character(self.__characters_last_round[1], self.__characters_this_round[0]):
                     if self.__move_x + window_x / 2 > 0:
                         self.__move_x -= int(window_x / 30)
                     # 左边到右边去
@@ -327,38 +338,9 @@ class CharacterImageManager:
                     )
 
     # 更新立绘
-    def update(self, characterNameList: Union[list, tuple, None]) -> None:
+    def update(self, characterNameList: Iterable[str]) -> None:
         self.__characters_last_round = self.__characters_this_round
         self.__characters_this_round = tuple(characterNameList) if characterNameList is not None else tuple()
         self.__last_round_image_alpha = 255
         self.__this_round_image_alpha = 5
         self.__move_x = 0
-
-
-# 立绘配置信息数据库
-class CharacterImageDatabase:
-    def __init__(self):
-        self.__is_disabled: bool = False
-        self.__DATA: dict = {}
-        if os.path.exists(path := os.path.join("Data", "database.yaml")):
-            if "Npc" in (data_t := Config.load(path)):
-                self.__DATA = dict(data_t["Npc"])
-            else:
-                self.__is_disabled = True
-        else:
-            self.__is_disabled = True
-
-    # 根据文件名判断是否是同一角色名下的图片
-    def is_the_same_character(self, fileName1: str, fileName2: str) -> bool:
-        if not self.__is_disabled:
-            fileName1 = fileName1.replace("<c>", "").replace("<d>", "")
-            fileName2 = fileName2.replace("<c>", "").replace("<d>", "")
-            if fileName1 == fileName2:
-                return True
-            else:
-                for key in self.__DATA:
-                    if fileName1 in self.__DATA[key]:
-                        return fileName2 in self.__DATA[key]
-                    elif fileName2 in self.__DATA[key]:
-                        return fileName1 in self.__DATA[key]
-        return False

@@ -2,8 +2,8 @@ from .glob import *
 
 # 版本信息管理模块
 class InfoManager:
-    def __init__(self) -> None:
-        self.__INFO: dict = dict(Config.load_internal("info.json"))
+
+    __INFO: dict = dict(Config.load_internal("info.json"))
 
     # 获取当前版本号
     @property

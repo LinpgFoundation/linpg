@@ -4,17 +4,14 @@ from .progressbar import *
 
 class UiGenerator:
     def __init__(self) -> None:
-        self.__default_pos: int = 0
         self.__DEFAULT_UI: dict = dict(Config.load_internal("ui.json"))
         # 加载自定义的ui数据（如果存在）
-        if os.path.exists((path := os.path.join("Data", "ui.json"))) or os.path.exists(
-            (path := os.path.join("Data", "ui.yaml"))
-        ):
+        if len(path := Config.resolve_path(os.path.join("Data", "ui"))) > 0:
             self.__DEFAULT_UI.update(Config.load(path))
 
     # 检测尺寸是否合法
     @staticmethod
-    def __make_sure_size(item: dict, key: str, value_in_case_percentage: int) -> None:
+    def __convert_number(item: dict, key: str, value_in_case_percentage: int) -> int:
         if key not in item:
             EXCEPTION.fatal(
                 'You have to set "{0}" for "{1}".'.format(key, item["name"])
@@ -22,11 +19,11 @@ class UiGenerator:
                 else 'You have to set "{}".'.format(key)
             )
         elif isinstance(item[key], float):
-            item[key] = int(item[key])
+            return int(item[key])
         elif not isinstance(item[key], int):
             if isinstance(item[key], str) and item[key].endswith("%"):
                 try:
-                    item[key] = int(convert_percentage(item[key]) * value_in_case_percentage)
+                    return int(convert_percentage(item[key]) * value_in_case_percentage)
                 except Exception:
                     EXCEPTION.fatal(
                         'Cannot convert "{0}" because it is not a valid percentage for "{1}".'.format(
@@ -37,7 +34,7 @@ class UiGenerator:
                     )
             else:
                 try:
-                    item[key] = int(item[key])
+                    return int(item[key])
                 except Exception:
                     EXCEPTION.fatal(
                         'The "{0}" for "{1}" needs to an interger instead of "{2}".'.format(key, item["name"], item[key])
@@ -46,15 +43,16 @@ class UiGenerator:
                     )
 
     # 检测坐标是否合法
-    def __make_sure_pos(self, item: dict, key: str, value_in_case_center: int, value_in_case_percentage: int) -> None:
+    @staticmethod
+    def __convert_coordinate(item: dict, key: str, value_in_case_center: int, value_in_case_percentage: int) -> int:
         if key not in item:
-            item[key] = self.__default_pos
+            return 0
         elif not isinstance(item[key], int):
             if item[key] == "center":
-                item[key] = value_in_case_center
+                return value_in_case_center
             elif item[key].endswith("%"):
                 try:
-                    item[key] = int(convert_percentage(item[key]) * value_in_case_percentage)
+                    return int(convert_percentage(item[key]) * value_in_case_percentage)
                 except Exception:
                     EXCEPTION.fatal(
                         'Cannot convert "{0}" because it is not a valid percentage for "{1}".'.format(
@@ -65,12 +63,13 @@ class UiGenerator:
                     )
             else:
                 try:
-                    item[key] = int(item[key])
+                    return int(item[key])
                 except Exception:
                     EXCEPTION.fatal("Valid value for {0}: {1}.".format(key, item[key]))
 
     # 转换文字
-    def convert_text(self, text: str) -> str:
+    @staticmethod
+    def __convert_text(text: str) -> str:
         final_text_list: deque = deque()
         text_index: int = 0
         find_close_bracket: bool = False
@@ -94,22 +93,16 @@ class UiGenerator:
             text_index += 1
         return "".join(final_text_list)
 
-    # 生成UI - 如果目标是str则视为是名称，尝试从ui数据库中加载对应的模板，否则则视为模板
-    def generate(self, data: Union[str, dict], max_width: int = -1, max_height: int = -1) -> GameObject2d:
-        if isinstance(data, str):
-            try:
-                ui_dict_t: dict = dict(self.__DEFAULT_UI[data])
-            except KeyError:
-                EXCEPTION.fatal('The ui called "{}" does not exist!'.format(data))
-            return self.generate(deepcopy(ui_dict_t))
-        elif isinstance(data, dict):
+    # 生成UI主模块
+    def __generate(self, data: dict, max_width: int = -1, max_height: int = -1) -> GameObject2d:
+        if isinstance(data, dict):
             # 如果没有提供最大高度，则默认使用屏幕高度
             if max_height < 0:
                 max_height = Display.get_height()
             # 如果对象是文字
             if data["type"] == "text" or data["type"] == "dynamic_text" or data["type"] == "drop_down_single_choice_list":
                 # 转换字体大小
-                self.__make_sure_size(data, "font_size", max_height)
+                font_size = self.__convert_number(data, "font_size", max_height)
                 # 补充可选参数
                 if "color" not in data:
                     data["color"] = "black"
@@ -120,43 +113,46 @@ class UiGenerator:
                 if "src" not in data:
                     data["src"] = None
                 else:
-                    data["src"] = self.convert_text(data["src"])
+                    data["src"] = self.__convert_text(data["src"])
                 # 生成文字图层
                 if data["type"] == "text":
                     item_t = TextSurface(
-                        Font.render(data["src"], data["color"], data["font_size"], data["bold"], data["italic"]), 0, 0
+                        Font.render(data["src"], data["color"], font_size, data["bold"], data["italic"]), 0, 0
                     )
                 elif data["type"] == "dynamic_text":
                     item_t = DynamicTextSurface(
-                        Font.render(data["src"], data["color"], data["font_size"], data["bold"], data["italic"]),
-                        Font.render(data["src"], data["color"], data["font_size"] * 1.5, data["bold"], data["italic"]),
+                        Font.render(data["src"], data["color"], font_size, data["bold"], data["italic"]),
+                        Font.render(data["src"], data["color"], font_size * 1.5, data["bold"], data["italic"]),
                         0,
                         0,
                     )
                 else:
-                    item_t = DropDownSingleChoiceList(data["src"], 0, 0, data["font_size"], data["color"])
+                    item_t = DropDownSingleChoiceList(data["src"], 0, 0, font_size, data["color"])
             else:
                 # 如果没有提供最大宽度，则默认使用屏幕宽度
                 if max_width < 0:
                     max_width = Display.get_width()
                 # 转换尺寸
-                self.__make_sure_size(data, "width", max_width)
-                self.__make_sure_size(data, "height", max_height)
+                object_width: int = self.__convert_number(data, "width", max_width)
+                object_height: int = self.__convert_number(data, "height", max_height)
                 # 如果对象是容器
                 if data["type"] == "container":
-                    # 转换坐标
-                    self.__make_sure_pos(data, "x", int((max_width - data["width"]) / 2), max_width)
-                    self.__make_sure_pos(data, "y", int((max_height - data["height"]) / 2), max_height)
                     if "src" not in data:
                         data["src"] = None
                     # 生成容器
-                    container_t = GameObjectsContainer(data["src"], data["x"], data["y"], data["width"], data["height"])
+                    container_t = GameObjectsContainer(
+                        data["src"],
+                        self.__convert_coordinate(data, "x", int((max_width - object_width) / 2), max_width),
+                        self.__convert_coordinate(data, "y", int((max_height - object_height) / 2), max_height),
+                        object_width,
+                        object_height,
+                    )
                     # 加载数据
                     if "hidden" in data:
                         container_t.hidden = data["hidden"]
                     if "items" in data:
                         for each_item in data["items"]:
-                            item_r = self.generate(each_item, container_t.get_width(), container_t.get_height())
+                            item_r = self.__generate(each_item, container_t.get_width(), container_t.get_height())
                             if item_r.tag != "":
                                 container_t.set(item_r.tag, item_r)
                             else:
@@ -165,23 +161,27 @@ class UiGenerator:
                 elif data["type"] == "button":
                     if "alpha_when_not_hover" not in data:
                         data["alpha_when_not_hover"] = 255
-                    item_t = (
-                        load_button_with_text_in_center(
+                    if "text" in data:
+                        item_t = load_button_with_text_in_center(
                             IMG.load(data["src"]),
-                            self.convert_text(data["text"]["src"]),
+                            self.__convert_text(data["text"]["src"]),
                             data["text"]["color"],
-                            data["height"],
+                            object_height,
                             Pos.ORIGIN,
                             data["alpha_when_not_hover"],
                         )
-                        if "text" in data
-                        else load_button(
+                    elif "title" in data:
+                        item_t = load_button_with_des(
                             IMG.load(data["src"]),
+                            self.__convert_text(data["title"]),
                             Pos.ORIGIN,
-                            (data["width"], data["height"]),
+                            (object_width, object_height),
                             data["alpha_when_not_hover"],
                         )
-                    )
+                    else:
+                        item_t = load_button(
+                            IMG.load(data["src"]), Pos.ORIGIN, (object_width, object_height), data["alpha_when_not_hover"]
+                        )
                     if not "name" in data:
                         EXCEPTION.fatal("You have to set a name for button type.")
                 elif data["type"] == "progress_bar_adjuster":
@@ -190,9 +190,6 @@ class UiGenerator:
                         assert "indicator" in data
                     except AssertionError:
                         EXCEPTION.fatal("You need to set a indicator for progress_bar_adjuster!")
-                    # 确认按钮有长宽
-                    self.__make_sure_size(data["indicator"], "width", data["width"])
-                    self.__make_sure_size(data["indicator"], "height", data["height"])
                     if "mode" not in data:
                         data["mode"] = "horizontal"
                     # 生成ProgressBarAdjuster
@@ -202,27 +199,39 @@ class UiGenerator:
                         data["indicator"]["src"],
                         0,
                         0,
-                        data["width"],
-                        data["height"],
-                        data["indicator"]["width"],
-                        data["indicator"]["height"],
+                        object_width,
+                        object_height,
+                        self.__convert_number(data["indicator"], "width", object_width),
+                        self.__convert_number(data["indicator"], "height", object_height),
                         data["mode"],
                     )
                     if not "name" in data:
                         EXCEPTION.fatal("You have to set a name for button type.")
                 elif data["type"] == "image":
-                    item_t = DynamicImage(data["src"], 0, 0, data["width"], data["height"])
+                    item_t = DynamicImage(data["src"], 0, 0, object_width, object_height)
                 else:
                     EXCEPTION.fatal("Current type is not supported")
             # 如果有名字，则以tag的形式进行标注
             item_t.tag = data["name"] if "name" in data else ""
-            # 转换坐标
-            self.__make_sure_pos(data, "x", int((max_width - item_t.get_width()) / 2), max_width)
-            self.__make_sure_pos(data, "y", int((max_height - item_t.get_height()) / 2), max_height)
-            item_t.set_pos(data["x"], data["y"])
+            # 设置坐标
+            item_t.set_pos(
+                self.__convert_coordinate(data, "x", int((max_width - item_t.get_width()) / 2), max_width),
+                self.__convert_coordinate(data, "y", int((max_height - item_t.get_height()) / 2), max_height),
+            )
             return item_t
         else:
             EXCEPTION.fatal("Data type is not supported.")
+
+    # 生成UI - 如果目标是str则视为是名称，尝试从ui数据库中加载对应的模板，否则则视为模板
+    def generate(self, data: Union[str, dict]) -> GameObject2d:
+        if isinstance(data, str):
+            try:
+                ui_dict_t: dict = dict(self.__DEFAULT_UI[data])
+            except KeyError:
+                EXCEPTION.fatal('The ui called "{}" does not exist!'.format(data))
+            return self.__generate(deepcopy(ui_dict_t))
+        else:
+            return self.__generate(deepcopy(data))
 
 
 UI: UiGenerator = UiGenerator()

@@ -70,9 +70,9 @@ class CampfireObject(DecorationObject):
 
 # 箱子
 class ChestObject(DecorationObject):
-    def __init__(self, x: int, y: int, itemType: str, items: list, whitelist: list):
+    def __init__(self, x: int, y: int, itemType: str, items: dict, whitelist: list):
         super().__init__(x, y, itemType, itemType)
         # 箱内物品
-        self.items: list = items
+        self.items: dict = items
         # 是否箱子有白名单（只能被特定角色拾取）
         self.whitelist: list = whitelist

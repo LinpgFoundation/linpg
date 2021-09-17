@@ -3,4 +3,5 @@ build/
 src/
 dist/
 Save/
+virtualenv/
 test.py

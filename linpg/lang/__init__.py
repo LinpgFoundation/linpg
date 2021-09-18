@@ -58,7 +58,7 @@ class LanguageManager:
     def get_language_id(self, lang_name: str) -> str:
         for lang_file in glob(os.path.join(self.__LANG_PATH_PATTERN)):
             if Config.load(lang_file, "Language") == lang_name:
-                return os.path.basename(lang_file).replace(".json", "")
+                return os.path.basename(lang_file).removesuffix(".json")
         return ""
 
     # 获取可用语言

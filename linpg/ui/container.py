@@ -69,12 +69,12 @@ class GameObjectsContainer(AbstractImageSurface):
             # 画出物品
             for key_of_game_object, game_object_t in self._items_container.items():
                 game_object_t.display(surface, current_abs_pos)
-                if isinstance(game_object_t, Button) and game_object_t.has_been_hovered():
-                    self._item_being_hovered = key_of_game_object
-                elif isinstance(game_object_t, GameObject) and game_object_t.is_hover(
-                    Pos.subtract(Controller.mouse.pos, current_abs_pos)
-                ):
-                    self._item_being_hovered = key_of_game_object
+                if isinstance(game_object_t, Button):
+                    if game_object_t.has_been_hovered() is True:
+                        self._item_being_hovered = key_of_game_object
+                elif isinstance(game_object_t, GameObject):
+                    if game_object_t.is_hover(Pos.subtract(Controller.mouse.pos, current_abs_pos)):
+                        self._item_being_hovered = key_of_game_object
 
 
 # 下拉选项菜单

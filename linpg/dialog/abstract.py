@@ -22,11 +22,8 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._buttons_mananger = None
         # 对话文件路径
         self._dialog_folder_path: str = "Data"
-        # 背景音乐路径
-        self._background_music_folder_path: str = "Assets/music"
         # 背景图片路径
         self._background_image_folder_path: str = "Assets/image/dialog_background"
-        self._dynamic_background_folder_path: str = "Assets/movie"
         # 背景图片
         self.__background_image_name = None
         self.__background_image_surface = self._black_bg.copy()
@@ -91,12 +88,13 @@ class AbstractDialogSystem(AbstractGameSystem):
                     )
         return currentDialogContent
 
-    # 获取当前正在播放的背景音乐名称
-    def get_current_background_music_name(self) -> str:
-        try:
-            return self.dialog_content[self._dialog_id]["background_music"]
-        except KeyError:
-            return None
+    # 检测当前对话是否带有合法的下一个对话对象的id
+    def does_current_dialog_have_next_dialog(self) -> bool:
+        return (
+            "next_dialog_id" in self._current_dialog_content
+            and self._current_dialog_content["next_dialog_id"] is not None
+            and len(self._current_dialog_content["next_dialog_id"]) > 0
+        )
 
     # 初始化关键参数
     def _initialize(
@@ -161,9 +159,9 @@ class AbstractDialogSystem(AbstractGameSystem):
                     ):
                         self.__background_image_surface = StaticImage(img_path, 0, 0)
                     # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
-                    elif os.path.exists(os.path.join(self._dynamic_background_folder_path, self.__background_image_name)):
+                    elif os.path.exists(os.path.join(ASSET.PATH_DICT["movie"], self.__background_image_name)):
                         self.__background_image_surface = VedioSurface(
-                            os.path.join(self._dynamic_background_folder_path, self.__background_image_name),
+                            os.path.join(ASSET.PATH_DICT["movie"], self.__background_image_name),
                             with_audio=False,
                         )
                     else:
@@ -181,16 +179,16 @@ class AbstractDialogSystem(AbstractGameSystem):
     def _update_scene(self, dialog_id: strint) -> None:
         # 更新dialogId
         self._dialog_id = dialog_id
-        # 获取当前对话的内容
-        currentDialogContent: dict = self.__get_current_dialog_content(True)
+        # 更新当前对话数据的指针
+        self._current_dialog_content = self.__get_current_dialog_content(True)
         # 更新立绘和背景
-        self._npc_manager.update(currentDialogContent["characters_img"])
-        self._update_background_image(currentDialogContent["background_img"])
+        self._npc_manager.update(self._current_dialog_content["characters_img"])
+        self._update_background_image(self._current_dialog_content["background_img"])
         # 更新对话框
-        self._dialog_txt_system.update(currentDialogContent["narrator"], currentDialogContent["content"])
+        self._dialog_txt_system.update(self._current_dialog_content["narrator"], self._current_dialog_content["content"])
         # 更新背景音乐
-        if (current_bgm := self.get_current_background_music_name()) is not None:
-            self.set_bgm(os.path.join(self._background_music_folder_path, current_bgm))
+        if (current_bgm := self._current_dialog_content["background_music"]) is not None:
+            self.set_bgm(os.path.join(ASSET.PATH_DICT["music"], current_bgm))
         else:
             self.unload_bgm()
 
@@ -226,6 +224,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 检测章节是否初始化
         if self._chapter_id is None:
             raise EXCEPTION.fatal("The dialog has not been initialized!")
+        # 更新当前对话数据的指针
         self._current_dialog_content = self.__get_current_dialog_content()
         # 展示背景图片和npc立绘
         self.display_background_image(surface)

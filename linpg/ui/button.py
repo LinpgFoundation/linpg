@@ -19,11 +19,14 @@ class Button(AbstractImageSurface):
         return self.__is_hovered
 
     def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
-        self.__is_hovered = self.is_hover(Pos.subtract(Controller.mouse.pos, offSet))
-        surface.blit(
-            IMG.resize(self.img2 if self.__is_hovered is True and self.img2 is not None else self.img, self.size),
-            Pos.add(self.pos, offSet),
-        )
+        if not self.hidden:
+            self.__is_hovered = self.is_hover(Pos.subtract(Controller.mouse.pos, offSet))
+            surface.blit(
+                IMG.resize(self.img2 if self.__is_hovered is True and self.img2 is not None else self.img, self.size),
+                Pos.add(self.pos, offSet),
+            )
+        else:
+            self.__is_hovered = False
 
 
 # 加载按钮

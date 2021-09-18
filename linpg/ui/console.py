@@ -31,7 +31,7 @@ class Console(SingleLineInputBox):
         elif event.key == Key.RETURN:
             if len(self._text) > 0:
                 if self._text.startswith(self.command_indicator):
-                    self._check_command(self._text[len(self.command_indicator) :].split())
+                    self._check_command(self._text.removeprefix(self.command_indicator).split())
                 else:
                     self._txt_output.append(self._text)
                 self._text_history.append(self._text)

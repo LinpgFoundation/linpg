@@ -110,7 +110,7 @@ class EnvImagesManagement:
             (imgPath := os.path.join(ASSET.get_internal_environment_image_path("decoration"), decorationType))
         ):
             for img_path in glob(os.path.join(imgPath, "*.png")):
-                self.__DECORATION_IMAGE_DICT[decorationType][os.path.basename(img_path).replace(".png", "")] = StaticImage(
+                self.__DECORATION_IMAGE_DICT[decorationType][os.path.basename(img_path).removesuffix(".png")] = StaticImage(
                     img_path, 0, 0
                 )
             if self.__DARKNESS > 0:

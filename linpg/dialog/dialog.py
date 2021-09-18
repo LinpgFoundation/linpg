@@ -280,9 +280,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                     self.stop()
                     cutscene(
                         surface,
-                        os.path.join(
-                            self._dynamic_background_folder_path, self._current_dialog_content["next_dialog_id"]["target"]
-                        ),
+                        os.path.join(ASSET.PATH_DICT["movie"], self._current_dialog_content["next_dialog_id"]["target"]),
                     )
                 # break被视为立刻退出，没有淡出动画
                 elif next_dialog_type == "break":

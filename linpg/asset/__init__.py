@@ -17,6 +17,10 @@ _CUSTOM_UI_IMAGE_PATH: str = PATH.join("Assets", "image", "UI")
 
 # 资源管理模块
 class AssetManager:
+
+    # 路径
+    PATH_DICT = {"music": PATH.join("Assets", "music"), "movie": PATH.join("Assets", "movie")}
+
     # 处理路径
     @staticmethod
     def resolve_path(file_path: str) -> str:

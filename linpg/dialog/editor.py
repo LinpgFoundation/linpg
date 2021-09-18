@@ -45,8 +45,8 @@ class DialogEditor(AbstractDialogSystem):
         for imgPath in glob(os.path.join(self._background_image_folder_path, "*")):
             self.UIContainerRight_bg.set(os.path.basename(imgPath), IMG.load(imgPath, (container_width * 0.8, None)))
         # 加载动态背景图片
-        if os.path.exists(self._dynamic_background_folder_path):
-            for imgPath in glob(os.path.join(self._dynamic_background_folder_path, "*")):
+        if os.path.exists(ASSET.PATH_DICT["movie"]):
+            for imgPath in glob(os.path.join(ASSET.PATH_DICT["movie"], "*")):
                 self.UIContainerRight_bg.set(
                     os.path.basename(imgPath), IMG.resize(get_preview_of_vedio(imgPath), (container_width * 0.8, None))
                 )
@@ -99,34 +99,24 @@ class DialogEditor(AbstractDialogSystem):
         self.button_select_npc.set_left(self.button_select_background.get_right() + panding)
         button_size: tuple = (button_width, button_width)
         # 页面右上方的一排按钮
-        self.buttonsUI = {
-            "mute": load_button_with_des(
-                "<!ui>mute.png", Lang.get_text("Global", "mute"), (button_width * 8.5, button_y), button_size, 150
-            ),
-            "save": load_button_with_des(
-                "<!ui>save.png", Lang.get_text("Global", "save"), (button_width * 7.25, button_y), button_size, 150
-            ),
-            "reload": load_button_with_des(
-                "<!ui>reload.png", Lang.get_text("Global", "reload_file"), (button_width * 6, button_y), button_size, 150
-            ),
-            "add": load_button_with_des("<!ui>add.png", CONFIG["add"], (button_width * 4.75, button_y), button_size, 150),
-            "next": load_button_with_des("<!ui>next.png", CONFIG["next"], (button_width * 4.75, button_y), button_size, 150),
-            "previous": load_button_with_des(
-                "<!ui>previous.png", CONFIG["previous"], (button_width * 3.5, button_y), button_size, 150
-            ),
-            "delete": load_button_with_des(
-                "<!ui>delete.png", CONFIG["delete"], (button_width * 2.25, button_y), button_size, 150
-            ),
-            "back": load_button_with_des(
-                "<!ui>back.png", Lang.get_text("Global", "back_to_main_menu"), (button_width, button_y), button_size, 150
-            ),
+        custom_values: dict = {
+            "button_size": button_width,
+            "button_y": button_y,
+            "mute_button_x": int(button_width * 8.5),
+            "save_button_x": int(button_width * 7.25),
+            "reload_button_x": int(button_width * 6),
+            "add_and_next_button_x": int(button_width * 4.75),
+            "previous_button_x": int(button_width * 3.5),
+            "delete_button_x": int(button_width * 2.25),
+            "back_button_x": button_width,
         }
+        self.__buttons_ui_container = UI.generate("dialog_editor_buttons", custom_values)
         self.please_enter_content = CONFIG["please_enter_content"]
         self.please_enter_name = CONFIG["please_enter_name"]
         # 背景音乐
         self.dialog_bgm_select = DropDownSingleChoiceList(None, button_width * 11, button_y + font_size * 3, font_size)
         self.dialog_bgm_select.set("null", Lang.get_text("DialogCreator", "no_bgm"))
-        for file_name in os.listdir("Assets\music"):
+        for file_name in os.listdir(ASSET.PATH_DICT["music"]):
             self.dialog_bgm_select.set(file_name, file_name)
         # 从配置文件中加载数据
         self._load_content()
@@ -233,6 +223,21 @@ class DialogEditor(AbstractDialogSystem):
         else:
             return False
 
+    # 更新UI
+    def __update_ui(self) -> None:
+        # 更新背景音乐选项菜单
+        if (file_name := self._current_dialog_content["background_music"]) is not None:
+            self.dialog_bgm_select.set_current_selected_item(file_name)
+        else:
+            self.dialog_bgm_select.set_current_selected_item("null")
+        # 更新按钮
+        if self.does_current_dialog_have_next_dialog() is True:
+            self.__buttons_ui_container.get("add").hidden = True
+            self.__buttons_ui_container.get("next").hidden = False
+        else:
+            self.__buttons_ui_container.get("add").hidden = False
+            self.__buttons_ui_container.get("next").hidden = True
+
     # 更新场景
     def _update_scene(self, dialog_id: strint) -> None:
         # 确保当前版块有对话数据。如果当前版块为空，则加载默认模板
@@ -246,44 +251,38 @@ class DialogEditor(AbstractDialogSystem):
         # 如果id存在，则加载对应数据
         if dialog_id in self.dialog_content:
             super()._update_scene(dialog_id)
+            self.__update_ui()
         # 如果id不存在，则新增一个
         else:
             self.__add_dialog(dialog_id)
-        # 更新背景音乐选项菜单
-        if (file_name := self.get_current_background_music_name()) is not None:
-            self.dialog_bgm_select.set_current_selected_item(file_name)
-        else:
-            self.dialog_bgm_select.set_current_selected_item("null")
 
     # 添加新的对话
     def __add_dialog(self, dialogId: strint) -> None:
         self.dialog_content[dialogId] = {
-            "background_img": self.dialog_content[self._dialog_id]["background_img"],
-            "background_music": self.dialog_content[self._dialog_id]["background_music"],
+            "background_img": self._current_dialog_content["background_img"],
+            "background_music": self._current_dialog_content["background_music"],
             "characters_img": [],
             "content": [self.please_enter_content],
             "last_dialog_id": self._dialog_id,
             "narrator": self.please_enter_name,
             "next_dialog_id": None,
         }
-        self.dialog_content[self._dialog_id]["next_dialog_id"] = {"target": dialogId, "type": "default"}
+        self._current_dialog_content["next_dialog_id"] = {"target": dialogId, "type": "default"}
         lastId = self.__get_last_id()
         if lastId is not None:
             self.dialog_content[dialogId]["narrator"] = self.dialog_content[lastId]["narrator"]
             self.dialog_content[dialogId]["characters_img"] = deepcopy(self.dialog_content[lastId]["characters_img"])
         # 检测是否自动保存
-        if not self.auto_save:
-            self._update_scene(dialogId)
-        else:
+        if self.auto_save:
             self.save_progress()
+        # 更新数据
+        super()._update_scene(dialogId)
+        self.__update_ui()
 
     # 获取上一个对话的ID
     def __get_last_id(self) -> strint:
-        if (
-            "last_dialog_id" in self.dialog_content[self._dialog_id]
-            and self.dialog_content[self._dialog_id]["last_dialog_id"] is not None
-        ):
-            return self.dialog_content[self._dialog_id]["last_dialog_id"]
+        if "last_dialog_id" in self._current_dialog_content and self._current_dialog_content["last_dialog_id"] is not None:
+            return self._current_dialog_content["last_dialog_id"]
         elif self._dialog_id == "head":
             return None
         else:
@@ -307,10 +306,8 @@ class DialogEditor(AbstractDialogSystem):
 
     # 获取下一个对话的ID
     def __get_next_id(self, surface: ImageSurface) -> strint:
-        if (
-            "next_dialog_id" in self.dialog_content[self._dialog_id]
-            and (theNext := self.dialog_content[self._dialog_id]["next_dialog_id"]) is not None
-        ):
+        if self.does_current_dialog_have_next_dialog() is True:
+            theNext = self._current_dialog_content["next_dialog_id"]
             if theNext["type"] == "default" or theNext["type"] == "changeScene":
                 return theNext["target"]
             elif theNext["type"] == "option":
@@ -360,30 +357,18 @@ class DialogEditor(AbstractDialogSystem):
 
     def draw(self, surface: ImageSurface) -> None:
         super().draw(surface)
-        # 获取当前dialog数据
         # 更新对话框数据
         if self._dialog_txt_system.narrator.need_save:
             self._current_dialog_content["narrator"] = self._dialog_txt_system.narrator.get_text()
         if self._dialog_txt_system.content.need_save:
             self._current_dialog_content["content"] = self._dialog_txt_system.content.get_text()
-        # 初始化数值
-        buttonHovered = None
         # 展示按钮
-        for button in self.buttonsUI:
-            if button == "next" and (
-                self._current_dialog_content["next_dialog_id"] is None
-                or len(self._current_dialog_content["next_dialog_id"]) < 2
-            ):
-                if self.buttonsUI["add"].is_hover():
-                    buttonHovered = "add"
-                self.buttonsUI["add"].draw(surface)
-            elif button != "add":
-                if self.buttonsUI[button].is_hover():
-                    buttonHovered = button
-                self.buttonsUI[button].draw(surface)
+        self.__buttons_ui_container.draw(surface)
         # 展示出当前可供使用的背景音乐
         self.dialog_bgm_select.draw(surface)
-        if (current_bgm := self.get_current_background_music_name()) != self.dialog_bgm_select.get_current_selected_item():
+        if (
+            current_bgm := self._current_dialog_content["background_music"]
+        ) != self.dialog_bgm_select.get_current_selected_item():
             if self.dialog_bgm_select.get_current_selected_item() == "null" and current_bgm is None:
                 pass
             else:
@@ -412,19 +397,19 @@ class DialogEditor(AbstractDialogSystem):
                         self.UIContainerRightButton.switch()
                         self.UIContainerRightButton.flip()
                     # 退出
-                    elif buttonHovered == "back":
+                    elif self.__buttons_ui_container.item_being_hovered == "back":
                         if self.__no_changes_were_made() is True:
                             self.stop()
                             break
                         else:
                             self.__no_save_warning.hidden = False
-                    elif buttonHovered == "previous":
+                    elif self.__buttons_ui_container.item_being_hovered == "previous":
                         lastId = self.__get_last_id()
                         if lastId is not None:
                             self._update_scene(lastId)
                         else:
                             EXCEPTION.inform("There is no last dialog id.")
-                    elif buttonHovered == "delete":
+                    elif self.__buttons_ui_container.item_being_hovered == "delete":
                         lastId = self.__get_last_id()
                         nextId = self.__get_next_id(surface)
                         if lastId is not None:
@@ -459,22 +444,21 @@ class DialogEditor(AbstractDialogSystem):
                             del self.dialog_content[needDeleteId]
                         else:
                             EXCEPTION.inform("There is no last dialog id.")
-                    elif buttonHovered == "next":
-                        nextId = self.__get_next_id(surface)
-                        if nextId is not None:
+                    elif self.__buttons_ui_container.item_being_hovered == "next":
+                        if (nextId := self.__get_next_id(surface)) is not None:
                             self._update_scene(nextId)
                         else:
                             EXCEPTION.inform("There is no next dialog id.")
-                    elif buttonHovered == "add":
+                    elif self.__buttons_ui_container.item_being_hovered == "add":
                         nextId = 1
                         while nextId in self.dialog_content:
                             nextId += 1
                         self.__add_dialog(nextId)
-                    elif buttonHovered == "save":
+                    elif self.__buttons_ui_container.item_being_hovered == "save":
                         self.save_progress()
-                    elif buttonHovered == "reload":
+                    elif self.__buttons_ui_container.item_being_hovered == "reload":
                         self._load_content()
-                    elif buttonHovered == "mute":
+                    elif self.__buttons_ui_container.item_being_hovered == "mute":
                         self._is_muted = not self._is_muted
                         if self._is_muted is True:
                             self.stop_bgm()

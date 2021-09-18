@@ -9,9 +9,30 @@ class UiGenerator:
         if len(path := Config.resolve_path(os.path.join("Data", "ui"))) > 0:
             self.__DEFAULT_UI.update(Config.load(path))
 
+    # 尝试转换特殊的string
+    def __try_convert_special_string_to_number(self, value: str, value_in_case_percentage: int, custom_values: dict) -> int:
+        if value.endswith("%"):
+            try:
+                return int(convert_percentage(value) * value_in_case_percentage)
+            except Exception:
+                EXCEPTION.fatal('Cannot convert "{}" because it is not a valid percentage.'.format(value))
+        elif value.startswith("<#") and value.endswith(">"):
+            the_value = custom_values[value.removeprefix("<#").removesuffix(">")]
+            if isinstance(the_value, str):
+                return self.__try_convert_special_string_to_number(the_value, value_in_case_percentage, custom_values)
+            else:
+                try:
+                    return int(the_value)
+                except Exception:
+                    EXCEPTION.fatal('Cannot convert string "{}".'.format(value))
+        else:
+            try:
+                return int(value)
+            except Exception:
+                EXCEPTION.fatal('Cannot convert string "{}".'.format(value))
+
     # 检测尺寸是否合法
-    @staticmethod
-    def __convert_number(item: dict, key: str, value_in_case_percentage: int) -> int:
+    def __convert_number(self, item: dict, key: str, value_in_case_percentage: int, custom_values: dict) -> int:
         if key not in item:
             EXCEPTION.fatal(
                 'You have to set "{0}" for "{1}".'.format(key, item["name"])
@@ -21,17 +42,8 @@ class UiGenerator:
         elif isinstance(item[key], float):
             return int(item[key])
         elif not isinstance(item[key], int):
-            if isinstance(item[key], str) and item[key].endswith("%"):
-                try:
-                    return int(convert_percentage(item[key]) * value_in_case_percentage)
-                except Exception:
-                    EXCEPTION.fatal(
-                        'Cannot convert "{0}" because it is not a valid percentage for "{1}".'.format(
-                            item[key], item["name"]
-                        )
-                        if "name" in item
-                        else 'Cannot convert "{}" because it is not a valid percentage.'.format(item[key])
-                    )
+            if isinstance(item[key], str):
+                return self.__try_convert_special_string_to_number(item[key], value_in_case_percentage, custom_values)
             else:
                 try:
                     return int(item[key])
@@ -41,31 +53,27 @@ class UiGenerator:
                         if "name" in item
                         else 'The "{0}" needs to an interger instead of "{1}".'.format(key, item[key])
                     )
+        else:
+            return item[key]
 
     # 检测坐标是否合法
-    @staticmethod
-    def __convert_coordinate(item: dict, key: str, value_in_case_center: int, value_in_case_percentage: int) -> int:
+    def __convert_coordinate(
+        self, item: dict, key: str, value_in_case_center: int, value_in_case_percentage: int, custom_values: dict
+    ) -> int:
         if key not in item:
             return 0
         elif not isinstance(item[key], int):
             if item[key] == "center":
                 return value_in_case_center
-            elif item[key].endswith("%"):
-                try:
-                    return int(convert_percentage(item[key]) * value_in_case_percentage)
-                except Exception:
-                    EXCEPTION.fatal(
-                        'Cannot convert "{0}" because it is not a valid percentage for "{1}".'.format(
-                            item[key], item["name"]
-                        )
-                        if "name" in item
-                        else 'Cannot convert "{}" because it is not a valid percentage.'.format(item[key])
-                    )
+            elif isinstance(item[key], str):
+                return self.__try_convert_special_string_to_number(item[key], value_in_case_percentage, custom_values)
             else:
                 try:
                     return int(item[key])
                 except Exception:
                     EXCEPTION.fatal("Valid value for {0}: {1}.".format(key, item[key]))
+        else:
+            return item[key]
 
     # 转换文字
     @staticmethod
@@ -94,7 +102,7 @@ class UiGenerator:
         return "".join(final_text_list)
 
     # 生成UI主模块
-    def __generate(self, data: dict, max_width: int = -1, max_height: int = -1) -> GameObject2d:
+    def __generate(self, data: dict, custom_values: dict, max_width: int = -1, max_height: int = -1) -> GameObject2d:
         if isinstance(data, dict):
             # 如果没有提供最大高度，则默认使用屏幕高度
             if max_height < 0:
@@ -102,7 +110,7 @@ class UiGenerator:
             # 如果对象是文字
             if data["type"] == "text" or data["type"] == "dynamic_text" or data["type"] == "drop_down_single_choice_list":
                 # 转换字体大小
-                font_size = self.__convert_number(data, "font_size", max_height)
+                font_size = self.__convert_number(data, "font_size", max_height, custom_values)
                 # 补充可选参数
                 if "color" not in data:
                     data["color"] = "black"
@@ -133,8 +141,8 @@ class UiGenerator:
                 if max_width < 0:
                     max_width = Display.get_width()
                 # 转换尺寸
-                object_width: int = self.__convert_number(data, "width", max_width)
-                object_height: int = self.__convert_number(data, "height", max_height)
+                object_width: int = self.__convert_number(data, "width", max_width, custom_values)
+                object_height: int = self.__convert_number(data, "height", max_height, custom_values)
                 # 如果对象是容器
                 if data["type"] == "container":
                     if "src" not in data:
@@ -142,8 +150,10 @@ class UiGenerator:
                     # 生成容器
                     container_t = GameObjectsContainer(
                         data["src"],
-                        self.__convert_coordinate(data, "x", int((max_width - object_width) / 2), max_width),
-                        self.__convert_coordinate(data, "y", int((max_height - object_height) / 2), max_height),
+                        self.__convert_coordinate(data, "x", int((max_width - object_width) / 2), max_width, custom_values),
+                        self.__convert_coordinate(
+                            data, "y", int((max_height - object_height) / 2), max_height, custom_values
+                        ),
                         object_width,
                         object_height,
                     )
@@ -152,7 +162,9 @@ class UiGenerator:
                         container_t.hidden = data["hidden"]
                     if "items" in data:
                         for each_item in data["items"]:
-                            item_r = self.__generate(each_item, container_t.get_width(), container_t.get_height())
+                            item_r = self.__generate(
+                                each_item, custom_values, container_t.get_width(), container_t.get_height()
+                            )
                             if item_r.tag != "":
                                 container_t.set(item_r.tag, item_r)
                             else:
@@ -201,8 +213,8 @@ class UiGenerator:
                         0,
                         object_width,
                         object_height,
-                        self.__convert_number(data["indicator"], "width", object_width),
-                        self.__convert_number(data["indicator"], "height", object_height),
+                        self.__convert_number(data["indicator"], "width", object_width, custom_values),
+                        self.__convert_number(data["indicator"], "height", object_height, custom_values),
                         data["mode"],
                     )
                     if not "name" in data:
@@ -215,23 +227,23 @@ class UiGenerator:
             item_t.tag = data["name"] if "name" in data else ""
             # 设置坐标
             item_t.set_pos(
-                self.__convert_coordinate(data, "x", int((max_width - item_t.get_width()) / 2), max_width),
-                self.__convert_coordinate(data, "y", int((max_height - item_t.get_height()) / 2), max_height),
+                self.__convert_coordinate(data, "x", int((max_width - item_t.get_width()) / 2), max_width, custom_values),
+                self.__convert_coordinate(data, "y", int((max_height - item_t.get_height()) / 2), max_height, custom_values),
             )
             return item_t
         else:
             EXCEPTION.fatal("Data type is not supported.")
 
     # 生成UI - 如果目标是str则视为是名称，尝试从ui数据库中加载对应的模板，否则则视为模板
-    def generate(self, data: Union[str, dict]) -> GameObject2d:
+    def generate(self, data: Union[str, dict], custom_values: dict = {}) -> GameObject2d:
         if isinstance(data, str):
             try:
                 ui_dict_t: dict = dict(self.__DEFAULT_UI[data])
             except KeyError:
                 EXCEPTION.fatal('The ui called "{}" does not exist!'.format(data))
-            return self.__generate(deepcopy(ui_dict_t))
+            return self.__generate(deepcopy(ui_dict_t), custom_values)
         else:
-            return self.__generate(deepcopy(data))
+            return self.__generate(deepcopy(data), custom_values)
 
 
 UI: UiGenerator = UiGenerator()

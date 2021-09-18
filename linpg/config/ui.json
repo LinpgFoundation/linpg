@@ -1,4 +1,101 @@
 {
+    "dialog_editor_buttons": {
+        "height": "100%",
+        "items": [
+            {
+                "alpha_when_not_hover": 150,
+                "height": "<#button_size>",
+                "name": "mute",
+                "src": "<!ui>mute.png",
+                "title": "{Global,mute}",
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "<#mute_button_x>",
+                "y": "<#button_y>"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "<#button_size>",
+                "name": "save",
+                "src": "<!ui>save.png",
+                "title": "{Global,save}",
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "<#save_button_x>",
+                "y": "<#button_y>"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "<#button_size>",
+                "name": "reload",
+                "src": "<!ui>reload.png",
+                "title": "{Global,reload_file}",
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "<#reload_button_x>",
+                "y": "<#button_y>"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "<#button_size>",
+                "name": "add",
+                "src": "<!ui>add.png",
+                "title": "{DialogCreator,add}",
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "<#add_and_next_button_x>",
+                "y": "<#button_y>"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "<#button_size>",
+                "name": "next",
+                "src": "<!ui>next.png",
+                "title": "{DialogCreator,next}",
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "<#add_and_next_button_x>",
+                "y": "<#button_y>"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "<#button_size>",
+                "name": "previous",
+                "src": "<!ui>previous.png",
+                "title": "{DialogCreator,previous}",
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "<#previous_button_x>",
+                "y": "<#button_y>"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "<#button_size>",
+                "name": "delete",
+                "src": "<!ui>delete.png",
+                "title": "{DialogCreator,delete}",
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "<#delete_button_x>",
+                "y": "<#button_y>"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "<#button_size>",
+                "name": "back",
+                "src": "<!ui>back.png",
+                "title": "{Global,back_to_main_menu}",
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "<#back_button_x>",
+                "y": "<#button_y>"
+            }
+        ],
+        "type": "container",
+        "width": "100%",
+        "x": 0,
+        "y": 0
+    },
     "exit_without_saving_progress_warning": {
         "height": "20%",
         "items": [

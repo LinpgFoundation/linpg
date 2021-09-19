@@ -6,7 +6,7 @@ try:
     import cv2
 
     _OPENCV_INITIALIZED = True
-except Exception:
+except ImportError:
     pass
 
 # 视频模块专属的错误检测器

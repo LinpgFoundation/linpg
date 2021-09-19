@@ -1,6 +1,15 @@
 import time
 from .container import *
 
+# 尝试导入pysimplegui
+_PYSIMPLEGUI_INITIALIZED: bool = False
+try:
+    import PySimpleGUI
+
+    _PYSIMPLEGUI_INITIALIZED = True
+except ImportError:
+    pass
+
 # 输入框Abstract，请勿实体化
 class AbstractInputBox(GameObject2d):
     def __init__(self, x: int_f, y: int_f, font_size: int, txt_color: color_liked, default_width: int) -> None:
@@ -49,13 +58,12 @@ class SingleLineInputBox(AbstractInputBox):
         else:
             return self._text
 
-    def set_text(self, new_txt: str = None) -> None:
-        if new_txt is not None and len(new_txt) > 0:
+    def set_text(self, new_txt: str = "") -> None:
+        if len(new_txt) > 0:
             self._text = new_txt
-            self.holderIndex = len(new_txt)
         else:
             self._text = ""
-            self.holderIndex = 0
+        self.holderIndex = len(new_txt)
         self._reset_inputbox_width()
 
     def _add_char(self, char: str) -> None:
@@ -74,6 +82,8 @@ class SingleLineInputBox(AbstractInputBox):
         elif action == "behind":
             if self.holderIndex < len(self._text):
                 self._text = self._text[: self.holderIndex] + self._text[self.holderIndex + 1 :]
+        elif action == "all":
+            self.set_text()
         else:
             EXCEPTION.fatal("Action has to be either 'ahead' or 'behind'!")
         self._reset_inputbox_width()
@@ -180,8 +190,11 @@ class SingleLineInputBox(AbstractInputBox):
 class MultipleLinesInputBox(AbstractInputBox):
     def __init__(self, x: int_f, y: int_f, font_size: int, txt_color: color_liked, default_width: int = 150) -> None:
         super().__init__(x, y, font_size, txt_color, default_width)
-        self._text = [""]
+        self._text: list[str] = [""]
         self.lineId = 0
+        self.__using_PySimpleGUI_input_box = (
+            load_button("<!ui>back.png", (0, 0), (self.FONT.size, self.FONT.size)) if _PYSIMPLEGUI_INITIALIZED else None
+        )
 
     def get_text(self) -> list:
         self.need_save = False
@@ -190,14 +203,25 @@ class MultipleLinesInputBox(AbstractInputBox):
         else:
             return self._text
 
-    def set_text(self, new_txt: Iterable = None) -> None:
-        if new_txt is None or len(self._text) == 0:
-            self._text = [""]
-        elif isinstance(new_txt, list):
+    def get_raw_text(self) -> str:
+        text: str = ""
+        for each_line in self._text:
+            text += each_line + "\n"
+        text.removesuffix("\n")
+        return text
+
+    def set_text(self, new_txt: list = []) -> None:
+        if len(new_txt) > 0:
             self._text = new_txt
-            self._reset_inputbox_size()
         else:
-            EXCEPTION.fatal("The new_txt for MultipleLinesInputBox.set_text() must be a list!")
+            self._text = [""]
+        # 防止数值越界
+        if self.lineId > (line_limit := len(self._text) - 1):
+            self.lineId = line_limit
+        if self.holderIndex > (index_limit := len(self._text[self.lineId])):
+            self.holderIndex = index_limit
+        # 重置尺寸
+        self._reset_inputbox_size()
 
     def set_fontsize(self, font_size: int) -> None:
         super().set_fontsize(font_size)
@@ -274,6 +298,8 @@ class MultipleLinesInputBox(AbstractInputBox):
                 if len(self._text[self.lineId + 1]) > 0:
                     self._text[self.lineId] += self._text[self.lineId + 1]
                 self._text.pop(self.lineId + 1)
+        elif action == "all":
+            self.set_text()
         else:
             EXCEPTION.fatal("Action has to be either 'ahead' or 'behind'!")
         self._reset_inputbox_size()
@@ -298,6 +324,26 @@ class MultipleLinesInputBox(AbstractInputBox):
             self.holderIndex = i
         else:
             self.holderIndex = i - 1
+
+    def show_external_input_box(self, screen: ImageSurface) -> None:
+        if _PYSIMPLEGUI_INITIALIZED:
+            self.__using_PySimpleGUI_input_box.set_right(self.input_box.right)
+            self.__using_PySimpleGUI_input_box.set_bottom(self.input_box.bottom)
+            self.__using_PySimpleGUI_input_box.draw(screen)
+            if self.__using_PySimpleGUI_input_box.is_hover() and Controller.get_event("confirm"):
+                event, values = PySimpleGUI.Window(
+                    "",
+                    [
+                        [PySimpleGUI.Multiline(default_text=self.get_raw_text(), key="-CONTENT-")],
+                        [
+                            PySimpleGUI.Submit(Lang.get_text("Global", "save")),
+                            PySimpleGUI.Cancel(Lang.get_text("Global", "cancel")),
+                        ],
+                    ],
+                ).read(close=True)
+                if event == Lang.get_text("Global", "save"):
+                    self._remove_char("all")
+                    self._add_char(values["-CONTENT-"])
 
     def draw(self, screen: ImageSurface) -> bool:
         for event in Controller.events:
@@ -385,3 +431,5 @@ class MultipleLinesInputBox(AbstractInputBox):
                         self.y + self.lineId * self.default_height,
                     ),
                 )
+            # 如果PySimpleGUI安装
+            self.show_external_input_box(screen)

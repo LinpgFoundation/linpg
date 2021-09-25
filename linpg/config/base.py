@@ -179,20 +179,6 @@ class ConfigManager:
         for configFilePath in glob(pathname):
             self.optimize_cn_content(configFilePath)
 
-    # 删除特定文件夹
-    def search_and_remove_folder(self, folder_to_search: str, stuff_to_remove: str) -> None:
-        # 确保folder_to_search是一个目录
-        try:
-            assert os.path.isdir(folder_to_search)
-        except:
-            EXCEPTION.fatal("You can only search a folder!")
-        # 移除当前文件夹符合条件的目录/文件
-        for path in glob(os.path.join(folder_to_search, "*")):
-            if path.endswith(stuff_to_remove):
-                rmtree(path)
-            elif os.path.isdir(path):
-                self.search_and_remove_folder(path, stuff_to_remove)
-
     # 解决路径冲突
     def resolve_path(self, file_location: str) -> str:
         path: str

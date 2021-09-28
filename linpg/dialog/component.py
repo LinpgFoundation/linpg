@@ -12,7 +12,7 @@ class DialogButtons:
         # 从设置中读取信息
         self.FONT = Font.create(Display.get_width() * 0.0175)
         # 从语言文件中读取按钮文字
-        dialog_txt: dict = Lang.get_text("Dialog")
+        dialog_txt: dict = Lang.get_texts("Dialog")
         # 生成跳过按钮
         tempButtonIcon = IMG.load("<!ui>next.png", (self.FONT.size, self.FONT.size))
         tempButtonTxt = self.FONT.render(dialog_txt["skip"], Color.WHITE)

@@ -7,7 +7,7 @@ class Message:
         self,
         title: str,
         message: str,
-        buttons: tuple,
+        buttons: tuple[str],
         info: bool = False,
         warn: bool = False,
         error: bool = False,

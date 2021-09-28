@@ -82,7 +82,7 @@ class DialogEditor(AbstractDialogSystem):
         )
         self.UIContainerRightButton.rotate(90)
         # UI按钮
-        CONFIG = Lang.get_text("DialogCreator")
+        CONFIG = Lang.get_texts("DialogCreator")
         button_y: int = int(Display.get_height() * 0.03)
         font_size: int = int(button_width / 3)
         # 控制容器转换的按钮

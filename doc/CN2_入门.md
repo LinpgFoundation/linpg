@@ -42,12 +42,12 @@ StaticImage适用于尺寸不需要经常改动的图片，相比DynamicImage，
 
 # 视频（实验性功能）
 
-Linpg提供了2个视频类：VedioSurface和VedioPlayer。
+Linpg提供了2个视频类：VideoSurface和VideoPlayer。
 
-`linpg.VedioSurface(path: str, width: int, height: int, loop: bool = True, with_music: bool = False, play_range: tuple = None, volume: float = 1.0, tag: str = "")`
+`linpg.VideoSurface(path: str, width: int, height: int, loop: bool = True, with_music: bool = False, play_range: tuple = None, volume: float = 1.0, tag: str = "")`
 
-类似Wallpaper Engine，将视频加载为动态背景，比VedioPlayer更灵活，但缺点是不能保证视频和音效同步。
+类似Wallpaper Engine，将视频加载为动态背景，比VideoPlayer更灵活，但缺点是不能保证视频和音效同步。
 
-`linpg.VedioPlayer(path:str, width:int, height:int, tag:str="")`
+`linpg.VideoPlayer(path:str, width:int, height:int, tag:str="")`
 
-与VedioSurface相比，VedioPlayer少了很多功能。但VedioPlayer可以确保视频和音效同步，建议用于播放过场动画。
+与VideoSurface相比，VideoPlayer少了很多功能。但VideoPlayer可以确保视频和音效同步，建议用于播放过场动画。

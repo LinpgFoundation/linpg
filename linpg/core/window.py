@@ -34,7 +34,7 @@ class Message:
         self.return_button: int = return_button
         self.escape_button: int = escape_button
 
-    def show(self):
+    def show(self) -> int:
         return messagebox(
             self.title,
             self.message,

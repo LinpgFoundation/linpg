@@ -10,18 +10,18 @@ except ImportError:
     pass
 
 # 视频模块专属的错误检测器
-def _vedio_validator(path: str) -> None:
+def _video_validator(path: str) -> None:
     # 如果opencv没有成功地导入
     if not _OPENCV_INITIALIZED:
-        EXCEPTION.fatal("You cannot use any vedio module unless you intall opencv!")
+        EXCEPTION.fatal("You cannot use any video module unless you intall opencv!")
     # 确保路径存在
     elif not os.path.exists(path):
         EXCEPTION.fatal('Cannot find file on path: "{}"'.format(path))
 
 
 # 获取视频封面
-def get_preview_of_vedio(path: str, size: tuple[int] = NoSize) -> ImageSurface:
-    _vedio_validator(path)
+def get_preview_of_video(path: str, size: tuple[int] = NoSize) -> ImageSurface:
+    _video_validator(path)
     video_stream = cv2.VideoCapture(path)
     video_stream.set(cv2.CAP_PROP_POS_FRAMES, int(video_stream.get(cv2.CAP_PROP_FRAME_COUNT) * 0.1))
     current_frame = cv2.cvtColor(video_stream.read()[1], cv2.COLOR_BGR2RGB)
@@ -33,9 +33,9 @@ def get_preview_of_vedio(path: str, size: tuple[int] = NoSize) -> ImageSurface:
 
 
 # 视频抽象类
-class AbstractVedio:
+class AbstractVideo:
     def __init__(self, path: str, buffer_num: int, play_range: tuple[int] = (0, -1)):
-        _vedio_validator(path)
+        _video_validator(path)
         self._path: str = path
         # 确保路径存在
         if not os.path.exists(self._path):
@@ -153,7 +153,7 @@ class AbstractVedio:
 
 
 # 类似Wallpaper Engine的视频背景，但音乐不与画面同步
-class VedioSurface(AbstractVedio):
+class VideoSurface(AbstractVideo):
     def __init__(
         self, path: str, loop: bool = True, with_audio: bool = True, play_range: tuple[int] = (0, -1), buffer_num: int = 10
     ) -> None:
@@ -166,7 +166,7 @@ class VedioSurface(AbstractVedio):
     # 返回一个复制
     def copy(self) -> object:
         with_audio = True if self.__audio is not None else False
-        new_t = VedioSurface(self._path, self.__loop, with_audio, self.play_range)
+        new_t = VideoSurface(self._path, self.__loop, with_audio, self.play_range)
         if with_audio is True:
             new_t.set_volume(self.get_volume())
         return new_t
@@ -217,7 +217,7 @@ class VedioSurface(AbstractVedio):
 
 
 # 视频播放器，强制视频和音乐同步
-class VedioPlayer(AbstractVedio):
+class VideoPlayer(AbstractVideo):
     def __init__(self, path: str, buffer_num: int = 6):
         super().__init__(path, buffer_num=buffer_num)
         self.__clock = pygame.time.Clock()
@@ -225,7 +225,7 @@ class VedioPlayer(AbstractVedio):
 
     # 返回一个复制
     def copy(self) -> object:
-        return VedioPlayer(self._path, self._frame_buffer_num)
+        return VideoPlayer(self._path, self._frame_buffer_num)
 
     # 设置帧坐标
     def set_frame_index(self, num: int) -> None:

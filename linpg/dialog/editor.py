@@ -48,7 +48,7 @@ class DialogEditor(AbstractDialogSystem):
         if os.path.exists(ASSET.PATH_DICT["movie"]):
             for imgPath in glob(os.path.join(ASSET.PATH_DICT["movie"], "*")):
                 self.UIContainerRight_bg.set(
-                    os.path.basename(imgPath), IMG.resize(get_preview_of_vedio(imgPath), (container_width * 0.8, None))
+                    os.path.basename(imgPath), IMG.resize(get_preview_of_video(imgPath), (container_width * 0.8, None))
                 )
         # 加载透明图片
         self.UIContainerRight_bg.set(

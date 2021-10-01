@@ -148,7 +148,7 @@ class AbstractDialogSystem(AbstractGameSystem):
             # 更新背景的名称
             self.__background_image_name = image_name
             # 如果背景是视频，则应该停止，以防止内存泄漏
-            if isinstance(self.__background_image_surface, VedioSurface):
+            if isinstance(self.__background_image_surface, VideoSurface):
                 self.__background_image_surface.stop()
             # 更新背景的图片数据
             if self.__background_image_name is not None:
@@ -160,7 +160,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                         self.__background_image_surface = StaticImage(img_path, 0, 0)
                     # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
                     elif os.path.exists(os.path.join(ASSET.PATH_DICT["movie"], self.__background_image_name)):
-                        self.__background_image_surface = VedioSurface(
+                        self.__background_image_surface = VideoSurface(
                             os.path.join(ASSET.PATH_DICT["movie"], self.__background_image_name),
                             with_audio=False,
                         )
@@ -206,8 +206,8 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 停止播放
     def stop(self) -> None:
-        # 如果背景是多线程的VedioSurface，则应该退出占用
-        if isinstance(self.__background_image_surface, VedioSurface):
+        # 如果背景是多线程的VideoSurface，则应该退出占用
+        if isinstance(self.__background_image_surface, VideoSurface):
             self.__background_image_surface.stop()
         # 设置停止播放
         super().stop()

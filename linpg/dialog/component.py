@@ -166,7 +166,7 @@ def cutscene(surface: ImageSurface, videoPath: str, fade_out_in_ms: int = 3000) 
     BLACK_CURTAIN.fill(Color.BLACK)
     BLACK_CURTAIN.set_alpha(0)
     # 创建视频文件
-    VIDEO: VedioPlayer = VedioPlayer(videoPath)
+    VIDEO: VideoPlayer = VideoPlayer(videoPath)
     VIDEO.pre_init()
     # 播放主循环
     while is_playing is True and VIDEO.is_playing() is True:

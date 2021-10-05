@@ -67,6 +67,8 @@ def draw_rect(surface: ImageSurface, color: color_liked, rect: RectLiked, thickn
         pygame.draw.rect(surface, Color.get(color), rect, thickness)
     elif isinstance(rect, Rect):
         pygame.draw.rect(surface, Color.get(color), rect.get_rect(), thickness)
+    else:
+        EXCEPTION.fatal('You need to put in a rect liked object, and "{0}" is a "{1}".'.format(rect, type(rect)))
 
 
 # 转换pygame的rect类至linpg引擎的rect类

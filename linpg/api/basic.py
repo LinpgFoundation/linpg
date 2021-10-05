@@ -1,6 +1,5 @@
 from typing import Iterable
 from random import randint as RANDINT
-from re import split as RE_SPLIT
 from ..lang import *
 
 # 用于辨识基础游戏库的参数，True为默认的pyglet，False则为Pygame
@@ -15,6 +14,9 @@ try:
     # 初始化pygame
     pygame.init()
 except ModuleNotFoundError:
+
+    EXCEPTION.inform("Cannot import Linpg, try to use pyglet instead.")
+
     import pyglet
 
     _LIBRARY_INDICATOR = 1
@@ -78,12 +80,12 @@ def convert_percentage(percentage: Union[str, float]) -> float:
 
 
 # 获取Surface
-def new_surface(size: Iterable, surface_flags: any = None) -> ImageSurface:
+def new_surface(size: tuple, surface_flags: any = None) -> ImageSurface:
     return pygame.Surface(size, flags=surface_flags) if surface_flags is not None else pygame.Surface(size)
 
 
 # 获取透明的Surface
-def new_transparent_surface(size: Iterable) -> ImageSurface:
+def new_transparent_surface(size: tuple) -> ImageSurface:
     return new_surface(size, pygame.SRCALPHA).convert_alpha()
 
 

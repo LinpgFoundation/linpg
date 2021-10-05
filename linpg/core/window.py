@@ -88,3 +88,35 @@ class RenderedWindow(Rect):
     # 展示
     def present(self) -> None:
         self.__win.present()
+
+
+# 基于ImageSurface的内部窗口
+class SurfaceWindow(AdvancedAbstractImageSurface):
+    def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, bar_height: int_f, tag: str = ""):
+        super().__init__(None, x, y, width, height, tag=tag)
+        self._bar_height: int = int(bar_height)
+        self.__content_layer: ImageSurface = None
+        self.__mouse_hovered_local_pos: tuple = tuple()
+        self._generate_window()
+
+    def get_bar_rect(self) -> Rect:
+        return new_rect((0, 0), (self._width, self._bar_height))
+
+    def _generate_window(self):
+        self.img = new_surface((self._width, self._height + self._bar_height)).convert()
+        self.img.fill(Color.WHITE)
+        draw_rect(self.img, Color.LIGHT_GRAY, self.get_bar_rect())
+        draw_rect(self.img, Color.GRAY, self.img.get_rect(), 1)
+
+    def present_on(self, surface: ImageSurface) -> None:
+        if not self.hidden:
+            if Controller.mouse.get_pressed(0):
+                if len(self.__mouse_hovered_local_pos) > 0:
+                    self.move_to(Pos.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_local_pos))
+                elif is_hover(self.get_bar_rect(), off_set_x=self.x, off_set_y=self.y):
+                    self.__mouse_hovered_local_pos = Pos.subtract(Controller.mouse.get_pos(), self.pos)
+            else:
+                self.__mouse_hovered_local_pos = tuple()
+            surface.blit(self.img, self.pos)
+            if self.__content_layer is not None:
+                surface.blit(self.__content_layer, (self.x, self.y + self._bar_height))

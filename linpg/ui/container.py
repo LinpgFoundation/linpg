@@ -105,8 +105,8 @@ class DropDownSingleChoiceList(GameObjectsContainer):
 
     # 更新font的尺寸
     def update_font_size(self, font_size: int) -> None:
-        self.__block_height: int = int(font_size * 1.5)
         self.__FONT.update(font_size)
+        self.__block_height = round(self.__FONT.size * 1.5)
         self.__recalculate_width()
 
     # 更新font的颜色
@@ -132,11 +132,7 @@ class DropDownSingleChoiceList(GameObjectsContainer):
 
     # 获取高度
     def get_height(self) -> int:
-        return (
-            int((len(self._items_container) + 1) * self.__FONT.size * 1.5)
-            if not self.__fold_choice
-            else int(self.__FONT.size * 1.5)
-        )
+        return (len(self._items_container) + 1) * self.__block_height if not self.__fold_choice else self.__block_height
 
     # 移除一个物品
     def pop(self, index: int) -> None:
@@ -186,9 +182,9 @@ class DropDownSingleChoiceList(GameObjectsContainer):
                     self.__fold_choice = True
             # 列出选择
             if not self.__fold_choice:
-                index: int = 0
+                index: int = 1
                 for key_of_game_object, game_object_t in self._items_container.items():
-                    current_pos = Pos.add(current_abs_pos, (0, (index + 1) * self.__block_height))
+                    current_pos = Pos.add(current_abs_pos, (0, index * self.__block_height))
                     font_surface = self.__FONT.render_with_bounding(game_object_t, self.__font_color)
                     surface.blit(
                         font_surface,

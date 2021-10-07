@@ -30,6 +30,7 @@ class DisplayController:
 
     # 更新屏幕
     def flip(self) -> None:
+        Controller.finish_up()
         self.__clock.tick(self.fps)
         pygame.display.flip()
         # 如果需要截图

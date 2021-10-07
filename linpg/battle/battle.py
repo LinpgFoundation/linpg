@@ -138,30 +138,30 @@ class AbstractBattleSystem(AbstractGameSystem):
     # 检测手柄事件
     def _check_jostick_events(self) -> None:
         if Controller.joystick.get_init():
-            self.__pressKeyToMove["up"] = True if round(Controller.joystick.get_axis(4)) == -1 else False
-            self.__pressKeyToMove["down"] = True if round(Controller.joystick.get_axis(4)) == 1 else False
-            self.__pressKeyToMove["right"] = True if round(Controller.joystick.get_axis(3)) == 1 else False
-            self.__pressKeyToMove["left"] = True if round(Controller.joystick.get_axis(3)) == -1 else False
+            self.__pressKeyToMove["up"] = bool(round(Controller.joystick.get_axis(4)) == -1)
+            self.__pressKeyToMove["down"] = bool(round(Controller.joystick.get_axis(4)) == 1)
+            self.__pressKeyToMove["right"] = bool(round(Controller.joystick.get_axis(3)) == 1)
+            self.__pressKeyToMove["left"] = bool(round(Controller.joystick.get_axis(3)) == -1)
 
     # 检测并处理屏幕移动事件
     def _check_if_move_screen(self) -> None:
         # 根据按键情况设定要移动的数值
-        if self.__pressKeyToMove["up"]:
+        if self.__pressKeyToMove["up"] is True:
             if self.screen_to_move_y is None:
                 self.screen_to_move_y = self.MAP.block_height / 4
             else:
                 self.screen_to_move_y += self.MAP.block_height / 4
-        if self.__pressKeyToMove["down"]:
+        if self.__pressKeyToMove["down"] is True:
             if self.screen_to_move_y is None:
                 self.screen_to_move_y = -self.MAP.block_height / 4
             else:
                 self.screen_to_move_y -= self.MAP.block_height / 4
-        if self.__pressKeyToMove["left"]:
+        if self.__pressKeyToMove["left"] is True:
             if self.screen_to_move_x is None:
                 self.screen_to_move_x = self.MAP.block_width / 4
             else:
                 self.screen_to_move_x += self.MAP.block_width / 4
-        if self.__pressKeyToMove["right"]:
+        if self.__pressKeyToMove["right"] is True:
             if self.screen_to_move_x is None:
                 self.screen_to_move_x = -self.MAP.block_width / 4
             else:

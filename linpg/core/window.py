@@ -94,29 +94,98 @@ class RenderedWindow(Rect):
 class SurfaceWindow(AdvancedAbstractImageSurface):
     def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, bar_height: int_f, tag: str = ""):
         super().__init__(None, x, y, width, height, tag=tag)
-        self._bar_height: int = int(bar_height)
+        self.__bar_height: int = int(bar_height)
         self.__content_layer: ImageSurface = None
         self.__mouse_hovered_local_pos: tuple = tuple()
-        self._generate_window()
+        self.__outline_thickness: int = 2
+        self.__rescale_icon = StaticImage("<!ui>rescale.png", 0, 0, self.__bar_height, int(self.__bar_height / 4))
+        self.__if_regenerate_window: bool = True
+        self.__rescale_directions: dict[str, bool] = {"left": False, "right": False, "top": False, "bottom": False}
 
     def get_bar_rect(self) -> Rect:
-        return new_rect((0, 0), (self._width, self._bar_height))
+        return new_rect((0, 0), (self._width, self.__bar_height))
 
     def _generate_window(self):
-        self.img = new_surface((self._width, self._height + self._bar_height)).convert()
-        self.img.fill(Color.WHITE)
-        draw_rect(self.img, Color.LIGHT_GRAY, self.get_bar_rect())
-        draw_rect(self.img, Color.GRAY, self.img.get_rect(), 1)
+        if self.__if_regenerate_window is True:
+            self.img = new_surface((self._width, self._height)).convert()
+            self.img.fill(Color.WHITE)
+            draw_rect(self.img, Color.LIGHT_GRAY, self.get_bar_rect())
+            draw_rect(self.img, Color.GRAY, self.img.get_rect(), self.__outline_thickness)
+            self.__if_regenerate_window = False
+
+    def set_width(self, value: int_f) -> None:
+        super().set_width(value)
+        self.__if_regenerate_window = True
+
+    def set_height(self, value: int_f) -> None:
+        super().set_height(value)
+        self.__if_regenerate_window = True
 
     def present_on(self, surface: ImageSurface) -> None:
         if not self.hidden:
-            if Controller.mouse.get_pressed(0):
-                if len(self.__mouse_hovered_local_pos) > 0:
-                    self.move_to(Pos.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_local_pos))
-                elif is_hover(self.get_bar_rect(), off_set_x=self.x, off_set_y=self.y):
+            if not Controller.mouse.get_pressed_previously(0):
+                self.__rescale_directions["left"] = (
+                    -self.__outline_thickness <= Controller.mouse.x - self.x <= self.__outline_thickness * 2
+                )
+                self.__rescale_directions["right"] = (
+                    -self.__outline_thickness * 2 <= Controller.mouse.x - self.right <= self.__outline_thickness
+                )
+                self.__rescale_directions["top"] = (
+                    -self.__outline_thickness <= Controller.mouse.y - self.y <= self.__outline_thickness * 2
+                )
+                self.__rescale_directions["bottom"] = (
+                    -self.__outline_thickness * 2 <= Controller.mouse.y - self.bottom <= self.__outline_thickness
+                )
+
+                if True not in self.__rescale_directions.values() and is_hover(
+                    self.get_bar_rect(), off_set_x=self.x, off_set_y=self.y
+                ):
                     self.__mouse_hovered_local_pos = Pos.subtract(Controller.mouse.get_pos(), self.pos)
+                else:
+                    self.__mouse_hovered_local_pos = tuple()
+
             else:
-                self.__mouse_hovered_local_pos = tuple()
+                if Controller.mouse.get_pressed(0):
+                    if len(self.__mouse_hovered_local_pos) > 0:
+                        self.move_to(Pos.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_local_pos))
+                    else:
+                        # 向左放大
+                        if self.__rescale_directions["left"] is True and Controller.mouse.x < self.right:
+                            self.set_width(self.right - Controller.mouse.x)
+                            self.set_left(Controller.mouse.x)
+                        else:
+                            self.__rescale_directions["left"] = False
+                            self.__rescale_directions["right"] = True
+                        # 向右放大
+                        if self.__rescale_directions["right"] is True and Controller.mouse.x > self.left:
+                            self.set_width(Controller.mouse.x - self.left)
+                        else:
+                            self.__rescale_directions["right"] = False
+                            self.__rescale_directions["left"] = True
+                        # 向上放大
+                        if self.__rescale_directions["top"] is True and Controller.mouse.y < self.bottom - self.__bar_height:
+                            self.set_height(self.bottom - Controller.mouse.y)
+                            self.set_top(Controller.mouse.y)
+                        else:
+                            self.__rescale_directions["top"] = False
+                            self.__rescale_directions["bottom"] = True
+                        # 向下放大
+                        if self.__rescale_directions["bottom"] is True and Controller.mouse.y > self.top:
+                            self.set_height(Controller.mouse.y - self.top)
+                        else:
+                            self.__rescale_directions["bottom"] = False
+                            self.__rescale_directions["top"] = True
+                else:
+                    for key in self.__rescale_directions:
+                        self.__rescale_directions[key] = False
+                    self.__mouse_hovered_local_pos = tuple()
+
+            self._generate_window()
+
             surface.blit(self.img, self.pos)
             if self.__content_layer is not None:
-                surface.blit(self.__content_layer, (self.x, self.y + self._bar_height))
+                surface.blit(self.__content_layer, (self.x, self.y + self.__bar_height))
+
+            if True in self.__rescale_directions.values():
+                self.__rescale_icon.set_center(Controller.mouse.x, Controller.mouse.y)
+                self.__rescale_icon.draw(surface)

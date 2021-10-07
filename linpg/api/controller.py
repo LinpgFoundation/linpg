@@ -57,6 +57,9 @@ class MouseController:
     # 鼠标移动速度（使用手柄时）
     __moving_speed: int = int(max(Setting.get("MouseMoveSpeed"), 1))
 
+    # 鼠标上次更新时被按下的详情
+    __mouse_get_pressed_previously: tuple[bool] = (False, False, False, False, False)
+
     def __init__(self) -> None:
         custom: bool = False
         if not custom:
@@ -99,10 +102,18 @@ class MouseController:
     def get_pressed(button_id: int) -> bool:
         return pygame.mouse.get_pressed()[button_id]
 
+    # 是否鼠标按钮在本次更新被点击
+    def get_pressed_previously(self, button_id: int) -> bool:
+        return self.__mouse_get_pressed_previously[button_id]
+
     # 更新设备
     def update(self) -> None:
         # 更新鼠标坐标
         self.__x, self.__y = pygame.mouse.get_pos()
+
+    # 完成旧数据的存储
+    def finish_up(self) -> None:
+        self.__mouse_get_pressed_previously = pygame.mouse.get_pressed()
 
     # 画出自定义的鼠标图标
     def draw_custom_icon(self, surface: ImageSurface) -> None:
@@ -158,8 +169,12 @@ class GameController:
         except KeyError:
             EXCEPTION.fatal('The event type "{}" is not supported!'.format(event_type))
 
+    # 完成这一帧的收尾工作
+    def finish_up(self) -> None:
+        self.__mouse.finish_up()
+
     # 更新输入
-    def update(self):
+    def update(self) -> None:
         # 更新手柄输入事件
         self.__joystick.update()
         # 更新鼠标输入事件

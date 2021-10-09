@@ -63,7 +63,7 @@ class GameObject2d(GameObject):
         return self.get_width()
 
     def get_width(self) -> int:
-        EXCEPTION.fatal("The child class has to implement get_width() function!")
+        EXCEPTION.fatal("get_width()", 1)
 
     # 高
     @property
@@ -71,7 +71,7 @@ class GameObject2d(GameObject):
         return self.get_height()
 
     def get_height(self) -> int:
-        EXCEPTION.fatal("The child class has to implement get_height() function!")
+        EXCEPTION.fatal("get_height()", 1)
 
     # 尺寸
     @property
@@ -151,7 +151,7 @@ class GameObject2d(GameObject):
 
     # 根据offSet将图片展示到surface的对应位置上 - 子类必须实现
     def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
-        EXCEPTION.fatal("The child class does not implement display() function!")
+        EXCEPTION.fatal("display()", 1)
 
     # 根据offSet将图片展示到屏幕的对应位置上
     def display_on_screen(self, offSet: Iterable = Pos.ORIGIN) -> None:

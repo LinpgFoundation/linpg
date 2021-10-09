@@ -186,3 +186,11 @@ def cutscene(surface: ImageSurface, videoPath: str, fade_out_in_ms: int = 3000) 
                 VIDEO.stop()
             surface.blit(BLACK_CURTAIN, (0, 0))
         Display.flip()
+
+
+class DialogNavigator(AbstractSurfaceWindow):
+    def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, bar_height: int_f, tag: str = ""):
+        super().__init__(x, y, width, height, bar_height, tag=tag)
+
+    def _present_content(self, surface: ImageSurface) -> None:
+        pass

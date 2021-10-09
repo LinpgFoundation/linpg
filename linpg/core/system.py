@@ -106,7 +106,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
 
     # 把内容画到surface上（子类必须实现）
     def draw(self, surface: ImageSurface) -> None:
-        EXCEPTION.fatal("The child class needs to implement draw() function!")
+        EXCEPTION.fatal("draw()", 1)
 
     # 直接画到屏幕上
     def draw_on_screen(self) -> None:
@@ -154,7 +154,7 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
 
     # 获取需要保存的数据（子类必须实现）
     def _get_data_need_to_save(self) -> dict:
-        EXCEPTION.fatal("The child class needs to implement _get_data_need_to_save() function!")
+        EXCEPTION.fatal("_get_data_need_to_save()", 1)
 
     # 保存进度
     def save_progress(self) -> None:

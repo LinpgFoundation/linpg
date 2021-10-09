@@ -6,13 +6,25 @@ class InfoManager:
     __INFO: dict = dict(Config.load_internal("info.json"))
 
     # 确保linpg版本
-    def ensure_linpg_version(self, action: str, revision: int, patch: int) -> bool:
+    def ensure_linpg_version(self, action: str, revision: int, patch: int, version: int = 3) -> bool:
         if action == "==":
-            return revision == int(self.__INFO["revision"]) and patch == int(self.__INFO["patch"])
+            return (
+                version == int(self.__INFO["version"])
+                and revision == int(self.__INFO["revision"])
+                and patch == int(self.__INFO["patch"])
+            )
         elif action == ">=":
-            return revision >= int(self.__INFO["revision"]) and patch >= int(self.__INFO["patch"])
+            return (
+                version >= int(self.__INFO["version"])
+                and revision >= int(self.__INFO["revision"])
+                and patch >= int(self.__INFO["patch"])
+            )
         elif action == "<=":
-            return revision <= int(self.__INFO["revision"]) and patch <= int(self.__INFO["patch"])
+            return (
+                version <= int(self.__INFO["version"])
+                and revision <= int(self.__INFO["revision"])
+                and patch <= int(self.__INFO["patch"])
+            )
 
     # 获取当前版本号
     @property

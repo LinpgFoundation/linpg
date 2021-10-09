@@ -91,59 +91,74 @@ class RenderedWindow(Rect):
 
 
 # 基于ImageSurface的内部窗口
-class SurfaceWindow(AdvancedAbstractImageSurface):
+class AbstractSurfaceWindow(AdvancedAbstractImageSurface):
     def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, bar_height: int_f, tag: str = ""):
         super().__init__(None, x, y, width, height, tag=tag)
         self.__bar_height: int = int(bar_height)
-        self.__content_layer: ImageSurface = None
         self.__mouse_hovered_local_pos: tuple = tuple()
         self.__outline_thickness: int = 2
-        self.__rescale_icon = StaticImage("<!ui>rescale.png", 0, 0, self.__bar_height, int(self.__bar_height / 4))
-        self.__if_regenerate_window: bool = True
+        self.__rescale_icon = StaticImage("<!ui>rescale.png", 0, 0, self.__bar_height, self.__bar_height)
         self.__rescale_directions: dict[str, bool] = {"left": False, "right": False, "top": False, "bottom": False}
+        self.__if_regenerate_window: bool = True
 
-    def get_bar_rect(self) -> Rect:
-        return new_rect((0, 0), (self._width, self.__bar_height))
-
-    def _generate_window(self):
+    # 更新窗口
+    def __update_window_frame(self) -> None:
         if self.__if_regenerate_window is True:
             self.img = new_surface((self._width, self._height)).convert()
             self.img.fill(Color.WHITE)
-            draw_rect(self.img, Color.LIGHT_GRAY, self.get_bar_rect())
+            draw_rect(self.img, Color.LIGHT_GRAY, ((0, 0), (self._width, self.__bar_height)))
             draw_rect(self.img, Color.GRAY, self.img.get_rect(), self.__outline_thickness)
             self.__if_regenerate_window = False
 
+    # 展示内容（子类必须实现该功能）
+    def _present_content(self, surface: ImageSurface) -> None:
+        EXCEPTION.fatal("_present_content()", 1)
+
+    # 设置宽度
     def set_width(self, value: int_f) -> None:
         super().set_width(value)
         self.__if_regenerate_window = True
 
+    # 设置高度
     def set_height(self, value: int_f) -> None:
         super().set_height(value)
         self.__if_regenerate_window = True
 
+    # 展示
     def present_on(self, surface: ImageSurface) -> None:
         if not self.hidden:
             if not Controller.mouse.get_pressed_previously(0):
-                self.__rescale_directions["left"] = (
-                    -self.__outline_thickness <= Controller.mouse.x - self.x <= self.__outline_thickness * 2
+                self.__rescale_directions["left"] = is_in_range(
+                    Controller.mouse.x - self.x, -self.__outline_thickness, self.__outline_thickness * 2
                 )
-                self.__rescale_directions["right"] = (
-                    -self.__outline_thickness * 2 <= Controller.mouse.x - self.right <= self.__outline_thickness
+                self.__rescale_directions["right"] = is_in_range(
+                    Controller.mouse.x - self.right, -self.__outline_thickness * 2, self.__outline_thickness
                 )
-                self.__rescale_directions["top"] = (
-                    -self.__outline_thickness <= Controller.mouse.y - self.y <= self.__outline_thickness * 2
+                self.__rescale_directions["top"] = is_in_range(
+                    Controller.mouse.y - self.y, -self.__outline_thickness, self.__outline_thickness * 2
                 )
-                self.__rescale_directions["bottom"] = (
-                    -self.__outline_thickness * 2 <= Controller.mouse.y - self.bottom <= self.__outline_thickness
+                self.__rescale_directions["bottom"] = is_in_range(
+                    Controller.mouse.y - self.bottom, -self.__outline_thickness * 2, self.__outline_thickness
                 )
-
                 if True not in self.__rescale_directions.values() and is_hover(
-                    self.get_bar_rect(), off_set_x=self.x, off_set_y=self.y
+                    new_rect((self.x, self.y), (self._width, self.__bar_height))
                 ):
                     self.__mouse_hovered_local_pos = Pos.subtract(Controller.mouse.get_pos(), self.pos)
                 else:
                     self.__mouse_hovered_local_pos = tuple()
 
+                if (self.__rescale_directions["top"] and self.__rescale_directions["right"] is True) or (
+                    self.__rescale_directions["bottom"] and self.__rescale_directions["left"] is True
+                ):
+                    self.__rescale_icon.rotate_to(45)
+                elif (self.__rescale_directions["top"] and self.__rescale_directions["left"] is True) or (
+                    self.__rescale_directions["bottom"] and self.__rescale_directions["right"] is True
+                ):
+                    self.__rescale_icon.rotate_to(135)
+                elif self.__rescale_directions["top"] or self.__rescale_directions["bottom"]:
+                    self.__rescale_icon.rotate_to(90)
+                else:
+                    self.__rescale_icon.rotate_to(0)
             else:
                 if Controller.mouse.get_pressed(0):
                     if len(self.__mouse_hovered_local_pos) > 0:
@@ -180,11 +195,10 @@ class SurfaceWindow(AdvancedAbstractImageSurface):
                         self.__rescale_directions[key] = False
                     self.__mouse_hovered_local_pos = tuple()
 
-            self._generate_window()
+            self.__update_window_frame()
 
             surface.blit(self.img, self.pos)
-            if self.__content_layer is not None:
-                surface.blit(self.__content_layer, (self.x, self.y + self.__bar_height))
+            self._present_content(surface)
 
             if True in self.__rescale_directions.values():
                 self.__rescale_icon.set_center(Controller.mouse.x, Controller.mouse.y)

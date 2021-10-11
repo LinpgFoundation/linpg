@@ -162,7 +162,7 @@ def cutscene(surface: ImageSurface, videoPath: str, fade_out_in_ms: int = 3000) 
         bar_height, surface.get_height() - bar_height * 2, surface.get_width() - bar_height * 2, bar_height, "white"
     )
     # 生成黑色帘幕
-    BLACK_CURTAIN: ImageSurface = new_surface(surface.get_size()).convert()
+    BLACK_CURTAIN: ImageSurface = new_surface(surface.get_size())
     BLACK_CURTAIN.fill(Color.BLACK)
     BLACK_CURTAIN.set_alpha(0)
     # 创建视频文件
@@ -188,9 +188,14 @@ def cutscene(surface: ImageSurface, videoPath: str, fade_out_in_ms: int = 3000) 
         Display.flip()
 
 
-class DialogNavigator(AbstractSurfaceWindow):
+class DialogNavigatorWindow(AbstractSurfaceWindow):
     def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, bar_height: int_f, tag: str = ""):
         super().__init__(x, y, width, height, bar_height, tag=tag)
+        self.__node_maps: dict = {}
+
+    def add_node(self, key: str, next_keys: tuple[str]) -> None:
+        self.__node_maps[key] = load_button_with_text_in_center()
+        self.__node_maps[key].next = next_keys
 
     def _present_content(self, surface: ImageSurface) -> None:
         pass

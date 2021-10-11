@@ -186,7 +186,7 @@ class EnvImagesManagement:
         self.__BACKGROUND_SURFACE = (
             IMG.resize(self.__BACKGROUND_IMAGE, screen_size)
             if self.__BACKGROUND_IMAGE is not None
-            else new_surface(screen_size).convert()
+            else new_surface(screen_size)
         )
         if self.__MAP_SURFACE is not None:
             self.__MAP_SURFACE.fill(Color.TRANSPARENT)

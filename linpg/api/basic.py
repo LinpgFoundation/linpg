@@ -64,11 +64,6 @@ def get_random_int(start: int, end: int) -> int:
     return RANDINT(start, end)
 
 
-# 检测数值是否在范围内
-def is_in_range(number: number, min_value: number, max_value: number) -> bool:
-    return min_value <= number <= max_value
-
-
 # 检测数值是否越界
 def keep_in_range(number: number, min_value: number, max_value: number) -> number:
     return max(min(max_value, number), min_value)
@@ -84,14 +79,14 @@ def convert_percentage(percentage: Union[str, float]) -> float:
         EXCEPTION.fatal('"{}" is not a valid percentage that can be converted'.format(percentage))
 
 
-# 获取Surface
-def new_surface(size: tuple, surface_flags: any = None) -> ImageSurface:
-    return pygame.Surface(size, flags=surface_flags) if surface_flags is not None else pygame.Surface(size)
-
-
 # 根据array生成Surface
 def make_surface_from_array(surface_array: Iterable) -> ImageSurface:
     return pygame.surfarray.make_surface(surface_array)
+
+
+# 获取Surface
+def new_surface(size: tuple, surface_flags: any = None) -> ImageSurface:
+    return pygame.Surface(size, flags=surface_flags) if surface_flags is not None else pygame.Surface(size).convert()
 
 
 # 获取透明的Surface

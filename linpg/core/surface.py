@@ -131,6 +131,7 @@ class AdvancedAbstractImageSurface(AbstractImageSurface):
         return self.abs_x, self.abs_y
 
 
+# 带缓存的高级图片拟态类
 class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
     def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         super().__init__(img, x, y, width, height, tag=tag)

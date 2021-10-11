@@ -161,9 +161,7 @@ class FontManager:
         thickness: int = 2,
     ) -> ImageSurface:
         font_surface = self.render(txt, color, size, ifBold, ifItalic)
-        des_surface = new_surface(
-            (font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2)
-        ).convert()
+        des_surface = new_surface((font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2))
         des_surface.fill(Color.get(background_color))
         pygame.draw.rect(
             des_surface,

@@ -95,7 +95,7 @@ class AbstractSurfaceWindow(AdvancedAbstractImageSurface):
     def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, bar_height: int_f, tag: str = ""):
         super().__init__(None, x, y, width, height, tag=tag)
         self.__bar_height: int = int(bar_height)
-        self.__mouse_hovered_local_pos: tuple = tuple()
+        self.__mouse_hovered_offset_pos: tuple = tuple()
         self.__outline_thickness: int = 2
         self.__rescale_icon = StaticImage("<!ui>rescale.png", 0, 0, self.__bar_height, self.__bar_height)
         self.__rescale_directions: dict[str, bool] = {"left": False, "right": False, "top": False, "bottom": False}
@@ -104,7 +104,7 @@ class AbstractSurfaceWindow(AdvancedAbstractImageSurface):
     # 更新窗口
     def __update_window_frame(self) -> None:
         if self.__if_regenerate_window is True:
-            self.img = new_surface((self._width, self._height)).convert()
+            self.img = new_surface(self.size)
             self.img.fill(Color.WHITE)
             draw_rect(self.img, Color.LIGHT_GRAY, ((0, 0), (self._width, self.__bar_height)))
             draw_rect(self.img, Color.GRAY, self.img.get_rect(), self.__outline_thickness)
@@ -124,82 +124,93 @@ class AbstractSurfaceWindow(AdvancedAbstractImageSurface):
         super().set_height(value)
         self.__if_regenerate_window = True
 
+    # 角落是否被触碰
+    def __is_corner_hovered(self, side1: str, side2: str = None) -> bool:
+        if side2 is None:
+            return bool(self.__rescale_directions[side1])
+        else:
+            return self.__rescale_directions[side1] is True and self.__rescale_directions[side2] is True
+
     # 展示
     def present_on(self, surface: ImageSurface) -> None:
         if not self.hidden:
+            # 如果鼠标之前没有被按下
             if not Controller.mouse.get_pressed_previously(0):
-                self.__rescale_directions["left"] = is_in_range(
-                    Controller.mouse.x - self.x, -self.__outline_thickness, self.__outline_thickness * 2
+                # 查看鼠标是否触碰窗口的边缘
+                self.__rescale_directions["left"] = bool(
+                    -self.__outline_thickness <= Controller.mouse.x - self.x < self.__outline_thickness * 2
                 )
-                self.__rescale_directions["right"] = is_in_range(
-                    Controller.mouse.x - self.right, -self.__outline_thickness * 2, self.__outline_thickness
+                self.__rescale_directions["right"] = bool(
+                    -self.__outline_thickness * 2 < Controller.mouse.x - self.right <= self.__outline_thickness
                 )
-                self.__rescale_directions["top"] = is_in_range(
-                    Controller.mouse.y - self.y, -self.__outline_thickness, self.__outline_thickness * 2
+                self.__rescale_directions["top"] = bool(
+                    -self.__outline_thickness <= Controller.mouse.y - self.y < self.__outline_thickness * 2
                 )
-                self.__rescale_directions["bottom"] = is_in_range(
-                    Controller.mouse.y - self.bottom, -self.__outline_thickness * 2, self.__outline_thickness
+                self.__rescale_directions["bottom"] = bool(
+                    -self.__outline_thickness * 2 < Controller.mouse.y - self.bottom <= self.__outline_thickness
                 )
+                # 如果鼠标按住bar
                 if True not in self.__rescale_directions.values() and is_hover(
                     new_rect((self.x, self.y), (self._width, self.__bar_height))
                 ):
-                    self.__mouse_hovered_local_pos = Pos.subtract(Controller.mouse.get_pos(), self.pos)
+                    self.__mouse_hovered_offset_pos = Pos.subtract(Controller.mouse.get_pos(), self.pos)
                 else:
-                    self.__mouse_hovered_local_pos = tuple()
-
-                if (self.__rescale_directions["top"] and self.__rescale_directions["right"] is True) or (
-                    self.__rescale_directions["bottom"] and self.__rescale_directions["left"] is True
-                ):
+                    self.__mouse_hovered_offset_pos = tuple()
+                # 如果鼠标触碰了边框，则旋转放大icon至对应角度
+                if self.__is_corner_hovered("top", "right") or self.__is_corner_hovered("bottom", "left"):
                     self.__rescale_icon.rotate_to(45)
-                elif (self.__rescale_directions["top"] and self.__rescale_directions["left"] is True) or (
-                    self.__rescale_directions["bottom"] and self.__rescale_directions["right"] is True
-                ):
+                elif self.__is_corner_hovered("top", "left") or self.__is_corner_hovered("bottom", "right"):
                     self.__rescale_icon.rotate_to(135)
-                elif self.__rescale_directions["top"] or self.__rescale_directions["bottom"]:
+                elif self.__is_corner_hovered("top") or self.__is_corner_hovered("bottom"):
                     self.__rescale_icon.rotate_to(90)
                 else:
                     self.__rescale_icon.rotate_to(0)
-            else:
-                if Controller.mouse.get_pressed(0):
-                    if len(self.__mouse_hovered_local_pos) > 0:
-                        self.move_to(Pos.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_local_pos))
-                    else:
-                        # 向左放大
-                        if self.__rescale_directions["left"] is True and Controller.mouse.x < self.right:
+            elif Controller.mouse.get_pressed(0):
+                # 移动窗口
+                if len(self.__mouse_hovered_offset_pos) > 0:
+                    self.move_to(Pos.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_offset_pos))
+                else:
+                    # 向左放大
+                    if self.__rescale_directions["left"] is True:
+                        if Controller.mouse.x < self.right:
                             self.set_width(self.right - Controller.mouse.x)
                             self.set_left(Controller.mouse.x)
                         else:
                             self.__rescale_directions["left"] = False
                             self.__rescale_directions["right"] = True
-                        # 向右放大
-                        if self.__rescale_directions["right"] is True and Controller.mouse.x > self.left:
+                    # 向右放大
+                    if self.__rescale_directions["right"] is True:
+                        if Controller.mouse.x > self.left:
                             self.set_width(Controller.mouse.x - self.left)
                         else:
                             self.__rescale_directions["right"] = False
                             self.__rescale_directions["left"] = True
-                        # 向上放大
-                        if self.__rescale_directions["top"] is True and Controller.mouse.y < self.bottom - self.__bar_height:
+                    # 向上放大
+                    if self.__rescale_directions["top"] is True:
+                        if Controller.mouse.y < self.bottom - self.__bar_height:
                             self.set_height(self.bottom - Controller.mouse.y)
                             self.set_top(Controller.mouse.y)
                         else:
                             self.__rescale_directions["top"] = False
                             self.__rescale_directions["bottom"] = True
-                        # 向下放大
-                        if self.__rescale_directions["bottom"] is True and Controller.mouse.y > self.top:
+                    # 向下放大
+                    if self.__rescale_directions["bottom"] is True:
+                        if Controller.mouse.y > self.top:
                             self.set_height(Controller.mouse.y - self.top)
                         else:
                             self.__rescale_directions["bottom"] = False
                             self.__rescale_directions["top"] = True
-                else:
-                    for key in self.__rescale_directions:
-                        self.__rescale_directions[key] = False
-                    self.__mouse_hovered_local_pos = tuple()
-
+            else:
+                for key in self.__rescale_directions:
+                    self.__rescale_directions[key] = False
+                self.__mouse_hovered_offset_pos = tuple()
+            # 更新窗口
             self.__update_window_frame()
-
+            # 画出窗口
             surface.blit(self.img, self.pos)
+            # 画出内容
             self._present_content(surface)
-
+            # 画出放大icon
             if True in self.__rescale_directions.values():
                 self.__rescale_icon.set_center(Controller.mouse.x, Controller.mouse.y)
                 self.__rescale_icon.draw(surface)

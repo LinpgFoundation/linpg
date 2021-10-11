@@ -9,7 +9,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 加载对话的背景图片模块
         self._npc_manager = CharacterImageManager()
         # 黑色Void帘幕
-        black_surface_t = new_surface(Display.get_size()).convert()
+        black_surface_t = new_surface(Display.get_size())
         black_surface_t.fill(Color.BLACK)
         self._black_bg = StaticImage(black_surface_t, 0, 0, black_surface_t.get_width(), black_surface_t.get_height())
         # 加载对话框系统

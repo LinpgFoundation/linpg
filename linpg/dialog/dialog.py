@@ -192,7 +192,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         # 展示历史
         if self._is_showing_history is True:
             if self._history_surface is None:
-                self._history_surface = new_surface(Display.get_size()).convert()
+                self._history_surface = new_surface(Display.get_size())
                 self._history_surface.fill(Color.BLACK)
                 self._history_surface.set_alpha(150)
                 dialogIdTemp = "head"

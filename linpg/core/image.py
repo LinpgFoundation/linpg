@@ -51,19 +51,9 @@ class DynamicImage(AbstractImageSurface):
 class StaticImage(AdvancedAbstractCachingImageSurface):
     def __init__(self, img: PoI, x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = ""):
         super().__init__(IMG.quickly_load(img), x, y, width, height, tag)
-        self.__is_flipped: bool = False
+        self.__is_flipped_horizontally: bool = False
+        self.__is_flipped_vertically: bool = False
         self.__crop_rect: object = None
-        self.__rotate_degree: int = 0
-
-    # 旋转至
-    def rotate_to(self, angle: int) -> None:
-        self.__rotate_degree = angle
-        self._need_update = True
-
-    # 旋转
-    def rotate(self, angle: int) -> None:
-        self.__rotate_degree += angle
-        self._need_update = True
 
     # 截图的范围
     @property
@@ -84,24 +74,31 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
             EXCEPTION.fatal("You have to input either a None or a Rect, not {}".format(type(rect)))
 
     # 反转原图，并打上已反转的标记
-    def flip(self) -> None:
-        self.__is_flipped = not self.__is_flipped
-        self._need_update = True
-
-    # 反转原图
-    def flip_original_img(self, horizontal: bool = True, vertical: bool = False) -> None:
-        self.img = IMG.flip(self.img, horizontal, vertical)
-        self._need_update = True
+    def flip(self, horizontal: bool = True, vertical: bool = False) -> None:
+        if horizontal is True:
+            self.__is_flipped_horizontally = not self.__is_flipped_horizontally
+            self._need_update = True
+        if vertical is True:
+            self.__is_flipped_vertically = not self.__is_flipped_vertically
+            self._need_update = True
 
     # 如果不处于反转状态，则反转
-    def flip_if_not(self) -> None:
-        if not self.__is_flipped:
-            self.flip()
+    def flip_if_not(self, horizontal: bool = True, vertical: bool = False) -> None:
+        if horizontal is True and not self.__is_flipped_horizontally:
+            self.__is_flipped_horizontally = True
+            self._need_update = True
+        if vertical is True and not self.__is_flipped_vertically:
+            self.__is_flipped_vertically = True
+            self._need_update = True
 
     # 反转回正常状态
     def flip_back_to_normal(self) -> None:
-        if self.__is_flipped:
-            self.flip()
+        if self.__is_flipped_horizontally is True:
+            self.__is_flipped_horizontally = False
+            self._need_update = True
+        if self.__is_flipped_vertically is True:
+            self.__is_flipped_vertically = False
+            self._need_update = True
 
     # 返回一个复制品
     def copy(self) -> AdvancedAbstractImageSurface:
@@ -116,12 +113,8 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         # 改变尺寸
         imgTmp = IMG.smoothly_resize(self.img, self.size) if Setting.antialias is True else IMG.resize(self.img, self.size)
         # 翻转图片
-        if self.__is_flipped is True:
-            imgTmp = IMG.flip(imgTmp, True, False)
-        # 旋转图片
-        self.__rotate_degree %= 360
-        if self.__rotate_degree > 0:
-            imgTmp = IMG.rotate(imgTmp, self.__rotate_degree)
+        if self.__is_flipped_horizontally is True or self.__is_flipped_vertically is True:
+            imgTmp = IMG.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)
         # 获取切割rect
         rect = imgTmp.get_bounding_rect()
         if self.width != rect.width or self.height != rect.height or self.__crop_rect is not None:

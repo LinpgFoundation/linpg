@@ -22,7 +22,7 @@ class Loader:
     # 可自行移动的图片
     @staticmethod
     def movable_image(
-        path: str, position: tuple, target_position: tuple, move_speed: tuple = (0, 0), size: tuple = NoSize, tag=""
+        path: str, position: tuple, target_position: tuple, move_speed: tuple, size: tuple, tag=""
     ) -> MovableImage:
         return MovableImage(
             path,

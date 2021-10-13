@@ -182,14 +182,28 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
         self.img = IMG.add_darkness(self.img, value)
         self._need_update = True
 
+    # 减暗度
     def subtract_darkness(self, value: int) -> None:
         self.img = IMG.subtract_darkness(self.img, value)
+        self._need_update = True
+
+    # 旋转
+    def rotate(self, angle: int) -> None:
+        # 旋转图片
+        super().rotate(angle)
+        self._need_update = True
+
+    # 反转原图
+    def flip_original_img(self, horizontal: bool = True, vertical: bool = False) -> None:
+        self.img = IMG.flip(self.img, horizontal, vertical)
         self._need_update = True
 
     # 画出轮廓
     def draw_outline(
         self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN, color: color_liked = "red", line_width: int = 2
     ) -> None:
+        if self._need_update is True:
+            self._update_img()
         draw_rect(surface, color, (Pos.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width)
 
     # 展示

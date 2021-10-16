@@ -1,5 +1,4 @@
 from ..dialog import *
-import numpy
 
 # 地图场景模块
 class EnvImagesManagement:

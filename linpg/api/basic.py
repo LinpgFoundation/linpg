@@ -1,5 +1,8 @@
-from typing import Iterable
 from random import randint as RANDINT
+from typing import Iterable
+
+import numpy
+
 from ..lang import *
 
 # 用于辨识基础游戏库的参数，True为默认的pyglet，False则为Pygame
@@ -80,8 +83,21 @@ def convert_percentage(percentage: Union[str, float]) -> float:
 
 
 # 根据array生成Surface
-def make_surface_from_array(surface_array: Iterable) -> ImageSurface:
-    return pygame.surfarray.make_surface(surface_array)
+def make_surface_from_array(surface_array: numpy.ndarray, swap_axes: bool = True) -> ImageSurface:
+    if swap_axes is True:
+        surface_array = surface_array.swapaxes(0, 1)
+    if surface_array.shape[2] < 4:
+        return pygame.surfarray.make_surface(surface_array).convert()
+    else:
+        # by llindstrom
+        surface = new_transparent_surface(surface_array.shape[0:2])
+        # Copy the rgb part of array to the new surface.
+        pygame.pixelcopy.array_to_surface(surface, surface_array[:, :, 0:3])
+        # Copy the alpha part of array to the surface using a pixels-alpha
+        # view of the surface.
+        surface_alpha = numpy.array(surface.get_view("A"), copy=False)
+        surface_alpha[:, :] = surface_array[:, :, 3]
+        return surface
 
 
 # 获取Surface

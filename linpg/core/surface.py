@@ -48,6 +48,11 @@ class AbstractImageSurface(Rect):
     def set_height_with_original_image_size_locked(self, height: int_f) -> None:
         self.set_size(height / self.img.get_height() * self.img.get_width(), height)
 
+    # 自动放大2倍
+    def scale_n_times(self, times: float) -> None:
+        self.set_width(self.get_width() * times)
+        self.set_height(self.get_height() * times)
+
     # 旋转
     def rotate(self, angle: int) -> None:
         self.img = IMG.rotate(self.img, angle)

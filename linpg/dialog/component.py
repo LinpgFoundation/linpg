@@ -189,8 +189,8 @@ def cutscene(surface: ImageSurface, videoPath: str, fade_out_in_ms: int = 3000) 
 
 
 class DialogNavigatorWindow(AbstractSurfaceWindow):
-    def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, bar_height: int_f, tag: str = ""):
-        super().__init__(x, y, width, height, bar_height, tag=tag)
+    def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
+        super().__init__(x, y, width, height, tag=tag)
         self.__node_maps: dict = {}
 
     def add_node(self, key: str, next_keys: tuple[str]) -> None:

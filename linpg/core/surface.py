@@ -8,12 +8,12 @@ class AbstractImageSurface(Rect):
         self.hidden: bool = False
         self.tag: str = str(tag)
         # 确保长宽均已输入且为正整数
-        if self._width < 0 and self._height < 0:
-            self._width, self._height = self.img.get_size()
-        elif self._width < 0 and self._height >= 0:
-            self.set_width(self._height / self.img.get_height() * self.img.get_width())
-        elif self._width >= 0 and self._height < 0:
-            self.set_height(self._width / self.img.get_width() * self.img.get_height())
+        if self.get_width() < 0 and self.get_height() < 0:
+            self.set_size(self.img.get_width(), self.img.get_height())
+        elif self.get_width() < 0 and self.get_height() >= 0:
+            self.set_width(self.get_height() / self.img.get_height() * self.img.get_width())
+        elif self.get_width() >= 0 and self.get_height() < 0:
+            self.set_height(self.get_width() / self.img.get_width() * self.img.get_height())
 
     """透明度"""
 
@@ -141,7 +141,7 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
     def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         super().__init__(img, x, y, width, height, tag=tag)
         self._processed_img: ImageSurface = None
-        self._need_update: bool = True if self._width >= 0 and self._height >= 0 else False
+        self._need_update: bool = True if self.get_width() >= 0 and self.get_height() >= 0 else False
 
     # 处理图片（子类必须实现）
     def _update_img(self) -> None:
@@ -160,13 +160,13 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 宽度
     def set_width(self, value: int_f) -> None:
-        if (value := int(value)) != self._width:
+        if (value := int(value)) != self.get_width():
             super().set_width(value)
             self._need_update = True
 
     # 高度
     def set_height(self, value: int_f) -> None:
-        if (value := int(value)) != self._height:
+        if (value := int(value)) != self.get_height():
             super().set_height(value)
             self._need_update = True
 

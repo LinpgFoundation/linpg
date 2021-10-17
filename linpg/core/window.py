@@ -117,7 +117,7 @@ class AbstractSurfaceWindow(AdvancedAbstractImageSurface):
         if self.__if_regenerate_window is True:
             self.img = new_surface(self.size)
             self.img.fill(Color.WHITE)
-            draw_rect(self.img, Color.LIGHT_GRAY, ((0, 0), (self._width, self._bar_height)))
+            draw_rect(self.img, Color.LIGHT_GRAY, ((0, 0), (self.get_width(), self._bar_height)))
             draw_rect(self.img, Color.GRAY, self.img.get_rect(), self._outline_thickness)
             if self._rescale_icon_0 is None:
                 self._rescale_icon_0 = StaticImage("<!ui>rescale.png", 0, 0, self._bar_height * 1.5, self._bar_height * 1.5)
@@ -172,7 +172,7 @@ class AbstractSurfaceWindow(AdvancedAbstractImageSurface):
                 )
                 # 如果鼠标按住bar
                 if True not in self.__rescale_directions.values() and is_hover(
-                    new_rect((self.x, self.y), (self._width, self._bar_height))
+                    new_rect((self.x, self.y), (self.get_width(), self._bar_height))
                 ):
                     self.__mouse_hovered_offset_pos = Pos.subtract(Controller.mouse.get_pos(), self.pos)
                 else:

@@ -35,7 +35,7 @@ class FontGenerator:
     # 更新文字模块
     def update(self, size: int_f, ifBold: bool = False, ifItalic: bool = False) -> None:
         if size <= 0:
-            EXCEPTION.fatal("Font size must be bigger than 0!")
+            EXCEPTION.fatal("Font size must be greater than 0!")
         self.__SIZE = int(size)
         # 根据类型处理
         if Setting.font_type == "default":

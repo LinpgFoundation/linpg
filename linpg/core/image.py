@@ -8,13 +8,13 @@ class DynamicImage(AbstractImageSurface):
 
     # 返回一个复制
     def copy(self) -> AbstractImageSurface:
-        replica = DynamicImage(self.get_image_copy(), self.x, self.y, self._width, self._height, self.tag)
+        replica = DynamicImage(self.get_image_copy(), self.x, self.y, self.get_width(), self.get_height(), self.tag)
         replica.set_alpha(255)
         return replica
 
     # 返回一个浅复制品
     def light_copy(self) -> AbstractImageSurface:
-        return DynamicImage(self.img, self.x, self.y, self._width, self._height, self.tag)
+        return DynamicImage(self.img, self.x, self.y, self.get_width(), self.get_height(), self.tag)
 
     # 反转
     def flip(self, vertical: bool = False, horizontal: bool = False) -> None:
@@ -102,11 +102,11 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
 
     # 返回一个复制品
     def copy(self) -> AdvancedAbstractImageSurface:
-        return StaticImage(self.img.copy(), self.x, self.y, self._width, self._height)
+        return StaticImage(self.img.copy(), self.x, self.y, self.get_width(), self.get_height())
 
     # 返回一个浅复制品
     def light_copy(self) -> AdvancedAbstractImageSurface:
-        return StaticImage(self.img, self.x, self.y, self._width, self._height)
+        return StaticImage(self.img, self.x, self.y, self.get_width(), self.get_height())
 
     # 更新图片
     def _update_img(self) -> None:
@@ -171,8 +171,8 @@ class MovableImage(StaticImage):
             self.__target_y,
             self.__move_speed_x,
             self.__move_speed_y,
-            self._width,
-            self._height,
+            self.get_width(),
+            self.get_height(),
             self.tag,
         )
 
@@ -186,8 +186,8 @@ class MovableImage(StaticImage):
             self.__target_y,
             self.__move_speed_x,
             self.__move_speed_y,
-            self._width,
-            self._height,
+            self.get_width(),
+            self.get_height(),
             self.tag,
         )
 
@@ -288,11 +288,11 @@ class GifImage(AdvancedAbstractImageSurface):
 
     # 返回一个复制
     def copy(self) -> AdvancedAbstractImageSurface:
-        return GifImage(self.get_image_copy(), self.x, self.y, self._width, self._height, self.updateGap)
+        return GifImage(self.get_image_copy(), self.x, self.y, self.get_width(), self.get_height(), self.updateGap)
 
     # 返回一个浅复制品
     def light_copy(self) -> AdvancedAbstractImageSurface:
-        return GifImage(self.img, self.x, self.y, self._width, self._height, self.updateGap)
+        return GifImage(self.img, self.x, self.y, self.get_width(), self.get_height(), self.updateGap)
 
     # 当前图片
     @property

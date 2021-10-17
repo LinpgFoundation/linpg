@@ -148,19 +148,19 @@ class MapObject(AdvancedAbstractImageSurface):
     # 控制地图放大缩小
     def changePerBlockSize(self, newPerBlockWidth: int_f, newPerBlockHeight: int_f) -> None:
         # 记录老尺寸
-        old_width: int = self._width
-        old_height: int = self._height
+        old_width: int = self.get_width()
+        old_height: int = self.get_height()
         # 更新尺寸
         self.set_width(newPerBlockWidth * 0.9 * ((self.row + self.column + 1) / 2))
         self.set_height(newPerBlockWidth * 0.45 * ((self.row + self.column + 1) / 2) + newPerBlockWidth)
         MAP_ENV_IMAGE.set_block_size(newPerBlockWidth, newPerBlockHeight)
-        if self._width < Display.get_width():
-            self._width = Display.get_width()
-        if self._height < Display.get_height():
-            self._height = Display.get_height()
+        if self.get_width() < Display.get_width():
+            self.set_width(Display.get_width())
+        if self.get_height() < Display.get_height():
+            self.set_height(Display.get_height())
         # 自动校准坐标
-        self.add_local_x((old_width - self._width) / 2)
-        self.add_local_y((old_height - self._height) / 2)
+        self.add_local_x((old_width - self.get_width()) / 2)
+        self.add_local_y((old_height - self.get_height()) / 2)
         # 打上需要更新的标签
         self.__need_update_surface = True
         self.__block_on_surface = None
@@ -181,14 +181,14 @@ class MapObject(AdvancedAbstractImageSurface):
     # 把地图画到屏幕上
     def display_map(self, screen: ImageSurface, screen_to_move_x: int = 0, screen_to_move_y: int = 0) -> tuple:
         # 检测屏幕是不是移到了不移到的地方
-        if self._local_x < screen.get_width() - self._width:
-            self._local_x = screen.get_width() - self._width
+        if self._local_x < screen.get_width() - self.get_width():
+            self._local_x = screen.get_width() - self.get_width()
             screen_to_move_x = 0
         elif self._local_x > 0:
             self._local_x = 0
             screen_to_move_x = 0
-        if self._local_y < screen.get_height() - self._height:
-            self._local_y = screen.get_height() - self._height
+        if self._local_y < screen.get_height() - self.get_height():
+            self._local_y = screen.get_height() - self.get_height()
             screen_to_move_y = 0
         elif self._local_y > 0:
             self._local_y = 0
@@ -213,7 +213,7 @@ class MapObject(AdvancedAbstractImageSurface):
         xRange: int = self.column
         screen_min: int = -self.block_width
         if not isinstance(self.__block_on_surface, numpy.ndarray):
-            mapSurface = MAP_ENV_IMAGE.new_surface(window_size, (self._width, self._height))
+            mapSurface = MAP_ENV_IMAGE.new_surface(window_size, (self.get_width(), self.get_height()))
             self.__block_on_surface = numpy.zeros((self.row, self.column), dtype=numpy.int8)
         mapSurface = MAP_ENV_IMAGE.get_surface()
         # 画出地图

@@ -96,6 +96,35 @@
         "x": 0,
         "y": 0
     },
+    "dialog_buttons": {
+        "height": "100%",
+        "items": [
+            {
+                "alpha_when_not_hover": 150,
+                "width": "<#button_size>",
+                "height": "<#button_size>",
+                "name": "hide",
+                "src": "<!ui>hide.png",
+                "type": "button",
+                "x": "5%",
+                "y": "5%"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "width": "<#button_size>",
+                "height": "<#button_size>",
+                "name": "history",
+                "src": "<!ui>history.png",
+                "type": "button",
+                "x": "10%",
+                "y": "5%"
+            }
+        ],
+        "type": "container",
+        "width": "100%",
+        "x": 0,
+        "y": 0
+    },
     "exit_without_saving_progress_warning": {
         "height": "20%",
         "items": [

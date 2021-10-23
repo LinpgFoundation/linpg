@@ -3,8 +3,8 @@ from .system import *
 # 坐标类
 class Coordinate:
     def __init__(self, x: int_f, y: int_f):
-        self.x = int(x)
-        self.y = int(y)
+        self.x: int = int(x)
+        self.y: int = int(y)
 
     def __lt__(self, other: object) -> bool:
         return self.y + self.x < other.y + other.x
@@ -28,6 +28,33 @@ class Coordinate:
     # 检测是否在给定的位置上
     def on_pos(self, pos: any) -> bool:
         return Pos.is_same(self.pos, pos)
+
+
+# 坐标类 - 更精准坐标
+class PreciseCoordinate:
+    def __init__(self, x: number, y: number):
+        # 坐标（注意，与Coordinate不同，PreciseCoordinate坐标使用浮点数）
+        self.x: number = x
+        self.y: number = y
+
+    def __lt__(self, other: object) -> bool:
+        return self.y + self.x < other.y + other.x
+
+    # 坐标信息
+    @property
+    def pos(self) -> tuple[number]:
+        return self.x, self.y
+
+    def get_pos(self) -> tuple[number]:
+        return self.x, self.y
+
+    # 设置坐标
+    def set_pos(self, x: number, y: number) -> None:
+        self.x = x if isinstance(x, int) else round(x, 5)
+        self.y = y if isinstance(y, int) else round(y, 5)
+
+    def move_to(self, pos: tuple) -> None:
+        self.set_pos(pos[0], pos[1])
 
 
 # 游戏对象接口

@@ -162,6 +162,22 @@ class GameObject2d(GameObject):
         self.set_centerx(centerx)
         self.set_centery(centery)
 
+    @property
+    def left_center(self) -> tuple[int]:
+        return self.x, self.centery
+
+    @property
+    def right_center(self) -> tuple[int]:
+        return self.right, self.centery
+
+    @property
+    def top_center(self) -> tuple[int]:
+        return self.centerx, self.y
+
+    @property
+    def bottom_center(self) -> tuple[int]:
+        return self.centerx, self.bottom
+
     # 是否被鼠标触碰
     def is_hover(self, mouse_pos: Iterable = NoPos) -> bool:
         if mouse_pos is NoPos:

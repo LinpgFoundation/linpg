@@ -139,20 +139,27 @@ class DialogNode(Button):
         button_surface = Font.render_description_box(self.__key_name, Color.BLACK, font_size, font_size, Color.WHITE)
         super().__init__(button_surface, 0, 0, width=button_surface.get_width(), height=button_surface.get_height(), tag=tag)
         self.__next_keys: tuple[str] = tuple(next_keys)
+        self.has_been_displayed: bool = False
 
+    # 下一个keys
     @property
     def next_keys(self) -> tuple[str]:
         return self.__next_keys
+
+    # 展示（注意，你无法在此输入off_set，你必须提前设置）
+    def display(self, surface: ImageSurface) -> None:
+        return super().display(surface)
 
 
 class DialogNavigatorWindow(AbstractSurfaceWindow):
     def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         super().__init__(x, y, width, height, tag=tag)
-        self.__node_maps: dict = {}
-        self.__current_select: str = "head"
+        self.__node_maps: dict[str, DialogNode] = {}
+        self.__current_selected_key: str = "head"
+        self.__font_size: int = 10
 
     def add_node(self, key: str, next_keys: list[str]) -> None:
-        self.__node_maps[key] = DialogNode(key, 10, next_keys)
+        self.__node_maps[key] = DialogNode(key, self.__font_size, next_keys)
 
     def add_all(self, dialogs_data: dict):
         for key in dialogs_data:
@@ -165,22 +172,38 @@ class DialogNavigatorWindow(AbstractSurfaceWindow):
             self.add_node(dialogs_data[key], next_keys)
 
     def update_selected(self, new_current_select: str) -> None:
-        self.__current_select = new_current_select
+        self.__current_selected_key = new_current_select
 
-    def __draw_node(self, key: str, surface: ImageSurface, offset_x: int = 0) -> None:
-        abs_pos: tuple[int] = (self.x + offset_x, self.y + self._bar_height)
-        self.__node_maps[key].display(surface, abs_pos)
-        if self.__current_select == key:
-            draw_rect(surface, Color.RED, (abs_pos, self.__node_maps[key].get_size()), 4)
-        abs_right_center: tuple[int] = (abs_pos[0] + self.__node_maps[key].width, abs_pos[1] + self.__node_maps[key].centery)
+    def __draw_node(self, key: str, surface: ImageSurface, offset_x: int, offset_y: int) -> int:
+        key_node: DialogNode = self.__node_maps[key]
+        if not key_node.has_been_displayed:
+            # 设置坐标并展示
+            key_node.set_pos(offset_x, offset_y + self._bar_height)
+            key_node.display(surface)
+            key_node.has_been_displayed = True
 
-        constant_offset = 100
-        for child_key in self.__node_maps[key].next_keys:
-            self.__draw_node(child_key, surface, constant_offset)
-            pygame.draw.line(surface, Color.BLACK, abs_right_center, (abs_pos[0] + constant_offset, abs_right_center[1]))
+            if Controller.mouse.get_pressed(0) is True and is_hover(convert_rect(key_node.get_rect())):
+                self.__current_selected_key = key
+
+            if self.__current_selected_key == key:
+                draw_rect(surface, Color.RED, key_node.get_rect(), 4)
+
+            panding: int = 4 * self.__font_size
+
+            if len(key_node.next_keys) > 1:
+                offset_y = key_node.y - len(key_node.next_keys) * self.__font_size - panding
+
+            for child_key in key_node.next_keys:
+                offset_y += panding
+                offset_y = self.__draw_node(child_key, surface, key_node.x + self.__font_size * 10, offset_y)
+                pygame.draw.aaline(surface, Color.BLACK, key_node.right_center, self.__node_maps[child_key].left_center, 3)
+
+        return offset_y
 
     def _present_content(self, surface: ImageSurface) -> None:
         if "head" in self.__node_maps:
-            self.__draw_node("head", surface)
+            for key in self.__node_maps:
+                self.__node_maps[key].has_been_displayed = False
+            self.__draw_node("head", surface, self.x, self.y)
         else:
             EXCEPTION.fatal("Head is missing")

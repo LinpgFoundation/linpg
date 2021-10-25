@@ -129,7 +129,7 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
                 )
             self._processed_img = new_transparent_surface(rect.size)
             self.set_local_pos(rect.x, rect.y)
-            self._processed_img.blit(imgTmp, (-self._local_x, -self._local_y))
+            self._processed_img.blit(imgTmp, (-self.local_x, -self.local_y))
         else:
             self._processed_img = imgTmp
         if self._alpha < 255:

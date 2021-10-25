@@ -94,14 +94,14 @@ class RenderedWindow(Rect):
 class AbstractSurfaceWindow(AdvancedAbstractImageSurface):
 
     # 窗口上方bar的高度
-    _bar_height: int = int(Display.get_height() * 0.02)
+    __bar_height: int = int(Display.get_height() * 0.02)
     # 窗口线条的粗细
-    _outline_thickness: int = int(Display.get_height() * 0.002)
+    __outline_thickness: int = int(Display.get_height() * 0.002)
     # 放大指示图标
-    _rescale_icon_0: StaticImage = None
-    _rescale_icon_45: StaticImage = None
-    _rescale_icon_90: StaticImage = None
-    _rescale_icon_135: StaticImage = None
+    __rescale_icon_0: StaticImage = None
+    __rescale_icon_45: StaticImage = None
+    __rescale_icon_90: StaticImage = None
+    __rescale_icon_135: StaticImage = None
 
     def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         super().__init__(None, x, y, width, height, tag=tag)
@@ -111,39 +111,52 @@ class AbstractSurfaceWindow(AdvancedAbstractImageSurface):
         self.__rescale_directions: dict[str, bool] = {"left": False, "right": False, "top": False, "bottom": False}
         # 是否重新放大窗口
         self.__if_regenerate_window: bool = True
+        # 用于修改并展示内容的surface
+        self._content_surface: ImageSurface = None
+        # 是否需要更新用于展示内容的surface
+        self._if_update_needed: bool = True
+        #
+        self.__if_move_local_pos: bool = False
 
     # 更新窗口
     def __update_window_frame(self) -> None:
         if self.__if_regenerate_window is True:
             self.img = new_surface(self.size)
             self.img.fill(Color.WHITE)
-            draw_rect(self.img, Color.LIGHT_GRAY, ((0, 0), (self.get_width(), self._bar_height)))
-            draw_rect(self.img, Color.GRAY, self.img.get_rect(), self._outline_thickness)
-            if self._rescale_icon_0 is None:
-                self._rescale_icon_0 = StaticImage("<!ui>rescale.png", 0, 0, self._bar_height * 1.5, self._bar_height * 1.5)
-                self._rescale_icon_45 = self._rescale_icon_0.copy()
-                self._rescale_icon_45.rotate(45)
-                self._rescale_icon_45.scale_n_times(1.5)
-                self._rescale_icon_90 = self._rescale_icon_0.copy()
-                self._rescale_icon_90.rotate(90)
-                self._rescale_icon_135 = self._rescale_icon_0.copy()
-                self._rescale_icon_135.rotate(135)
-                self._rescale_icon_135.scale_n_times(1.5)
+            draw_rect(self.img, Color.LIGHT_GRAY, ((0, 0), (self.get_width(), self.__bar_height)))
+            draw_rect(self.img, Color.GRAY, self.img.get_rect(), self.__outline_thickness)
+            if self.__rescale_icon_0 is None:
+                self.__rescale_icon_0 = StaticImage(
+                    "<!ui>rescale.png", 0, 0, self.__bar_height * 1.5, self.__bar_height * 1.5
+                )
+                self.__rescale_icon_45 = self.__rescale_icon_0.copy()
+                self.__rescale_icon_45.rotate(45)
+                self.__rescale_icon_45.scale_n_times(1.5)
+                self.__rescale_icon_90 = self.__rescale_icon_0.copy()
+                self.__rescale_icon_90.rotate(90)
+                self.__rescale_icon_135 = self.__rescale_icon_0.copy()
+                self.__rescale_icon_135.rotate(135)
+                self.__rescale_icon_135.scale_n_times(1.5)
             self.__if_regenerate_window = False
 
-    # 展示内容（子类必须实现该功能）
-    def _present_content(self, surface: ImageSurface) -> None:
-        EXCEPTION.fatal("_present_content()", 1)
+    # 更新内容surface（子类必须实现该功能）
+    def _update(self) -> None:
+        EXCEPTION.fatal("_update()", 1)
+
+    def _process_content_surface_events(self) -> bool:
+        EXCEPTION.fatal("_process_content_surface_events()", 1)
 
     # 设置宽度
     def set_width(self, value: int_f) -> None:
         super().set_width(value)
         self.__if_regenerate_window = True
+        self._if_update_needed = True
 
     # 设置高度
     def set_height(self, value: int_f) -> None:
         super().set_height(value)
         self.__if_regenerate_window = True
+        self._if_update_needed = True
 
     # 角落是否被触碰
     def __is_corner_hovered(self, side1: str, side2: str = None) -> bool:
@@ -159,27 +172,32 @@ class AbstractSurfaceWindow(AdvancedAbstractImageSurface):
             if not Controller.mouse.get_pressed_previously(0):
                 # 查看鼠标是否触碰窗口的边缘
                 self.__rescale_directions["left"] = bool(
-                    -self._outline_thickness <= Controller.mouse.x - self.x < self._outline_thickness * 2
+                    -self.__outline_thickness <= Controller.mouse.x - self.x < self.__outline_thickness * 2
                 )
                 self.__rescale_directions["right"] = bool(
-                    -self._outline_thickness * 2 < Controller.mouse.x - self.right <= self._outline_thickness
+                    -self.__outline_thickness * 2 < Controller.mouse.x - self.right <= self.__outline_thickness
                 )
                 self.__rescale_directions["top"] = bool(
-                    -self._outline_thickness <= Controller.mouse.y - self.y < self._outline_thickness * 2
+                    -self.__outline_thickness <= Controller.mouse.y - self.y < self.__outline_thickness * 2
                 )
                 self.__rescale_directions["bottom"] = bool(
-                    -self._outline_thickness * 2 < Controller.mouse.y - self.bottom <= self._outline_thickness
+                    -self.__outline_thickness * 2 < Controller.mouse.y - self.bottom <= self.__outline_thickness
                 )
                 # 如果鼠标按住bar
-                if True not in self.__rescale_directions.values() and is_hover(
-                    new_rect((self.x, self.y), (self.get_width(), self._bar_height))
-                ):
-                    self.__mouse_hovered_offset_pos = Pos.subtract(Controller.mouse.get_pos(), self.pos)
-                else:
-                    self.__mouse_hovered_offset_pos = tuple()
+                if True not in self.__rescale_directions.values() and Controller.mouse.get_pressed(0):
+                    if is_hover(new_rect((self.x, self.y), (self.get_width(), self.__bar_height))):
+                        self.__mouse_hovered_offset_pos = Pos.subtract(Controller.mouse.get_pos(), self.pos)
+                    elif not self._process_content_surface_events():
+                        self.__if_move_local_pos = True
+                        self.__mouse_hovered_offset_pos = Pos.subtract(Controller.mouse.get_pos(), self.pos, self.local_pos)
             elif Controller.mouse.get_pressed(0):
+                if self.__if_move_local_pos is True:
+                    new_local_pos = Pos.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_offset_pos)
+                    self.set_local_x(new_local_pos[0])
+                    self.set_local_y(new_local_pos[1])
+
                 # 移动窗口
-                if len(self.__mouse_hovered_offset_pos) > 0:
+                elif len(self.__mouse_hovered_offset_pos) > 0:
                     self.move_to(Pos.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_offset_pos))
                 else:
                     # 向左放大
@@ -199,7 +217,7 @@ class AbstractSurfaceWindow(AdvancedAbstractImageSurface):
                             self.__rescale_directions["left"] = True
                     # 向上放大
                     if self.__rescale_directions["top"] is True:
-                        if Controller.mouse.y < self.bottom - self._bar_height:
+                        if Controller.mouse.y < self.bottom - self.__bar_height:
                             self.set_height(self.bottom - Controller.mouse.y)
                             self.set_top(Controller.mouse.y)
                         else:
@@ -216,22 +234,45 @@ class AbstractSurfaceWindow(AdvancedAbstractImageSurface):
                 for key in self.__rescale_directions:
                     self.__rescale_directions[key] = False
                 self.__mouse_hovered_offset_pos = tuple()
+                self.__if_move_local_pos = False
             # 更新窗口
             self.__update_window_frame()
             # 画出窗口
             surface.blit(self.img, self.pos)
+            # 如果需要，则先更新内容surface
+            if self._if_update_needed is True:
+                self._update()
             # 画出内容
-            self._present_content(surface)
+            if self._content_surface is not None:
+                local_x_of_sub:int = max(self.local_x, 0)
+                local_y_of_sub:int = max(self.local_y, 0)
+                width_of_sub: int = keep_in_range(
+                    self.get_width() - self.__outline_thickness,
+                    0,
+                    self._content_surface.get_width(),
+                )
+                height_of_sub: int = keep_in_range(
+                    self.get_height() - self.__bar_height - self.__outline_thickness,
+                    0,
+                    self._content_surface.get_height(),
+                )
+                if width_of_sub > 0 and height_of_sub > 0:
+                    rect2 = (local_x_of_sub, local_y_of_sub, width_of_sub, height_of_sub)
+                print(rect2, self._content_surface.get_rect())
+                surface.blit(
+                    get_img_subsurface(self._content_surface, rect2),
+                    (self.x + self.__outline_thickness, self.y + self.__outline_thickness + self.__bar_height),
+                )
             # 画出放大icon
             if True in self.__rescale_directions.values():
                 # 如果鼠标触碰了边框，则旋转放大icon至对应角度
                 if self.__is_corner_hovered("top", "right") or self.__is_corner_hovered("bottom", "left"):
-                    rescale_icon = self._rescale_icon_45
+                    rescale_icon = self.__rescale_icon_45
                 elif self.__is_corner_hovered("top", "left") or self.__is_corner_hovered("bottom", "right"):
-                    rescale_icon = self._rescale_icon_135
+                    rescale_icon = self.__rescale_icon_135
                 elif self.__is_corner_hovered("top") or self.__is_corner_hovered("bottom"):
-                    rescale_icon = self._rescale_icon_90
+                    rescale_icon = self.__rescale_icon_90
                 else:
-                    rescale_icon = self._rescale_icon_0
+                    rescale_icon = self.__rescale_icon_0
                 rescale_icon.set_center(Controller.mouse.x, Controller.mouse.y)
                 rescale_icon.draw(surface)

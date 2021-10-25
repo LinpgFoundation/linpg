@@ -167,31 +167,31 @@ class MapObject(AdvancedAbstractImageSurface):
 
     # 设置local坐标
     def set_local_x(self, value: number) -> None:
-        old_local_x: int = self._local_x
+        old_local_x: int = self.local_x
         super().set_local_x(value)
-        if self._local_x != old_local_x:
+        if self.local_x != old_local_x:
             self.__need_update_surface = True
 
     def set_local_y(self, value: number) -> None:
-        old_local_y: int = self._local_y
+        old_local_y: int = self.local_y
         super().set_local_y(value)
-        if self._local_y != old_local_y:
+        if self.local_y != old_local_y:
             self.__need_update_surface = True
 
     # 把地图画到屏幕上
     def display_map(self, screen: ImageSurface, screen_to_move_x: int = 0, screen_to_move_y: int = 0) -> tuple:
         # 检测屏幕是不是移到了不移到的地方
-        if self._local_x < screen.get_width() - self.get_width():
-            self._local_x = screen.get_width() - self.get_width()
+        if self.local_x < screen.get_width() - self.get_width():
+            self.set_local_x(screen.get_width() - self.get_width())
             screen_to_move_x = 0
-        elif self._local_x > 0:
-            self._local_x = 0
+        elif self.local_x > 0:
+            self.set_local_x(0)
             screen_to_move_x = 0
-        if self._local_y < screen.get_height() - self.get_height():
-            self._local_y = screen.get_height() - self.get_height()
+        if self.local_y < screen.get_height() - self.get_height():
+            self.set_local_y(screen.get_height() - self.get_height())
             screen_to_move_y = 0
-        elif self._local_y > 0:
-            self._local_y = 0
+        elif self.local_y > 0:
+            self.set_local_y(0)
             screen_to_move_y = 0
         if self.__need_update_surface is True:
             self.__need_update_surface = False
@@ -226,7 +226,7 @@ class MapObject(AdvancedAbstractImageSurface):
                             evn_img = MAP_ENV_IMAGE.get_env_image(self.__Map_Data[y][x].name, True)
                         else:
                             evn_img = MAP_ENV_IMAGE.get_env_image(self.__Map_Data[y][x].name, False)
-                        evn_img.set_pos(posTupleTemp[0] - self._local_x, posTupleTemp[1] - self._local_y)
+                        evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
                         evn_img.draw(mapSurface)
                         self.__block_on_surface[y][x] = 1
                         if y < yRange - 1:
@@ -288,13 +288,13 @@ class MapObject(AdvancedAbstractImageSurface):
             pos = Controller.mouse.pos
         guess_x: int = int(
             (
-                (pos[0] - self._local_x - self.row * self.block_width * 0.43) / 0.43
-                + (pos[1] - self._local_y - self.block_width * 0.4) / 0.22
+                (pos[0] - self.local_x - self.row * self.block_width * 0.43) / 0.43
+                + (pos[1] - self.local_y - self.block_width * 0.4) / 0.22
             )
             / 2
             / self.block_width
         )
-        guess_y: int = int((pos[1] - self._local_y - self.block_width * 0.4) / self.block_width / 0.22) - guess_x
+        guess_y: int = int((pos[1] - self.local_y - self.block_width * 0.4) / self.block_width / 0.22) - guess_x
         x: int
         y: int
         posTupleTemp: tuple
@@ -387,8 +387,8 @@ class MapObject(AdvancedAbstractImageSurface):
     # 计算在地图中的位置
     def calPosInMap(self, x: int_f, y: int_f) -> tuple[int]:
         widthTmp: float = self.block_width * 0.43
-        return round((x - y) * widthTmp + self._local_x + self.row * widthTmp), round(
-            (y + x) * self.block_width * 0.22 + self._local_y + self.block_width * 0.4
+        return round((x - y) * widthTmp + self.local_x + self.row * widthTmp), round(
+            (y + x) * self.block_width * 0.22 + self.local_y + self.block_width * 0.4
         )
 
     def calAbsPosInMap(self, x: int_f, y: int_f) -> tuple[int]:

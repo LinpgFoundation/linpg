@@ -157,9 +157,13 @@ class DialogNavigatorWindow(AbstractSurfaceWindow):
         self.__node_maps: dict[str, DialogNode] = {}
         self.__current_selected_key: str = "head"
         self.__font_size: int = 10
+        self.__most_right: int = 0
+        self.__most_top: int = 0
+        self.__most_bottom: int = 0
 
     def add_node(self, key: str, next_keys: list[str]) -> None:
         self.__node_maps[key] = DialogNode(key, self.__font_size, next_keys)
+        self._if_update_needed = True
 
     def add_all(self, dialogs_data: dict):
         for key in dialogs_data:
@@ -173,37 +177,61 @@ class DialogNavigatorWindow(AbstractSurfaceWindow):
 
     def update_selected(self, new_current_select: str) -> None:
         self.__current_selected_key = new_current_select
+        self._if_update_needed = True
 
-    def __draw_node(self, key: str, surface: ImageSurface, offset_x: int, offset_y: int) -> int:
+    def __update_node_pos(self, key: str = "head", offset_x: int = 0, offset_y: int = 0) -> None:
         key_node: DialogNode = self.__node_maps[key]
         if not key_node.has_been_displayed:
             # 设置坐标并展示
-            key_node.set_pos(offset_x, offset_y + self._bar_height)
+            key_node.set_pos(offset_x, offset_y)
+            key_node.has_been_displayed = True
+            panding: int = 4 * self.__font_size
+            if len(key_node.next_keys) > 1:
+                offset_y = key_node.y - len(key_node.next_keys) * self.__font_size - panding
+            for child_key in key_node.next_keys:
+                offset_y += panding
+                offset_y = self.__update_node_pos(child_key, key_node.x + self.__font_size * 10, offset_y)
+            if self.__most_right < key_node.right:
+                self.__most_right = key_node.right
+            if self.__most_bottom < key_node.bottom:
+                self.__most_bottom = key_node.bottom
+            if self.__most_top > key_node.top:
+                self.__most_top = key_node.top
+        return offset_y
+
+    def __draw_node(self, surface: ImageSurface, key: str = "head") -> int:
+        key_node: DialogNode = self.__node_maps[key]
+        if not key_node.has_been_displayed:
+            # 设置坐标并展示
             key_node.display(surface)
             key_node.has_been_displayed = True
 
             if Controller.mouse.get_pressed(0) is True and is_hover(convert_rect(key_node.get_rect())):
-                self.__current_selected_key = key
+                self.update_selected(key)
 
             if self.__current_selected_key == key:
                 draw_rect(surface, Color.RED, key_node.get_rect(), 4)
 
-            panding: int = 4 * self.__font_size
-
-            if len(key_node.next_keys) > 1:
-                offset_y = key_node.y - len(key_node.next_keys) * self.__font_size - panding
-
             for child_key in key_node.next_keys:
-                offset_y += panding
-                offset_y = self.__draw_node(child_key, surface, key_node.x + self.__font_size * 10, offset_y)
+                self.__draw_node(surface, child_key)
                 pygame.draw.aaline(surface, Color.BLACK, key_node.right_center, self.__node_maps[child_key].left_center, 3)
 
-        return offset_y
-
-    def _present_content(self, surface: ImageSurface) -> None:
+    def _update(self) -> None:
         if "head" in self.__node_maps:
             for key in self.__node_maps:
                 self.__node_maps[key].has_been_displayed = False
-            self.__draw_node("head", surface, self.x, self.y)
+            self.__most_right = 0
+            self.__most_bottom = 0
+            self.__update_node_pos()
+            for key in self.__node_maps:
+                self.__node_maps[key].has_been_displayed = False
+                self.__node_maps[key].y -= self.__most_top
+            self._content_surface = new_transparent_surface((self.__most_right, self.__most_bottom - self.__most_top))
+            self.__draw_node(self._content_surface)
+
+            self._if_update_needed = False
         else:
             EXCEPTION.fatal("Head is missing")
+
+    def _process_content_surface_events(self) -> bool:
+        return False

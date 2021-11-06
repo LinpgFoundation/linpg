@@ -151,7 +151,7 @@ class DialogNode(Button):
         return super().display(surface)
 
 
-class DialogNavigatorWindow(AbstractSurfaceWindow):
+class DialogNavigatorWindow(AbstractFrame):
     def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         super().__init__(x, y, width, height, tag=tag)
         self.__node_maps: dict[str, DialogNode] = {}
@@ -206,9 +206,6 @@ class DialogNavigatorWindow(AbstractSurfaceWindow):
             key_node.display(surface)
             key_node.has_been_displayed = True
 
-            if Controller.mouse.get_pressed(0) is True and is_hover(convert_rect(key_node.get_rect())):
-                self.update_selected(key)
-
             if self.__current_selected_key == key:
                 draw_rect(surface, Color.RED, key_node.get_rect(), 4)
 
@@ -228,10 +225,20 @@ class DialogNavigatorWindow(AbstractSurfaceWindow):
                 self.__node_maps[key].y -= self.__most_top
             self._content_surface = new_transparent_surface((self.__most_right, self.__most_bottom - self.__most_top))
             self.__draw_node(self._content_surface)
-
             self._if_update_needed = False
         else:
             EXCEPTION.fatal("Head is missing")
 
-    def _process_content_surface_events(self) -> bool:
+    def _any_content_container_event(self) -> bool:
+        for key in self.__node_maps:
+            if is_hover(
+                convert_rect(
+                    (
+                        Pos.subtract(Pos.add(self.__node_maps[key].pos, (self.x, self.content_container_y)), self.local_pos),
+                        self.__node_maps[key].get_size(),
+                    )
+                )
+            ):
+                self.update_selected(key)
+                return True
         return False

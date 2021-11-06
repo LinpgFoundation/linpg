@@ -1,5 +1,5 @@
 """
 结构:
-system -> module -> shape -> surface -> image -> window -> video
+system -> module -> shape -> surface -> image -> frame -> window -> video
 """
 from .video import *

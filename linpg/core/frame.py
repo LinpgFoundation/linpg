@@ -107,14 +107,13 @@ class AbstractFrame(AdvancedAbstractImageSurface):
                 ):
                     if is_hover(new_rect((self.x, self.y), (self.get_width(), self.__bar_height))):
                         self.__mouse_hovered_offset_pos = Pos.subtract(Controller.mouse.get_pos(), self.pos)
-                    else:
+                    elif self.is_hovered():
                         self.__if_move_local_pos = True
-                        self.__mouse_hovered_offset_pos = Pos.subtract(Controller.mouse.get_pos(), self.pos, self.local_pos)
+                        self.__mouse_hovered_offset_pos = Pos.subtract(Controller.mouse.get_pos(), self.local_pos)
             elif Controller.mouse.get_pressed(0):
+                # 根据鼠标位置修改本地坐标
                 if self.__if_move_local_pos is True:
-                    new_local_pos = Pos.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_offset_pos)
-                    self.set_local_x(new_local_pos[0])
-                    self.set_local_y(new_local_pos[1])
+                    self.locally_move_to(Pos.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_offset_pos))
 
                 # 移动窗口
                 elif len(self.__mouse_hovered_offset_pos) > 0:

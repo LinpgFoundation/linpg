@@ -122,7 +122,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             skip_button.draw(surface)
             white_progress_bar.set_percentage(VIDEO.get_percentage_played())
             white_progress_bar.draw(surface)
-            if skip_button.is_hover() and Controller.mouse.get_pressed(0) and not is_skip:
+            if skip_button.is_hovered() and Controller.mouse.get_pressed(0) and not is_skip:
                 is_skip = True
                 Music.fade_out(fade_out_in_ms)
             if is_skip is True:
@@ -162,7 +162,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         # 按键判定
         leftClick: bool = False
         if Controller.get_event("confirm"):
-            if self.history_back is not None and self.history_back.is_hover() and self._is_showing_history is True:
+            if self.history_back is not None and self.history_back.is_hovered() and self._is_showing_history is True:
                 self._is_showing_history = False
                 self._history_surface = None
             elif self.__check_button_event(surface) is True:
@@ -296,7 +296,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             surface.blit(self._history_surface, (0, 0))
             if self.history_back is not None:
                 self.history_back.draw(surface)
-                self.history_back.is_hover()
+                self.history_back.is_hovered()
         # 如果对话被隐藏，则无视进入下一个对白的操作
         elif self._buttons_mananger is not None and self._buttons_mananger.hidden is True:
             pass

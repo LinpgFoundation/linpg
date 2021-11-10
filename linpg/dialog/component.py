@@ -69,16 +69,16 @@ class DialogButtons:
         self.__button_hovered = 0
         if self.hidden is True:
             self.showButton.draw(surface)
-            if self.showButton.is_hover():
+            if self.showButton.is_hovered():
                 self.__button_hovered = 1
         else:
             self.__buttons_container.draw(surface)
-            if self.skipButton.is_hover():
+            if self.skipButton.is_hovered():
                 self.skipButtonHovered.draw(surface)
                 self.__button_hovered = 2
             else:
                 self.skipButton.draw(surface)
-            if self.autoButton.is_hover():
+            if self.autoButton.is_hovered():
                 self.autoButtonHovered.draw(surface)
                 if self.autoMode:
                     rotatedIcon = IMG.rotate(self.autoIconHovered, self.autoIconDegree)

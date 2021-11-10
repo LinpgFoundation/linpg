@@ -330,7 +330,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             self.__using_PySimpleGUI_input_box.set_right(self.input_box.right)
             self.__using_PySimpleGUI_input_box.set_bottom(self.input_box.bottom)
             self.__using_PySimpleGUI_input_box.draw(screen)
-            if self.__using_PySimpleGUI_input_box.is_hover() and Controller.get_event("confirm"):
+            if self.__using_PySimpleGUI_input_box.is_hovered() and Controller.get_event("confirm"):
                 event, values = PySimpleGUI.Window(
                     "",
                     [

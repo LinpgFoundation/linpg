@@ -73,7 +73,7 @@ class GameObjectsContainer(AbstractImageSurface):
                     if game_object_t.has_been_hovered() is True:
                         self._item_being_hovered = key_of_game_object
                 elif isinstance(game_object_t, GameObject):
-                    if game_object_t.is_hover(Pos.subtract(Controller.mouse.pos, current_abs_pos)):
+                    if game_object_t.is_hovered(Controller.mouse.pos, current_abs_pos):
                         self._item_being_hovered = key_of_game_object
 
 
@@ -483,7 +483,7 @@ class SurfaceContainerWithScrollbar(GameObjectsContainer):
                 self.__total_height = self.get_height()
             """处理事件"""
             # 获取鼠标坐标
-            if self.is_hover(Pos.subtract(Controller.mouse.pos, off_set)):
+            if self.is_hovered(Controller.mouse.pos, off_set):
                 if (
                     not self.__mode
                     and self.__total_height > self.get_height()

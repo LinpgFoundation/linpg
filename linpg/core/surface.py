@@ -108,6 +108,9 @@ class AdvancedAbstractImageSurface(AbstractImageSurface):
         self.set_local_x(local_x)
         self.set_local_y(local_y)
 
+    def locally_move_to(self, local_pos: tuple) -> None:
+        self.set_local_pos(local_pos[0], local_pos[1])
+
     # 增加本地坐标
     def add_local_x(self, value: int_f) -> None:
         self.set_local_x(self.__local_x + value)
@@ -171,16 +174,21 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
             self._need_update = True
 
     # 是否被鼠标触碰
-    def is_hover(self, mouse_pos: Iterable = NoSize) -> bool:
+    def is_hovered(self, mouse_pos: Iterable = NoSize, off_set: Iterable = NoPos) -> bool:
         if self._processed_img is not None:
             if mouse_pos is NoSize:
-                mouse_pos = Controller.mouse.pos
+                mouse_pos = Controller.mouse.pos if off_set is NoPos else Pos.subtract(Controller.mouse.pos, off_set)
             return (
                 0 < mouse_pos[0] - self.x - self.local_x < self._processed_img.get_width()
                 and 0 < mouse_pos[1] - self.y - self.local_y < self._processed_img.get_height()
             )
         else:
             return False
+
+    """3.2弃置"""
+
+    def is_hover(self, mouse_pos: Iterable = NoPos) -> bool:
+        return self.is_hovered(mouse_pos)
 
     # 加暗度
     def add_darkness(self, value: int) -> None:
@@ -251,7 +259,7 @@ class DynamicTextSurface(TextSurface):
     # 画出
     def display(self, surface: ImageSurface, offSet: tuple = Pos.ORIGIN) -> None:
         if not self.hidden:
-            self.__is_hovered = self.is_hover(Pos.subtract(Controller.mouse.pos, offSet))
+            self.__is_hovered = self.is_hovered(Controller.mouse.pos, offSet)
             if not self.__is_hovered:
                 surface.blit(self.img, Pos.add(self.pos, offSet))
             else:

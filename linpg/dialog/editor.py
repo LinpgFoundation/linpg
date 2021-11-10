@@ -393,7 +393,7 @@ class DialogEditor(AbstractDialogSystem):
         for event in Controller.events:
             if event.type == MOUSE_BUTTON_DOWN:
                 if event.button == 1:
-                    if self.UIContainerRightButton.is_hover():
+                    if self.UIContainerRightButton.is_hovered():
                         self.UIContainerRightButton.switch()
                         self.UIContainerRightButton.flip()
                     # 退出

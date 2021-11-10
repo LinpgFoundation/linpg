@@ -14,11 +14,16 @@ class AbstractInternalMenu:
         self._initialized = True
 
     # 菜单是否被触碰
-    def is_hover(self) -> bool:
+    def is_hovered(self) -> bool:
         if not self.hidden and self._CONTENT is not None:
-            return self._CONTENT.is_hover()
+            return self._CONTENT.is_hovered()
         else:
             return False
+
+    """3.2弃置"""
+
+    def is_hover(self) -> bool:
+        return self.is_hovered()
 
     # 画出内容
     def draw(self, surface: ImageSurface) -> None:
@@ -66,7 +71,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
                 self._initialized = False
                 self.need_update["language"] = True
             # 按键的判定按钮
-            if self._CONTENT.item_being_hovered is not None and not lang_drop_down.is_hover():
+            if self._CONTENT.item_being_hovered is not None and not lang_drop_down.is_hovered():
                 item_percentage_t: int
                 # 如果碰到全局音量条
                 if self._CONTENT.item_being_hovered == "global_sound_volume":

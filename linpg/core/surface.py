@@ -174,10 +174,11 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
             self._need_update = True
 
     # 是否被鼠标触碰
-    def is_hovered(self, mouse_pos: Iterable = NoSize, off_set: Iterable = NoPos) -> bool:
+    def is_hovered(self, off_set: Iterable = NoPos) -> bool:
         if self._processed_img is not None:
-            if mouse_pos is NoSize:
-                mouse_pos = Controller.mouse.pos if off_set is NoPos else Pos.subtract(Controller.mouse.pos, off_set)
+            mouse_pos: tuple[int] = (
+                Controller.mouse.pos if off_set is NoPos else Pos.int(Pos.subtract(Controller.mouse.pos, off_set))
+            )
             return (
                 0 < mouse_pos[0] - self.x - self.local_x < self._processed_img.get_width()
                 and 0 < mouse_pos[1] - self.y - self.local_y < self._processed_img.get_height()
@@ -187,8 +188,16 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     """3.2弃置"""
 
-    def is_hover(self, mouse_pos: Iterable = NoPos) -> bool:
-        return self.is_hovered(mouse_pos)
+    def is_hover(self, mouse_pos: Iterable = NoSize) -> bool:
+        if self._processed_img is not None:
+            if mouse_pos is NoSize:
+                mouse_pos = Controller.mouse.pos
+            return (
+                0 < mouse_pos[0] - self.x - self.local_x < self._processed_img.get_width()
+                and 0 < mouse_pos[1] - self.y - self.local_y < self._processed_img.get_height()
+            )
+        else:
+            return False
 
     # 加暗度
     def add_darkness(self, value: int) -> None:
@@ -259,7 +268,7 @@ class DynamicTextSurface(TextSurface):
     # 画出
     def display(self, surface: ImageSurface, offSet: tuple = Pos.ORIGIN) -> None:
         if not self.hidden:
-            self.__is_hovered = self.is_hovered(Controller.mouse.pos, offSet)
+            self.__is_hovered = self.is_hovered(offSet)
             if not self.__is_hovered:
                 surface.blit(self.img, Pos.add(self.pos, offSet))
             else:

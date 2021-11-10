@@ -484,11 +484,11 @@ class DialogEditor(AbstractDialogSystem):
             # self.UIContainerRight_bg.draw_outline(surface,(self.UIContainerRightButton.right,0))
             # self.UIContainerRight_npc.draw_outline(surface,(self.UIContainerRightButton.right,0))
             # 检测按钮
-            if is_hover(self.button_select_background, off_set_x=self.UIContainerRightButton.right) and leftClick is True:
+            if self.button_select_background.is_hovered((self.UIContainerRightButton.right, 0)) and leftClick is True:
                 self.UIContainerRight_bg.hidden = False
                 self.UIContainerRight_npc.hidden = True
                 leftClick = False
-            if is_hover(self.button_select_npc, off_set_x=self.UIContainerRightButton.right) and leftClick is True:
+            if self.button_select_npc.is_hovered((self.UIContainerRightButton.right, 0)) and leftClick is True:
                 self.UIContainerRight_bg.hidden = True
                 self.UIContainerRight_npc.hidden = False
                 leftClick = False

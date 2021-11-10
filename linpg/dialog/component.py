@@ -231,14 +231,12 @@ class DialogNavigatorWindow(AbstractFrame):
 
     def _any_content_container_event(self) -> bool:
         for key in self.__node_maps:
-            if is_hover(
-                convert_rect(
-                    (
-                        Pos.subtract(Pos.add(self.__node_maps[key].pos, (self.x, self.content_container_y)), self.local_pos),
-                        self.__node_maps[key].get_size(),
-                    )
+            if convert_rect(
+                (
+                    Pos.subtract(Pos.add(self.__node_maps[key].pos, (self.x, self.content_container_y)), self.local_pos),
+                    self.__node_maps[key].get_size(),
                 )
-            ):
+            ).is_hovered():
                 self.update_selected(key)
                 return True
         return False

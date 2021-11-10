@@ -121,7 +121,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
             abs_pos: tuple[number] = Pos.add(self.pos, offSet)
             x: int
             y: int
-            if self._mode:
+            if self._mode is True:
                 x, y = Pos.int(
                     Pos.add(
                         (
@@ -171,13 +171,12 @@ class ProgressBarAdjuster(ProgressBarSurface):
                         )
                     ),
                 )
-            mouse_x: int
-            mouse_y: int
-            mouse_x, mouse_y = Pos.subtract(Controller.mouse.pos, offSet)
-            if self.is_hovered((mouse_x, mouse_y)):
+            if self.is_hovered(offSet):
                 if Controller.mouse.get_pressed(0):
                     self.set_percentage(
-                        (mouse_x - self.x) / self.get_width() if self._mode else (mouse_y - self.y) / self.get_height()
+                        (Controller.mouse.x - offSet[0] - self.x) / self.get_width()
+                        if self._mode is True
+                        else (Controller.mouse.y - offSet[1] - self.y) / self.get_height()
                     )
                 elif Controller.get_event("scroll_down"):
                     self.set_percentage(min(round(self.percentage + 0.01, 2), 1.0))

@@ -73,7 +73,7 @@ class GameObjectsContainer(AbstractImageSurface):
                     if game_object_t.has_been_hovered() is True:
                         self._item_being_hovered = key_of_game_object
                 elif isinstance(game_object_t, GameObject):
-                    if game_object_t.is_hovered(Controller.mouse.pos, current_abs_pos):
+                    if game_object_t.is_hovered(current_abs_pos):
                         self._item_being_hovered = key_of_game_object
 
 
@@ -178,9 +178,9 @@ class DropDownSingleChoiceList(GameObjectsContainer):
                 ),
             )
             if Controller.get_event("confirm"):
-                if is_hover(rect_of_outline):
+                if rect_of_outline.is_hovered():
                     self.__fold_choice = not self.__fold_choice
-                elif not self.__fold_choice and not is_hover(new_rect(current_abs_pos, self.size)):
+                elif not self.__fold_choice and not new_rect(current_abs_pos, self.size).is_hovered():
                     self.__fold_choice = True
             # 列出选择
             if not self.__fold_choice:
@@ -196,7 +196,7 @@ class DropDownSingleChoiceList(GameObjectsContainer):
                     )
                     rect_of_outline = new_rect(current_pos, (self.width, self.__block_height))
                     draw_rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
-                    if is_hover(rect_of_outline) and Controller.mouse.get_pressed(0):
+                    if rect_of_outline.is_hovered() and Controller.mouse.get_pressed(0):
                         self.__chosen_item_key = key_of_game_object
                     draw_circle(
                         surface,
@@ -412,7 +412,7 @@ class SurfaceContainerWithScrollbar(GameObjectsContainer):
                                 new_width = self.get_width()
                             subsurface_rect = Rect(0, 0, new_width, new_height)
                             surface.blit(get_img_subsurface(item, subsurface_rect), (current_x, current_y))
-                            if is_hover(subsurface_rect, off_set_x=current_x, off_set_y=current_y):
+                            if subsurface_rect.is_hovered((current_x, current_y)):
                                 self._item_being_hovered = key
                         elif -(item.get_height()) <= abs_local_y < 0:
                             crop_height = -abs_local_y
@@ -424,7 +424,7 @@ class SurfaceContainerWithScrollbar(GameObjectsContainer):
                                 new_width = self.get_width()
                             subsurface_rect = Rect(0, crop_height, new_width, new_height)
                             surface.blit(get_img_subsurface(item, subsurface_rect), (current_x, current_y + crop_height))
-                            if is_hover(subsurface_rect, off_set_x=current_x, off_set_y=current_y):
+                            if subsurface_rect.is_hovered((current_x, current_y)):
                                 self._item_being_hovered = key
                         # 换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line - 1:
@@ -448,7 +448,7 @@ class SurfaceContainerWithScrollbar(GameObjectsContainer):
                                 get_img_subsurface(item, subsurface_rect),
                                 (current_x, current_y),
                             )
-                            if is_hover(subsurface_rect, off_set_x=current_x, off_set_y=current_y):
+                            if subsurface_rect.is_hovered((current_x, current_y)):
                                 self._item_being_hovered = key
                         elif -(item.get_width()) <= abs_local_x < 0:
                             crop_width = -abs_local_x
@@ -460,7 +460,7 @@ class SurfaceContainerWithScrollbar(GameObjectsContainer):
                                 new_height = self.get_height()
                             subsurface_rect = Rect(crop_width, 0, new_width, new_height)
                             surface.blit(get_img_subsurface(item, subsurface_rect), (current_x + crop_width, current_y))
-                            if is_hover(subsurface_rect, off_set_x=current_x, off_set_y=current_y):
+                            if subsurface_rect.is_hovered((current_x, current_y)):
                                 self._item_being_hovered = key
                         # 换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line - 1:
@@ -483,7 +483,7 @@ class SurfaceContainerWithScrollbar(GameObjectsContainer):
                 self.__total_height = self.get_height()
             """处理事件"""
             # 获取鼠标坐标
-            if self.is_hovered(Controller.mouse.pos, off_set):
+            if self.is_hovered(off_set):
                 if (
                     not self.__mode
                     and self.__total_height > self.get_height()
@@ -495,9 +495,9 @@ class SurfaceContainerWithScrollbar(GameObjectsContainer):
                         if event.type == MOUSE_BUTTON_DOWN:
                             if event.button == 1:
                                 scroll_bar_rect = self.__get_scroll_bar_rect(off_set[0], off_set[1])
-                                if scroll_bar_rect is not None and is_hover(scroll_bar_rect):
+                                if scroll_bar_rect is not None and scroll_bar_rect.is_hovered():
                                     scroll_button_rect = self.__get_scroll_button_rect(off_set[0], off_set[1])
-                                    if is_hover(scroll_button_rect):
+                                    if scroll_button_rect.is_hovered():
                                         if not self.__is_holding_scroll_button:
                                             self.__is_holding_scroll_button = True
                                             self.__mouse_x_last, self.__mouse_y_last = Controller.mouse.pos

@@ -179,15 +179,18 @@ class GameObject2d(GameObject):
         return self.centerx, self.bottom
 
     # 是否被鼠标触碰
-    def is_hovered(self, mouse_pos: Iterable = NoPos, off_set: Iterable = NoPos) -> bool:
-        if mouse_pos is NoPos:
-            mouse_pos = Controller.mouse.pos if off_set is NoPos else Pos.subtract(Controller.mouse.pos, off_set)
+    def is_hovered(self, off_set: Iterable = NoPos) -> bool:
+        mouse_pos: tuple[int] = (
+            Controller.mouse.pos if off_set is NoPos else Pos.int(Pos.subtract(Controller.mouse.pos, off_set))
+        )
         return 0 < mouse_pos[0] - self.x < self.get_width() and 0 < mouse_pos[1] - self.y < self.get_height()
 
     """3.2弃置"""
 
     def is_hover(self, mouse_pos: Iterable = NoPos) -> bool:
-        return self.is_hovered(mouse_pos)
+        if mouse_pos is NoPos:
+            mouse_pos = Controller.mouse.pos
+        return 0 < mouse_pos[0] - self.x < self.get_width() and 0 < mouse_pos[1] - self.y < self.get_height()
 
     # 将图片直接画到surface上
     def draw(self, surface: ImageSurface) -> None:

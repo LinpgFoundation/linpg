@@ -69,26 +69,24 @@ def is_same_rect(rect1: RectLiked, rect2: RectLiked) -> bool:
 
 # 检测图片是否被点击
 def is_hover(imgObject: object, objectPos: Iterable = Pos.ORIGIN, off_set_x: number = 0, off_set_y: number = 0) -> bool:
-
     """将会在3.2中弃置"""
-
-    return is_hovering(imgObject, objectPos, off_set_x, off_set_y)
+    return is_hovering(imgObject, objectPos, (off_set_x, off_set_y))
 
 
 # 检测图片是否被点击
-def is_hovering(imgObject: object, objectPos: Iterable = Pos.ORIGIN, off_set_x: number = 0, off_set_y: number = 0) -> bool:
+def is_hovering(imgObject: object, objectPos: Iterable = Pos.ORIGIN, off_set: Iterable = Pos.ORIGIN) -> bool:
     # 如果是Linpg引擎的GameObject2d类(所有2d物品的父类)
     if isinstance(imgObject, GameObject2d):
-        return imgObject.is_hovered(Controller.mouse.pos, (off_set_x, off_set_y))
+        return imgObject.is_hovered(off_set)
     # 如果是pygame类
     else:
         mouse_pos: tuple[number]
         # 如果是Surface类
         if isinstance(imgObject, ImageSurface):
-            mouse_pos = Pos.subtract(Controller.mouse.pos, (off_set_x, off_set_y), objectPos)
+            mouse_pos = Pos.subtract(Controller.mouse.pos, off_set, objectPos)
         # 如果是Rect类
         elif isinstance(imgObject, pygame.Rect):
-            mouse_pos = Pos.subtract(Controller.mouse.pos, (off_set_x, off_set_y), (imgObject.x, imgObject.y))
+            mouse_pos = Pos.subtract(Controller.mouse.pos, off_set, (imgObject.x, imgObject.y))
         else:
             EXCEPTION.fatal("Unable to check current object: {0} (type:{1})".format(imgObject, type(imgObject)))
         # 返回结果

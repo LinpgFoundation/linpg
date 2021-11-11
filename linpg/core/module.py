@@ -27,13 +27,13 @@ class Coordinate:
 
     # 检测是否在给定的位置上
     def on_pos(self, pos: any) -> bool:
-        return Pos.is_same(self.pos, pos)
+        return Coordinates.is_same(self.pos, pos)
 
 
 # 坐标类 - 更精准坐标
-class PreciseCoordinate:
+class Position:
     def __init__(self, x: number, y: number):
-        # 坐标（注意，与Coordinate不同，PreciseCoordinate坐标使用浮点数）
+        # 坐标（注意，与Coordinate不同，Position坐标使用浮点数）
         self.x: number = x
         self.y: number = y
 
@@ -42,10 +42,10 @@ class PreciseCoordinate:
 
     # 坐标信息
     @property
-    def pos(self) -> tuple[number]:
+    def pos(self) -> tuple:
         return self.x, self.y
 
-    def get_pos(self) -> tuple[number]:
+    def get_pos(self) -> tuple:
         return self.x, self.y
 
     # 设置坐标
@@ -181,7 +181,7 @@ class GameObject2d(GameObject):
     # 是否被鼠标触碰
     def is_hovered(self, off_set: Iterable = NoPos) -> bool:
         mouse_pos: tuple[int] = (
-            Controller.mouse.pos if off_set is NoPos else Pos.int(Pos.subtract(Controller.mouse.pos, off_set))
+            Controller.mouse.pos if off_set is NoPos else Coordinates.subtract(Controller.mouse.pos, off_set)
         )
         return 0 < mouse_pos[0] - self.x < self.get_width() and 0 < mouse_pos[1] - self.y < self.get_height()
 
@@ -201,11 +201,11 @@ class GameObject2d(GameObject):
         self.display(Display.window)
 
     # 根据offSet将图片展示到surface的对应位置上 - 子类必须实现
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
         EXCEPTION.fatal("display()", 1)
 
     # 根据offSet将图片展示到屏幕的对应位置上
-    def display_on_screen(self, offSet: Iterable = Pos.ORIGIN) -> None:
+    def display_on_screen(self, offSet: Iterable = Coordinates.ORIGIN) -> None:
         self.display(Display.window, offSet)
 
     # 忽略现有坐标，将图片画到surface的指定位置上
@@ -259,7 +259,7 @@ class ItemNeedBlit(GameObject2point5d):
 
     def draw(self, surface: ImageSurface) -> None:
         if isinstance(self.image, ImageSurface):
-            surface.blit(self.image, Pos.add(self.pos, self.offSet))
+            surface.blit(self.image, Coordinates.add(self.pos, self.offSet))
         else:
             try:
                 self.image.display(surface, self.offSet)

@@ -11,7 +11,7 @@ _ENTITY_UI_FONT: object = Font.create(Display.get_width() / 192)
 DYING_ROUND_LIMIT: int = 3
 
 # 人形模块
-class Entity(PreciseCoordinate):
+class Entity(Position):
     def __init__(self, DATA: dict, faction: str, mode: str):
         super().__init__(DATA["x"], DATA["y"])
         # 最大行动值
@@ -450,7 +450,7 @@ class Entity(PreciseCoordinate):
     # 根据坐标反转角色
     def set_flip_based_on_pos(self, pos: any):
         # 转换坐标
-        x, y = Pos.convert(pos)
+        x, y = Positions.convert(pos)
         # 检测坐标
         if self.x > x:
             self.set_flip(True)

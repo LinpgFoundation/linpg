@@ -24,12 +24,12 @@ class ProgressBar(AbstractProgressBar):
         super().__init__(None, x, y, max_width, height, tag)
         self.color: tuple = Color.get(color)
 
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
         if not self.hidden:
             draw_rect(
                 surface,
                 self.color,
-                new_rect(Pos.add(self.pos, offSet), (int(self.get_width() * self.percentage), self.get_height())),
+                new_rect(Coordinates.add(self.pos, offSet), (int(self.get_width() * self.percentage), self.get_height())),
             )
 
 
@@ -79,9 +79,9 @@ class ProgressBarSurface(AbstractProgressBar):
         return ProgressBarSurface(self.img, self.img2, self.x, self.y, self.get_width(), self.get_height(), self.get_mode())
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
         if not self.hidden:
-            pos = Pos.add(self.pos, offSet)
+            pos = Coordinates.add(self.pos, offSet)
             surface.blit(IMG.resize(self.img2, self.size), pos)
             if self.percentage > 0:
                 imgOnTop = IMG.resize(self.img, self.size)
@@ -115,60 +115,47 @@ class ProgressBarAdjuster(ProgressBarSurface):
         self.__indicator: StaticImage = StaticImage(indicator_img, 0, 0, indicator_width, indicator_height)
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
         if not self.hidden:
             super().display(surface, offSet)
-            abs_pos: tuple[number] = Pos.add(self.pos, offSet)
+            abs_pos: tuple[int] = Coordinates.add(self.pos, offSet)
             x: int
             y: int
             if self._mode is True:
-                x, y = Pos.int(
-                    Pos.add(
-                        (
-                            int(self.get_width() * self.percentage - self.__indicator.width / 2),
-                            int((self.get_height() - self.__indicator.height) / 2),
-                        ),
-                        abs_pos,
-                    )
+                x, y = Coordinates.add(
+                    (
+                        int(self.get_width() * self.percentage - self.__indicator.width / 2),
+                        int((self.get_height() - self.__indicator.height) / 2),
+                    ),
+                    abs_pos,
                 )
                 self.__indicator.set_pos(x, y)
                 self.__indicator.draw(surface)
                 value_font = Font.render(str(round(self.percentage * 100)), Color.WHITE, self.get_height())
                 surface.blit(
                     value_font,
-                    Pos.int(
-                        Pos.add(
-                            abs_pos,
-                            (
-                                self.get_width() + self.__indicator.width * 0.7,
-                                (self.get_height() - value_font.get_height()) / 2,
-                            ),
-                        )
+                    Coordinates.add(
+                        abs_pos,
+                        (self.width + self.__indicator.width * 0.7, (self.height - value_font.get_height()) / 2),
                     ),
                 )
             else:
-                x, y = Pos.int(
-                    Pos.add(
-                        (
-                            int((self.get_width() - self.__indicator.width) / 2),
-                            int(self.get_height() * self.percentage - self.__indicator.height / 2),
-                        ),
-                        abs_pos,
-                    )
+                x, y = Coordinates.add(
+                    (
+                        int((self.get_width() - self.__indicator.width) / 2),
+                        int(self.get_height() * self.percentage - self.__indicator.height / 2),
+                    ),
+                    abs_pos,
                 )
+
                 self.__indicator.set_pos(x, y)
                 self.__indicator.draw(surface)
                 value_font = Font.render(str(round(self.percentage * 100)), Color.WHITE, self.get_width())
                 surface.blit(
                     value_font,
-                    Pos.int(
-                        Pos.add(
-                            abs_pos,
-                            (
-                                (self.get_width() - value_font.get_width()) / 2,
-                                self.get_height() + self.__indicator.height * 0.7,
-                            ),
-                        )
+                    Coordinates.add(
+                        abs_pos,
+                        ((self.width - value_font.get_width()) / 2, self.height + self.__indicator.height * 0.7),
                     ),
                 )
             if self.is_hovered(offSet):
@@ -302,6 +289,6 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                         pos,
                     )
 
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
         if not self.hidden:
-            self._draw_bar(surface, self.img, self.img2, Pos.add(self.pos, offSet))
+            self._draw_bar(surface, self.img, self.img2, Coordinates.add(self.pos, offSet))

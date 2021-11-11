@@ -179,20 +179,23 @@ class UiGenerator:
                             self.__convert_text(data["text"]["src"]),
                             data["text"]["color"],
                             object_height,
-                            Pos.ORIGIN,
+                            Coordinates.ORIGIN,
                             data["alpha_when_not_hover"],
                         )
                     elif "title" in data:
                         item_t = load_button_with_des(
                             IMG.load(data["src"]),
                             self.__convert_text(data["title"]),
-                            Pos.ORIGIN,
+                            Coordinates.ORIGIN,
                             (object_width, object_height),
                             data["alpha_when_not_hover"],
                         )
                     else:
                         item_t = load_button(
-                            IMG.load(data["src"]), Pos.ORIGIN, (object_width, object_height), data["alpha_when_not_hover"]
+                            IMG.load(data["src"]),
+                            Coordinates.ORIGIN,
+                            (object_width, object_height),
+                            data["alpha_when_not_hover"],
                         )
                     if not "name" in data:
                         EXCEPTION.fatal("You have to set a name for button type.")

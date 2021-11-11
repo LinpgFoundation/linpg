@@ -122,7 +122,7 @@ class MapObject(AdvancedAbstractImageSurface):
     def find_decoration_on(self, pos: any) -> DecorationObject:
         for decoration in self.__decorations:
             # 如果坐标一致，则应该是当前装饰物了
-            if Pos.is_same(decoration.get_pos(), pos):
+            if Positions.is_same(decoration.get_pos(), pos):
                 return decoration
         return None
 
@@ -270,7 +270,7 @@ class MapObject(AdvancedAbstractImageSurface):
                 else:
                     offSet = offSet_normal
                 # 画出
-                item.blit(screen, Pos.add(thePosInMap, offSet), not self.inLightArea(item), decoration_alpha)
+                item.blit(screen, Coordinates.add(thePosInMap, offSet), not self.inLightArea(item), decoration_alpha)
 
     # 更新方块
     def update_block(self, pos: dict, name: str) -> None:
@@ -415,9 +415,9 @@ class MapObject(AdvancedAbstractImageSurface):
         ignoreEnemyCharacters: list = [],
     ) -> list:
         # 检测起点
-        start_pos: tuple = Pos.convert(startPosition)
+        start_pos: tuple = Coordinates.convert(startPosition)
         # 检测终点
-        end_pos: tuple = Pos.convert(endPosition)
+        end_pos: tuple = Coordinates.convert(endPosition)
         # 建立寻路地图
         self.map2d = numpy.zeros((self.column, self.row), dtype=numpy.int8)
         # 可行走标记

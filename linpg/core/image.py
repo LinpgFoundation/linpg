@@ -37,14 +37,14 @@ class DynamicImage(AbstractImageSurface):
         self.__processed_img = None
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
         if not self.hidden:
             if not Setting.low_memory_mode:
                 if self.__processed_img is None or self.__processed_img.get_size() != self.size:
                     self.__processed_img = IMG.smoothly_resize(self.img, self.size)
-                surface.blit(self.__processed_img, Pos.add(self.pos, offSet))
+                surface.blit(self.__processed_img, Coordinates.add(self.pos, offSet))
             else:
-                surface.blit(IMG.resize(self.img, self.size), Pos.add(self.pos, offSet))
+                surface.blit(IMG.resize(self.img, self.size), Coordinates.add(self.pos, offSet))
 
 
 # 用于静态图片的surface
@@ -229,7 +229,7 @@ class MovableImage(StaticImage):
         )
 
     # 画出
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
         if not self.hidden:
             super().display(surface, offSet)
             if self.__is_moving_toward_target is True:
@@ -300,11 +300,11 @@ class GifImage(AdvancedAbstractImageSurface):
         return self.img[self.imgId]
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
         if not self.hidden:
             self.current_image.set_size(self.get_width(), self.get_height())
             self.current_image.set_alpha(self._alpha)
-            self.current_image.display(surface, Pos.add(self.pos, offSet))
+            self.current_image.display(surface, Coordinates.add(self.pos, offSet))
             if self.countDown >= self.updateGap:
                 self.countDown = 0
                 self.imgId += 1

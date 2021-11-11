@@ -84,9 +84,9 @@ class Square(GameObject2d):
 
     # 画出轮廓
     def draw_outline(
-        self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN, color: str = "red", thickness: int = 2
+        self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN, color: str = "red", thickness: int = 2
     ) -> None:
-        self.draw_(surface, Color.get(color), (Pos.int(Pos.add(self.pos, offSet)), self.size), thickness)
+        self.draw_(surface, Color.get(color), (Coordinates.add(self.pos, offSet), self.size), thickness)
 
 
 # 用于兼容的长方类
@@ -186,6 +186,6 @@ class Circle(Square):
 
     # 画出轮廓
     def draw_outline(
-        self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN, color: str = "red", thickness: int = 2
+        self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN, color: str = "red", thickness: int = 2
     ) -> None:
-        self.draw_(surface, Color.get(color), Pos.int(Pos.add(self.center, offSet)), self.radius, thickness)
+        self.draw_(surface, Color.get(color), Coordinates.add(self.center, offSet), self.radius, thickness)

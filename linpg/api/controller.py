@@ -94,7 +94,7 @@ class MouseController:
 
     # 设置坐标
     def set_pos(self, pos: Iterable) -> None:
-        self.__x, self.__y = Pos.int(Pos.convert(pos))
+        self.__x, self.__y = Coordinates.convert(pos)
         pygame.mouse.set_pos(self.get_pos())
 
     # 是否鼠标按钮被点击

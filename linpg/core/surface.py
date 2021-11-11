@@ -177,7 +177,7 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
     def is_hovered(self, off_set: Iterable = NoPos) -> bool:
         if self._processed_img is not None:
             mouse_pos: tuple[int] = (
-                Controller.mouse.pos if off_set is NoPos else Pos.int(Pos.subtract(Controller.mouse.pos, off_set))
+                Controller.mouse.pos if off_set is NoPos else Coordinates.subtract(Controller.mouse.pos, off_set)
             )
             return (
                 0 < mouse_pos[0] - self.x - self.local_x < self._processed_img.get_width()
@@ -222,20 +222,20 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 画出轮廓
     def draw_outline(
-        self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN, color: color_liked = "red", line_width: int = 2
+        self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN, color: color_liked = "red", line_width: int = 2
     ) -> None:
         if self._need_update is True:
             self._update_img()
-        draw_rect(surface, color, (Pos.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width)
+        draw_rect(surface, color, (Coordinates.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width)
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
         if not self.hidden:
             # 如果图片需要更新，则先更新
             if self._need_update is True:
                 self._update_img()
             # 将已经处理好的图片画在给定的图层上
-            surface.blit(self._processed_img, Pos.add(self.abs_pos, offSet))
+            surface.blit(self._processed_img, Coordinates.add(self.abs_pos, offSet))
 
 
 # 基础文字类
@@ -244,9 +244,9 @@ class TextSurface(AbstractImageSurface):
         super().__init__(font_surface, x, y, -1, -1, tag)
 
     # 画出
-    def display(self, surface: ImageSurface, offSet: tuple = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple = Coordinates.ORIGIN) -> None:
         if not self.hidden:
-            surface.blit(self.img, Pos.add(self.pos, offSet))
+            surface.blit(self.img, Coordinates.add(self.pos, offSet))
 
 
 # 动态文字类
@@ -266,11 +266,11 @@ class DynamicTextSurface(TextSurface):
         return self.__is_hovered
 
     # 画出
-    def display(self, surface: ImageSurface, offSet: tuple = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple = Coordinates.ORIGIN) -> None:
         if not self.hidden:
             self.__is_hovered = self.is_hovered(offSet)
             if not self.__is_hovered:
-                surface.blit(self.img, Pos.add(self.pos, offSet))
+                surface.blit(self.img, Coordinates.add(self.pos, offSet))
             else:
                 surface.blit(
                     self.__big_font_surface,

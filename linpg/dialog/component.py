@@ -233,7 +233,9 @@ class DialogNavigatorWindow(AbstractFrame):
         for key in self.__node_maps:
             if convert_rect(
                 (
-                    Pos.subtract(Pos.add(self.__node_maps[key].pos, (self.x, self.content_container_y)), self.local_pos),
+                    Coordinates.subtract(
+                        Coordinates.add(self.__node_maps[key].pos, (self.x, self.content_container_y)), self.local_pos
+                    ),
                     self.__node_maps[key].get_size(),
                 )
             ).is_hovered():

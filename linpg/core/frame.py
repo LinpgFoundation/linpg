@@ -106,18 +106,18 @@ class AbstractFrame(AdvancedAbstractImageSurface):
                     and not self._any_content_container_event()
                 ):
                     if new_rect((self.x, self.y), (self.get_width(), self.__bar_height)).is_hovered():
-                        self.__mouse_hovered_offset_pos = Pos.subtract(Controller.mouse.get_pos(), self.pos)
+                        self.__mouse_hovered_offset_pos = Coordinates.subtract(Controller.mouse.get_pos(), self.pos)
                     elif self.is_hovered():
                         self.__if_move_local_pos = True
-                        self.__mouse_hovered_offset_pos = Pos.subtract(Controller.mouse.get_pos(), self.local_pos)
+                        self.__mouse_hovered_offset_pos = Coordinates.subtract(Controller.mouse.get_pos(), self.local_pos)
             elif Controller.mouse.get_pressed(0):
                 # 根据鼠标位置修改本地坐标
                 if self.__if_move_local_pos is True:
-                    self.locally_move_to(Pos.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_offset_pos))
+                    self.locally_move_to(Coordinates.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_offset_pos))
 
                 # 移动窗口
                 elif len(self.__mouse_hovered_offset_pos) > 0:
-                    self.move_to(Pos.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_offset_pos))
+                    self.move_to(Coordinates.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_offset_pos))
                 else:
                     # 向左放大
                     if self.__rescale_directions["left"] is True:

@@ -37,8 +37,8 @@ class DynamicImage(AbstractImageSurface):
         self.__processed_img = None
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
-        if not self.hidden:
+    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+        if self.is_visible():
             if not Setting.low_memory_mode:
                 if self.__processed_img is None or self.__processed_img.get_size() != self.size:
                     self.__processed_img = IMG.smoothly_resize(self.img, self.size)
@@ -229,8 +229,8 @@ class MovableImage(StaticImage):
         )
 
     # 画出
-    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
-        if not self.hidden:
+    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+        if self.is_visible():
             super().display(surface, offSet)
             if self.__is_moving_toward_target is True:
                 if self.__default_x < self.__target_x:
@@ -300,8 +300,8 @@ class GifImage(AdvancedAbstractImageSurface):
         return self.img[self.imgId]
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
-        if not self.hidden:
+    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+        if self.is_visible():
             self.current_image.set_size(self.get_width(), self.get_height())
             self.current_image.set_alpha(self._alpha)
             self.current_image.display(surface, Coordinates.add(self.pos, offSet))

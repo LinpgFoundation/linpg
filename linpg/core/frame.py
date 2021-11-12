@@ -83,7 +83,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
 
     # 展示
     def present_on(self, surface: ImageSurface) -> None:
-        if not self.hidden:
+        if self.is_visible():
             # 如果鼠标之前没有被按下
             if not Controller.mouse.get_pressed_previously(0):
                 # 查看鼠标是否触碰窗口的边缘

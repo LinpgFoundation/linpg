@@ -153,7 +153,7 @@ class RawImageManafer:
 
     # 按照给定的位置对图片进行剪裁
     @staticmethod
-    def crop(img: ImageSurface, pos: Iterable = Coordinates.ORIGIN, size: Iterable = (1, 1)) -> ImageSurface:
+    def crop(img: ImageSurface, pos: Iterable = ORIGIN, size: Iterable = (1, 1)) -> ImageSurface:
         if isinstance(pos, pygame.Rect):
             cropped = new_transparent_surface(pos.size)
             cropped.blit(img, (-pos.x, -pos.y))

@@ -1,11 +1,11 @@
 from .feature import *
 
 # 图形接口
-class AbstractImageSurface(Rect):
+class AbstractImageSurface(Rect, HiddenableSurface):
     def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str):
-        super().__init__(x, y, width, height)
+        Rect.__init__(self, x, y, width, height)
+        HiddenableSurface.__init__(self)
         self.img: any = img
-        self.hidden: bool = False
         self.tag: str = str(tag)
         # 确保长宽均已输入且为正整数
         if self.get_width() < 0 and self.get_height() < 0:
@@ -222,15 +222,15 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 画出轮廓
     def draw_outline(
-        self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN, color: color_liked = "red", line_width: int = 2
+        self, surface: ImageSurface, offSet: Iterable = ORIGIN, color: color_liked = "red", line_width: int = 2
     ) -> None:
         if self._need_update is True:
             self._update_img()
         draw_rect(surface, color, (Coordinates.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width)
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
-        if not self.hidden:
+    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+        if self.is_visible():
             # 如果图片需要更新，则先更新
             if self._need_update is True:
                 self._update_img()
@@ -244,8 +244,8 @@ class TextSurface(AbstractImageSurface):
         super().__init__(font_surface, x, y, -1, -1, tag)
 
     # 画出
-    def display(self, surface: ImageSurface, offSet: tuple = Coordinates.ORIGIN) -> None:
-        if not self.hidden:
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
+        if self.is_visible():
             surface.blit(self.img, Coordinates.add(self.pos, offSet))
 
 
@@ -266,8 +266,8 @@ class DynamicTextSurface(TextSurface):
         return self.__is_hovered
 
     # 画出
-    def display(self, surface: ImageSurface, offSet: tuple = Coordinates.ORIGIN) -> None:
-        if not self.hidden:
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
+        if self.is_visible():
             self.__is_hovered = self.is_hovered(offSet)
             if not self.__is_hovered:
                 surface.blit(self.img, Coordinates.add(self.pos, offSet))

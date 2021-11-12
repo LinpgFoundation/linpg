@@ -59,14 +59,10 @@ class PositionSystemOld:
 Pos: PositionSystemOld = PositionSystemOld()
 
 
+ORIGIN: tuple[int] = (0, 0)
+
+
 class Positions:
-
-    __ORIGIN: tuple[float] = (0.0, 0.0)
-
-    # 原点
-    @property
-    def ORIGIN(self) -> tuple[float]:
-        return self.__ORIGIN
 
     # 转换坐标
     @staticmethod
@@ -110,13 +106,6 @@ class Positions:
 
 
 class Coordinates:
-
-    __ORIGIN: tuple[int] = (0, 0)
-
-    # 原点
-    @property
-    def ORIGIN(self) -> tuple[int]:
-        return self.__ORIGIN
 
     # 转换坐标
     @staticmethod

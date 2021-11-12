@@ -1,10 +1,10 @@
 from .dialogbox import *
 
 # 对话系统按钮UI模块
-class DialogButtons:
+class DialogButtons(HiddenableSurface):
     def __init__(self):
+        super().__init__()
         self.__button_hovered: int = 0
-        self.hidden: bool = False
         self.__buttons_container = None
         self.initialize()
 
@@ -67,7 +67,7 @@ class DialogButtons:
 
     def draw(self, surface: ImageSurface) -> None:
         self.__button_hovered = 0
-        if self.hidden is True:
+        if self.is_hidden():
             self.showButton.draw(surface)
             if self.showButton.is_hovered():
                 self.__button_hovered = 1

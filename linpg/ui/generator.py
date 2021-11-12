@@ -159,7 +159,7 @@ class UiGenerator:
                     )
                     # 加载数据
                     if "hidden" in data:
-                        container_t.hidden = data["hidden"]
+                        container_t.set_visible(not data["hidden"])
                     if "items" in data:
                         for each_item in data["items"]:
                             item_r = self.__generate(
@@ -179,21 +179,21 @@ class UiGenerator:
                             self.__convert_text(data["text"]["src"]),
                             data["text"]["color"],
                             object_height,
-                            Coordinates.ORIGIN,
+                            ORIGIN,
                             data["alpha_when_not_hover"],
                         )
                     elif "title" in data:
                         item_t = load_button_with_des(
                             IMG.load(data["src"]),
                             self.__convert_text(data["title"]),
-                            Coordinates.ORIGIN,
+                            ORIGIN,
                             (object_width, object_height),
                             data["alpha_when_not_hover"],
                         )
                     else:
                         item_t = load_button(
                             IMG.load(data["src"]),
-                            Coordinates.ORIGIN,
+                            ORIGIN,
                             (object_width, object_height),
                             data["alpha_when_not_hover"],
                         )

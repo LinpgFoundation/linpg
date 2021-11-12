@@ -24,8 +24,8 @@ class ProgressBar(AbstractProgressBar):
         super().__init__(None, x, y, max_width, height, tag)
         self.color: tuple = Color.get(color)
 
-    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
-        if not self.hidden:
+    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+        if self.is_visible():
             draw_rect(
                 surface,
                 self.color,
@@ -79,8 +79,8 @@ class ProgressBarSurface(AbstractProgressBar):
         return ProgressBarSurface(self.img, self.img2, self.x, self.y, self.get_width(), self.get_height(), self.get_mode())
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
-        if not self.hidden:
+    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+        if self.is_visible():
             pos = Coordinates.add(self.pos, offSet)
             surface.blit(IMG.resize(self.img2, self.size), pos)
             if self.percentage > 0:
@@ -115,8 +115,8 @@ class ProgressBarAdjuster(ProgressBarSurface):
         self.__indicator: StaticImage = StaticImage(indicator_img, 0, 0, indicator_width, indicator_height)
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
-        if not self.hidden:
+    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+        if self.is_visible():
             super().display(surface, offSet)
             abs_pos: tuple[int] = Coordinates.add(self.pos, offSet)
             x: int
@@ -289,6 +289,6 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                         pos,
                     )
 
-    def display(self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN) -> None:
-        if not self.hidden:
+    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+        if self.is_visible():
             self._draw_bar(surface, self.img, self.img2, Coordinates.add(self.pos, offSet))

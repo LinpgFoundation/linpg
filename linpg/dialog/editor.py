@@ -65,7 +65,7 @@ class DialogEditor(AbstractDialogSystem):
         # 加载npc立绘
         for imgPath in glob(os.path.join(self._npc_manager.image_folder_path, "*")):
             self.UIContainerRight_npc.set(os.path.basename(imgPath), IMG.load(imgPath, (container_width * 0.8, None)))
-        self.UIContainerRight_npc.hidden = True
+        self.UIContainerRight_npc.set_visible(False)
         self.UIContainerRight_npc.distance_between_item = 0
         # 容器按钮
         button_width: int = int(Display.get_width() * 0.04)
@@ -232,11 +232,11 @@ class DialogEditor(AbstractDialogSystem):
             self.dialog_bgm_select.set_current_selected_item("null")
         # 更新按钮
         if self.does_current_dialog_have_next_dialog() is True:
-            self.__buttons_ui_container.get("add").hidden = True
-            self.__buttons_ui_container.get("next").hidden = False
+            self.__buttons_ui_container.get("add").set_visible(False)
+            self.__buttons_ui_container.get("next").set_visible(True)
         else:
-            self.__buttons_ui_container.get("add").hidden = False
-            self.__buttons_ui_container.get("next").hidden = True
+            self.__buttons_ui_container.get("add").set_visible(True)
+            self.__buttons_ui_container.get("next").set_visible(False)
 
     # 更新场景
     def _update_scene(self, dialog_id: strint) -> None:
@@ -402,7 +402,7 @@ class DialogEditor(AbstractDialogSystem):
                             self.stop()
                             break
                         else:
-                            self.__no_save_warning.hidden = False
+                            self.__no_save_warning.set_visible(True)
                     elif self.__buttons_ui_container.item_being_hovered == "previous":
                         lastId = self.__get_last_id()
                         if lastId is not None:
@@ -485,19 +485,19 @@ class DialogEditor(AbstractDialogSystem):
             # self.UIContainerRight_npc.draw_outline(surface,(self.UIContainerRightButton.right,0))
             # 检测按钮
             if self.button_select_background.is_hovered((self.UIContainerRightButton.right, 0)) and leftClick is True:
-                self.UIContainerRight_bg.hidden = False
-                self.UIContainerRight_npc.hidden = True
+                self.UIContainerRight_bg.set_visible(True)
+                self.UIContainerRight_npc.set_visible(False)
                 leftClick = False
             if self.button_select_npc.is_hovered((self.UIContainerRightButton.right, 0)) and leftClick is True:
-                self.UIContainerRight_bg.hidden = True
-                self.UIContainerRight_npc.hidden = False
+                self.UIContainerRight_bg.set_visible(False)
+                self.UIContainerRight_npc.set_visible(True)
                 leftClick = False
             # 画出按钮
             self.button_select_background.display(surface, (self.UIContainerRightButton.right, 0))
             self.button_select_npc.display(surface, (self.UIContainerRightButton.right, 0))
             # 检测是否有物品被选中需要更新
             if leftClick is True:
-                if not self.UIContainerRight_bg.hidden:
+                if self.UIContainerRight_bg.is_visible():
                     imgName = self.UIContainerRight_bg.item_being_hovered
                     if imgName is not None:
                         if imgName != "current_select":
@@ -506,7 +506,7 @@ class DialogEditor(AbstractDialogSystem):
                         else:
                             self._current_dialog_content["background_img"] = None
                             self._update_background_image(None)
-                elif not self.UIContainerRight_npc.hidden:
+                elif self.UIContainerRight_npc.is_visible():
                     imgName = self.UIContainerRight_npc.item_being_hovered
                     if imgName is not None:
                         if self._current_dialog_content["characters_img"] is None:
@@ -524,7 +524,7 @@ class DialogEditor(AbstractDialogSystem):
                 self.stop()
             # 取消
             elif self.__no_save_warning.item_being_hovered == "cancel":
-                self.__no_save_warning.hidden = True
+                self.__no_save_warning.set_visible(False)
             # 不保存并离开
             elif self.__no_save_warning.item_being_hovered == "dont_save":
                 self.stop()

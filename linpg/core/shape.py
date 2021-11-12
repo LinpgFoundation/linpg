@@ -83,9 +83,7 @@ class Square(GameObject2d):
         pygame.draw.rect(surface, color, rect, thickness)
 
     # 画出轮廓
-    def draw_outline(
-        self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN, color: str = "red", thickness: int = 2
-    ) -> None:
+    def draw_outline(self, surface: ImageSurface, offSet: Iterable = ORIGIN, color: str = "red", thickness: int = 2) -> None:
         self.draw_(surface, Color.get(color), (Coordinates.add(self.pos, offSet), self.size), thickness)
 
 
@@ -185,7 +183,5 @@ class Circle(Square):
         pygame.draw.circle(surface, color, center_pos, radius, thickness)
 
     # 画出轮廓
-    def draw_outline(
-        self, surface: ImageSurface, offSet: Iterable = Coordinates.ORIGIN, color: str = "red", thickness: int = 2
-    ) -> None:
+    def draw_outline(self, surface: ImageSurface, offSet: Iterable = ORIGIN, color: str = "red", thickness: int = 2) -> None:
         self.draw_(surface, Color.get(color), Coordinates.add(self.center, offSet), self.radius, thickness)

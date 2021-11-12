@@ -72,8 +72,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
     def __check_button_event(self, surface: ImageSurface) -> bool:
         if self._buttons_mananger is not None and not self._is_showing_history:
             if self._buttons_mananger.item_being_hovered == "hide":
-                self._buttons_mananger.hidden = not self._buttons_mananger.hidden
-                self._dialog_txt_system.hidden = self._buttons_mananger.hidden
+                self._buttons_mananger.set_visible(self._buttons_mananger.is_hidden())
+                self._dialog_txt_system.set_visible(self._buttons_mananger.is_visible())
             # 如果接来下没有文档了或者玩家按到了跳过按钮, 则准备淡出并停止播放
             elif self._buttons_mananger.item_being_hovered == "skip":
                 self.fade(surface)
@@ -189,7 +189,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         # 显示对话选项
         if (
             self._dialog_txt_system.is_all_played()
-            and not self._dialog_txt_system.hidden
+            and self._dialog_txt_system.is_visible()
             and self._current_dialog_content["next_dialog_id"] is not None
             and self._current_dialog_content["next_dialog_id"]["type"] == "option"
         ):
@@ -298,7 +298,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 self.history_back.draw(surface)
                 self.history_back.is_hovered()
         # 如果对话被隐藏，则无视进入下一个对白的操作
-        elif self._buttons_mananger is not None and self._buttons_mananger.hidden is True:
+        elif self._buttons_mananger is not None and self._buttons_mananger.is_hidden():
             pass
         # 如果操作或自动播放系统告知需要更新
         elif self._dialog_txt_system.needUpdate() or leftClick:

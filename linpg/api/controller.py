@@ -54,6 +54,8 @@ class MouseController:
     # 鼠标位置
     __x: int = 0
     __y: int = 0
+    __last_x: int = 0
+    __last_y: int = 0
     # 鼠标移动速度（使用手柄时）
     __moving_speed: int = int(max(Setting.get("MouseMoveSpeed"), 1))
 
@@ -82,18 +84,45 @@ class MouseController:
         return self.__x
 
     @property
+    def last_x(self) -> int:
+        return self.__last_x
+
+    @property
+    def x_moved(self) -> int:
+        return self.__last_x - self.__x
+
+    @property
     def y(self) -> int:
         return self.__y
+
+    @property
+    def last_y(self) -> int:
+        return self.__last_y
+
+    @property
+    def y_moved(self) -> int:
+        return self.__last_y - self.__y
 
     @property
     def pos(self) -> tuple[int]:
         return self.__x, self.__y
 
+    @property
+    def last_pos(self) -> tuple[int]:
+        return self.__last_x, self.__last_y
+
     def get_pos(self) -> tuple[int]:
         return self.__x, self.__y
 
+    def get_last_pos(self) -> tuple[int]:
+        return self.__last_x, self.__last_y
+
     # 设置坐标
     def set_pos(self, pos: Iterable) -> None:
+        # 更新前鼠标坐标
+        self.__last_x = self.__x
+        self.__last_y = self.__y
+        # 更新当前鼠标坐标
         self.__x, self.__y = Coordinates.convert(pos)
         pygame.mouse.set_pos(self.get_pos())
 
@@ -106,9 +135,12 @@ class MouseController:
     def get_pressed_previously(self, button_id: int) -> bool:
         return self.__mouse_get_pressed_previously[button_id]
 
-    # 更新设备
+    # 更新鼠标数据
     def update(self) -> None:
-        # 更新鼠标坐标
+        # 更新前鼠标坐标
+        self.__last_x = self.__x
+        self.__last_y = self.__y
+        # 更新当前鼠标坐标
         self.__x, self.__y = pygame.mouse.get_pos()
 
     # 完成旧数据的存储

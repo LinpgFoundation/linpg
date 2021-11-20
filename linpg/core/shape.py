@@ -2,6 +2,9 @@ from .module import *
 
 RectLiked = Union[Rect, pygame.Rect, tuple]
 
+# 无数据的RECT，用于规范化Typing
+NULL_RECT = Rect(0, 0, 0, 0)
+
 # 正方形类
 class Square(GameObject2d):
     def __init__(self, x: int_f, y: int_f, width: int):

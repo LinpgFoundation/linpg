@@ -89,8 +89,14 @@ class DialogBox(HiddenableSurface):
             self.narrator = narrator
             self.content = content
         else:
-            self.narrator.set_text(narrator)
-            self.content.set_text(content)
+            if narrator is None:
+                self.narrator.set_text()
+            else:
+                self.narrator.set_text(narrator)
+            if content is None:
+                self.content.set_text()
+            else:
+                self.content.set_text(content)
 
     def reset(self) -> None:
         self.__fade_out_stage = False

@@ -99,7 +99,7 @@ def _split_audio_from_video(input_path: str, audio_type="ogg") -> str:
 
 
 # 音效管理
-class SoundController:
+class Sound:
     # 加载音效
     @staticmethod
     def load(path: str, volume: float = 1.0) -> pygame.mixer.Sound:
@@ -109,9 +109,10 @@ class SoundController:
         return soundTmp
 
     # 从一个视频中加载音效
-    def load_from_video(self, path: str, volume: float = 1.0) -> pygame.mixer.Sound:
+    @staticmethod
+    def load_from_video(path: str, volume: float = 1.0) -> pygame.mixer.Sound:
         path_of_sound: str = _split_audio_from_video(path)
-        sound_audio = self.load(path_of_sound, volume)
+        sound_audio = Sound.load(path_of_sound, volume)
         os.remove(path_of_sound)
         return sound_audio
 
@@ -136,27 +137,27 @@ class SoundController:
         return int(pygame.mixer.get_num_channels() - 3)
 
     # 获取对应id的频道
-    def get_channel(self, channel_id: int) -> pygame.mixer.Channel:
-        if channel_id < self.get_num_channels():
+    @staticmethod
+    def get_channel(channel_id: int) -> pygame.mixer.Channel:
+        if channel_id < Sound.get_num_channels():
             return pygame.mixer.Channel(channel_id)
         else:
-            EXCEPTION.fatal('The channel_id "{0}" is out of bound of {1}'.format(channel_id, self.get_num_channels()))
+            EXCEPTION.fatal('The channel_id "{0}" is out of bound of {1}'.format(channel_id, Sound.get_num_channels()))
 
-
-Sound: SoundController = SoundController()
 
 # 音乐管理
-class MusicController:
+class Music:
     # 加载背景音乐（但不播放）
     @staticmethod
     def load(path: str) -> None:
         pygame.mixer.music.load(path)
 
     # 从一个视频中加载音乐
-    def load_from_video(self, path: str) -> str:
-        self.unload()
+    @staticmethod
+    def load_from_video(path: str) -> str:
+        Music.unload()
         path_of_music: str = _split_audio_from_video(path, "mp3")
-        self.load(path_of_music)
+        Music.load(path_of_music)
         return path_of_music
 
     # 卸载背景音乐
@@ -210,12 +211,10 @@ class MusicController:
         return pygame.mixer.music.get_busy()
 
 
-Music: MusicController = MusicController()
-
 # 音量管理
 class SoundVolumeManger:
-    def __init__(self) -> None:
-        self.__sound_unit: int = 100
+
+    __sound_unit: int = 100
 
     @property
     def global_value(self) -> int:
@@ -244,8 +243,8 @@ class SoundVolumeManger:
 
 # 多媒体全局管理
 class MediaController:
-    def __init__(self) -> None:
-        self.__volume: SoundVolumeManger = SoundVolumeManger()
+
+    __volume: SoundVolumeManger = SoundVolumeManger()
 
     @property
     def volume(self) -> SoundVolumeManger:

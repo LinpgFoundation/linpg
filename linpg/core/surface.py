@@ -59,11 +59,10 @@ class AbstractImageSurface(Rect, HiddenableSurface):
 
 
 # 有本地坐标的图形接口
-class AdvancedAbstractImageSurface(AbstractImageSurface):
+class AdvancedAbstractImageSurface(AbstractImageSurface, SurfaceWithLocalPos):
     def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
-        super().__init__(img, x, y, width, height, tag)
-        self.__local_x: int = 0
-        self.__local_y: int = 0
+        AbstractImageSurface.__init__(self, img, x, y, width, height, tag)
+        SurfaceWithLocalPos.__init__(self)
         self._alpha: int = 255
 
     # 透明度
@@ -74,69 +73,6 @@ class AdvancedAbstractImageSurface(AbstractImageSurface):
         self._alpha = keep_in_range(int(value), 0, 255)
         if update_original is True and isinstance(self.img, ImageSurface):
             super().set_alpha(self._alpha)
-
-    # 获取本地坐标
-    @property
-    def local_x(self) -> int:
-        return self.__local_x
-
-    def get_local_x(self) -> int:
-        return self.__local_x
-
-    @property
-    def local_y(self) -> int:
-        return self.__local_y
-
-    def get_local_y(self) -> int:
-        return self.__local_y
-
-    @property
-    def local_pos(self) -> tuple[int]:
-        return self.__local_x, self.__local_y
-
-    def get_local_pos(self) -> tuple[int]:
-        return self.__local_x, self.__local_y
-
-    # 设置本地坐标
-    def set_local_x(self, value: int_f) -> None:
-        self.__local_x = int(value)
-
-    def set_local_y(self, value: int_f) -> None:
-        self.__local_y = int(value)
-
-    def set_local_pos(self, local_x: int_f, local_y: int_f) -> None:
-        self.set_local_x(local_x)
-        self.set_local_y(local_y)
-
-    def locally_move_to(self, local_pos: tuple) -> None:
-        self.set_local_pos(local_pos[0], local_pos[1])
-
-    # 增加本地坐标
-    def add_local_x(self, value: int_f) -> None:
-        self.set_local_x(self.__local_x + value)
-
-    def add_local_y(self, value: int_f) -> None:
-        self.set_local_y(self.__local_y + value)
-
-    def add_local_pos(self, local_x: int_f, local_y: int_f) -> None:
-        self.add_local_x(local_x)
-        self.add_local_y(local_y)
-
-    # 绝对的本地坐标
-    @property
-    def abs_x(self) -> int:
-        return int(self.x + self.__local_x)
-
-    @property
-    def abs_y(self) -> int:
-        return int(self.y + self.__local_y)
-
-    @property
-    def abs_pos(self) -> tuple[int]:
-        return self.abs_x, self.abs_y
-
-    def get_abs_pos(self) -> tuple[int]:
-        return self.abs_x, self.abs_y
 
 
 # 带缓存的高级图片拟态类

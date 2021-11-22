@@ -6,6 +6,8 @@ class AbstractDialogSystem(AbstractGameSystem):
         super().__init__()
         # 存储视觉小说数据的参数
         self._dialog_data: dict = {}
+        # 当前对话的id
+        self._dialog_id: str = "head"
         # 加载对话的背景图片模块
         self._npc_manager = CharacterImageManager()
         # 黑色Void帘幕
@@ -103,7 +105,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         chapterId: int,
         part: str,
         projectName: str,
-        dialogId: strint = "head",
+        dialogId: str = "head",
         dialog_options: dict = {},
     ) -> None:
         super()._initialize(chapterType, chapterId, projectName)
@@ -176,7 +178,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                 self.__background_image_surface = self._black_bg.copy()
 
     # 更新场景
-    def _update_scene(self, dialog_id: strint) -> None:
+    def _update_scene(self, dialog_id: str) -> None:
         # 更新dialogId
         self._dialog_id = dialog_id
         # 更新当前对话数据的指针

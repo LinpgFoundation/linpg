@@ -5,7 +5,7 @@ class AbstractScrollbarsSurface:
     def __init__(self) -> None:
         self._button_tickness: int = 20
         self._move_speed: int = 20
-        self.__color: tuple[int] = Color.WHITE
+        self._bar_color: tuple[int] = Color.WHITE
 
     # 获取surface宽度（子类需要实现）
     def get_surface_width(self) -> int:
@@ -16,12 +16,12 @@ class AbstractScrollbarsSurface:
         EXCEPTION.fatal("get_surface_height()", 1)
 
     # 获取scrollbar的颜色
-    def get_color(self) -> tuple[int]:
-        return self.__color
+    def get_bar_color(self) -> tuple[int]:
+        return self._bar_color
 
     # 修改scrollbar的颜色
-    def set_color(self, color: color_liked) -> None:
-        self.__color = Color.get(color)
+    def set_bar_color(self, color: color_liked) -> None:
+        self._bar_color = Color.get(color)
 
     # 获取滚动条的Rect
     def _get_right_scroll_bar_rect(self, off_set_x: number, off_set_y: number) -> Rect:
@@ -123,13 +123,13 @@ class AbstractScrollbarsSurface:
                 self.set_local_x(local_x_max)
         # 画出滚动条
         if right_scroll_button_rect is not NULL_RECT:
-            draw_rect(surface, self.__color, right_scroll_button_rect)
+            draw_rect(surface, self._bar_color, right_scroll_button_rect)
         if right_scroll_bar_rect is not NULL_RECT:
-            draw_rect(surface, self.__color, right_scroll_bar_rect, 2)
+            draw_rect(surface, self._bar_color, right_scroll_bar_rect, 2)
         if bottom_scroll_button_rect is not NULL_RECT:
-            draw_rect(surface, self.__color, bottom_scroll_button_rect)
+            draw_rect(surface, self._bar_color, bottom_scroll_button_rect)
         if bottom_scroll_bar_rect is not NULL_RECT:
-            draw_rect(surface, self.__color, bottom_scroll_bar_rect, 2)
+            draw_rect(surface, self._bar_color, bottom_scroll_bar_rect, 2)
 
 
 # 同一时刻只会拥有一个scrollbar的Surface
@@ -299,6 +299,6 @@ class AbstractSurfaceWithScrollbar(SurfaceWithLocalPos, AbstractScrollbarsSurfac
             self.set_local_x(local_x_max)
         # 画出滚动条
         if scroll_button_rect is not NULL_RECT:
-            draw_rect(surface, Color.WHITE, scroll_button_rect)
+            draw_rect(surface, self._bar_color, scroll_button_rect)
         if scroll_bar_rect is not NULL_RECT:
-            draw_rect(surface, Color.WHITE, scroll_bar_rect, 2)
+            draw_rect(surface, self._bar_color, scroll_bar_rect, 2)

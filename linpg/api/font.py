@@ -68,10 +68,12 @@ class FontGenerator:
     # 渲染有边框的文字
     def render_with_bounding(self, txt: strint, color: color_liked, background_color: color_liked = None) -> ImageSurface:
         if self.__SIZE > 0:
+            if not isinstance(txt, (str, int)):
+                EXCEPTION.fatal("The text must be a unicode or bytes, not {}".format(txt))
             if background_color is None:
-                return self.__FONT.render(txt, Setting.antialias, Color.get(color))
+                return self.__FONT.render(str(txt), Setting.antialias, Color.get(color))
             else:
-                return self.__FONT.render(txt, Setting.antialias, Color.get(color), Color.get(background_color))
+                return self.__FONT.render(str(txt), Setting.antialias, Color.get(color), Color.get(background_color))
         else:
             EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
 

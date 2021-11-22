@@ -151,37 +151,45 @@ class DialogNode(Button):
         return super().display(surface)
 
 
-class DialogNavigatorWindow(AbstractScrollbarsSurface, AbstractFrame):
+class DialogNavigationWindow(AbstractFrame):
     def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
-        AbstractScrollbarsSurface.__init__(self)
-        AbstractFrame.__init__(self, x, y, width, height, tag=tag)
-        self.__node_maps: dict[str, DialogNode] = {}
+        super().__init__(x, y, width, height, tag=tag)
+        self.__nodes_map: dict[str, DialogNode] = {}
         self.__current_selected_key: str = "head"
         self.__font_size: int = 10
         self.__most_right: int = 0
         self.__most_top: int = 0
         self.__most_bottom: int = 0
 
+    # 新增node
     def add_node(self, key: str, next_keys: list[str]) -> None:
-        self.__node_maps[key] = DialogNode(key, self.__font_size, next_keys)
+        self.__nodes_map[key] = DialogNode(key, self.__font_size, next_keys)
         self._if_update_needed = True
 
-    def add_all(self, dialogs_data: dict):
+    # 重新添加全部的key
+    def readd_all(self, dialogs_data: dict):
+        self.__nodes_map.clear()
         for key in dialogs_data:
             next_keys: list[str] = []
-            if dialogs_data[key]["next_dialog_id"]["type"] == "option":
-                for next_keys_options in dialogs_data[key]["next_dialog_id"]["target"]:
-                    next_keys.append(next_keys_options["id"])
-            else:
-                next_keys: list[str].append(dialogs_data[key]["next_dialog_id"]["target"])
-            self.add_node(dialogs_data[key], next_keys)
+            if dialogs_data[key]["next_dialog_id"] != None:
+                if dialogs_data[key]["next_dialog_id"]["type"] == "option":
+                    for next_keys_options in dialogs_data[key]["next_dialog_id"]["target"]:
+                        next_keys.append(next_keys_options["id"])
+                elif isinstance(the_next_key := dialogs_data[key]["next_dialog_id"]["target"], (str, int)):
+                    next_keys.append(the_next_key)
+            self.add_node(key, next_keys)
 
+    # 更新选中的key
     def update_selected(self, new_current_select: str) -> None:
         self.__current_selected_key = new_current_select
         self._if_update_needed = True
 
+    # 获取当前选中的key
+    def get_selected_key(self) -> str:
+        return self.__current_selected_key
+
     def __update_node_pos(self, key: str = "head", offset_x: int = 0, offset_y: int = 0) -> None:
-        key_node: DialogNode = self.__node_maps[key]
+        key_node: DialogNode = self.__nodes_map[key]
         if not key_node.has_been_displayed:
             # 设置坐标并展示
             key_node.set_pos(offset_x, offset_y)
@@ -190,8 +198,8 @@ class DialogNavigatorWindow(AbstractScrollbarsSurface, AbstractFrame):
             if len(key_node.next_keys) > 1:
                 offset_y = key_node.y - len(key_node.next_keys) * self.__font_size - panding
             for child_key in key_node.next_keys:
-                offset_y += panding
                 offset_y = self.__update_node_pos(child_key, key_node.x + self.__font_size * 10, offset_y)
+                offset_y += panding
             if self.__most_right < key_node.right:
                 self.__most_right = key_node.right
             if self.__most_bottom < key_node.bottom:
@@ -201,7 +209,7 @@ class DialogNavigatorWindow(AbstractScrollbarsSurface, AbstractFrame):
         return offset_y
 
     def __draw_node(self, surface: ImageSurface, key: str = "head") -> int:
-        key_node: DialogNode = self.__node_maps[key]
+        key_node: DialogNode = self.__nodes_map[key]
         if not key_node.has_been_displayed:
             # 设置坐标并展示
             key_node.display(surface)
@@ -212,18 +220,18 @@ class DialogNavigatorWindow(AbstractScrollbarsSurface, AbstractFrame):
 
             for child_key in key_node.next_keys:
                 self.__draw_node(surface, child_key)
-                pygame.draw.aaline(surface, Color.BLACK, key_node.right_center, self.__node_maps[child_key].left_center, 3)
+                pygame.draw.aaline(surface, Color.BLACK, key_node.right_center, self.__nodes_map[child_key].left_center, 3)
 
     def _update(self) -> None:
-        if "head" in self.__node_maps:
-            for key in self.__node_maps:
-                self.__node_maps[key].has_been_displayed = False
+        if "head" in self.__nodes_map:
+            for key in self.__nodes_map:
+                self.__nodes_map[key].has_been_displayed = False
             self.__most_right = 0
             self.__most_bottom = 0
             self.__update_node_pos()
-            for key in self.__node_maps:
-                self.__node_maps[key].has_been_displayed = False
-                self.__node_maps[key].y -= self.__most_top
+            for key in self.__nodes_map:
+                self.__nodes_map[key].has_been_displayed = False
+                self.__nodes_map[key].y -= self.__most_top
             self._content_surface = new_transparent_surface((self.__most_right, self.__most_bottom - self.__most_top))
             self.__draw_node(self._content_surface)
             self._if_update_needed = False
@@ -231,25 +239,15 @@ class DialogNavigatorWindow(AbstractScrollbarsSurface, AbstractFrame):
             EXCEPTION.fatal("Head is missing")
 
     def _any_content_container_event(self) -> bool:
-        for key in self.__node_maps:
+        for key in self.__nodes_map:
             if convert_rect(
                 (
                     Coordinates.subtract(
-                        Coordinates.add(self.__node_maps[key].pos, (self.x, self.content_container_y)), self.local_pos
+                        Coordinates.add(self.__nodes_map[key].pos, (self.x, self.content_container_y)), self.local_pos
                     ),
-                    self.__node_maps[key].get_size(),
+                    self.__nodes_map[key].get_size(),
                 )
             ).is_hovered():
                 self.update_selected(key)
                 return True
         return False
-
-    def get_surface_width(self) -> int:
-        return self._content_surface.get_width() if self._content_surface is not None else 0
-
-    def get_surface_height(self) -> int:
-        return self._content_surface.get_height() if self._content_surface is not None else 0
-
-    def present_on(self, surface: ImageSurface) -> None:
-        super().present_on(surface)
-        self.display_scrollbar(surface)

@@ -47,7 +47,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         self._load_content()
 
     # 更新场景
-    def _update_scene(self, dialog_id: strint) -> None:
+    def _update_scene(self, dialog_id: str) -> None:
         # 如果dialog Id存在
         if dialog_id in self.dialog_content:
             super()._update_scene(dialog_id)
@@ -61,7 +61,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         super().updated_language()
         self._initialize_pause_menu()
 
-    def continue_scene(self, dialog_id: strint) -> None:
+    def continue_scene(self, dialog_id: str) -> None:
         self._continue()
         self._update_scene(dialog_id)
 

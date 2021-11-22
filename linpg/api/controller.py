@@ -171,6 +171,8 @@ class GameController:
         "scroll_up": False,
         "scroll_down": False,
         "previous": False,
+        # 删除
+        "delete": False,
     }
     # 是否需要截图
     NEED_TO_TAKE_SCREENSHOT: bool = False
@@ -253,6 +255,8 @@ class GameController:
                     self.__SPECIFIC_EVENTS["back"] = True
                 elif event.key == Key.F3:
                     self.NEED_TO_TAKE_SCREENSHOT = True
+                elif event.key == Key.DELETE:
+                    self.__SPECIFIC_EVENTS["delete"] = True
 
 
 # 控制器输入组件初始化

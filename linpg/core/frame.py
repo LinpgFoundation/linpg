@@ -86,19 +86,20 @@ class AbstractFrame(AdvancedAbstractImageSurface):
         if self.is_visible():
             # 如果鼠标之前没有被按下
             if not Controller.mouse.get_pressed_previously(0):
-                # 查看鼠标是否触碰窗口的边缘
-                self.__rescale_directions["left"] = bool(
-                    -self.__outline_thickness <= Controller.mouse.x - self.x < self.__outline_thickness * 2
-                )
-                self.__rescale_directions["right"] = bool(
-                    -self.__outline_thickness * 2 < Controller.mouse.x - self.right <= self.__outline_thickness
-                )
-                self.__rescale_directions["top"] = bool(
-                    -self.__outline_thickness <= Controller.mouse.y - self.y < self.__outline_thickness * 2
-                )
-                self.__rescale_directions["bottom"] = bool(
-                    -self.__outline_thickness * 2 < Controller.mouse.y - self.bottom <= self.__outline_thickness
-                )
+                abs_x = Controller.mouse.x - self.x
+                abs_y = Controller.mouse.y - self.y
+                if (
+                    -self.__outline_thickness <= abs_x <= self.width + self.__outline_thickness
+                    and -self.__outline_thickness <= abs_y <= self.height + self.__outline_thickness
+                ):
+                    # 查看鼠标是否触碰窗口的边缘
+                    self.__rescale_directions["left"] = abs_x < self.__outline_thickness * 2
+                    self.__rescale_directions["right"] = -self.__outline_thickness * 2 < abs_x - self.width
+                    self.__rescale_directions["top"] = abs_y < self.__outline_thickness * 2
+                    self.__rescale_directions["bottom"] = -self.__outline_thickness * 2 < abs_y - self.height
+                else:
+                    for key in self.__rescale_directions:
+                        self.__rescale_directions[key] = False
                 # 如果鼠标按住bar
                 if (
                     True not in self.__rescale_directions.values()

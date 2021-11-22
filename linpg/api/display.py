@@ -28,6 +28,15 @@ class DisplayController:
     def sfpsp(self) -> float:
         return self.__standard_fps / self.__fps
 
+    # 时间增量
+    @property
+    def delta_time(self) -> float:
+        return pygame.time.get_ticks() / self.__fps
+
+    # 获取 pixel per second
+    def get_pps(self, distcane: float) -> int:
+        return int(pygame.time.get_ticks() * distcane / self.__fps)
+
     # 更新屏幕
     def flip(self) -> None:
         Controller.finish_up()

@@ -15,7 +15,7 @@ class AbstractProgressBar(AbstractImageSurface):
         return self.__current_percentage
 
     def set_percentage(self, value: float) -> None:
-        self.__current_percentage = keep_in_range(value, 0.0, 1.0)
+        self.__current_percentage = round(keep_in_range(value, 0.0, 1.0), 5)
 
 
 # 进度条简单形式的实现
@@ -185,7 +185,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
     ):
         super().__init__(imgOnTop, imgOnBottom, x, y, max_width, height, mode)
         self._percentage_to_be = 0
-        self.__perecent_update_each_time = 0
+        self.__perecent_update_each_time: float = 0.0
         self.__total_update_intervals = 10
 
     # 数据准确度
@@ -207,9 +207,9 @@ class DynamicProgressBarSurface(ProgressBarSurface):
 
     def set_percentage(self, value: float) -> None:
         self._percentage_to_be = keep_in_range(value, 0.0, 1.0) * self.accuracy
-        self.__perecent_update_each_time = (
-            self._percentage_to_be - self.__real_current_percentage
-        ) / self.__total_update_intervals
+        self.__perecent_update_each_time = round(
+            (self._percentage_to_be - self.__real_current_percentage) / self.__total_update_intervals, 5
+        )
 
     def copy(self):
         return DynamicProgressBarSurface(

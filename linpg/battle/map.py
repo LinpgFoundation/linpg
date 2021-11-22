@@ -41,6 +41,10 @@ class MapObject(AdvancedAbstractImageSurface):
         self.__block_on_surface: numpy.ndarray = None
         # 开发者使用的窗口
         self.__debug_win = None
+        # 开启表
+        self.openList = []
+        # 关闭表
+        self.closeList = []
 
     @property
     def block_width(self) -> int:
@@ -535,10 +539,9 @@ class MapObject(AdvancedAbstractImageSurface):
         开始寻路
         :return: None或Point列表（路径）
         """
-        # 开启表
-        self.openList = []
-        # 关闭表
-        self.closeList = []
+        # 初始化路径寻找使用的缓存列表
+        self.openList.clear()
+        self.closeList.clear()
         # 判断寻路终点是否是障碍
         mapRow, mapCol = self.map2d.shape
         if (
@@ -574,6 +577,10 @@ class MapObject(AdvancedAbstractImageSurface):
                         pathList.append(cPoint.point)
                         cPoint = cPoint.father
                     else:
+                        self.openList.clear()
+                        self.closeList.clear()
                         return list(reversed(pathList))
             if len(self.openList) == 0:
+                self.openList.clear()
+                self.closeList.clear()
                 return []

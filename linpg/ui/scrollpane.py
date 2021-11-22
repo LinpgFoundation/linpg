@@ -1,6 +1,5 @@
 from .scrollbar import *
 
-
 # 带有滚动条的Surface容器
 class SurfaceContainerWithScrollbar(GameObjectsContainer, AbstractSurfaceWithScrollbar):
     def __init__(

@@ -151,9 +151,10 @@ class DialogNode(Button):
         return super().display(surface)
 
 
-class DialogNavigatorWindow(AbstractFrame):
+class DialogNavigatorWindow(AbstractScrollbarsSurface, AbstractFrame):
     def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
-        super().__init__(x, y, width, height, tag=tag)
+        AbstractScrollbarsSurface.__init__(self)
+        AbstractFrame.__init__(self, x, y, width, height, tag=tag)
         self.__node_maps: dict[str, DialogNode] = {}
         self.__current_selected_key: str = "head"
         self.__font_size: int = 10
@@ -242,3 +243,13 @@ class DialogNavigatorWindow(AbstractFrame):
                 self.update_selected(key)
                 return True
         return False
+
+    def get_surface_width(self) -> int:
+        return self._content_surface.get_width() if self._content_surface is not None else 0
+
+    def get_surface_height(self) -> int:
+        return self._content_surface.get_height() if self._content_surface is not None else 0
+
+    def present_on(self, surface: ImageSurface) -> None:
+        super().present_on(surface)
+        self.display_scrollbar(surface)

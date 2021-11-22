@@ -1,5 +1,7 @@
-from typing import overload
 from .shape import *
+
+# 无数据的RECT，用于规范化Typing
+NULL_RECT: Rect = Rect(1, 1, -2, -2)
 
 # 新建一个形状类
 def new_rect(pos: tuple, size: tuple) -> Rect:

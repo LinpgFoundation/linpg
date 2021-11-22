@@ -2,7 +2,6 @@ from __future__ import annotations
 import json
 from copy import deepcopy
 from glob import glob
-from shutil import rmtree
 from ..exception import EXCEPTION, os
 
 # 尝试导入yaml库
@@ -56,9 +55,11 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: any, warning: boo
 
 
 # 配置文件管理模块
-class ConfigManager:
+class Config:
+
     # 加载配置文件的程序
-    def __load(self, path: str, keys: list[str], warning: bool = True) -> any:
+    @staticmethod
+    def __load(path: str, keys: tuple[str], warning: bool = True) -> any:
         # 如果路径不存在
         if not os.path.exists(path):
             if warning is True:
@@ -91,16 +92,19 @@ class ConfigManager:
         return Data if len(keys) == 0 else get_value_by_keys(Data, keys)
 
     # 加载配置文件
-    def load(self, path: str, *key: str) -> any:
-        return self.__load(path, key)
+    @staticmethod
+    def load(path: str, *key: str) -> any:
+        return Config.__load(path, key)
 
     # 加载配置文件
-    def try_load(self, path: str, *key: str) -> any:
-        return self.__load(path, key, False)
+    @staticmethod
+    def try_load(path: str, *key: str) -> any:
+        return Config.__load(path, key, False)
 
     # 加载内部配置文件保存
-    def load_internal(self, path: str, *key: str) -> any:
-        return self.__load(os.path.join(os.path.dirname(__file__), path), key)
+    @staticmethod
+    def load_internal(path: str, *key: str) -> any:
+        return Config.__load(os.path.join(os.path.dirname(__file__), path), key)
 
     # 配置文件保存
     @staticmethod
@@ -124,13 +128,15 @@ class ConfigManager:
                 )
 
     # 整理配置文件（读取了再存）
-    def organize(self, pathname: str) -> None:
+    @staticmethod
+    def organize(pathname: str) -> None:
         for configFilePath in glob(pathname):
-            self.save(configFilePath, self.load(configFilePath))
+            Config.save(configFilePath, Config.load(configFilePath))
 
     # 整理内部配置文件
-    def organize_internal(self) -> None:
-        self.organize(os.path.join(os.path.dirname(__file__), "*.json"))
+    @staticmethod
+    def organize_internal() -> None:
+        Config.organize(os.path.join(os.path.dirname(__file__), "*.json"))
 
     # 优化中文文档
     @staticmethod
@@ -175,12 +181,14 @@ class ConfigManager:
             f.writelines(file_lines)
 
     # 优化文件夹中特定文件的中文字符串
-    def optimize_cn_content_in_folder(self, pathname: str) -> None:
+    @staticmethod
+    def optimize_cn_content_in_folder(pathname: str) -> None:
         for configFilePath in glob(pathname):
-            self.optimize_cn_content(configFilePath)
+            Config.optimize_cn_content(configFilePath)
 
     # 解决路径冲突
-    def resolve_path(self, file_location: str) -> str:
+    @staticmethod
+    def resolve_path(file_location: str) -> str:
         path: str
         if (
             os.path.exists(path := file_location + ".yml")
@@ -190,6 +198,3 @@ class ConfigManager:
             return path
         else:
             return ""
-
-
-Config: ConfigManager = ConfigManager()

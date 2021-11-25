@@ -69,6 +69,36 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         self._part = part
         self._load_content()
 
+    def __go_to_next(self, surface: ImageSurface) -> None:
+        if self._current_dialog_content["next_dialog_id"] is None:
+            self.fade(surface)
+            self.stop()
+        elif (next_dialog_type := self.get_next_dialog_type()) is not None:
+            # 默认转到下一个对话
+            if next_dialog_type == "default":
+                self._update_scene(self._current_dialog_content["next_dialog_id"]["target"])
+            # 如果是多选项，则不用处理
+            elif next_dialog_type == "option":
+                pass
+            # 如果是切换场景
+            elif next_dialog_type == "changeScene":
+                self.fade(surface)
+                # 更新场景
+                self._update_scene(self._current_dialog_content["next_dialog_id"]["target"])
+                self._dialog_txt_system.reset()
+                self.fade(surface, "$in")
+            # 如果是需要播放过程动画
+            elif next_dialog_type == "cutscene":
+                self.fade(surface)
+                self.stop()
+                self.play_cutscene(surface)
+            # break被视为立刻退出，没有淡出动画
+            elif next_dialog_type == "break":
+                self.stop()
+            # 非法type
+            else:
+                EXCEPTION.fatal('Type "{}" is not a valid type.'.format(next_dialog_type))
+
     def __check_button_event(self, surface: ImageSurface) -> bool:
         if self._buttons_mananger is not None and not self._is_showing_history:
             if self._buttons_mananger.item_being_hovered == "hide":
@@ -160,7 +190,6 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         if self._buttons_mananger is not None:
             self._buttons_mananger.draw(surface)
         # 按键判定
-        leftClick: bool = False
         if Controller.get_event("confirm"):
             if self.history_back is not None and self.history_back.is_hovered() and self._is_showing_history is True:
                 self._is_showing_history = False
@@ -170,8 +199,21 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             # 如果所有行都没有播出，则播出所有行
             elif not self._dialog_txt_system.is_all_played():
                 self._dialog_txt_system.play_all()
+            # 如果玩家需要并做出了选择
+            elif self._dialog_options_container.item_being_hovered >= 0:
+                # 获取下一个对话的id
+                nextDialogId = self._current_dialog_content["next_dialog_id"]["target"][
+                    self._dialog_options_container.item_being_hovered
+                ]["id"]
+                # 记录玩家选项
+                self._dialog_options[self._dialog_id] = {
+                    "id": self._dialog_options_container.item_being_hovered,
+                    "target": nextDialogId,
+                }
+                # 更新场景
+                self._update_scene(nextDialogId)
             else:
-                leftClick = True
+                self.__go_to_next(surface)
         if Controller.get_event("scroll_up") and self._history_surface_local_y < 0:
             self._history_surface = None
             self._history_surface_local_y += Display.get_height() * 0.1
@@ -186,55 +228,35 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 self._is_showing_history = False
             else:
                 self._show_pause_menu(surface)
-        # 显示对话选项
+
         if (
             self._dialog_txt_system.is_all_played()
             and self._dialog_txt_system.is_visible()
-            and self._current_dialog_content["next_dialog_id"] is not None
-            and self._current_dialog_content["next_dialog_id"]["type"] == "option"
+            and self.get_next_dialog_type() == "option"
+            and self._dialog_options_container.is_hidden() is True
         ):
-            optionBox_y_base = (
-                Display.get_height() * 3 / 4
-                - (len(self._current_dialog_content["next_dialog_id"]["target"])) * 2 * Display.get_width() * 0.03
-            ) / 4
-            optionBox_height = int(Display.get_width() * 0.05)
-            nextDialogId = None
-            for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
-                option_txt = self._dialog_txt_system.FONT.render(
-                    self._current_dialog_content["next_dialog_id"]["target"][i]["txt"], Color.WHITE
+            optionBox_y_base: int = int(
+                (
+                    Display.get_height() * 3 / 4
+                    - (len(self._current_dialog_content["next_dialog_id"]["target"])) * 2 * Display.get_width() * 0.03
                 )
-                optionBox_width: int = int(option_txt.get_width() + Display.get_width() * 0.05)
-                optionBox_x: int = int((Display.get_width() - optionBox_width) / 2)
-                optionBox_y: int = int((i + 1) * 2 * Display.get_width() * 0.03 + optionBox_y_base)
-                if (
-                    0 < Controller.mouse.x - optionBox_x < optionBox_width
-                    and 0 < Controller.mouse.y - optionBox_y < optionBox_height
-                ):
-                    self._option_box_selected_surface.set_size(optionBox_width, optionBox_height)
-                    self._option_box_selected_surface.set_pos(optionBox_x, optionBox_y)
-                    self._option_box_selected_surface.draw(surface)
-                    display_in_center(
-                        option_txt,
-                        self._option_box_selected_surface,
-                        self._option_box_selected_surface.x,
-                        self._option_box_selected_surface.y,
-                        surface,
-                    )
-                    # 保存选取的选项
-                    if leftClick and not self._is_showing_history:
-                        nextDialogId = self._current_dialog_content["next_dialog_id"]["target"][i]["id"]
-                else:
-                    self._option_box_surface.set_size(optionBox_width, optionBox_height)
-                    self._option_box_surface.set_pos(optionBox_x, optionBox_y)
-                    self._option_box_surface.draw(surface)
-                    display_in_center(
-                        option_txt, self._option_box_surface, self._option_box_surface.x, self._option_box_surface.y, surface
-                    )
-            if nextDialogId is not None:
-                self._dialog_options[self._dialog_id] = {"id": i, "target": nextDialogId}
-                # 更新场景
-                self._update_scene(nextDialogId)
-                leftClick = False
+                / 4
+            )
+            for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
+                optionButton = load_button_with_text_in_center_and_different_background(
+                    "<!ui>option.png",
+                    "<!ui>option_selected.png",
+                    self._current_dialog_content["next_dialog_id"]["target"][i]["txt"],
+                    Color.WHITE,
+                    self._dialog_txt_system.FONT.size,
+                    (0, 0),
+                )
+                optionButton.set_pos(
+                    (Display.get_width() - optionButton.get_width()) / 2,
+                    (i + 1) * 2 * Display.get_width() * 0.03 + optionBox_y_base,
+                )
+                self._dialog_options_container.append(optionButton)
+            self._dialog_options_container.set_visible(True)
         # 展示历史
         if self._is_showing_history is True:
             if self._history_surface is None:
@@ -297,37 +319,12 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             if self.history_back is not None:
                 self.history_back.draw(surface)
                 self.history_back.is_hovered()
-        # 如果对话被隐藏，则无视进入下一个对白的操作
-        elif self._buttons_mananger is not None and self._buttons_mananger.is_hidden():
-            pass
-        # 如果操作或自动播放系统告知需要更新
-        elif self._dialog_txt_system.needUpdate() or leftClick:
-            if self._current_dialog_content["next_dialog_id"] is None:
-                self.fade(surface)
-                self.stop()
-            else:
-                next_dialog_type: str = str(self._current_dialog_content["next_dialog_id"]["type"])
-                # 默认转到下一个对话
-                if next_dialog_type == "default":
-                    self._update_scene(self._current_dialog_content["next_dialog_id"]["target"])
-                # 如果是多选项，则不用处理
-                elif next_dialog_type == "option":
-                    pass
-                # 如果是切换场景
-                elif next_dialog_type == "changeScene":
-                    self.fade(surface)
-                    # 更新场景
-                    self._update_scene(self._current_dialog_content["next_dialog_id"]["target"])
-                    self._dialog_txt_system.reset()
-                    self.fade(surface, "$in")
-                # 如果是需要播放过程动画
-                elif next_dialog_type == "cutscene":
-                    self.fade(surface)
-                    self.stop()
-                    self.play_cutscene(surface)
-                # break被视为立刻退出，没有淡出动画
-                elif next_dialog_type == "break":
-                    self.stop()
-                # 非法type
-                else:
-                    EXCEPTION.fatal('Type "{}" is not a valid type.'.format(next_dialog_type))
+        else:
+            # 显示对话选项
+            self._dialog_options_container.display(surface)
+            # 如果对话被隐藏，则无视进入下一个对白的操作
+            if self._buttons_mananger is not None and self._buttons_mananger.is_hidden():
+                pass
+            # 如果操作或自动播放系统告知需要更新
+            elif self._dialog_txt_system.needUpdate():
+                self.__go_to_next(surface)

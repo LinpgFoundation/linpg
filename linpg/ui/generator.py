@@ -148,7 +148,7 @@ class UiGenerator:
                     if "src" not in data:
                         data["src"] = None
                     # 生成容器
-                    container_t = GameObjectsContainer(
+                    container_t = GameObjectsDictContainer(
                         data["src"],
                         self.__convert_coordinate(data, "x", int((max_width - object_width) / 2), max_width, custom_values),
                         self.__convert_coordinate(

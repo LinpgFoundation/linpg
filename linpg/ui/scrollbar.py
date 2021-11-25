@@ -1,4 +1,4 @@
-from .container import *
+from .combobox import *
 
 # 同一时刻会展示2个scrollbar的Surface
 class AbstractScrollbarsSurface:

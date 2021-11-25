@@ -1,11 +1,11 @@
 from .scrollbar import *
 
 # 带有滚动条的Surface容器
-class SurfaceContainerWithScrollbar(GameObjectsContainer, AbstractSurfaceWithScrollbar):
+class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWithScrollbar):
     def __init__(
         self, img: PoI, x: int_f, y: int_f, width: int, height: int, mode: str = "horizontal", tag: str = ""
     ) -> None:
-        GameObjectsContainer.__init__(
+        GameObjectsDictContainer.__init__(
             self, IMG.load(img, (width, height)) if img is not None else img, x, y, width, height, tag
         )
         AbstractSurfaceWithScrollbar.__init__(self)
@@ -56,7 +56,7 @@ class SurfaceContainerWithScrollbar(GameObjectsContainer, AbstractSurfaceWithScr
             new_width: int
             item_has_been_dawn_on_this_line: int = 0
             # 画出物品栏里的图片
-            for key, item in self._items_container.items():
+            for key, item in self._get_container().items():
                 if item is not None:
                     if not self._mode:
                         abs_local_y = int(current_y - self.y)

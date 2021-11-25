@@ -1,5 +1,5 @@
 """
 结构:
-button -> container -> scrollbar -> scrollpane -> inputbox -> console -> progressbar -> generator -> menu
+button -> container -> combobox -> scrollbar -> scrollpane -> inputbox -> console -> progressbar -> generator -> menu
 """
 from .menu import *

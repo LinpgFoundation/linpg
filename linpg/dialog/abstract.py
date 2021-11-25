@@ -16,10 +16,6 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._black_bg = StaticImage(black_surface_t, 0, 0, black_surface_t.get_width(), black_surface_t.get_height())
         # 加载对话框系统
         self._dialog_txt_system = DialogBox(int(Display.get_width() * 0.015))
-        # 选项栏
-        self._option_box_surface = StaticImage("<!ui>option.png", 0, 0)
-        # 选项栏-选中
-        self._option_box_selected_surface = StaticImage("<!ui>option_selected.png", 0, 0)
         # UI按钮
         self._buttons_mananger = None
         # 对话文件路径
@@ -37,6 +33,9 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._current_dialog_content: dict = {}
         # 初始化音量
         self._update_sound_volume()
+        # 选项菜单
+        self._dialog_options_container = GameObjectsListContainer(None, 0, 0, 0, 0)
+        self._dialog_options_container.set_visible(False)
 
     # 获取对话文件所在的具体路径
     def get_dialog_file_location(self, lang: str = "") -> str:
@@ -64,6 +63,28 @@ class AbstractDialogSystem(AbstractGameSystem):
                 os.path.join(self._dialog_folder_path, self._chapter_type, self._project_name, "info.yaml"), "default_lang"
             )
         )
+
+    # 获取下一个dialog node的类型
+    def get_next_dialog_type(self) -> str:
+        return (
+            self._current_dialog_content["next_dialog_id"]["type"]
+            if self._current_dialog_content["next_dialog_id"] is not None
+            else None
+        )
+
+    # 生产一个新的推荐id
+    def generate_a_new_recommended_key(self, index: int = 1) -> str:
+        while True:
+            if index <= 9:
+                if (newId := "id_00" + str(index)) not in self.dialog_content:
+                    return newId
+            elif index <= 99:
+                if (newId := "id_0" + str(index)) not in self.dialog_content:
+                    return newId
+            else:
+                if (newId := "id_" + str(index)) not in self.dialog_content:
+                    return newId
+            index += 1
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
@@ -193,6 +214,9 @@ class AbstractDialogSystem(AbstractGameSystem):
             self.set_bgm(os.path.join(ASSET.PATH_DICT["music"], current_bgm))
         else:
             self.unload_bgm()
+        # 隐藏选项菜单
+        self._dialog_options_container.clear()
+        self._dialog_options_container.set_visible(False)
 
     # 更新语言
     def updated_language(self) -> None:

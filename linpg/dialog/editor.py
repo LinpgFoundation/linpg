@@ -199,6 +199,33 @@ class DialogEditor(AbstractDialogSystem):
         if len(self._dialog_data) <= 0:
             self._part = "example_dialog"
             self._dialog_data[self._part] = {}
+        # 检测是否有非str的key name
+        for part in self._dialog_data:
+            if isinstance(part, str):
+                convert = False
+                if convert is True:
+                    # 如果有，则尝试转换
+                    while convert:
+                        looping: bool = False
+                        int_liked_old_key: int = 0
+                        for key, value in self._dialog_data[part].items():
+                            if value["next_dialog_id"] is not None and isinstance(value["next_dialog_id"]["target"], int):
+                                int_liked_old_key: int = int(self._dialog_data[part][key]["next_dialog_id"]["target"])
+                                looping = True
+                                break
+                        if looping is True:
+                            new_key: str = self.generate_a_new_recommended_key(int_liked_old_key)
+                            self._dialog_data[part][key]["next_dialog_id"]["target"] = new_key
+                            self._dialog_data[part][new_key] = deepcopy(self._dialog_data[part][int_liked_old_key])
+                            del self._dialog_data[part][int_liked_old_key]
+                        else:
+                            break
+                else:
+                    for key in self._dialog_data[part]:
+                        if not isinstance(key, str):
+                            EXCEPTION.fatal("Key name has to be a string, not {}".format(key))
+            else:
+                EXCEPTION.fatal("Part name has to be a string, not {}!".format(part))
         # 更新场景
         self._update_scene(self._dialog_id)
 
@@ -260,7 +287,7 @@ class DialogEditor(AbstractDialogSystem):
             self.__update_ui()
         # 如果id不存在，则新增一个
         else:
-            self.__add_dialog(dialog_id)
+            self.__add_dialog(str(dialog_id))
 
     # 添加新的对话
     def __add_dialog(self, dialogId: str) -> None:
@@ -285,29 +312,60 @@ class DialogEditor(AbstractDialogSystem):
         super()._update_scene(dialogId)
         self.__update_ui()
 
+    # 连接2个dialog node
+    def __make_connection(self, key1: str, key2: str, addNode: bool = False) -> None:
+        if key1 is not None:
+            seniorNodePointer = self.dialog_content[key1]["next_dialog_id"]
+            if not addNode:
+                if seniorNodePointer["type"] == "default" or seniorNodePointer["type"] == "changeScene":
+                    seniorNodePointer["target"] = key2
+                elif seniorNodePointer["type"] == "option":
+                    for optionChoice in seniorNodePointer["target"]:
+                        if optionChoice["id"] == self._dialog_id:
+                            optionChoice["id"] = key2
+                            break
+                else:
+                    # 如果当前next_dialog_id的类型不支持的话，报错
+                    EXCEPTION.fatal(
+                        "Cannot recognize next_dialog_id type: {}, please fix it".format(seniorNodePointer["type"])
+                    )
+                # 修改下一个对白配置文件中的"last_dialog_id"的参数
+                if key2 is not None:
+                    if (
+                        "last_dialog_id" in self.dialog_content[key2]
+                        and self.dialog_content[key2]["last_dialog_id"] is not None
+                    ):
+                        self.dialog_content[key2]["last_dialog_id"] = key1
+                else:
+                    self.dialog_content[key1]["next_dialog_id"] = None
+        else:
+            EXCEPTION.warn('Fail to make a connection between "{0}" and "{1}".'.format(key1, key2))
+
     # 获取上一个对话的ID
-    def __get_last_id(self) -> int:
+    def __get_last_id(self, child_node: str = None) -> str:
+        if child_node is None:
+            child_node = self._dialog_id
         if "last_dialog_id" in self._current_dialog_content and self._current_dialog_content["last_dialog_id"] is not None:
-            return self._current_dialog_content["last_dialog_id"]
-        elif self._dialog_id == "head":
+            return str(self._current_dialog_content["last_dialog_id"])
+        elif child_node == "head":
             return None
         else:
             for key, dialog_data in self.dialog_content.items():
                 if dialog_data["next_dialog_id"] is not None:
                     if (
                         dialog_data["next_dialog_id"]["type"] == "default"
-                        and dialog_data["next_dialog_id"]["target"] == self._dialog_id
+                        and dialog_data["next_dialog_id"]["target"] == child_node
                     ):
-                        return key
+                        return str(key)
                     elif (
                         dialog_data["next_dialog_id"]["type"] == "changeScene"
-                        and dialog_data["next_dialog_id"]["target"] == self._dialog_id
+                        and dialog_data["next_dialog_id"]["target"] == child_node
                     ):
-                        return key
+                        return str(key)
                     elif dialog_data["next_dialog_id"]["type"] == "option":
                         for optionChoice in dialog_data["next_dialog_id"]["target"]:
-                            if optionChoice["id"] == self._dialog_id:
-                                return key
+                            if optionChoice["id"] == child_node:
+                                return str(key)
             return None
 
     # 获取下一个对话的ID
@@ -415,49 +473,17 @@ class DialogEditor(AbstractDialogSystem):
                         EXCEPTION.inform("There is no last dialog id.")
                 elif self.__buttons_ui_container.item_being_hovered == "delete":
                     lastId = self.__get_last_id()
-                    nextId = self.__get_next_id(surface)
-                    if lastId is not None:
-                        if (
-                            self.dialog_content[lastId]["next_dialog_id"]["type"] == "default"
-                            or self.dialog_content[lastId]["next_dialog_id"]["type"] == "changeScene"
-                        ):
-                            self.dialog_content[lastId]["next_dialog_id"]["target"] = nextId
-                        elif self.dialog_content[lastId]["next_dialog_id"]["type"] == "option":
-                            for optionChoice in self.dialog_content[lastId]["next_dialog_id"]["target"]:
-                                if optionChoice["id"] == self._dialog_id:
-                                    optionChoice["id"] = nextId
-                                    break
-                        else:
-                            # 如果当前next_dialog_id的类型不支持的话，报错
-                            EXCEPTION.fatal(
-                                "Cannot recognize next_dialog_id type: {}, please fix it".format(
-                                    self.dialog_content[lastId]["next_dialog_id"]["type"]
-                                )
-                            )
-                        # 修改下一个对白配置文件中的"last_dialog_id"的参数
-                        if nextId is not None:
-                            if (
-                                "last_dialog_id" in self.dialog_content[nextId]
-                                and self.dialog_content[nextId]["last_dialog_id"] is not None
-                            ):
-                                self.dialog_content[nextId]["last_dialog_id"] = lastId
-                        else:
-                            self.dialog_content[lastId]["next_dialog_id"] = None
-                        needDeleteId = self._dialog_id
-                        self._update_scene(str(lastId))
-                        del self.dialog_content[needDeleteId]
-                    else:
-                        EXCEPTION.inform("There is no last dialog id.")
+                    self.__make_connection(lastId, self.__get_next_id(surface))
+                    needDeleteId: str = str(self._dialog_id)
+                    self._update_scene(str(lastId))
+                    del self.dialog_content[needDeleteId]
                 elif self.__buttons_ui_container.item_being_hovered == "next":
                     if (nextId := self.__get_next_id(surface)) is not None:
                         self._update_scene(str(nextId))
                     else:
                         EXCEPTION.inform("There is no next dialog id.")
                 elif self.__buttons_ui_container.item_being_hovered == "add":
-                    nextId = 1
-                    while "id_" + str(nextId) in self.dialog_content:
-                        nextId += 1
-                    self.__add_dialog("id_" + str(nextId))
+                    self.__add_dialog(self.generate_a_new_recommended_key())
                 elif self.__buttons_ui_container.item_being_hovered == "save":
                     self.save_progress()
                 elif self.__buttons_ui_container.item_being_hovered == "reload":

@@ -8,11 +8,11 @@
             "last_dialog_id": null,
             "narrator": "",
             "next_dialog_id": {
-                "target": "id_1",
+                "target": "id_001",
                 "type": "default"
             }
         },
-        "id_1": {
+        "id_001": {
             "background_img": null,
             "background_music": null,
             "characters_img": [],

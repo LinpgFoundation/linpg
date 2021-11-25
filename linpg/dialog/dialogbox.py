@@ -13,7 +13,7 @@ class DialogBox(HiddenableSurface):
         self.dialoguebox: StaticImage = StaticImage(
             "<!ui>dialoguebox.png", int(Display.get_width() * 0.13), 0, Display.get_width() * 0.74
         )
-        self.FONT: int = Font.create(fontSize)
+        self.FONT: FontGenerator = Font.create(fontSize)
         self.content = []
         self.narrator = None
         self.textIndex = None

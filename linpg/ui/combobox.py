@@ -121,7 +121,7 @@ class DropDownSingleChoiceList(GameObjectsDictContainer):
                     )
                     rect_of_outline = new_rect(current_pos, (self.width, self.__block_height))
                     draw_rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
-                    if rect_of_outline.is_hovered() and Controller.mouse.get_pressed(0):
+                    if rect_of_outline.is_hovered() and Controller.get_event("confirm"):
                         self.__chosen_item_key = key_of_game_object
                     draw_circle(
                         surface,

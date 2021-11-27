@@ -9,11 +9,11 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 当前对话的id
         self._dialog_id: str = "head"
         # 加载对话的背景图片模块
-        self._npc_manager = CharacterImageManager()
+        self._npc_manager: CharacterImageManager = CharacterImageManager()
         # 黑色Void帘幕
-        black_surface_t = new_surface(Display.get_size())
-        black_surface_t.fill(Color.BLACK)
-        self._black_bg = StaticImage(black_surface_t, 0, 0, black_surface_t.get_width(), black_surface_t.get_height())
+        self._black_bg = StaticImage(
+            Color.surface(Display.get_size(), Color.BLACK), 0, 0, Display.get_width(), Display.get_height()
+        )
         # 加载对话框系统
         self._dialog_txt_system = DialogBox(int(Display.get_width() * 0.015))
         # UI按钮
@@ -34,7 +34,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 初始化音量
         self._update_sound_volume()
         # 选项菜单
-        self._dialog_options_container = GameObjectsListContainer(None, 0, 0, 0, 0)
+        self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer(None, 0, 0, 0, 0)
         self._dialog_options_container.set_visible(False)
 
     # 获取对话文件所在的具体路径
@@ -244,6 +244,28 @@ class AbstractDialogSystem(AbstractGameSystem):
             if isinstance(self.__background_image_surface, Rect):
                 self.__background_image_surface.set_size(surface.get_width(), surface.get_height())
             self.__background_image_surface.draw(surface)
+
+    def _get_dialog_options_container_ready(self) -> None:
+        self._dialog_options_container.clear()
+        optionBox_y_base: int = int(
+            Display.get_height() * 3 / 16
+            - len(self._current_dialog_content["next_dialog_id"]["target"]) * self._dialog_txt_system.FONT.size
+        )
+        for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
+            optionButton = load_button_with_text_in_center_and_different_background(
+                "<!ui>option.png",
+                "<!ui>option_selected.png",
+                self._current_dialog_content["next_dialog_id"]["target"][i]["txt"],
+                Color.WHITE,
+                self._dialog_txt_system.FONT.size,
+                (0, 0),
+            )
+            optionButton.set_pos(
+                (Display.get_width() - optionButton.get_width()) / 2,
+                (i + 1) * 4 * self._dialog_txt_system.FONT.size + optionBox_y_base,
+            )
+            self._dialog_options_container.append(optionButton)
+        self._dialog_options_container.set_visible(True)
 
     # 把基础内容画到surface上
     def draw(self, surface: ImageSurface) -> None:

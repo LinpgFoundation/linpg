@@ -69,6 +69,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         self._part = part
         self._load_content()
 
+    # 前往下一个对话
     def __go_to_next(self, surface: ImageSurface) -> None:
         if self._current_dialog_content["next_dialog_id"] is None:
             self.fade(surface)
@@ -138,8 +139,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             bar_height, surface.get_height() - bar_height * 2, surface.get_width() - bar_height * 2, bar_height, "white"
         )
         # 生成黑色帘幕
-        BLACK_CURTAIN: ImageSurface = new_surface(surface.get_size())
-        BLACK_CURTAIN.fill(Color.BLACK)
+        BLACK_CURTAIN: ImageSurface = Color.surface(surface.get_size(), Color.BLACK)
         BLACK_CURTAIN.set_alpha(0)
         # 创建视频文件
         VIDEO: VideoPlayer = VideoPlayer(
@@ -202,9 +202,11 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             # 如果玩家需要并做出了选择
             elif self._dialog_options_container.item_being_hovered >= 0:
                 # 获取下一个对话的id
-                nextDialogId = self._current_dialog_content["next_dialog_id"]["target"][
-                    self._dialog_options_container.item_being_hovered
-                ]["id"]
+                nextDialogId = str(
+                    self._current_dialog_content["next_dialog_id"]["target"][
+                        self._dialog_options_container.item_being_hovered
+                    ]["id"]
+                )
                 # 记录玩家选项
                 self._dialog_options[self._dialog_id] = {
                     "id": self._dialog_options_container.item_being_hovered,
@@ -233,35 +235,13 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             self._dialog_txt_system.is_all_played()
             and self._dialog_txt_system.is_visible()
             and self.get_next_dialog_type() == "option"
-            and self._dialog_options_container.is_hidden() is True
+            and self._dialog_options_container.is_hidden()
         ):
-            optionBox_y_base: int = int(
-                (
-                    Display.get_height() * 3 / 4
-                    - (len(self._current_dialog_content["next_dialog_id"]["target"])) * 2 * Display.get_width() * 0.03
-                )
-                / 4
-            )
-            for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
-                optionButton = load_button_with_text_in_center_and_different_background(
-                    "<!ui>option.png",
-                    "<!ui>option_selected.png",
-                    self._current_dialog_content["next_dialog_id"]["target"][i]["txt"],
-                    Color.WHITE,
-                    self._dialog_txt_system.FONT.size,
-                    (0, 0),
-                )
-                optionButton.set_pos(
-                    (Display.get_width() - optionButton.get_width()) / 2,
-                    (i + 1) * 2 * Display.get_width() * 0.03 + optionBox_y_base,
-                )
-                self._dialog_options_container.append(optionButton)
-            self._dialog_options_container.set_visible(True)
+            self._get_dialog_options_container_ready()
         # 展示历史
         if self._is_showing_history is True:
             if self._history_surface is None:
-                self._history_surface = new_surface(Display.get_size())
-                self._history_surface.fill(Color.BLACK)
+                self._history_surface = Color.surface(Display.get_size(), Color.BLACK)
                 self._history_surface.set_alpha(150)
                 dialogIdTemp = "head"
                 local_y = self._history_surface_local_y
@@ -322,9 +302,10 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         else:
             # 显示对话选项
             self._dialog_options_container.display(surface)
-            # 如果对话被隐藏，则无视进入下一个对白的操作
-            if self._buttons_mananger is not None and self._buttons_mananger.is_hidden():
-                pass
-            # 如果操作或自动播放系统告知需要更新
-            elif self._dialog_txt_system.needUpdate():
+            # 当自动播放系统告知需要更新，如果对话被隐藏，则无视进入下一个对白的操作，反之则进入
+            if (
+                self._buttons_mananger is not None
+                and self._buttons_mananger.is_visible()
+                and self._dialog_txt_system.needUpdate()
+            ):
                 self.__go_to_next(surface)

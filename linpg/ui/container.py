@@ -46,7 +46,7 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
 
     @property
     def item_being_hovered(self) -> str:
-        return str(self._item_being_hovered)
+        return str(self._item_being_hovered) if self._item_being_hovered is not None else None
 
     # 获取物品合集
     def _get_container(self):

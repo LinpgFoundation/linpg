@@ -1,7 +1,7 @@
-from .dialog import *
+from .converter import *
 
 # 对话制作器
-class DialogEditor(AbstractDialogSystem):
+class DialogEditor(DialogConverter):
     def __init__(self):
         super().__init__()
         # 导航窗口
@@ -18,6 +18,10 @@ class DialogEditor(AbstractDialogSystem):
         self.please_enter_name: str = ""
         # 默认不播放音乐
         # self._is_muted = True
+        # 是否尝试修复错位
+        self.__if_try_to_fix_issues: bool = False
+        # 压缩模式
+        self.__compress_when_saving: bool = True
 
     # 加载数据
     def load(self, chapterType: str, chapterId: int, part: str, projectName: str = None) -> None:
@@ -125,8 +129,9 @@ class DialogEditor(AbstractDialogSystem):
         self._load_content()
         # 移除按钮
         self.removeNpcButton = self._dialog_txt_system.FONT.render(CONFIG["remove_npc"], Color.BLACK)
-        surfaceTmp = new_surface((self.removeNpcButton.get_width() * 1.2, self.removeNpcButton.get_height() * 1.2))
-        surfaceTmp.fill(Color.WHITE)
+        surfaceTmp = Color.surface(
+            (self.removeNpcButton.get_width() * 1.2, self.removeNpcButton.get_height() * 1.2), Color.WHITE
+        )
         surfaceTmp.blit(self.removeNpcButton, (self.removeNpcButton.get_width() * 0.1, 0))
         self.removeNpcButton = surfaceTmp
         # 未保存离开时的警告
@@ -202,24 +207,9 @@ class DialogEditor(AbstractDialogSystem):
         # 检测是否有非str的key name
         for part in self._dialog_data:
             if isinstance(part, str):
-                convert = False
-                if convert is True:
+                if self.__if_try_to_fix_issues is True:
                     # 如果有，则尝试转换
-                    while convert:
-                        looping: bool = False
-                        int_liked_old_key: int = 0
-                        for key, value in self._dialog_data[part].items():
-                            if value["next_dialog_id"] is not None and isinstance(value["next_dialog_id"]["target"], int):
-                                int_liked_old_key: int = int(self._dialog_data[part][key]["next_dialog_id"]["target"])
-                                looping = True
-                                break
-                        if looping is True:
-                            new_key: str = self.generate_a_new_recommended_key(int_liked_old_key)
-                            self._dialog_data[part][key]["next_dialog_id"]["target"] = new_key
-                            self._dialog_data[part][new_key] = deepcopy(self._dialog_data[part][int_liked_old_key])
-                            del self._dialog_data[part][int_liked_old_key]
-                        else:
-                            break
+                    self._check_and_fix_non_str_key(part)
                 else:
                     for key in self._dialog_data[part]:
                         if not isinstance(key, str):
@@ -234,7 +224,7 @@ class DialogEditor(AbstractDialogSystem):
         self._current_dialog_content["narrator"] = self._dialog_txt_system.narrator.get_text()
         self._current_dialog_content["content"] = self._dialog_txt_system.content.get_text()
         data_need_save: dict = deepcopy(self._dialog_data)
-        if not self._is_default_dialog:
+        if not self._is_default_dialog and self.__compress_when_saving is True:
             # 移除掉相似的内容
             for part in self._dialog_data_default:
                 for dialogId, defaultDialogData in self._dialog_data_default[part].items():
@@ -369,54 +359,34 @@ class DialogEditor(AbstractDialogSystem):
             return None
 
     # 获取下一个对话的ID
-    def __get_next_id(self, surface: ImageSurface) -> str:
+    def __try_get_next_id(self, surface: ImageSurface) -> str:
         if self.does_current_dialog_have_next_dialog() is True:
             theNext = self._current_dialog_content["next_dialog_id"]
             if theNext["type"] == "default" or theNext["type"] == "changeScene":
-                return theNext["target"]
+                return str(theNext["target"])
             elif theNext["type"] == "option":
-                optionBox_y_base = (
-                    surface.get_height() * 3 / 4 - (len(theNext["target"])) * 2 * surface.get_width() * 0.03
-                ) / 4
-                option_button_height = surface.get_width() * 0.05
-                screenshot = surface.copy()
-                # 等待玩家选择一个选项
-                while True:
-                    surface.blit(screenshot, (0, 0))
-                    for i in range(len(theNext["target"])):
-                        button = theNext["target"][i]
-                        option_txt = self._dialog_txt_system.FONT.render(button["txt"], Color.WHITE)
-                        option_button_width = int(option_txt.get_width() + surface.get_width() * 0.05)
-                        option_button_x = int((surface.get_width() - option_button_width) / 2)
-                        option_button_y = int((i + 1) * 2 * surface.get_width() * 0.03 + optionBox_y_base)
-                        if (
-                            0 < Controller.mouse.x - option_button_x < option_button_width
-                            and 0 < Controller.mouse.y - option_button_y < option_button_height
-                        ):
-                            self._option_box_selected_surface.set_size(option_button_width, option_button_height)
-                            self._option_box_selected_surface.set_pos(option_button_x, option_button_y)
-                            self._option_box_selected_surface.draw(surface)
-                            display_in_center(
-                                option_txt,
-                                self._option_box_selected_surface,
-                                self._option_box_selected_surface.x,
-                                self._option_box_selected_surface.y,
-                                surface,
+                if len(theNext["target"]) > 1:
+                    self._get_dialog_options_container_ready()
+                    screenshot = surface.copy()
+                    while True:
+                        surface.blit(screenshot, (0, 0))
+                        # 显示对话选项
+                        self._dialog_options_container.display(surface)
+                        # 等待玩家选择一个选项
+                        if Controller.get_event("confirm") and self._dialog_options_container.item_being_hovered >= 0:
+                            # 获取下一个对话的id
+                            return str(
+                                self._current_dialog_content["next_dialog_id"]["target"][
+                                    self._dialog_options_container.item_being_hovered
+                                ]["id"]
                             )
-                            if Controller.get_event("confirm"):
-                                return button["id"]
-                        else:
-                            self._option_box_surface.set_size(option_button_width, option_button_height)
-                            self._option_box_surface.set_pos(option_button_x, option_button_y)
-                            self._option_box_surface.draw(surface)
-                            display_in_center(
-                                option_txt,
-                                self._option_box_surface,
-                                self._option_box_surface.x,
-                                self._option_box_surface.y,
-                                surface,
-                            )
-                    Display.flip()
+                        elif Controller.get_event("back"):
+                            self._dialog_options_container.clear()
+                            self._dialog_options_container.set_visible(False)
+                            break
+                        Display.flip()
+                elif len(theNext["target"]) == 1:
+                    return self._current_dialog_content["next_dialog_id"]["target"][0]["id"]
         return None
 
     def draw(self, surface: ImageSurface) -> None:
@@ -472,13 +442,14 @@ class DialogEditor(AbstractDialogSystem):
                     else:
                         EXCEPTION.inform("There is no last dialog id.")
                 elif self.__buttons_ui_container.item_being_hovered == "delete":
-                    lastId = self.__get_last_id()
-                    self.__make_connection(lastId, self.__get_next_id(surface))
+                    lastId: str = self.__get_last_id()
+                    nextId: str = self.__try_get_next_id(surface)
+                    self.__make_connection(lastId, nextId)
                     needDeleteId: str = str(self._dialog_id)
                     self._update_scene(str(lastId))
                     del self.dialog_content[needDeleteId]
                 elif self.__buttons_ui_container.item_being_hovered == "next":
-                    if (nextId := self.__get_next_id(surface)) is not None:
+                    if (nextId := self.__try_get_next_id(surface)) is not None:
                         self._update_scene(str(nextId))
                     else:
                         EXCEPTION.inform("There is no next dialog id.")
@@ -499,8 +470,6 @@ class DialogEditor(AbstractDialogSystem):
                 self._current_dialog_content["characters_img"].remove(self._npc_manager.character_get_click)
                 self._npc_manager.update(self._current_dialog_content["characters_img"])
                 self._npc_manager.character_get_click = None
-        else:
-            confirm_event_tag = Controller.get_event("confirm")
         # 显示移除角色的提示
         if self._npc_manager.character_get_click is not None:
             surface.blit(self.removeNpcButton, Controller.mouse.pos)

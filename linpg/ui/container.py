@@ -52,6 +52,10 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
     def _get_container(self):
         return self.__items_container_dict
 
+    # 获取key的列表
+    def keys(self) -> tuple:
+        return tuple(self.__items_container_dict.keys())
+
     # 新增一个物品
     def set(self, key: str, new_item: any) -> None:
         self.__items_container_dict[key] = new_item
@@ -73,6 +77,10 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
     # 是否包括
     def contain(self, key: str) -> bool:
         return key in self.__items_container_dict
+
+    # 更新内容
+    def _update(self, new_content: dict) -> None:
+        self.__items_container_dict.update(new_content)
 
     # 把物品画到surface上
     def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:

@@ -301,7 +301,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 self.history_back.is_hovered()
         else:
             # 显示对话选项
-            self._dialog_options_container.display(surface)
+            if self._buttons_mananger is None or self._buttons_mananger.is_visible():
+                self._dialog_options_container.display(surface)
             # 当自动播放系统告知需要更新，如果对话被隐藏，则无视进入下一个对白的操作，反之则进入
             if (
                 self._buttons_mananger is not None

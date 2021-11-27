@@ -71,12 +71,7 @@ class Config:
             # 使用yaml模块加载配置文件
             if path.endswith(".yaml") or path.endswith(".yml"):
                 if _YAML_INITIALIZED is True:
-                    try:
-                        # 尝试使用默认模式加载yaml配置文件
-                        Data = yaml.load(f.read(), Loader=yaml.FullLoader)
-                    except yaml.constructor.ConstructorError:
-                        # 使用非安全模式加载yaml配置文件
-                        Data = yaml.load(f.read(), Loader=yaml.UnsafeLoader)
+                    Data = yaml.load(f.read(), Loader=yaml.Loader)
                 elif warning is True:
                     EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.")
                 else:

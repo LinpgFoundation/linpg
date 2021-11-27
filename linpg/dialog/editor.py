@@ -193,8 +193,11 @@ class DialogEditor(DialogConverter):
             else:
                 dialog_data_t = deepcopy(self._dialog_data_default)
                 for part in self._dialog_data:
-                    for key, value in self._dialog_data[part].items():
-                        dialog_data_t[part][key].update(value)
+                    for node_id, Node in self._dialog_data[part].items():
+                        if node_id not in dialog_data_t[part]:
+                            dialog_data_t[part][node_id] = Node
+                        else:
+                            dialog_data_t[part][node_id].update(Node)
                 self._dialog_data = dialog_data_t
         # 如果是默认主语言，则不进行任何额外操作
         else:
@@ -276,8 +279,10 @@ class DialogEditor(DialogConverter):
             super()._update_scene(dialog_id)
             self.__update_ui()
         # 如果id不存在，则新增一个
-        else:
+        elif dialog_id != "head":
             self.__add_dialog(str(dialog_id))
+        else:
+            EXCEPTION.fatal("You have to setup a head.")
 
     # 添加新的对话
     def __add_dialog(self, dialogId: str) -> None:
@@ -412,15 +417,15 @@ class DialogEditor(DialogConverter):
                     self._current_dialog_content["background_music"] = self.dialog_bgm_select.get(
                         self.dialog_bgm_select.get_current_selected_item()
                     )
-                self._update_scene(str(self._dialog_id))
+                self._update_scene(self._dialog_id)
         # 展示出当前可供编辑的dialog部分
         self.dialog_key_select.draw(surface)
         # 切换当前正在浏览编辑的dialog部分
         if self.dialog_key_select.get_current_selected_item() != self._part:
             self._part = self.dialog_key_select.get_current_selected_item()
-            try:
-                self._update_scene(str(self._dialog_id))
-            except Exception:
+            if self._dialog_id in self.dialog_content:
+                self._update_scene(self._dialog_id)
+            else:
                 self._update_scene("head")
         # 处理输入事件
         confirm_event_tag: bool = False
@@ -445,7 +450,7 @@ class DialogEditor(DialogConverter):
                     lastId: str = self.__get_last_id()
                     nextId: str = self.__try_get_next_id(surface)
                     self.__make_connection(lastId, nextId)
-                    needDeleteId: str = str(self._dialog_id)
+                    needDeleteId: str = self._dialog_id
                     self._update_scene(str(lastId))
                     del self.dialog_content[needDeleteId]
                 elif self.__buttons_ui_container.item_being_hovered == "next":

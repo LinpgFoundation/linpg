@@ -1,14 +1,14 @@
 from .inputbox import *
 
 # 控制台
-class Console(SingleLineInputBox):
+class Console(SingleLineInputBox, HiddenableSurface):
     def __init__(self, x: int_f, y: int_f, font_size: int = 32, default_width: int = 150):
-        self.color_inactive = Color.get("lightskyblue3")
+        HiddenableSurface.__init__(self, False)
         self.color_active = Color.get("dodgerblue2")
-        super().__init__(x, y, font_size, self.color_active, default_width)
+        SingleLineInputBox.__init__(self, x, y, font_size, self.color_active, default_width)
+        self.color_inactive = Color.get("lightskyblue3")
         self.color = self.color_active
         self.active: bool = True
-        self.hidden: bool = True
         self._text_history: list = []
         self.__backward_id: int = 1
         self._txt_output: list = []
@@ -93,12 +93,12 @@ class Console(SingleLineInputBox):
             self._txt_output.append("The command is unknown!")
 
     def draw(self, screen: ImageSurface) -> None:
-        if self.hidden is True:
+        if self.is_hidden():
             for event in Controller.events:
                 if event.type == Key.DOWN and event.key == Key.BACKQUOTE:
-                    self.hidden = False
+                    self.set_visible(True)
                     break
-        elif not self.hidden:
+        else:
             for event in Controller.events:
                 if event.type == MOUSE_BUTTON_DOWN:
                     if (
@@ -119,7 +119,7 @@ class Console(SingleLineInputBox):
                             self._add_char(event.unicode)
                     else:
                         if event.key == Key.BACKQUOTE or event.key == Key.ESCAPE:
-                            self.hidden = True
+                            self.set_visible(False)
                             self.set_text()
             # 画出输出信息
             for i in range(len(self._txt_output)):

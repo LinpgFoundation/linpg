@@ -6,18 +6,16 @@ class AbstractDialogSystem(AbstractGameSystem):
         super().__init__()
         # 存储视觉小说数据的参数
         self._dialog_data: dict = {}
+        # 当前对话的id
+        self._dialog_id: str = "head"
         # 加载对话的背景图片模块
-        self._npc_manager = CharacterImageManager()
+        self._npc_manager: CharacterImageManager = CharacterImageManager()
         # 黑色Void帘幕
-        black_surface_t = new_surface(Display.get_size()).convert()
-        black_surface_t.fill(Color.BLACK)
-        self._black_bg = StaticImage(black_surface_t, 0, 0, black_surface_t.get_width(), black_surface_t.get_height())
+        self._black_bg = StaticImage(
+            Color.surface(Display.get_size(), Color.BLACK), 0, 0, Display.get_width(), Display.get_height()
+        )
         # 加载对话框系统
         self._dialog_txt_system = DialogBox(int(Display.get_width() * 0.015))
-        # 选项栏
-        self._option_box_surface = StaticImage("<!ui>option.png", 0, 0)
-        # 选项栏-选中
-        self._option_box_selected_surface = StaticImage("<!ui>option_selected.png", 0, 0)
         # UI按钮
         self._buttons_mananger = None
         # 对话文件路径
@@ -35,6 +33,9 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._current_dialog_content: dict = {}
         # 初始化音量
         self._update_sound_volume()
+        # 选项菜单
+        self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer(None, 0, 0, 0, 0)
+        self._dialog_options_container.set_visible(False)
 
     # 获取对话文件所在的具体路径
     def get_dialog_file_location(self, lang: str = "") -> str:
@@ -62,6 +63,28 @@ class AbstractDialogSystem(AbstractGameSystem):
                 os.path.join(self._dialog_folder_path, self._chapter_type, self._project_name, "info.yaml"), "default_lang"
             )
         )
+
+    # 获取下一个dialog node的类型
+    def get_next_dialog_type(self) -> str:
+        return (
+            self._current_dialog_content["next_dialog_id"]["type"]
+            if self._current_dialog_content["next_dialog_id"] is not None
+            else None
+        )
+
+    # 生产一个新的推荐id
+    def generate_a_new_recommended_key(self, index: int = 1) -> str:
+        while True:
+            if index <= 9:
+                if (newId := "id_00" + str(index)) not in self.dialog_content:
+                    return newId
+            elif index <= 99:
+                if (newId := "id_0" + str(index)) not in self.dialog_content:
+                    return newId
+            else:
+                if (newId := "id_" + str(index)) not in self.dialog_content:
+                    return newId
+            index += 1
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
@@ -103,7 +126,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         chapterId: int,
         part: str,
         projectName: str,
-        dialogId: strint = "head",
+        dialogId: str = "head",
         dialog_options: dict = {},
     ) -> None:
         super()._initialize(chapterType, chapterId, projectName)
@@ -148,7 +171,7 @@ class AbstractDialogSystem(AbstractGameSystem):
             # 更新背景的名称
             self.__background_image_name = image_name
             # 如果背景是视频，则应该停止，以防止内存泄漏
-            if isinstance(self.__background_image_surface, VedioSurface):
+            if isinstance(self.__background_image_surface, VideoSurface):
                 self.__background_image_surface.stop()
             # 更新背景的图片数据
             if self.__background_image_name is not None:
@@ -160,7 +183,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                         self.__background_image_surface = StaticImage(img_path, 0, 0)
                     # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
                     elif os.path.exists(os.path.join(ASSET.PATH_DICT["movie"], self.__background_image_name)):
-                        self.__background_image_surface = VedioSurface(
+                        self.__background_image_surface = VideoSurface(
                             os.path.join(ASSET.PATH_DICT["movie"], self.__background_image_name),
                             with_audio=False,
                         )
@@ -176,7 +199,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                 self.__background_image_surface = self._black_bg.copy()
 
     # 更新场景
-    def _update_scene(self, dialog_id: strint) -> None:
+    def _update_scene(self, dialog_id: str) -> None:
         # 更新dialogId
         self._dialog_id = dialog_id
         # 更新当前对话数据的指针
@@ -191,6 +214,9 @@ class AbstractDialogSystem(AbstractGameSystem):
             self.set_bgm(os.path.join(ASSET.PATH_DICT["music"], current_bgm))
         else:
             self.unload_bgm()
+        # 隐藏选项菜单
+        self._dialog_options_container.clear()
+        self._dialog_options_container.set_visible(False)
 
     # 更新语言
     def updated_language(self) -> None:
@@ -206,8 +232,8 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 停止播放
     def stop(self) -> None:
-        # 如果背景是多线程的VedioSurface，则应该退出占用
-        if isinstance(self.__background_image_surface, VedioSurface):
+        # 如果背景是多线程的VideoSurface，则应该退出占用
+        if isinstance(self.__background_image_surface, VideoSurface):
             self.__background_image_surface.stop()
         # 设置停止播放
         super().stop()
@@ -218,6 +244,28 @@ class AbstractDialogSystem(AbstractGameSystem):
             if isinstance(self.__background_image_surface, Rect):
                 self.__background_image_surface.set_size(surface.get_width(), surface.get_height())
             self.__background_image_surface.draw(surface)
+
+    def _get_dialog_options_container_ready(self) -> None:
+        self._dialog_options_container.clear()
+        optionBox_y_base: int = int(
+            Display.get_height() * 3 / 16
+            - len(self._current_dialog_content["next_dialog_id"]["target"]) * self._dialog_txt_system.FONT.size
+        )
+        for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
+            optionButton = load_button_with_text_in_center_and_different_background(
+                "<!ui>option.png",
+                "<!ui>option_selected.png",
+                self._current_dialog_content["next_dialog_id"]["target"][i]["txt"],
+                Color.WHITE,
+                self._dialog_txt_system.FONT.size,
+                (0, 0),
+            )
+            optionButton.set_pos(
+                (Display.get_width() - optionButton.get_width()) / 2,
+                (i + 1) * 4 * self._dialog_txt_system.FONT.size + optionBox_y_base,
+            )
+            self._dialog_options_container.append(optionButton)
+        self._dialog_options_container.set_visible(True)
 
     # 把基础内容画到surface上
     def draw(self, surface: ImageSurface) -> None:

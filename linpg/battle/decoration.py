@@ -10,7 +10,7 @@ class DecorationObject(GameObject):
         self.scale: float = 0.5
 
     def is_on_pos(self, pos: any) -> bool:
-        return Pos.is_same(self.get_pos(), pos)
+        return Coordinates.is_same(self.get_pos(), pos)
 
     def get_status(self, key: str) -> any:
         return self.__status[key]

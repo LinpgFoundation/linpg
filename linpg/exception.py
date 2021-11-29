@@ -8,6 +8,12 @@ class Error(Exception):
         super().__init__(*args)
 
 
+# 未实现子类的错误
+class FunctionNotImplement(Error):
+    def __init__(self, *args: object) -> NoReturn:
+        super().__init__(*args)
+
+
 # Linpg错误类管理器
 class LinpgExceptionHandler:
 
@@ -41,10 +47,15 @@ class LinpgExceptionHandler:
         print("LinpgEngine-Warning: {}".format(info))
 
     # 严重错误
-    def fatal(self, info: str) -> NoReturn:
+    def fatal(self, info: str, error_type_id: int = 0) -> NoReturn:
         self.__log("Error Message From Linpg: {}".format(info))
         # 打印出错误，并停止进程
-        raise Error(info)
+        if error_type_id == 1:
+            raise FunctionNotImplement(
+                'A parent class requires you to implement "{}" function before you can use it'.formate(info)
+            )
+        else:
+            raise Error(info)
 
 
 EXCEPTION: LinpgExceptionHandler = LinpgExceptionHandler()

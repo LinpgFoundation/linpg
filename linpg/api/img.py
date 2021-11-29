@@ -15,7 +15,7 @@ from .color import *
 
 # 获取材质缺失的临时警示材质
 def get_texture_missing_surface(size: Iterable) -> ImageSurface:
-    texture_missing_surface: ImageSurface = new_surface(size).convert()
+    texture_missing_surface: ImageSurface = new_surface(size)
     texture_missing_surface.fill(Color.BLACK)
     half_width: int = int(size[0] / 2)
     half_height: int = int(size[1] / 2)
@@ -153,7 +153,7 @@ class RawImageManafer:
 
     # 按照给定的位置对图片进行剪裁
     @staticmethod
-    def crop(img: ImageSurface, pos: Iterable = Pos.ORIGIN, size: Iterable = (1, 1)) -> ImageSurface:
+    def crop(img: ImageSurface, pos: Iterable = ORIGIN, size: Iterable = (1, 1)) -> ImageSurface:
         if isinstance(pos, pygame.Rect):
             cropped = new_transparent_surface(pos.size)
             cropped.blit(img, (-pos.x, -pos.y))

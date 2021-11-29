@@ -1,8 +1,9 @@
 from ..ui import *
 
 # 对话框和对话框内容
-class DialogBox:
+class DialogBox(HiddenableSurface):
     def __init__(self, fontSize: int_f):
+        super().__init__()
         # 编辑器模式
         self.__dev_mode: bool = False
         # 对胡框数据
@@ -12,7 +13,7 @@ class DialogBox:
         self.dialoguebox: StaticImage = StaticImage(
             "<!ui>dialoguebox.png", int(Display.get_width() * 0.13), 0, Display.get_width() * 0.74
         )
-        self.FONT: int = Font.create(fontSize)
+        self.FONT: FontGenerator = Font.create(fontSize)
         self.content = []
         self.narrator = None
         self.textIndex = None
@@ -38,7 +39,6 @@ class DialogBox:
             self.FONT.size,
             50,
         )
-        self.hidden: bool = False
         self.readTime = 0
         self.totalLetters = 0
         self.autoMode = False
@@ -89,8 +89,14 @@ class DialogBox:
             self.narrator = narrator
             self.content = content
         else:
-            self.narrator.set_text(narrator)
-            self.content.set_text(content)
+            if narrator is None:
+                self.narrator.set_text()
+            else:
+                self.narrator.set_text(narrator)
+            if content is None:
+                self.content.set_text()
+            else:
+                self.content.set_text(content)
 
     def reset(self) -> None:
         self.__fade_out_stage = False
@@ -167,7 +173,7 @@ class DialogBox:
 
     # 展示
     def draw(self, surface: ImageSurface) -> None:
-        if not self.hidden:
+        if self.is_visible():
             # 渐入
             if not self.__fade_out_stage:
                 # 如果当前对话框图片的y坐标不存在（一般出现在对话系统例行初始化后），则根据屏幕大小设置一个

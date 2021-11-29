@@ -18,12 +18,12 @@ class Button(AbstractImageSurface):
     def has_been_hovered(self) -> bool:
         return self.__is_hovered
 
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
-        if not self.hidden:
-            self.__is_hovered = self.is_hover(Pos.subtract(Controller.mouse.pos, offSet))
+    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+        if self.is_visible():
+            self.__is_hovered = self.is_hovered(offSet)
             surface.blit(
                 IMG.resize(self.img2 if self.__is_hovered is True and self.img2 is not None else self.img, self.size),
-                Pos.add(self.pos, offSet),
+                Coordinates.add(self.pos, offSet),
             )
         else:
             self.__is_hovered = False
@@ -52,6 +52,27 @@ def load_button_with_text_in_center(
     return load_button(img, position, img.get_size(), alpha_when_not_hover)
 
 
+# 加载中间有文字按钮
+def load_button_with_text_in_center_and_different_background(
+    path: PoI,
+    path2: PoI,
+    txt: str,
+    font_color: color_liked,
+    font_size: int,
+    position: tuple,
+    alpha_when_not_hover: int = 255,
+) -> Button:
+    txt_surface = Font.render(txt, font_color, font_size)
+    panding: int = int(font_size * 0.5)
+    img = IMG.load(path, size=(txt_surface.get_width() + panding * 4, txt_surface.get_height() + panding * 2))
+    img.blit(txt_surface, (panding * 2, panding))
+    img2 = IMG.load(path2, size=(txt_surface.get_width() + panding * 4, txt_surface.get_height() + panding * 2))
+    img2.blit(txt_surface, (panding * 2, panding))
+    button_temp = load_button(img, position, img.get_size(), alpha_when_not_hover)
+    button_temp.set_hover_img(img2)
+    return button_temp
+
+
 # 带描述的按钮
 class ButtonWithDes(Button):
     def __init__(
@@ -60,10 +81,10 @@ class ButtonWithDes(Button):
         super().__init__(img, x, y, width, height, tag)
         self.des: str = str(des)
         self.des_surface = Font.render_description_box(
-            self.des, Color.BLACK, self._height * 0.4, self._height * 0.2, Color.WHITE
+            self.des, Color.BLACK, self.get_height() * 0.4, self.get_height() * 0.2, Color.WHITE
         )
 
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
         super().display(surface, offSet)
         if self.has_been_hovered():
             surface.blit(self.des_surface, Controller.mouse.pos)

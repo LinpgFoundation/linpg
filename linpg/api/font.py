@@ -35,7 +35,7 @@ class FontGenerator:
     # 更新文字模块
     def update(self, size: int_f, ifBold: bool = False, ifItalic: bool = False) -> None:
         if size <= 0:
-            EXCEPTION.fatal("Font size must be bigger than 0!")
+            EXCEPTION.fatal("Font size must be greater than 0!")
         self.__SIZE = int(size)
         # 根据类型处理
         if Setting.font_type == "default":
@@ -68,10 +68,12 @@ class FontGenerator:
     # 渲染有边框的文字
     def render_with_bounding(self, txt: strint, color: color_liked, background_color: color_liked = None) -> ImageSurface:
         if self.__SIZE > 0:
+            if not isinstance(txt, (str, int)):
+                EXCEPTION.fatal("The text must be a unicode or bytes, not {}".format(txt))
             if background_color is None:
-                return self.__FONT.render(txt, Setting.antialias, Color.get(color))
+                return self.__FONT.render(str(txt), Setting.antialias, Color.get(color))
             else:
-                return self.__FONT.render(txt, Setting.antialias, Color.get(color), Color.get(background_color))
+                return self.__FONT.render(str(txt), Setting.antialias, Color.get(color), Color.get(background_color))
         else:
             EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
 
@@ -161,10 +163,9 @@ class FontManager:
         thickness: int = 2,
     ) -> ImageSurface:
         font_surface = self.render(txt, color, size, ifBold, ifItalic)
-        des_surface = new_surface(
-            (font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2)
-        ).convert()
-        des_surface.fill(Color.get(background_color))
+        des_surface = Color.surface(
+            (font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2), background_color
+        )
         pygame.draw.rect(
             des_surface,
             Color.get(color if outline_color is None else outline_color),

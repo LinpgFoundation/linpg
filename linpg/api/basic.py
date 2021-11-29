@@ -1,6 +1,8 @@
-from typing import Iterable
 from random import randint as RANDINT
-from re import split as RE_SPLIT
+from typing import Iterable
+
+import numpy
+
 from ..lang import *
 
 # 用于辨识基础游戏库的参数，True为默认的pyglet，False则为Pygame
@@ -15,6 +17,9 @@ try:
     # 初始化pygame
     pygame.init()
 except ModuleNotFoundError:
+
+    EXCEPTION.inform("Cannot import Linpg, try to use pyglet instead.")
+
     import pyglet
 
     _LIBRARY_INDICATOR = 1
@@ -77,13 +82,31 @@ def convert_percentage(percentage: Union[str, float]) -> float:
         EXCEPTION.fatal('"{}" is not a valid percentage that can be converted'.format(percentage))
 
 
+# 根据array生成Surface
+def make_surface_from_array(surface_array: numpy.ndarray, swap_axes: bool = True) -> ImageSurface:
+    if swap_axes is True:
+        surface_array = surface_array.swapaxes(0, 1)
+    if surface_array.shape[2] < 4:
+        return pygame.surfarray.make_surface(surface_array).convert()
+    else:
+        # by llindstrom
+        surface = new_transparent_surface(surface_array.shape[0:2])
+        # Copy the rgb part of array to the new surface.
+        pygame.pixelcopy.array_to_surface(surface, surface_array[:, :, 0:3])
+        # Copy the alpha part of array to the surface using a pixels-alpha
+        # view of the surface.
+        surface_alpha = numpy.array(surface.get_view("A"), copy=False)
+        surface_alpha[:, :] = surface_array[:, :, 3]
+        return surface
+
+
 # 获取Surface
-def new_surface(size: Iterable, surface_flags: any = None) -> ImageSurface:
-    return pygame.Surface(size, flags=surface_flags) if surface_flags is not None else pygame.Surface(size)
+def new_surface(size: tuple, surface_flags: any = None) -> ImageSurface:
+    return pygame.Surface(size, flags=surface_flags) if surface_flags is not None else pygame.Surface(size).convert()
 
 
 # 获取透明的Surface
-def new_transparent_surface(size: Iterable) -> ImageSurface:
+def new_transparent_surface(size: tuple) -> ImageSurface:
     return new_surface(size, pygame.SRCALPHA).convert_alpha()
 
 

@@ -1,12 +1,12 @@
 from .generator import *
 
 # 内部菜单模块的抽象
-class AbstractInternalMenu:
+class AbstractInternalMenu(HiddenableSurface):
     def __init__(self, menu_name: str) -> None:
+        super().__init__(False)
         self._CONTENT = None
         self._initialized: bool = False
         self._menu_name: str = menu_name
-        self.hidden: bool = True
 
     # 初始化
     def initialize(self) -> None:
@@ -14,11 +14,16 @@ class AbstractInternalMenu:
         self._initialized = True
 
     # 菜单是否被触碰
-    def is_hover(self) -> bool:
-        if not self.hidden and self._CONTENT is not None:
-            return self._CONTENT.is_hover()
+    def is_hovered(self) -> bool:
+        if self.is_visible() and self._CONTENT is not None:
+            return self._CONTENT.is_hovered()
         else:
             return False
+
+    """3.2弃置"""
+
+    def is_hover(self) -> bool:
+        return self.is_hovered()
 
     # 画出内容
     def draw(self, surface: ImageSurface) -> None:
@@ -34,7 +39,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
     # 展示
     def draw(self, surface: ImageSurface) -> None:
         self.need_update = {"volume": False, "language": False}
-        if not self.hidden:
+        if self.is_visible():
             # 检查是否初始化
             if not self._initialized:
                 self.initialize()
@@ -66,7 +71,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
                 self._initialized = False
                 self.need_update["language"] = True
             # 按键的判定按钮
-            if self._CONTENT.item_being_hovered is not None and not lang_drop_down.is_hover():
+            if self._CONTENT.item_being_hovered is not None and not lang_drop_down.is_hovered():
                 item_percentage_t: int
                 # 如果碰到全局音量条
                 if self._CONTENT.item_being_hovered == "global_sound_volume":
@@ -100,7 +105,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
                 if self.need_update["volume"] is True:
                     Setting.save()
                 if Controller.mouse.get_pressed(0) and self._CONTENT.item_being_hovered == "back_button":
-                    self.hidden = True
+                    self.set_visible(False)
 
 
 # 引擎本体的选项菜单
@@ -126,20 +131,20 @@ class PauseMenu(AbstractInternalMenu):
         super().initialize()
         # 加载返回确认菜单
         self.__leave_warning = UI.generate("leave_without_saving_progress_warning")
-        self.__leave_warning.hidden = True
+        self.__leave_warning.set_visible(False)
         # 加载退出确认菜单
         self.__exit_warning = UI.generate("exit_without_saving_progress_warning")
-        self.__exit_warning.hidden = True
+        self.__exit_warning.set_visible(False)
 
     def hide(self) -> None:
-        self.hidden = True
-        self.__exit_warning.hidden = True
-        self.__leave_warning.hidden = True
+        self.set_visible(False)
+        self.__exit_warning.set_visible(False)
+        self.__leave_warning.set_visible(False)
         self.screenshot = None
 
     def draw(self, surface: ImageSurface) -> None:
         self.__button_hovered = ""
-        if not self.hidden:
+        if self.is_visible():
             if not self._initialized:
                 self.initialize()
             # 展示原先的背景
@@ -148,35 +153,35 @@ class PauseMenu(AbstractInternalMenu):
             # 画出原先的背景
             surface.blit(self.screenshot, (0, 0))
             # 画出选项
-            if self.__leave_warning.hidden is True and self.__exit_warning.hidden is True:
+            if self.__leave_warning.is_hidden() and self.__exit_warning.is_hidden():
                 super().draw(surface)
             # 画出退出确认
             self.__leave_warning.draw(surface)
             self.__exit_warning.draw(surface)
             # 处理事件
             if Controller.get_event("back"):
-                if not self.__leave_warning.hidden:
-                    self.__leave_warning.hidden = True
-                elif not self.__exit_warning.hidden:
-                    self.__exit_warning.hidden = True
+                if self.__leave_warning.is_visible():
+                    self.__leave_warning.set_visible(False)
+                elif self.__exit_warning.is_visible():
+                    self.__exit_warning.set_visible(False)
                 else:
                     self.__button_hovered = "resume"
             elif Controller.get_event("confirm"):
-                if not self.__leave_warning.hidden:
+                if self.__leave_warning.is_visible():
                     if self.__leave_warning.item_being_hovered == "confirm":
                         self.__button_hovered = "back_to_mainMenu"
                     elif self.__leave_warning.item_being_hovered == "cancel":
-                        self.__leave_warning.hidden = True
-                elif not self.__exit_warning.hidden:
+                        self.__leave_warning.set_visible(False)
+                elif self.__exit_warning.is_visible():
                     if self.__exit_warning.item_being_hovered == "confirm":
                         Display.quit()
                     elif self.__exit_warning.item_being_hovered == "cancel":
-                        self.__exit_warning.hidden = True
+                        self.__exit_warning.set_visible(False)
                 elif self._CONTENT.item_being_hovered is not None:
                     if self._CONTENT.item_being_hovered == "back_to_mainMenu":
-                        self.__leave_warning.hidden = False
+                        self.__leave_warning.set_visible(True)
                     elif self._CONTENT.item_being_hovered == "exit_to_desktop":
-                        self.__exit_warning.hidden = False
+                        self.__exit_warning.set_visible(True)
                     else:
                         self.__button_hovered = self._CONTENT.item_being_hovered
 
@@ -208,27 +213,27 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
         )
         progress_saved_text.set_alpha(0)
         progress_saved_text.set_center(surface.get_width() / 2, surface.get_height() / 2)
-        self.__pause_menu.hidden = False
-        while not self.__pause_menu.hidden:
+        self.__pause_menu.set_visible(True)
+        while self.__pause_menu.is_visible():
             Display.flip()
-            if OptionMenu.hidden is True:
+            if OptionMenu.is_hidden():
                 self.__pause_menu.draw(surface)
                 if self.__pause_menu.get_button_clicked() == "resume":
-                    OptionMenu.hidden = True
-                    self.__pause_menu.hidden = True
+                    OptionMenu.set_visible(False)
+                    self.__pause_menu.set_visible(False)
                 elif self.__pause_menu.get_button_clicked() == "save":
                     self.save_progress()
                     progress_saved_text.set_alpha(255)
                 elif self.__pause_menu.get_button_clicked() == "option_menu":
-                    OptionMenu.hidden = False
+                    OptionMenu.set_visible(True)
                 elif self.__pause_menu.get_button_clicked() == "back_to_mainMenu":
                     try:
                         self.fade(surface)
                     except Exception:
                         Media.unload()
-                    OptionMenu.hidden = True
+                    OptionMenu.set_visible(False)
                     progress_saved_text.set_alpha(0)
-                    self.__pause_menu.hidden = True
+                    self.__pause_menu.set_visible(False)
                     GlobalValue.set("BackToMainMenu", True)
                     self.stop()
             else:

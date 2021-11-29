@@ -54,8 +54,13 @@ class MouseController:
     # 鼠标位置
     __x: int = 0
     __y: int = 0
+    __last_x: int = 0
+    __last_y: int = 0
     # 鼠标移动速度（使用手柄时）
     __moving_speed: int = int(max(Setting.get("MouseMoveSpeed"), 1))
+
+    # 鼠标上次更新时被按下的详情
+    __mouse_get_pressed_previously: tuple[bool] = (False, False, False, False, False)
 
     def __init__(self) -> None:
         custom: bool = False
@@ -79,19 +84,46 @@ class MouseController:
         return self.__x
 
     @property
+    def last_x(self) -> int:
+        return self.__last_x
+
+    @property
+    def x_moved(self) -> int:
+        return self.__last_x - self.__x
+
+    @property
     def y(self) -> int:
         return self.__y
+
+    @property
+    def last_y(self) -> int:
+        return self.__last_y
+
+    @property
+    def y_moved(self) -> int:
+        return self.__last_y - self.__y
 
     @property
     def pos(self) -> tuple[int]:
         return self.__x, self.__y
 
+    @property
+    def last_pos(self) -> tuple[int]:
+        return self.__last_x, self.__last_y
+
     def get_pos(self) -> tuple[int]:
         return self.__x, self.__y
 
+    def get_last_pos(self) -> tuple[int]:
+        return self.__last_x, self.__last_y
+
     # 设置坐标
     def set_pos(self, pos: Iterable) -> None:
-        self.__x, self.__y = Pos.int(Pos.convert(pos))
+        # 更新前鼠标坐标
+        self.__last_x = self.__x
+        self.__last_y = self.__y
+        # 更新当前鼠标坐标
+        self.__x, self.__y = Coordinates.convert(pos)
         pygame.mouse.set_pos(self.get_pos())
 
     # 是否鼠标按钮被点击
@@ -99,10 +131,21 @@ class MouseController:
     def get_pressed(button_id: int) -> bool:
         return pygame.mouse.get_pressed()[button_id]
 
-    # 更新设备
+    # 是否鼠标按钮在本次更新被点击
+    def get_pressed_previously(self, button_id: int) -> bool:
+        return self.__mouse_get_pressed_previously[button_id]
+
+    # 更新鼠标数据
     def update(self) -> None:
-        # 更新鼠标坐标
+        # 更新前鼠标坐标
+        self.__last_x = self.__x
+        self.__last_y = self.__y
+        # 更新当前鼠标坐标
         self.__x, self.__y = pygame.mouse.get_pos()
+
+    # 完成旧数据的存储
+    def finish_up(self) -> None:
+        self.__mouse_get_pressed_previously = pygame.mouse.get_pressed()
 
     # 画出自定义的鼠标图标
     def draw_custom_icon(self, surface: ImageSurface) -> None:
@@ -128,6 +171,8 @@ class GameController:
         "scroll_up": False,
         "scroll_down": False,
         "previous": False,
+        # 删除
+        "delete": False,
     }
     # 是否需要截图
     NEED_TO_TAKE_SCREENSHOT: bool = False
@@ -158,8 +203,12 @@ class GameController:
         except KeyError:
             EXCEPTION.fatal('The event type "{}" is not supported!'.format(event_type))
 
+    # 完成这一帧的收尾工作
+    def finish_up(self) -> None:
+        self.__mouse.finish_up()
+
     # 更新输入
-    def update(self):
+    def update(self) -> None:
         # 更新手柄输入事件
         self.__joystick.update()
         # 更新鼠标输入事件
@@ -206,6 +255,8 @@ class GameController:
                     self.__SPECIFIC_EVENTS["back"] = True
                 elif event.key == Key.F3:
                     self.NEED_TO_TAKE_SCREENSHOT = True
+                elif event.key == Key.DELETE:
+                    self.__SPECIFIC_EVENTS["delete"] = True
 
 
 # 控制器输入组件初始化

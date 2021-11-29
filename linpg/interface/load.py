@@ -22,7 +22,7 @@ class Loader:
     # 可自行移动的图片
     @staticmethod
     def movable_image(
-        path: str, position: tuple, target_position: tuple, move_speed: tuple = (0, 0), size: tuple = NoSize, tag=""
+        path: str, position: tuple, target_position: tuple, move_speed: tuple, size: tuple, tag=""
     ) -> MovableImage:
         return MovableImage(
             path,
@@ -51,14 +51,12 @@ class Loader:
         # 如果是gif文件
         if isinstance(gif_path_or_img_list, str) and gif_path_or_img_list.endswith(".gif"):
             gif_image: object = ImageLoader.open(gif_path_or_img_list)
-            theFilePath: str = os.path.dirname(gif_path_or_img_list)
             frame_index: int = 0
             for frame_index in range(gif_image.n_frames):
                 gif_image.seek(frame_index)
-                pathTmp = os.path.join(theFilePath, "gifTempFileForLoading_{}.png".format(frame_index))
-                gif_image.save(pathTmp)
-                imgList.append(StaticImage(pathTmp, 0, 0, size[0], size[1]))
-                os.remove(pathTmp)
+                imgList.append(
+                    StaticImage(make_surface_from_array(numpy.asarray(gif_image.convert("RGBA"))), 0, 0, size[0], size[1])
+                )
         # 如果是一个列表的文件路径
         elif isinstance(gif_path_or_img_list, Iterable):
             for image_path in gif_path_or_img_list:

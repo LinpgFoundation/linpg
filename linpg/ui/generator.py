@@ -148,7 +148,7 @@ class UiGenerator:
                     if "src" not in data:
                         data["src"] = None
                     # 生成容器
-                    container_t = GameObjectsContainer(
+                    container_t = GameObjectsDictContainer(
                         data["src"],
                         self.__convert_coordinate(data, "x", int((max_width - object_width) / 2), max_width, custom_values),
                         self.__convert_coordinate(
@@ -159,7 +159,7 @@ class UiGenerator:
                     )
                     # 加载数据
                     if "hidden" in data:
-                        container_t.hidden = data["hidden"]
+                        container_t.set_visible(not data["hidden"])
                     if "items" in data:
                         for each_item in data["items"]:
                             item_r = self.__generate(
@@ -179,20 +179,23 @@ class UiGenerator:
                             self.__convert_text(data["text"]["src"]),
                             data["text"]["color"],
                             object_height,
-                            Pos.ORIGIN,
+                            ORIGIN,
                             data["alpha_when_not_hover"],
                         )
                     elif "title" in data:
                         item_t = load_button_with_des(
                             IMG.load(data["src"]),
                             self.__convert_text(data["title"]),
-                            Pos.ORIGIN,
+                            ORIGIN,
                             (object_width, object_height),
                             data["alpha_when_not_hover"],
                         )
                     else:
                         item_t = load_button(
-                            IMG.load(data["src"]), Pos.ORIGIN, (object_width, object_height), data["alpha_when_not_hover"]
+                            IMG.load(data["src"]),
+                            ORIGIN,
+                            (object_width, object_height),
+                            data["alpha_when_not_hover"],
                         )
                     if not "name" in data:
                         EXCEPTION.fatal("You have to set a name for button type.")

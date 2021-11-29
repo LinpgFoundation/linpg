@@ -2,7 +2,6 @@ from __future__ import annotations
 import json
 from copy import deepcopy
 from glob import glob
-from shutil import rmtree
 from ..exception import EXCEPTION, os
 
 # 尝试导入yaml库
@@ -56,9 +55,11 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: any, warning: boo
 
 
 # 配置文件管理模块
-class ConfigManager:
+class Config:
+
     # 加载配置文件的程序
-    def __load(self, path: str, keys: list[str], warning: bool = True) -> any:
+    @staticmethod
+    def __load(path: str, keys: tuple[str], warning: bool = True) -> any:
         # 如果路径不存在
         if not os.path.exists(path):
             if warning is True:
@@ -70,12 +71,7 @@ class ConfigManager:
             # 使用yaml模块加载配置文件
             if path.endswith(".yaml") or path.endswith(".yml"):
                 if _YAML_INITIALIZED is True:
-                    try:
-                        # 尝试使用默认模式加载yaml配置文件
-                        Data = yaml.load(f.read(), Loader=yaml.FullLoader)
-                    except yaml.constructor.ConstructorError:
-                        # 使用非安全模式加载yaml配置文件
-                        Data = yaml.load(f.read(), Loader=yaml.UnsafeLoader)
+                    Data = yaml.load(f.read(), Loader=yaml.Loader)
                 elif warning is True:
                     EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.")
                 else:
@@ -91,16 +87,19 @@ class ConfigManager:
         return Data if len(keys) == 0 else get_value_by_keys(Data, keys)
 
     # 加载配置文件
-    def load(self, path: str, *key: str) -> any:
-        return self.__load(path, key)
+    @staticmethod
+    def load(path: str, *key: str) -> any:
+        return Config.__load(path, key)
 
     # 加载配置文件
-    def try_load(self, path: str, *key: str) -> any:
-        return self.__load(path, key, False)
+    @staticmethod
+    def try_load(path: str, *key: str) -> any:
+        return Config.__load(path, key, False)
 
     # 加载内部配置文件保存
-    def load_internal(self, path: str, *key: str) -> any:
-        return self.__load(os.path.join(os.path.dirname(__file__), path), key)
+    @staticmethod
+    def load_internal(path: str, *key: str) -> any:
+        return Config.__load(os.path.join(os.path.dirname(__file__), path), key)
 
     # 配置文件保存
     @staticmethod
@@ -124,13 +123,15 @@ class ConfigManager:
                 )
 
     # 整理配置文件（读取了再存）
-    def organize(self, pathname: str) -> None:
+    @staticmethod
+    def organize(pathname: str) -> None:
         for configFilePath in glob(pathname):
-            self.save(configFilePath, self.load(configFilePath))
+            Config.save(configFilePath, Config.load(configFilePath))
 
     # 整理内部配置文件
-    def organize_internal(self) -> None:
-        self.organize(os.path.join(os.path.dirname(__file__), "*.json"))
+    @staticmethod
+    def organize_internal() -> None:
+        Config.organize(os.path.join(os.path.dirname(__file__), "*.json"))
 
     # 优化中文文档
     @staticmethod
@@ -175,26 +176,14 @@ class ConfigManager:
             f.writelines(file_lines)
 
     # 优化文件夹中特定文件的中文字符串
-    def optimize_cn_content_in_folder(self, pathname: str) -> None:
+    @staticmethod
+    def optimize_cn_content_in_folder(pathname: str) -> None:
         for configFilePath in glob(pathname):
-            self.optimize_cn_content(configFilePath)
-
-    # 删除特定文件夹
-    def search_and_remove_folder(self, folder_to_search: str, stuff_to_remove: str) -> None:
-        # 确保folder_to_search是一个目录
-        try:
-            assert os.path.isdir(folder_to_search)
-        except:
-            EXCEPTION.fatal("You can only search a folder!")
-        # 移除当前文件夹符合条件的目录/文件
-        for path in glob(os.path.join(folder_to_search, "*")):
-            if path.endswith(stuff_to_remove):
-                rmtree(path)
-            elif os.path.isdir(path):
-                self.search_and_remove_folder(path, stuff_to_remove)
+            Config.optimize_cn_content(configFilePath)
 
     # 解决路径冲突
-    def resolve_path(self, file_location: str) -> str:
+    @staticmethod
+    def resolve_path(file_location: str) -> str:
         path: str
         if (
             os.path.exists(path := file_location + ".yml")
@@ -204,6 +193,3 @@ class ConfigManager:
             return path
         else:
             return ""
-
-
-Config: ConfigManager = ConfigManager()

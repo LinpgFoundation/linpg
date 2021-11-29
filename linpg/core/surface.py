@@ -1,19 +1,19 @@
-from .shape import *
+from .feature import *
 
 # 图形接口
-class AbstractImageSurface(Rect):
+class AbstractImageSurface(Rect, HiddenableSurface):
     def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str):
-        super().__init__(x, y, width, height)
+        Rect.__init__(self, x, y, width, height)
+        HiddenableSurface.__init__(self)
         self.img: any = img
-        self.hidden: bool = False
         self.tag: str = str(tag)
         # 确保长宽均已输入且为正整数
-        if self._width < 0 and self._height < 0:
-            self._width, self._height = self.img.get_size()
-        elif self._width < 0 and self._height >= 0:
-            self.set_width(self._height / self.img.get_height() * self.img.get_width())
-        elif self._width >= 0 and self._height < 0:
-            self.set_height(self._width / self.img.get_width() * self.img.get_height())
+        if self.get_width() < 0 and self.get_height() < 0:
+            self.set_size(self.img.get_width(), self.img.get_height())
+        elif self.get_width() < 0 and self.get_height() >= 0:
+            self.set_width(self.get_height() / self.img.get_height() * self.img.get_width())
+        elif self.get_width() >= 0 and self.get_height() < 0:
+            self.set_height(self.get_width() / self.img.get_width() * self.img.get_height())
 
     """透明度"""
 
@@ -41,17 +41,28 @@ class AbstractImageSurface(Rect):
     def update_image(self, img_path: PoI, ifConvertAlpha: bool = True) -> None:
         self.img = IMG.quickly_load(img_path, ifConvertAlpha)
 
+    # 在尺寸比例不变的情况下改变尺寸
+    def set_width_with_original_image_size_locked(self, width: int_f) -> None:
+        self.set_size(width, width / self.img.get_width() * self.img.get_height())
+
+    def set_height_with_original_image_size_locked(self, height: int_f) -> None:
+        self.set_size(height / self.img.get_height() * self.img.get_width(), height)
+
+    # 自动放大2倍
+    def scale_n_times(self, times: float) -> None:
+        self.set_width(self.get_width() * times)
+        self.set_height(self.get_height() * times)
+
     # 旋转
     def rotate(self, angle: int) -> None:
         self.img = IMG.rotate(self.img, angle)
 
 
 # 有本地坐标的图形接口
-class AdvancedAbstractImageSurface(AbstractImageSurface):
+class AdvancedAbstractImageSurface(AbstractImageSurface, SurfaceWithLocalPos):
     def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
-        super().__init__(img, x, y, width, height, tag)
-        self._local_x: int = 0
-        self._local_y: int = 0
+        AbstractImageSurface.__init__(self, img, x, y, width, height, tag)
+        SurfaceWithLocalPos.__init__(self)
         self._alpha: int = 255
 
     # 透明度
@@ -63,65 +74,104 @@ class AdvancedAbstractImageSurface(AbstractImageSurface):
         if update_original is True and isinstance(self.img, ImageSurface):
             super().set_alpha(self._alpha)
 
-    # 获取本地坐标
-    @property
-    def local_x(self) -> int:
-        return self._local_x
 
-    def get_local_x(self) -> int:
-        return self._local_x
+# 带缓存的高级图片拟态类
+class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
+    def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
+        super().__init__(img, x, y, width, height, tag=tag)
+        self._processed_img: ImageSurface = None
+        self._need_update: bool = True if self.get_width() >= 0 and self.get_height() >= 0 else False
 
-    @property
-    def local_y(self) -> int:
-        return self._local_y
+    # 处理图片（子类必须实现）
+    def _update_img(self) -> None:
+        EXCEPTION.fatal("_update_img()", 1)
 
-    def get_local_y(self) -> int:
-        return self._local_y
+    # 更新图片
+    def update_image(self, img_path: PoI, ifConvertAlpha: bool = True) -> None:
+        super().update_image(img_path, ifConvertAlpha)
+        self._need_update = True
 
-    @property
-    def local_pos(self) -> tuple[int]:
-        return self._local_x, self._local_y
+    # 设置透明度
+    def set_alpha(self, value: int) -> None:
+        super().set_alpha(value, False)
+        if self._processed_img is not None:
+            self._processed_img.set_alpha(self.get_alpha())
 
-    def get_local_pos(self) -> tuple[int]:
-        return self._local_x, self._local_y
+    # 宽度
+    def set_width(self, value: int_f) -> None:
+        if (value := int(value)) != self.get_width():
+            super().set_width(value)
+            self._need_update = True
 
-    # 设置本地坐标
-    def set_local_x(self, value: int_f) -> None:
-        self._local_x = int(value)
+    # 高度
+    def set_height(self, value: int_f) -> None:
+        if (value := int(value)) != self.get_height():
+            super().set_height(value)
+            self._need_update = True
 
-    def set_local_y(self, value: int_f) -> None:
-        self._local_y = int(value)
+    # 是否被鼠标触碰
+    def is_hovered(self, off_set: Iterable = NoPos) -> bool:
+        if self._processed_img is not None:
+            mouse_pos: tuple[int] = (
+                Controller.mouse.pos if off_set is NoPos else Coordinates.subtract(Controller.mouse.pos, off_set)
+            )
+            return (
+                0 < mouse_pos[0] - self.x - self.local_x < self._processed_img.get_width()
+                and 0 < mouse_pos[1] - self.y - self.local_y < self._processed_img.get_height()
+            )
+        else:
+            return False
 
-    def set_local_pos(self, local_x: int_f, local_y: int_f) -> None:
-        self.set_local_x(local_x)
-        self.set_local_y(local_y)
+    """3.2弃置"""
 
-    # 增加本地坐标
-    def add_local_x(self, value: int_f) -> None:
-        self.set_local_x(self._local_x + value)
+    def is_hover(self, mouse_pos: Iterable = NoSize) -> bool:
+        if self._processed_img is not None:
+            if mouse_pos is NoSize:
+                mouse_pos = Controller.mouse.pos
+            return (
+                0 < mouse_pos[0] - self.x - self.local_x < self._processed_img.get_width()
+                and 0 < mouse_pos[1] - self.y - self.local_y < self._processed_img.get_height()
+            )
+        else:
+            return False
 
-    def add_local_y(self, value: int_f) -> None:
-        self.set_local_y(self._local_y + value)
+    # 加暗度
+    def add_darkness(self, value: int) -> None:
+        self.img = IMG.add_darkness(self.img, value)
+        self._need_update = True
 
-    def add_local_pos(self, local_x: int_f, local_y: int_f) -> None:
-        self.add_local_x(local_x)
-        self.add_local_y(local_y)
+    # 减暗度
+    def subtract_darkness(self, value: int) -> None:
+        self.img = IMG.subtract_darkness(self.img, value)
+        self._need_update = True
 
-    # 绝对的本地坐标
-    @property
-    def abs_x(self) -> int:
-        return int(self.x + self._local_x)
+    # 旋转
+    def rotate(self, angle: int) -> None:
+        # 旋转图片
+        super().rotate(angle)
+        self._need_update = True
 
-    @property
-    def abs_y(self) -> int:
-        return int(self.y + self._local_y)
+    # 反转原图
+    def flip_original_img(self, horizontal: bool = True, vertical: bool = False) -> None:
+        self.img = IMG.flip(self.img, horizontal, vertical)
+        self._need_update = True
 
-    @property
-    def abs_pos(self) -> tuple[int]:
-        return self.abs_x, self.abs_y
+    # 画出轮廓
+    def draw_outline(
+        self, surface: ImageSurface, offSet: Iterable = ORIGIN, color: color_liked = "red", line_width: int = 2
+    ) -> None:
+        if self._need_update is True:
+            self._update_img()
+        draw_rect(surface, color, (Coordinates.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width)
 
-    def get_abs_pos(self) -> tuple[int]:
-        return self.abs_x, self.abs_y
+    # 展示
+    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+        if self.is_visible():
+            # 如果图片需要更新，则先更新
+            if self._need_update is True:
+                self._update_img()
+            # 将已经处理好的图片画在给定的图层上
+            surface.blit(self._processed_img, Coordinates.add(self.abs_pos, offSet))
 
 
 # 基础文字类
@@ -130,9 +180,9 @@ class TextSurface(AbstractImageSurface):
         super().__init__(font_surface, x, y, -1, -1, tag)
 
     # 画出
-    def display(self, surface: ImageSurface, offSet: tuple = Pos.ORIGIN) -> None:
-        if not self.hidden:
-            surface.blit(self.img, Pos.add(self.pos, offSet))
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
+        if self.is_visible():
+            surface.blit(self.img, Coordinates.add(self.pos, offSet))
 
 
 # 动态文字类
@@ -152,11 +202,11 @@ class DynamicTextSurface(TextSurface):
         return self.__is_hovered
 
     # 画出
-    def display(self, surface: ImageSurface, offSet: tuple = Pos.ORIGIN) -> None:
-        if not self.hidden:
-            self.__is_hovered = self.is_hover(Pos.subtract(Controller.mouse.pos, offSet))
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
+        if self.is_visible():
+            self.__is_hovered = self.is_hovered(offSet)
             if not self.__is_hovered:
-                surface.blit(self.img, Pos.add(self.pos, offSet))
+                surface.blit(self.img, Coordinates.add(self.pos, offSet))
             else:
                 surface.blit(
                     self.__big_font_surface,

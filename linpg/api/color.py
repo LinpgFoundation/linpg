@@ -21,6 +21,8 @@ class ColorManager:
     __WHITE: tuple[int] = (255, 255, 255, 255)
     # 灰色
     __GRAY: tuple[int] = (105, 105, 105, 255)
+    # 淡灰色
+    __LIGHT_GRAY: tuple[int] = (83, 83, 83, 255)
     # 黑色
     __BLACK: tuple[int] = (0, 0, 0, 255)
     # 红色
@@ -49,6 +51,11 @@ class ColorManager:
     @property
     def GRAY(self) -> tuple[int]:
         return self.__GRAY
+
+    # 淡灰色
+    @property
+    def LIGHT_GRAY(self) -> tuple[int]:
+        return self.__LIGHT_GRAY
 
     # 黑色
     @property
@@ -116,6 +123,12 @@ class ColorManager:
                     color, type(color)
                 )
             )
+
+    # 获取一个带颜色的Surface
+    def surface(self, size: tuple, color: color_liked) -> ImageSurface:
+        surface_t: ImageSurface = new_surface(size)
+        surface_t.fill(self.get(color))
+        return surface_t
 
 
 Color: ColorManager = ColorManager()

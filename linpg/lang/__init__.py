@@ -66,15 +66,15 @@ class LanguageManager:
         return tuple(self.__LANG_AVAILABLE)
 
     # 根据key(s)获取对应的语言
-    def get_text(self, *key: str) -> any:
+    def get_text(self, *key: str) -> str:
+        return str(get_value_by_keys(self.__LANG_DATA, key))
+
+    def get_text_by_keys(self, keys: tuple) -> str:
+        return str(get_value_by_keys(self.__LANG_DATA, keys if isinstance(keys, tuple) else tuple(keys)))
+
+    # 根据key(s)获取对应的语言 - 与get_text不同，这里返回的是any，通常是列表或者字典
+    def get_texts(self, *key: str) -> any:
         return get_value_by_keys(self.__LANG_DATA, key)
-
-    def get_text_by_keys(self, keys: tuple) -> any:
-        return get_value_by_keys(self.__LANG_DATA, keys if isinstance(keys, tuple) else tuple(keys))
-
-    # 尝试根据key(s)获取对应的语言
-    def try_to_get_text(self, *key: str) -> any:
-        return get_value_by_keys(self.__LANG_DATA, key, False)
 
     # 获取本地化的数字
     def get_num_in_local_text(self, num: strint) -> str:
@@ -82,6 +82,10 @@ class LanguageManager:
             return deepcopy(self.__LANG_DATA["Numbers"][int(num)])
         except Exception:
             return str(num)
+
+    # 查看数据库中是否有对应的名字
+    def has_key(self, name: str) -> bool:
+        return name in self.__LANG_DATA
 
 
 Lang: LanguageManager = LanguageManager()

@@ -41,6 +41,10 @@ class MapObject(AdvancedAbstractImageSurface):
         self.__block_on_surface: numpy.ndarray = None
         # 开发者使用的窗口
         self.__debug_win = None
+        # 开启表
+        self.openList = []
+        # 关闭表
+        self.closeList = []
 
     @property
     def block_width(self) -> int:
@@ -122,7 +126,7 @@ class MapObject(AdvancedAbstractImageSurface):
     def find_decoration_on(self, pos: any) -> DecorationObject:
         for decoration in self.__decorations:
             # 如果坐标一致，则应该是当前装饰物了
-            if Pos.is_same(decoration.get_pos(), pos):
+            if Positions.is_same(decoration.get_pos(), pos):
                 return decoration
         return None
 
@@ -148,50 +152,50 @@ class MapObject(AdvancedAbstractImageSurface):
     # 控制地图放大缩小
     def changePerBlockSize(self, newPerBlockWidth: int_f, newPerBlockHeight: int_f) -> None:
         # 记录老尺寸
-        old_width: int = self._width
-        old_height: int = self._height
+        old_width: int = self.get_width()
+        old_height: int = self.get_height()
         # 更新尺寸
         self.set_width(newPerBlockWidth * 0.9 * ((self.row + self.column + 1) / 2))
         self.set_height(newPerBlockWidth * 0.45 * ((self.row + self.column + 1) / 2) + newPerBlockWidth)
         MAP_ENV_IMAGE.set_block_size(newPerBlockWidth, newPerBlockHeight)
-        if self._width < Display.get_width():
-            self._width = Display.get_width()
-        if self._height < Display.get_height():
-            self._height = Display.get_height()
+        if self.get_width() < Display.get_width():
+            self.set_width(Display.get_width())
+        if self.get_height() < Display.get_height():
+            self.set_height(Display.get_height())
         # 自动校准坐标
-        self.add_local_x((old_width - self._width) / 2)
-        self.add_local_y((old_height - self._height) / 2)
+        self.add_local_x((old_width - self.get_width()) / 2)
+        self.add_local_y((old_height - self.get_height()) / 2)
         # 打上需要更新的标签
         self.__need_update_surface = True
         self.__block_on_surface = None
 
     # 设置local坐标
     def set_local_x(self, value: number) -> None:
-        old_local_x: int = self._local_x
+        old_local_x: int = self.local_x
         super().set_local_x(value)
-        if self._local_x != old_local_x:
+        if self.local_x != old_local_x:
             self.__need_update_surface = True
 
     def set_local_y(self, value: number) -> None:
-        old_local_y: int = self._local_y
+        old_local_y: int = self.local_y
         super().set_local_y(value)
-        if self._local_y != old_local_y:
+        if self.local_y != old_local_y:
             self.__need_update_surface = True
 
     # 把地图画到屏幕上
     def display_map(self, screen: ImageSurface, screen_to_move_x: int = 0, screen_to_move_y: int = 0) -> tuple:
         # 检测屏幕是不是移到了不移到的地方
-        if self._local_x < screen.get_width() - self._width:
-            self._local_x = screen.get_width() - self._width
+        if self.local_x < screen.get_width() - self.get_width():
+            self.set_local_x(screen.get_width() - self.get_width())
             screen_to_move_x = 0
-        elif self._local_x > 0:
-            self._local_x = 0
+        elif self.local_x > 0:
+            self.set_local_x(0)
             screen_to_move_x = 0
-        if self._local_y < screen.get_height() - self._height:
-            self._local_y = screen.get_height() - self._height
+        if self.local_y < screen.get_height() - self.get_height():
+            self.set_local_y(screen.get_height() - self.get_height())
             screen_to_move_y = 0
-        elif self._local_y > 0:
-            self._local_y = 0
+        elif self.local_y > 0:
+            self.set_local_y(0)
             screen_to_move_y = 0
         if self.__need_update_surface is True:
             self.__need_update_surface = False
@@ -213,7 +217,7 @@ class MapObject(AdvancedAbstractImageSurface):
         xRange: int = self.column
         screen_min: int = -self.block_width
         if not isinstance(self.__block_on_surface, numpy.ndarray):
-            mapSurface = MAP_ENV_IMAGE.new_surface(window_size, (self._width, self._height))
+            mapSurface = MAP_ENV_IMAGE.new_surface(window_size, (self.get_width(), self.get_height()))
             self.__block_on_surface = numpy.zeros((self.row, self.column), dtype=numpy.int8)
         mapSurface = MAP_ENV_IMAGE.get_surface()
         # 画出地图
@@ -226,7 +230,7 @@ class MapObject(AdvancedAbstractImageSurface):
                             evn_img = MAP_ENV_IMAGE.get_env_image(self.__Map_Data[y][x].name, True)
                         else:
                             evn_img = MAP_ENV_IMAGE.get_env_image(self.__Map_Data[y][x].name, False)
-                        evn_img.set_pos(posTupleTemp[0] - self._local_x, posTupleTemp[1] - self._local_y)
+                        evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
                         evn_img.draw(mapSurface)
                         self.__block_on_surface[y][x] = 1
                         if y < yRange - 1:
@@ -270,7 +274,7 @@ class MapObject(AdvancedAbstractImageSurface):
                 else:
                     offSet = offSet_normal
                 # 画出
-                item.blit(screen, Pos.add(thePosInMap, offSet), not self.inLightArea(item), decoration_alpha)
+                item.blit(screen, Coordinates.add(thePosInMap, offSet), not self.inLightArea(item), decoration_alpha)
 
     # 更新方块
     def update_block(self, pos: dict, name: str) -> None:
@@ -288,13 +292,13 @@ class MapObject(AdvancedAbstractImageSurface):
             pos = Controller.mouse.pos
         guess_x: int = int(
             (
-                (pos[0] - self._local_x - self.row * self.block_width * 0.43) / 0.43
-                + (pos[1] - self._local_y - self.block_width * 0.4) / 0.22
+                (pos[0] - self.local_x - self.row * self.block_width * 0.43) / 0.43
+                + (pos[1] - self.local_y - self.block_width * 0.4) / 0.22
             )
             / 2
             / self.block_width
         )
-        guess_y: int = int((pos[1] - self._local_y - self.block_width * 0.4) / self.block_width / 0.22) - guess_x
+        guess_y: int = int((pos[1] - self.local_y - self.block_width * 0.4) / self.block_width / 0.22) - guess_x
         x: int
         y: int
         posTupleTemp: tuple
@@ -387,8 +391,8 @@ class MapObject(AdvancedAbstractImageSurface):
     # 计算在地图中的位置
     def calPosInMap(self, x: int_f, y: int_f) -> tuple[int]:
         widthTmp: float = self.block_width * 0.43
-        return round((x - y) * widthTmp + self._local_x + self.row * widthTmp), round(
-            (y + x) * self.block_width * 0.22 + self._local_y + self.block_width * 0.4
+        return round((x - y) * widthTmp + self.local_x + self.row * widthTmp), round(
+            (y + x) * self.block_width * 0.22 + self.local_y + self.block_width * 0.4
         )
 
     def calAbsPosInMap(self, x: int_f, y: int_f) -> tuple[int]:
@@ -415,9 +419,9 @@ class MapObject(AdvancedAbstractImageSurface):
         ignoreEnemyCharacters: list = [],
     ) -> list:
         # 检测起点
-        start_pos: tuple = Pos.convert(startPosition)
+        start_pos: tuple = Coordinates.convert(startPosition)
         # 检测终点
-        end_pos: tuple = Pos.convert(endPosition)
+        end_pos: tuple = Coordinates.convert(endPosition)
         # 建立寻路地图
         self.map2d = numpy.zeros((self.column, self.row), dtype=numpy.int8)
         # 可行走标记
@@ -535,10 +539,9 @@ class MapObject(AdvancedAbstractImageSurface):
         开始寻路
         :return: None或Point列表（路径）
         """
-        # 开启表
-        self.openList = []
-        # 关闭表
-        self.closeList = []
+        # 初始化路径寻找使用的缓存列表
+        self.openList.clear()
+        self.closeList.clear()
         # 判断寻路终点是否是障碍
         mapRow, mapCol = self.map2d.shape
         if (
@@ -574,6 +577,10 @@ class MapObject(AdvancedAbstractImageSurface):
                         pathList.append(cPoint.point)
                         cPoint = cPoint.father
                     else:
+                        self.openList.clear()
+                        self.closeList.clear()
                         return list(reversed(pathList))
             if len(self.openList) == 0:
+                self.openList.clear()
+                self.closeList.clear()
                 return []

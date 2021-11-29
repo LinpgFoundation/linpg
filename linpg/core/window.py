@@ -1,5 +1,5 @@
 from pygame._sdl2 import Renderer, Window, messagebox
-from .image import *
+from .frame import *
 
 # 提示窗口
 class Message:
@@ -7,7 +7,7 @@ class Message:
         self,
         title: str,
         message: str,
-        buttons: tuple,
+        buttons: tuple[str],
         info: bool = False,
         warn: bool = False,
         error: bool = False,
@@ -34,7 +34,7 @@ class Message:
         self.return_button: int = return_button
         self.escape_button: int = escape_button
 
-    def show(self):
+    def show(self) -> int:
         return messagebox(
             self.title,
             self.message,
@@ -79,7 +79,7 @@ class RenderedWindow(Rect):
         self.__win.fill_rect(convert_to_pygame_rect(rect_pos))
 
     def fill(self, color: color_liked) -> None:
-        self.fill_rect((0, 0, self.__size[0], self.__size[1]), color)
+        self.fill_rect(((0, 0), self.get_size()), color)
 
     # 清空窗口
     def clear(self) -> None:

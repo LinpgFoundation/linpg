@@ -1,10 +1,10 @@
-from .system import *
+from .interface import *
 
 # 坐标类
 class Coordinate:
     def __init__(self, x: int_f, y: int_f):
-        self.x = int(x)
-        self.y = int(y)
+        self.x: int = int(x)
+        self.y: int = int(y)
 
     def __lt__(self, other: object) -> bool:
         return self.y + self.x < other.y + other.x
@@ -27,7 +27,34 @@ class Coordinate:
 
     # 检测是否在给定的位置上
     def on_pos(self, pos: any) -> bool:
-        return Pos.is_same(self.pos, pos)
+        return Coordinates.is_same(self.pos, pos)
+
+
+# 坐标类 - 更精准坐标
+class Position:
+    def __init__(self, x: number, y: number):
+        # 坐标（注意，与Coordinate不同，Position坐标使用浮点数）
+        self.x: number = x
+        self.y: number = y
+
+    def __lt__(self, other: object) -> bool:
+        return self.y + self.x < other.y + other.x
+
+    # 坐标信息
+    @property
+    def pos(self) -> tuple:
+        return self.x, self.y
+
+    def get_pos(self) -> tuple:
+        return self.x, self.y
+
+    # 设置坐标
+    def set_pos(self, x: number, y: number) -> None:
+        self.x = x if isinstance(x, int) else round(x, 5)
+        self.y = y if isinstance(y, int) else round(y, 5)
+
+    def move_to(self, pos: tuple) -> None:
+        self.set_pos(pos[0], pos[1])
 
 
 # 游戏对象接口
@@ -63,7 +90,7 @@ class GameObject2d(GameObject):
         return self.get_width()
 
     def get_width(self) -> int:
-        EXCEPTION.fatal("The child class has to implement get_width() function!")
+        EXCEPTION.fatal("get_width()", 1)
 
     # 高
     @property
@@ -71,7 +98,7 @@ class GameObject2d(GameObject):
         return self.get_height()
 
     def get_height(self) -> int:
-        EXCEPTION.fatal("The child class has to implement get_height() function!")
+        EXCEPTION.fatal("get_height()", 1)
 
     # 尺寸
     @property
@@ -135,7 +162,31 @@ class GameObject2d(GameObject):
         self.set_centerx(centerx)
         self.set_centery(centery)
 
+    @property
+    def left_center(self) -> tuple[int]:
+        return self.x, self.centery
+
+    @property
+    def right_center(self) -> tuple[int]:
+        return self.right, self.centery
+
+    @property
+    def top_center(self) -> tuple[int]:
+        return self.centerx, self.y
+
+    @property
+    def bottom_center(self) -> tuple[int]:
+        return self.centerx, self.bottom
+
     # 是否被鼠标触碰
+    def is_hovered(self, off_set: Iterable = NoPos) -> bool:
+        mouse_pos: tuple[int] = (
+            Controller.mouse.pos if off_set is NoPos else Coordinates.subtract(Controller.mouse.pos, off_set)
+        )
+        return 0 < mouse_pos[0] - self.x < self.get_width() and 0 < mouse_pos[1] - self.y < self.get_height()
+
+    """3.2弃置"""
+
     def is_hover(self, mouse_pos: Iterable = NoPos) -> bool:
         if mouse_pos is NoPos:
             mouse_pos = Controller.mouse.pos
@@ -150,11 +201,11 @@ class GameObject2d(GameObject):
         self.display(Display.window)
 
     # 根据offSet将图片展示到surface的对应位置上 - 子类必须实现
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
-        EXCEPTION.fatal("The child class does not implement display() function!")
+    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+        EXCEPTION.fatal("display()", 1)
 
     # 根据offSet将图片展示到屏幕的对应位置上
-    def display_on_screen(self, offSet: Iterable = Pos.ORIGIN) -> None:
+    def display_on_screen(self, offSet: Iterable = ORIGIN) -> None:
         self.display(Display.window, offSet)
 
     # 忽略现有坐标，将图片画到surface的指定位置上
@@ -208,7 +259,7 @@ class ItemNeedBlit(GameObject2point5d):
 
     def draw(self, surface: ImageSurface) -> None:
         if isinstance(self.image, ImageSurface):
-            surface.blit(self.image, Pos.add(self.pos, self.offSet))
+            surface.blit(self.image, Coordinates.add(self.pos, self.offSet))
         else:
             try:
                 self.image.display(surface, self.offSet)

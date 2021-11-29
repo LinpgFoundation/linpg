@@ -15,7 +15,7 @@ class AbstractProgressBar(AbstractImageSurface):
         return self.__current_percentage
 
     def set_percentage(self, value: float) -> None:
-        self.__current_percentage = keep_in_range(value, 0.0, 1.0)
+        self.__current_percentage = round(keep_in_range(value, 0.0, 1.0), 5)
 
 
 # 进度条简单形式的实现
@@ -24,10 +24,12 @@ class ProgressBar(AbstractProgressBar):
         super().__init__(None, x, y, max_width, height, tag)
         self.color: tuple = Color.get(color)
 
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
-        if not self.hidden:
+    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+        if self.is_visible():
             draw_rect(
-                surface, self.color, new_rect(Pos.add(self.pos, offSet), (int(self._width * self.percentage), self._height))
+                surface,
+                self.color,
+                new_rect(Coordinates.add(self.pos, offSet), (int(self.get_width() * self.percentage), self.get_height())),
             )
 
 
@@ -70,23 +72,27 @@ class ProgressBarSurface(AbstractProgressBar):
     # 克隆
     def copy(self):
         return ProgressBarSurface(
-            self.img.copy(), self.img2.copy(), self.x, self.y, self._width, self._height, self.get_mode()
+            self.img.copy(), self.img2.copy(), self.x, self.y, self.get_width(), self.get_height(), self.get_mode()
         )
 
     def light_copy(self):
-        return ProgressBarSurface(self.img, self.img2, self.x, self.y, self._width, self._height, self.get_mode())
+        return ProgressBarSurface(self.img, self.img2, self.x, self.y, self.get_width(), self.get_height(), self.get_mode())
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
-        if not self.hidden:
-            pos = Pos.add(self.pos, offSet)
+    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+        if self.is_visible():
+            pos = Coordinates.add(self.pos, offSet)
             surface.blit(IMG.resize(self.img2, self.size), pos)
             if self.percentage > 0:
                 imgOnTop = IMG.resize(self.img, self.size)
                 if self._mode:
-                    surface.blit(imgOnTop.subsurface((0, 0, int(self._width * self.percentage), self._height)), pos)
+                    surface.blit(
+                        imgOnTop.subsurface((0, 0, int(self.get_width() * self.percentage), self.get_height())), pos
+                    )
                 else:
-                    surface.blit(imgOnTop.subsurface((0, 0, self._width, int(self._height * self.percentage))), pos)
+                    surface.blit(
+                        imgOnTop.subsurface((0, 0, self.get_width(), int(self.get_height() * self.percentage))), pos
+                    )
 
 
 # 进度条形式的调整器
@@ -109,66 +115,55 @@ class ProgressBarAdjuster(ProgressBarSurface):
         self.__indicator: StaticImage = StaticImage(indicator_img, 0, 0, indicator_width, indicator_height)
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
-        if not self.hidden:
+    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+        if self.is_visible():
             super().display(surface, offSet)
-            abs_pos: tuple[number] = Pos.add(self.pos, offSet)
+            abs_pos: tuple[int] = Coordinates.add(self.pos, offSet)
             x: int
             y: int
-            if self._mode:
-                x, y = Pos.int(
-                    Pos.add(
-                        (
-                            int(self._width * self.percentage - self.__indicator.width / 2),
-                            int((self._height - self.__indicator.height) / 2),
-                        ),
-                        abs_pos,
-                    )
+            if self._mode is True:
+                x, y = Coordinates.add(
+                    (
+                        int(self.get_width() * self.percentage - self.__indicator.width / 2),
+                        int((self.get_height() - self.__indicator.height) / 2),
+                    ),
+                    abs_pos,
                 )
                 self.__indicator.set_pos(x, y)
                 self.__indicator.draw(surface)
-                value_font = Font.render(str(round(self.percentage * 100)), Color.WHITE, self._height)
+                value_font = Font.render(str(round(self.percentage * 100)), Color.WHITE, self.get_height())
                 surface.blit(
                     value_font,
-                    Pos.int(
-                        Pos.add(
-                            abs_pos,
-                            (
-                                self._width + self.__indicator.width * 0.7,
-                                (self._height - value_font.get_height()) / 2,
-                            ),
-                        )
+                    Coordinates.add(
+                        abs_pos,
+                        (self.width + self.__indicator.width * 0.7, (self.height - value_font.get_height()) / 2),
                     ),
                 )
             else:
-                x, y = Pos.int(
-                    Pos.add(
-                        (
-                            int((self._width - self.__indicator.width) / 2),
-                            int(self._height * self.percentage - self.__indicator.height / 2),
-                        ),
-                        abs_pos,
-                    )
+                x, y = Coordinates.add(
+                    (
+                        int((self.get_width() - self.__indicator.width) / 2),
+                        int(self.get_height() * self.percentage - self.__indicator.height / 2),
+                    ),
+                    abs_pos,
                 )
+
                 self.__indicator.set_pos(x, y)
                 self.__indicator.draw(surface)
-                value_font = Font.render(str(round(self.percentage * 100)), Color.WHITE, self._width)
+                value_font = Font.render(str(round(self.percentage * 100)), Color.WHITE, self.get_width())
                 surface.blit(
                     value_font,
-                    Pos.int(
-                        Pos.add(
-                            abs_pos,
-                            ((self._width - value_font.get_width()) / 2, self._height + self.__indicator.height * 0.7),
-                        )
+                    Coordinates.add(
+                        abs_pos,
+                        ((self.width - value_font.get_width()) / 2, self.height + self.__indicator.height * 0.7),
                     ),
                 )
-            mouse_x: int
-            mouse_y: int
-            mouse_x, mouse_y = Pos.subtract(Controller.mouse.pos, offSet)
-            if self.is_hover((mouse_x, mouse_y)):
+            if self.is_hovered(offSet):
                 if Controller.mouse.get_pressed(0):
                     self.set_percentage(
-                        (mouse_x - self.x) / self._width if self._mode else (mouse_y - self.y) / self._height
+                        (Controller.mouse.x - offSet[0] - self.x) / self.get_width()
+                        if self._mode is True
+                        else (Controller.mouse.y - offSet[1] - self.y) / self.get_height()
                     )
                 elif Controller.get_event("scroll_down"):
                     self.set_percentage(min(round(self.percentage + 0.01, 2), 1.0))
@@ -190,7 +185,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
     ):
         super().__init__(imgOnTop, imgOnBottom, x, y, max_width, height, mode)
         self._percentage_to_be = 0
-        self.__perecent_update_each_time = 0
+        self.__perecent_update_each_time: float = 0.0
         self.__total_update_intervals = 10
 
     # 数据准确度
@@ -212,17 +207,19 @@ class DynamicProgressBarSurface(ProgressBarSurface):
 
     def set_percentage(self, value: float) -> None:
         self._percentage_to_be = keep_in_range(value, 0.0, 1.0) * self.accuracy
-        self.__perecent_update_each_time = (
-            self._percentage_to_be - self.__real_current_percentage
-        ) / self.__total_update_intervals
+        self.__perecent_update_each_time = round(
+            (self._percentage_to_be - self.__real_current_percentage) / self.__total_update_intervals, 5
+        )
 
     def copy(self):
         return DynamicProgressBarSurface(
-            self.img.copy(), self.img2.copy(), self.x, self.y, self._width, self._height, self.get_mode()
+            self.img.copy(), self.img2.copy(), self.x, self.y, self.get_width(), self.get_height(), self.get_mode()
         )
 
     def light_copy(self):
-        return DynamicProgressBarSurface(self.img, self.img2, self.x, self.y, self._width, self._height, self.get_mode())
+        return DynamicProgressBarSurface(
+            self.img, self.img2, self.x, self.y, self.get_width(), self.get_height(), self.get_mode()
+        )
 
     # 展示
     def _draw_bar(self, surface: ImageSurface, imgOnTop: ImageSurface, imgOnBottom: ImageSurface, pos: tuple) -> None:
@@ -244,48 +241,54 @@ class DynamicProgressBarSurface(ProgressBarSurface):
             if self._mode:
                 if self.__real_current_percentage < self._percentage_to_be:
                     img2 = IMG.crop(
-                        img_on_top_t, size=(int(self._width * self._percentage_to_be / self.accuracy), self._height)
+                        img_on_top_t,
+                        size=(int(self.get_width() * self._percentage_to_be / self.accuracy), self.get_height()),
                     )
                     img2.set_alpha(100)
                     surface.blit(img2, pos)
                     surface.blit(
-                        img_on_top_t.subsurface((0, 0, int(self._width * super().get_percentage()), self._height)),
+                        img_on_top_t.subsurface((0, 0, int(self.get_width() * super().get_percentage()), self.get_height())),
                         pos,
                     )
                 else:
                     if self.__real_current_percentage > self._percentage_to_be:
-                        img2 = IMG.crop(img_on_top_t, size=(int(self._width * super().get_percentage()), self._height))
+                        img2 = IMG.crop(
+                            img_on_top_t, size=(int(self.get_width() * super().get_percentage()), self.get_height())
+                        )
                         img2.set_alpha(100)
                         surface.blit(img2, pos)
                     surface.blit(
                         img_on_top_t.subsurface(
-                            (0, 0, int(self._width * self._percentage_to_be / self.accuracy), self._height)
+                            (0, 0, int(self.get_width() * self._percentage_to_be / self.accuracy), self.get_height())
                         ),
                         pos,
                     )
             else:
                 if self.__real_current_percentage < self._percentage_to_be:
                     img2 = IMG.crop(
-                        img_on_top_t, size=(self._width, int(self._height * self._percentage_to_be / self.accuracy))
+                        img_on_top_t,
+                        size=(self.get_width(), int(self.get_height() * self._percentage_to_be / self.accuracy)),
                     )
                     img2.set_alpha(100)
                     surface.blit(img2, pos)
                     surface.blit(
-                        img_on_top_t.subsurface((0, 0, self._width, int(self._height * super().get_percentage()))),
+                        img_on_top_t.subsurface((0, 0, self.get_width(), int(self.get_height() * super().get_percentage()))),
                         pos,
                     )
                 else:
                     if self.__real_current_percentage > self._percentage_to_be:
-                        img2 = IMG.crop(img_on_top_t, size=(self._width, int(self._height * super().get_percentage())))
+                        img2 = IMG.crop(
+                            img_on_top_t, size=(self.get_width(), int(self.get_height() * super().get_percentage()))
+                        )
                         img2.set_alpha(100)
                         surface.blit(img2, pos)
                     surface.blit(
                         img_on_top_t.subsurface(
-                            (0, 0, self._width, int(self._height * self._percentage_to_be / self.accuracy))
+                            (0, 0, self.get_width(), int(self.get_height() * self._percentage_to_be / self.accuracy))
                         ),
                         pos,
                     )
 
-    def display(self, surface: ImageSurface, offSet: Iterable = Pos.ORIGIN) -> None:
-        if not self.hidden:
-            self._draw_bar(surface, self.img, self.img2, Pos.add(self.pos, offSet))
+    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+        if self.is_visible():
+            self._draw_bar(surface, self.img, self.img2, Coordinates.add(self.pos, offSet))

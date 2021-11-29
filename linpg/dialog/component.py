@@ -1,10 +1,11 @@
 from .dialogbox import *
 
 # 对话系统按钮UI模块
-class DialogButtons:
+class DialogButtons(HiddenableSurface):
     def __init__(self):
+        super().__init__()
         self.__button_hovered: int = 0
-        self.hidden: bool = False
+        self.__buttons_container = None
         self.initialize()
 
     # 初始化
@@ -12,7 +13,7 @@ class DialogButtons:
         # 从设置中读取信息
         self.FONT = Font.create(Display.get_width() * 0.0175)
         # 从语言文件中读取按钮文字
-        dialog_txt: dict = Lang.get_text("Dialog")
+        dialog_txt: dict = Lang.get_texts("Dialog")
         # 生成跳过按钮
         tempButtonIcon = IMG.load("<!ui>next.png", (self.FONT.size, self.FONT.size))
         tempButtonTxt = self.FONT.render(dialog_txt["skip"], Color.WHITE)
@@ -45,21 +46,11 @@ class DialogButtons:
         self.autoButton.tag = int(self.autoButton.x + self.autoButton.img.get_width() - self.FONT.size)
         self.autoButtonHovered = DynamicImage(self.autoButtonHovered, Display.get_width() * 0.8, Display.get_height() * 0.05)
         self.autoButtonHovered.tag = int(self.autoButtonHovered.x + self.autoButtonHovered.img.get_width() - self.FONT.size)
-        # 隐藏按钮
-        self.hideButton = load_button(
-            "<!ui>hide.png", (Display.get_width() * 0.05, Display.get_height() * 0.05), (self.FONT.size, self.FONT.size), 150
-        )
         # 取消隐藏按钮
         self.showButton = load_button(
             "<!ui>show.png", (Display.get_width() * 0.05, Display.get_height() * 0.05), (self.FONT.size, self.FONT.size), 150
         )
-        # 历史回溯按钮
-        self.historyButton = load_button(
-            "<!ui>history.png",
-            (Display.get_width() * 0.1, Display.get_height() * 0.05),
-            (self.FONT.size, self.FONT.size),
-            150,
-        )
+        self.__buttons_container = UI.generate("dialog_buttons", {"button_size": self.FONT.size})
 
     @property
     def item_being_hovered(self) -> str:
@@ -76,19 +67,18 @@ class DialogButtons:
 
     def draw(self, surface: ImageSurface) -> None:
         self.__button_hovered = 0
-        if self.hidden is True:
+        if self.is_hidden():
             self.showButton.draw(surface)
-            if self.showButton.is_hover():
+            if self.showButton.is_hovered():
                 self.__button_hovered = 1
         else:
-            self.hideButton.draw(surface)
-            self.historyButton.draw(surface)
-            if self.skipButton.is_hover():
+            self.__buttons_container.draw(surface)
+            if self.skipButton.is_hovered():
                 self.skipButtonHovered.draw(surface)
                 self.__button_hovered = 2
             else:
                 self.skipButton.draw(surface)
-            if self.autoButton.is_hover():
+            if self.autoButton.is_hovered():
                 self.autoButtonHovered.draw(surface)
                 if self.autoMode:
                     rotatedIcon = IMG.rotate(self.autoIconHovered, self.autoIconDegree)
@@ -130,9 +120,9 @@ class DialogButtons:
                 else:
                     self.autoButton.draw(surface)
                     surface.blit(self.autoIcon, (self.autoButton.tag, self.autoButton.y + self.icon_y))
-            if self.hideButton.is_hover():
+            if self.__buttons_container.item_being_hovered == "hide":
                 self.__button_hovered = 1
-            elif self.historyButton.is_hover():
+            elif self.__buttons_container.item_being_hovered == "history":
                 self.__button_hovered = 4
 
     def autoModeSwitch(self) -> None:
@@ -143,46 +133,121 @@ class DialogButtons:
             self.autoIconDegree = 0
 
 
-# 过场动画
-def cutscene(surface: ImageSurface, videoPath: str, fade_out_in_ms: int = 3000) -> None:
-    # 初始化部分参数
-    is_skip: bool = False
-    is_playing: bool = True
-    # 初始化跳过按钮的参数
-    skip_button: StaticImage = StaticImage(
-        "<!ui>next.png",
-        int(surface.get_width() * 0.92),
-        int(surface.get_height() * 0.05),
-        int(surface.get_width() * 0.055),
-        int(surface.get_height() * 0.06),
-    )
-    # 进度条
-    bar_height: int = 10
-    white_progress_bar: ProgressBar = ProgressBar(
-        bar_height, surface.get_height() - bar_height * 2, surface.get_width() - bar_height * 2, bar_height, "white"
-    )
-    # 生成黑色帘幕
-    BLACK_CURTAIN: ImageSurface = new_surface(surface.get_size()).convert()
-    BLACK_CURTAIN.fill(Color.BLACK)
-    BLACK_CURTAIN.set_alpha(0)
-    # 创建视频文件
-    VIDEO: VedioPlayer = VedioPlayer(videoPath)
-    VIDEO.pre_init()
-    # 播放主循环
-    while is_playing is True and VIDEO.is_playing() is True:
-        VIDEO.draw(surface)
-        skip_button.draw(surface)
-        white_progress_bar.set_percentage(VIDEO.get_percentage_played())
-        white_progress_bar.draw(surface)
-        if skip_button.is_hover() and Controller.mouse.get_pressed(0) and not is_skip:
-            is_skip = True
-            Music.fade_out(fade_out_in_ms)
-        if is_skip is True:
-            temp_alpha: int = BLACK_CURTAIN.get_alpha()
-            if temp_alpha < 255:
-                BLACK_CURTAIN.set_alpha(temp_alpha + 5)
-            else:
-                is_playing = False
-                VIDEO.stop()
-            surface.blit(BLACK_CURTAIN, (0, 0))
-        Display.flip()
+class DialogNode(Button):
+    def __init__(self, key_name: str, font_size: int, next_keys: list[str], tag: str = ""):
+        self.__key_name: str = key_name
+        button_surface = Font.render_description_box(self.__key_name, Color.BLACK, font_size, font_size, Color.WHITE)
+        super().__init__(button_surface, 0, 0, width=button_surface.get_width(), height=button_surface.get_height(), tag=tag)
+        self.__next_keys: tuple[str] = tuple(next_keys)
+        self.has_been_displayed: bool = False
+
+    # 下一个keys
+    @property
+    def next_keys(self) -> tuple[str]:
+        return self.__next_keys
+
+    # 展示（注意，你无法在此输入off_set，你必须提前设置）
+    def display(self, surface: ImageSurface) -> None:
+        return super().display(surface)
+
+
+class DialogNavigationWindow(AbstractFrame):
+    def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
+        super().__init__(x, y, width, height, tag=tag)
+        self.__nodes_map: dict[str, DialogNode] = {}
+        self.__current_selected_key: str = "head"
+        self.__font_size: int = 10
+        self.__most_right: int = 0
+        self.__most_top: int = 0
+        self.__most_bottom: int = 0
+
+    # 新增node
+    def add_node(self, key: str, next_keys: list[str]) -> None:
+        self.__nodes_map[key] = DialogNode(key, self.__font_size, next_keys)
+        self._if_update_needed = True
+
+    # 重新添加全部的key
+    def readd_all(self, dialogs_data: dict):
+        self.__nodes_map.clear()
+        for key in dialogs_data:
+            next_keys: list[str] = []
+            if dialogs_data[key]["next_dialog_id"] is not None:
+                if dialogs_data[key]["next_dialog_id"]["type"] == "option":
+                    for next_keys_options in dialogs_data[key]["next_dialog_id"]["target"]:
+                        next_keys.append(next_keys_options["id"])
+                elif isinstance(the_next_key := dialogs_data[key]["next_dialog_id"]["target"], (str, int)):
+                    next_keys.append(the_next_key)
+            self.add_node(key, next_keys)
+
+    # 更新选中的key
+    def update_selected(self, new_current_select: str) -> None:
+        self.__current_selected_key = new_current_select
+        self._if_update_needed = True
+
+    # 获取当前选中的key
+    def get_selected_key(self) -> str:
+        return self.__current_selected_key
+
+    def __update_node_pos(self, key: str = "head", offset_x: int = 0, offset_y: int = 0) -> None:
+        key_node: DialogNode = self.__nodes_map[key]
+        if not key_node.has_been_displayed:
+            # 设置坐标并展示
+            key_node.set_pos(offset_x, offset_y)
+            key_node.has_been_displayed = True
+            panding: int = 4 * self.__font_size
+            if len(key_node.next_keys) > 1:
+                offset_y = key_node.y - len(key_node.next_keys) * self.__font_size - panding
+            for child_key in key_node.next_keys:
+                offset_y = self.__update_node_pos(child_key, key_node.x + self.__font_size * 10, offset_y)
+                offset_y += panding
+            if self.__most_right < key_node.right:
+                self.__most_right = key_node.right
+            if self.__most_bottom < key_node.bottom:
+                self.__most_bottom = key_node.bottom
+            if self.__most_top > key_node.top:
+                self.__most_top = key_node.top
+        return offset_y
+
+    def __draw_node(self, surface: ImageSurface, key: str = "head") -> int:
+        key_node: DialogNode = self.__nodes_map[key]
+        if not key_node.has_been_displayed:
+            # 设置坐标并展示
+            key_node.display(surface)
+            key_node.has_been_displayed = True
+
+            if self.__current_selected_key == key:
+                draw_rect(surface, Color.RED, key_node.get_rect(), 4)
+
+            for child_key in key_node.next_keys:
+                self.__draw_node(surface, child_key)
+                pygame.draw.aaline(surface, Color.BLACK, key_node.right_center, self.__nodes_map[child_key].left_center, 3)
+
+    def _update(self) -> None:
+        if "head" in self.__nodes_map:
+            for key in self.__nodes_map:
+                self.__nodes_map[key].has_been_displayed = False
+            self.__most_right = 0
+            self.__most_bottom = 0
+            self.__update_node_pos()
+            for key in self.__nodes_map:
+                self.__nodes_map[key].has_been_displayed = False
+                self.__nodes_map[key].y -= self.__most_top
+            self._content_surface = new_transparent_surface((self.__most_right, self.__most_bottom - self.__most_top))
+            self.__draw_node(self._content_surface)
+            self._if_update_needed = False
+        else:
+            EXCEPTION.fatal("Head is missing")
+
+    def _any_content_container_event(self) -> bool:
+        for key in self.__nodes_map:
+            if convert_rect(
+                (
+                    Coordinates.subtract(
+                        Coordinates.add(self.__nodes_map[key].pos, (self.x, self.content_container_y)), self.local_pos
+                    ),
+                    self.__nodes_map[key].get_size(),
+                )
+            ).is_hovered():
+                self.update_selected(key)
+                return True
+        return False

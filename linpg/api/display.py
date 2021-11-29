@@ -28,8 +28,18 @@ class DisplayController:
     def sfpsp(self) -> float:
         return self.__standard_fps / self.__fps
 
+    # 时间增量
+    @property
+    def delta_time(self) -> float:
+        return pygame.time.get_ticks() / self.__fps
+
+    # 获取 pixel per second
+    def get_pps(self, distcane: float) -> int:
+        return int(pygame.time.get_ticks() * distcane / self.__fps)
+
     # 更新屏幕
     def flip(self) -> None:
+        Controller.finish_up()
         self.__clock.tick(self.fps)
         pygame.display.flip()
         # 如果需要截图
@@ -120,4 +130,4 @@ Display: DisplayController = DisplayController()
 
 # 直接画到屏幕上
 def draw_on_screen(surface_to_draw: ImageSurface, pos: Iterable) -> None:
-    Display.window.blit(surface_to_draw, Pos.convert(pos))
+    Display.window.blit(surface_to_draw, Coordinates.convert(pos))

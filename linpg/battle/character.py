@@ -230,7 +230,7 @@ class HostileCharacter(Entity):
         elif len(self.__patrol_path) > 0:
             # 如果巡逻坐标点只有一个（意味着角色需要在该坐标上长期镇守）
             if len(self.__patrol_path) == 1:
-                if not Pos.is_same(self.pos, self.__patrol_path[0]):
+                if not Coordinates.is_same(self.pos, self.__patrol_path[0]):
                     the_route = Map.findPath(
                         self.pos, self.__patrol_path[0], hostileCharacterData, friendlyCharacterData, blocks_can_move
                     )
@@ -249,7 +249,7 @@ class HostileCharacter(Entity):
                 if len(the_route) > 0:
                     actions.append(DecisionHolder("move", the_route))
                     # 如果角色在这次移动后到达了最近的巡逻点，则应该更新最近的巡逻点
-                    if Pos.is_same(the_route[-1], self.__patrol_path[0]):
+                    if Coordinates.is_same(the_route[-1], self.__patrol_path[0]):
                         self.__patrol_path.append(self.__patrol_path.popleft())
                 else:
                     EXCEPTION.fatal("A hostile character cannot find a valid path!")

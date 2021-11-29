@@ -81,7 +81,7 @@ class CharacterImageManager:
                 img.set_crop_rect(None)
                 img.draw(surface)
             # 如果是开发模式
-            if self.dev_mode is True and is_hover(img, (x, y)):
+            if self.dev_mode is True and is_hovering(img, (x, y)):
                 img.draw_outline(surface)
                 self.character_get_click = name
 

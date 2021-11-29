@@ -1,5 +1,4 @@
 from ..dialog import *
-import numpy
 
 # 地图场景模块
 class EnvImagesManagement:
@@ -71,7 +70,7 @@ class EnvImagesManagement:
         imgPath: str = os.path.join(ASSET.get_internal_environment_image_path("block"), "{}.png".format(fileName))
         if os.path.exists(imgPath):
             self.__ENV_IMAGE_DICT[fileName] = StaticImage(imgPath, 0, 0)
-            self.__ENV_IMAGE_DICT[fileName].set_width_with_size_locked(self.__BLOCK_WIDTH)
+            self.__ENV_IMAGE_DICT[fileName].set_width_with_original_image_size_locked(self.__BLOCK_WIDTH)
             # 如果是夜战模式
             if self.__DARKNESS > 0:
                 self.__ENV_IMAGE_DICT_DARK[fileName] = self.__ENV_IMAGE_DICT[fileName].copy()
@@ -140,11 +139,11 @@ class EnvImagesManagement:
         self.__BLOCK_HEIGHT = round(newHeight)
         # 调整地图方块尺寸
         for key in self.__ENV_IMAGE_DICT:
-            self.__ENV_IMAGE_DICT[key].set_width_with_size_locked(self.__BLOCK_WIDTH)
+            self.__ENV_IMAGE_DICT[key].set_width_with_original_image_size_locked(self.__BLOCK_WIDTH)
         # 如果是黑夜模式，则应该调整黑夜模式下的地图方块尺寸
         if self.__DARKNESS > 0:
             for key in self.__ENV_IMAGE_DICT_DARK:
-                self.__ENV_IMAGE_DICT_DARK[key].set_width_with_size_locked(self.__BLOCK_WIDTH)
+                self.__ENV_IMAGE_DICT_DARK[key].set_width_with_original_image_size_locked(self.__BLOCK_WIDTH)
 
     def get_env_image(self, key: str, darkMode: bool) -> StaticImage:
         try:
@@ -186,7 +185,7 @@ class EnvImagesManagement:
         self.__BACKGROUND_SURFACE = (
             IMG.resize(self.__BACKGROUND_IMAGE, screen_size)
             if self.__BACKGROUND_IMAGE is not None
-            else new_surface(screen_size).convert()
+            else new_surface(screen_size)
         )
         if self.__MAP_SURFACE is not None:
             self.__MAP_SURFACE.fill(Color.TRANSPARENT)

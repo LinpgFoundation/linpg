@@ -1,4 +1,33 @@
 {
+    "dialog_buttons": {
+        "height": "100%",
+        "items": [
+            {
+                "alpha_when_not_hover": 150,
+                "height": "<#button_size>",
+                "name": "hide",
+                "src": "<!ui>hide.png",
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "5%",
+                "y": "5%"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "<#button_size>",
+                "name": "history",
+                "src": "<!ui>history.png",
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "10%",
+                "y": "5%"
+            }
+        ],
+        "type": "container",
+        "width": "100%",
+        "x": 0,
+        "y": 0
+    },
     "dialog_editor_buttons": {
         "height": "100%",
         "items": [

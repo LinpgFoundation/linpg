@@ -530,7 +530,7 @@ class DialogEditor(DialogConverter):
 
         # 未保存离开时的警告
         self.__no_save_warning.draw(surface)
-        if confirm_event_tag is True and self.__no_save_warning.item_being_hovered != "":
+        if Controller.get_event("confirm") and self.__no_save_warning.item_being_hovered != "":
             # 保存并离开
             if self.__no_save_warning.item_being_hovered == "save":
                 self.save_progress()

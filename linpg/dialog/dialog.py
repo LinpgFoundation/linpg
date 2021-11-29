@@ -274,12 +274,12 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                             dialogIdTemp = self.dialog_content[dialogIdTemp]["next_dialog_id"]["target"]
                         elif self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "option":
                             narratorTemp = self._dialog_txt_system.FONT.render(
-                                self._buttons_mananger.choiceTxt + " - ", (0, 191, 255)
+                                self._buttons_mananger.choiceTxt + ":", (0, 191, 255)
                             )
                             self._history_surface.blit(
                                 narratorTemp,
                                 (
-                                    Display.get_width() * 0.15 - narratorTemp.get_width(),
+                                    Display.get_width() * 0.14 - narratorTemp.get_width(),
                                     Display.get_height() * 0.1 + local_y,
                                 ),
                             )

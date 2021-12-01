@@ -121,7 +121,7 @@ class DialogEditor(DialogConverter):
         self.please_enter_content = CONFIG["please_enter_content"]
         self.please_enter_name = CONFIG["please_enter_name"]
         # 背景音乐
-        self.dialog_bgm_select = DropDownSingleChoiceList(None, button_width * 11, button_y + font_size * 3, font_size)
+        self.dialog_bgm_select = DropDownList(None, button_width * 11, button_y + font_size * 3, font_size)
         self.dialog_bgm_select.set("null", Lang.get_text("DialogCreator", "no_bgm"))
         for file_name in os.listdir(ASSET.PATH_DICT["music"]):
             self.dialog_bgm_select.set(file_name, file_name)
@@ -137,10 +137,10 @@ class DialogEditor(DialogConverter):
         # 未保存离开时的警告
         self.__no_save_warning = UI.generate("leave_without_saving_warning")
         # 切换准备编辑的dialog部分
-        self.dialog_key_select = DropDownSingleChoiceList(None, button_width * 11, button_y + font_size, font_size)
+        self.dialog_key_select = DropDownList(None, button_width * 11, button_y + font_size, font_size)
         for key in self._dialog_data:
             self.dialog_key_select.set(key, key)
-        self.dialog_key_select.set_current_selected_item(self._part)
+        self.dialog_key_select.set_selected_item(self._part)
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
@@ -250,9 +250,9 @@ class DialogEditor(DialogConverter):
     def __update_ui(self) -> None:
         # 更新背景音乐选项菜单
         if (file_name := self._current_dialog_content["background_music"]) is not None:
-            self.dialog_bgm_select.set_current_selected_item(file_name)
+            self.dialog_bgm_select.set_selected_item(file_name)
         else:
-            self.dialog_bgm_select.set_current_selected_item("null")
+            self.dialog_bgm_select.set_selected_item("null")
         # 更新按钮
         if self.does_current_dialog_have_next_dialog() is True:
             self.__buttons_ui_container.get("add").set_visible(False)
@@ -405,24 +405,22 @@ class DialogEditor(DialogConverter):
         self.__buttons_ui_container.draw(surface)
         # 展示出当前可供使用的背景音乐
         self.dialog_bgm_select.draw(surface)
-        if (
-            current_bgm := self._current_dialog_content["background_music"]
-        ) != self.dialog_bgm_select.get_current_selected_item():
-            if self.dialog_bgm_select.get_current_selected_item() == "null" and current_bgm is None:
+        if (current_bgm := self._current_dialog_content["background_music"]) != self.dialog_bgm_select.get_selected_item():
+            if self.dialog_bgm_select.get_selected_item() == "null" and current_bgm is None:
                 pass
             else:
-                if self.dialog_bgm_select.get_current_selected_item() == "null" and current_bgm is not None:
+                if self.dialog_bgm_select.get_selected_item() == "null" and current_bgm is not None:
                     self._current_dialog_content["background_music"] = None
                 else:
                     self._current_dialog_content["background_music"] = self.dialog_bgm_select.get(
-                        self.dialog_bgm_select.get_current_selected_item()
+                        self.dialog_bgm_select.get_selected_item()
                     )
                 self._update_scene(self._dialog_id)
         # 展示出当前可供编辑的dialog部分
         self.dialog_key_select.draw(surface)
         # 切换当前正在浏览编辑的dialog部分
-        if self.dialog_key_select.get_current_selected_item() != self._part:
-            self._part = self.dialog_key_select.get_current_selected_item()
+        if self.dialog_key_select.get_selected_item() != self._part:
+            self._part = self.dialog_key_select.get_selected_item()
             if self._dialog_id in self.dialog_content:
                 self._update_scene(self._dialog_id)
             else:

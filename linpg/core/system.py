@@ -47,7 +47,7 @@ class AbstractSystem:
         return self.__current_language != Lang.current_language
 
     # 更新语言
-    def updated_language(self) -> None:
+    def update_language(self) -> None:
         self.__current_language = Lang.current_language
 
 

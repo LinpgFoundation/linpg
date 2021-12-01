@@ -41,7 +41,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
                 lang_drop_down = self._CONTENT.get("lang_drop_down")
                 for lang_choice in Lang.get_available_languages():
                     lang_drop_down.set(lang_choice, lang_choice)
-                lang_drop_down.set_current_selected_item(Lang.current_language)
+                lang_drop_down.set_selected_item(Lang.current_language)
             else:
                 lang_drop_down = self._CONTENT.get("lang_drop_down")
             # 更新百分比
@@ -52,14 +52,11 @@ class DefaultOptionMenu(AbstractInternalMenu):
             # 画出
             super().draw(surface)
             # 如果需要更新语言
-            if (
-                lang_drop_down.get_current_selected_item() != Lang.current_language
-                and lang_drop_down.get_current_selected_item() != ""
-            ):
+            if lang_drop_down.get_selected_item() != Lang.current_language and lang_drop_down.get_selected_item() != "":
                 # 更新语言并保存新的参数到本地
                 Setting.set(
                     "Language",
-                    value=Lang.get_language_id(lang_drop_down.get_current_selected_item()),
+                    value=Lang.get_language_id(lang_drop_down.get_selected_item()),
                 )
                 Setting.save()
                 Lang.reload()
@@ -239,7 +236,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
                     self._update_sound_volume()
                 # 更新语言
                 if OptionMenu.need_update["language"] is True:
-                    self.updated_language()
+                    self.update_language()
             # 显示进度已保存的文字
             progress_saved_text.draw(surface)
             progress_saved_text.subtract_alpha(5)

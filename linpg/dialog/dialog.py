@@ -57,8 +57,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         else:
             EXCEPTION.fatal("The dialog id {} does not exist!".format(dialog_id))
 
-    def updated_language(self) -> None:
-        super().updated_language()
+    def update_language(self) -> None:
+        super().update_language()
         self._initialize_pause_menu()
 
     def continue_scene(self, dialog_id: str) -> None:

@@ -219,8 +219,8 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._dialog_options_container.set_visible(False)
 
     # 更新语言
-    def updated_language(self) -> None:
-        super().updated_language()
+    def update_language(self) -> None:
+        super().update_language()
         if self._buttons_mananger is not None:
             self._buttons_mananger.initialize()
         self._load_content()

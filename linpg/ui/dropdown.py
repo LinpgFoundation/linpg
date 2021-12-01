@@ -1,7 +1,7 @@
 from .container import *
 
 # 下拉选项菜单
-class DropDownSingleChoiceList(GameObjectsDictContainer):
+class DropDownList(GameObjectsDictContainer):
     def __init__(
         self, bg_img: PoI, x: int_f, y: int_f, font_size: int, font_color: color_liked = "black", tag: str = ""
     ) -> None:
@@ -48,11 +48,11 @@ class DropDownSingleChoiceList(GameObjectsDictContainer):
         return super().get(key) if not self.is_empty() else self.__DEFAULT_CONTENT
 
     # 获取当前选中的物品
-    def get_current_selected_item(self) -> str:
+    def get_selected_item(self) -> str:
         return self.__chosen_item_key
 
     # 设置当前选中的物品
-    def set_current_selected_item(self, key: str) -> None:
+    def set_selected_item(self, key: str) -> None:
         self.__chosen_item_key = key
 
     # 获取高度
@@ -60,8 +60,8 @@ class DropDownSingleChoiceList(GameObjectsDictContainer):
         return (len(self._get_container()) + 1) * self.__block_height if not self.__fold_choice else self.__block_height
 
     # 移除一个物品
-    def pop(self, index: int) -> None:
-        super().pop(index)
+    def remove(self, key: str) -> None:
+        super().remove(key)
         self.__recalculate_width()
 
     # 清空物品栏
@@ -80,9 +80,7 @@ class DropDownSingleChoiceList(GameObjectsDictContainer):
                 draw_rect(surface, Color.WHITE, (current_abs_pos, self.size))
             # 列出当前选中的选项
             current_pos: tuple = current_abs_pos
-            font_surface: ImageSurface = self.__FONT.render_with_bounding(
-                self.get_current_selected_item(), self.__font_color
-            )
+            font_surface: ImageSurface = self.__FONT.render_with_bounding(self.get_selected_item(), self.__font_color)
             surface.blit(
                 font_surface,
                 Coordinates.add(

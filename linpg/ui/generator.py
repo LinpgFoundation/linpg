@@ -135,7 +135,7 @@ class UiGenerator:
                         0,
                     )
                 else:
-                    item_t = DropDownSingleChoiceList(data["src"], 0, 0, font_size, data["color"])
+                    item_t = DropDownList(data["src"], 0, 0, font_size, data["color"])
             else:
                 # 如果没有提供最大宽度，则默认使用屏幕宽度
                 if max_width < 0:

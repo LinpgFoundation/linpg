@@ -3,7 +3,7 @@ from typing import Iterable
 
 import numpy
 
-from ..lang import *
+from ..tools import *
 
 # 用于辨识基础游戏库的参数，True为默认的pyglet，False则为Pygame
 _LIBRARY_INDICATOR: int = 0

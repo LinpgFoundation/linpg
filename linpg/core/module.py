@@ -185,13 +185,6 @@ class GameObject2d(GameObject):
         )
         return 0 < mouse_pos[0] - self.x < self.get_width() and 0 < mouse_pos[1] - self.y < self.get_height()
 
-    """3.2弃置"""
-
-    def is_hover(self, mouse_pos: Iterable = NoPos) -> bool:
-        if mouse_pos is NoPos:
-            mouse_pos = Controller.mouse.pos
-        return 0 < mouse_pos[0] - self.x < self.get_width() and 0 < mouse_pos[1] - self.y < self.get_height()
-
     # 将图片直接画到surface上
     def draw(self, surface: ImageSurface) -> None:
         self.display(surface)

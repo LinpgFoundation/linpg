@@ -18,7 +18,6 @@ _RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID: int = MIXER_CHANNEL_NUM - 1
 LINPG_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL = pygame.mixer.Channel(_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID)
 pygame.mixer.set_reserved(_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID)
 
-
 # 音效管理模块接口
 class AbstractSoundManager:
     def __init__(self, channel_id: int):
@@ -69,33 +68,29 @@ class SoundManagement(AbstractSoundManager):
 
 # 获取视频的音频 （返回路径）
 def _split_audio_from_video(input_path: str, audio_type="ogg") -> str:
-    if TOOlKIT_INSTALLED == 1:
-        output_folder: str = os.path.dirname(input_path)
-        # 产生不重名的output文件名称
-        output_file_name_t: str = os.path.basename(input_path).replace(".", "_") + "{0}.{1}"
-        output_file_name: str
-        index: int = 0
-        while True:
-            output_file_name = output_file_name_t.format(index, audio_type)
-            if not os.path.exists(output_file_name):
-                break
-            else:
-                index += 1
-        # 生成output路径
-        output_path: str = os.path.join(output_folder, output_file_name)
-        try:
-            # 让linpgtoolkit生成视频文件
-            linpgtoolkit.FFmpeg.convert_from_video_to_audio(input_path, output_path)
-            # 如果一切正常，返回output路径
-            return output_path
-        # 如果不正常...
-        except linpgtoolkit.FileNotExists:
-            EXCEPTION.fatal('Cannot find media file on path "{}".'.format(input_path))
-        except linpgtoolkit.ToolIsMissing:
-            EXCEPTION.fatal('LinpgToolKit cannot find its "ffmpeg.exe" file. You may need to reinstall the toolkit.')
-
-    else:
-        EXCEPTION.fatal("You have to install linpgtoolkit if you want to load audio from video")
+    output_folder: str = os.path.dirname(input_path)
+    # 产生不重名的output文件名称
+    output_file_name_t: str = os.path.basename(input_path).replace(".", "_") + "{0}.{1}"
+    output_file_name: str
+    index: int = 0
+    while True:
+        output_file_name = output_file_name_t.format(index, audio_type)
+        if not os.path.exists(output_file_name):
+            break
+        else:
+            index += 1
+    # 生成output路径
+    output_path: str = os.path.join(output_folder, output_file_name)
+    try:
+        # 生成视频文件
+        VideoConverter.convert_from_video_to_audio(input_path, output_path)
+        # 如果一切正常，返回output路径
+        return output_path
+    # 如果不正常...
+    except FileNotExists:
+        EXCEPTION.fatal('Cannot find media file on path "{}".'.format(input_path))
+    except ToolIsMissing:
+        EXCEPTION.fatal('LinpgToolKit cannot find its "ffmpeg.exe" file. You may need to reinstall the toolkit.')
 
 
 # 音效管理

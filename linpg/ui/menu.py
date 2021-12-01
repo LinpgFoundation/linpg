@@ -20,11 +20,6 @@ class AbstractInternalMenu(HiddenableSurface):
         else:
             return False
 
-    """3.2弃置"""
-
-    def is_hover(self) -> bool:
-        return self.is_hovered()
-
     # 画出内容
     def draw(self, surface: ImageSurface) -> None:
         self._CONTENT.draw(surface)

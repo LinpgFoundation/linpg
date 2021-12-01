@@ -41,7 +41,6 @@ setup(
     packages=find_packages(where="src"),
     python_requires=">=3.9",
     install_requires=[
-        "linpgtoolkit",
         "pygame",
         "pyyaml",
         "opencv-python",

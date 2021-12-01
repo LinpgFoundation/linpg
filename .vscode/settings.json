@@ -1,6 +1,7 @@
 {
     "cSpell.words": [
         "aaline",
+        "acodec",
         "alphanum",
         "asarray",
         "blit",
@@ -25,9 +26,9 @@
         "isinstance",
         "KEYUP",
         "LCTRL",
+        "libvorbis",
         "linpg",
         "linpgdev",
-        "linpgtoolkit",
         "llindstrom",
         "makedirs",
         "maxsize",

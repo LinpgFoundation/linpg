@@ -1,6 +1,6 @@
 from glob import glob
 from os import path as PATH
-from linpgtoolkit import Builder
+from .linpg import Builder
 
 # 编译源代码
 if not PATH.exists("src") or input("Do you want to recompile everything (Y/n):") == "Y":

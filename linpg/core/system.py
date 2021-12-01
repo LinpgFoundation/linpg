@@ -1,5 +1,5 @@
 import threading
-from ..api import *
+from ..basic import *
 
 # 使用多线程保存数据
 class SaveDataThread(threading.Thread):

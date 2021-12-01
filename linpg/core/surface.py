@@ -122,19 +122,6 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
         else:
             return False
 
-    """3.2弃置"""
-
-    def is_hover(self, mouse_pos: Iterable = NoSize) -> bool:
-        if self._processed_img is not None:
-            if mouse_pos is NoSize:
-                mouse_pos = Controller.mouse.pos
-            return (
-                0 < mouse_pos[0] - self.x - self.local_x < self._processed_img.get_width()
-                and 0 < mouse_pos[1] - self.y - self.local_y < self._processed_img.get_height()
-            )
-        else:
-            return False
-
     # 加暗度
     def add_darkness(self, value: int) -> None:
         self.img = IMG.add_darkness(self.img, value)

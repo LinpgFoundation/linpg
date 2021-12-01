@@ -1,17 +1,6 @@
 import os
 from datetime import datetime
-from typing import NoReturn
-
-# Linpg本身错误类
-class Error(Exception):
-    def __init__(self, *args: object) -> NoReturn:
-        super().__init__(*args)
-
-
-# 未实现子类的错误
-class FunctionNotImplement(Error):
-    def __init__(self, *args: object) -> NoReturn:
-        super().__init__(*args)
+from .error import *
 
 
 # Linpg错误类管理器
@@ -54,6 +43,8 @@ class LinpgExceptionHandler:
             raise FunctionNotImplement(
                 'A parent class requires you to implement "{}" function before you can use it'.formate(info)
             )
+        elif error_type_id == 2:
+            raise FileNotExists(info)
         else:
             raise Error(info)
 

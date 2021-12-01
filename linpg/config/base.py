@@ -2,7 +2,7 @@ from __future__ import annotations
 import json
 from copy import deepcopy
 from glob import glob
-from ..exception import EXCEPTION, os
+from ..exception import *
 
 # 尝试导入yaml库
 _YAML_INITIALIZED: bool = False
@@ -12,8 +12,6 @@ try:
     _YAML_INITIALIZED = True
 except Exception:
     pass
-
-__all__ = ["os", "deepcopy", "glob", "EXCEPTION", "Config", "get_value_by_keys", "set_value_by_keys"]
 
 # 根据keys查找值，最后返回一个复制的对象
 def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) -> any:

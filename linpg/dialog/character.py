@@ -60,7 +60,9 @@ class CharacterImageManager:
             nameTemp = name.replace("<c>", "").replace("<d>", "")
             self.__ensure_the_existence_of(nameTemp)
             # 加载npc的基础立绘
-            img = self.__character_image[nameTemp]["dark"] if "<d>" in name else self.__character_image[nameTemp]["normal"]
+            img: StaticImage = (
+                self.__character_image[nameTemp]["dark"] if "<d>" in name else self.__character_image[nameTemp]["normal"]
+            )
             img.set_size(self.__img_width, self.__img_width)
             img.set_alpha(alpha)
             img.set_pos(x, y)
@@ -81,7 +83,7 @@ class CharacterImageManager:
                 img.set_crop_rect(None)
                 img.draw(surface)
             # 如果是开发模式
-            if self.dev_mode is True and is_hovering(img, (x, y)):
+            if self.dev_mode is True and img.is_hovered():
                 img.draw_outline(surface)
                 self.character_get_click = name
 

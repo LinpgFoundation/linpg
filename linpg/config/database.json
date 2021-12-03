@@ -762,5 +762,8 @@
         "waterplant5": "other",
         "waterplant6": "other"
     },
-    "Npc": {}
+    "Npc": {},
+    "Paths": {
+        "ThirdPartyLibraries": []
+    }
 }

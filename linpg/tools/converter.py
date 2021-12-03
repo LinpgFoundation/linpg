@@ -3,7 +3,7 @@ from .builder import *
 
 class VideoConverterSystem(AbstractToolSystem):
     def __init__(self) -> None:
-        super().__init__("4.4", os.path.join(os.path.dirname(__file__), "ffmpeg.exe"))
+        super().__init__("4.4", os.path.join("ThirdPartyLibraries", "ffmpeg.exe"))
 
     # 使用ffmpeg直接转换文件
     def convert(self, input_path: str, output_path: str) -> None:

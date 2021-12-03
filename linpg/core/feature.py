@@ -69,23 +69,15 @@ def is_same_rect(rect1: RectLiked, rect2: RectLiked) -> bool:
     return rect1.x == rect2.x and rect1.y == rect2.y and rect1.width == rect2.width and rect1.height == rect2.height
 
 
-# 检测图片是否被点击
-def is_hovering(imgObject: object, objectPos: Iterable = ORIGIN, off_set: Iterable = ORIGIN) -> bool:
-    # 如果是Linpg引擎的GameObject2d类(所有2d物品的父类)
-    if isinstance(imgObject, GameObject2d):
-        return imgObject.is_hovered(off_set)
-    # 如果是pygame类
+# 检测pygame类2d模型是否被点击
+def is_hovering(imgObject: object, objectPos: Iterable = ORIGIN) -> bool:
+    # 如果是Surface类
+    if isinstance(imgObject, ImageSurface):
+        mouse_pos = Positions.subtract(Controller.mouse.pos, objectPos)
     else:
-        # 如果是Surface类
-        if isinstance(imgObject, ImageSurface):
-            mouse_pos = Positions.subtract(Controller.mouse.pos, off_set, objectPos)
-        # 如果是Rect类
-        elif isinstance(imgObject, pygame.Rect):
-            mouse_pos = Positions.subtract(Controller.mouse.pos, off_set, (imgObject.x, imgObject.y))
-        else:
-            EXCEPTION.fatal("Unable to check current object: {0} (type:{1})".format(imgObject, type(imgObject)))
-        # 返回结果
-        return 0 < mouse_pos[0] < imgObject.get_width() and 0 < mouse_pos[1] < imgObject.get_height()
+        EXCEPTION.fatal("Unable to check current object: {0} (type:{1})".format(imgObject, type(imgObject)))
+    # 返回结果
+    return 0 < mouse_pos[0] < imgObject.get_width() and 0 < mouse_pos[1] < imgObject.get_height()
 
 
 # 获取图片的subsurface

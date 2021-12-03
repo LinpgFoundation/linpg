@@ -14,7 +14,7 @@ class BuilderManager(AbstractToolSystem):
     # 移除指定文件夹中的pycache文件夹
     def __remove_pycache(self, path: str) -> None:
         for file_path in glob(os.path.join(path, "*")):
-            if os.pathisdir(file_path):
+            if os.path.isdir(file_path):
                 if "pycache" in file_path:
                     shutil.rmtree(file_path)
                 else:
@@ -23,19 +23,19 @@ class BuilderManager(AbstractToolSystem):
     # 删除特定文件夹
     def search_and_remove_folder(self, folder_to_search: str, stuff_to_remove: str) -> None:
         # 确保folder_to_search是一个目录
-        if not os.pathisdir(folder_to_search):
+        if not os.path.isdir(folder_to_search):
             EXCEPTION.fatal("You can only search a folder!", 2)
         # 移除当前文件夹符合条件的目录/文件
         for path in glob(os.path.join(folder_to_search, "*")):
             if path.endswith(stuff_to_remove):
                 shutil.rmtree(path)
-            elif os.pathisdir(path):
+            elif os.path.isdir(path):
                 self.search_and_remove_folder(path, stuff_to_remove)
 
     # 如果指定文件夹存在，则移除
     def delete_file_if_exist(self, path: str):
         if os.pathexists(path):
-            if os.pathisdir(path):
+            if os.path.isdir(path):
                 shutil.rmtree(path)
             else:
                 os.remove(path)
@@ -45,7 +45,7 @@ class BuilderManager(AbstractToolSystem):
     def copy(files: tuple[str], target_folder: str):
         for the_file in files:
             # 如果是文件夹
-            if os.pathisdir(the_file):
+            if os.path.isdir(the_file):
                 shutil.copytree(the_file, os.path.join(target_folder, os.pathbasename(the_file)))
             else:
                 shutil.copy(the_file, os.path.join(target_folder, os.pathbasename(the_file)))

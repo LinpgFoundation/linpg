@@ -1,114 +1,105 @@
 from .setting import *
 
-# 全局数据
-class GlobalValueManager:
+# 用于存放全局数据的字典
+_GLOBAL_VALUES_DICT: dict = {}
 
-    __DATA: dict = {}
+# 全局数据
+class GlobalValue:
 
     # 获取特定的全局数据
-    def get(self, key: str) -> any:
-        return self.__DATA[key]
+    @staticmethod
+    def get(key: str) -> any:
+        return _GLOBAL_VALUES_DICT[key]
 
     # 设置特定的全局数据
-    def set(self, key: str, value: any) -> None:
-        self.__DATA[key] = value
+    @staticmethod
+    def set(key: str, value: any) -> None:
+        _GLOBAL_VALUES_DICT[key] = value
 
     # 删除特定的全局数据
-    def remove(self, key: str) -> None:
-        del self.__DATA[key]
+    @staticmethod
+    def remove(key: str) -> None:
+        del _GLOBAL_VALUES_DICT[key]
 
     # 清空所有全局数据
-    def clear(self) -> None:
-        self.__DATA.clear()
+    @staticmethod
+    def clear() -> None:
+        _GLOBAL_VALUES_DICT.clear()
 
     # 如果不是对应的值，则设置为对应的值，返回是否对应
-    def if_get_set(self, key: str, valueToGet: any, valueToSet: any) -> bool:
-        if self.__DATA[key] == valueToGet:
-            self.__DATA[key] = valueToSet
+    @staticmethod
+    def if_get_set(key: str, valueToGet: any, valueToSet: any) -> bool:
+        if _GLOBAL_VALUES_DICT[key] == valueToGet:
+            _GLOBAL_VALUES_DICT[key] = valueToSet
             return True
         else:
             return False
 
 
-GlobalValue: GlobalValueManager = GlobalValueManager()
+# 用于存放数据库数据的字典
+_DATA_BASE_DICT: dict = dict(Config.load_internal("database.json"))
 
-# 全局数据库
-class DataBaseManager:
+# 初始化数据库
+if len(path := Config.resolve_path(os.path.join("Data", "database"))) > 0:
+    for key, value in dict(Config.load(path)).items():
+        if key not in _DATA_BASE_DICT:
+            _DATA_BASE_DICT[key] = value
+        else:
+            _DATA_BASE_DICT[key].update(value)
 
-    # 初始化数据库
-    __DATA: dict[str, dict] = dict(Config.load_internal("database.json"))
-    if len(path := Config.resolve_path(os.path.join("Data", "database"))) > 0:
-        for key, value in dict(Config.load(path)).items():
-            if key not in __DATA:
-                __DATA[key] = value
-            else:
-                __DATA[key].update(value)
-
-    def get(self, key: str) -> dict:
+# 数据库
+class DataBase:
+    @staticmethod
+    def get(*key: str) -> any:
         try:
-            return self.__DATA[key]
+            return get_value_by_keys(_DATA_BASE_DICT, key)
         except KeyError:
             EXCEPTION.fatal('Cannot find key "{}" in the database'.format(key))
 
 
-DataBase: DataBaseManager = DataBaseManager()
-
+_INFO_DATA_DICT: dict = dict(Config.load_internal("info.json"))
 
 # 版本信息管理模块
-class InfoManager:
-
-    __INFO: dict = dict(Config.load_internal("info.json"))
+class Info:
 
     # 确保linpg版本
-    def ensure_linpg_version(self, action: str, revision: int, patch: int, version: int = 3) -> bool:
+    @staticmethod
+    def ensure_linpg_version(action: str, revision: int, patch: int, version: int = 3) -> bool:
         if action == "==":
             return (
-                version == int(self.__INFO["version"])
-                and revision == int(self.__INFO["revision"])
-                and patch == int(self.__INFO["patch"])
+                version == int(_INFO_DATA_DICT["version"])
+                and revision == int(_INFO_DATA_DICT["revision"])
+                and patch == int(_INFO_DATA_DICT["patch"])
             )
         elif action == ">=":
             return (
-                version >= int(self.__INFO["version"])
-                and revision >= int(self.__INFO["revision"])
-                and patch >= int(self.__INFO["patch"])
+                version >= int(_INFO_DATA_DICT["version"])
+                and revision >= int(_INFO_DATA_DICT["revision"])
+                and patch >= int(_INFO_DATA_DICT["patch"])
             )
         elif action == "<=":
             return (
-                version <= int(self.__INFO["version"])
-                and revision <= int(self.__INFO["revision"])
-                and patch <= int(self.__INFO["patch"])
+                version <= int(_INFO_DATA_DICT["version"])
+                and revision <= int(_INFO_DATA_DICT["revision"])
+                and patch <= int(_INFO_DATA_DICT["patch"])
             )
 
     # 获取当前版本号
-    @property
-    def current_version(self) -> str:
-        return "{0}.{1}.{2}".format(self.__INFO["version"], self.__INFO["revision"], self.__INFO["patch"])
+    @staticmethod
+    def get_current_version() -> str:
+        return "{0}.{1}.{2}".format(_INFO_DATA_DICT["version"], _INFO_DATA_DICT["revision"], _INFO_DATA_DICT["patch"])
 
     # 获取作者邮箱
-    @property
-    def author_email(self) -> str:
-        return self.__INFO["author_email"]
+    @staticmethod
+    def get_author_email() -> str:
+        return _INFO_DATA_DICT["author_email"]
 
     # 获取github项目地址
-    @property
-    def repository_url(self) -> str:
-        return self.__INFO["repository_url"]
+    @staticmethod
+    def get_repository_url() -> str:
+        return _INFO_DATA_DICT["repository_url"]
 
     # 获取项目简介
-    @property
-    def short_description(self) -> str:
-        return self.__INFO["short_description"]
-
-    # 获取详细信息
-    @property
-    def details(self) -> dict:
-        return {
-            "version": self.current_version,
-            "author_email": self.author_email,
-            "description": self.short_description,
-            "url": self.repository_url,
-        }
-
-
-Info: InfoManager = InfoManager()
+    @staticmethod
+    def get_short_description() -> str:
+        return _INFO_DATA_DICT["short_description"]

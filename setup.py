@@ -42,7 +42,6 @@ setup(
     python_requires=">=3.9",
     install_requires=[
         "pygame",
-        "pyyaml",
         "opencv-python",
         "numpy",
     ],

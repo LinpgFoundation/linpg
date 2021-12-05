@@ -1,13 +1,16 @@
-import pkg_resources
 import shutil
 from .abstract import *
 
 
 class BuilderManager(AbstractToolSystem):
     def __init__(self) -> None:
-        super().__init__("3.0", os.path.join(os.path.dirname(__file__), "compiler.py"))
+        super().__init__("*", os.path.join(os.path.dirname(__file__), "compiler.py"))
 
+    # 更新所有包
     def update_all_site_packages(self):
+
+        import pkg_resources
+
         for pkg in pkg_resources.working_set:
             self._run_raw_cmd(["pip", "install", "--upgrade", pkg.project_name], True)
 

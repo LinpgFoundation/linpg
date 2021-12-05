@@ -764,6 +764,9 @@
     },
     "Npc": {},
     "Paths": {
-        "ThirdPartyLibraries": []
+        "ThirdPartyLibraries": {
+            "ffmpeg": "ffmpeg.exe"
+        },
+        "ThirdPartyLibrariesFolder": "ThirdPartyLibraries"
     }
 }

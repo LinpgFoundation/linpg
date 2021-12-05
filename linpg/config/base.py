@@ -57,7 +57,7 @@ class Config:
 
     # 加载配置文件的程序
     @staticmethod
-    def __load(path: str, keys: tuple[str], warning: bool = True) -> any:
+    def __load(path: str, keys: tuple, warning: bool = True) -> any:
         # 如果路径不存在
         if not os.path.exists(path):
             if warning is True:

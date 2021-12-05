@@ -86,7 +86,7 @@ class Console(SingleLineInputBox, HiddenableSurface):
             else:
                 self._txt_output.append("Unknown status for dev command.")
         elif conditions[0] == "linpg" and len(conditions) > 1 and conditions[1] == "info":
-            self._txt_output.append("Linpg Version: {}".format(Info.current_version))
+            self._txt_output.append("Linpg Version: {}".format(Info.get_current_version()))
         elif conditions[0] == "quit":
             Display.quit()
         else:

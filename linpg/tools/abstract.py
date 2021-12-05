@@ -3,6 +3,10 @@ from ..lang import *
 
 
 class AbstractToolSystem:
+
+    _TOOL_FOLDER: str = str(DataBase.get("Paths", "ThirdPartyLibrariesFolder"))
+    _TOOL_LIBRARIES: dict = dict(DataBase.get("Paths", "ThirdPartyLibraries"))
+
     def __init__(self, recommend_version: str, tool_path: str) -> None:
         self.__RECOMMENDED_VERSION: str = recommend_version
         self.__TOOL_PATH: str = tool_path

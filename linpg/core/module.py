@@ -6,15 +6,15 @@ class Coordinate:
         self.x: int = int(x)
         self.y: int = int(y)
 
-    def __lt__(self, other: object) -> bool:
+    def __lt__(self, other: "Coordinate") -> bool:
         return self.y + self.x < other.y + other.x
 
     # 坐标信息
     @property
-    def pos(self) -> tuple[int]:
+    def pos(self) -> tuple[int, int]:
         return int(self.x), int(self.y)
 
-    def get_pos(self) -> tuple[int]:
+    def get_pos(self) -> tuple[int, int]:
         return int(self.x), int(self.y)
 
     # 设置坐标
@@ -37,7 +37,7 @@ class Position:
         self.x: number = x
         self.y: number = y
 
-    def __lt__(self, other: object) -> bool:
+    def __lt__(self, other: "Position") -> bool:
         return self.y + self.x < other.y + other.x
 
     # 坐标信息
@@ -102,10 +102,10 @@ class GameObject2d(GameObject):
 
     # 尺寸
     @property
-    def size(self) -> tuple[int]:
+    def size(self) -> tuple[int, int]:
         return self.get_width(), self.get_height()
 
-    def get_size(self) -> tuple[int]:
+    def get_size(self) -> tuple[int, int]:
         return self.get_width(), self.get_height()
 
     # 右侧位置
@@ -152,10 +152,10 @@ class GameObject2d(GameObject):
         self.y = int(centery - self.get_height() / 2)
 
     @property
-    def center(self) -> tuple[int]:
+    def center(self) -> tuple[int, int]:
         return self.centerx, self.centery
 
-    def get_center(self) -> tuple[int]:
+    def get_center(self) -> tuple[int, int]:
         return self.centerx, self.centery
 
     def set_center(self, centerx: number, centery: number) -> None:
@@ -163,24 +163,24 @@ class GameObject2d(GameObject):
         self.set_centery(centery)
 
     @property
-    def left_center(self) -> tuple[int]:
+    def left_center(self) -> tuple[int, int]:
         return self.x, self.centery
 
     @property
-    def right_center(self) -> tuple[int]:
+    def right_center(self) -> tuple[int, int]:
         return self.right, self.centery
 
     @property
-    def top_center(self) -> tuple[int]:
+    def top_center(self) -> tuple[int, int]:
         return self.centerx, self.y
 
     @property
-    def bottom_center(self) -> tuple[int]:
+    def bottom_center(self) -> tuple[int, int]:
         return self.centerx, self.bottom
 
     # 是否被鼠标触碰
     def is_hovered(self, off_set: Iterable = NoPos) -> bool:
-        mouse_pos: tuple[int] = (
+        mouse_pos: tuple[int, int] = (
             Controller.mouse.pos if off_set is NoPos else Coordinates.subtract(Controller.mouse.pos, off_set)
         )
         return 0 < mouse_pos[0] - self.x < self.get_width() and 0 < mouse_pos[1] - self.y < self.get_height()
@@ -222,7 +222,7 @@ class GameObject2point5d(GameObject):
         super().__init__(x, y)
         self.z = int(z)
 
-    def __lt__(self, other: object) -> bool:
+    def __lt__(self, other: "GameObject2point5d") -> bool:
         if self.z != other.z:
             return self.z < other.z
         else:

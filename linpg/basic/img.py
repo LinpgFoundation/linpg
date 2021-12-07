@@ -31,7 +31,7 @@ class RawImageManafer:
             path_t: str = ASSET.resolve_path(path)
             if convert_alpha is True:
                 try:
-                    return pygame.image.load(path_t).convert_alpha() if is_using_pygame() else pyglet.image.load(path_t)
+                    return pygame.image.load(path_t).convert_alpha()
                 except Exception:
                     if Setting.developer_mode is True:
                         EXCEPTION.fatal("Cannot load image from path: {}".format(path_t))
@@ -39,7 +39,7 @@ class RawImageManafer:
                         return get_texture_missing_surface((192, 108))
             else:
                 try:
-                    return pygame.image.load(path_t) if is_using_pygame() else pyglet.image.load(path_t)
+                    return pygame.image.load(path_t)
                 except Exception:
                     if Setting.developer_mode is True:
                         EXCEPTION.fatal("Cannot load image from path: {}".format(path_t))

@@ -35,8 +35,8 @@ class AbstractSoundManager:
 class SoundManagement(AbstractSoundManager):
     def __init__(self, channel_id: int):
         super().__init__(channel_id)
-        self.sound_id = 0
-        self.__sounds_list = []
+        self.sound_id: int = 0
+        self.__sounds_list: list = []
 
     # 添加音乐
     def add(self, path: str) -> None:

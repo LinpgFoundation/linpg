@@ -74,12 +74,12 @@ class Square(GameObject2d):
         self.set_width(self.get_width())
 
     # 获取rect
-    def get_rect(self) -> tuple[int]:
+    def get_rect(self) -> tuple[int, int, int, int]:
         return self.left, self.top, self.__width, self.__width
 
     # 根据给与的rect画出轮廓（static method）
     @staticmethod
-    def draw_(surface: ImageSurface, color: tuple[int], rect: tuple[int], thickness: int) -> None:
+    def draw_(surface: ImageSurface, color: tuple, rect: tuple, thickness: int) -> None:
         pygame.draw.rect(surface, color, rect, thickness)
 
     # 画出轮廓
@@ -164,7 +164,7 @@ class Rect(Square):
         self.set_height(height)
 
     # 获取rect
-    def get_rect(self) -> tuple[int]:
+    def get_rect(self) -> tuple[int, int, int, int]:
         return self.x, self.y, self.get_width(), self.__height
 
 
@@ -179,7 +179,7 @@ class Circle(Square):
 
     # 根据给与的中心点画出一个圆（static method）
     @staticmethod
-    def draw_(surface: ImageSurface, color: tuple[int], center_pos: tuple[int], radius: int, thickness: int) -> None:
+    def draw_(surface: ImageSurface, color: tuple, center_pos: tuple, radius: int, thickness: int) -> None:
         pygame.draw.circle(surface, color, center_pos, radius, thickness)
 
     # 画出轮廓

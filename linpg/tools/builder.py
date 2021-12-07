@@ -37,7 +37,7 @@ class BuilderManager(AbstractToolSystem):
 
     # 如果指定文件夹存在，则移除
     def delete_file_if_exist(self, path: str):
-        if os.pathexists(path):
+        if os.path.exists(path):
             if os.path.isdir(path):
                 shutil.rmtree(path)
             else:
@@ -49,9 +49,9 @@ class BuilderManager(AbstractToolSystem):
         for the_file in files:
             # 如果是文件夹
             if os.path.isdir(the_file):
-                shutil.copytree(the_file, os.path.join(target_folder, os.pathbasename(the_file)))
+                shutil.copytree(the_file, os.path.join(target_folder, os.path.basename(the_file)))
             else:
-                shutil.copy(the_file, os.path.join(target_folder, os.pathbasename(the_file)))
+                shutil.copy(the_file, os.path.join(target_folder, os.path.basename(the_file)))
 
     # 编译
     def compile(
@@ -98,7 +98,7 @@ class BuilderManager(AbstractToolSystem):
 
     # 打包上传最新的文件
     def upload_package(self) -> None:
-        if os.pathexists("setup.py"):
+        if os.path.exists("setup.py"):
             # 升级build工具
             self._run_raw_cmd(["python", "-m", "pip", "install", "--upgrade", "build"])
             # 打包文件

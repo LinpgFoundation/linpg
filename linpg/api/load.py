@@ -50,7 +50,7 @@ class Loader:
         imgList: list = []
         # 如果是gif文件
         if isinstance(gif_path_or_img_list, str) and gif_path_or_img_list.endswith(".gif"):
-            gif_image: object = ImageLoader.open(gif_path_or_img_list)
+            gif_image: ImageLoader.Image = ImageLoader.open(gif_path_or_img_list)
             frame_index: int = 0
             for frame_index in range(gif_image.n_frames):
                 gif_image.seek(frame_index)

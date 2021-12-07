@@ -43,7 +43,6 @@
         "opencv",
         "OPENGL",
         "Pygame",
-        "pyglet",
         "pyinstaller",
         "pyproject",
         "pysimplegui",

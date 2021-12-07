@@ -5,7 +5,7 @@ class AbstractScrollbarsSurface:
     def __init__(self) -> None:
         self._button_tickness: int = 20
         self._move_speed: int = 20
-        self._bar_color: tuple[int] = Color.WHITE
+        self._bar_color: tuple[int, int, int, int] = Color.WHITE
 
     # 获取surface宽度（子类需要实现）
     def get_surface_width(self) -> int:
@@ -16,7 +16,7 @@ class AbstractScrollbarsSurface:
         EXCEPTION.fatal("get_surface_height()", 1)
 
     # 获取scrollbar的颜色
-    def get_bar_color(self) -> tuple[int]:
+    def get_bar_color(self) -> tuple[int, int, int, int]:
         return self._bar_color
 
     # 修改scrollbar的颜色

@@ -10,7 +10,7 @@ class DisplayController:
     # 窗口比例
     __screen_scale: int = int(keep_in_range(Setting.get("ScreenScale"), 0, 100))
     # 主要的窗口
-    __SCREEN_WINDOW: object = None
+    __SCREEN_WINDOW: ImageSurface = None
     # 窗口尺寸
     __standard_width: int = round(1920 * __screen_scale / 100)
     __standard_height: int = round(1080 * __screen_scale / 100)
@@ -55,18 +55,14 @@ class DisplayController:
         Controller.mouse.draw_custom_icon(self.__SCREEN_WINDOW)
 
     # 设置窗口标题
-    def set_caption(self, title: str) -> None:
-        if is_using_pygame():
-            pygame.display.set_caption(title)
-        else:
-            self.__SCREEN_WINDOW.set_caption(title)
+    @staticmethod
+    def set_caption(title: str) -> None:
+        pygame.display.set_caption(title)
 
     # 设置窗口图标
-    def set_icon(self, path: str) -> None:
-        if is_using_pygame():
-            pygame.display.set_icon(IMG.quickly_load(path, False))
-        else:
-            self.__SCREEN_WINDOW.set_icon(IMG.quickly_load(path, False))
+    @staticmethod
+    def set_icon(path: str) -> None:
+        pygame.display.set_icon(IMG.quickly_load(path, False))
 
     # 窗口尺寸
     @property
@@ -97,18 +93,15 @@ class DisplayController:
 
     # 初始化屏幕
     def init(self, flags=None) -> object:
-        if is_using_pygame() is True:
-            if flags is None:
-                if self.__screen_scale >= 100:
-                    flags = pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE | pygame.SCALED
-                else:
-                    flags = pygame.SCALED
-            self.__SCREEN_WINDOW = pygame.display.set_mode(
-                self.get_size(), flags, vsync=1 if Setting.get("VerticalSync") is True else 0
-            )
-            self.__SCREEN_WINDOW.set_alpha(None)
-        else:
-            self.__SCREEN_WINDOW = pyglet.window.Window(self.get_width(), self.get_height())
+        if flags is None:
+            if self.__screen_scale >= 100:
+                flags = pygame.FULLSCREEN | pygame.DOUBLEBUF | pygame.HWSURFACE | pygame.SCALED
+            else:
+                flags = pygame.SCALED
+        self.__SCREEN_WINDOW = pygame.display.set_mode(
+            self.get_size(), flags, vsync=1 if Setting.get("VerticalSync") is True else 0
+        )
+        self.__SCREEN_WINDOW.set_alpha(None)
         return self.__SCREEN_WINDOW
 
     # 获取屏幕

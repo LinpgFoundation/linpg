@@ -3,7 +3,7 @@ from .img import *
 # 手柄控制组件
 class JoystickController:
 
-    __input: object = None
+    __input: pygame.joystick.Joystick = None
 
     def __init__(self):
         # 如果pygame的手柄组件没有初始化，则初始化
@@ -60,7 +60,7 @@ class MouseController:
     __moving_speed: int = int(max(Setting.get("MouseMoveSpeed"), 1))
 
     # 鼠标上次更新时被按下的详情
-    __mouse_get_pressed_previously: tuple[bool] = (False, False, False, False, False)
+    __mouse_get_pressed_previously: tuple[bool, bool, bool, bool, bool] = (False, False, False, False, False)
 
     def __init__(self) -> None:
         custom: bool = False
@@ -104,17 +104,17 @@ class MouseController:
         return self.__last_y - self.__y
 
     @property
-    def pos(self) -> tuple[int]:
+    def pos(self) -> tuple[int, int]:
         return self.__x, self.__y
 
     @property
-    def last_pos(self) -> tuple[int]:
+    def last_pos(self) -> tuple[int, int]:
         return self.__last_x, self.__last_y
 
-    def get_pos(self) -> tuple[int]:
+    def get_pos(self) -> tuple[int, int]:
         return self.__x, self.__y
 
-    def get_last_pos(self) -> tuple[int]:
+    def get_last_pos(self) -> tuple[int, int]:
         return self.__last_x, self.__last_y
 
     # 设置坐标

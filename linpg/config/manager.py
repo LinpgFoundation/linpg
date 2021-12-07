@@ -83,6 +83,8 @@ class Info:
                 and revision <= int(_INFO_DATA_DICT["revision"])
                 and patch <= int(_INFO_DATA_DICT["patch"])
             )
+        else:
+            EXCEPTION.fatal('Action "{}" is not supported!'.format(action))
 
     # 获取当前版本号
     @staticmethod

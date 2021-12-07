@@ -37,10 +37,10 @@ class SurfaceWithLocalPos:
         return self.__local_y
 
     @property
-    def local_pos(self) -> tuple[int]:
+    def local_pos(self) -> tuple[int, int]:
         return self.__local_x, self.__local_y
 
-    def get_local_pos(self) -> tuple[int]:
+    def get_local_pos(self) -> tuple[int, int]:
         return self.__local_x, self.__local_y
 
     # 设置本地坐标
@@ -89,8 +89,8 @@ class SurfaceWithLocalPos:
         return int(self.get_top() + self.__local_y)
 
     @property
-    def abs_pos(self) -> tuple[int]:
+    def abs_pos(self) -> tuple[int, int]:
         return self.abs_x, self.abs_y
 
-    def get_abs_pos(self) -> tuple[int]:
+    def get_abs_pos(self) -> tuple[int, int]:
         return self.abs_x, self.abs_y

@@ -1,11 +1,11 @@
 from .entityModule import *
 
 # 储存角色图片的常量
-_CHARACTERS_IMAGE_SYS: object = EntityImageManager()
+_CHARACTERS_IMAGE_SYS: EntityImageManager = EntityImageManager()
 # 储存角色音效的常量
-_CHARACTERS_SOUND_SYSTEM: object = EntitySoundManager(5)
+_CHARACTERS_SOUND_SYSTEM: EntitySoundManager = EntitySoundManager(5)
 # 角色UI的文字数据
-_ENTITY_UI_FONT: object = Font.create(Display.get_width() / 192)
+_ENTITY_UI_FONT: FontGenerator = Font.create(Display.get_width() / 192)
 
 # 濒死回合限制
 DYING_ROUND_LIMIT: int = 3
@@ -231,7 +231,7 @@ class Entity(Position):
             EXCEPTION.fatal("You cannot do a negative damage")
 
     # 攻击另一个Entity
-    def attack(self, another_entity: object) -> int:
+    def attack(self, another_entity: "Entity") -> int:
         damage = get_random_int(self.min_damage, self.max_damage)
         another_entity.decreaseHp(damage)
         return damage
@@ -316,7 +316,7 @@ class Entity(Position):
         self.__hp_bar.load_image()
 
     # 查看是否一个Entity在该角色的附近
-    def near(self, otherEntity: object) -> bool:
+    def near(self, otherEntity: "Entity") -> bool:
         if self.x == otherEntity.x:
             return abs(self.y - otherEntity.y) <= 1
         elif self.y == otherEntity.y:
@@ -404,7 +404,7 @@ class Entity(Position):
         return self.__attack_range
 
     # 目标角色所在的攻击范围内
-    def range_target_in(self, otherEntity: object, custom_pos: any = None) -> str:
+    def range_target_in(self, otherEntity: "Entity", custom_pos: any = None) -> str:
         distanceBetween: int = (
             abs(int(otherEntity.x - self.x)) + abs(int(otherEntity.y - self.y))
             if custom_pos is None
@@ -432,7 +432,7 @@ class Entity(Position):
             return None
 
     # 判断是否在攻击范围内
-    def can_attack(self, otherEntity: object) -> bool:
+    def can_attack(self, otherEntity: "Entity") -> bool:
         return self.range_target_in(otherEntity) is not None
 
     # 返回该角色的理想攻击范围

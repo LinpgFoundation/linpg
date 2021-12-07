@@ -86,5 +86,7 @@ def get_img_subsurface(img: ImageSurface, rect: RectLiked) -> ImageSurface:
 
 
 # 画圆形
-def draw_circle(surface: ImageSurface, color: color_liked, center_pos: tuple[int], radius: int, thickness: int = 0) -> None:
+def draw_circle(
+    surface: ImageSurface, color: color_liked, center_pos: tuple[int, int], radius: int, thickness: int = 0
+) -> None:
     Circle.draw_(surface, Color.get(color), center_pos, radius, thickness)

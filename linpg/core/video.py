@@ -20,7 +20,7 @@ def _video_validator(path: str) -> None:
 
 
 # 获取视频封面
-def get_preview_of_video(path: str, size: tuple[int] = NoSize) -> ImageSurface:
+def get_preview_of_video(path: str, size: tuple[int, int] = NoSize) -> ImageSurface:
     _video_validator(path)
     video_stream = cv2.VideoCapture(path)
     video_stream.set(cv2.CAP_PROP_POS_FRAMES, int(video_stream.get(cv2.CAP_PROP_FRAME_COUNT) * 0.1))
@@ -34,7 +34,7 @@ def get_preview_of_video(path: str, size: tuple[int] = NoSize) -> ImageSurface:
 
 # 视频抽象类
 class AbstractVideo:
-    def __init__(self, path: str, buffer_num: int, play_range: tuple[int] = (0, -1)):
+    def __init__(self, path: str, buffer_num: int, play_range: tuple[int, int] = (0, -1)):
         _video_validator(path)
         self._path: str = path
         # 确保路径存在
@@ -129,8 +129,8 @@ class AbstractVideo:
 
     # 播放范围
     @property
-    def play_range(self) -> tuple[int]:
-        return (self._starting_point, self._ending_point)
+    def play_range(self) -> tuple[int, int]:
+        return self._starting_point, self._ending_point
 
     # 是否还在播放
     def is_playing(self) -> bool:
@@ -155,7 +155,12 @@ class AbstractVideo:
 # 类似Wallpaper Engine的视频背景，但音乐不与画面同步
 class VideoSurface(AbstractVideo):
     def __init__(
-        self, path: str, loop: bool = True, with_audio: bool = True, play_range: tuple[int] = (0, -1), buffer_num: int = 10
+        self,
+        path: str,
+        loop: bool = True,
+        with_audio: bool = True,
+        play_range: tuple[int, int] = (0, -1),
+        buffer_num: int = 10,
     ) -> None:
         super().__init__(path, buffer_num, play_range)
         self.__loop: bool = loop

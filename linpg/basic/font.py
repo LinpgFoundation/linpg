@@ -147,7 +147,7 @@ class FontManager:
         ifItalic: bool = False,
         background_color: color_liked = None,
     ) -> ImageSurface:
-        self.__LINPG_LAST_FONT.check_for_update(size, ifBold, ifItalic)
+        self.__LINPG_LAST_FONT.check_for_update(int(size), ifBold, ifItalic)
         return self.__LINPG_LAST_FONT.render(txt, color, background_color)
 
     def render_description_box(

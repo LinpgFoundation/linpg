@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from typing import NoReturn
 from .error import *
 
 
@@ -41,7 +42,7 @@ class LinpgExceptionHandler:
         # 打印出错误，并停止进程
         if error_type_id == 1:
             raise FunctionNotImplement(
-                'A parent class requires you to implement "{}" function before you can use it'.formate(info)
+                'A parent class requires you to implement "{}" function before you can use it'.format(info)
             )
         elif error_type_id == 2:
             raise FileNotExists(info)

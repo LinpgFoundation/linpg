@@ -1,6 +1,6 @@
 from .header import *
 
-ORIGIN: tuple[int] = (0, 0)
+ORIGIN: tuple[int, int] = (0, 0)
 
 # 浮点坐标
 class Positions:
@@ -51,7 +51,7 @@ class Coordinates:
 
     # 转换坐标
     @staticmethod
-    def convert(pos: any) -> tuple[int]:
+    def convert(pos: any) -> tuple[int, int]:
         # 检测坐标
         if isinstance(pos, Iterable):
             if isinstance(pos, dict):
@@ -71,7 +71,7 @@ class Coordinates:
 
     # 相加2个坐标
     @staticmethod
-    def add(*positions: tuple) -> tuple[int]:
+    def add(*positions: tuple) -> tuple[int, int]:
         x = 0
         y = 0
         for pos in positions:
@@ -81,7 +81,7 @@ class Coordinates:
 
     # 相减2个坐标
     @staticmethod
-    def subtract(position: tuple, *positions: tuple) -> tuple[int]:
+    def subtract(position: tuple, *positions: tuple) -> tuple[int, int]:
         x = position[0]
         y = position[1]
         for pos in positions:

@@ -5,38 +5,16 @@ import numpy
 
 from ..tools import *
 
-# 用于辨识基础游戏库的参数，True为默认的pyglet，False则为Pygame
-_LIBRARY_INDICATOR: int = 0
+# 导入pygame组件
+import pygame
+from pygame.locals import *
 
-# 默认使用pygame库（直到引擎完全支持pyglet）
-try:
-    # 导入pygame组件
-    import pygame
-    from pygame.locals import *
-
-    # 初始化pygame
-    pygame.init()
-except ModuleNotFoundError:
-
-    EXCEPTION.inform("Cannot import Linpg, try to use pyglet instead.")
-
-    import pyglet
-
-    _LIBRARY_INDICATOR = 1
-
-# 是否正在使用pygame库
-def is_using_pygame() -> bool:
-    return _LIBRARY_INDICATOR == 0
-
-
-# 是否正在使用pyglet库
-def is_using_pyglet() -> bool:
-    return _LIBRARY_INDICATOR == 1
-
+# 初始化pygame
+pygame.init()
 
 # 获取正在使用的库的信息
 def get_library_info() -> str:
-    return "Pygame {}".format(pygame.version.ver) if _LIBRARY_INDICATOR == 0 else "Pyglet {}".format(pyglet.version)
+    return "Pygame {}".format(pygame.version.ver)
 
 
 """linpg自带属性"""
@@ -48,12 +26,12 @@ number = Union[int, float]
 color_liked = Union[Iterable[int], str]
 
 # 图形类
-ImageSurface = pygame.Surface if _LIBRARY_INDICATOR == 0 else pyglet.image
-PoI = Union[str, ImageSurface]
+ImageSurface = pygame.surface.Surface
+PoI = Union[str, pygame.surface.Surface]
 
 """linpg自带常量"""
-NoSize: tuple[int] = (-1, -1)
-NoPos: tuple[int] = (-1, -1)
+NoSize: tuple[int, int] = (-1, -1)
+NoPos: tuple[int, int] = (-1, -1)
 
 """指向pygame事件的指针"""
 # 鼠标
@@ -90,7 +68,7 @@ def make_surface_from_array(surface_array: numpy.ndarray, swap_axes: bool = True
         return pygame.surfarray.make_surface(surface_array).convert()
     else:
         # by llindstrom
-        surface = new_transparent_surface(surface_array.shape[0:2])
+        surface: ImageSurface = new_transparent_surface(surface_array.shape[0:2])
         # Copy the rgb part of array to the new surface.
         pygame.pixelcopy.array_to_surface(surface, surface_array[:, :, 0:3])
         # Copy the alpha part of array to the surface using a pixels-alpha

@@ -118,7 +118,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
     def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
         if self.is_visible():
             super().display(surface, offSet)
-            abs_pos: tuple[int] = Coordinates.add(self.pos, offSet)
+            abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             x: int
             y: int
             if self._mode is True:

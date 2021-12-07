@@ -252,15 +252,15 @@ class MapObject(AdvancedAbstractImageSurface):
             charactersPos.append((int(dataDic.x), int(dataDic.y)))
             charactersPos.append((int(dataDic.x) + 1, int(dataDic.y) + 1))
         # 计算offSet
-        offSet: tuple[int]
-        offSet_normal: tuple[int] = (round(self.block_width / 4), -round(self.block_width / 8))
-        offSet_tree: tuple[int] = (round(self.block_width * 0.125), -round(self.block_width * 0.375))
+        offSet: tuple[int, int]
+        offSet_normal: tuple[int, int] = (round(self.block_width / 4), -round(self.block_width / 8))
+        offSet_tree: tuple[int, int] = (round(self.block_width * 0.125), -round(self.block_width * 0.375))
         # 计算需要画出的范围
         screen_min: int = -self.block_width
         # 透明度
         decoration_alpha: int
         # 在地图的坐标
-        thePosInMap: tuple[int]
+        thePosInMap: tuple[int, int]
         # 历遍装饰物列表里的物品
         for item in self.__decorations:
             thePosInMap = self.calPosInMap(item.x, item.y)
@@ -287,7 +287,7 @@ class MapObject(AdvancedAbstractImageSurface):
         return self.__Map_Data[pos["y"]][pos["x"]].canPassThrough
 
     # 计算在地图中的方块
-    def calBlockInMap(self, pos: tuple[int] = None):
+    def calBlockInMap(self, pos: tuple[int, int] = None):
         if pos is None:
             pos = Controller.mouse.pos
         guess_x: int = int(
@@ -389,13 +389,13 @@ class MapObject(AdvancedAbstractImageSurface):
         self.__block_on_surface = None
 
     # 计算在地图中的位置
-    def calPosInMap(self, x: int_f, y: int_f) -> tuple[int]:
+    def calPosInMap(self, x: int_f, y: int_f) -> tuple[int, int]:
         widthTmp: float = self.block_width * 0.43
         return round((x - y) * widthTmp + self.local_x + self.row * widthTmp), round(
             (y + x) * self.block_width * 0.22 + self.local_y + self.block_width * 0.4
         )
 
-    def calAbsPosInMap(self, x: int_f, y: int_f) -> tuple[int]:
+    def calAbsPosInMap(self, x: int_f, y: int_f) -> tuple[int, int]:
         widthTmp: float = self.block_width * 0.43
         return round((x - y) * widthTmp + self.row * widthTmp), round(
             (y + x) * self.block_width * 0.22 + self.block_width * 0.4

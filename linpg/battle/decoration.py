@@ -24,7 +24,7 @@ class DecorationObject(GameObject):
         except KeyError:
             EXCEPTION.warn('Cannot remove status "{}" because it does not exist'.format(key))
 
-    def blit(self, surface: ImageSurface, pos: tuple[int], is_dark: bool, alpha: int) -> None:
+    def blit(self, surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:
         imgToBlit = MAP_ENV_IMAGE.get_decoration_image(self.type, self.image, is_dark)
         imgToBlit.set_size(MAP_ENV_IMAGE.get_block_width() * self.scale, MAP_ENV_IMAGE.get_block_width() * self.scale)
         imgToBlit.set_alpha(alpha)
@@ -46,7 +46,7 @@ class CampfireObject(DecorationObject):
         return self.__img_id / 10.0
 
     # 画出篝火（注意，alpha不会被使用，它只因为兼容性和一致性而存在）
-    def blit(self, surface: ImageSurface, pos: tuple[int], is_dark: bool, alpha: int) -> None:
+    def blit(self, surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:
         # 查看篝火的状态是否正在变化，并调整对应的alpha值
         if self.get_status("lit") is True:
             if self.__alpha < 255:

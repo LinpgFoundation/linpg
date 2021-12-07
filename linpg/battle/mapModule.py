@@ -13,7 +13,7 @@ class BlockObject:
 
 # 点
 class Point(GameObject):
-    def __eq__(self, other: object) -> bool:
+    def __eq__(self, other: "Point") -> bool:
         return self.x == other.x and self.y == other.y
 
 

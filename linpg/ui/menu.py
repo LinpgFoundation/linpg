@@ -199,7 +199,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
     def _show_pause_menu(self, surface: ImageSurface) -> None:
         Media.pause()
         progress_saved_text = StaticImage(
-            Font.render(Lang.get_text("Global", "progress_has_been_saved"), Color.WHITE, int(Display.get_width() * 0.015)),
+            Font.render(Lang.get_text("Global", "progress_has_been_saved"), Colors.WHITE, int(Display.get_width() * 0.015)),
             0,
             0,
         )

@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+from typing import Any
 from copy import deepcopy
 from glob import glob
 from ..exception import *
@@ -14,7 +15,7 @@ except Exception:
     pass
 
 # 根据keys查找值，最后返回一个复制的对象
-def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) -> any:
+def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) -> Any:
     pointer = dict_to_check
     for key in keys:
         try:
@@ -31,7 +32,7 @@ def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) ->
 
 
 # 根据keys查找被设置对应对应对象为指定值
-def set_value_by_keys(dict_to_check: dict, keys: tuple, value: any, warning: bool = True) -> None:
+def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Any, warning: bool = True) -> None:
     pointer = dict_to_check
     key_range: int = len(keys)
     last_key_index: int = key_range - 1
@@ -57,7 +58,7 @@ class Config:
 
     # 加载配置文件的程序
     @staticmethod
-    def __load(path: str, keys: tuple, warning: bool = True) -> any:
+    def __load(path: str, keys: tuple, warning: bool = True) -> Any:
         # 如果路径不存在
         if not os.path.exists(path):
             if warning is True:
@@ -86,22 +87,22 @@ class Config:
 
     # 加载配置文件
     @staticmethod
-    def load(path: str, *key: str) -> any:
+    def load(path: str, *key: str) -> Any:
         return Config.__load(path, key)
 
     # 加载配置文件
     @staticmethod
-    def try_load(path: str, *key: str) -> any:
+    def try_load(path: str, *key: str) -> Any:
         return Config.__load(path, key, False)
 
     # 加载内部配置文件保存
     @staticmethod
-    def load_internal(path: str, *key: str) -> any:
+    def load_internal(path: str, *key: str) -> Any:
         return Config.__load(os.path.join(os.path.dirname(__file__), path), key)
 
     # 配置文件保存
     @staticmethod
-    def save(path: str, data: any) -> None:
+    def save(path: str, data: dict) -> None:
         # 确保用于储存的文件夹存在
         dir_path: str = os.path.dirname(path)
         if len(dir_path) > 0 and not os.path.exists(dir_path):

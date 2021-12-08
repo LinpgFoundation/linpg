@@ -1,11 +1,11 @@
 from .feature import *
 
 # 图形接口
-class AbstractImageSurface(Rect, HiddenableSurface):
-    def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str):
-        Rect.__init__(self, x, y, width, height)
+class AbstractImageSurface(Rectangle, HiddenableSurface):
+    def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str):
+        Rectangle.__init__(self, x, y, width, height)
         HiddenableSurface.__init__(self)
-        self.img: any = img
+        self.img: Any = img
         self.tag: str = str(tag)
         # 确保长宽均已输入且为正整数
         if self.get_width() < 0 and self.get_height() < 0:
@@ -34,7 +34,7 @@ class AbstractImageSurface(Rect, HiddenableSurface):
         self.set_alpha(self.get_alpha() - value)
 
     # 获取图片复制品
-    def get_image_copy(self) -> any:
+    def get_image_copy(self) -> Any:
         return self.img.copy()
 
     # 更新图片
@@ -60,7 +60,7 @@ class AbstractImageSurface(Rect, HiddenableSurface):
 
 # 有本地坐标的图形接口
 class AdvancedAbstractImageSurface(AbstractImageSurface, SurfaceWithLocalPos):
-    def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
+    def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         AbstractImageSurface.__init__(self, img, x, y, width, height, tag)
         SurfaceWithLocalPos.__init__(self)
         self._alpha: int = 255
@@ -77,7 +77,7 @@ class AdvancedAbstractImageSurface(AbstractImageSurface, SurfaceWithLocalPos):
 
 # 带缓存的高级图片拟态类
 class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
-    def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
+    def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         super().__init__(img, x, y, width, height, tag=tag)
         self._processed_img: ImageSurface = None
         self._need_update: bool = True if self.get_width() >= 0 and self.get_height() >= 0 else False

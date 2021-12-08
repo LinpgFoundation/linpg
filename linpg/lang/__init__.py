@@ -73,7 +73,7 @@ class LanguageManager:
         return str(get_value_by_keys(self.__LANG_DATA, keys if isinstance(keys, tuple) else tuple(keys)))
 
     # 根据key(s)获取对应的语言 - 与get_text不同，这里返回的是any，通常是列表或者字典
-    def get_texts(self, *key: str) -> any:
+    def get_texts(self, *key: str) -> Any:
         return get_value_by_keys(self.__LANG_DATA, key)
 
     # 获取本地化的数字

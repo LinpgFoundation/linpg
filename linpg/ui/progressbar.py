@@ -2,7 +2,7 @@ from .console import *
 
 # 进度条抽象，请勿直接初始化
 class AbstractProgressBar(AbstractImageSurface):
-    def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str):
+    def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str):
         super().__init__(img, x, y, width, height, tag)
         self.__current_percentage: float = 0.0
 
@@ -22,7 +22,7 @@ class AbstractProgressBar(AbstractImageSurface):
 class ProgressBar(AbstractProgressBar):
     def __init__(self, x: int_f, y: int_f, max_width: int, height: int, color: color_liked, tag: str = ""):
         super().__init__(None, x, y, max_width, height, tag)
-        self.color: tuple = Color.get(color)
+        self.color: tuple = Colors.get(color)
 
     def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
         if self.is_visible():
@@ -70,12 +70,12 @@ class ProgressBarSurface(AbstractProgressBar):
             EXCEPTION.fatal("Mode '{}' is not supported!".format(mode))
 
     # 克隆
-    def copy(self):
+    def copy(self) -> "ProgressBarSurface":
         return ProgressBarSurface(
             self.img.copy(), self.img2.copy(), self.x, self.y, self.get_width(), self.get_height(), self.get_mode()
         )
 
-    def light_copy(self):
+    def light_copy(self) -> "ProgressBarSurface":
         return ProgressBarSurface(self.img, self.img2, self.x, self.y, self.get_width(), self.get_height(), self.get_mode())
 
     # 展示
@@ -131,7 +131,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
                 )
                 self.__indicator.set_pos(x, y)
                 self.__indicator.draw(surface)
-                value_font = Font.render(str(round(self.percentage * 100)), Color.WHITE, self.get_height())
+                value_font = Font.render(str(round(self.percentage * 100)), Colors.WHITE, self.get_height())
                 surface.blit(
                     value_font,
                     Coordinates.add(
@@ -150,7 +150,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
 
                 self.__indicator.set_pos(x, y)
                 self.__indicator.draw(surface)
-                value_font = Font.render(str(round(self.percentage * 100)), Color.WHITE, self.get_width())
+                value_font = Font.render(str(round(self.percentage * 100)), Colors.WHITE, self.get_width())
                 surface.blit(
                     value_font,
                     Coordinates.add(
@@ -211,12 +211,12 @@ class DynamicProgressBarSurface(ProgressBarSurface):
             (self._percentage_to_be - self.__real_current_percentage) / self.__total_update_intervals, 5
         )
 
-    def copy(self):
+    def copy(self) -> "DynamicProgressBarSurface":
         return DynamicProgressBarSurface(
             self.img.copy(), self.img2.copy(), self.x, self.y, self.get_width(), self.get_height(), self.get_mode()
         )
 
-    def light_copy(self):
+    def light_copy(self) -> "DynamicProgressBarSurface":
         return DynamicProgressBarSurface(
             self.img, self.img2, self.x, self.y, self.get_width(), self.get_height(), self.get_mode()
         )

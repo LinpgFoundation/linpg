@@ -1,16 +1,8 @@
 from PIL import ImageColor
-from .key import *
 
 # 加载颜色字典
-THECOLORS: dict
-if is_using_pygame():
-    try:
-        from pygame.colordict import THECOLORS
-    except Exception:
-        THECOLORS = {}
-else:
-    THECOLORS = {}
-
+from pygame.colordict import THECOLORS
+from .key import *
 
 # 颜色管理
 class ColorManager:
@@ -104,7 +96,7 @@ class ColorManager:
 
     """获取颜色"""
     # 给定一个颜色的名字或序号，返回对应的RGB列表
-    def get(self, color: color_liked) -> tuple[int, int, int, int]:
+    def get(self, color: color_liked) -> tuple:
         if isinstance(color, str):
             if color.startswith("#"):
                 return ImageColor.getrgb(color)
@@ -131,4 +123,4 @@ class ColorManager:
         return surface_t
 
 
-Color: ColorManager = ColorManager()
+Colors: ColorManager = ColorManager()

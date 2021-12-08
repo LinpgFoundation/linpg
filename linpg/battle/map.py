@@ -123,7 +123,7 @@ class MapObject(AdvancedAbstractImageSurface):
         return self.__decorations[index]
 
     # 根据坐标寻找装饰物
-    def find_decoration_on(self, pos: any) -> DecorationObject:
+    def find_decoration_on(self, pos: Any) -> DecorationObject:
         for decoration in self.__decorations:
             # 如果坐标一致，则应该是当前装饰物了
             if Positions.is_same(decoration.get_pos(), pos):
@@ -411,8 +411,8 @@ class MapObject(AdvancedAbstractImageSurface):
     # 以下是A星寻路功能
     def findPath(
         self,
-        startPosition: any,
-        endPosition: any,
+        startPosition: Any,
+        endPosition: Any,
         friendData: dict,
         enemyData: dict,
         routeLen: int = -1,

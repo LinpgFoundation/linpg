@@ -36,7 +36,7 @@ class BuilderManager(AbstractToolSystem):
                 self.search_and_remove_folder(path, stuff_to_remove)
 
     # 如果指定文件夹存在，则移除
-    def delete_file_if_exist(self, path: str):
+    def delete_file_if_exist(self, path: str) -> None:
         if os.path.exists(path):
             if os.path.isdir(path):
                 shutil.rmtree(path)
@@ -45,7 +45,7 @@ class BuilderManager(AbstractToolSystem):
 
     # 复制文件
     @staticmethod
-    def copy(files: tuple[str], target_folder: str):
+    def copy(files: tuple, target_folder: str) -> None:
         for the_file in files:
             # 如果是文件夹
             if os.path.isdir(the_file):
@@ -58,8 +58,8 @@ class BuilderManager(AbstractToolSystem):
         self,
         source_folder: str,
         target_folder: str = "src",
-        additional_files: tuple[str] = tuple(),
-        ignore_key_words: tuple[str] = tuple(),
+        additional_files: tuple = tuple(),
+        ignore_key_words: tuple = tuple(),
         keep_c: bool = False,
         generate_html: bool = False,
         show_all_warnings: bool = True,

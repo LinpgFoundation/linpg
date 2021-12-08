@@ -12,7 +12,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._npc_manager: CharacterImageManager = CharacterImageManager()
         # 黑色Void帘幕
         self._black_bg = StaticImage(
-            Color.surface(Display.get_size(), Color.BLACK), 0, 0, Display.get_width(), Display.get_height()
+            Colors.surface(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height()
         )
         # 加载对话框系统
         self._dialog_txt_system = DialogBox(int(Display.get_width() * 0.015))
@@ -241,7 +241,7 @@ class AbstractDialogSystem(AbstractGameSystem):
     # 将背景图片画到surface上
     def display_background_image(self, surface: ImageSurface) -> None:
         if self.__background_image_surface is not None:
-            if isinstance(self.__background_image_surface, Rect):
+            if isinstance(self.__background_image_surface, Rectangle):
                 self.__background_image_surface.set_size(surface.get_width(), surface.get_height())
             self.__background_image_surface.draw(surface)
 
@@ -256,7 +256,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                 "<!ui>option.png",
                 "<!ui>option_selected.png",
                 self._current_dialog_content["next_dialog_id"]["target"][i]["txt"],
-                Color.WHITE,
+                Colors.WHITE,
                 self._dialog_txt_system.FONT.size,
                 (0, 0),
             )

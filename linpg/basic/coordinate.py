@@ -7,13 +7,15 @@ class Positions:
 
     # 转换坐标
     @staticmethod
-    def convert(pos: any) -> tuple:
+    def convert(pos: Any) -> tuple:
         # 检测坐标
         if isinstance(pos, Iterable):
             if isinstance(pos, dict):
                 return pos["x"], pos["y"]
-            else:
+            elif isinstance(pos, (list, tuple, numpy.ndarray)):
                 return pos[0], pos[1]
+            else:
+                EXCEPTION.fatal('Unable to convert position "{}".'.format(pos))
         else:
             try:
                 return pos.x, pos.y
@@ -22,7 +24,7 @@ class Positions:
 
     # 判断2个坐标是否相同
     @staticmethod
-    def is_same(pos1: any, pos2: any) -> bool:
+    def is_same(pos1: Any, pos2: Any) -> bool:
         return Positions.convert(pos1) == Positions.convert(pos2)
 
     # 相加2个坐标
@@ -51,7 +53,7 @@ class Coordinates:
 
     # 转换坐标
     @staticmethod
-    def convert(pos: any) -> tuple[int, int]:
+    def convert(pos: Any) -> tuple[int, int]:
         # 检测坐标
         if isinstance(pos, Iterable):
             if isinstance(pos, dict):
@@ -66,7 +68,7 @@ class Coordinates:
 
     # 判断2个坐标是否相同
     @staticmethod
-    def is_same(pos1: any, pos2: any) -> bool:
+    def is_same(pos1: Any, pos2: Any) -> bool:
         return Coordinates.convert(pos1) == Coordinates.convert(pos2)
 
     # 相加2个坐标

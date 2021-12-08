@@ -35,7 +35,7 @@ class DialogEditor(DialogConverter):
         container_width = int(Display.get_width() * 0.2)
         self.UIContainerRightImage = IMG.load("<!ui>container.png", (container_width, Display.get_height()))
         # 右侧容器尺寸
-        RightContainerRect: Rect = Rect(
+        RightContainerRect: Rectangle = Rectangle(
             int(container_width * 0.075),
             int(Display.get_height() * 0.1),
             int(container_width * 0.85),
@@ -128,9 +128,9 @@ class DialogEditor(DialogConverter):
         # 从配置文件中加载数据
         self._load_content()
         # 移除按钮
-        self.removeNpcButton = self._dialog_txt_system.FONT.render(CONFIG["remove_npc"], Color.BLACK)
-        surfaceTmp = Color.surface(
-            (self.removeNpcButton.get_width() * 1.2, self.removeNpcButton.get_height() * 1.2), Color.WHITE
+        self.removeNpcButton = self._dialog_txt_system.FONT.render(CONFIG["remove_npc"], Colors.BLACK)
+        surfaceTmp = Colors.surface(
+            (self.removeNpcButton.get_width() * 1.2, self.removeNpcButton.get_height() * 1.2), Colors.WHITE
         )
         surfaceTmp.blit(self.removeNpcButton, (self.removeNpcButton.get_width() * 0.1, 0))
         self.removeNpcButton = surfaceTmp

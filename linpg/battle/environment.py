@@ -155,7 +155,7 @@ class EnvImagesManagement:
             self.__add_evn_image(key)
             return self.__ENV_IMAGE_DICT_DARK[key] if darkMode is True else self.__ENV_IMAGE_DICT[key]
 
-    def get_decoration_image(self, decorationType: str, key: strint, darkMode: bool) -> any:
+    def get_decoration_image(self, decorationType: str, key: strint, darkMode: bool) -> Any:
         try:
             return (
                 self.__DECORATION_IMAGE_DICT_DARK[decorationType][key]
@@ -188,7 +188,7 @@ class EnvImagesManagement:
             else new_surface(screen_size)
         )
         if self.__MAP_SURFACE is not None:
-            self.__MAP_SURFACE.fill(Color.TRANSPARENT)
+            self.__MAP_SURFACE.fill(Colors.TRANSPARENT)
         else:
             self.__MAP_SURFACE = new_transparent_surface(map_size)
 

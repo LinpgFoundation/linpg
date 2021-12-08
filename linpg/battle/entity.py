@@ -404,7 +404,7 @@ class Entity(Position):
         return self.__attack_range
 
     # 目标角色所在的攻击范围内
-    def range_target_in(self, otherEntity: "Entity", custom_pos: any = None) -> str:
+    def range_target_in(self, otherEntity: "Entity", custom_pos: Any = None) -> str:
         distanceBetween: int = (
             abs(int(otherEntity.x - self.x)) + abs(int(otherEntity.y - self.y))
             if custom_pos is None
@@ -448,7 +448,7 @@ class Entity(Position):
             EXCEPTION.fatal("This character has no valid effective range!")
 
     # 根据坐标反转角色
-    def set_flip_based_on_pos(self, pos: any):
+    def set_flip_based_on_pos(self, pos: Any):
         # 转换坐标
         x, y = Positions.convert(pos)
         # 检测坐标
@@ -465,7 +465,7 @@ class Entity(Position):
     """画出角色"""
     # 角色画到surface上
     def __blit_entity_img(
-        self, surface: ImageSurface, MapClass: object, action: str = None, pos: any = None, alpha: int = 155
+        self, surface: ImageSurface, MapClass: object, action: str = None, pos: Any = None, alpha: int = 155
     ) -> None:
         # 如果没有指定action,则默认使用当前的动作
         if action is None:
@@ -524,7 +524,7 @@ class Entity(Position):
                 self._if_play_action_in_reversing = False
                 self.set_action()
 
-    def draw_custom(self, action: str, pos: any, surface: ImageSurface, MapClass: object, isContinue: bool = True) -> bool:
+    def draw_custom(self, action: str, pos: Any, surface: ImageSurface, MapClass: object, isContinue: bool = True) -> bool:
         self.__blit_entity_img(surface, MapClass, action, pos)
         # 调整id，并返回对应的bool状态
         if self.__imgId_dict[action]["imgId"] < self.get_imgNum(action) - 1:
@@ -548,7 +548,7 @@ class Entity(Position):
             self.__hp_bar.set_percentage(self.__current_hp / self.__max_hp)
             self.__hp_bar.draw(surface, False)
             display_in_center(
-                _ENTITY_UI_FONT.render("{0}/{1}".format(self.__current_hp, self.__max_hp), Color.BLACK),
+                _ENTITY_UI_FONT.render("{0}/{1}".format(self.__current_hp, self.__max_hp), Colors.BLACK),
                 self.__hp_bar,
                 xTemp,
                 yTemp,
@@ -558,7 +558,7 @@ class Entity(Position):
             self.__hp_bar.set_percentage(self.dying / DYING_ROUND_LIMIT)
             self.__hp_bar.draw(surface, True)
             display_in_center(
-                _ENTITY_UI_FONT.render("{0}/{1}".format(self.dying, DYING_ROUND_LIMIT), Color.BLACK),
+                _ENTITY_UI_FONT.render("{0}/{1}".format(self.dying, DYING_ROUND_LIMIT), Colors.BLACK),
                 self.__hp_bar,
                 xTemp,
                 yTemp,

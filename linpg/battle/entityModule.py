@@ -323,7 +323,7 @@ def loadCharacterData() -> None:
 
 # 用于存放角色做出的决定
 class DecisionHolder:
-    def __init__(self, action: str, data: any):
+    def __init__(self, action: str, data: Any):
         self.action = action
         self.data = data
 

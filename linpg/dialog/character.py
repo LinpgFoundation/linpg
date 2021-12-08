@@ -13,7 +13,7 @@ class CharacterImageManager:
         self.__darkness: int = 50
         self.__img_width: int = int(Display.get_width() / 2)
         try:
-            self.__communication_surface_rect: Rect = Rect(
+            self.__communication_surface_rect: Rectangle = Rectangle(
                 int(self.__img_width * 0.25), 0, int(self.__img_width * 0.5), int(self.__img_width * 0.56)
             )
             self.__communication = StaticImage(

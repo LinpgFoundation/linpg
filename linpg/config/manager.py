@@ -8,12 +8,12 @@ class GlobalValue:
 
     # 获取特定的全局数据
     @staticmethod
-    def get(key: str) -> any:
+    def get(key: str) -> Any:
         return _GLOBAL_VALUES_DICT[key]
 
     # 设置特定的全局数据
     @staticmethod
-    def set(key: str, value: any) -> None:
+    def set(key: str, value: Any) -> None:
         _GLOBAL_VALUES_DICT[key] = value
 
     # 删除特定的全局数据
@@ -28,7 +28,7 @@ class GlobalValue:
 
     # 如果不是对应的值，则设置为对应的值，返回是否对应
     @staticmethod
-    def if_get_set(key: str, valueToGet: any, valueToSet: any) -> bool:
+    def if_get_set(key: str, valueToGet: Any, valueToSet: Any) -> bool:
         if _GLOBAL_VALUES_DICT[key] == valueToGet:
             _GLOBAL_VALUES_DICT[key] = valueToSet
             return True
@@ -50,7 +50,7 @@ if len(path := Config.resolve_path(os.path.join("Data", "database"))) > 0:
 # 数据库
 class DataBase:
     @staticmethod
-    def get(*key: str) -> any:
+    def get(*key: str) -> Any:
         try:
             return get_value_by_keys(_DATA_BASE_DICT, key)
         except KeyError:

@@ -81,7 +81,7 @@ class ButtonWithDes(Button):
         super().__init__(img, x, y, width, height, tag)
         self.des: str = str(des)
         self.des_surface = Font.render_description_box(
-            self.des, Color.BLACK, self.get_height() * 0.4, self.get_height() * 0.2, Color.WHITE
+            self.des, Colors.BLACK, self.get_height() * 0.4, self.get_height() * 0.2, Colors.WHITE
         )
 
     def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:

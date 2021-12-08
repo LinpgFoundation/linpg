@@ -7,13 +7,13 @@ class DynamicImage(AbstractImageSurface):
         self.__processed_img: ImageSurface = None
 
     # 返回一个复制
-    def copy(self) -> AbstractImageSurface:
+    def copy(self) -> "DynamicImage":
         replica = DynamicImage(self.get_image_copy(), self.x, self.y, self.get_width(), self.get_height(), self.tag)
         replica.set_alpha(255)
         return replica
 
     # 返回一个浅复制品
-    def light_copy(self) -> AbstractImageSurface:
+    def light_copy(self) -> "DynamicImage":
         return DynamicImage(self.img, self.x, self.y, self.get_width(), self.get_height(), self.tag)
 
     # 反转
@@ -53,25 +53,25 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         super().__init__(IMG.quickly_load(img), x, y, width, height, tag)
         self.__is_flipped_horizontally: bool = False
         self.__is_flipped_vertically: bool = False
-        self.__crop_rect: object = None
+        self.__crop_rect: Optional[Rectangle] = None
 
     # 截图的范围
     @property
-    def crop_rect(self) -> object:
+    def crop_rect(self) -> Optional[Rectangle]:
         return self.__crop_rect
 
-    def get_crop_rect(self) -> object:
+    def get_crop_rect(self) -> Optional[Rectangle]:
         return self.__crop_rect
 
-    def set_crop_rect(self, rect: Rect) -> None:
-        if rect is None or isinstance(rect, Rect):
+    def set_crop_rect(self, rect: Rectangle) -> None:
+        if rect is None or isinstance(rect, Rectangle):
             if self.__crop_rect != rect:
                 self.__crop_rect = rect
                 self._need_update = True
             else:
                 pass
         else:
-            EXCEPTION.fatal("You have to input either a None or a Rect, not {}".format(type(rect)))
+            EXCEPTION.fatal("You have to input either a None or a Rectangle, not {}".format(type(rect)))
 
     # 反转原图，并打上已反转的标记
     def flip(self, horizontal: bool = True, vertical: bool = False) -> None:
@@ -101,11 +101,11 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
             self._need_update = True
 
     # 返回一个复制品
-    def copy(self) -> AdvancedAbstractImageSurface:
+    def copy(self) -> "StaticImage":
         return StaticImage(self.img.copy(), self.x, self.y, self.get_width(), self.get_height())
 
     # 返回一个浅复制品
-    def light_copy(self) -> AdvancedAbstractImageSurface:
+    def light_copy(self) -> "StaticImage":
         return StaticImage(self.img, self.x, self.y, self.get_width(), self.get_height())
 
     # 更新图片
@@ -121,7 +121,7 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
             if self.__crop_rect is not None:
                 new_x: int = max(rect.x, self.__crop_rect.x)
                 new_y: int = max(rect.y, self.__crop_rect.y)
-                rect = Rect(
+                rect = Rectangle(
                     new_x,
                     new_y,
                     min(rect.right, self.__crop_rect.right) - new_x,
@@ -157,12 +157,12 @@ class MovableImage(StaticImage):
         self.__default_y: int = int(self.y)
         self.__target_x: int = int(target_x)
         self.__target_y: int = int(target_y)
-        self.__move_speed_x: number = move_speed_x
-        self.__move_speed_y: number = move_speed_y
+        self.__move_speed_x: number = round(move_speed_x, 5)
+        self.__move_speed_y: number = round(move_speed_y, 5)
         self.__is_moving_toward_target: bool = False
 
     # 返回一个复制
-    def copy(self) -> StaticImage:
+    def copy(self) -> "MovableImage":
         return MovableImage(
             self.get_image_copy(),
             self.x,
@@ -177,7 +177,7 @@ class MovableImage(StaticImage):
         )
 
     # 返回一个浅复制品
-    def light_copy(self) -> StaticImage:
+    def light_copy(self) -> "MovableImage":
         return MovableImage(
             self.img,
             self.x,
@@ -287,11 +287,11 @@ class GifImage(AdvancedAbstractImageSurface):
         self.countDown: int = 0
 
     # 返回一个复制
-    def copy(self) -> AdvancedAbstractImageSurface:
+    def copy(self) -> "GifImage":
         return GifImage(self.get_image_copy(), self.x, self.y, self.get_width(), self.get_height(), self.updateGap)
 
     # 返回一个浅复制品
-    def light_copy(self) -> AdvancedAbstractImageSurface:
+    def light_copy(self) -> "GifImage":
         return GifImage(self.img, self.x, self.y, self.get_width(), self.get_height(), self.updateGap)
 
     # 当前图片

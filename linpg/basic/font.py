@@ -1,3 +1,4 @@
+from typing import Optional
 from .mixer import *
 
 _FONT_IS_NOT_INITIALIZED_MSG: str = "Font is not initialized!"
@@ -61,19 +62,21 @@ class FontGenerator:
             EXCEPTION.fatal("FontType option in setting file is incorrect!")
 
     # 渲染（无边框的）文字
-    def render(self, txt: strint, color: color_liked, background_color: color_liked = None) -> ImageSurface:
+    def render(self, txt: strint, color: color_liked, background_color: Optional[color_liked] = None) -> ImageSurface:
         font_surface_t = self.render_with_bounding(txt, color, background_color)
         return font_surface_t.subsurface(font_surface_t.get_bounding_rect())
 
     # 渲染有边框的文字
-    def render_with_bounding(self, txt: strint, color: color_liked, background_color: color_liked = None) -> ImageSurface:
+    def render_with_bounding(
+        self, txt: strint, color: color_liked, background_color: Optional[color_liked] = None
+    ) -> ImageSurface:
         if self.__SIZE > 0:
             if not isinstance(txt, (str, int)):
                 EXCEPTION.fatal("The text must be a unicode or bytes, not {}".format(txt))
             if background_color is None:
-                return self.__FONT.render(str(txt), Setting.antialias, Color.get(color))
+                return self.__FONT.render(str(txt), Setting.antialias, Colors.get(color))
             else:
-                return self.__FONT.render(str(txt), Setting.antialias, Color.get(color), Color.get(background_color))
+                return self.__FONT.render(str(txt), Setting.antialias, Colors.get(color), Colors.get(background_color))
         else:
             EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
 
@@ -163,12 +166,12 @@ class FontManager:
         thickness: int = 2,
     ) -> ImageSurface:
         font_surface = self.render(txt, color, size, ifBold, ifItalic)
-        des_surface = Color.surface(
+        des_surface = Colors.surface(
             (font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2), background_color
         )
         pygame.draw.rect(
             des_surface,
-            Color.get(color if outline_color is None else outline_color),
+            Colors.get(color if outline_color is None else outline_color),
             ((0, 0), des_surface.get_size()),
             thickness,
         )

@@ -9,13 +9,13 @@ class DecorationObject(GameObject):
         self.__status: dict = {}
         self.scale: float = 0.5
 
-    def is_on_pos(self, pos: any) -> bool:
+    def is_on_pos(self, pos: Any) -> bool:
         return Coordinates.is_same(self.get_pos(), pos)
 
-    def get_status(self, key: str) -> any:
+    def get_status(self, key: str) -> Any:
         return self.__status[key]
 
-    def set_status(self, key: str, value: any) -> None:
+    def set_status(self, key: str, value: Any) -> None:
         self.__status[key] = value
 
     def remove_status(self, key: str) -> None:

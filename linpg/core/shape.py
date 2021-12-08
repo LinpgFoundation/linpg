@@ -1,7 +1,5 @@
 from .module import *
 
-RectLiked = Union[Rect, pygame.Rect, tuple]
-
 # 正方形类
 class Square(GameObject2d):
     def __init__(self, x: int_f, y: int_f, width: int):
@@ -84,11 +82,11 @@ class Square(GameObject2d):
 
     # 画出轮廓
     def draw_outline(self, surface: ImageSurface, offSet: Iterable = ORIGIN, color: str = "red", thickness: int = 2) -> None:
-        self.draw_(surface, Color.get(color), (Coordinates.add(self.pos, offSet), self.size), thickness)
+        self.draw_(surface, Colors.get(color), (Coordinates.add(self.pos, offSet), self.size), thickness)
 
 
 # 用于兼容的长方类
-class Rect(Square):
+class Rectangle(Square):
     def __init__(self, left: int_f, top: int_f, width: int, height: int):
         super().__init__(left, top, width)
         self.__height: int = int(height)
@@ -184,4 +182,4 @@ class Circle(Square):
 
     # 画出轮廓
     def draw_outline(self, surface: ImageSurface, offSet: Iterable = ORIGIN, color: str = "red", thickness: int = 2) -> None:
-        self.draw_(surface, Color.get(color), Coordinates.add(self.center, offSet), self.radius, thickness)
+        self.draw_(surface, Colors.get(color), Coordinates.add(self.center, offSet), self.radius, thickness)

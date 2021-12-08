@@ -67,7 +67,7 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                             new_width = item.get_width()
                             if new_width > self.get_width():
                                 new_width = self.get_width()
-                            subsurface_rect = Rect(0, 0, new_width, new_height)
+                            subsurface_rect = Rectangle(0, 0, new_width, new_height)
                             surface.blit(get_img_subsurface(item, subsurface_rect), (current_x, current_y))
                             if subsurface_rect.is_hovered((current_x, current_y)):
                                 self._item_being_hovered = key
@@ -79,7 +79,7 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                             new_width = item.get_width()
                             if new_width > self.get_width():
                                 new_width = self.get_width()
-                            subsurface_rect = Rect(0, crop_height, new_width, new_height)
+                            subsurface_rect = Rectangle(0, crop_height, new_width, new_height)
                             surface.blit(get_img_subsurface(item, subsurface_rect), (current_x, current_y + crop_height))
                             if subsurface_rect.is_hovered((current_x, current_y)):
                                 self._item_being_hovered = key
@@ -100,7 +100,7 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                             new_height = item.get_height()
                             if new_height > self.get_height():
                                 new_height = self.get_height()
-                            subsurface_rect = Rect(0, 0, new_width, new_height)
+                            subsurface_rect = Rectangle(0, 0, new_width, new_height)
                             surface.blit(
                                 get_img_subsurface(item, subsurface_rect),
                                 (current_x, current_y),
@@ -115,7 +115,7 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                             new_height = item.get_height()
                             if new_height > self.get_height():
                                 new_height = self.get_height()
-                            subsurface_rect = Rect(crop_width, 0, new_width, new_height)
+                            subsurface_rect = Rectangle(crop_width, 0, new_width, new_height)
                             surface.blit(get_img_subsurface(item, subsurface_rect), (current_x + crop_width, current_y))
                             if subsurface_rect.is_hovered((current_x, current_y)):
                                 self._item_being_hovered = key

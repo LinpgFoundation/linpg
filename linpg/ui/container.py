@@ -57,11 +57,11 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
         return tuple(self.__items_container_dict.keys())
 
     # 新增一个物品
-    def set(self, key: str, new_item: any) -> None:
+    def set(self, key: str, new_item: Any) -> None:
         self.__items_container_dict[key] = new_item
 
     # 获取一个物品
-    def get(self, key: str) -> any:
+    def get(self, key: str) -> Any:
         return self.__items_container_dict[key]
 
     # 交换2个key名下的图片
@@ -116,11 +116,11 @@ class GameObjectsListContainer(AbstractGameObjectsContainer):
         return self.__items_container_list
 
     # 新增一个物品
-    def append(self, new_item: any) -> None:
+    def append(self, new_item: Any) -> None:
         self.__items_container_list.append(new_item)
 
     # 获取一个物品
-    def get(self, index: int) -> any:
+    def get(self, index: int) -> Any:
         return self.__items_container_list[index]
 
     # 交换2个key名下的图片

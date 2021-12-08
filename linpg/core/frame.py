@@ -36,9 +36,9 @@ class AbstractFrame(AdvancedAbstractImageSurface):
     # 更新窗口
     def __update_window_frame(self) -> None:
         if self.__if_regenerate_window is True:
-            self.img = Color.surface(self.size, Color.WHITE)
-            draw_rect(self.img, Color.LIGHT_GRAY, ((0, 0), (self.get_width(), self.__bar_height)))
-            draw_rect(self.img, Color.GRAY, self.img.get_rect(), self.__outline_thickness)
+            self.img = Colors.surface(self.size, Colors.WHITE)
+            draw_rect(self.img, Colors.LIGHT_GRAY, ((0, 0), (self.get_width(), self.__bar_height)))
+            draw_rect(self.img, Colors.GRAY, self.img.get_rect(), self.__outline_thickness)
             if self.__rescale_icon_0 is None:
                 self.__rescale_icon_0 = StaticImage(
                     "<!ui>rescale.png", 0, 0, self.__bar_height * 1.5, self.__bar_height * 1.5

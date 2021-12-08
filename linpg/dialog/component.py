@@ -16,7 +16,7 @@ class DialogButtons(HiddenableSurface):
         dialog_txt: dict = Lang.get_texts("Dialog")
         # 生成跳过按钮
         tempButtonIcon = IMG.load("<!ui>next.png", (self.FONT.size, self.FONT.size))
-        tempButtonTxt = self.FONT.render(dialog_txt["skip"], Color.WHITE)
+        tempButtonTxt = self.FONT.render(dialog_txt["skip"], Colors.WHITE)
         temp_w = tempButtonTxt.get_width() + self.FONT.size * 1.5
         self.choiceTxt = dialog_txt["choice"]
         self.skipButton = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
@@ -24,7 +24,7 @@ class DialogButtons(HiddenableSurface):
         self.icon_y = (tempButtonTxt.get_height() - tempButtonIcon.get_height()) / 2
         self.skipButtonHovered.blit(tempButtonIcon, (tempButtonTxt.get_width() + self.FONT.size * 0.5, self.icon_y))
         self.skipButtonHovered.blit(tempButtonTxt, (0, 0))
-        tempButtonTxt = self.FONT.render(dialog_txt["skip"], Color.GRAY)
+        tempButtonTxt = self.FONT.render(dialog_txt["skip"], Colors.GRAY)
         tempButtonIcon = IMG.add_darkness(tempButtonIcon, 100)
         self.skipButton.blit(tempButtonIcon, (tempButtonTxt.get_width() + self.FONT.size * 0.5, self.icon_y))
         self.skipButton.blit(tempButtonTxt, (0, 0))
@@ -36,12 +36,12 @@ class DialogButtons(HiddenableSurface):
         self.autoIconDegree = 0
         self.autoIconDegreeChange = (2 ** 0.5 - 1) * self.FONT.size / 45
         self.autoMode: bool = False
-        tempButtonTxt = self.FONT.render(dialog_txt["auto"], Color.GRAY)
+        tempButtonTxt = self.FONT.render(dialog_txt["auto"], Colors.GRAY)
         temp_w = tempButtonTxt.get_width() + self.FONT.size * 1.5
         self.autoButton = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
         self.autoButtonHovered = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
         self.autoButton.blit(tempButtonTxt, (0, 0))
-        self.autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"], Color.WHITE), (0, 0))
+        self.autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"], Colors.WHITE), (0, 0))
         self.autoButton = DynamicImage(self.autoButton, Display.get_width() * 0.8, Display.get_height() * 0.05)
         self.autoButton.tag = int(self.autoButton.x + self.autoButton.img.get_width() - self.FONT.size)
         self.autoButtonHovered = DynamicImage(self.autoButtonHovered, Display.get_width() * 0.8, Display.get_height() * 0.05)
@@ -136,7 +136,7 @@ class DialogButtons(HiddenableSurface):
 class DialogNode(Button):
     def __init__(self, key_name: str, font_size: int, next_keys: list[str], tag: str = ""):
         self.__key_name: str = key_name
-        button_surface = Font.render_description_box(self.__key_name, Color.BLACK, font_size, font_size, Color.WHITE)
+        button_surface = Font.render_description_box(self.__key_name, Colors.BLACK, font_size, font_size, Colors.WHITE)
         super().__init__(button_surface, 0, 0, width=button_surface.get_width(), height=button_surface.get_height(), tag=tag)
         self.__next_keys: tuple[str] = tuple(next_keys)
         self.has_been_displayed: bool = False
@@ -216,11 +216,11 @@ class DialogNavigationWindow(AbstractFrame):
             key_node.has_been_displayed = True
 
             if self.__current_selected_key == key:
-                draw_rect(surface, Color.RED, key_node.get_rect(), 4)
+                draw_rect(surface, Colors.RED, key_node.get_rect(), 4)
 
             for child_key in key_node.next_keys:
                 self.__draw_node(surface, child_key)
-                pygame.draw.aaline(surface, Color.BLACK, key_node.right_center, self.__nodes_map[child_key].left_center, 3)
+                pygame.draw.aaline(surface, Colors.BLACK, key_node.right_center, self.__nodes_map[child_key].left_center, 3)
 
     def _update(self) -> None:
         if "head" in self.__nodes_map:

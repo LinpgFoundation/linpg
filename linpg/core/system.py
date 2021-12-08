@@ -10,7 +10,7 @@ class SaveDataThread(threading.Thread):
         self.result: bool = False
 
     # 返回一个线程的复制
-    def copy(self) -> object:
+    def copy(self) -> "SaveDataThread":
         return SaveDataThread(self.path, self.data)
 
     def run(self) -> None:
@@ -55,7 +55,7 @@ class AbstractSystem:
 class SystemWithBackgroundMusic(AbstractSystem):
     def __init__(self) -> None:
         super().__init__()
-        self.__bgm_path = None
+        self.__bgm_path: Optional[str] = None
         self.__bgm_volume: float = 1.0
         self.__audio = None
 
@@ -71,7 +71,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
         self.__audio = None
 
     # 设置bgm
-    def set_bgm(self, path: str, forced: bool = False) -> None:
+    def set_bgm(self, path: Optional[str], forced: bool = False) -> None:
         # 如果path是None,则
         if path is None:
             if self.__bgm_path is not None:
@@ -120,7 +120,7 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
         # 参数
         self._chapter_type: str = ""
         self._chapter_id: int = 0
-        self._project_name = None
+        self._project_name: Optional[str] = None
         # 储存进度存档的文件夹的路径
         self.folder_for_save_file: str = "Save"
         # 存档文件的名称
@@ -138,7 +138,7 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
         return self.__initialized
 
     # 初始化关键参数
-    def _initialize(self, chapterType: str, chapterId: int, projectName: str) -> None:
+    def _initialize(self, chapterType: str, chapterId: int, projectName: Optional[str]) -> None:
         # 类型
         self._chapter_type = chapterType
         # 章节id

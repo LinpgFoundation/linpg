@@ -3,7 +3,7 @@ from .img import *
 # 手柄控制组件
 class JoystickController:
 
-    __input: pygame.joystick.Joystick = None
+    __input: Optional[pygame.joystick.Joystick] = None
 
     def __init__(self):
         # 如果pygame的手柄组件没有初始化，则初始化
@@ -60,13 +60,14 @@ class MouseController:
     __moving_speed: int = int(max(Setting.get("MouseMoveSpeed"), 1))
 
     # 鼠标上次更新时被按下的详情
-    __mouse_get_pressed_previously: tuple[bool, bool, bool, bool, bool] = (False, False, False, False, False)
+    __mouse_get_pressed_previously: tuple[bool, ...] = (False, False, False, False, False)
+
+    # 鼠标图标
+    __icon_img: Optional[ImageSurface] = None
 
     def __init__(self) -> None:
         custom: bool = False
-        if not custom:
-            self.__icon_img = None
-        else:
+        if custom:
             pygame.mouse.set_visible(False)
             self.__icon_img = IMG.load(
                 "<!ui>mouse_icon.png", (int(Setting.get("MouseIconWidth")), int(Setting.get("MouseIconWidth") * 1.3))
@@ -162,7 +163,7 @@ class GameController:
     # 输入事件
     __INPUT_EVENTS: list = []
     # 检测特定事件
-    __SPECIFIC_EVENTS: dict = {
+    __SPECIFIC_EVENTS: dict[str, bool] = {
         # 是否有确认事件
         "confirm": False,
         # 是否有返回事件

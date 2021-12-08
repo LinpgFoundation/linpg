@@ -49,7 +49,7 @@ class Message:
 
 
 # 窗口
-class RenderedWindow(Rect):
+class RenderedWindow(Rectangle):
     def __init__(self, width: int, height: int, title: str, is_win_always_on_top: bool):
         super().__init__(0, 0, width, height)
         self.title: str = title
@@ -71,11 +71,11 @@ class RenderedWindow(Rect):
         self.__win = Renderer(Window(self.title, self.size, always_on_top=self.always_on_top))
 
     def draw_rect(self, rect_pos: Iterable, color: color_liked) -> None:
-        self.__win.draw_color = Color.get(color)
+        self.__win.draw_color = Colors.get(color)
         self.__win.draw_rect(convert_to_pygame_rect(rect_pos))
 
     def fill_rect(self, rect_pos: Iterable, color: color_liked) -> None:
-        self.__win.draw_color = Color.get(color)
+        self.__win.draw_color = Colors.get(color)
         self.__win.fill_rect(convert_to_pygame_rect(rect_pos))
 
     def fill(self, color: color_liked) -> None:

@@ -44,15 +44,15 @@ class SettingSystem:
         Config.save(self.get_config_path(), self.__SETTING_DATA)
 
     # 获取设置数据
-    def get(self, *key: str) -> any:
+    def get(self, *key: str) -> Any:
         return get_value_by_keys(self.__SETTING_DATA, key)
 
     # 在不确定的情况下尝试获取设置数据
-    def try_get(self, *key: str) -> any:
+    def try_get(self, *key: str) -> Any:
         return get_value_by_keys(self.__SETTING_DATA, key, False)
 
     # 修改设置数据
-    def set(self, *key: str, value: any) -> None:
+    def set(self, *key: str, value: Any) -> None:
         return set_value_by_keys(self.__SETTING_DATA, key, value)
 
     """其他常用的重要参数"""

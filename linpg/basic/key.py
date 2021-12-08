@@ -26,12 +26,12 @@ class KeySystem:
     __root.withdraw()
 
     # key是否被按下
-    def get_pressed(self, key_name: any) -> bool:
+    def get_pressed(self, key_name: Any) -> bool:
         return pygame.key.get_pressed()[self.get_key_code(key_name) if isinstance(key_name, str) else key_name]
 
     # 获取key的代号
     @staticmethod
-    def get_key_code(key_name: str) -> any:
+    def get_key_code(key_name: str) -> int:
         return pygame.key.key_code(key_name)
 
     # 获取粘贴板内容

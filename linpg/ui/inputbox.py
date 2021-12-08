@@ -17,9 +17,9 @@ class AbstractInputBox(GameObject2d):
         self.FONT = Font.create(font_size)
         self.default_width = default_width
         self.default_height = int(self.FONT.size * 1.5)
-        self.input_box = Rect(x, y, default_width, self.default_height)
-        self.color = Color.get("lightskyblue3")
-        self.txt_color = Color.get(txt_color)
+        self.input_box = Rectangle(x, y, default_width, self.default_height)
+        self.color = Colors.get("lightskyblue3")
+        self.txt_color = Colors.get(txt_color)
         self.active: bool = False
         self._text = None
         self._holder = self.FONT.render_with_bounding("|", self.txt_color)
@@ -40,7 +40,7 @@ class AbstractInputBox(GameObject2d):
 
     def set_pos(self, x: int_f, y: int_f) -> None:
         super().set_pos(x, y)
-        self.input_box = Rect(x, y, self.default_width, self.FONT.size * 1.5)
+        self.input_box = Rectangle(x, y, self.default_width, self.FONT.size * 1.5)
 
 
 # 单行输入框

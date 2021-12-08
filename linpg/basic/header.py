@@ -3,11 +3,11 @@ from typing import Iterable
 
 import numpy
 
-from ..tools import *
-
 # 导入pygame组件
 import pygame
 from pygame.locals import *
+
+from ..tools import *
 
 # 初始化pygame
 pygame.init()
@@ -79,7 +79,7 @@ def make_surface_from_array(surface_array: numpy.ndarray, swap_axes: bool = True
 
 
 # 获取Surface
-def new_surface(size: tuple, surface_flags: any = None) -> ImageSurface:
+def new_surface(size: tuple, surface_flags: Any = None) -> ImageSurface:
     return pygame.Surface(size, flags=surface_flags) if surface_flags is not None else pygame.Surface(size).convert()
 
 

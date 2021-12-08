@@ -36,7 +36,7 @@ class DropDownList(GameObjectsDictContainer):
 
     # 更新font的颜色
     def update_font_color(self, font_color: color_liked) -> None:
-        self.__font_color = Color.get(font_color)
+        self.__font_color = Colors.get(font_color)
 
     # 新增一个物品
     def set(self, key: str, new_item: strint) -> None:
@@ -77,7 +77,7 @@ class DropDownList(GameObjectsDictContainer):
             if self.img is not None:
                 self.img.display(surface, current_abs_pos)
             else:
-                draw_rect(surface, Color.WHITE, (current_abs_pos, self.size))
+                draw_rect(surface, Colors.WHITE, (current_abs_pos, self.size))
             # 列出当前选中的选项
             current_pos: tuple = current_abs_pos
             font_surface: ImageSurface = self.__FONT.render_with_bounding(self.get_selected_item(), self.__font_color)

@@ -2,19 +2,19 @@ from ..asset import ASSET
 from .color import *
 
 # 获取材质缺失的临时警示材质
-def get_texture_missing_surface(size: Iterable) -> ImageSurface:
+def get_texture_missing_surface(size: tuple) -> ImageSurface:
     texture_missing_surface: ImageSurface = new_surface(size)
-    texture_missing_surface.fill(Color.BLACK)
+    texture_missing_surface.fill(Colors.BLACK)
     half_width: int = int(size[0] / 2)
     half_height: int = int(size[1] / 2)
     pygame.draw.rect(
         texture_missing_surface,
-        Color.VIOLET,
+        Colors.VIOLET,
         pygame.Rect(half_width, 0, texture_missing_surface.get_width() - half_width, half_height),
     )
     pygame.draw.rect(
         texture_missing_surface,
-        Color.VIOLET,
+        Colors.VIOLET,
         pygame.Rect(0, half_height, half_width, texture_missing_surface.get_height() - half_height),
     )
     return texture_missing_surface
@@ -49,7 +49,7 @@ class RawImageManafer:
             EXCEPTION.fatal("The path '{}' has to be a string or at least a ImageSurface!".format(path))
 
     # 图片加载模块：接收图片路径,长,高,返回对应图片
-    def load(self, path: PoI, size: Iterable = tuple(), alpha: int = 255, convert_alpha: bool = True) -> ImageSurface:
+    def load(self, path: PoI, size: tuple = tuple(), alpha: int = 255, convert_alpha: bool = True) -> ImageSurface:
         # 加载图片
         img = IMG.quickly_load(path, convert_alpha)
         # 根据参数编辑图片
@@ -63,55 +63,29 @@ class RawImageManafer:
 
     # 重新编辑尺寸
     @staticmethod
-    def resize(img: ImageSurface, size: Iterable = (None, None)) -> ImageSurface:
-        # 转换尺寸
-        if isinstance(size, (list, tuple)):
-            if len(size) == 1:
-                width = size[0]
-                height = None
-            else:
-                width = size[0]
-                height = size[1]
-        elif isinstance(size, (int, float)):
-            width = size
-            height = None
-        else:
-            EXCEPTION.fatal("The size '{}' is not acceptable.".format(size))
+    def resize(img: ImageSurface, size: tuple) -> ImageSurface:
         # 编辑图片
-        if height is not None and height >= 0 and width is None:
-            img2 = pygame.transform.scale(img, (round(height / img.get_height() * img.get_width()), round(height)))
-        elif height is None and width is not None and width >= 0:
-            img2 = pygame.transform.scale(img, (round(width), round(width / img.get_width() * img.get_height())))
-        elif width >= 0 and height >= 0:
-            img2 = pygame.transform.scale(img, (round(width), round(height)))
-        elif width < 0 or height < 0:
+        if size[1] is not None and size[1] >= 0 and size[0] is None:
+            img2 = pygame.transform.scale(img, (round(size[1] / img.get_height() * img.get_width()), round(size[1])))
+        elif size[1] is None and size[0] is not None and size[0] >= 0:
+            img2 = pygame.transform.scale(img, (round(size[0]), round(size[0] / img.get_width() * img.get_height())))
+        elif size[0] >= 0 and size[1] >= 0:
+            img2 = pygame.transform.scale(img, (round(size[0]), round(size[1])))
+        elif size[0] < 0 or size[1] < 0:
             EXCEPTION.fatal("Both width and height must be positive interger!")
         return img2
 
     # 精准地缩放尺寸
     @staticmethod
-    def smoothly_resize(img: ImageSurface, size: Iterable = (None, None)):
-        # 转换尺寸
-        if isinstance(size, (list, tuple)):
-            if len(size) == 1:
-                width = size[0]
-                height = None
-            else:
-                width = size[0]
-                height = size[1]
-        elif isinstance(size, (int, float)):
-            width = size
-            height = None
-        else:
-            EXCEPTION.fatal("The size '{}' is not acceptable.".format(size))
+    def smoothly_resize(img: ImageSurface, size: tuple):
         # 编辑图片
-        if height is not None and height >= 0 and width is None:
-            img = pygame.transform.smoothscale(img, (round(height / img.get_height() * img.get_width()), round(height)))
-        elif height is None and width is not None and width >= 0:
-            img = pygame.transform.smoothscale(img, (round(width), round(width / img.get_width() * img.get_height())))
-        elif width >= 0 and height >= 0:
-            img = pygame.transform.smoothscale(img, (round(width), round(height)))
-        elif width < 0 or height < 0:
+        if size[1] is not None and size[1] >= 0 and size[0] is None:
+            img = pygame.transform.smoothscale(img, (round(size[1] / img.get_height() * img.get_width()), round(size[1])))
+        elif size[1] is None and size[0] is not None and size[0] >= 0:
+            img = pygame.transform.smoothscale(img, (round(size[0]), round(size[0] / img.get_width() * img.get_height())))
+        elif size[0] >= 0 and size[1] >= 0:
+            img = pygame.transform.smoothscale(img, (round(size[0]), round(size[1])))
+        elif size[0] < 0 or size[1] < 0:
             EXCEPTION.fatal("Both width and height must be positive interger!")
         return img
 

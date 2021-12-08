@@ -169,7 +169,7 @@ class VideoSurface(AbstractVideo):
         self.__audio_channel = None
 
     # 返回一个复制
-    def copy(self) -> object:
+    def copy(self) -> "VideoSurface":
         with_audio = True if self.__audio is not None else False
         new_t = VideoSurface(self._path, self.__loop, with_audio, self.play_range)
         if with_audio is True:
@@ -229,7 +229,7 @@ class VideoPlayer(AbstractVideo):
         self.__audio_path: str = ""
 
     # 返回一个复制
-    def copy(self) -> object:
+    def copy(self) -> "VideoPlayer":
         return VideoPlayer(self._path, self._frame_buffer_num)
 
     # 设置帧坐标

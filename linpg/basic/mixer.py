@@ -182,7 +182,7 @@ class Music:
 
     # 获取背景音乐播放的位置
     @staticmethod
-    def get_pos() -> any:
+    def get_pos() -> int:
         return pygame.mixer.music.get_pos()
 
     # 设置背景音乐播放的位置

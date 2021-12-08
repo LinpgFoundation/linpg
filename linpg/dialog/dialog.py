@@ -139,7 +139,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             bar_height, surface.get_height() - bar_height * 2, surface.get_width() - bar_height * 2, bar_height, "white"
         )
         # 生成黑色帘幕
-        BLACK_CURTAIN: ImageSurface = Color.surface(surface.get_size(), Color.BLACK)
+        BLACK_CURTAIN: ImageSurface = Colors.surface(surface.get_size(), Colors.BLACK)
         BLACK_CURTAIN.set_alpha(0)
         # 创建视频文件
         VIDEO: VideoPlayer = VideoPlayer(
@@ -241,14 +241,14 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         # 展示历史
         if self._is_showing_history is True:
             if self._history_surface is None:
-                self._history_surface = Color.surface(Display.get_size(), Color.BLACK)
+                self._history_surface = Colors.surface(Display.get_size(), Colors.BLACK)
                 self._history_surface.set_alpha(150)
                 dialogIdTemp = "head"
                 local_y = self._history_surface_local_y
                 while dialogIdTemp is not None:
                     if self.dialog_content[dialogIdTemp]["narrator"] is not None:
                         narratorTemp = self._dialog_txt_system.FONT.render(
-                            self.dialog_content[dialogIdTemp]["narrator"] + ":", Color.WHITE
+                            self.dialog_content[dialogIdTemp]["narrator"] + ":", Colors.WHITE
                         )
                         self._history_surface.blit(
                             narratorTemp,
@@ -262,7 +262,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                             elif i == len(self.dialog_content[dialogIdTemp]["content"]) - 1:
                                 txt += '" ]'
                         self._history_surface.blit(
-                            self._dialog_txt_system.FONT.render(txt, Color.WHITE),
+                            self._dialog_txt_system.FONT.render(txt, Colors.WHITE),
                             (Display.get_width() * 0.15, Display.get_height() * 0.1 + local_y),
                         )
                         local_y += self._dialog_txt_system.FONT.size * 1.5

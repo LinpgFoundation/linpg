@@ -131,13 +131,15 @@ class DialogBox(HiddenableSurface):
             y: int = int(surface.get_height() * 0.73)
             # 写上当前讲话人的名字
             if self.narrator is not None:
-                surface.blit(self.FONT.render(self.narrator, Color.WHITE), (x, self.dialoguebox_y + self.FONT.size))
+                surface.blit(self.FONT.render(self.narrator, Colors.WHITE), (x, self.dialoguebox_y + self.FONT.size))
             # 对话框已播放的内容
             for i in range(self.displayedLine):
-                surface.blit(self.FONT.render_with_bounding(self.content[i], Color.WHITE), (x, y + self.FONT.size * 1.5 * i))
+                surface.blit(
+                    self.FONT.render_with_bounding(self.content[i], Colors.WHITE), (x, y + self.FONT.size * 1.5 * i)
+                )
             # 对话框正在播放的内容
             surface.blit(
-                self.FONT.render_with_bounding(self.content[self.displayedLine][: self.textIndex], Color.WHITE),
+                self.FONT.render_with_bounding(self.content[self.displayedLine][: self.textIndex], Colors.WHITE),
                 (x, y + self.FONT.size * 1.5 * self.displayedLine),
             )
             # 如果当前行的字符还没有完全播出

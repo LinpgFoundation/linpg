@@ -1,6 +1,6 @@
 from __future__ import annotations
 import json
-from typing import Any
+from typing import Any, Optional
 from copy import deepcopy
 from glob import glob
 from ..exception import *
@@ -15,7 +15,7 @@ except Exception:
     pass
 
 # 根据keys查找值，最后返回一个复制的对象
-def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) -> Any:
+def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) -> Optional[Any]:
     pointer = dict_to_check
     for key in keys:
         try:
@@ -56,9 +56,14 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Any, warning: boo
 # 配置文件管理模块
 class Config:
 
+    # 获取默认配置文件类型
+    @staticmethod
+    def get_file_type() -> str:
+        return str(_SPECIFICATIONS["ConfigFileType"])
+
     # 加载配置文件的程序
     @staticmethod
-    def __load(path: str, keys: tuple, warning: bool = True) -> Any:
+    def __load(path: str, keys: tuple, warning: bool = True) -> Optional[Any]:
         # 如果路径不存在
         if not os.path.exists(path):
             if warning is True:
@@ -87,17 +92,17 @@ class Config:
 
     # 加载配置文件
     @staticmethod
-    def load(path: str, *key: str) -> Any:
+    def load(path: str, *key: str) -> Optional[Any]:
         return Config.__load(path, key)
 
     # 加载配置文件
     @staticmethod
-    def try_load(path: str, *key: str) -> Any:
+    def try_load(path: str, *key: str) -> Optional[Any]:
         return Config.__load(path, key, False)
 
     # 加载内部配置文件保存
     @staticmethod
-    def load_internal(path: str, *key: str) -> Any:
+    def load_internal(path: str, *key: str) -> Optional[Any]:
         return Config.__load(os.path.join(os.path.dirname(__file__), path), key)
 
     # 配置文件保存
@@ -192,3 +197,12 @@ class Config:
             return path
         else:
             return ""
+
+
+_SPECIFICATIONS: dict = dict(Config.load_internal("specifications.json"))
+
+# 使用引擎开发游戏的用户可以自定义的参数
+class Specification:
+    @staticmethod
+    def get(key: str) -> Any:
+        return _SPECIFICATIONS[key]

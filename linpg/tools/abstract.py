@@ -4,8 +4,8 @@ from ..lang import *
 
 class AbstractToolSystem:
 
-    _TOOL_FOLDER: str = str(DataBase.get("Paths", "ThirdPartyLibrariesFolder"))
-    _TOOL_LIBRARIES: dict = dict(DataBase.get("Paths", "ThirdPartyLibraries"))
+    _TOOL_FOLDER: str = "ThirdPartyLibraries"
+    _TOOL_LIBRARIES: dict = dict(Specification.get("ThirdPartyLibraries"))
 
     def __init__(self, recommend_version: str, tool_path: str) -> None:
         self.__RECOMMENDED_VERSION: str = recommend_version
@@ -33,5 +33,5 @@ class AbstractToolSystem:
             self._run_raw_cmd(command_line)
 
     # 直接运行命令
-    def _run_raw_cmd(self, command_line: list[str], shell: bool = False) -> None:
-        check_call(command_line, shell=shell)
+    def _run_raw_cmd(self, command_line: list[str]) -> None:
+        check_call(command_line)

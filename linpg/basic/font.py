@@ -1,4 +1,3 @@
-from typing import Optional
 from .mixer import *
 
 _FONT_IS_NOT_INITIALIZED_MSG: str = "Font is not initialized!"

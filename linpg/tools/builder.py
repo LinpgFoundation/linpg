@@ -6,14 +6,6 @@ class BuilderManager(AbstractToolSystem):
     def __init__(self) -> None:
         super().__init__("*", os.path.join(os.path.dirname(__file__), "compiler.py"))
 
-    # 更新所有包
-    def update_all_site_packages(self):
-
-        import pkg_resources
-
-        for pkg in pkg_resources.working_set:
-            self._run_raw_cmd(["pip", "install", "--upgrade", pkg.project_name], True)
-
     # 移除指定文件夹中的pycache文件夹
     def __remove_pycache(self, path: str) -> None:
         for file_path in glob(os.path.join(path, "*")):

@@ -124,7 +124,7 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
         # 储存进度存档的文件夹的路径
         self.folder_for_save_file: str = "Save"
         # 存档文件的名称
-        self.name_for_save_file: str = "save.yaml"
+        self.name_for_save_file: str = "save.{}".format(Config.get_file_type())
         # 是否已经初始化
         self.__initialized: bool = False
 

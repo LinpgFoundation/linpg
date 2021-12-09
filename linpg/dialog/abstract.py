@@ -43,24 +43,35 @@ class AbstractDialogSystem(AbstractGameSystem):
             lang = Setting.language
         return (
             os.path.join(
-                self._dialog_folder_path, self._chapter_type, "chapter{0}_dialogs_{1}.yaml".format(self._chapter_id, lang)
+                self._dialog_folder_path,
+                self._chapter_type,
+                "chapter{0}_dialogs_{1}.{2}".format(self._chapter_id, lang, Config.get_file_type()),
             )
             if self._project_name is None
             else os.path.join(
                 self._dialog_folder_path,
                 self._chapter_type,
                 self._project_name,
-                "chapter{0}_dialogs_{1}.yaml".format(self._chapter_id, lang),
+                "chapter{0}_dialogs_{1}.{2}".format(self._chapter_id, lang, Config.get_file_type()),
             )
         )
 
     # 获取对话文件的主语言
     def get_default_lang(self) -> str:
         return (
-            Config.load(os.path.join(self._dialog_folder_path, self._chapter_type, "info.yaml"), "default_lang")
+            Config.load(
+                os.path.join(self._dialog_folder_path, self._chapter_type, "info.{}".format(Config.get_file_type())),
+                "default_lang",
+            )
             if self._project_name is None
             else Config.load(
-                os.path.join(self._dialog_folder_path, self._chapter_type, self._project_name, "info.yaml"), "default_lang"
+                os.path.join(
+                    self._dialog_folder_path,
+                    self._chapter_type,
+                    self._project_name,
+                    "info.{}".format(Config.get_file_type()),
+                ),
+                "default_lang",
             )
         )
 

@@ -14,6 +14,8 @@
         "commu",
         "cpdef",
         "cutscene",
+        "Cython",
+        "cythonize",
         "datas",
         "deadbush",
         "deque",

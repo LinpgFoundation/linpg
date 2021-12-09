@@ -1,4 +1,5 @@
 from .setting import *
+import hashlib
 
 # 用于存放全局数据的字典
 _GLOBAL_VALUES_DICT: dict = {}
@@ -105,3 +106,43 @@ class Info:
     @staticmethod
     def get_short_description() -> str:
         return _INFO_DATA_DICT["short_description"]
+
+
+# 缓存文件夹路径
+__CACHE_FOLDER: str = "Cache"
+
+# 如果允许缓存，但缓存文件夹不存在
+if Setting.get("AllowCache") is True and not os.path.exists(__CACHE_FOLDER):
+    # 则创建缓存文件夹
+    os.mkdir(__CACHE_FOLDER)
+
+# 缓存文件目录数据
+_CACHE_FILES_DATA: dict = {}
+# 缓存文件目录
+__CACHE_FILES_DATA_PATH: str = os.path.join(__CACHE_FOLDER, "files.{}".format(Config.get_file_type()))
+
+# 如果允许缓存
+if Setting.get("AllowCache") is True:
+    # 但缓存文件目录不存在
+    if not os.path.exists(__CACHE_FILES_DATA_PATH):
+        # 则创建缓存文件夹
+        Config.save(__CACHE_FILES_DATA_PATH, _CACHE_FILES_DATA)
+    else:
+        _CACHE_FILES_DATA = dict(Config.load(__CACHE_FILES_DATA_PATH))
+
+
+class Cache:
+
+    # 为一个文件夹生产md5值
+    @staticmethod
+    def generate_md5(path: str) -> str:
+        with open(path, "rb") as f:
+            return hashlib.md5(f.read()).hexdigest()
+
+    # 根据md5值获取数据
+    @staticmethod
+    def get_data(md5: str) -> Optional[Any]:
+        try:
+            return _CACHE_FILES_DATA[md5]
+        except KeyError:
+            return None

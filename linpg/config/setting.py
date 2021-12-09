@@ -9,7 +9,7 @@ class SettingSystem:
     __INTERNAL_SETTING: dict = {"Cheat": False}
     # 当前配置文件保存路径的参数
     __SETTING_FOLDER_PATH: str = "Save"
-    __SETTING_FILE_NAME: str = "setting.yaml"
+    __SETTING_FILE_NAME: str = "setting.{}".format(Config.get_file_type())
 
     # 初始化
     def __init__(self) -> None:
@@ -44,11 +44,11 @@ class SettingSystem:
         Config.save(self.get_config_path(), self.__SETTING_DATA)
 
     # 获取设置数据
-    def get(self, *key: str) -> Any:
+    def get(self, *key: str) -> Optional[Any]:
         return get_value_by_keys(self.__SETTING_DATA, key)
 
     # 在不确定的情况下尝试获取设置数据
-    def try_get(self, *key: str) -> Any:
+    def try_get(self, *key: str) -> Optional[Any]:
         return get_value_by_keys(self.__SETTING_DATA, key, False)
 
     # 修改设置数据

@@ -1,0 +1,6 @@
+{
+    "ConfigFileType": "yaml",
+    "ThirdPartyLibraries": {
+        "ffmpeg": "ffmpeg.exe"
+    }
+}

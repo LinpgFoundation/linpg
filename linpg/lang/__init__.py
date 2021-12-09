@@ -25,7 +25,7 @@ class LanguageManager:
         # 加载游戏自定义的外部语言文件
         path_t: str
         if os.path.exists(
-            path_t := os.path.join(self.__EX_LANG_FOLDER, "{}.yaml".format(Setting.language))
+            path_t := os.path.join(self.__EX_LANG_FOLDER, "{0}.{1}".format(Setting.language, Config.get_file_type()))
         ) or os.path.exists(path_t := os.path.join(self.__EX_LANG_FOLDER, "{}.json".format(Setting.language))):
             try:
                 self.__LANG_DATA.update(Config.load(path_t))

@@ -40,9 +40,14 @@ class AbstractBattleSystem(AbstractGameSystem):
     # 获取对话文件所在的具体路径
     def get_map_file_location(self) -> str:
         return (
-            os.path.join("Data", self._chapter_type, "chapter{}_map.yaml".format(self._chapter_id))
+            os.path.join("Data", self._chapter_type, "chapter{0}_map.{1}".format(self._chapter_id, Config.get_file_type()))
             if self._project_name is None
-            else os.path.join("Data", self._chapter_type, self._project_name, "chapter{}_map.yaml".format(self._chapter_id))
+            else os.path.join(
+                "Data",
+                self._chapter_type,
+                self._project_name,
+                "chapter{0}_map.{1}".format(self._chapter_id, Config.get_file_type()),
+            )
         )
 
     # 初始化地图

@@ -145,7 +145,7 @@ class DialogEditor(DialogConverter):
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
         original_data: dict = (
-            Config.load(self.get_dialog_file_location()) if os.path.exists(self.get_dialog_file_location()) else {}
+            Config.load_file(self.get_dialog_file_location()) if os.path.exists(self.get_dialog_file_location()) else {}
         )
         original_data["dialogs"] = self.__slipt_the_stuff_need_save()
         return original_data
@@ -171,7 +171,7 @@ class DialogEditor(DialogConverter):
     # 读取章节信息
     def _load_content(self) -> None:
         if os.path.exists(path := self.get_dialog_file_location()):
-            if "dialogs" in (data_t := Config.load(path)):
+            if "dialogs" in (data_t := Config.load_file(path)):
                 try:
                     self._dialog_data = dict(data_t["dialogs"])
                 except Exception:
@@ -268,7 +268,7 @@ class DialogEditor(DialogConverter):
     def _update_scene(self, dialog_id: str) -> None:
         # 确保当前版块有对话数据。如果当前版块为空，则加载默认模板
         if len(self.dialog_content) <= 0:
-            self.dialog_content.update(Config.load_internal("template.json", "dialog_example"))
+            self.dialog_content.update(Template.get("dialog_example"))
             for key in self.dialog_content:
                 self.dialog_content[key]["content"].append(self.please_enter_content)
                 self.dialog_content[key]["narrator"] = self.please_enter_name

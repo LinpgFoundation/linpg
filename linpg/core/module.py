@@ -179,7 +179,7 @@ class GameObject2d(GameObject):
         return self.centerx, self.bottom
 
     # 是否被鼠标触碰
-    def is_hovered(self, off_set: Iterable = NoPos) -> bool:
+    def is_hovered(self, off_set: tuple = NoPos) -> bool:
         mouse_pos: tuple[int, int] = (
             Controller.mouse.pos if off_set is NoPos else Coordinates.subtract(Controller.mouse.pos, off_set)
         )
@@ -194,22 +194,22 @@ class GameObject2d(GameObject):
         self.display(Display.window)
 
     # 根据offSet将图片展示到surface的对应位置上 - 子类必须实现
-    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         EXCEPTION.fatal("display()", 1)
 
     # 根据offSet将图片展示到屏幕的对应位置上
-    def display_on_screen(self, offSet: Iterable = ORIGIN) -> None:
+    def display_on_screen(self, offSet: tuple = ORIGIN) -> None:
         self.display(Display.window, offSet)
 
     # 忽略现有坐标，将图片画到surface的指定位置上
-    def blit(self, surface: ImageSurface, pos: Iterable) -> None:
+    def blit(self, surface: ImageSurface, pos: tuple) -> None:
         old_pos = self.get_pos()
         self.move_to(pos)
         self.draw(surface)
         self.move_to(old_pos)
 
     # 忽略现有坐标，将图片画到surface的指定位置上
-    def blit_on_screen(self, pos: Iterable) -> None:
+    def blit_on_screen(self, pos: tuple) -> None:
         old_pos = self.get_pos()
         self.move_to(pos)
         self.draw(Display.window)
@@ -245,7 +245,7 @@ class GameObject2point5d(GameObject):
 
 # 需要被打印的物品
 class ItemNeedBlit(GameObject2point5d):
-    def __init__(self, image: object, weight: number, pos: Iterable, offSet: Iterable):
+    def __init__(self, image: object, weight: number, pos: tuple, offSet: tuple):
         super().__init__(pos[0], pos[1], weight)
         self.image = image
         self.offSet = offSet

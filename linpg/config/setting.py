@@ -26,10 +26,10 @@ class SettingSystem:
     # 重新加载设置数据
     def reload(self) -> None:
         # 加载内部默认的设置配置文件
-        self.__SETTING_DATA = dict(Config.load_internal("template.json", "setting"))
+        self.__SETTING_DATA = Template.get("setting")
         # 如果自定义的设置配置文件存在，则加载
         if os.path.exists(self.get_config_path()):
-            self.__SETTING_DATA.update(Config.load(self.get_config_path()))
+            self.__SETTING_DATA.update(Config.load_file(self.get_config_path()))
         # 如果不存在自定义的设置配置文件，则应该创建一个
         else:
             # 导入local,查看默认语言
@@ -44,11 +44,11 @@ class SettingSystem:
         Config.save(self.get_config_path(), self.__SETTING_DATA)
 
     # 获取设置数据
-    def get(self, *key: str) -> Optional[Any]:
+    def get(self, *key: str) -> Any:
         return get_value_by_keys(self.__SETTING_DATA, key)
 
     # 在不确定的情况下尝试获取设置数据
-    def try_get(self, *key: str) -> Optional[Any]:
+    def try_get(self, *key: str) -> Any:
         return get_value_by_keys(self.__SETTING_DATA, key, False)
 
     # 修改设置数据
@@ -96,6 +96,11 @@ class SettingSystem:
     @property
     def low_memory_mode(self) -> bool:
         return self.__SETTING_DATA["LowMemoryMode"]
+
+    # 允许缓存
+    @property
+    def allow_cache(self) -> bool:
+        return self.__SETTING_DATA["AllowCache"]
 
     # 作弊模式
     @property

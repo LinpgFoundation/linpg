@@ -1,7 +1,7 @@
 from .display import *
 
 # 根据设置参数改变声道数量
-MIXER_CHANNEL_NUM: int = max(Setting.get("NumberOfChannels"), 8) + 3
+MIXER_CHANNEL_NUM: int = max(int(Setting.get("NumberOfChannels")), 8) + 3
 pygame.mixer.set_num_channels(MIXER_CHANNEL_NUM)
 
 """设置linpg引擎保留的"""
@@ -213,12 +213,12 @@ class SoundVolumeManger:
 
     @property
     def global_value(self) -> int:
-        return round(keep_in_range(Setting.get("Sound", "global_value"), 0, self.__sound_unit))
+        return round(keep_in_range(round(Setting.get("Sound", "global_value")), 0, self.__sound_unit))
 
     @property
     def background_music(self) -> int:
         return round(
-            keep_in_range(Setting.get("Sound", "background_music"), 0, self.__sound_unit)
+            keep_in_range(round(Setting.get("Sound", "background_music"), 2), 0, self.__sound_unit)
             * self.global_value
             / self.__sound_unit
         )
@@ -226,13 +226,17 @@ class SoundVolumeManger:
     @property
     def effects(self) -> int:
         return round(
-            keep_in_range(Setting.get("Sound", "effects"), 0, self.__sound_unit) * self.global_value / self.__sound_unit
+            keep_in_range(round(Setting.get("Sound", "effects"), 2), 0, self.__sound_unit)
+            * self.global_value
+            / self.__sound_unit
         )
 
     @property
     def environment(self) -> int:
         return round(
-            keep_in_range(Setting.get("Sound", "environment"), 0, self.__sound_unit) * self.global_value / self.__sound_unit
+            keep_in_range(round(Setting.get("Sound", "environment"), 2), 0, self.__sound_unit)
+            * self.global_value
+            / self.__sound_unit
         )
 
 

@@ -106,7 +106,7 @@ class DisplayController:
 
     # 获取屏幕
     @property
-    def window(self) -> object:
+    def window(self) -> ImageSurface:
         return self.__SCREEN_WINDOW
 
     # 退出

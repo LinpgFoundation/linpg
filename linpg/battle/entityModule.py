@@ -273,7 +273,7 @@ def makeFolderForCharacterSounds() -> None:
 
 # 加载并更新更新位于Data中的角色数据配置文件-character_data.yaml
 def loadCharacterData() -> None:
-    loadData = Config.load("Data/character_data.yaml")
+    loadData = Config.load_file("Data/character_data.yaml")
     ifAnythingChange = False
     for path in glob(r"Assets/image/character/*"):
         name = os.path.basename(path)

@@ -12,9 +12,11 @@ class DropDownList(GameObjectsDictContainer):
         super().__init__(bg_img, x, y, 0, 0, tag)
         self.__chosen_item_key: str = ""
         self.__DEFAULT_CONTENT: str = ""
-        self.__font_color: tuple = None
-        self.update_font_color(font_color)
+        # 字体颜色
+        self.__font_color: tuple = Colors.get(font_color)
+        # 字体
         self.__FONT = Font.create(font_size)
+        # 边缘粗细
         self.outline_thickness: int = 1
 
     # 重新计算宽度

@@ -1,5 +1,6 @@
-from .setting import *
 import hashlib
+from typing import Optional
+from .setting import *
 
 # 用于存放全局数据的字典
 _GLOBAL_VALUES_DICT: dict = {}
@@ -38,11 +39,11 @@ class GlobalValue:
 
 
 # 用于存放数据库数据的字典
-_DATA_BASE_DICT: dict = dict(Config.load_internal("database.json"))
+_DATA_BASE_DICT: dict = Config.load_internal_file("database.json")
 
 # 初始化数据库
 if len(path := Config.resolve_path(os.path.join("Data", "database"))) > 0:
-    for key, value in dict(Config.load(path)).items():
+    for key, value in Config.load_file(path).items():
         if key not in _DATA_BASE_DICT:
             _DATA_BASE_DICT[key] = value
         else:
@@ -58,7 +59,7 @@ class DataBase:
             EXCEPTION.fatal('Cannot find key "{}" in the database'.format(key))
 
 
-_INFO_DATA_DICT: dict = dict(Config.load_internal("info.json"))
+_INFO_DATA_DICT: dict = Config.load_internal_file("info.json")
 
 # 版本信息管理模块
 class Info:
@@ -122,13 +123,13 @@ _CACHE_FILES_DATA: dict = {}
 __CACHE_FILES_DATA_PATH: str = os.path.join(__CACHE_FOLDER, "files.{}".format(Config.get_file_type()))
 
 # 如果允许缓存
-if Setting.get("AllowCache") is True:
+if Setting.allow_cache is True:
     # 但缓存文件目录不存在
     if not os.path.exists(__CACHE_FILES_DATA_PATH):
         # 则创建缓存文件夹
         Config.save(__CACHE_FILES_DATA_PATH, _CACHE_FILES_DATA)
     else:
-        _CACHE_FILES_DATA = dict(Config.load(__CACHE_FILES_DATA_PATH))
+        _CACHE_FILES_DATA = Config.load_file(__CACHE_FILES_DATA_PATH)
 
 
 class Cache:

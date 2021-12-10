@@ -21,14 +21,14 @@ class LanguageManager:
     # 重新加载语言文件
     def reload(self) -> None:
         # 加载引擎内部的默认语言文件
-        self.__LANG_DATA = dict(Config.load(os.path.join(os.path.dirname(__file__), "{}.json".format(Setting.language))))
+        self.__LANG_DATA = Config.load_file(os.path.join(os.path.dirname(__file__), "{}.json".format(Setting.language)))
         # 加载游戏自定义的外部语言文件
         path_t: str
         if os.path.exists(
             path_t := os.path.join(self.__EX_LANG_FOLDER, "{0}.{1}".format(Setting.language, Config.get_file_type()))
         ) or os.path.exists(path_t := os.path.join(self.__EX_LANG_FOLDER, "{}.json".format(Setting.language))):
             try:
-                self.__LANG_DATA.update(Config.load(path_t))
+                self.__LANG_DATA.update(Config.load_file(path_t))
             except Exception:
                 EXCEPTION.inform("Linpg cannot load additional language file.")
         # 获取当前所有完整的可用语言的列表

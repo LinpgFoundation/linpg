@@ -1,6 +1,6 @@
 from __future__ import annotations
 import json
-from typing import Any, Optional
+from typing import Any
 from copy import deepcopy
 from glob import glob
 from ..exception import *
@@ -15,7 +15,7 @@ except Exception:
     pass
 
 # 根据keys查找值，最后返回一个复制的对象
-def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) -> Optional[Any]:
+def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) -> Any:
     pointer = dict_to_check
     for key in keys:
         try:
@@ -61,49 +61,41 @@ class Config:
     def get_file_type() -> str:
         return str(_SPECIFICATIONS["ConfigFileType"])
 
-    # 加载配置文件的程序
+    # 加载配置文件
     @staticmethod
-    def __load(path: str, keys: tuple, warning: bool = True) -> Optional[Any]:
+    def __load_file(path: str) -> dict:
         # 如果路径不存在
         if not os.path.exists(path):
-            if warning is True:
-                EXCEPTION.fatal("Cannot find file on path: {}".format(path))
-            else:
-                return None
-        # 按照类型加载配置文件
-        with open(path, "r", encoding="utf-8") as f:
-            # 使用yaml模块加载配置文件
-            if path.endswith(".yaml") or path.endswith(".yml"):
-                if _YAML_INITIALIZED is True:
-                    Data = yaml.load(f.read(), Loader=yaml.Loader)
-                elif warning is True:
-                    EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.")
+            EXCEPTION.fatal("Cannot find file on path: {}".format(path))
+        else:
+            # 按照类型加载配置文件
+            with open(path, "r", encoding="utf-8") as f:
+                # 使用yaml模块加载配置文件
+                if path.endswith(".yaml") or path.endswith(".yml"):
+                    if _YAML_INITIALIZED is True:
+                        return yaml.load(f.read(), Loader=yaml.Loader)
+                    else:
+                        EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.")
+                # 使用json模块加载配置文件
+                elif path.endswith(".json"):
+                    return json.load(f)
                 else:
-                    return None
-            # 使用json模块加载配置文件
-            elif path.endswith(".json"):
-                Data = json.load(f)
-            elif warning is True:
-                EXCEPTION.fatal("Linpg can only load json and yaml (when pyyaml is installed).")
-            else:
-                return None
-        # 返回配置文件中的数据
-        return Data if len(keys) == 0 else get_value_by_keys(Data, keys)
+                    EXCEPTION.fatal("Linpg can only load json and yaml (when pyyaml is installed).")
 
     # 加载配置文件
     @staticmethod
-    def load(path: str, *key: str) -> Optional[Any]:
-        return Config.__load(path, key)
+    def load_file(path: str) -> dict:
+        return Config.__load_file(path)
 
-    # 加载配置文件
+    # 加载配置文件，并根据key（s）返回对应的数据
     @staticmethod
-    def try_load(path: str, *key: str) -> Optional[Any]:
-        return Config.__load(path, key, False)
+    def load(path: str, *key: str) -> Any:
+        return get_value_by_keys(Config.__load_file(path), key)
 
-    # 加载内部配置文件保存
+    # 加载内部配置文件
     @staticmethod
-    def load_internal(path: str, *key: str) -> Optional[Any]:
-        return Config.__load(os.path.join(os.path.dirname(__file__), path), key)
+    def load_internal_file(path: str) -> dict:
+        return Config.__load_file(os.path.join(os.path.dirname(__file__), path))
 
     # 配置文件保存
     @staticmethod
@@ -130,7 +122,7 @@ class Config:
     @staticmethod
     def organize(pathname: str) -> None:
         for configFilePath in glob(pathname):
-            Config.save(configFilePath, Config.load(configFilePath))
+            Config.save(configFilePath, Config.load_file(configFilePath))
 
     # 整理内部配置文件
     @staticmethod
@@ -199,10 +191,19 @@ class Config:
             return ""
 
 
-_SPECIFICATIONS: dict = dict(Config.load_internal("specifications.json"))
+_SPECIFICATIONS: dict = Config.load_internal_file("specifications.json")
 
 # 使用引擎开发游戏的用户可以自定义的参数
 class Specification:
     @staticmethod
     def get(key: str) -> Any:
         return _SPECIFICATIONS[key]
+
+
+_TEMPLATE: dict = Config.load_internal_file("template.json")
+
+# 引擎部分生产的配置文件的模板
+class Template:
+    @staticmethod
+    def get(key: str) -> dict:
+        return dict(_TEMPLATE[key])

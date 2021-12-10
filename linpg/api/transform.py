@@ -16,7 +16,8 @@ class Transformer:
 
     # 移除掉图片周围的透明像素
     def crop_bounding(self, img: ImageSurface) -> ImageSurface:
-        return IMG.crop(img, img.get_bounding_rect())
+        rect_t = img.get_bounding_rect()
+        return IMG.crop(img, rect_t.topleft, rect_t.size)
 
 
 transform = Transformer()

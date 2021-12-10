@@ -22,7 +22,7 @@ def draw_rect(surface: ImageSurface, color: color_liked, rect: RectLiked, thickn
 
 # 转换pygame的rect类至linpg引擎的rect类
 def convert_rect(rect: RectLiked) -> Rectangle:
-    # 确认是pygame.RectSSS类再转换
+    # 确认是pygame.Rect类再转换
     if isinstance(rect, pygame.Rect):
         return Rectangle(rect.x, rect.y, rect.width, rect.height)
     # 如果是tuple类，则需要创建
@@ -40,9 +40,9 @@ def convert_rect(rect: RectLiked) -> Rectangle:
         EXCEPTION.fatal('The rect has to be RectLiked object, not "{}".'.format(type(rect)))
 
 
-# 转换linpg.Rect至pygame.RectSSS
+# 转换linpg.Rect至pygame.Rect
 def convert_to_pygame_rect(rect: RectLiked) -> pygame.Rect:
-    # 如果是pygame.RectSSS类，则没必要转换
+    # 如果是pygame.Rect类，则没必要转换
     if isinstance(rect, pygame.Rect):
         return rect
     # 确认是linpg.Rect类再转换

@@ -28,7 +28,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
 
     # 读取章节
     def load(self, save_path: str) -> None:
-        saveData = Config.load(save_path)
+        saveData = Config.load_file(save_path)
         self._initialize(
             saveData["chapter_type"],
             saveData["chapter_id"],

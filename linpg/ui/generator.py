@@ -4,10 +4,10 @@ from .progressbar import *
 
 class UiGenerator:
     def __init__(self) -> None:
-        self.__DEFAULT_UI: dict = dict(Config.load_internal("ui.json"))
+        self.__DEFAULT_UI: dict = Config.load_internal_file("ui.json")
         # 加载自定义的ui数据（如果存在）
         if len(path := Config.resolve_path(os.path.join("Data", "ui"))) > 0:
-            self.__DEFAULT_UI.update(Config.load(path))
+            self.__DEFAULT_UI.update(Config.load_file(path))
 
     # 尝试转换特殊的string
     def __try_convert_special_string_to_number(self, value: str, value_in_case_percentage: int, custom_values: dict) -> int:

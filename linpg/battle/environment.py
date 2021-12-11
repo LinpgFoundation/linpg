@@ -1,4 +1,4 @@
-from ..dialog import *
+from ..character import *
 
 # 地图场景模块
 class EnvImagesManagement:
@@ -16,7 +16,7 @@ class EnvImagesManagement:
         self.__DECORATION_IMAGE_DICT: dict = {}
         self.__DECORATION_IMAGE_DICT_DARK: dict = {}
         # 背景图片
-        self.__BACKGROUND_IMAGE_PATH: str = "Assets/image/dialog_background"
+        self.__BACKGROUND_IMAGE_PATH: str = os.path.join("Assets", "image", "dialog_background")
         # 暗度（仅黑夜场景有效，为0时视为白天）
         self.__DARKNESS: int = 0
 
@@ -202,4 +202,4 @@ class EnvImagesManagement:
 
 
 # 地图场景图片管理
-MAP_ENV_IMAGE: object = EnvImagesManagement()
+MAP_ENV_IMAGE: EnvImagesManagement = EnvImagesManagement()

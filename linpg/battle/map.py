@@ -30,9 +30,28 @@ class MapObject(AdvancedAbstractImageSurface, AStar):
         self.set_local_pos(mapDataDic["local_x"], mapDataDic["local_y"])
         # 是否夜战
         self.__night_mode: bool = bool(mapDataDic["atNight"]) if "atNight" in mapDataDic else False
+        # 加载装饰物
+        decorations: list = []
+        new_decoration: DecorationObject
+        for decorationType, itemsThatType in mapDataDic["decoration"].items():
+            for itemData in itemsThatType.values():
+                if decorationType == "campfire":
+                    new_decoration = CampfireObject(itemData["x"], itemData["y"], decorationType, itemData["range"])
+                elif decorationType == "chest":
+                    new_decoration = ChestObject(
+                        itemData["x"],
+                        itemData["y"],
+                        decorationType,
+                        itemData["items"] if "items" in itemData else [],
+                        itemData["whitelist"] if "whitelist" in itemData else [],
+                    )
+                else:
+                    new_decoration = DecorationObject(itemData["x"], itemData["y"], decorationType, itemData["image"])
+                    if decorationType == "tree":
+                        new_decoration.scale = 0.75
+                decorations.append(new_decoration)
         # 装饰物
-        self.__decorations: numpy.ndarray
-        self.load_decorations(mapDataDic["decoration"])
+        self.__decorations: numpy.ndarray = numpy.sort(numpy.asarray(decorations))
         # 加载环境
         self.load_env_img((perBlockWidth, perBlockHeight))
         # 处于光处的区域
@@ -92,29 +111,6 @@ class MapObject(AdvancedAbstractImageSurface, AStar):
                 else:
                     self.__debug_win.fill_rect((start_x, start_y, unit, unit), "white")
         self.__debug_win.present()
-
-    # 加载装饰物
-    def load_decorations(self, decorationData: dict) -> None:
-        decorations: list = []
-        new_decoration: object = None
-        for decorationType, itemsThatType in decorationData.items():
-            for itemData in itemsThatType.values():
-                if decorationType == "campfire":
-                    new_decoration = CampfireObject(itemData["x"], itemData["y"], decorationType, itemData["range"])
-                elif decorationType == "chest":
-                    new_decoration = ChestObject(
-                        itemData["x"],
-                        itemData["y"],
-                        decorationType,
-                        itemData["items"] if "items" in itemData else [],
-                        itemData["whitelist"] if "whitelist" in itemData else [],
-                    )
-                else:
-                    new_decoration = DecorationObject(itemData["x"], itemData["y"], decorationType, itemData["image"])
-                    if decorationType == "tree":
-                        new_decoration.scale = 0.75
-                decorations.append(new_decoration)
-        self.__decorations = numpy.sort(numpy.asarray(decorations))
 
     # 根据index寻找装饰物
     def find_decoration_with_id(self, index: int) -> DecorationObject:
@@ -245,7 +241,7 @@ class MapObject(AdvancedAbstractImageSurface, AStar):
     # 把装饰物画到屏幕上
     def display_decoration(self, screen: ImageSurface, alliances_data: dict = {}, enemies_data: dict = {}) -> None:
         # 检测角色所占据的装饰物（即需要透明化，方便玩家看到角色）
-        charactersPos: list[int] = []
+        charactersPos: list = []
         for dataDic in {**alliances_data, **enemies_data}.values():
             charactersPos.append((int(dataDic.x), int(dataDic.y)))
             charactersPos.append((int(dataDic.x) + 1, int(dataDic.y) + 1))

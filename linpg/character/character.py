@@ -3,38 +3,41 @@ from .entity import *
 # 攻击所需的AP
 AP_IS_NEEDED_TO_ATTACK: int = 5
 AP_IS_NEEDED_TO_MOVE_ONE_BLOCK: int = 2
+# 濒死回合限制
+DYING_ROUND_LIMIT: int = 3
 
 # 友方角色类
 class FriendlyCharacter(Entity):
-    def __init__(self, theCharacterDataDic: dict, defaultData: dict, mode: str) -> None:
-        for key in theCharacterDataDic:
-            defaultData[key] = theCharacterDataDic[key]
-        super().__init__(defaultData, "character", mode)
-        self.bullets_carried = defaultData["bullets_carried"]
-        self.skill_effective_range = defaultData["skill_effective_range"]
-        self.max_skill_range = calculate_range(defaultData["skill_effective_range"])
-        self.skill_cover_range = defaultData["skill_cover_range"]
-        self._detection: int = (
-            int(defaultData["detection"]) if "detection" in defaultData and defaultData["detection"] is not None else 0
+    def __init__(self, characterData: dict, mode: str) -> None:
+        super().__init__(characterData, "character", mode)
+        # 是否濒死
+        self.__down_time: int = (
+            int(characterData["down_time"])
+            if "down_time" in characterData
+            else (-1 if self.is_alive() else DYING_ROUND_LIMIT)
+        )
+        # 当前弹夹的子弹数
+        self.__current_bullets: int = (
+            int(characterData["current_bullets"]) if "current_bullets" in characterData else self.__magazine_capacity
+        )
+        # 当前携带子弹数量
+        self.__bullets_carried: int = int(characterData["bullets_carried"])
+        # 技能覆盖范围
+        self.__skill_coverage: int = int(characterData["skill_coverage"])
+        # 技能施展范围
+        self.__skill_effective_range: dict = dict(characterData["skill_effective_range"])
+        # 最远技能施展范围
+        self.__max_skill_range: int = calculate_range(self.__skill_effective_range)
+        # 被察觉程度
+        self.__detection: int = (
+            int(characterData["detection"]) if "detection" in characterData and characterData["detection"] is not None else 0
         )
         # 生成被察觉的图标
         self.__beNoticedImage: EntityDynamicProgressBarSurface = EntityDynamicProgressBarSurface()
-        self.__beNoticedImage.set_percentage(self._detection / 100)
+        self.__beNoticedImage.set_percentage(self.__detection / 100)
         # 重创立绘
-        self.__getHurtImage = None
-        self.__try_load_get_hurt_image()
-
-    # 加载图片
-    def load_image(self) -> None:
-        super().load_image()
-        if self.__getHurtImage is not None:
-            self.__getHurtImage.add(self.type)
-        else:
-            self.__try_load_get_hurt_image()
-        self.__beNoticedImage.load_image()
-
-    # 尝试加载重创立绘
-    def __try_load_get_hurt_image(self) -> None:
+        self.__getHurtImage: Optional[EntityGetHurtImage]
+        # 尝试加载重创立绘
         try:
             self.__getHurtImage = EntityGetHurtImage(self.type, Display.get_height() / 4, Display.get_height() / 2)
         except Exception:
@@ -43,28 +46,107 @@ class FriendlyCharacter(Entity):
             if not os.path.exists(os.path.join("Assets/image/npc_icon", "{}.png".format(self.type))):
                 print("And also its icon.")
 
+    def to_dict(self) -> dict:
+        return super().to_dict() | {
+            "down_time": self.__down_time,
+            "current_bullets": self.__current_bullets,
+            "bullets_carried": self.__bullets_carried,
+            "skill_coverage": self.__skill_coverage,
+            "skill_effective_range": self.__skill_effective_range,
+            "detection": self.__detection,
+        }
+
+    """
+    子弹
+    """
+
+    # 当前子弹携带数量
+    @property
+    def bullets_carried(self) -> int:
+        return self.__bullets_carried
+
+    # 增加当前子弹携带数量
+    def add_bullets_carried(self, value: int) -> None:
+        self.__bullets_carried += value
+
+    # 当前子弹数量
+    @property
+    def current_bullets(self) -> int:
+        return self.__current_bullets
+
+    # 减少当前子弹数量
+    def subtract_current_bullets(self, value: int = 1) -> None:
+        self.__current_bullets -= value
+
+    # 是否需要换弹
+    def is_reload_needed(self) -> int:
+        return self.magazine_capacity - self.__current_bullets > 0
+
+    # 换弹
+    def reload_magazine(self) -> None:
+        bullets_to_add: int = self.magazine_capacity - self.__current_bullets
+        # 当所剩子弹足够换弹的时候
+        if bullets_to_add < self.__bullets_carried:
+            self.__current_bullets += bullets_to_add
+            self.__bullets_carried -= bullets_to_add
+        # 当所剩子弹不足以换弹的时候
+        else:
+            self.__current_bullets += self.__bullets_carried
+            self.__bullets_carried = 0
+
+    """
+    技能
+    """
+
+    # 技能覆盖范围
+    @property
+    def skill_coverage(self) -> int:
+        self.__skill_coverage
+
+    # 技能施展范围
+    @property
+    def skill_effective_range(self) -> dict:
+        self.__skill_effective_range
+
+    # 最远技能施展范围
+    @property
+    def max_skill_range(self) -> int:
+        self.__max_skill_range
+
+    # 是否处于濒死状态
+    def is_dying(self) -> bool:
+        return self.__down_time > 0
+
+    # 更加面临死亡
+    def get_closer_to_death(self) -> None:
+        self.__down_time -= 1
+
+    # 角色彻底死亡
+    def is_dead(self) -> bool:
+        return self.__down_time == 0
+
     @property
     def detection(self) -> int:
-        return self._detection
+        return self.__detection
 
     @property
     def is_detected(self) -> bool:
-        return self._detection >= 100
+        return self.__detection >= 100
 
     # 调整角色的隐蔽度
     def notice(self, value: int = 10) -> None:
-        self._detection += value
-        if self._detection > 100:
-            self._detection = 100
-        elif self._detection < 0:
-            self._detection = 0
-        self.__beNoticedImage.set_percentage(self._detection / 100)
+        self.__detection += value
+        if self.__detection > 100:
+            self.__detection = 100
+        elif self.__detection < 0:
+            self.__detection = 0
+        self.__beNoticedImage.set_percentage(self.__detection / 100)
 
     def injury(self, damage: int) -> None:
         super().injury(damage)
         # 如果角色在被攻击后处于濒死状态
-        if not self.is_alive() and not self.dying and self.kind != "HOC":
-            self.dying = DYING_ROUND_LIMIT
+        if not self.is_alive() and self.__down_time < 0 and self.__kind != "HOC":
+            self.__down_time = DYING_ROUND_LIMIT
             if self.__getHurtImage is not None:
                 self.__getHurtImage.x = -self.__getHurtImage.width
                 self.__getHurtImage.alpha = 255
@@ -73,14 +155,29 @@ class FriendlyCharacter(Entity):
 
     def heal(self, hpHealed: int) -> None:
         super().heal(hpHealed)
-        if self.dying is not False:
-            self.dying = False
+        if self.__down_time >= 0:
+            self.__down_time = -1
             self._if_play_action_in_reversing = True
+
+    # 把角色血条画到屏幕上
+    def _draw_health_bar(self, surface: ImageSurface) -> None:
+        if self.__down_time < 0:
+            super()._draw_health_bar(surface)
+        else:
+            self.__hp_bar.set_percentage(self.__down_time / DYING_ROUND_LIMIT)
+            self.__hp_bar.draw(surface, True)
+            display_in_center(
+                self.__ENTITY_UI_FONT.render("{0}/{1}".format(self.__down_time, DYING_ROUND_LIMIT), Colors.BLACK),
+                self.__hp_bar,
+                self.__hp_bar.x,
+                self.__hp_bar.y,
+                surface,
+            )
 
     def drawUI(self, surface: ImageSurface, MapClass: object) -> None:
         blit_pos = super().drawUI(surface, MapClass)
         # 展示被察觉的程度
-        if self._detection > 0:
+        if self.__detection > 0:
             # 参数
             eyeImgWidth: int = round(MapClass.block_width / 6)
             eyeImgHeight: int = round(MapClass.block_width / 10)
@@ -107,18 +204,15 @@ class FriendlyCharacter(Entity):
 
 # 敌对角色类
 class HostileCharacter(Entity):
-    def __init__(self, theSangvisFerrisDataDic: dict, defaultData: dict, mode: str):
-        for key in theSangvisFerrisDataDic:
-            defaultData[key] = theSangvisFerrisDataDic[key]
-        super().__init__(defaultData, "sangvisFerri", mode)
-        self.__patrol_path: deque = deque(defaultData["patrol_path"]) if "patrol_path" in defaultData else deque()
-        self.__vigilance: int = 0
+    def __init__(self, characterData: dict, mode: str):
+        super().__init__(characterData, "sangvisFerri", mode)
+        self.__patrol_path: deque = deque(characterData["patrol_path"]) if "patrol_path" in characterData else deque()
+        self.__vigilance: int = int(characterData["vigilance"]) if "vigilance" in characterData else 0
         self.__vigilanceImage: EntityDynamicProgressBarSurface = EntityDynamicProgressBarSurface("vertical")
         self.__vigilanceImage.set_percentage(self.__vigilance / 100)
 
-    def load_image(self) -> None:
-        super().load_image()
-        self.__vigilanceImage.load_image()
+    def to_dict(self) -> dict:
+        return super().to_dict() | {"patrol_path": list(self.__patrol_path), "vigilance": self.__vigilance}
 
     def alert(self, value: int = 10) -> None:
         self.__vigilance += value
@@ -271,22 +365,21 @@ class CharacterDataLoader(threading.Thread):
         self.mode = mode
 
     def run(self) -> None:
+        data_t: dict
         for key, value in self.alliances.items():
-            if isinstance(value, FriendlyCharacter):
-                value.load_image()
-            else:
-                self.alliances[key] = FriendlyCharacter(value, self.DATABASE[value["type"]], self.mode)
+            data_t = deepcopy(self.DATABASE[value["type"]])
+            data_t.update(value)
+            self.alliances[key] = FriendlyCharacter(data_t, self.mode)
             self.currentID += 1
             if Setting.developer_mode:
                 print("total: {0}, current: {1}".format(self.totalNum, self.currentID))
         for key, value in self.enemies.items():
-            if isinstance(value, HostileCharacter):
-                value.load_image()
-            else:
-                self.enemies[key] = HostileCharacter(value, self.DATABASE[value["type"]], self.mode)
+            data_t = deepcopy(self.DATABASE[value["type"]])
+            data_t.update(value)
+            self.enemies[key] = HostileCharacter(data_t, self.mode)
             self.currentID += 1
             if Setting.developer_mode:
                 print("total: {0}, current: {1}".format(self.totalNum, self.currentID))
 
-    def getResult(self) -> tuple:
+    def getResult(self) -> tuple[dict, dict]:
         return self.alliances, self.enemies

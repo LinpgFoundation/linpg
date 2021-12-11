@@ -4,7 +4,7 @@ from .environment import *
 class DecorationObject(GameObject):
     def __init__(self, x: int, y: int, itemType: str, image: str):
         super().__init__(x, y)
-        self.type = itemType
+        self.type: str = itemType
         self.image: str = image
         self.__status: dict = {}
         self.scale: float = 0.5

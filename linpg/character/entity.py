@@ -1,80 +1,123 @@
-from .entityModule import *
-
-# 储存角色图片的常量
-_CHARACTERS_IMAGE_SYS: EntityImageManager = EntityImageManager()
-# 储存角色音效的常量
-_CHARACTERS_SOUND_SYSTEM: EntitySoundManager = EntitySoundManager(5)
-# 角色UI的文字数据
-_ENTITY_UI_FONT: FontGenerator = Font.create(Display.get_width() / 192)
-
-# 濒死回合限制
-DYING_ROUND_LIMIT: int = 3
+from .module import *
 
 # 人形模块
 class Entity(Position):
+
+    # 角色UI的文字数据
+    __ENTITY_UI_FONT: FontGenerator = Font.create(Display.get_width() / 192)
+    # 储存角色音效的常量
+    __CHARACTERS_SOUND_SYSTEM: EntitySoundManager = EntitySoundManager(5)
+    # 储存角色图片的常量
+    __CHARACTERS_IMAGE_SYS: EntityImageManager = EntityImageManager()
+
     def __init__(self, DATA: dict, faction: str, mode: str):
         super().__init__(DATA["x"], DATA["y"])
         # 最大行动值
-        self.__max_action_point: int = int(DATA["action_point"])
+        self.__max_action_point: int = (
+            int(DATA["max_action_point"]) if "max_action_point" in DATA else int(DATA["action_point"])
+        )
         # 当前行动值
-        self.__current_action_point: int = int(DATA["action_point"])
+        self.__current_action_point: int = (
+            int(DATA["current_action_point"]) if "current_action_point" in DATA else int(DATA["action_point"])
+        )
         # 攻击范围
         self.__attack_coverage: int = int(DATA["attack_coverage"])
         # 弹夹容量
         self.__magazine_capacity: int = int(DATA["magazine_capacity"])
-        # 当前弹夹的子弹数
-        self.current_bullets: int = int(DATA["current_bullets"]) if "current_bullets" in DATA else self.__magazine_capacity
         # 最大血量
         self.__max_hp: int = max(int(DATA["max_hp"]), 1)
         # 当前血量
         self.__current_hp: int = int(DATA["current_hp"]) if "current_hp" in DATA else self.__max_hp
         # 不可再生的护甲值
         self.__irrecoverable_armor: int = int(DATA["irrecoverable_armor"]) if "irrecoverable_armor" in DATA else 0
-        # 当前可再生的护甲值
-        self.__current_recoverable_armor: int = int(DATA["recoverable_armor"]) if "recoverable_armor" in DATA else 0
         # 最大可再生的护甲值
         self.__max_recoverable_armor: int = int(DATA["recoverable_armor"]) if "recoverable_armor" in DATA else 0
-        # 是否濒死
-        self.dying = False if self.is_alive() else DYING_ROUND_LIMIT
-        # 攻击距离
-        self.effective_range: dict = dict(DATA["effective_range"])
+        # 当前可再生的护甲值
+        self.__current_recoverable_armor: int = (
+            int(DATA["current_recoverable_armor"]) if "current_recoverable_armor" in DATA else self.__max_recoverable_armor
+        )
+        # 攻击范围
+        self.__effective_range: dict = dict(DATA["effective_range"])
         # 最大攻击距离
-        self._max_effective_range: int = calculate_range(self.effective_range)
-        # 武器类型
-        self.kind: str = str(DATA["kind"])
-        # 阵营
-        self.faction: str = faction
-        # 角色武器名称
-        self.type: str = str(DATA["type"])
-        # gif图片管理
-        self.__imgId_dict: dict = _CHARACTERS_IMAGE_SYS.createGifDict(self.type, faction, mode)
-        # 加载角色的音效
-        if mode != "dev":
-            _CHARACTERS_SOUND_SYSTEM.add(self.type)
+        self.__max_effective_range: int = calculate_range(self.__effective_range)
         # 最大攻击力
         self.__max_damage: int = int(DATA["max_damage"])
         # 最小攻击力
         self.__min_damage: int = int(DATA["min_damage"])
+        # 武器类型
+        self.__kind: str = str(DATA["kind"])
+        # 阵营
+        self.__faction: str = faction
+        # 角色武器名称
+        self.__type: str = str(DATA["type"])
         # 是否图片镜像
-        self.__if_flip: bool = False
+        self.__if_flip: bool = bool(DATA["if_flip"]) if "if_flip" in DATA else False
         # idle动作
         self.__idle_action: str = "wait"
         # 当前动作
-        self.__current_action: str = self.__idle_action
+        self.__current_action: str = bool(DATA["current_action"]) if "current_action" in DATA else self.__idle_action
         # 动作是否重复
-        self.__if_action_loop: bool = True
+        self.__if_action_loop: bool = bool(DATA["if_action_loop"]) if "if_action_loop" in DATA else True
         # 动作是正序列播放还是反序播放
-        self._if_play_action_in_reversing: bool = False
+        self._if_play_action_in_reversing: bool = (
+            bool(DATA["if_play_action_in_reversing"]) if "if_play_action_in_reversing" in DATA else False
+        )
         # 需要移动的路径
-        self.__moving_path: deque = None
+        self.__moving_path: deque = deque(DATA["moving_path"]) if "moving_path" in DATA else None
+        # 是否无敌
+        self.__if_invincible: bool = bool(DATA["if_invincible"]) if "if_invincible" in DATA else False
+        # gif图片管理
+        self.__imgId_dict: dict = self.__CHARACTERS_IMAGE_SYS.createGifDict(self.__type, faction, mode)
+        # 加载角色的音效
+        if mode != "dev":
+            self.__CHARACTERS_SOUND_SYSTEM.add(self.__type)
         # 是否需要重新渲染地图
         self.__if_map_need_update: bool = False
         # 攻击范围
         self.__attack_range: dict[str, list] = {"near": [], "middle": [], "far": []}
-        # 是否无敌
-        self.__if_invincible: bool = False
         # 血条图片
         self.__hp_bar: EntityHpBar = EntityHpBar()
+
+    def to_dict(self) -> dict:
+        return {
+            "x": self.x,
+            "y": self.y,
+            "max_action_point": self.__max_action_point,
+            "current_action_point": self.__current_action_point,
+            "attack_coverage": self.__attack_coverage,
+            "magazine_capacity": self.__magazine_capacity,
+            "max_hp": self.__max_hp,
+            "current_hp": self.__current_hp,
+            "irrecoverable_armor": self.__irrecoverable_armor,
+            "recoverable_armor": self.__max_recoverable_armor,
+            "current_recoverable_armor": self.__current_recoverable_armor,
+            "effective_range": self.__effective_range,
+            "kind": self.__kind,
+            "type": self.__type,
+            "max_damage": self.__max_damage,
+            "min_damage": self.__min_damage,
+            "if_flip": self.__if_flip,
+            "current_action": self.__current_action,
+            "if_action_loop": self.__if_action_loop,
+            "if_play_action_in_reversing": self._if_play_action_in_reversing,
+            "moving_path": list(self.__moving_path),
+            "if_invincible": self.__if_invincible,
+        }
+
+    # 阵营
+    @property
+    def faction(self) -> str:
+        return self.__faction
+
+    # 武器类型
+    @property
+    def kind(self) -> str:
+        return self.__kind
+
+    # 角色武器名称
+    @property
+    def type(self) -> str:
+        return self.__type
 
     """
     攻击
@@ -86,8 +129,14 @@ class Entity(Position):
         return self.__magazine_capacity
 
     # 攻击覆盖范围
+    @property
     def attack_coverage(self) -> int:
         return self.__attack_coverage
+
+    # 攻击范围
+    @property
+    def effective_range(self) -> dict:
+        return self.__effective_range
 
     # 最大攻击力
     @property
@@ -134,7 +183,7 @@ class Entity(Position):
 
     # 获取角色特定动作的图片总数量
     def get_imgNum(self, action: str) -> int:
-        return _CHARACTERS_IMAGE_SYS.get_img_num(self.type, action)
+        return self.__CHARACTERS_IMAGE_SYS.get_img_num(self.__type, action)
 
     # 设定角色特定动作的图片播放ID
     def set_imgId(self, action: str, imgId: int) -> None:
@@ -288,7 +337,7 @@ class Entity(Position):
 
     # 播放角色声音
     def play_sound(self, kind_of_sound: str) -> None:
-        _CHARACTERS_SOUND_SYSTEM.play(self.type, kind_of_sound)
+        self.__CHARACTERS_SOUND_SYSTEM.play(self.__type, kind_of_sound)
 
     # 设置需要移动的路径
     def move_follow(self, path: Iterable) -> None:
@@ -344,13 +393,6 @@ class Entity(Position):
         else:
             return False
 
-    # 加载图片
-    def load_image(self) -> None:
-        for theAction in self.__imgId_dict:
-            _CHARACTERS_IMAGE_SYS.loadImageCollection(self.type, theAction, self.faction)
-        _CHARACTERS_SOUND_SYSTEM.add(self.type)
-        self.__hp_bar.load_image()
-
     # 查看是否一个Entity在该角色的附近
     def near(self, otherEntity: "Entity") -> bool:
         if self.x == otherEntity.x:
@@ -367,74 +409,76 @@ class Entity(Position):
             value.clear()
         # 确定范围
         if not ifHalfMode:
-            start_point = self.y - self._max_effective_range
-            end_point = self.y + self._max_effective_range + 1
+            start_point = self.y - self.__max_effective_range
+            end_point = self.y + self.__max_effective_range + 1
         elif not self.__if_flip:
-            start_point = self.y - self._max_effective_range
+            start_point = self.y - self.__max_effective_range
             end_point = self.y + 1
         else:
             start_point = self.y
-            end_point = self.y + self._max_effective_range + 1
+            end_point = self.y + self.__max_effective_range + 1
         # append坐标
         for y in range(start_point, end_point):
             if y <= self.y:
                 for x in range(
-                    self.x - self._max_effective_range - (y - self.y), self.x + self._max_effective_range + (y - self.y) + 1
+                    self.x - self.__max_effective_range - (y - self.y),
+                    self.x + self.__max_effective_range + (y - self.y) + 1,
                 ):
                     if x == self.x and y == self.y:
                         pass
                     if Map.row > y >= 0 and Map.column > x >= 0:
                         if (
-                            "far" in self.effective_range
-                            and self.effective_range["far"] is not None
-                            and self.effective_range["far"][0]
+                            "far" in self.__effective_range
+                            and self.__effective_range["far"] is not None
+                            and self.__effective_range["far"][0]
                             <= abs(x - self.x) + abs(y - self.y)
-                            <= self.effective_range["far"][1]
+                            <= self.__effective_range["far"][1]
                         ):
                             self.__attack_range["far"].append((x, y))
                         elif (
-                            "middle" in self.effective_range
-                            and self.effective_range["middle"] is not None
-                            and self.effective_range["middle"][0]
+                            "middle" in self.__effective_range
+                            and self.__effective_range["middle"] is not None
+                            and self.__effective_range["middle"][0]
                             <= abs(x - self.x) + abs(y - self.y)
-                            <= self.effective_range["middle"][1]
+                            <= self.__effective_range["middle"][1]
                         ):
                             self.__attack_range["middle"].append((x, y))
                         elif (
-                            "near" in self.effective_range
-                            and self.effective_range["near"] is not None
-                            and self.effective_range["near"][0]
+                            "near" in self.__effective_range
+                            and self.__effective_range["near"] is not None
+                            and self.__effective_range["near"][0]
                             <= abs(x - self.x) + abs(y - self.y)
-                            <= self.effective_range["near"][1]
+                            <= self.__effective_range["near"][1]
                         ):
                             self.__attack_range["near"].append((x, y))
             else:
                 for x in range(
-                    self.x - self._max_effective_range + (y - self.y), self.x + self._max_effective_range - (y - self.y) + 1
+                    self.x - self.__max_effective_range + (y - self.y),
+                    self.x + self.__max_effective_range - (y - self.y) + 1,
                 ):
                     if Map.row > y >= 0 and Map.column > x >= 0:
                         if (
-                            "far" in self.effective_range
-                            and self.effective_range["far"] is not None
-                            and self.effective_range["far"][0]
+                            "far" in self.__effective_range
+                            and self.__effective_range["far"] is not None
+                            and self.__effective_range["far"][0]
                             <= abs(x - self.x) + abs(y - self.y)
-                            <= self.effective_range["far"][1]
+                            <= self.__effective_range["far"][1]
                         ):
                             self.__attack_range["far"].append((x, y))
                         elif (
-                            "middle" in self.effective_range
-                            and self.effective_range["middle"] is not None
-                            and self.effective_range["middle"][0]
+                            "middle" in self.__effective_range
+                            and self.__effective_range["middle"] is not None
+                            and self.__effective_range["middle"][0]
                             <= abs(x - self.x) + abs(y - self.y)
-                            <= self.effective_range["middle"][1]
+                            <= self.__effective_range["middle"][1]
                         ):
                             self.__attack_range["middle"].append((x, y))
                         elif (
-                            "near" in self.effective_range
-                            and self.effective_range["near"] is not None
-                            and self.effective_range["near"][0]
+                            "near" in self.__effective_range
+                            and self.__effective_range["near"] is not None
+                            and self.__effective_range["near"][0]
                             <= abs(x - self.x) + abs(y - self.y)
-                            <= self.effective_range["near"][1]
+                            <= self.__effective_range["near"][1]
                         ):
                             self.__attack_range["near"].append((x, y))
         return self.__attack_range
@@ -447,21 +491,21 @@ class Entity(Position):
             else abs(int(otherEntity.x - custom_pos[0])) + abs(int(otherEntity.y - custom_pos[1]))
         )
         if (
-            "near" in self.effective_range
-            and self.effective_range["near"] is not None
-            and self.effective_range["near"][0] <= distanceBetween <= self.effective_range["near"][1]
+            "near" in self.__effective_range
+            and self.__effective_range["near"] is not None
+            and self.__effective_range["near"][0] <= distanceBetween <= self.__effective_range["near"][1]
         ):
             return "near"
         elif (
-            "middle" in self.effective_range
-            and self.effective_range["middle"] is not None
-            and self.effective_range["middle"][0] <= distanceBetween <= self.effective_range["middle"][1]
+            "middle" in self.__effective_range
+            and self.__effective_range["middle"] is not None
+            and self.__effective_range["middle"][0] <= distanceBetween <= self.__effective_range["middle"][1]
         ):
             return "middle"
         elif (
-            "far" in self.effective_range
-            and self.effective_range["far"] is not None
-            and self.effective_range["far"][0] <= distanceBetween <= self.effective_range["far"][1]
+            "far" in self.__effective_range
+            and self.__effective_range["far"] is not None
+            and self.__effective_range["far"][0] <= distanceBetween <= self.__effective_range["far"][1]
         ):
             return "far"
         else:
@@ -474,12 +518,12 @@ class Entity(Position):
     # 返回该角色的理想攻击范围
     @property
     def ideal_attack_range(self) -> int:
-        if "near" in self.effective_range and self.effective_range["near"] is not None:
-            return self.effective_range["near"][-1]
-        elif "middle" in self.effective_range and self.effective_range["middle"] is not None:
-            return self.effective_range["middle"][-1]
-        elif "far" in self.effective_range and self.effective_range["far"] is not None:
-            return self.effective_range["far"][-1]
+        if "near" in self.__effective_range and self.__effective_range["near"] is not None:
+            return self.__effective_range["near"][-1]
+        elif "middle" in self.__effective_range and self.__effective_range["middle"] is not None:
+            return self.__effective_range["middle"][-1]
+        elif "far" in self.__effective_range and self.__effective_range["far"] is not None:
+            return self.__effective_range["far"][-1]
         else:
             EXCEPTION.fatal("This character has no valid effective range!")
 
@@ -507,7 +551,7 @@ class Entity(Position):
         if action is None:
             action = self.__current_action
         # 调整小人图片的尺寸
-        img_of_char = _CHARACTERS_IMAGE_SYS.get_img(self.type, action, self.__imgId_dict[action]["imgId"])
+        img_of_char = self.__CHARACTERS_IMAGE_SYS.get_img(self.__type, action, self.__imgId_dict[action]["imgId"])
         img_width = round(MapClass.block_width * 1.6)
         img_of_char.set_size(img_width, img_width)
         # 调整alpha值
@@ -573,31 +617,24 @@ class Entity(Position):
             else:
                 return False
 
+    # 把角色血条画到屏幕上
+    def _draw_health_bar(self, surface: ImageSurface) -> None:
+        self.__hp_bar.set_percentage(self.__current_hp / self.__max_hp)
+        self.__hp_bar.draw(surface, False)
+        display_in_center(
+            self.__ENTITY_UI_FONT.render("{0}/{1}".format(self.__current_hp, self.__max_hp), Colors.BLACK),
+            self.__hp_bar,
+            self.__hp_bar.x,
+            self.__hp_bar.y,
+            surface,
+        )
+
+    # 把角色ui画到屏幕上
     def drawUI(self, surface: ImageSurface, MapClass: object) -> tuple:
-        # 把角色图片画到屏幕上
         xTemp, yTemp = MapClass.calPosInMap(self.x, self.y)
         xTemp += MapClass.block_width * 0.25
         yTemp -= MapClass.block_width * 0.2
         self.__hp_bar.set_size(MapClass.block_width / 2, MapClass.block_width / 10)
         self.__hp_bar.set_pos(xTemp, yTemp)
-        if not self.dying:
-            self.__hp_bar.set_percentage(self.__current_hp / self.__max_hp)
-            self.__hp_bar.draw(surface, False)
-            display_in_center(
-                _ENTITY_UI_FONT.render("{0}/{1}".format(self.__current_hp, self.__max_hp), Colors.BLACK),
-                self.__hp_bar,
-                xTemp,
-                yTemp,
-                surface,
-            )
-        else:
-            self.__hp_bar.set_percentage(self.dying / DYING_ROUND_LIMIT)
-            self.__hp_bar.draw(surface, True)
-            display_in_center(
-                _ENTITY_UI_FONT.render("{0}/{1}".format(self.dying, DYING_ROUND_LIMIT), Colors.BLACK),
-                self.__hp_bar,
-                xTemp,
-                yTemp,
-                surface,
-            )
+        self._draw_health_bar(surface)
         return xTemp, yTemp

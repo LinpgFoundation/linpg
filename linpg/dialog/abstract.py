@@ -99,9 +99,10 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
-        return {
-            **self.get_data_of_parent_game_system(),
-            **{"dialog_id": self._dialog_id, "dialog_options": self._dialog_options, "type": self._part},
+        return self.get_data_of_parent_game_system() | {
+            "dialog_id": self._dialog_id,
+            "dialog_options": self._dialog_options,
+            "type": self._part,
         }
 
     @property

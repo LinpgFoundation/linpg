@@ -1,4 +1,4 @@
-from .character import *
+from .map import *
 
 # 战斗系统接口，请勿实例化
 class AbstractBattleSystem(AbstractGameSystem):
@@ -14,8 +14,8 @@ class AbstractBattleSystem(AbstractGameSystem):
         # 用于检测是否有方向键被按到的字典
         self.__pressKeyToMove: dict = {"up": False, "down": False, "left": False, "right": False}
         # 角色数据
-        self.alliances_data = None
-        self.enemies_data = None
+        self.alliances_data: dict = {}
+        self.enemies_data: dict = {}
         # 地图数据
         self.MAP: object = None
         # 视觉小说系统与参数

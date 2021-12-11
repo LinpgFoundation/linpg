@@ -14,11 +14,11 @@ class FriendlyCharacter(Entity):
         self.skill_effective_range = defaultData["skill_effective_range"]
         self.max_skill_range = calculate_range(defaultData["skill_effective_range"])
         self.skill_cover_range = defaultData["skill_cover_range"]
-        self._detection = (
-            defaultData["detection"] if "detection" in defaultData and defaultData["detection"] is not None else 0
+        self._detection: int = (
+            int(defaultData["detection"]) if "detection" in defaultData and defaultData["detection"] is not None else 0
         )
         # 生成被察觉的图标
-        self.__beNoticedImage = EntityDynamicProgressBarSurface()
+        self.__beNoticedImage: EntityDynamicProgressBarSurface = EntityDynamicProgressBarSurface()
         self.__beNoticedImage.set_percentage(self._detection / 100)
         # 重创立绘
         self.__getHurtImage = None
@@ -60,8 +60,8 @@ class FriendlyCharacter(Entity):
             self._detection = 0
         self.__beNoticedImage.set_percentage(self._detection / 100)
 
-    def decreaseHp(self, damage: int) -> None:
-        super().decreaseHp(damage)
+    def injury(self, damage: int) -> None:
+        super().injury(damage)
         # 如果角色在被攻击后处于濒死状态
         if not self.is_alive() and not self.dying and self.kind != "HOC":
             self.dying = DYING_ROUND_LIMIT
@@ -112,38 +112,38 @@ class HostileCharacter(Entity):
             defaultData[key] = theSangvisFerrisDataDic[key]
         super().__init__(defaultData, "sangvisFerri", mode)
         self.__patrol_path: deque = deque(defaultData["patrol_path"]) if "patrol_path" in defaultData else deque()
-        self._vigilance = 0
-        self.__vigilanceImage = EntityDynamicProgressBarSurface("vertical")
-        self.__vigilanceImage.set_percentage(self._vigilance / 100)
+        self.__vigilance: int = 0
+        self.__vigilanceImage: EntityDynamicProgressBarSurface = EntityDynamicProgressBarSurface("vertical")
+        self.__vigilanceImage.set_percentage(self.__vigilance / 100)
 
     def load_image(self) -> None:
         super().load_image()
         self.__vigilanceImage.load_image()
 
     def alert(self, value: int = 10) -> None:
-        self._vigilance += value
+        self.__vigilance += value
         # 防止警觉度数值超过阈值
-        if self._vigilance > 100:
-            self._vigilance = 100
-        elif self._vigilance < 0:
-            self._vigilance = 0
+        if self.__vigilance > 100:
+            self.__vigilance = 100
+        elif self.__vigilance < 0:
+            self.__vigilance = 0
         else:
             pass
-        self.__vigilanceImage.set_percentage(self._vigilance / 100)
+        self.__vigilanceImage.set_percentage(self.__vigilance / 100)
 
     @property
     def vigilance(self) -> int:
-        return self._vigilance
+        return self.__vigilance
 
     @property
     def is_alert(self) -> bool:
-        return self._vigilance >= 100
+        return self.__vigilance >= 100
 
     # 画UI - 列如血条
     def drawUI(self, surface: ImageSurface, MapClass: object) -> None:
         blit_pos = super().drawUI(surface, MapClass)
         # 展示警觉的程度
-        if self._vigilance > 0:
+        if self.__vigilance > 0:
             # 参数
             eyeImgWidth: int = round(MapClass.block_width / 6)
             eyeImgHeight: int = round(MapClass.block_width / 6)
@@ -168,7 +168,7 @@ class HostileCharacter(Entity):
                 weight += self.current_hp * self.hp_precentage
                 target_value_board.append((name, weight))
         # 最大移动距离
-        blocks_can_move: int = int((self.max_action_point) / AP_IS_NEEDED_TO_MOVE_ONE_BLOCK)
+        blocks_can_move: int = int(self.max_action_point / AP_IS_NEEDED_TO_MOVE_ONE_BLOCK)
         # 角色将会在该回合采取的行动
         actions: deque = deque()
         # 如果角色有可以攻击的对象，且角色至少有足够的行动点数攻击

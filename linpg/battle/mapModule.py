@@ -1,4 +1,4 @@
-from .decoration import *
+from .weather import *
 
 # 方块类
 class BlockObject:
@@ -26,66 +26,142 @@ class Node:
         self.h = (abs(endPoint.x - point.x) + abs(endPoint.y - point.y)) * 10  # 计算h值
 
 
-# 天气系统
-class WeatherSystem:
-    def __init__(self):
-        self.__initialized: bool = False
-        self.__items: tuple = tuple()
-        self.__img_list: list = []
-        self.__speed_unit: int = 0
+# 寻路模块
+class AStar:
 
-    # 初始化
-    def init(self, weather: str, entityNum: int = 50) -> None:
-        self.__initialized = True
-        self.name = 0
-        self.__img_list = [
-            IMG.load(imgPath)
-            for imgPath in glob(os.path.join(ASSET.get_internal_environment_image_path("weather"), weather, "*.png"))
-        ]
-        i: int
-        self.__items = tuple(
-            [
-                Snow(
-                    imgId=get_random_int(0, len(self.__img_list) - 1),
-                    size=get_random_int(5, 10),
-                    speed=get_random_int(1, 4),
-                    x=get_random_int(1, Display.get_width() * 1.5),
-                    y=get_random_int(1, Display.get_height()),
-                )
-                for i in range(entityNum)
-            ]
-        )
+    # 可行走标记
+    __pass_tag: int = 0
 
-    # 查看初始化状态
-    def get_init(self) -> bool:
-        return self.__initialized
+    def __init__(self, row: int, column: int) -> None:
+        # 寻路用的ndarray地图
+        self._map2d: numpy.ndarray = numpy.zeros((column, row), dtype=numpy.int8)
+        # 行
+        self.__row = row
+        # 列
+        self.__column = column
+        # 终点
+        self.__end_point: Node = Node(Point(0, 0), Point(0, 0))
+        # 开启表
+        self.__open_list: list = []
+        # 关闭表
+        self.__close_list: list = []
 
-    # 画出
-    def draw(self, surface: ImageSurface, perBlockWidth: number) -> None:
-        try:
-            assert self.__initialized is True
-        except AssertionError:
-            EXCEPTION.fatal("You need to initialize the weather system before using it.")
-        self.__speed_unit: int = int(perBlockWidth / 15)
-        for item in self.__items:
-            if 0 <= item.x < surface.get_width() and 0 <= item.y < surface.get_height():
-                surface.blit(
-                    IMG.resize(self.__img_list[item.imgId], (perBlockWidth / item.size, perBlockWidth / item.size)), item.pos
-                )
-            item.move(self.__speed_unit)
-            if item.x <= 0 or item.y >= surface.get_height():
-                item.y = get_random_int(-50, 0)
-                item.x = get_random_int(0, surface.get_width() * 2)
+    def __getMinNode(self) -> Node:
+        """
+        获得OpenList中F值最小的节点
+        :return: Node
+        """
+        currentNode = self.__open_list[0]
+        for node in self.__open_list:
+            if node.g + node.h < currentNode.g + currentNode.h:
+                currentNode = node
+        return currentNode
 
+    def __pointInCloseList(self, point: Point) -> bool:
+        for node in self.__close_list:
+            if node.point == point:
+                return True
+        return False
 
-# 雪花片
-class Snow(GameObject):
-    def __init__(self, imgId: int, size: int, speed: int, x: int, y: int):
-        super().__init__(x, y)
-        self.imgId: int = imgId
-        self.size: int = size
-        self.speed: int = speed
+    def __pointInOpenList(self, point: Point) -> Node:
+        for node in self.__open_list:
+            if node.point == point:
+                return node
+        return None
 
-    def move(self, speed_unit: int) -> None:
-        self.x -= self.speed * speed_unit
-        self.y += self.speed * speed_unit
+    def __end_pointInCloseList(self) -> Node:
+        for node in self.__open_list:
+            if node.point == self.__end_point:
+                return node
+        return None
+
+    def __searchNear(self, minF: Node, offSetX: int, offSetY: int) -> None:
+        """
+        搜索节点周围的点
+        :param minF:F值最小的节点
+        :param offSetX:坐标偏移量
+        :param offSetY:
+        :return:
+        """
+        # 越界检测
+        if (
+            minF.point.x + offSetX < 0
+            or minF.point.x + offSetX > self.__column - 1
+            or minF.point.y + offSetY < 0
+            or minF.point.y + offSetY > self.__row - 1
+        ):
+            return
+        # 如果是障碍，就忽略
+        if self._map2d[minF.point.x + offSetX][minF.point.y + offSetY] != self.__pass_tag:
+            return
+        # 如果在关闭表中，就忽略
+        currentPoint = Point(minF.point.x + offSetX, minF.point.y + offSetY)
+        if self.__pointInCloseList(currentPoint):
+            return
+        # 设置单位花费
+        if offSetX == 0 or offSetY == 0:
+            step = 10
+        else:
+            step = 14
+        # 如果不再openList中，就把它加入OpenList
+        currentNode = self.__pointInOpenList(currentPoint)
+        if not currentNode:
+            currentNode = Node(currentPoint, self.__end_point, g=minF.g + step)
+            currentNode.father = minF
+            self.__open_list.append(currentNode)
+            return
+        # 如果在openList中，判断minF到当前点的G是否更小
+        if minF.g + step < currentNode.g:  # 如果更小，就重新计算g值，并且改变father
+            currentNode.g = minF.g + step
+            currentNode.father = minF
+
+    def _startFindingPath(self, startPoint: Point, endPoint: Point) -> list:
+        """
+        开始寻路
+        :return: None或Point列表（路径）
+        """
+        # 初始化路径寻找使用的缓存列表
+        self.__open_list.clear()
+        self.__close_list.clear()
+        # 判断寻路终点是否是障碍
+        self.__end_point = endPoint
+        if (
+            self.__end_point.y < 0
+            or self.__end_point.y >= self.__row
+            or self.__end_point.x < 0
+            or self.__end_point.x >= self.__column
+            or self._map2d[self.__end_point.x][self.__end_point.y] != self.__pass_tag  # 如果终点是障碍物
+        ):
+            return []
+        # 1.将起点放入开启列表
+        startNode = Node(startPoint, self.__end_point)
+        self.__open_list.append(startNode)
+        # 2.主循环逻辑
+        while True:
+            # 找到F值最小的点
+            minF = self.__getMinNode()
+            # 把这个点加入closeList中，并且在openList中删除它
+            self.__close_list.append(minF)
+            self.__open_list.remove(minF)
+            # 判断这个节点的上下左右节点
+            self.__searchNear(minF, 0, -1)
+            self.__searchNear(minF, 0, 1)
+            self.__searchNear(minF, -1, 0)
+            self.__searchNear(minF, 1, 0)
+            # 判断是否终止
+            point = self.__end_pointInCloseList()
+            if point:  # 如果终点在关闭表中，就返回结果
+                cPoint = point
+                pathList: list = []
+                while True:
+                    if cPoint.father:
+                        pathList.append(cPoint.point)
+                        cPoint = cPoint.father
+                    else:
+                        self.__open_list.clear()
+                        self.__close_list.clear()
+                        return list(reversed(pathList))
+            if len(self.__open_list) == 0:
+                self.__open_list.clear()
+                self.__close_list.clear()
+                return []

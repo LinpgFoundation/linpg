@@ -15,75 +15,103 @@ class Entity(Position):
     def __init__(self, DATA: dict, faction: str, mode: str):
         super().__init__(DATA["x"], DATA["y"])
         # 最大行动值
-        self.max_action_point = DATA["action_point"]
+        self.__max_action_point: int = int(DATA["action_point"])
         # 当前行动值
         self.__current_action_point: int = int(DATA["action_point"])
         # 攻击范围
-        self.attack_range = DATA["attack_range"]
+        self.__attack_coverage: int = int(DATA["attack_coverage"])
+        # 弹夹容量
+        self.__magazine_capacity: int = int(DATA["magazine_capacity"])
         # 当前弹夹的子弹数
-        self.current_bullets = DATA["current_bullets"] if "current_bullets" in DATA else DATA["magazine_capacity"]
-        # 当前血量
-        self.__current_hp = DATA["current_hp"] if "current_hp" in DATA else DATA["max_hp"]
+        self.current_bullets: int = int(DATA["current_bullets"]) if "current_bullets" in DATA else self.__magazine_capacity
         # 最大血量
-        self.__max_hp = max(DATA["max_hp"], 1)
+        self.__max_hp: int = max(int(DATA["max_hp"]), 1)
+        # 当前血量
+        self.__current_hp: int = int(DATA["current_hp"]) if "current_hp" in DATA else self.__max_hp
         # 不可再生的护甲值
-        self.__irrecoverable_armor = DATA["irrecoverable_armor"] if "irrecoverable_armor" in DATA else 0
+        self.__irrecoverable_armor: int = int(DATA["irrecoverable_armor"]) if "irrecoverable_armor" in DATA else 0
         # 当前可再生的护甲值
-        self.__current_recoverable_armor = DATA["recoverable_armor"] if "recoverable_armor" in DATA else 0
+        self.__current_recoverable_armor: int = int(DATA["recoverable_armor"]) if "recoverable_armor" in DATA else 0
         # 最大可再生的护甲值
-        self.__max_recoverable_armor = DATA["recoverable_armor"] if "recoverable_armor" in DATA else 0
+        self.__max_recoverable_armor: int = int(DATA["recoverable_armor"]) if "recoverable_armor" in DATA else 0
         # 是否濒死
         self.dying = False if self.is_alive() else DYING_ROUND_LIMIT
         # 攻击距离
-        self.effective_range = DATA["effective_range"]
+        self.effective_range: dict = dict(DATA["effective_range"])
         # 最大攻击距离
-        self._max_effective_range = calculate_range(self.effective_range)
+        self._max_effective_range: int = calculate_range(self.effective_range)
         # 武器类型
-        self.kind = DATA["kind"]
+        self.kind: str = str(DATA["kind"])
         # 阵营
-        self.faction = faction
+        self.faction: str = faction
         # 角色武器名称
-        self.type = DATA["type"]
+        self.type: str = str(DATA["type"])
         # gif图片管理
-        self.__imgId_dict = _CHARACTERS_IMAGE_SYS.createGifDict(self.type, faction, mode)
+        self.__imgId_dict: dict = _CHARACTERS_IMAGE_SYS.createGifDict(self.type, faction, mode)
         # 加载角色的音效
         if mode != "dev":
             _CHARACTERS_SOUND_SYSTEM.add(self.type)
-        # 弹夹容量
-        self.magazine_capacity = DATA["magazine_capacity"]
         # 最大攻击力
-        self.max_damage = DATA["max_damage"]
+        self.__max_damage: int = int(DATA["max_damage"])
         # 最小攻击力
-        self.min_damage = DATA["min_damage"]
+        self.__min_damage: int = int(DATA["min_damage"])
         # 是否图片镜像
-        self.if_flip = False
+        self.__if_flip: bool = False
         # idle动作
-        self.idle_action = "wait"
+        self.__idle_action: str = "wait"
         # 当前动作
-        self.__current_action = self.idle_action
+        self.__current_action: str = self.__idle_action
         # 动作是否重复
         self.__if_action_loop: bool = True
         # 动作是正序列播放还是反序播放
         self._if_play_action_in_reversing: bool = False
         # 需要移动的路径
-        self.__moving_path = None
+        self.__moving_path: deque = None
         # 是否需要重新渲染地图
         self.__if_map_need_update: bool = False
         # 攻击范围
-        self.__attack_range: dict = {"near": [], "middle": [], "far": []}
+        self.__attack_range: dict[str, list] = {"near": [], "middle": [], "far": []}
         # 是否无敌
         self.__if_invincible: bool = False
         # 血条图片
-        self.__hp_bar = EntityHpBar()
+        self.__hp_bar: EntityHpBar = EntityHpBar()
 
-    """角色动作参数管理"""
+    """
+    攻击
+    """
+
+    # 弹夹容量
+    @property
+    def magazine_capacity(self) -> int:
+        return self.__magazine_capacity
+
+    # 攻击覆盖范围
+    def attack_coverage(self) -> int:
+        return self.__attack_coverage
+
+    # 最大攻击力
+    @property
+    def max_damage(self) -> int:
+        return self.__max_damage
+
+    # 最小攻击力
+    @property
+    def min_damage(self) -> int:
+        return self.__min_damage
+
+    # 攻击另一个Entity
+    def attack(self, another_entity: "Entity") -> int:
+        damage = get_random_int(self.__min_damage, self.__max_damage)
+        another_entity.injury(damage)
+        return damage
+
+    """
+    角色动作参数管理
+    """
+
     # 当前动作
     @property
     def action(self) -> str:
-        return self.__current_action
-
-    # 获取当前动作，建议使用self.action
-    def get_action(self) -> str:
         return self.__current_action
 
     # 设置动作
@@ -94,7 +122,7 @@ class Entity(Position):
 
     # 是否闲置
     def is_idle(self) -> bool:
-        return self.__current_action == self.idle_action
+        return self.__current_action == self.__idle_action
 
     # 获取角色特定动作的图片播放ID
     def get_imgId(self, action: str) -> int:
@@ -128,14 +156,22 @@ class Entity(Position):
     def set_imgAlpaha(self, action: str, alpha: int) -> None:
         self.__imgId_dict[action]["alpha"] = alpha
 
-    """角色行动值参数管理"""
+    """
+    角色行动值参数管理
+    """
+
+    # 当前行动值
+    @property
+    def max_action_point(self) -> int:
+        return self.__max_action_point
+
+    # 设置当前行动值，不建议非开发者使用
+    def set_max_action_point(self, point: int) -> None:
+        self.__max_action_point = int(point)
+
     # 当前行动值
     @property
     def current_action_point(self) -> int:
-        return self.__current_action_point
-
-    # 获取当前行动值,建议使用self.current_action_point
-    def get_current_action_point(self) -> int:
         return self.__current_action_point
 
     # 设置当前行动值，不建议非开发者使用
@@ -144,7 +180,7 @@ class Entity(Position):
 
     # 重置行动点数
     def reset_action_point(self) -> None:
-        self.set_current_action_point(self.max_action_point)
+        self.set_current_action_point(self.__max_action_point)
 
     # 是否有足够的开发点数
     def have_enough_action_point(self, value: int) -> bool:
@@ -163,7 +199,10 @@ class Entity(Position):
         else:
             EXCEPTION.fatal("While you reduce the action points, the module cannot reduce a non-int value!")
 
-    """角色血量护甲参数管理"""
+    """
+    角色血量护甲参数管理
+    """
+
     # 是否角色还活着
     @property
     def isAlive(self) -> bool:
@@ -197,7 +236,7 @@ class Entity(Position):
             EXCEPTION.fatal("You cannot heal a negative value")
 
     # 降低血量
-    def decreaseHp(self, damage: int):
+    def injury(self, damage: int):
         if not self.__if_invincible and damage > 0:
             # 如果有可再生的护甲
             if self.__current_recoverable_armor > 0:
@@ -230,12 +269,6 @@ class Entity(Position):
         else:
             EXCEPTION.fatal("You cannot do a negative damage")
 
-    # 攻击另一个Entity
-    def attack(self, another_entity: "Entity") -> int:
-        damage = get_random_int(self.min_damage, self.max_damage)
-        another_entity.decreaseHp(damage)
-        return damage
-
     # 回复可再生护甲
     def recover_armor(self, value: int) -> None:
         self.__current_recoverable_armor += int(value)
@@ -245,10 +278,13 @@ class Entity(Position):
         elif self.__current_recoverable_armor < 0:
             self.__current_recoverable_armor = 0
 
-    """其他"""
+    """
+    其他
+    """
+
     # 设置反转
     def set_flip(self, theBool: bool) -> None:
-        self.if_flip = theBool
+        self.__if_flip = theBool
 
     # 播放角色声音
     def play_sound(self, kind_of_sound: str) -> None:
@@ -333,7 +369,7 @@ class Entity(Position):
         if not ifHalfMode:
             start_point = self.y - self._max_effective_range
             end_point = self.y + self._max_effective_range + 1
-        elif not self.if_flip:
+        elif not self.__if_flip:
             start_point = self.y - self._max_effective_range
             end_point = self.y + 1
         else:
@@ -477,7 +513,7 @@ class Entity(Position):
         # 调整alpha值
         img_of_char.set_alpha(alpha)
         # 反转图片
-        if self.if_flip:
+        if self.__if_flip:
             img_of_char.flip_if_not()
         else:
             img_of_char.flip_back_to_normal()

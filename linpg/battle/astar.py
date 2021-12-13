@@ -1,16 +1,5 @@
 from .weather import *
 
-# 方块类
-class BlockObject:
-    def __init__(self, name: str, canPassThrough: bool):
-        self.name: str = name
-        self.canPassThrough: bool = canPassThrough
-
-    def update(self, name: str, canPassThrough: bool):
-        self.name = name
-        self.canPassThrough = canPassThrough
-
-
 # 点
 class Point(GameObject):
     def __eq__(self, other: "Point") -> bool:
@@ -115,7 +104,7 @@ class AStar:
             currentNode.g = minF.g + step
             currentNode.father = minF
 
-    def _startFindingPath(self, startPoint: Point, endPoint: Point) -> list:
+    def _startPathFinding(self, start_pos: tuple[int, int], end_pos: tuple[int, int]) -> list:
         """
         开始寻路
         :return: None或Point列表（路径）
@@ -124,7 +113,7 @@ class AStar:
         self.__open_list.clear()
         self.__close_list.clear()
         # 判断寻路终点是否是障碍
-        self.__end_point = endPoint
+        self.__end_point = Point(end_pos[0], end_pos[1])
         if (
             self.__end_point.y < 0
             or self.__end_point.y >= self.__row
@@ -134,7 +123,7 @@ class AStar:
         ):
             return []
         # 1.将起点放入开启列表
-        startNode = Node(startPoint, self.__end_point)
+        startNode = Node(Point(start_pos[0], start_pos[1]), self.__end_point)
         self.__open_list.append(startNode)
         # 2.主循环逻辑
         while True:

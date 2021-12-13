@@ -55,7 +55,7 @@ class Entity(Position):
         # idle动作
         self.__idle_action: str = "wait"
         # 当前动作
-        self.__current_action: str = bool(DATA["current_action"]) if "current_action" in DATA else self.__idle_action
+        self.__current_action: str = str(DATA["current_action"]) if "current_action" in DATA else self.__idle_action
         # 动作是否重复
         self.__if_action_loop: bool = bool(DATA["if_action_loop"]) if "if_action_loop" in DATA else True
         # 动作是正序列播放还是反序播放
@@ -79,7 +79,7 @@ class Entity(Position):
         self.__hp_bar: EntityHpBar = EntityHpBar()
 
     def to_dict(self) -> dict:
-        return {
+        data: dict = {
             "x": self.x,
             "y": self.y,
             "max_action_point": self.__max_action_point,
@@ -100,9 +100,11 @@ class Entity(Position):
             "current_action": self.__current_action,
             "if_action_loop": self.__if_action_loop,
             "if_play_action_in_reversing": self._if_play_action_in_reversing,
-            "moving_path": list(self.__moving_path),
             "if_invincible": self.__if_invincible,
         }
+        if self.__moving_path is not None:
+            data["moving_path"] = list(self.__moving_path)
+        return data
 
     # 阵营
     @property

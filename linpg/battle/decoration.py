@@ -2,12 +2,16 @@ from .environment import *
 
 # 管理场景装饰物的类
 class DecorationObject(GameObject):
-    def __init__(self, x: int, y: int, itemType: str, image: str):
+    def __init__(self, x: int, y: int, _id: str, itemType: str, image: str, status: dict):
         super().__init__(x, y)
+        self.__id: str = _id
         self.type: str = itemType
         self.image: str = image
-        self.__status: dict = {}
+        self.__status: dict = status
         self.scale: float = 0.5
+
+    def to_dict(self) -> dict:
+        return {"x": self.x, "y": self.y, "id": self.__id, "type": self.type, "image": self.image, "status": self.__status}
 
     def is_on_pos(self, pos: Any) -> bool:
         return Coordinates.is_same(self.get_pos(), pos)
@@ -34,12 +38,15 @@ class DecorationObject(GameObject):
 
 # 篝火
 class CampfireObject(DecorationObject):
-    def __init__(self, x: int, y: int, itemType: str, lit_range: int):
-        super().__init__(x, y, itemType, "campfire")
-        self.range: int = lit_range
+    def __init__(self, x: int, y: int, _id: str, itemType: str, _range: int, status: dict):
+        super().__init__(x, y, _id, itemType, "campfire", status)
+        self.range: int = _range
         self.__alpha: int = 255
         self.__img_id: int = get_random_int(0, 90)
         self.set_status("lit", True)
+
+    def to_dict(self) -> dict:
+        return super().to_dict() | {"range": self.range}
 
     @property
     def img_id(self) -> float:
@@ -70,9 +77,12 @@ class CampfireObject(DecorationObject):
 
 # 箱子
 class ChestObject(DecorationObject):
-    def __init__(self, x: int, y: int, itemType: str, items: dict, whitelist: list):
-        super().__init__(x, y, itemType, itemType)
+    def __init__(self, x: int, y: int, _id: str, itemType: str, items: dict, whitelist: list, status: dict):
+        super().__init__(x, y, _id, itemType, itemType, status)
         # 箱内物品
         self.items: dict = items
         # 是否箱子有白名单（只能被特定角色拾取）
         self.whitelist: list = whitelist
+
+    def to_dict(self) -> dict:
+        return super().to_dict() | {"items": self.items, "whitelist": self.whitelist}

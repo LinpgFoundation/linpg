@@ -220,7 +220,7 @@ class DialogNavigationWindow(AbstractFrame):
 
             for child_key in key_node.next_keys:
                 self.__draw_node(surface, child_key)
-                pygame.draw.aaline(surface, Colors.BLACK, key_node.right_center, self.__nodes_map[child_key].left_center, 3)
+                draw_aaline(surface, Colors.BLACK, key_node.right_center, self.__nodes_map[child_key].left_center, 3)
 
     def _update(self) -> None:
         if "head" in self.__nodes_map:

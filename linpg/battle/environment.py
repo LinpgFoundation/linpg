@@ -1,7 +1,7 @@
 from ..character import *
 
 # 地图场景模块
-class EnvImagesManagement:
+class EnvImagesModule:
     def __init__(self):
         # 背景图层
         self.__BACKGROUND_SURFACE: object = None
@@ -24,7 +24,7 @@ class EnvImagesManagement:
     def update(
         self,
         theMap: numpy.ndarray,
-        decorationData: numpy.ndarray,
+        decorationData: tuple,
         bgImgName: str,
         blockSize: tuple,
         darkMode: bool,
@@ -55,10 +55,10 @@ class EnvImagesManagement:
             self.__DARKNESS = 0
         # 确认场景需要用到素材
         all_images_needed: list = []
-        for y in range(len(theMap)):
-            for x in range(len(theMap[y])):
-                if theMap[y][x].name not in all_images_needed:
-                    all_images_needed.append(theMap[y][x].name)
+        for theRow in theMap:
+            for theItem in theRow:
+                if theItem not in all_images_needed:
+                    all_images_needed.append(theItem)
         # 加载图片
         for fileName in all_images_needed:
             self.__add_evn_image(fileName)
@@ -202,4 +202,4 @@ class EnvImagesManagement:
 
 
 # 地图场景图片管理
-MAP_ENV_IMAGE: EnvImagesManagement = EnvImagesManagement()
+MAP_ENV_IMAGE: EnvImagesModule = EnvImagesModule()

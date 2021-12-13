@@ -95,3 +95,10 @@ def draw_circle(
     surface: ImageSurface, color: color_liked, center_pos: tuple[int, int], radius: int, thickness: int = 0
 ) -> None:
     Circle.draw_(surface, Colors.get(color), center_pos, radius, thickness)
+
+
+# 画抗锯齿线条
+def draw_aaline(
+    surface: ImageSurface, color: color_liked, start_pos: tuple[int, int], end_pos: tuple[int, int], blend: int = 1
+) -> None:
+    pygame.draw.aaline(surface, Colors.get(color), start_pos, end_pos, blend)

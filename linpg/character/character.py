@@ -18,7 +18,7 @@ class FriendlyCharacter(Entity):
         )
         # 当前弹夹的子弹数
         self.__current_bullets: int = (
-            int(characterData["current_bullets"]) if "current_bullets" in characterData else self.__magazine_capacity
+            int(characterData["current_bullets"]) if "current_bullets" in characterData else self.magazine_capacity
         )
         # 当前携带子弹数量
         self.__bullets_carried: int = int(characterData["bullets_carried"])

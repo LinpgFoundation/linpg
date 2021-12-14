@@ -29,8 +29,10 @@ class DecorationObject(GameObject):
             EXCEPTION.warn('Cannot remove status "{}" because it does not exist'.format(key))
 
     def blit(self, surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:
-        imgToBlit = MAP_ENV_IMAGE.get_decoration_image(self.type, self.image, is_dark)
-        imgToBlit.set_size(MAP_ENV_IMAGE.get_block_width() * self.scale, MAP_ENV_IMAGE.get_block_width() * self.scale)
+        imgToBlit = DecorationImagesModule.get_image(self.type, self.image, is_dark)
+        imgToBlit.set_size(
+            DecorationImagesModule.get_block_width() * self.scale, DecorationImagesModule.get_block_width() * self.scale
+        )
         imgToBlit.set_alpha(alpha)
         imgToBlit.move_to(pos)
         imgToBlit.draw(surface)
@@ -69,7 +71,7 @@ class CampfireObject(DecorationObject):
         if self.__alpha > 0:
             self.image = "lit_{}".format(int(self.img_id))
             super().blit(surface, pos, is_dark, self.__alpha)
-            if self.img_id >= MAP_ENV_IMAGE.get_decoration_num(self.type) - 2:
+            if self.img_id >= DecorationImagesModule.get_image_num(self.type) - 2:
                 self.__img_id = 0
             else:
                 self.__img_id += 1

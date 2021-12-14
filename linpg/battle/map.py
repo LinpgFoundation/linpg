@@ -1,7 +1,7 @@
 from .astar import *
 
 # 地图模块
-class MapObject(AdvancedAbstractImageSurface, AStar, EnvImagesModule):
+class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
 
     # 获取方块数据库
     __BLOCKS_DATABASE: dict = DataBase.get("Blocks")
@@ -14,10 +14,13 @@ class MapObject(AdvancedAbstractImageSurface, AStar, EnvImagesModule):
         AStar.__init__(self, self.row, self.column)
         # 背景图片路径
         self.__background_image: str = str(mapDataDic["background_image"])
-        # 现已可以计算尺寸，初始化父类
-        AdvancedAbstractImageSurface.__init__(
+        # 暗度（仅黑夜场景有效）
+        AbstractMapImagesModule.set_darkness(155 if "atNight" in mapDataDic and bool(mapDataDic["atNight"]) is True else 0)
+        # 本地坐标模块
+        SurfaceWithLocalPos.__init__(self)
+        # Rectangle模块
+        Rectangle.__init__(
             self,
-            self.__background_image,  # self.img:str储存了背景图片的信息
             0,
             0,
             int(perBlockWidth * 0.9 * ((self.row + self.column + 1) / 2)),
@@ -25,8 +28,6 @@ class MapObject(AdvancedAbstractImageSurface, AStar, EnvImagesModule):
         )
         # 设置本地坐标
         self.set_local_pos(mapDataDic["local_x"], mapDataDic["local_y"])
-        # 是否夜战
-        self.__night_mode: bool = bool(mapDataDic["atNight"]) if "atNight" in mapDataDic else False
         # 装饰物
         self.__decorations: list = []
         # 加载装饰物
@@ -56,8 +57,29 @@ class MapObject(AdvancedAbstractImageSurface, AStar, EnvImagesModule):
                     if decorationType == "tree":
                         new_decoration.scale = 0.75
                 self.__decorations.append(new_decoration)
-        # 加载环境图片
-        MAP_ENV_IMAGE.update(self.__MAP, self.__decorations, self.img, (perBlockWidth, perBlockHeight), self.__night_mode)
+        # 对装饰物进行排序
+        self.__decorations.sort()
+        # 初始化环境图片管理模块
+        self.__MAP_SURFACE: object = None
+        # 背景图片
+        self.__BACKGROUND_IMAGE: ImageSurface = (
+            IMG.quickly_load(os.path.join("Assets", "image", "dialog_background", self.__background_image), False).convert()
+            if self.__background_image is not None
+            else None
+        )
+        # 更新尺寸
+        AbstractMapImagesModule.set_block_size(round(perBlockWidth), round(perBlockHeight))
+        # 确认场景需要用到素材
+        all_images_needed: list = []
+        for theRow in self.__MAP:
+            for theItem in theRow:
+                if theItem not in all_images_needed:
+                    all_images_needed.append(theItem)
+        # 加载图片
+        for fileName in all_images_needed:
+            TileMapImagesModule.add_image(fileName)
+        for decoration in self.__decorations:
+            DecorationImagesModule.add_image(decoration.type, decoration.image)
         # 处于光处的区域
         self.__light_area: numpy.ndarray = None
         # 追踪是否需要更新的参数
@@ -68,16 +90,18 @@ class MapObject(AdvancedAbstractImageSurface, AStar, EnvImagesModule):
         self.__debug_win = None
 
     @property
-    def block_width(self) -> int:
-        return MAP_ENV_IMAGE.get_block_width()
-
-    @property
-    def block_height(self) -> int:
-        return MAP_ENV_IMAGE.get_block_height()
-
-    @property
     def decorations(self) -> list:
         return self.__decorations
+
+    # 获取方块宽度
+    @property
+    def block_width(self) -> int:
+        return AbstractMapImagesModule.get_block_width()
+
+    # 获取方块高度
+    @property
+    def block_height(self) -> int:
+        return AbstractMapImagesModule.get_block_height()
 
     def to_dict(self) -> dict:
         decoration_dict = {}
@@ -91,7 +115,7 @@ class MapObject(AdvancedAbstractImageSurface, AStar, EnvImagesModule):
             "background_image": self.__background_image,
             "local_x": self.local_x,
             "local_y": self.local_y,
-            "atNight": self.__night_mode,
+            "atNight": self.night_mode,
             "decoration": decoration_dict,
         }
 
@@ -157,7 +181,7 @@ class MapObject(AdvancedAbstractImageSurface, AStar, EnvImagesModule):
     # 是否夜战
     @property
     def night_mode(self) -> bool:
-        return self.__night_mode
+        return AbstractMapImagesModule.get_darkness() > 0
 
     # 控制地图放大缩小
     def changePerBlockSize(self, newPerBlockWidth: int_f, newPerBlockHeight: int_f) -> None:
@@ -167,7 +191,8 @@ class MapObject(AdvancedAbstractImageSurface, AStar, EnvImagesModule):
         # 更新尺寸
         self.set_width(newPerBlockWidth * 0.9 * ((self.row + self.column + 1) / 2))
         self.set_height(newPerBlockWidth * 0.45 * ((self.row + self.column + 1) / 2) + newPerBlockWidth)
-        MAP_ENV_IMAGE.set_block_size(newPerBlockWidth, newPerBlockHeight)
+        AbstractMapImagesModule.set_block_size(round(newPerBlockWidth), round(newPerBlockHeight))
+        TileMapImagesModule.update_size()
         if self.get_width() < Display.get_width():
             self.set_width(Display.get_width())
         if self.get_height() < Display.get_height():
@@ -214,7 +239,7 @@ class MapObject(AdvancedAbstractImageSurface, AStar, EnvImagesModule):
         if self.__debug_win is not None and isinstance(self.__block_on_surface, numpy.ndarray):
             self.__display_dev_panel()
         # 画出背景
-        MAP_ENV_IMAGE.display_background_surface(screen, self.get_local_pos())
+        screen.blits(((self.__BACKGROUND_SURFACE, (0, 0)), (self.__MAP_SURFACE, self.get_local_pos())))
         # 返回offset
         return screen_to_move_x, screen_to_move_y
 
@@ -227,9 +252,16 @@ class MapObject(AdvancedAbstractImageSurface, AStar, EnvImagesModule):
         xRange: int = self.column
         screen_min: int = -self.block_width
         if not isinstance(self.__block_on_surface, numpy.ndarray):
-            mapSurface = MAP_ENV_IMAGE.new_surface(window_size, (self.get_width(), self.get_height()))
+            self.__BACKGROUND_SURFACE = (
+                IMG.resize(self.__BACKGROUND_IMAGE, window_size)
+                if self.__BACKGROUND_IMAGE is not None
+                else new_surface(window_size)
+            )
+            if self.__MAP_SURFACE is not None:
+                self.__MAP_SURFACE.fill(Colors.TRANSPARENT)
+            else:
+                self.__MAP_SURFACE = new_transparent_surface(self.get_size())
             self.__block_on_surface = numpy.zeros((self.row, self.column), dtype=numpy.int8)
-        mapSurface = MAP_ENV_IMAGE.get_surface()
         # 画出地图
         for y in range(yRange):
             for x in range(xRange):
@@ -237,11 +269,11 @@ class MapObject(AdvancedAbstractImageSurface, AStar, EnvImagesModule):
                 if screen_min <= posTupleTemp[0] < window_size[0] and screen_min <= posTupleTemp[1] < window_size[1]:
                     if self.__block_on_surface[y][x] == 0:
                         if not self.isPosInLightArea(x, y):
-                            evn_img = MAP_ENV_IMAGE.get_env_image(self.__MAP[y][x], True)
+                            evn_img = TileMapImagesModule.get_image(self.__MAP[y][x], True)
                         else:
-                            evn_img = MAP_ENV_IMAGE.get_env_image(self.__MAP[y][x], False)
+                            evn_img = TileMapImagesModule.get_image(self.__MAP[y][x], False)
                         evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
-                        evn_img.draw(mapSurface)
+                        evn_img.draw(self.__MAP_SURFACE)
                         self.__block_on_surface[y][x] = 1
                         if y < yRange - 1:
                             self.__block_on_surface[y + 1][x] = 0
@@ -416,7 +448,7 @@ class MapObject(AdvancedAbstractImageSurface, AStar, EnvImagesModule):
         return self.isPosInLightArea(entity.x, entity.y)
 
     def isPosInLightArea(self, x: int_f, y: int_f) -> bool:
-        return True if not self.__night_mode else numpy.any(numpy.equal(self.__light_area, [int(x), int(y)]).all(1))
+        return True if not self.night_mode else numpy.any(numpy.equal(self.__light_area, [int(x), int(y)]).all(1))
 
     # 以下是A星寻路功能
     def findPath(

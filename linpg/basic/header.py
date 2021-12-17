@@ -105,25 +105,3 @@ def display_in_center(
             y + (item2.get_height() - item1.get_height()) / 2 + off_set_y,
         ),
     )
-
-
-# 中心展示模块2：接受两个item和item2的x和y，展示item2后，将item1展示在item2的中心位置：
-def display_within_center(
-    item1: ImageSurface,
-    item2: ImageSurface,
-    x: number,
-    y: number,
-    screen: ImageSurface,
-    off_set_x: number = 0,
-    off_set_y: number = 0,
-) -> None:
-    screen.blits(
-        (item2, (int(x + off_set_x), int(y + off_set_y))),
-        (
-            item1,
-            (
-                int(x + (item2.get_width() - item1.get_width()) / 2 + off_set_x),
-                int(y + (item2.get_height() - item1.get_height()) / 2 + off_set_y),
-            ),
-        ),
-    )

@@ -1,8 +1,9 @@
 from .dropdown import *
 
 # 同一时刻会展示2个scrollbar的Surface
-class AbstractScrollbarsSurface:
+class AbstractScrollbarsSurface(SurfaceWithLocalPos):
     def __init__(self) -> None:
+        super().__init__()
         self._button_tickness: int = 20
         self._move_speed: int = 20
         self._bar_color: tuple = Colors.WHITE
@@ -123,20 +124,19 @@ class AbstractScrollbarsSurface:
                 self.set_local_x(local_x_max)
         # 画出滚动条
         if right_scroll_button_rect is not NULL_RECT:
-            draw_rect(surface, self._bar_color, right_scroll_button_rect)
+            Draw.rect(surface, self._bar_color, right_scroll_button_rect.get_rect())
         if right_scroll_bar_rect is not NULL_RECT:
-            draw_rect(surface, self._bar_color, right_scroll_bar_rect, 2)
+            Draw.rect(surface, self._bar_color, right_scroll_bar_rect.get_rect(), 2)
         if bottom_scroll_button_rect is not NULL_RECT:
-            draw_rect(surface, self._bar_color, bottom_scroll_button_rect)
+            Draw.rect(surface, self._bar_color, bottom_scroll_button_rect.get_rect())
         if bottom_scroll_bar_rect is not NULL_RECT:
-            draw_rect(surface, self._bar_color, bottom_scroll_bar_rect, 2)
+            Draw.rect(surface, self._bar_color, bottom_scroll_bar_rect.get_rect(), 2)
 
 
 # 同一时刻只会拥有一个scrollbar的Surface
-class AbstractSurfaceWithScrollbar(SurfaceWithLocalPos, AbstractScrollbarsSurface):
+class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface):
     def __init__(self) -> None:
-        SurfaceWithLocalPos.__init__(self)
-        AbstractScrollbarsSurface.__init__(self)
+        super().__init__()
         self._mode: bool = False
         self.__scroll_bar_pos: bool = True
         self.__is_holding_scroll_button = False
@@ -303,6 +303,6 @@ class AbstractSurfaceWithScrollbar(SurfaceWithLocalPos, AbstractScrollbarsSurfac
             self.set_local_x(local_x_max)
         # 画出滚动条
         if scroll_button_rect is not NULL_RECT:
-            draw_rect(surface, self._bar_color, scroll_button_rect)
+            Draw.rect(surface, self._bar_color, scroll_button_rect.get_rect())
         if scroll_bar_rect is not NULL_RECT:
-            draw_rect(surface, self._bar_color, scroll_bar_rect, 2)
+            Draw.rect(surface, self._bar_color, scroll_bar_rect.get_rect(), 2)

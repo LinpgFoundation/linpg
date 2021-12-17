@@ -79,7 +79,7 @@ class DropDownList(GameObjectsDictContainer):
             if self.img is not None:
                 self.img.display(surface, current_abs_pos)
             else:
-                draw_rect(surface, Colors.WHITE, (current_abs_pos, self.size))
+                Draw.rect(surface, Colors.WHITE, (current_abs_pos, self.size))
             # 列出当前选中的选项
             current_pos: tuple = current_abs_pos
             font_surface: ImageSurface = self.__FONT.render_with_bounding(self.get_selected_item(), self.__font_color)
@@ -89,8 +89,8 @@ class DropDownList(GameObjectsDictContainer):
                     current_pos, (self.__FONT.size * 3, int((self.__block_height - font_surface.get_height()) / 2))
                 ),
             )
-            rect_of_outline = new_rect(current_pos, (self.width, self.__block_height))
-            draw_rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
+            rect_of_outline = Rectangle.new(current_pos, (self.width, self.__block_height))
+            Draw.rect(surface, self.__font_color, rect_of_outline.get_rect(), self.outline_thickness)
             font_surface = IMG.flip(self.__FONT.render("^", self.__font_color), False, True)
             surface.blit(
                 font_surface,
@@ -105,7 +105,7 @@ class DropDownList(GameObjectsDictContainer):
             if Controller.get_event("confirm"):
                 if rect_of_outline.is_hovered():
                     self.__fold_choice = not self.__fold_choice
-                elif not self.__fold_choice and not new_rect(current_abs_pos, self.size).is_hovered():
+                elif not self.__fold_choice and not Rectangle.new(current_abs_pos, self.size).is_hovered():
                     self.__fold_choice = True
             # 列出选择
             if not self.__fold_choice:
@@ -119,11 +119,11 @@ class DropDownList(GameObjectsDictContainer):
                             current_pos, (self.__FONT.size * 3, int((self.__block_height - font_surface.get_height()) / 2))
                         ),
                     )
-                    rect_of_outline = new_rect(current_pos, (self.width, self.__block_height))
-                    draw_rect(surface, self.__font_color, rect_of_outline, self.outline_thickness)
+                    rect_of_outline = Rectangle.new(current_pos, (self.width, self.__block_height))
+                    Draw.rect(surface, self.__font_color, rect_of_outline.get_rect(), self.outline_thickness)
                     if rect_of_outline.is_hovered() and Controller.get_event("confirm"):
                         self.__chosen_item_key = key_of_game_object
-                    draw_circle(
+                    Draw.circle(
                         surface,
                         self.__font_color,
                         Coordinates.add(current_pos, (self.__FONT.size * 2, self.__block_height / 2)),

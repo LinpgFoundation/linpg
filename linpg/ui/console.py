@@ -128,6 +128,6 @@ class Console(SingleLineInputBox, HiddenableSurface):
                     (self.x + self.FONT.size * 0.25, self.y - (len(self._txt_output) - i) * self.FONT.size * 1.5),
                 )
             # 画出输入框
-            draw_rect(screen, self.color, self.input_box, 2)
+            Draw.rect(screen, self.color, self.input_box.get_rect(), 2)
             # 画出文字
             self._draw_content(screen)

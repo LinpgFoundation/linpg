@@ -21,7 +21,6 @@ class AbstractInputBox(GameObject2d):
         self.color = Colors.get("lightskyblue3")
         self.txt_color = Colors.get(txt_color)
         self.active: bool = False
-        self._text = None
         self._holder = self.FONT.render_with_bounding("|", self.txt_color)
         self.holderIndex = 0
         self.need_save = False
@@ -40,7 +39,7 @@ class AbstractInputBox(GameObject2d):
 
     def set_pos(self, x: int_f, y: int_f) -> None:
         super().set_pos(x, y)
-        self.input_box = Rectangle(x, y, self.default_width, self.FONT.size * 1.5)
+        self.input_box = Rectangle(x, y, self.default_width, int(self.FONT.size * 1.5))
 
 
 # 单行输入框
@@ -94,7 +93,7 @@ class SingleLineInputBox(AbstractInputBox):
         new_width: int = 0
         i: int = 0
         for i in range(len(self._text)):
-            new_width = self.FONT.estimate_text_width(self._text[:i]) + self.FONT.size * 0.25
+            new_width = self.FONT.estimate_text_width(self._text[:i]) + int(self.FONT.size * 0.25)
             if new_width > local_x:
                 break
             else:
@@ -182,7 +181,7 @@ class SingleLineInputBox(AbstractInputBox):
                 self._reset_holderIndex(Controller.mouse.x)
         # 画出输入框
         if self.active:
-            draw_rect(screen, self.color, self.input_box, 2)
+            Draw.rect(screen, self.color, self.input_box.get_rect(), 2)
         self._draw_content(screen, self.active)
 
 
@@ -419,7 +418,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                 )
         if self.active:
             # 画出输入框
-            draw_rect(screen, self.color, self.input_box, 2)
+            Draw.rect(screen, self.color, self.input_box.get_rect(), 2)
             # 画出 “|” 符号
             if int(time.time() % 2) == 0 or len(Controller.events) > 0:
                 screen.blit(

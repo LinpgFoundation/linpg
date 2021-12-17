@@ -9,13 +9,10 @@ class Positions:
     @staticmethod
     def convert(pos: Any) -> tuple:
         # 检测坐标
-        if isinstance(pos, Iterable):
-            if isinstance(pos, dict):
-                return pos["x"], pos["y"]
-            elif isinstance(pos, (list, tuple, numpy.ndarray)):
-                return pos[0], pos[1]
-            else:
-                EXCEPTION.fatal('Unable to convert position "{}".'.format(pos))
+        if isinstance(pos, dict):
+            return pos["x"], pos["y"]
+        elif isinstance(pos, (list, tuple, numpy.ndarray)):
+            return pos[0], pos[1]
         else:
             try:
                 return pos.x, pos.y
@@ -55,11 +52,10 @@ class Coordinates:
     @staticmethod
     def convert(pos: Any) -> tuple[int, int]:
         # 检测坐标
-        if isinstance(pos, Iterable):
-            if isinstance(pos, dict):
-                return int(pos["x"]), int(pos["y"])
-            else:
-                return int(pos[0]), int(pos[1])
+        if isinstance(pos, dict):
+            return int(pos["x"]), int(pos["y"])
+        elif isinstance(pos, (tuple, list, numpy.ndarray)):
+            return int(pos[0]), int(pos[1])
         else:
             try:
                 return int(pos.x), int(pos.y)

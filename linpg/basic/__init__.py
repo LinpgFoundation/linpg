@@ -1,5 +1,5 @@
 """
 结构:
-header -> coordinate -> key -> color -> img -> controller -> display -> mixer -> font
+header -> coordinate -> key -> color -> draw -> img -> controller -> display -> mixer -> font
 """
 from .font import *

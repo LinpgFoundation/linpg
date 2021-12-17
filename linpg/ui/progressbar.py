@@ -24,12 +24,12 @@ class ProgressBar(AbstractProgressBar):
         super().__init__(None, x, y, max_width, height, tag)
         self.color: tuple = Colors.get(color)
 
-    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         if self.is_visible():
-            draw_rect(
+            Draw.rect(
                 surface,
                 self.color,
-                new_rect(Coordinates.add(self.pos, offSet), (int(self.get_width() * self.percentage), self.get_height())),
+                (Coordinates.add(self.pos, offSet), (int(self.get_width() * self.percentage), self.get_height())),
             )
 
 
@@ -79,7 +79,7 @@ class ProgressBarSurface(AbstractProgressBar):
         return ProgressBarSurface(self.img, self.img2, self.x, self.y, self.get_width(), self.get_height(), self.get_mode())
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         if self.is_visible():
             pos = Coordinates.add(self.pos, offSet)
             surface.blit(IMG.resize(self.img2, self.size), pos)
@@ -115,7 +115,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
         self.__indicator: StaticImage = StaticImage(indicator_img, 0, 0, indicator_width, indicator_height)
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         if self.is_visible():
             super().display(surface, offSet)
             abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
@@ -289,6 +289,6 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                         pos,
                     )
 
-    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         if self.is_visible():
             self._draw_bar(surface, self.img, self.img2, Coordinates.add(self.pos, offSet))

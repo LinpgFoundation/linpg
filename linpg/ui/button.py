@@ -18,7 +18,7 @@ class Button(AbstractImageSurface):
     def has_been_hovered(self) -> bool:
         return self.__is_hovered
 
-    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         if self.is_visible():
             self.__is_hovered = self.is_hovered(offSet)
             surface.blit(
@@ -84,7 +84,7 @@ class ButtonWithDes(Button):
             self.des, Colors.BLACK, self.get_height() * 0.4, self.get_height() * 0.2, Colors.WHITE
         )
 
-    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         super().display(surface, offSet)
         if self.has_been_hovered():
             surface.blit(self.des_surface, Controller.mouse.pos)

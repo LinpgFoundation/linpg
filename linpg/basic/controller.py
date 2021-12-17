@@ -3,7 +3,7 @@ from .img import *
 # 手柄控制组件
 class JoystickController:
 
-    __input: Optional[pygame.joystick.Joystick] = None
+    __input: pygame.joystick.Joystick = None
 
     def __init__(self):
         # 如果pygame的手柄组件没有初始化，则初始化
@@ -119,7 +119,7 @@ class MouseController:
         return self.__last_x, self.__last_y
 
     # 设置坐标
-    def set_pos(self, pos: Iterable) -> None:
+    def set_pos(self, pos: tuple) -> None:
         # 更新前鼠标坐标
         self.__last_x = self.__x
         self.__last_y = self.__y

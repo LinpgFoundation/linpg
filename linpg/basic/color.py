@@ -96,7 +96,7 @@ class ColorManager:
 
     """获取颜色"""
     # 给定一个颜色的名字或序号，返回对应的RGB列表
-    def get(self, color: color_liked) -> tuple:
+    def get(self, color: color_liked) -> tuple[int, ...]:
         if isinstance(color, str):
             if color.startswith("#"):
                 return ImageColor.getrgb(color)
@@ -107,14 +107,15 @@ class ColorManager:
                     return tuple(THECOLORS[color])
                 except KeyError:
                     EXCEPTION.fatal('The color "{}" is currently not available!'.format(color))
-        elif isinstance(color, Iterable):
-            return tuple(color)
         else:
-            EXCEPTION.fatal(
-                "The color has to be a string, tuple or list, and {0} (type:{1}) is not acceptable!".format(
-                    color, type(color)
+            try:
+                return tuple(color)
+            except Exception:
+                EXCEPTION.fatal(
+                    "The color has to be a string, tuple or list, and {0} (type:{1}) is not acceptable!".format(
+                        color, type(color)
+                    )
                 )
-            )
 
     # 获取一个带颜色的Surface
     def surface(self, size: tuple, color: color_liked) -> ImageSurface:

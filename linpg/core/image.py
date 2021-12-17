@@ -27,8 +27,8 @@ class DynamicImage(AbstractImageSurface):
             self.__processed_img.set_alpha(self.get_alpha())
 
     # 更新图片
-    def update_image(self, img_path: PoI, ifConvertAlpha: bool) -> None:
-        super().update_image(img_path, ifConvertAlpha=ifConvertAlpha)
+    def update_image(self, img_path: PoI, ifConvertAlpha: bool = True) -> None:
+        super().update_image(img_path, ifConvertAlpha)
         self.__processed_img = None
 
     # 旋转
@@ -37,7 +37,7 @@ class DynamicImage(AbstractImageSurface):
         self.__processed_img = None
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         if self.is_visible():
             if not Setting.low_memory_mode:
                 if self.__processed_img is None or self.__processed_img.get_size() != self.size:
@@ -137,6 +137,9 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         self._need_update = False
 
 
+# None, but StaticImage
+NullStaticImage = StaticImage(NullSurface, 0, 0, 0, 0)
+
 # 需要移动的动态图片
 class MovableImage(StaticImage):
     def __init__(
@@ -146,8 +149,8 @@ class MovableImage(StaticImage):
         y: int_f,
         target_x: int_f,
         target_y: int_f,
-        move_speed_x: number,
-        move_speed_y: number,
+        move_speed_x: int_f,
+        move_speed_y: int_f,
         width: int_f = -1,
         height: int_f = -1,
         tag: str = "",
@@ -157,8 +160,8 @@ class MovableImage(StaticImage):
         self.__default_y: int = int(self.y)
         self.__target_x: int = int(target_x)
         self.__target_y: int = int(target_y)
-        self.__move_speed_x: number = round(move_speed_x, 5)
-        self.__move_speed_y: number = round(move_speed_y, 5)
+        self.__move_speed_x: int = int(move_speed_x)
+        self.__move_speed_y: int = int(move_speed_y)
         self.__is_moving_toward_target: bool = False
 
     # 返回一个复制
@@ -201,11 +204,11 @@ class MovableImage(StaticImage):
         super().set_pos(x, y)
 
     # 设置目标坐标
-    def set_target(self, target_x: int_f, target_y: int_f, move_speed_x: number, move_speed_y: number) -> None:
+    def set_target(self, target_x: int_f, target_y: int_f, move_speed_x: int_f, move_speed_y: int_f) -> None:
         self.__target_x = int(target_x)
         self.__target_y = int(target_y)
-        self.__move_speed_x = move_speed_x
-        self.__move_speed_y = move_speed_y
+        self.__move_speed_x = int(move_speed_x)
+        self.__move_speed_y = int(move_speed_y)
 
     # 控制
     def switch(self) -> None:
@@ -229,7 +232,7 @@ class MovableImage(StaticImage):
         )
 
     # 画出
-    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         if self.is_visible():
             super().display(surface, offSet)
             if self.__is_moving_toward_target is True:
@@ -300,7 +303,7 @@ class GifImage(AdvancedAbstractImageSurface):
         return self.img[self.imgId]
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         if self.is_visible():
             self.current_image.set_size(self.get_width(), self.get_height())
             self.current_image.set_alpha(self._alpha)

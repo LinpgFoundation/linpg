@@ -5,21 +5,6 @@ NULL_RECT: Rectangle = Rectangle(1, 1, -2, -2)
 
 RectLiked = Union[Rectangle, pygame.Rect, tuple]
 
-# 新建一个形状类
-def new_rect(pos: tuple, size: tuple) -> Rectangle:
-    return Rectangle(pos[0], pos[1], size[0], size[1])
-
-
-# 画正方形（的方块）
-def draw_rect(surface: ImageSurface, color: color_liked, rect: RectLiked, thickness: int = 0) -> None:
-    if isinstance(rect, (pygame.Rect, tuple)):
-        Square.draw_(surface, Colors.get(color), rect, thickness)
-    elif isinstance(rect, Rectangle):
-        Square.draw_(surface, Colors.get(color), rect.get_rect(), thickness)
-    else:
-        EXCEPTION.fatal('You need to put in a rect liked object, and "{0}" is a "{1}".'.format(rect, type(rect)))
-
-
 # 转换pygame的rect类至linpg引擎的rect类
 def convert_rect(rect: RectLiked) -> Rectangle:
     # 确认是pygame.Rect类再转换
@@ -28,7 +13,7 @@ def convert_rect(rect: RectLiked) -> Rectangle:
     # 如果是tuple类，则需要创建
     elif isinstance(rect, tuple):
         if len(rect) == 2:
-            return new_rect(rect[0], rect[1])
+            return Rectangle.new(rect[0], rect[1])
         elif len(rect) == 4:
             return Rectangle(rect[0], rect[1], rect[2], rect[3])
         else:
@@ -88,17 +73,3 @@ def is_hovering(imgObject: object, objectPos: Iterable = ORIGIN) -> bool:
 # 获取图片的subsurface
 def get_img_subsurface(img: ImageSurface, rect: RectLiked) -> ImageSurface:
     return img.subsurface(rect if isinstance(rect, pygame.Rect) else convert_to_pygame_rect(rect))
-
-
-# 画圆形
-def draw_circle(
-    surface: ImageSurface, color: color_liked, center_pos: tuple[int, int], radius: int, thickness: int = 0
-) -> None:
-    Circle.draw_(surface, Colors.get(color), center_pos, radius, thickness)
-
-
-# 画抗锯齿线条
-def draw_aaline(
-    surface: ImageSurface, color: color_liked, start_pos: tuple[int, int], end_pos: tuple[int, int], blend: int = 1
-) -> None:
-    pygame.draw.aaline(surface, Colors.get(color), start_pos, end_pos, blend)

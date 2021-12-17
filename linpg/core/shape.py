@@ -2,7 +2,7 @@ from .module import *
 
 # 正方形类
 class Square(GameObject2d):
-    def __init__(self, x: int_f, y: int_f, width: int):
+    def __init__(self, x: int_f, y: int_f, width: int_f):
         super().__init__(x, y)
         self.__width: int = int(width)
         self.__min_width: int = 1
@@ -75,23 +75,23 @@ class Square(GameObject2d):
     def get_rect(self) -> tuple[int, int, int, int]:
         return self.left, self.top, self.__width, self.__width
 
-    # 根据给与的rect画出轮廓（static method）
-    @staticmethod
-    def draw_(surface: ImageSurface, color: tuple, rect: tuple, thickness: int) -> None:
-        pygame.draw.rect(surface, color, rect, thickness)
-
     # 画出轮廓
-    def draw_outline(self, surface: ImageSurface, offSet: Iterable = ORIGIN, color: str = "red", thickness: int = 2) -> None:
-        self.draw_(surface, Colors.get(color), (Coordinates.add(self.pos, offSet), self.size), thickness)
+    def draw_outline(self, surface: ImageSurface, offSet: tuple = ORIGIN, color: str = "red", thickness: int = 2) -> None:
+        Draw.rect(surface, Colors.get(color), (Coordinates.add(self.pos, offSet), self.size), thickness)
 
 
 # 用于兼容的长方类
 class Rectangle(Square):
-    def __init__(self, left: int_f, top: int_f, width: int, height: int):
+    def __init__(self, left: int_f, top: int_f, width: int_f, height: int_f):
         super().__init__(left, top, width)
         self.__height: int = int(height)
         self.__min_height: int = 1
         self.__max_height: int = -1
+
+    # 新建一个形状类
+    @staticmethod
+    def new(pos: tuple, size: tuple) -> "Rectangle":
+        return Rectangle(pos[0], pos[1], size[0], size[1])
 
     # 高度
     def get_height(self) -> int:
@@ -175,11 +175,6 @@ class Circle(Square):
     def radius(self) -> number:
         return self.get_width() / 2
 
-    # 根据给与的中心点画出一个圆（static method）
-    @staticmethod
-    def draw_(surface: ImageSurface, color: tuple, center_pos: tuple, radius: int, thickness: int) -> None:
-        pygame.draw.circle(surface, color, center_pos, radius, thickness)
-
     # 画出轮廓
-    def draw_outline(self, surface: ImageSurface, offSet: Iterable = ORIGIN, color: str = "red", thickness: int = 2) -> None:
-        self.draw_(surface, Colors.get(color), Coordinates.add(self.center, offSet), self.radius, thickness)
+    def draw_outline(self, surface: ImageSurface, offSet: tuple = ORIGIN, color: str = "red", thickness: int = 2) -> None:
+        Draw.circle(surface, Colors.get(color), Coordinates.add(self.center, offSet), self.radius, thickness)

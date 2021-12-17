@@ -216,11 +216,11 @@ class DialogNavigationWindow(AbstractFrame):
             key_node.has_been_displayed = True
 
             if self.__current_selected_key == key:
-                draw_rect(surface, Colors.RED, key_node.get_rect(), 4)
+                Draw.rect(surface, Colors.RED, key_node.get_rect(), 4)
 
             for child_key in key_node.next_keys:
                 self.__draw_node(surface, child_key)
-                draw_aaline(surface, Colors.BLACK, key_node.right_center, self.__nodes_map[child_key].left_center, 3)
+                Draw.aaline(surface, Colors.BLACK, key_node.right_center, self.__nodes_map[child_key].left_center, 3)
 
     def _update(self) -> None:
         if "head" in self.__nodes_map:

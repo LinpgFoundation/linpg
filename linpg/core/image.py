@@ -137,9 +137,6 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         self._need_update = False
 
 
-# None, but StaticImage
-NullStaticImage = StaticImage(NullSurface, 0, 0, 0, 0)
-
 # 需要移动的动态图片
 class MovableImage(StaticImage):
     def __init__(

@@ -45,8 +45,13 @@ def get_random_int(start: int, end: int) -> int:
     return RANDINT(start, end)
 
 
-# 检测数值是否越界
-def keep_in_range(number: number, min_value: number, max_value: number) -> number:
+# 检测int数值是否越界
+def keep_int_in_range(number: int, min_value: int, max_value: int) -> int:
+    return max(min(max_value, number), min_value)
+
+
+# 检测int或float数值是否越界
+def keep_number_in_range(number: number, min_value: number, max_value: number) -> number:
     return max(min(max_value, number), min_value)
 
 

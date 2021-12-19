@@ -81,7 +81,7 @@ class ButtonWithDes(Button):
         super().__init__(img, x, y, width, height, tag)
         self.des: str = str(des)
         self.des_surface = Font.render_description_box(
-            self.des, Colors.BLACK, self.get_height() * 0.4, self.get_height() * 0.2, Colors.WHITE
+            self.des, Colors.BLACK, self.get_height() * 0.4, int(self.get_height() * 0.2), Colors.WHITE
         )
 
     def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
@@ -95,12 +95,9 @@ def load_button_with_des(
     path: PoI, tag: str, position: tuple, size: tuple, alpha_when_not_hover: int = 255
 ) -> ButtonWithDes:
     if alpha_when_not_hover < 255:
-        fading_button = ButtonWithDes(
-            IMG.load(path, alpha=alpha_when_not_hover), tag, position[0], position[1], size[0], size[1]
-        )
-        img2 = fading_button.get_image_copy()
-        img2.set_alpha(255)
-        fading_button.set_hover_img(img2)
+        imgT: ImageSurface = IMG.load(path, alpha=alpha_when_not_hover)
+        fading_button = ButtonWithDes(imgT, tag, position[0], position[1], size[0], size[1])
+        fading_button.set_hover_img(imgT.copy())
         return fading_button
     else:
         return ButtonWithDes(IMG.load(path), tag, position[0], position[1], size[0], size[1])

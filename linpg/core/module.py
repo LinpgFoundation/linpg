@@ -220,7 +220,7 @@ class GameObject2d(GameObject):
 class GameObject2point5d(GameObject):
     def __init__(self, x: int_f, y: int_f, z: int_f):
         super().__init__(x, y)
-        self.z = int(z)
+        self.z: int = int(z)
 
     def __lt__(self, other: "GameObject2point5d") -> bool:
         if self.z != other.z:
@@ -230,10 +230,10 @@ class GameObject2point5d(GameObject):
 
     # 获取坐标
     @property
-    def pos(self) -> tuple:
+    def pos(self) -> tuple[int, int, int]:
         return self.x, self.y, self.z
 
-    def get_pos(self) -> tuple:
+    def get_pos(self) -> tuple[int, int, int]:
         return self.x, self.y, self.z
 
     # 设置坐标

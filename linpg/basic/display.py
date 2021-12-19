@@ -1,9 +1,6 @@
 from .controller import *
 from datetime import datetime
 
-# None, but surface
-NullSurface: ImageSurface = get_texture_missing_surface((50, 50))
-
 # 画面更新控制器
 class DisplayController:
 
@@ -11,9 +8,9 @@ class DisplayController:
     __clock: pygame.time.Clock = pygame.time.Clock()
     __standard_fps: int = 60
     # 窗口比例
-    __screen_scale: int = int(keep_in_range(Setting.get("ScreenScale"), 0, 100))
+    __screen_scale: int = keep_int_in_range(int(Setting.get("ScreenScale")), 0, 100)
     # 主要的窗口
-    __SCREEN_WINDOW: ImageSurface = NullSurface
+    __SCREEN_WINDOW: ImageSurface = None
     # 窗口尺寸
     __standard_width: int = round(1920 * __screen_scale / 100)
     __standard_height: int = round(1080 * __screen_scale / 100)

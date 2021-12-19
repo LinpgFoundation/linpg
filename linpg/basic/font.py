@@ -168,7 +168,7 @@ class FontManager:
         des_surface = Colors.surface(
             (font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2), background_color
         )
-        pygame.draw.rect(
+        Draw.rect(
             des_surface,
             Colors.get(color if outline_color is None else outline_color),
             ((0, 0), des_surface.get_size()),

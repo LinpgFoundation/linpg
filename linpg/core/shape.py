@@ -172,8 +172,8 @@ class Circle(Square):
         super().__init__(x, y, diameter)
 
     @property
-    def radius(self) -> number:
-        return self.get_width() / 2
+    def radius(self) -> int:
+        return round(self.get_width() / 2)
 
     # 画出轮廓
     def draw_outline(self, surface: ImageSurface, offSet: tuple = ORIGIN, color: str = "red", thickness: int = 2) -> None:

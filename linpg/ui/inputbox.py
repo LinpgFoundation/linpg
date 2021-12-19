@@ -53,7 +53,7 @@ class SingleLineInputBox(AbstractInputBox):
     def get_text(self) -> str:
         self.need_save = False
         if self._text == "":
-            return None
+            return ""
         else:
             return self._text
 
@@ -198,7 +198,7 @@ class MultipleLinesInputBox(AbstractInputBox):
     def get_text(self) -> list:
         self.need_save = False
         if len(self._text) == 0 or self._text == [""]:
-            return None
+            return []
         else:
             return self._text
 
@@ -227,14 +227,12 @@ class MultipleLinesInputBox(AbstractInputBox):
         self._reset_inputbox_size()
 
     def _reset_inputbox_width(self) -> None:
+        width: int = self.default_width
         if self._text is not None and len(self._text) > 0:
-            width = self.default_width
             for txtTmp in self._text:
-                new_width = self.FONT.estimate_text_width(txtTmp) + self.FONT.size / 2
+                new_width: int = int(self.FONT.estimate_text_width(txtTmp) + self.FONT.size / 2)
                 if new_width > width:
                     width = new_width
-        else:
-            width = self.default_width
         self.input_box.set_width(width)
 
     def _reset_inputbox_height(self) -> None:
@@ -314,7 +312,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         new_width: int = 0
         i: int = 0
         for i in range(len(self._text[self.lineId])):
-            new_width = self.FONT.estimate_text_width(self._text[self.lineId][:i]) + self.FONT.size * 0.25
+            new_width = int(self.FONT.estimate_text_width(self._text[self.lineId][:i]) + self.FONT.size * 0.25)
             if new_width > local_x:
                 break
             else:

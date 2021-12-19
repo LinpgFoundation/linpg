@@ -25,7 +25,7 @@ class AbstractImageSurface(Rectangle, HiddenableSurface):
         return self.img.get_alpha()
 
     def set_alpha(self, value: int) -> None:
-        self.img.set_alpha(keep_in_range(int(value), 0, 255))
+        self.img.set_alpha(keep_int_in_range(int(value), 0, 255))
 
     def add_alpha(self, value: int) -> None:
         self.set_alpha(self.get_alpha() + value)
@@ -70,7 +70,7 @@ class AdvancedAbstractImageSurface(AbstractImageSurface, SurfaceWithLocalPos):
         return self._alpha
 
     def set_alpha(self, value: int, update_original: bool = True) -> None:
-        self._alpha = keep_in_range(int(value), 0, 255)
+        self._alpha = keep_int_in_range(int(value), 0, 255)
         if update_original is True and isinstance(self.img, ImageSurface):
             super().set_alpha(self._alpha)
 
@@ -149,7 +149,9 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
     ) -> None:
         if self._need_update is True:
             self._update_img()
-        Draw.rect(surface, color, (Coordinates.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width)
+        Draw.rect(
+            surface, Colors.get(color), (Coordinates.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width
+        )
 
     # 展示
     def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:

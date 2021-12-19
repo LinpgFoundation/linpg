@@ -6,10 +6,9 @@ class AbstractGameObjectsContainer(AbstractImageSurface):
         super().__init__(
             StaticImage(bg_img, 0, 0, width, height) if bg_img is not None else bg_img, x, y, width, height, tag
         )
-        self._item_being_hovered = None
 
     # 获取物品container容器（子类需实现）
-    def _get_container(self) -> Iterable:
+    def _get_container(self) -> Union[dict, list]:
         EXCEPTION.fatal("_get_container()", 1)
 
     # 物品数量
@@ -43,13 +42,14 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
     def __init__(self, bg_img: PoI, x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
         super().__init__(bg_img, x, y, width, height, tag=tag)
         self.__items_container_dict: dict = {}
+        self._item_being_hovered: Optional[str] = None
 
     @property
-    def item_being_hovered(self) -> str:
-        return str(self._item_being_hovered) if self._item_being_hovered is not None else None
+    def item_being_hovered(self) -> Optional[str]:
+        return self._item_being_hovered
 
     # 获取物品合集
-    def _get_container(self):
+    def _get_container(self) -> dict:
         return self.__items_container_dict
 
     # 获取key的列表
@@ -95,10 +95,10 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
                 game_object_t.display(surface, current_abs_pos)
                 if isinstance(game_object_t, Button):
                     if game_object_t.has_been_hovered() is True:
-                        self._item_being_hovered = key_of_game_object
+                        self._item_being_hovered = str(key_of_game_object)
                 elif isinstance(game_object_t, GameObject):
                     if game_object_t.is_hovered(current_abs_pos):
-                        self._item_being_hovered = key_of_game_object
+                        self._item_being_hovered = str(key_of_game_object)
 
 
 # 使用List储存游戏对象的容器，类似html的div
@@ -106,13 +106,14 @@ class GameObjectsListContainer(AbstractGameObjectsContainer):
     def __init__(self, bg_img: PoI, x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
         super().__init__(bg_img, x, y, width, height, tag=tag)
         self.__items_container_list: list = []
+        self._item_being_hovered: int = -1
 
     @property
     def item_being_hovered(self) -> int:
-        return int(self._item_being_hovered)
+        return self._item_being_hovered
 
     # 获取物品合集
-    def _get_container(self):
+    def _get_container(self) -> list:
         return self.__items_container_list
 
     # 新增一个物品

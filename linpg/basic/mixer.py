@@ -213,12 +213,12 @@ class SoundVolumeManger:
 
     @property
     def global_value(self) -> int:
-        return round(keep_in_range(round(Setting.get("Sound", "global_value")), 0, self.__sound_unit))
+        return keep_int_in_range(round(Setting.get("Sound", "global_value")), 0, self.__sound_unit)
 
     @property
     def background_music(self) -> int:
         return round(
-            keep_in_range(round(Setting.get("Sound", "background_music"), 2), 0, self.__sound_unit)
+            keep_number_in_range(round(Setting.get("Sound", "background_music"), 2), 0, self.__sound_unit)
             * self.global_value
             / self.__sound_unit
         )
@@ -226,7 +226,7 @@ class SoundVolumeManger:
     @property
     def effects(self) -> int:
         return round(
-            keep_in_range(round(Setting.get("Sound", "effects"), 2), 0, self.__sound_unit)
+            keep_number_in_range(round(Setting.get("Sound", "effects"), 2), 0, self.__sound_unit)
             * self.global_value
             / self.__sound_unit
         )
@@ -234,7 +234,7 @@ class SoundVolumeManger:
     @property
     def environment(self) -> int:
         return round(
-            keep_in_range(round(Setting.get("Sound", "environment"), 2), 0, self.__sound_unit)
+            keep_number_in_range(round(Setting.get("Sound", "environment"), 2), 0, self.__sound_unit)
             * self.global_value
             / self.__sound_unit
         )

@@ -70,7 +70,7 @@ class SurfaceContainerWithScrollbar(AbstractSurfaceWithScrollbar, GameObjectsDic
                             subsurface_rect = Rectangle(0, 0, new_width, new_height)
                             surface.blit(get_img_subsurface(item, subsurface_rect), (current_x, current_y))
                             if subsurface_rect.is_hovered((current_x, current_y)):
-                                self._item_being_hovered = key
+                                self._item_being_hovered = str(key)
                         elif -(item.get_height()) <= abs_local_y < 0:
                             crop_height = -abs_local_y
                             new_height = item.get_height() - crop_height
@@ -82,7 +82,7 @@ class SurfaceContainerWithScrollbar(AbstractSurfaceWithScrollbar, GameObjectsDic
                             subsurface_rect = Rectangle(0, crop_height, new_width, new_height)
                             surface.blit(get_img_subsurface(item, subsurface_rect), (current_x, current_y + crop_height))
                             if subsurface_rect.is_hovered((current_x, current_y)):
-                                self._item_being_hovered = key
+                                self._item_being_hovered = str(key)
                         # 换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line - 1:
                             current_y += self.distance_between_item + item.get_height()
@@ -106,7 +106,7 @@ class SurfaceContainerWithScrollbar(AbstractSurfaceWithScrollbar, GameObjectsDic
                                 (current_x, current_y),
                             )
                             if subsurface_rect.is_hovered((current_x, current_y)):
-                                self._item_being_hovered = key
+                                self._item_being_hovered = str(key)
                         elif -(item.get_width()) <= abs_local_x < 0:
                             crop_width = -abs_local_x
                             new_width = item.get_width() - crop_width
@@ -118,7 +118,7 @@ class SurfaceContainerWithScrollbar(AbstractSurfaceWithScrollbar, GameObjectsDic
                             subsurface_rect = Rectangle(crop_width, 0, new_width, new_height)
                             surface.blit(get_img_subsurface(item, subsurface_rect), (current_x + crop_width, current_y))
                             if subsurface_rect.is_hovered((current_x, current_y)):
-                                self._item_being_hovered = key
+                                self._item_being_hovered = str(key)
                         # 换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line - 1:
                             current_x += self.distance_between_item + item.get_width()

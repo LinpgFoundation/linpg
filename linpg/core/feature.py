@@ -7,8 +7,11 @@ RectLiked = Union[Rectangle, pygame.Rect, tuple]
 
 # 转换pygame的rect类至linpg引擎的rect类
 def convert_rect(rect: RectLiked) -> Rectangle:
-    # 确认是pygame.Rect类再转换
-    if isinstance(rect, pygame.Rect):
+    # 如果是Rect类，则没必要转换
+    if isinstance(rect, Rectangle):
+        return rect
+    # 如果是pygame.Rect类则需转换
+    elif isinstance(rect, pygame.Rect):
         return Rectangle(rect.x, rect.y, rect.width, rect.height)
     # 如果是tuple类，则需要创建
     elif isinstance(rect, tuple):
@@ -18,9 +21,6 @@ def convert_rect(rect: RectLiked) -> Rectangle:
             return Rectangle(rect[0], rect[1], rect[2], rect[3])
         else:
             EXCEPTION.fatal("Invalid length for forming a rect.")
-    # 如果是Rect类，则没必要转换
-    elif isinstance(rect, Rectangle):
-        return rect
     else:
         EXCEPTION.fatal('The rect has to be RectLiked object, not "{}".'.format(type(rect)))
 
@@ -48,8 +48,8 @@ def convert_to_pygame_rect(rect: RectLiked) -> pygame.Rect:
 # 是否形状一样
 def is_same_rect(rect1: RectLiked, rect2: RectLiked) -> bool:
     # 确保两个输入的类rect的物品都不是tuple
-    rect1_t: Rectangle = convert_rect(rect1) if not isinstance(rect1, Rectangle) else rect1
-    rect2_t: Rectangle = convert_rect(rect2) if not isinstance(rect1, Rectangle) else rect2
+    rect1_t: Rectangle = convert_rect(rect1)
+    rect2_t: Rectangle = convert_rect(rect2)
     # 比较并返回结果
     return (
         rect1_t.x == rect2_t.x
@@ -60,14 +60,14 @@ def is_same_rect(rect1: RectLiked, rect2: RectLiked) -> bool:
 
 
 # 检测pygame类2d模型是否被点击
-def is_hovering(imgObject: object, objectPos: Iterable = ORIGIN) -> bool:
-    # 如果是Surface类
-    if isinstance(imgObject, ImageSurface):
-        mouse_pos = Positions.subtract(Controller.mouse.pos, objectPos)
-    else:
-        EXCEPTION.fatal("Unable to check current object: {0} (type:{1})".format(imgObject, type(imgObject)))
+def is_hovering(imgObject: ImageSurface, objectPos: tuple = ORIGIN) -> bool:
+    # 计算坐标
+    mouse_pos: tuple = Positions.subtract(Controller.mouse.pos, objectPos)
     # 返回结果
-    return 0 < mouse_pos[0] < imgObject.get_width() and 0 < mouse_pos[1] < imgObject.get_height()
+    try:
+        return 0 < mouse_pos[0] < imgObject.get_width() and 0 < mouse_pos[1] < imgObject.get_height()
+    except Exception:
+        EXCEPTION.fatal("Unable to check current object: {0} (type:{1})".format(imgObject, type(imgObject)))
 
 
 # 获取图片的subsurface

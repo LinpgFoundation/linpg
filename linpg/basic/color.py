@@ -96,12 +96,10 @@ class ColorManager:
 
     """获取颜色"""
     # 给定一个颜色的名字或序号，返回对应的RGB列表
-    def get(self, color: color_liked) -> tuple[int, ...]:
+    def get(self, color: color_liked) -> tuple:
         if isinstance(color, str):
             if color.startswith("#"):
                 return ImageColor.getrgb(color)
-            elif color == "gray" or color == "grey":
-                return self.__GRAY
             else:
                 try:
                     return tuple(THECOLORS[color])

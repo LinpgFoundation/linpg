@@ -103,7 +103,7 @@ class Entity(Position):
             "if_invincible": self.__if_invincible,
         }
         if self.__moving_path is not None:
-            data["moving_path"] = list(self.__moving_path)
+            data["moving_path"] = [list(pos) for pos in self.__moving_path]
         return data
 
     # 阵营

@@ -17,7 +17,7 @@ class AbstractBattleSystem(AbstractGameSystem):
         self.alliances_data: dict = {}
         self.enemies_data: dict = {}
         # 地图数据
-        self.MAP: object = None
+        self.MAP: MapObject = None
         # 视觉小说系统与参数
         self._DIALOG: DialogSystem = DialogSystem(True)
         self.dialog_parameters: dict = None

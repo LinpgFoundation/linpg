@@ -7,8 +7,37 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
     __BLOCKS_DATABASE: dict = DataBase.get("Blocks")
 
     def __init__(self, mapDataDic: dict, perBlockWidth: int_f, perBlockHeight: int_f):
+        # 转换原始的地图数据
+        lookup_table: tuple
+        MAP_t: list
+        if isinstance(mapDataDic["map"], (list, tuple)):
+            MAP_t = list(mapDataDic["map"])
+            # 确认场景需要用到素材
+            all_images_needed: list = []
+            for theRow in MAP_t:
+                for theItem in theRow:
+                    if theItem not in all_images_needed:
+                        all_images_needed.append(theItem)
+            lookup_table = tuple(all_images_needed)
+            del all_images_needed
+        else:
+            lookup_table = tuple(mapDataDic["map"]["lookup_table"])
+            MAP_t = list(mapDataDic["map"]["array2d"])
+            index: int = 0
+            for i in range(len(MAP_t)):
+                for j in range(len(MAP_t[i])):
+                    index = int(MAP_t[i][j])
+                    if 0 <= index < len(lookup_table):
+                        MAP_t[i][j] = lookup_table[index]
+                    else:
+                        EXCEPTION.warn(
+                            "A element with value {0} on x {1} and y {2} is not found in the lookup table, please fix it!".format(
+                                index, j, i
+                            )
+                        )
+                        MAP_t[i][j] = "TileTemplate01"
         # 初始化地图数据
-        self.__MAP: numpy.ndarray = numpy.asarray(mapDataDic["map"])
+        self.__MAP: numpy.ndarray = numpy.asarray(MAP_t)
         # 使用numpy的shape决定self.row和self.column
         self.row, self.column = self.__MAP.shape
         AStar.__init__(self, self.row, self.column)
@@ -31,32 +60,9 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
         # 装饰物
         self.__decorations: list = []
         # 加载装饰物
-        new_decoration: DecorationObject
         for decorationType, itemsThatType in mapDataDic["decoration"].items():
             for itemId, itemData in itemsThatType.items():
-                if "status" not in itemData:
-                    itemData["status"] = {}
-                if decorationType == "campfire":
-                    new_decoration = CampfireObject(
-                        itemData["x"], itemData["y"], itemId, decorationType, itemData["range"], itemData["status"]
-                    )
-                elif decorationType == "chest":
-                    new_decoration = ChestObject(
-                        itemData["x"],
-                        itemData["y"],
-                        itemId,
-                        decorationType,
-                        itemData["items"] if "items" in itemData else [],
-                        itemData["whitelist"] if "whitelist" in itemData else [],
-                        itemData["status"],
-                    )
-                else:
-                    new_decoration = DecorationObject(
-                        itemData["x"], itemData["y"], itemId, decorationType, itemData["image"], itemData["status"]
-                    )
-                    if decorationType == "tree":
-                        new_decoration.scale = 0.75
-                self.__decorations.append(new_decoration)
+                self.add_decoration(itemData, decorationType, itemId)
         # 对装饰物进行排序
         self.__decorations.sort()
         # 初始化环境图片管理模块
@@ -69,17 +75,11 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
         )
         # 更新尺寸
         AbstractMapImagesModule.set_block_size(round(perBlockWidth), round(perBlockHeight))
-        # 确认场景需要用到素材
-        all_images_needed: list = []
-        for theRow in self.__MAP:
-            for theItem in theRow:
-                if theItem not in all_images_needed:
-                    all_images_needed.append(theItem)
         # 加载图片
-        for fileName in all_images_needed:
+        for fileName in lookup_table:
             TileMapImagesModule.add_image(fileName)
         for decoration in self.__decorations:
-            DecorationImagesModule.add_image(decoration.type, decoration.image)
+            DecorationImagesModule.add_image(decoration.get_type(), decoration.image)
         # 处于光处的区域
         self.__light_area: numpy.ndarray = None
         # 追踪是否需要更新的参数
@@ -103,19 +103,40 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
     def block_height(self) -> int:
         return AbstractMapImagesModule.get_block_height()
 
+    # 将地图模块所有数据以字典的形式返回
     def to_dict(self) -> dict:
-        decoration_dict = {}
-        for theDecoration in self.__decorations:
-            theDecorationInDict: dict = theDecoration.to_dict()
-            if theDecorationInDict["type"] not in decoration_dict:
-                decoration_dict[theDecorationInDict["type"]] = {}
-            decoration_dict[theDecorationInDict["type"]][theDecorationInDict["id"]] = theDecorationInDict
         return {
-            "map": self.__MAP.tolist(),
             "background_image": self.__background_image,
             "local_x": self.local_x,
             "local_y": self.local_y,
             "atNight": self.night_mode,
+        } | self.get_map_in_dict()
+
+    # 以字典的形式获取地图的数据
+    def get_map_in_dict(self) -> dict:
+        # 转换场景装饰物数据
+        decoration_dict = {}
+        for theDecoration in self.__decorations:
+            theDecorationInDict: dict = theDecoration.to_dict()
+            if theDecoration.get_type() not in decoration_dict:
+                decoration_dict[theDecoration.get_type()] = {}
+            decoration_dict[theDecoration.get_type()][theDecoration.get_id()] = theDecorationInDict
+        # 转换地图数据
+        MAP_t: tuple = tuple(self.__MAP.tolist())
+        lookup_table: dict = {}
+        for row in MAP_t:
+            for item in row:
+                if item not in lookup_table:
+                    lookup_table[item] = 0
+                else:
+                    lookup_table[item] += 1
+        sorted_lookup_table: list = sorted(lookup_table, key=lookup_table.get, reverse=True)
+        # 返回数据
+        return {
+            "map": {
+                "array2d": [[sorted_lookup_table.index(item) for item in row] for row in MAP_t],
+                "lookup_table": sorted_lookup_table,
+            },
             "decoration": decoration_dict,
         }
 
@@ -166,8 +187,32 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
 
     # 与给定Index的场景装饰物进行互动
     def interact_decoration_with_id(self, index: int) -> None:
-        if self.__decorations[index].type == "campfire":
+        if self.__decorations[index].get_type() == "campfire":
             self.__decorations[index].set_status("lit", not self.__decorations[index].get_status("lit"))
+
+    # 新增装饰物
+    def add_decoration(self, _data: dict, _type: str, _id: str, _sort: bool = False) -> None:
+        if "status" not in _data:
+            _data["status"] = {}
+        if _type == "campfire":
+            new_decoration = CampfireObject(_data["x"], _data["y"], _id, _type, _data["range"], _data["status"])
+        elif _type == "chest":
+            new_decoration = ChestObject(
+                _data["x"],
+                _data["y"],
+                _id,
+                _type,
+                _data["items"] if "items" in _data else [],
+                _data["whitelist"] if "whitelist" in _data else [],
+                _data["status"],
+            )
+        else:
+            new_decoration = DecorationObject(_data["x"], _data["y"], _id, _type, _data["image"], _data["status"])
+            if _type == "tree":
+                new_decoration.scale = 0.75
+        self.__decorations.append(new_decoration)
+        if _sort is True:
+            self.__decorations.sort()
 
     # 移除装饰物
     def remove_decoration(self, decoration: object) -> None:
@@ -177,6 +222,10 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
             if self.__decorations[i].get_pos() == pos:
                 self.__decorations.pop(i)
                 break
+
+    # 获取装饰物数量
+    def count_decorations(self) -> int:
+        return len(self.__decorations)
 
     # 是否夜战
     @property
@@ -245,12 +294,6 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
 
     # 重新绘制地图
     def __update_map_surface(self, window_size: tuple) -> None:
-        posTupleTemp: tuple
-        x: int
-        y: int
-        yRange: int = self.row
-        xRange: int = self.column
-        screen_min: int = -self.block_width
         if not isinstance(self.__block_on_surface, numpy.ndarray):
             self.__BACKGROUND_SURFACE = (
                 IMG.resize(self.__BACKGROUND_IMAGE, window_size)
@@ -263,21 +306,23 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
                 self.__MAP_SURFACE = new_transparent_surface(self.get_size())
             self.__block_on_surface = numpy.zeros((self.row, self.column), dtype=numpy.int8)
         # 画出地图
-        for y in range(yRange):
-            for x in range(xRange):
+        posTupleTemp: tuple
+        evn_img: StaticImage
+        for y in range(self.row):
+            for x in range(self.column):
                 posTupleTemp = self.calPosInMap(x, y)
-                if screen_min <= posTupleTemp[0] < window_size[0] and screen_min <= posTupleTemp[1] < window_size[1]:
+                if (
+                    -self.block_width <= posTupleTemp[0] < window_size[0]
+                    and -self.block_width <= posTupleTemp[1] < window_size[1]
+                ):
                     if self.__block_on_surface[y][x] == 0:
-                        if not self.isPosInLightArea(x, y):
-                            evn_img = TileMapImagesModule.get_image(self.__MAP[y][x], True)
-                        else:
-                            evn_img = TileMapImagesModule.get_image(self.__MAP[y][x], False)
+                        evn_img = TileMapImagesModule.get_image(str(self.__MAP[y][x]), not self.isPosInLightArea(x, y))
                         evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
                         evn_img.draw(self.__MAP_SURFACE)
                         self.__block_on_surface[y][x] = 1
-                        if y < yRange - 1:
+                        if y < self.row - 1:
                             self.__block_on_surface[y + 1][x] = 0
-                        if x < xRange - 1:
+                        if x < self.column - 1:
                             self.__block_on_surface[y][x + 1] = 0
                     else:
                         pass
@@ -309,7 +354,7 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
             if screen_min <= thePosInMap[0] < screen.get_width() and screen_min <= thePosInMap[1] < screen.get_height():
                 decoration_alpha = 255
                 # 树
-                if item.type == "tree":
+                if item.get_type() == "tree":
                     offSet = offSet_tree
                     if item.get_pos() in charactersPos and self.inLightArea(item):
                         decoration_alpha = 100
@@ -416,7 +461,7 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
                         if [x, y] not in lightArea:
                             lightArea.append([x, y])
         for item in self.__decorations:
-            if item.type == "campfire" and item.get_status("lit") is True:
+            if item.get_type() == "campfire" and item.get_status("lit") is True:
                 for y in range(int(item.y - item.range), int(item.y + item.range)):
                     if y < item.y:
                         for x in range(int(item.x - item.range - (y - item.y) + 1), int(item.x + item.range + (y - item.y))):
@@ -475,7 +520,7 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
         """
         # 历遍设施，设置障碍方块
         for item in self.__decorations:
-            if item.type == "obstacle" or item.type == "campfire":
+            if item.get_type() == "obstacle" or item.get_type() == "campfire":
                 self._map2d[item.x][item.y] = 1
         # 如果终点有我方角色，则不允许
         for key, value in friendData.items():

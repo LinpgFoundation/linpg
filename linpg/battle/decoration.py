@@ -5,16 +5,28 @@ class DecorationObject(GameObject):
     def __init__(self, x: int, y: int, _id: str, itemType: str, image: str, status: dict):
         super().__init__(x, y)
         self.__id: str = _id
-        self.type: str = itemType
+        self.__type: str = itemType
         self.image: str = image
         self.__status: dict = status
         self.scale: float = 0.5
 
+    def get_id(self) -> str:
+        return self.__id
+
+    def get_type(self) -> str:
+        return self.__type
+
     def to_dict(self) -> dict:
-        return {"x": self.x, "y": self.y, "id": self.__id, "type": self.type, "image": self.image, "status": self.__status}
+        data_t: dict = {"x": self.x, "y": self.y, "image": self.image}
+        if len(self.__status) > 0:
+            data_t["status"] = deepcopy(self.__status)
+        return data_t
 
     def is_on_pos(self, pos: Any) -> bool:
         return Coordinates.is_same(self.get_pos(), pos)
+
+    def _has_status(self, key: str) -> bool:
+        return key in self.__status
 
     def get_status(self, key: str) -> Any:
         return self.__status[key]
@@ -29,7 +41,7 @@ class DecorationObject(GameObject):
             EXCEPTION.warn('Cannot remove status "{}" because it does not exist'.format(key))
 
     def blit(self, surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:
-        imgToBlit = DecorationImagesModule.get_image(self.type, self.image, is_dark)
+        imgToBlit = DecorationImagesModule.get_image(self.__type, self.image, is_dark)
         imgToBlit.set_size(
             DecorationImagesModule.get_block_width() * self.scale, DecorationImagesModule.get_block_width() * self.scale
         )
@@ -40,15 +52,26 @@ class DecorationObject(GameObject):
 
 # 篝火
 class CampfireObject(DecorationObject):
+
+    __IMAGE_NAME: str = "campfire"
+
     def __init__(self, x: int, y: int, _id: str, itemType: str, _range: int, status: dict):
-        super().__init__(x, y, _id, itemType, "campfire", status)
+        super().__init__(x, y, _id, itemType, self.__IMAGE_NAME, status)
         self.range: int = _range
         self.__alpha: int = 255
         self.__img_id: int = get_random_int(0, 90)
-        self.set_status("lit", True)
+        if not self._has_status("lit"):
+            self.set_status("lit", True)
 
     def to_dict(self) -> dict:
-        return super().to_dict() | {"range": self.range}
+        data_t: dict = super().to_dict()
+        del data_t["image"]
+        data_t["range"] = self.range
+        if "status" in data_t and data_t["status"]["lit"] is True:
+            del data_t["status"]["lit"]
+            if len(data_t["status"]) <= 0:
+                del data_t["status"]
+        return data_t
 
     @property
     def img_id(self) -> float:
@@ -71,7 +94,7 @@ class CampfireObject(DecorationObject):
         if self.__alpha > 0:
             self.image = "lit_{}".format(int(self.img_id))
             super().blit(surface, pos, is_dark, self.__alpha)
-            if self.img_id >= DecorationImagesModule.get_image_num(self.type) - 2:
+            if self.img_id >= DecorationImagesModule.get_image_num(self.get_type()) - 2:
                 self.__img_id = 0
             else:
                 self.__img_id += 1
@@ -87,4 +110,10 @@ class ChestObject(DecorationObject):
         self.whitelist: list = whitelist
 
     def to_dict(self) -> dict:
-        return super().to_dict() | {"items": self.items, "whitelist": self.whitelist}
+        data_t: dict = super().to_dict()
+        del data_t["image"]
+        if len(self.items) > 0:
+            data_t["items"] = deepcopy(self.items)
+        if len(self.whitelist) > 0:
+            data_t["whitelist"] = deepcopy(self.whitelist)
+        return data_t

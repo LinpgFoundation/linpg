@@ -70,6 +70,12 @@ class GameObject(Coordinate):
     def set_left(self, value: int_f) -> None:
         self.x = int(value)
 
+    def move_left(self, value: int_f) -> None:
+        self.x -= int(value)
+
+    def move_right(self, value: int_f) -> None:
+        self.x += int(value)
+
     # 上方位置
     @property
     def top(self) -> int:
@@ -80,6 +86,12 @@ class GameObject(Coordinate):
 
     def set_top(self, value: int_f) -> None:
         self.y = int(value)
+
+    def move_upward(self, value: int_f) -> None:
+        self.y -= int(value)
+
+    def move_downward(self, value: int_f) -> None:
+        self.y += int(value)
 
 
 # 2d游戏对象接口

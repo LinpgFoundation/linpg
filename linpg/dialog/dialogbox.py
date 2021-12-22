@@ -8,7 +8,7 @@ class AbstractDialogBox(HiddenableSurface):
         self.dialoguebox_max_height: int = int(Display.get_height() / 4)
         self.dialoguebox_max_y: int = int(Display.get_height() * 0.65)
         # 对胡框图片
-        self.dialoguebox: StaticImage = StaticImage(
+        self._dialoguebox: StaticImage = StaticImage(
             "<!ui>dialoguebox.png", Display.get_width() * 0.13, 0, Display.get_width() * 0.74
         )
 
@@ -31,6 +31,9 @@ class DevDialogBox(AbstractDialogBox):
         self.narrator: SingleLineInputBox = SingleLineInputBox(
             Display.get_width() * 0.2, self.dialoguebox_max_y + fontSize, fontSize, "white"
         )
+        # 设置对话框高度和坐标
+        self._dialoguebox.set_top(self.dialoguebox_max_y)
+        self._dialoguebox.set_height(self.dialoguebox_max_height)
 
     # 更新内容
     def update(self, narrator: str, content: list) -> None:
@@ -47,9 +50,7 @@ class DevDialogBox(AbstractDialogBox):
     def draw(self, surface: ImageSurface) -> None:
         if self.is_visible():
             # 画上对话框图片
-            self.dialoguebox.set_top(self.dialoguebox_max_y)
-            self.dialoguebox.set_height(self.dialoguebox_max_height)
-            self.dialoguebox.draw(surface)
+            self._dialoguebox.draw(surface)
             # 将文字画到屏幕上
             self.narrator.draw(surface)
             self.content.draw(surface)
@@ -71,9 +72,9 @@ class DialogBox(AbstractDialogBox):
             EXCEPTION.inform(
                 "Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!\nAs a result, the text playing sound will be disabled."
             )
-        self.READINGSPEED = Setting.get("ReadingSpeed")
+        self.__READING_SPEED: int = int(Setting.get("ReadingSpeed"))
         # 鼠标图标
-        self.mouseImg = GifImage(
+        self.__mouse_img = GifImage(
             (
                 StaticImage("<!ui>mouse_none.png", 0, 0, self.FONT.size, self.FONT.size),
                 StaticImage("<!ui>mouse.png", 0, 0, self.FONT.size, self.FONT.size),
@@ -84,12 +85,19 @@ class DialogBox(AbstractDialogBox):
             self.FONT.size,
             50,
         )
-        self.readTime = 0
-        self.totalLetters = 0
+        self.__read_time: int = 0
+        self.__total_letters: int = 0
         self.autoMode = False
         self.__fade_out_stage: bool = False
-        self.dialoguebox_height: int = 0
-        self.dialoguebox_y: Optional[int] = None
+        # 设置对话框高度和坐标
+        self._dialoguebox.set_top(-1)
+        self._dialoguebox.set_height(0)
+
+    # 重置
+    def reset(self) -> None:
+        self.__fade_out_stage = False
+        self._dialoguebox.set_height(0)
+        self._dialoguebox.set_top(-1)
 
     # 是否所有内容均已展出
     def is_all_played(self) -> bool:
@@ -108,25 +116,20 @@ class DialogBox(AbstractDialogBox):
     # 更新内容
     def update(self, narrator: str, content: list, forceNotResizeDialoguebox: bool = False) -> None:
         self.stop_playing_text_sound()
-        self.totalLetters = 0
-        self.readTime = 0
+        self.__total_letters = 0
+        self.__read_time = 0
         if narrator is None:
             narrator = ""
         if content is None:
             content = []
         for i in range(len(self.content)):
-            self.totalLetters += len(self.content[i])
+            self.__total_letters += len(self.content[i])
         if self.narrator != narrator and not forceNotResizeDialoguebox:
             self.__fade_out_stage = True
         self.__text_index = 0
         self.__displayed_lines = 0
         self.narrator = narrator
         self.content = content
-
-    def reset(self) -> None:
-        self.__fade_out_stage = False
-        self.dialoguebox_height = 0
-        self.dialoguebox_y = None
 
     # 获取文字播放时的音效的音量
     def get_sound_volume(self) -> float:
@@ -142,18 +145,12 @@ class DialogBox(AbstractDialogBox):
 
     # 是否需要更新
     def needUpdate(self) -> bool:
-        return True if self.autoMode and self.readTime >= self.totalLetters else False
+        return True if self.autoMode and self.__read_time >= self.__total_letters else False
 
     # 如果音效还在播放则停止播放文字音效
     def stop_playing_text_sound(self) -> None:
         if LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy():
             LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.stop()
-
-    # 画上对话框图片
-    def __draw_dialogbox(self, surface: ImageSurface) -> None:
-        self.dialoguebox.set_top(int(self.dialoguebox_y))
-        self.dialoguebox.set_height(self.dialoguebox_height)
-        self.dialoguebox.draw(surface)
 
     # 展示
     def draw(self, surface: ImageSurface) -> None:
@@ -161,24 +158,28 @@ class DialogBox(AbstractDialogBox):
             # 渐入
             if not self.__fade_out_stage:
                 # 如果当前对话框图片的y坐标不存在（一般出现在对话系统例行初始化后），则根据屏幕大小设置一个
-                if self.dialoguebox_y is None:
-                    self.dialoguebox_y = self.dialoguebox_max_y + self.dialoguebox_max_height / 2
+                if self._dialoguebox.y < 0:
+                    self._dialoguebox.set_top(self.dialoguebox_max_y + self.dialoguebox_max_height / 2)
                 # 画出对话框
-                self.__draw_dialogbox(surface)
+                self._dialoguebox.draw(surface)
                 # 如果对话框图片还在放大阶段
-                if self.dialoguebox_height < self.dialoguebox_max_height:
-                    self.dialoguebox_height = min(
-                        int(self.dialoguebox_height + self.dialoguebox_max_height * Display.sfpsp / 10),
-                        self.dialoguebox_max_height,
+                if self._dialoguebox.height < self.dialoguebox_max_height:
+                    self._dialoguebox.set_height(
+                        min(
+                            int(self._dialoguebox.height + self.dialoguebox_max_height * Display.sfpsp / 10),
+                            self.dialoguebox_max_height,
+                        )
                     )
-                    self.dialoguebox_y -= int(self.dialoguebox_max_height * Display.sfpsp / 20)
+                    self._dialoguebox.move_upward(self.dialoguebox_max_height * Display.sfpsp / 20)
                 # 如果已经放大好了，则将文字画到屏幕上
                 else:
                     x: int = int(surface.get_width() * 0.2)
                     y: int = int(surface.get_height() * 0.73)
                     # 写上当前讲话人的名字
                     if len(self.narrator) > 0:
-                        surface.blit(self.FONT.render(self.narrator, Colors.WHITE), (x, self.dialoguebox_y + self.FONT.size))
+                        surface.blit(
+                            self.FONT.render(self.narrator, Colors.WHITE), (x, self._dialoguebox.y + self.FONT.size)
+                        )
                     # 对话框已播放的内容
                     for i in range(self.__displayed_lines):
                         surface.blit(
@@ -204,20 +205,17 @@ class DialogBox(AbstractDialogBox):
                     # 当所有行都播出后
                     else:
                         self.stop_playing_text_sound()
-                        if self.autoMode and self.readTime < self.totalLetters:
-                            self.readTime += self.READINGSPEED
+                        if self.autoMode and self.__read_time < self.__total_letters:
+                            self.__read_time += self.__READING_SPEED
                     # 画出鼠标gif
-                    self.mouseImg.draw(surface)
+                    self.__mouse_img.draw(surface)
             # 淡出
             else:
                 # 画出对话框图片
-                if self.dialoguebox_y is not None:
-                    # 画出对话框
-                    self.__draw_dialogbox(surface)
-                if self.dialoguebox_height > 0:
-                    self.dialoguebox_height = max(
-                        int(self.dialoguebox_height - self.dialoguebox_max_height * Display.sfpsp / 10), 0
-                    )
-                    self.dialoguebox_y += int(self.dialoguebox_max_height * Display.sfpsp / 20)
+                self._dialoguebox.draw(surface)
+                height_t: int = int(self._dialoguebox.height - self.dialoguebox_max_height * Display.sfpsp / 10)
+                if height_t > 0:
+                    self._dialoguebox.set_height(height_t)
+                    self._dialoguebox.move_downward(self.dialoguebox_max_height * Display.sfpsp / 20)
                 else:
                     self.reset()

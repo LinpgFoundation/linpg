@@ -177,8 +177,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 is_skip = True
                 Music.fade_out(fade_out_in_ms)
             if is_skip is True:
-                temp_alpha: int = int(BLACK_CURTAIN.get_alpha())
-                if temp_alpha < 255:
+                temp_alpha: Optional[int] = BLACK_CURTAIN.get_alpha()
+                if temp_alpha is not None and temp_alpha < 255:
                     BLACK_CURTAIN.set_alpha(temp_alpha + 5)
                 else:
                     is_playing = False
@@ -264,9 +264,9 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             if self._history_surface is None:
                 self._history_surface = Colors.surface(Display.get_size(), Colors.BLACK)
                 self._history_surface.set_alpha(150)
-                dialogIdTemp = "head"
+                dialogIdTemp: str = "head"
                 local_y: int = self._history_surface_local_y
-                while dialogIdTemp is not None:
+                while True:
                     if self.dialog_content[dialogIdTemp]["narrator"] is not None:
                         narratorTemp = self.__dialog_txt_system.FONT.render(
                             self.dialog_content[dialogIdTemp]["narrator"] + ":", Colors.WHITE
@@ -275,12 +275,14 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                             narratorTemp,
                             (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() * 0.1 + local_y),
                         )
+                    has_narrator: bool = self.dialog_content[dialogIdTemp]["narrator"] is not None
                     for i in range(len(self.dialog_content[dialogIdTemp]["content"])):
-                        txt = self.dialog_content[dialogIdTemp]["content"][i]
-                        if self.dialog_content[dialogIdTemp]["narrator"] is not None:
+                        txt: str = str(self.dialog_content[dialogIdTemp]["content"][i])
+                        if has_narrator:
                             if i == 0:
                                 txt = '[ "' + txt
-                            elif i == len(self.dialog_content[dialogIdTemp]["content"]) - 1:
+                            # 这里不用elif，以免当对话行数为一的情况
+                            if i == len(self.dialog_content[dialogIdTemp]["content"]) - 1:
                                 txt += '" ]'
                         self._history_surface.blit(
                             self.__dialog_txt_system.FONT.render(txt, Colors.WHITE),
@@ -292,7 +294,10 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                             self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "default"
                             or self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "changeScene"
                         ):
-                            dialogIdTemp = self.dialog_content[dialogIdTemp]["next_dialog_id"]["target"]
+                            if (target_temp := self.dialog_content[dialogIdTemp]["next_dialog_id"]["target"]) is not None:
+                                dialogIdTemp = str(target_temp)
+                            else:
+                                break
                         elif self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "option":
                             narratorTemp = self.__dialog_txt_system.FONT.render(
                                 self._buttons_mananger.choiceTxt + ":", (0, 191, 255)
@@ -311,11 +316,14 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                                 (Display.get_width() * 0.15, Display.get_height() * 0.1 + local_y),
                             )
                             local_y += int(self.__dialog_txt_system.FONT.size * 1.5)
-                            dialogIdTemp = self._dialog_options[dialogIdTemp]["target"]
+                            if (target_temp := self._dialog_options[dialogIdTemp]["target"]) is not None:
+                                dialogIdTemp = str(target_temp)
+                            else:
+                                break
                         else:
-                            dialogIdTemp = None
+                            break
                     else:
-                        dialogIdTemp = None
+                        break
             surface.blit(self._history_surface, (0, 0))
             if self.history_back is not None:
                 self.history_back.draw(surface)

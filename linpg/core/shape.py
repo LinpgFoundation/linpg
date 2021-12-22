@@ -5,7 +5,7 @@ class Square(GameObject2d):
     def __init__(self, x: int_f, y: int_f, width: int_f):
         super().__init__(x, y)
         self.__width: int = int(width)
-        self.__min_width: int = 1
+        self.__min_width: int = 0
         self.__max_width: int = -1
 
     # 宽度
@@ -85,7 +85,7 @@ class Rectangle(Square):
     def __init__(self, left: int_f, top: int_f, width: int_f, height: int_f):
         super().__init__(left, top, width)
         self.__height: int = int(height)
-        self.__min_height: int = 1
+        self.__min_height: int = 0
         self.__max_height: int = -1
 
     # 新建一个形状类

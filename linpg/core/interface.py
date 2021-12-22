@@ -21,6 +21,14 @@ class SurfaceWithLocalPos:
         self.__local_x: int = 0
         self.__local_y: int = 0
 
+    # 获取x坐标（子类需实现）
+    def get_left(self) -> int:
+        EXCEPTION.fatal("get_left()", 1)
+
+    # 获取y坐标（子类需实现）
+    def get_top(self) -> int:
+        EXCEPTION.fatal("get_top()", 1)
+
     # 获取本地坐标
     @property
     def local_x(self) -> int:

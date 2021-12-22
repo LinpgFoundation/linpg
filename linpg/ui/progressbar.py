@@ -136,7 +136,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
                     value_font,
                     Coordinates.add(
                         abs_pos,
-                        (self.width + self.__indicator.width * 0.7, (self.height - value_font.get_height()) / 2),
+                        (self.get_width() + self.__indicator.width * 0.7, (self.get_height() - value_font.get_height()) / 2),
                     ),
                 )
             else:
@@ -155,7 +155,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
                     value_font,
                     Coordinates.add(
                         abs_pos,
-                        ((self.width - value_font.get_width()) / 2, self.height + self.__indicator.height * 0.7),
+                        ((self.get_width() - value_font.get_width()) / 2, self.get_height() + self.__indicator.height * 0.7),
                     ),
                 )
             if self.is_hovered(offSet):
@@ -206,7 +206,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
         return self._percentage_to_be / self.accuracy
 
     def set_percentage(self, value: float) -> None:
-        self._percentage_to_be = round(keep_number_in_range(value, 0, 1) * self.accuracy, 5)
+        self._percentage_to_be = float(round(keep_number_in_range(value, 0, 1) * self.accuracy, 5))
         self.__perecent_update_each_time = round(
             (self._percentage_to_be - self.__real_current_percentage) / self.__total_update_intervals, 5
         )

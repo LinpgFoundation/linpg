@@ -342,7 +342,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                     self._remove_char("all")
                     self._add_char(values["-CONTENT-"])
 
-    def draw(self, screen: ImageSurface) -> bool:
+    def draw(self, screen: ImageSurface) -> None:
         for event in Controller.events:
             if self.active:
                 if event.type == Key.DOWN:

@@ -95,7 +95,7 @@ class UiGenerator:
                     )
                     text_index = a
                 else:
-                    EXCEPTION.fatal("Cannot find close bracket for text: {}".format())
+                    EXCEPTION.fatal("Cannot find close bracket for text: {}".format(text))
             else:
                 final_text_list.append(text[text_index])
             text_index += 1

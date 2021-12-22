@@ -19,32 +19,33 @@ class DialogButtons(HiddenableSurface):
         tempButtonTxt = self.FONT.render(dialog_txt["skip"], Colors.WHITE)
         temp_w = tempButtonTxt.get_width() + self.FONT.size * 1.5
         self.choiceTxt = dialog_txt["choice"]
-        self.skipButton = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
-        self.skipButtonHovered = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
+        skipButton: ImageSurface = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
+        skipButtonHovered: ImageSurface = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
         self.icon_y = (tempButtonTxt.get_height() - tempButtonIcon.get_height()) / 2
-        self.skipButtonHovered.blit(tempButtonIcon, (tempButtonTxt.get_width() + self.FONT.size * 0.5, self.icon_y))
-        self.skipButtonHovered.blit(tempButtonTxt, (0, 0))
+        skipButtonHovered.blit(tempButtonIcon, (tempButtonTxt.get_width() + self.FONT.size * 0.5, self.icon_y))
+        skipButtonHovered.blit(tempButtonTxt, (0, 0))
         tempButtonTxt = self.FONT.render(dialog_txt["skip"], Colors.GRAY)
         tempButtonIcon = IMG.add_darkness(tempButtonIcon, 100)
-        self.skipButton.blit(tempButtonIcon, (tempButtonTxt.get_width() + self.FONT.size * 0.5, self.icon_y))
-        self.skipButton.blit(tempButtonTxt, (0, 0))
-        self.skipButton = StaticImage(self.skipButton, Display.get_width() * 0.9, Display.get_height() * 0.05)
-        self.skipButtonHovered = StaticImage(self.skipButtonHovered, Display.get_width() * 0.9, Display.get_height() * 0.05)
+        skipButton.blit(tempButtonIcon, (tempButtonTxt.get_width() + self.FONT.size * 0.5, self.icon_y))
+        skipButton.blit(tempButtonTxt, (0, 0))
+        self.skipButton: StaticImage = StaticImage(skipButton, Display.get_width() * 0.9, Display.get_height() * 0.05)
+        self.skipButtonHovered = StaticImage(skipButtonHovered, Display.get_width() * 0.9, Display.get_height() * 0.05)
         # 生成自动播放按钮
         self.autoIconHovered = IMG.load("<!ui>auto.png", (self.FONT.size, self.FONT.size))
         self.autoIcon = IMG.add_darkness(self.autoIconHovered, 100)
         self.autoIconDegree = 0
         self.autoIconDegreeChange = (2 ** 0.5 - 1) * self.FONT.size / 45
         self.autoMode: bool = False
+        # 自动播放
         tempButtonTxt = self.FONT.render(dialog_txt["auto"], Colors.GRAY)
         temp_w = tempButtonTxt.get_width() + self.FONT.size * 1.5
-        self.autoButton = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
-        self.autoButtonHovered = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
-        self.autoButton.blit(tempButtonTxt, (0, 0))
-        self.autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"], Colors.WHITE), (0, 0))
-        self.autoButton = DynamicImage(self.autoButton, Display.get_width() * 0.8, Display.get_height() * 0.05)
+        autoButton = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
+        autoButtonHovered = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
+        autoButton.blit(tempButtonTxt, (0, 0))
+        autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"], Colors.WHITE), (0, 0))
+        self.autoButton = DynamicImage(autoButton, Display.get_width() * 0.8, Display.get_height() * 0.05)
         self.autoButton.tag = int(self.autoButton.x + self.autoButton.img.get_width() - self.FONT.size)
-        self.autoButtonHovered = DynamicImage(self.autoButtonHovered, Display.get_width() * 0.8, Display.get_height() * 0.05)
+        self.autoButtonHovered = DynamicImage(autoButtonHovered, Display.get_width() * 0.8, Display.get_height() * 0.05)
         self.autoButtonHovered.tag = int(self.autoButtonHovered.x + self.autoButtonHovered.img.get_width() - self.FONT.size)
         # 取消隐藏按钮
         self.showButton = load_button(
@@ -176,7 +177,7 @@ class DialogNavigationWindow(AbstractFrame):
                     for next_keys_options in dialogs_data[key]["next_dialog_id"]["target"]:
                         next_keys.append(next_keys_options["id"])
                 elif isinstance(the_next_key := dialogs_data[key]["next_dialog_id"]["target"], (str, int)):
-                    next_keys.append(the_next_key)
+                    next_keys.append(str(the_next_key))
             self.add_node(key, next_keys)
 
     # 更新选中的key
@@ -188,7 +189,7 @@ class DialogNavigationWindow(AbstractFrame):
     def get_selected_key(self) -> str:
         return self.__current_selected_key
 
-    def __update_node_pos(self, key: str = "head", offset_x: int = 0, offset_y: int = 0) -> None:
+    def __update_node_pos(self, key: str = "head", offset_x: int = 0, offset_y: int = 0) -> int:
         key_node: DialogNode = self.__nodes_map[key]
         if not key_node.has_been_displayed:
             # 设置坐标并展示
@@ -208,7 +209,7 @@ class DialogNavigationWindow(AbstractFrame):
                 self.__most_top = key_node.top
         return offset_y
 
-    def __draw_node(self, surface: ImageSurface, key: str = "head") -> int:
+    def __draw_node(self, surface: ImageSurface, key: str = "head") -> None:
         key_node: DialogNode = self.__nodes_map[key]
         if not key_node.has_been_displayed:
             # 设置坐标并展示

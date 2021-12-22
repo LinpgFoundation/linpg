@@ -65,11 +65,15 @@ class AdvancedAbstractImageSurface(AbstractImageSurface, SurfaceWithLocalPos):
         SurfaceWithLocalPos.__init__(self)
         self._alpha: int = 255
 
-    # 透明度
+    # 获取透明度
     def get_alpha(self) -> int:
         return self._alpha
 
-    def set_alpha(self, value: int, update_original: bool = True) -> None:
+    # 设置透明度
+    def set_alpha(self, value: int) -> None:
+        self._set_alpha(value)
+
+    def _set_alpha(self, value: int, update_original: bool = True) -> None:
         self._alpha = keep_int_in_range(int(value), 0, 255)
         if update_original is True and isinstance(self.img, ImageSurface):
             super().set_alpha(self._alpha)
@@ -93,7 +97,7 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 设置透明度
     def set_alpha(self, value: int) -> None:
-        super().set_alpha(value, False)
+        self._set_alpha(value, False)
         if self._processed_img is not None:
             self._processed_img.set_alpha(self.get_alpha())
 

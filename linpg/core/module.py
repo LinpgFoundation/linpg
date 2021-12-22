@@ -230,10 +230,10 @@ class GameObject2point5d(GameObject):
 
     # 获取坐标
     @property
-    def pos(self) -> tuple[int, int, int]:
+    def pos(self) -> tuple[int, int, int]:  # type: ignore[override]
         return self.x, self.y, self.z
 
-    def get_pos(self) -> tuple[int, int, int]:
+    def get_pos(self) -> tuple[int, int, int]:  # type: ignore[override]
         return self.x, self.y, self.z
 
     # 设置坐标

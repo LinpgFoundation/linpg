@@ -8,6 +8,8 @@ class DialogEditor(DialogConverter):
         self.__dialog_navigation_window: DialogNavigationWindow = DialogNavigationWindow(
             0, 0, Display.get_width() / 10, Display.get_height() / 10
         )
+        # 加载对话框系统
+        self.__dialog_txt_system: DevDialogBox = DevDialogBox(self._FONT_SIZE)
         # 存储视觉小说默认数据的参数
         self._dialog_data_default: dict = {}
         # 是否是父类
@@ -23,12 +25,14 @@ class DialogEditor(DialogConverter):
         # 压缩模式
         self.__compress_when_saving: bool = True
 
+    # 获取对话框模块（按照父类要求实现）
+    def _get_dialog_box(self) -> DevDialogBox:
+        return self.__dialog_txt_system
+
     # 加载数据
     def load(self, chapterType: str, chapterId: int, part: str, projectName: str = None) -> None:
         self._initialize(chapterType, chapterId, part, projectName)
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_dialog_file_location())
-        # 加载对话框系统
-        self._dialog_txt_system.dev_mode()
         # 将npc立绘系统设置为开发者模式
         self._npc_manager.dev_mode = True
         # 加载容器
@@ -128,7 +132,7 @@ class DialogEditor(DialogConverter):
         # 从配置文件中加载数据
         self._load_content()
         # 移除按钮
-        self.removeNpcButton = self._dialog_txt_system.FONT.render(CONFIG["remove_npc"], Colors.BLACK)
+        self.removeNpcButton = Font.render(CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE)
         surfaceTmp = Colors.surface(
             (self.removeNpcButton.get_width() * 1.2, self.removeNpcButton.get_height() * 1.2), Colors.WHITE
         )
@@ -224,8 +228,8 @@ class DialogEditor(DialogConverter):
 
     # 分离需要保存的数据
     def __slipt_the_stuff_need_save(self) -> dict:
-        self._current_dialog_content["narrator"] = self._dialog_txt_system.narrator.get_text()
-        self._current_dialog_content["content"] = self._dialog_txt_system.content.get_text()
+        self._current_dialog_content["narrator"] = self.__dialog_txt_system.narrator.get_text()
+        self._current_dialog_content["content"] = self.__dialog_txt_system.content.get_text()
         data_need_save: dict = deepcopy(self._dialog_data)
         if not self._is_default_dialog and self.__compress_when_saving is True:
             # 移除掉相似的内容
@@ -397,10 +401,10 @@ class DialogEditor(DialogConverter):
     def draw(self, surface: ImageSurface) -> None:
         super().draw(surface)
         # 更新对话框数据
-        if self._dialog_txt_system.narrator.need_save:
-            self._current_dialog_content["narrator"] = self._dialog_txt_system.narrator.get_text()
-        if self._dialog_txt_system.content.need_save:
-            self._current_dialog_content["content"] = self._dialog_txt_system.content.get_text()
+        if self.__dialog_txt_system.narrator.need_save:
+            self._current_dialog_content["narrator"] = self.__dialog_txt_system.narrator.get_text()
+        if self.__dialog_txt_system.content.need_save:
+            self._current_dialog_content["content"] = self.__dialog_txt_system.content.get_text()
         # 展示按钮
         self.__buttons_ui_container.draw(surface)
         # 展示出当前可供使用的背景音乐
@@ -427,6 +431,7 @@ class DialogEditor(DialogConverter):
                 self._update_scene("head")
         # 处理输入事件
         confirm_event_tag: bool = False
+        lastId: str
         if not self.__dialog_navigation_window.is_hovered():
             if Controller.get_event("confirm"):
                 if self.UIContainerRightButton.is_hovered():
@@ -445,7 +450,7 @@ class DialogEditor(DialogConverter):
                     else:
                         EXCEPTION.inform("There is no last dialog id.")
                 elif self.__buttons_ui_container.item_being_hovered == "delete":
-                    lastId: str = self.__get_last_id()
+                    lastId = self.__get_last_id()
                     nextId: str = self.__try_get_next_id(surface)
                     self.__make_connection(lastId, nextId)
                     needDeleteId: str = self._dialog_id

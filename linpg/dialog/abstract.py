@@ -14,14 +14,12 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._black_bg = StaticImage(
             Colors.surface(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height()
         )
-        # 加载对话框系统
-        self._dialog_txt_system = DialogBox(int(Display.get_width() * 0.015))
         # UI按钮
         self._buttons_mananger = None
         # 对话文件路径
         self._dialog_folder_path: str = "Data"
         # 背景图片路径
-        self._background_image_folder_path: str = "Assets/image/dialog_background"
+        self._background_image_folder_path: str = os.path.join("Assets", "image", "dialog_background")
         # 背景图片
         self.__background_image_name = None
         self.__background_image_surface = self._black_bg.copy()
@@ -31,11 +29,17 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._is_muted: bool = False
         # 指向当前对话的数据的指针
         self._current_dialog_content: dict = {}
-        # 初始化音量
-        self._update_sound_volume()
         # 选项菜单
         self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer(None, 0, 0, 0, 0)
         self._dialog_options_container.set_visible(False)
+        # 更新背景音乐音量
+        self.set_bgm_volume(Media.volume.background_music / 100)
+        # 文字大小
+        self._FONT_SIZE: int = int(Display.get_width() * 0.015)
+
+    # 获取对话框模块（子类需实现）
+    def _get_dialog_box(self) -> AbstractDialogBox:
+        return EXCEPTION.fatal("_dialogBox()", 1)
 
     # 获取对话文件所在的具体路径
     def get_dialog_file_location(self, lang: str = "") -> str:
@@ -140,7 +144,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         projectName: str,
         dialogId: str = "head",
         dialog_options: dict = {},
-    ) -> None:
+    ) -> None:  # type: ignore[override]
         super()._initialize(chapterType, chapterId, projectName)
         # 对白id
         self._dialog_id = dialogId
@@ -175,7 +179,6 @@ class AbstractDialogSystem(AbstractGameSystem):
             EXCEPTION.fatal('You need to set up a "head" for the selected dialog "{}".'.format(self._part))
         # 将数据载入刚初始化的模块中
         self._update_scene(self._dialog_id)
-        self._dialog_txt_system.reset()
 
     # 更新背景图片
     def _update_background_image(self, image_name: str) -> None:
@@ -220,7 +223,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._npc_manager.update(self._current_dialog_content["characters_img"])
         self._update_background_image(self._current_dialog_content["background_img"])
         # 更新对话框
-        self._dialog_txt_system.update(self._current_dialog_content["narrator"], self._current_dialog_content["content"])
+        self._get_dialog_box().update(self._current_dialog_content["narrator"], self._current_dialog_content["content"])
         # 更新背景音乐
         if (current_bgm := self._current_dialog_content["background_music"]) is not None:
             self.set_bgm(os.path.join(ASSET.PATH_DICT["music"], current_bgm))
@@ -236,11 +239,6 @@ class AbstractDialogSystem(AbstractGameSystem):
         if self._buttons_mananger is not None:
             self._buttons_mananger.initialize()
         self._load_content()
-
-    # 更新音量
-    def _update_sound_volume(self) -> None:
-        self.set_bgm_volume(Media.volume.background_music / 100)
-        self._dialog_txt_system.set_sound_volume(Media.volume.effects / 100)
 
     # 停止播放
     def stop(self) -> None:
@@ -260,8 +258,7 @@ class AbstractDialogSystem(AbstractGameSystem):
     def _get_dialog_options_container_ready(self) -> None:
         self._dialog_options_container.clear()
         optionBox_y_base: int = int(
-            Display.get_height() * 3 / 16
-            - len(self._current_dialog_content["next_dialog_id"]["target"]) * self._dialog_txt_system.FONT.size
+            Display.get_height() * 3 / 16 - len(self._current_dialog_content["next_dialog_id"]["target"]) * self._FONT_SIZE
         )
         for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
             optionButton = load_button_with_text_in_center_and_different_background(
@@ -269,12 +266,12 @@ class AbstractDialogSystem(AbstractGameSystem):
                 "<!ui>option_selected.png",
                 self._current_dialog_content["next_dialog_id"]["target"][i]["txt"],
                 Colors.WHITE,
-                self._dialog_txt_system.FONT.size,
+                self._FONT_SIZE,
                 (0, 0),
             )
             optionButton.set_pos(
                 (Display.get_width() - optionButton.get_width()) / 2,
-                (i + 1) * 4 * self._dialog_txt_system.FONT.size + optionBox_y_base,
+                (i + 1) * 4 * self._FONT_SIZE + optionBox_y_base,
             )
             self._dialog_options_container.append(optionButton)
         self._dialog_options_container.set_visible(True)
@@ -289,7 +286,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 展示背景图片和npc立绘
         self.display_background_image(surface)
         self._npc_manager.draw(surface)
-        self._dialog_txt_system.draw(surface)
+        self._get_dialog_box().draw(surface)
         # 如果不处于静音状态
         if not self._is_muted:
             # 播放背景音乐

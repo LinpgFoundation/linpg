@@ -2,7 +2,7 @@ from .weather import *
 
 # 点
 class Point(GameObject):
-    def __eq__(self, other: "Point") -> bool:
+    def __eq__(self, other: "Point") -> bool:  # type: ignore[override]
         return self.x == other.x and self.y == other.y
 
 
@@ -14,6 +14,8 @@ class Node:
         self.g = g  # g值，g值在用到的时候会重新算
         self.h = (abs(endPoint.x - point.x) + abs(endPoint.y - point.y)) * 10  # 计算h值
 
+
+NULL_NODE: Node = Node(Point(-1, -1), Point(-1, -1))
 
 # 寻路模块
 class AStar:
@@ -29,7 +31,7 @@ class AStar:
         # 列
         self.__column = column
         # 终点
-        self.__end_point: Node = Node(Point(0, 0), Point(0, 0))
+        self.__end_point: Point = Point(0, 0)
         # 开启表
         self.__open_list: list = []
         # 关闭表
@@ -56,13 +58,13 @@ class AStar:
         for node in self.__open_list:
             if node.point == point:
                 return node
-        return None
+        return NULL_NODE
 
     def __end_pointInCloseList(self) -> Node:
         for node in self.__open_list:
             if node.point == self.__end_point:
                 return node
-        return None
+        return NULL_NODE
 
     def __searchNear(self, minF: Node, offSetX: int, offSetY: int) -> None:
         """
@@ -93,14 +95,13 @@ class AStar:
         else:
             step = 14
         # 如果不再openList中，就把它加入OpenList
-        currentNode = self.__pointInOpenList(currentPoint)
-        if not currentNode:
+        currentNode: Node = self.__pointInOpenList(currentPoint)
+        if currentNode is NULL_NODE:
             currentNode = Node(currentPoint, self.__end_point, g=minF.g + step)
             currentNode.father = minF
             self.__open_list.append(currentNode)
-            return
         # 如果在openList中，判断minF到当前点的G是否更小
-        if minF.g + step < currentNode.g:  # 如果更小，就重新计算g值，并且改变father
+        elif minF.g + step < currentNode.g:  # 如果更小，就重新计算g值，并且改变father
             currentNode.g = minF.g + step
             currentNode.father = minF
 
@@ -139,7 +140,7 @@ class AStar:
             self.__searchNear(minF, 1, 0)
             # 判断是否终止
             point = self.__end_pointInCloseList()
-            if point:  # 如果终点在关闭表中，就返回结果
+            if point is not NULL_NODE:  # 如果终点在关闭表中，就返回结果
                 cPoint = point
                 pathList: list = []
                 while True:

@@ -14,7 +14,7 @@ class Console(SingleLineInputBox, HiddenableSurface):
         self._txt_output: list = []
         self.command_indicator: str = "/"
 
-    def _check_key_down(self, event: object) -> bool:
+    def _check_key_down(self, event: pygame.event.Event) -> bool:
         if super()._check_key_down(event):
             return True
         # 向上-过去历史

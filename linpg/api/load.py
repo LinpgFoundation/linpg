@@ -1,4 +1,4 @@
-from PIL import Image as ImageLoader
+from PIL import Image as ImageLoader  # type: ignore
 from ..battle import *
 
 
@@ -73,7 +73,7 @@ class Loader:
     def button_with_text_in_center(
         path: str, txt: strint, font_color: color_liked, font_size: int, position: tuple, alpha_when_not_hover: int = 255
     ) -> Button:
-        return load_button_with_text_in_center(path, txt, font_color, font_size, position, alpha_when_not_hover)
+        return load_button_with_text_in_center(path, str(txt), font_color, font_size, position, alpha_when_not_hover)
 
     # 普通文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class
     @staticmethod

@@ -44,9 +44,11 @@ class DialogButtons(HiddenableSurface):
         autoButton.blit(tempButtonTxt, (0, 0))
         autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"], Colors.WHITE), (0, 0))
         self.autoButton = DynamicImage(autoButton, Display.get_width() * 0.8, Display.get_height() * 0.05)
-        self.autoButton.tag = int(self.autoButton.x + self.autoButton.img.get_width() - self.FONT.size)
+        self.autoButton_abs_x: int = int(self.autoButton.x + self.autoButton.img.get_width() - self.FONT.size)
         self.autoButtonHovered = DynamicImage(autoButtonHovered, Display.get_width() * 0.8, Display.get_height() * 0.05)
-        self.autoButtonHovered.tag = int(self.autoButtonHovered.x + self.autoButtonHovered.img.get_width() - self.FONT.size)
+        self.autoButtonHovered_abs_x: int = int(
+            self.autoButtonHovered.x + self.autoButtonHovered.img.get_width() - self.FONT.size
+        )
         # 取消隐藏按钮
         self.showButton = load_button(
             "<!ui>show.png", (Display.get_width() * 0.05, Display.get_height() * 0.05), (self.FONT.size, self.FONT.size), 150
@@ -86,7 +88,9 @@ class DialogButtons(HiddenableSurface):
                     surface.blit(
                         rotatedIcon,
                         (
-                            self.autoButtonHovered.tag + self.autoIconHovered.get_width() / 2 - rotatedIcon.get_width() / 2,
+                            self.autoButtonHovered_abs_x
+                            + self.autoIconHovered.get_width() / 2
+                            - rotatedIcon.get_width() / 2,
                             self.autoButtonHovered.y
                             + self.icon_y
                             + self.autoIconHovered.get_height() / 2
@@ -98,7 +102,9 @@ class DialogButtons(HiddenableSurface):
                     else:
                         self.autoIconDegree = 0
                 else:
-                    surface.blit(self.autoIconHovered, (self.autoButtonHovered.tag, self.autoButtonHovered.y + self.icon_y))
+                    surface.blit(
+                        self.autoIconHovered, (self.autoButtonHovered_abs_x, self.autoButtonHovered.y + self.icon_y)
+                    )
                 self.__button_hovered = 3
             else:
                 if self.autoMode:
@@ -107,7 +113,9 @@ class DialogButtons(HiddenableSurface):
                     surface.blit(
                         rotatedIcon,
                         (
-                            self.autoButtonHovered.tag + self.autoIconHovered.get_width() / 2 - rotatedIcon.get_width() / 2,
+                            self.autoButtonHovered_abs_x
+                            + self.autoIconHovered.get_width() / 2
+                            - rotatedIcon.get_width() / 2,
                             self.autoButtonHovered.y
                             + self.icon_y
                             + self.autoIconHovered.get_height() / 2
@@ -120,7 +128,7 @@ class DialogButtons(HiddenableSurface):
                         self.autoIconDegree = 0
                 else:
                     self.autoButton.draw(surface)
-                    surface.blit(self.autoIcon, (self.autoButton.tag, self.autoButton.y + self.icon_y))
+                    surface.blit(self.autoIcon, (self.autoButton_abs_x, self.autoButton.y + self.icon_y))
             if self.__buttons_container.item_being_hovered == "hide":
                 self.__button_hovered = 1
             elif self.__buttons_container.item_being_hovered == "history":
@@ -139,16 +147,16 @@ class DialogNode(Button):
         self.__key_name: str = key_name
         button_surface = Font.render_description_box(self.__key_name, Colors.BLACK, font_size, font_size, Colors.WHITE)
         super().__init__(button_surface, 0, 0, width=button_surface.get_width(), height=button_surface.get_height(), tag=tag)
-        self.__next_keys: tuple[str] = tuple(next_keys)
+        self.__next_keys: tuple[str, ...] = tuple(next_keys)
         self.has_been_displayed: bool = False
 
     # 下一个keys
     @property
-    def next_keys(self) -> tuple[str]:
+    def next_keys(self) -> tuple[str, ...]:
         return self.__next_keys
 
     # 展示（注意，你无法在此输入off_set，你必须提前设置）
-    def display(self, surface: ImageSurface) -> None:
+    def display(self, surface: ImageSurface) -> None:  # type: ignore[override]
         return super().display(surface)
 
 

@@ -1,5 +1,5 @@
 import os
-import linpg
+import linpg  # type: ignore
 
 __LINPG_PATH: str = linpg.__path__[0]
 __LINPG_NAME: str = "linpg"

@@ -20,7 +20,7 @@ class AbstractBattleSystem(AbstractGameSystem):
         self.MAP: MapObject = None
         # 视觉小说系统与参数
         self._DIALOG: DialogSystem = DialogSystem(True)
-        self.dialog_parameters: dict = None
+        self._dialog_parameters: dict = {}
         self._is_dialog_updated: bool = False
         self._dialog_dictionary: dict = {}
         self.dialog_key: str = ""
@@ -99,7 +99,7 @@ class AbstractBattleSystem(AbstractGameSystem):
         return self.__characterDataLoaderThread.totalNum
 
     # 检测按下按键的事件
-    def _check_key_down(self, event: object) -> None:
+    def _check_key_down(self, event: pygame.event.Event) -> None:
         if event.key == Key.ARROW_UP:
             self.__pressKeyToMove["up"] = True
         elif event.key == Key.ARROW_DOWN:
@@ -112,7 +112,7 @@ class AbstractBattleSystem(AbstractGameSystem):
             self.MAP.dev_mode()
 
     # 检测按键回弹的事件
-    def _check_key_up(self, event: object) -> None:
+    def _check_key_up(self, event: pygame.event.Event) -> None:
         if event.key == Key.ARROW_UP:
             self.__pressKeyToMove["up"] = False
         elif event.key == Key.ARROW_DOWN:

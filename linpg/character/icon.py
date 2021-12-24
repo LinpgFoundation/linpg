@@ -48,5 +48,5 @@ class EntityHpBar(DynamicProgressBarSurface):
         if self.__HP_EMPTY_IMG is None:
             self.__HP_EMPTY_IMG = IMG.quickly_load(r"Assets/image/UI/hp_empty.png")
 
-    def draw(self, surface: ImageSurface, isDying: bool) -> None:
+    def draw(self, surface: ImageSurface, isDying: bool) -> None:  # type: ignore[override]
         self._draw_bar(surface, self.__HP_GREEN_IMG if not isDying else self.__HP_RED_IMG, self.__HP_EMPTY_IMG, self.pos)

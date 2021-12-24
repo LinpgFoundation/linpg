@@ -234,7 +234,7 @@ class GameObject2point5d(GameObject):
         super().__init__(x, y)
         self.z: int = int(z)
 
-    def __lt__(self, other: "GameObject2point5d") -> bool:
+    def __lt__(self, other: "GameObject2point5d") -> bool:  # type: ignore[override]
         if self.z != other.z:
             return self.z < other.z
         else:

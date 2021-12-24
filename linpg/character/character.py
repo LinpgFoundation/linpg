@@ -39,7 +39,7 @@ class FriendlyCharacter(Entity):
         self.__getHurtImage: Optional[EntityGetHurtImage]
         # 尝试加载重创立绘
         try:
-            self.__getHurtImage = EntityGetHurtImage(self.type, Display.get_height() / 4, Display.get_height() / 2)
+            self.__getHurtImage = EntityGetHurtImage(self.type, Display.get_height() / 4, int(Display.get_height() / 2))
         except Exception:
             EXCEPTION.inform("Character {} does not have damaged artwork!".format(self.type))
             self.__getHurtImage = None
@@ -101,17 +101,17 @@ class FriendlyCharacter(Entity):
     # 技能覆盖范围
     @property
     def skill_coverage(self) -> int:
-        self.__skill_coverage
+        return self.__skill_coverage
 
     # 技能施展范围
     @property
     def skill_effective_range(self) -> dict:
-        self.__skill_effective_range
+        return self.__skill_effective_range
 
     # 最远技能施展范围
     @property
     def max_skill_range(self) -> int:
-        self.__max_skill_range
+        return self.__max_skill_range
 
     # 是否处于濒死状态
     def is_dying(self) -> bool:
@@ -191,7 +191,7 @@ class FriendlyCharacter(Entity):
         if self.__getHurtImage is not None and self.__getHurtImage.x is not None:
             self.__getHurtImage.draw(surface, self.type)
             if self.__getHurtImage.x < self.__getHurtImage.width / 4:
-                self.__getHurtImage.x += self.__getHurtImage.width / 25
+                self.__getHurtImage.move_right(self.__getHurtImage.width / 25)
             else:
                 if self.__getHurtImage.yToGo > 0:
                     self.__getHurtImage.yToGo -= 5
@@ -255,11 +255,11 @@ class HostileCharacter(Entity):
         target_value_board = []
         for name, theCharacter in friendlyCharacterData.items():
             if theCharacter.is_alive() and theCharacter.is_detected:
-                weight = 0
+                weight: int = 0
                 # 计算距离的分数
-                weight += abs(self.x - theCharacter.x) + abs(self.y - theCharacter.y)
+                weight += int(abs(self.x - theCharacter.x) + abs(self.y - theCharacter.y))
                 # 计算血量分数
-                weight += self.current_hp * self.hp_precentage
+                weight += int(self.current_hp * self.hp_precentage)
                 target_value_board.append((name, weight))
         # 最大移动距离
         blocks_can_move: int = int(self.max_action_point / AP_IS_NEEDED_TO_MOVE_ONE_BLOCK)

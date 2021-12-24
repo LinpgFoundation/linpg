@@ -3,7 +3,7 @@ from .window import *
 # 尝试导入opencv库
 _OPENCV_INITIALIZED: bool = False
 try:
-    import cv2
+    import cv2  # type: ignore
 
     _OPENCV_INITIALIZED = True
 except ImportError:

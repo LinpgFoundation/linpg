@@ -4,7 +4,7 @@ from .scrollpane import *
 # 尝试导入pysimplegui
 _PYSIMPLEGUI_INITIALIZED: bool = False
 try:
-    import PySimpleGUI
+    import PySimpleGUI  # type: ignore
 
     _PYSIMPLEGUI_INITIALIZED = True
 except ImportError:
@@ -111,7 +111,7 @@ class SingleLineInputBox(AbstractInputBox):
         else:
             self.input_box.set_width(self.default_width)
 
-    def _check_key_down(self, event: object) -> bool:
+    def _check_key_down(self, event: pygame.event.Event) -> bool:
         if event.key == Key.BACKSPACE:
             self._remove_char("ahead")
             return True

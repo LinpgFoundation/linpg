@@ -136,7 +136,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         )
 
     # 初始化关键参数
-    def _initialize(
+    def _initialize(  # type: ignore[override]
         self,
         chapterType: str,
         chapterId: int,
@@ -144,7 +144,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         projectName: str,
         dialogId: str = "head",
         dialog_options: dict = {},
-    ) -> None:  # type: ignore[override]
+    ) -> None:
         super()._initialize(chapterType, chapterId, projectName)
         # 对白id
         self._dialog_id = dialogId

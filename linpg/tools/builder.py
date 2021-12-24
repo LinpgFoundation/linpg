@@ -10,7 +10,7 @@ class BuilderManager(AbstractToolSystem):
     def __remove_pycache(self, path: str) -> None:
         for file_path in glob(os.path.join(path, "*")):
             if os.path.isdir(file_path):
-                if "pycache" in file_path:
+                if "pycache" in file_path or "mypy_cache" in file_path:
                     shutil.rmtree(file_path)
                 else:
                     self.__remove_pycache(file_path)

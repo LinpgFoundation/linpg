@@ -80,7 +80,7 @@ class CharacterImageManager:
                     )
                     self.__communication.draw(surface)
             else:
-                img.set_crop_rect(None)
+                img.set_crop_rect(NULL_RECT)
                 img.draw(surface)
             # 如果是开发模式
             if self.dev_mode is True and img.is_hovered():

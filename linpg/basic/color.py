@@ -1,4 +1,4 @@
-from PIL import ImageColor
+from PIL import ImageColor  # type: ignore
 
 # 加载颜色字典
 from pygame.colordict import THECOLORS

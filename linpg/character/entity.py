@@ -274,8 +274,8 @@ class Entity(Position):
 
     # 当前血量百分比
     @property
-    def hp_precentage(self) -> bool:
-        return self.__current_hp / self.__max_hp
+    def hp_precentage(self) -> float:
+        return float(round(self.__current_hp / self.__max_hp, 5))
 
     # 治愈
     def heal(self, hpHealed: int) -> None:
@@ -409,26 +409,26 @@ class Entity(Position):
         # 初始化列表
         for value in self.__attack_range.values():
             value.clear()
+        start_point: int = 0
+        end_point: int = 0
         # 确定范围
         if not ifHalfMode:
-            start_point = self.y - self.__max_effective_range
-            end_point = self.y + self.__max_effective_range + 1
+            start_point = int(self.y) - self.__max_effective_range
+            end_point = int(self.y) + self.__max_effective_range + 1
         elif not self.__if_flip:
-            start_point = self.y - self.__max_effective_range
-            end_point = self.y + 1
+            start_point = int(self.y) - self.__max_effective_range
+            end_point = int(self.y) + 1
         else:
-            start_point = self.y
-            end_point = self.y + self.__max_effective_range + 1
+            start_point = int(self.y)
+            end_point = int(self.y) + self.__max_effective_range + 1
         # append坐标
         for y in range(start_point, end_point):
             if y <= self.y:
                 for x in range(
-                    self.x - self.__max_effective_range - (y - self.y),
-                    self.x + self.__max_effective_range + (y - self.y) + 1,
+                    round(self.x) - self.__max_effective_range - (y - round(self.y)),
+                    round(self.x) + self.__max_effective_range + (y - round(self.y)) + 1,
                 ):
-                    if x == self.x and y == self.y:
-                        pass
-                    if Map.row > y >= 0 and Map.column > x >= 0:
+                    if not (x == round(self.x) and y == round(self.y)) and Map.row > y >= 0 and Map.column > x >= 0:
                         if (
                             "far" in self.__effective_range
                             and self.__effective_range["far"] is not None
@@ -455,8 +455,8 @@ class Entity(Position):
                             self.__attack_range["near"].append((x, y))
             else:
                 for x in range(
-                    self.x - self.__max_effective_range + (y - self.y),
-                    self.x + self.__max_effective_range - (y - self.y) + 1,
+                    round(self.x) - self.__max_effective_range + (y - round(self.y)),
+                    round(self.x) + self.__max_effective_range - (y - round(self.y)) + 1,
                 ):
                     if Map.row > y >= 0 and Map.column > x >= 0:
                         if (
@@ -511,7 +511,7 @@ class Entity(Position):
         ):
             return "far"
         else:
-            return None
+            return "None"
 
     # 判断是否在攻击范围内
     def can_attack(self, otherEntity: "Entity") -> bool:

@@ -66,7 +66,8 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
         # 对装饰物进行排序
         self.__decorations.sort()
         # 初始化环境图片管理模块
-        self.__MAP_SURFACE: object = None
+        self.__MAP_SURFACE: ImageSurface = None
+        self.__BACKGROUND_SURFACE: ImageSurface = None
         # 背景图片
         self.__BACKGROUND_IMAGE: ImageSurface = (
             IMG.quickly_load(os.path.join("Assets", "image", "dialog_background", self.__background_image), False).convert()
@@ -81,7 +82,7 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
         for decoration in self.__decorations:
             DecorationImagesModule.add_image(decoration.get_type(), decoration.image)
         # 处于光处的区域
-        self.__light_area: numpy.ndarray = None
+        self.__light_area: tuple = tuple()
         # 追踪是否需要更新的参数
         self.__need_update_surface: bool = True
         # 追踪目前已经画出的方块
@@ -115,7 +116,7 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
     # 以字典的形式获取地图的数据
     def get_map_in_dict(self) -> dict:
         # 转换场景装饰物数据
-        decoration_dict = {}
+        decoration_dict: dict = {}
         for theDecoration in self.__decorations:
             theDecorationInDict: dict = theDecoration.to_dict()
             if theDecoration.get_type() not in decoration_dict:
@@ -195,27 +196,31 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
         if "status" not in _data:
             _data["status"] = {}
         if _type == "campfire":
-            new_decoration = CampfireObject(_data["x"], _data["y"], _id, _type, _data["range"], _data["status"])
+            self.__decorations.append(CampfireObject(_data["x"], _data["y"], _id, _type, _data["range"], _data["status"]))
         elif _type == "chest":
-            new_decoration = ChestObject(
-                _data["x"],
-                _data["y"],
-                _id,
-                _type,
-                _data["items"] if "items" in _data else [],
-                _data["whitelist"] if "whitelist" in _data else [],
-                _data["status"],
+            self.__decorations.append(
+                ChestObject(
+                    _data["x"],
+                    _data["y"],
+                    _id,
+                    _type,
+                    _data["items"] if "items" in _data else [],
+                    _data["whitelist"] if "whitelist" in _data else [],
+                    _data["status"],
+                )
             )
         else:
-            new_decoration = DecorationObject(_data["x"], _data["y"], _id, _type, _data["image"], _data["status"])
+            new_decoration: DecorationObject = DecorationObject(
+                _data["x"], _data["y"], _id, _type, _data["image"], _data["status"]
+            )
             if _type == "tree":
                 new_decoration.scale = 0.75
-        self.__decorations.append(new_decoration)
+            self.__decorations.append(new_decoration)
         if _sort is True:
             self.__decorations.sort()
 
     # 移除装饰物
-    def remove_decoration(self, decoration: object) -> None:
+    def remove_decoration(self, decoration: DecorationObject) -> None:
         pos: tuple = decoration.get_pos()
         i: int
         for i in range(len(self.__decorations) - 1, -1):
@@ -288,7 +293,8 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
         if self.__debug_win is not None and isinstance(self.__block_on_surface, numpy.ndarray):
             self.__display_dev_panel()
         # 画出背景
-        screen.blits(((self.__BACKGROUND_SURFACE, (0, 0)), (self.__MAP_SURFACE, self.get_local_pos())))
+        screen.blit(self.__BACKGROUND_SURFACE, (0, 0))
+        screen.blit(self.__MAP_SURFACE, self.get_local_pos())
         # 返回offset
         return screen_to_move_x, screen_to_move_y
 
@@ -444,8 +450,8 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
                             alliances_data[each_chara].x + the_character_effective_range + (y - alliances_data[each_chara].y)
                         ),
                     ):
-                        if [x, y] not in lightArea:
-                            lightArea.append([x, y])
+                        if (x, y) not in lightArea:
+                            lightArea.append((x, y))
                 else:
                     for x in range(
                         int(
@@ -458,20 +464,20 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
                             alliances_data[each_chara].x + the_character_effective_range - (y - alliances_data[each_chara].y)
                         ),
                     ):
-                        if [x, y] not in lightArea:
-                            lightArea.append([x, y])
+                        if (x, y) not in lightArea:
+                            lightArea.append((x, y))
         for item in self.__decorations:
             if item.get_type() == "campfire" and item.get_status("lit") is True:
                 for y in range(int(item.y - item.range), int(item.y + item.range)):
                     if y < item.y:
                         for x in range(int(item.x - item.range - (y - item.y) + 1), int(item.x + item.range + (y - item.y))):
-                            if [x, y] not in lightArea:
-                                lightArea.append([x, y])
+                            if (x, y) not in lightArea:
+                                lightArea.append((x, y))
                     else:
                         for x in range(int(item.x - item.range + (y - item.y) + 1), int(item.x + item.range - (y - item.y))):
-                            if [x, y] not in lightArea:
-                                lightArea.append([x, y])
-        self.__light_area = numpy.asarray(lightArea, dtype=numpy.int8)
+                            if (x, y) not in lightArea:
+                                lightArea.append((x, y))
+        self.__light_area = tuple(lightArea)
         self.__need_update_surface = True
         self.__block_on_surface = None
 
@@ -489,11 +495,11 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
         )
 
     # 查看角色是否在光亮范围内
-    def inLightArea(self, entity: object) -> bool:
+    def inLightArea(self, entity: GameObject) -> bool:
         return self.isPosInLightArea(entity.x, entity.y)
 
     def isPosInLightArea(self, x: int_f, y: int_f) -> bool:
-        return True if not self.night_mode else numpy.any(numpy.equal(self.__light_area, [int(x), int(y)]).all(1))
+        return True if not self.night_mode else (int(x), int(y)) in self.__light_area
 
     # 以下是A星寻路功能
     def findPath(
@@ -506,9 +512,9 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
         ignoreEnemyCharacters: list = [],
     ) -> list:
         # 检测起点
-        start_pos: tuple = Coordinates.convert(start_p)
+        start_pos: tuple[int, int] = Coordinates.convert(start_p)
         # 检测终点
-        end_pos: tuple = Coordinates.convert(end_p)
+        end_pos: tuple[int, int] = Coordinates.convert(end_p)
         # 初始化寻路地图
         self._map2d.fill(0)
         # 历遍地图，设置障碍方块

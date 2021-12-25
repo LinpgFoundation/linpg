@@ -86,7 +86,8 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
         # 追踪是否需要更新的参数
         self.__need_update_surface: bool = True
         # 追踪目前已经画出的方块
-        self.__block_on_surface: numpy.ndarray = None
+        self.__block_on_surface: numpy.ndarray = numpy.zeros((self.row, self.column), dtype=int)
+        self.__need_to_recheck_block_on_surface: bool = True
         # 开发者使用的窗口
         self.__debug_win = None
 
@@ -256,7 +257,7 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
         self.add_local_y((old_height - self.get_height()) / 2)
         # 打上需要更新的标签
         self.__need_update_surface = True
-        self.__block_on_surface = None
+        self.__need_to_recheck_block_on_surface = True
 
     # 设置local坐标
     def set_local_x(self, value: number) -> None:
@@ -290,7 +291,7 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
             self.__need_update_surface = False
             self.__update_map_surface(screen.get_size())
         # 显示调试窗口
-        if self.__debug_win is not None and isinstance(self.__block_on_surface, numpy.ndarray):
+        if self.__debug_win is not None and not self.__need_to_recheck_block_on_surface:
             self.__display_dev_panel()
         # 画出背景
         screen.blit(self.__BACKGROUND_SURFACE, (0, 0))
@@ -300,7 +301,7 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
 
     # 重新绘制地图
     def __update_map_surface(self, window_size: tuple) -> None:
-        if not isinstance(self.__block_on_surface, numpy.ndarray):
+        if self.__need_to_recheck_block_on_surface is True:
             self.__BACKGROUND_SURFACE = (
                 IMG.resize(self.__BACKGROUND_IMAGE, window_size)
                 if self.__BACKGROUND_IMAGE is not None
@@ -310,7 +311,8 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
                 self.__MAP_SURFACE.fill(Colors.TRANSPARENT)
             else:
                 self.__MAP_SURFACE = new_transparent_surface(self.get_size())
-            self.__block_on_surface = numpy.zeros((self.row, self.column), dtype=numpy.int8)
+            self.__block_on_surface.fill(0)
+            self.__need_to_recheck_block_on_surface = False
         # 画出地图
         posTupleTemp: tuple
         evn_img: StaticImage
@@ -373,7 +375,7 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
     def update_block(self, pos: dict, name: str) -> None:
         self.__MAP[pos["y"]][pos["x"]] = name
         self.__need_update_surface = True
-        self.__block_on_surface = None
+        self.__need_to_recheck_block_on_surface = True
 
     # 是否角色能通过该方块
     def ifBlockCanPassThrough(self, pos: dict) -> bool:
@@ -479,7 +481,7 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
                                 lightArea.append((x, y))
         self.__light_area = tuple(lightArea)
         self.__need_update_surface = True
-        self.__block_on_surface = None
+        self.__need_to_recheck_block_on_surface = True
 
     # 计算在地图中的位置
     def calPosInMap(self, x: int_f, y: int_f) -> tuple[int, int]:

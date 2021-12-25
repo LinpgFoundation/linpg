@@ -5,8 +5,8 @@ class AbstractBattleSystem(AbstractGameSystem):
     def __init__(self) -> None:
         super().__init__()
         # 用于判断是否移动屏幕的参数
-        self.__mouse_move_temp_x = -1
-        self.__mouse_move_temp_y = -1
+        self.__mouse_move_temp_x: int = -1
+        self.__mouse_move_temp_y: int = -1
         self.screen_to_move_x = None
         self.screen_to_move_y = None
         # 是否是死亡的那个

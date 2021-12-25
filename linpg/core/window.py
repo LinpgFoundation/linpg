@@ -54,7 +54,7 @@ class RenderedWindow(Rectangle):
         super().__init__(0, 0, width, height)
         self.title: str = title
         self.always_on_top: bool = is_win_always_on_top
-        self.__win = None
+        self.__win: Renderer = None
         self.__update_window()
 
     # 设置尺寸

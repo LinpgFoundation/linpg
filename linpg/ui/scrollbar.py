@@ -40,8 +40,8 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos):
     def get_height(self) -> int:
         EXCEPTION.fatal("get_height()", 1)
 
-    # 是否被触碰（子类需实现）
-    def is_hovered(self) -> int:
+    # 是否被鼠标触碰（子类需实现）
+    def is_hovered(self, off_set: tuple = NoPos) -> bool:
         EXCEPTION.fatal("is_hovered()", 1)
 
     # 获取scrollbar的颜色

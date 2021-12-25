@@ -63,7 +63,10 @@ class Entity(Position):
             bool(DATA["if_play_action_in_reversing"]) if "if_play_action_in_reversing" in DATA else False
         )
         # 需要移动的路径
-        self.__moving_path: deque = deque(DATA["moving_path"]) if "moving_path" in DATA else None
+        self.__moving_path: deque = deque(DATA["moving_path"]) if "moving_path" in DATA else deque()
+        self.__moving_complete: bool = (
+            len(self.__moving_path) <= 0 if "moving_complete" not in DATA else bool(DATA["moving_complete"])
+        )
         # 是否无敌
         self.__if_invincible: bool = bool(DATA["if_invincible"]) if "if_invincible" in DATA else False
         # gif图片管理
@@ -102,8 +105,10 @@ class Entity(Position):
             "if_play_action_in_reversing": self._if_play_action_in_reversing,
             "if_invincible": self.__if_invincible,
         }
-        if self.__moving_path is not None:
+        if len(self.__moving_path) > 0:
             data["moving_path"] = [list(pos) for pos in self.__moving_path]
+        if not self.__moving_complete:
+            data["moving_complete"] = self.__moving_complete
         return data
 
     # 阵营
@@ -345,6 +350,7 @@ class Entity(Position):
     def move_follow(self, path: Iterable) -> None:
         if isinstance(path, Iterable) and len(path) > 0:
             self.__moving_path = deque(path)
+            self.__moving_complete = False
             self.set_action("move")
         else:
             EXCEPTION.fatal("Character cannot move to a invalid path!")
@@ -380,8 +386,8 @@ class Entity(Position):
                     self.y = self.__moving_path[0][1]
                     self.__moving_path.popleft()
                     self.__if_map_need_update = True
-        else:
-            self.__moving_path = None
+        elif not self.__moving_complete:
+            self.__moving_complete = True
             if self.get_imgId("set") >= 0:
                 self.set_action("set", False)
             else:
@@ -582,7 +588,7 @@ class Entity(Position):
     # 不画出任何内容，只计算imgId
     def draw_nothing(self) -> None:
         # 如果当前动作是移动
-        if self.__current_action == "move" and self.__moving_path is not None:
+        if self.__current_action == "move" and not self.__moving_complete:
             self.__move_based_on_path()
         # 如果角色图片还没播放完
         if not self._if_play_action_in_reversing:

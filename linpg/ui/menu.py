@@ -185,6 +185,26 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
         self.__pause_menu = None
         self.__pause_menu_enabled: bool = False
 
+    # 保存进度（子类需实现）
+    def save_progress(self) -> None:
+        EXCEPTION.fatal("_get_data_need_to_save()", 1)
+
+    # 淡入或淡出（子类需实现）
+    def fade(self) -> None:
+        EXCEPTION.fatal("fade()", 1)
+
+    # 停止播放（子类需实现）
+    def stop(self) -> None:
+        EXCEPTION.fatal("stop()", 1)
+
+    # 更新音量（子类需实现）
+    def _update_sound_volume(self) -> None:
+        EXCEPTION.fatal("_update_sound_volume()", 1)
+
+    # 更新语言（子类需实现）
+    def update_language(self) -> None:
+        EXCEPTION.fatal("update_language()", 1)
+
     def _enable_pause_menu(self) -> None:
         self.__pause_menu = PauseMenu()
         self.__pause_menu_enabled = True

@@ -25,7 +25,7 @@ class AStar:
 
     def __init__(self, row: int, column: int) -> None:
         # 寻路用的ndarray地图
-        self._map2d: numpy.ndarray = numpy.zeros((column, row), dtype=numpy.int8)
+        self._map2d: numpy.ndarray = numpy.zeros((column, row), dtype=int)
         # 行
         self.__row = row
         # 列

@@ -87,7 +87,11 @@ def _split_audio_from_video(input_path: str, audio_type="ogg") -> str:
     except FileNotExists:
         EXCEPTION.fatal('Cannot find media file on path "{}".'.format(input_path))
     except ToolIsMissing:
-        EXCEPTION.fatal('LinpgToolKit cannot find its "ffmpeg.exe" file. You may need to reinstall the toolkit.')
+        EXCEPTION.fatal(
+            'To split audio from video, "ffmpeg.exe" needs to be placed under directory "{}" inside your project. FFmpeg is never a part of Linpg Engine.'.format(
+                os.path.dirname(VideoConverter.get_tool_path())
+            )
+        )
 
 
 # 音效管理

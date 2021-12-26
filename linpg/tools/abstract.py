@@ -11,9 +11,13 @@ class AbstractToolSystem:
         self.__RECOMMENDED_VERSION: str = recommend_version
         self.__TOOL_PATH: str = tool_path
 
-    # 获取ffmpeg库版本
+    # 获取工具的版本
     def get_recommended_version(self) -> str:
         return self.__RECOMMENDED_VERSION
+
+    # 获取工具的路径
+    def get_tool_path(self) -> str:
+        return self.__TOOL_PATH
 
     # 检测
     def _check_path(self, input_path: str) -> None:

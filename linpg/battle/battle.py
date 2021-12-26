@@ -18,12 +18,6 @@ class AbstractBattleSystem(AbstractGameSystem):
         self.enemies_data: dict = {}
         # 地图数据
         self.MAP: MapObject = None
-        # 视觉小说系统与参数
-        self._DIALOG: DialogSystem = DialogSystem(True)
-        self._dialog_parameters: dict = {}
-        self._is_dialog_updated: bool = False
-        self._dialog_dictionary: dict = {}
-        self.dialog_key: str = ""
         # 方格标准尺寸
         self._standard_block_width: int = int(Display.get_width() / 10)
         self._standard_block_height: int = int(Display.get_height() / 10)
@@ -32,10 +26,6 @@ class AbstractBattleSystem(AbstractGameSystem):
         self.zoomIntoBe = 100
         # 天气系统
         self._weather_system: WeatherSystem = WeatherSystem()
-
-    def stop(self) -> None:
-        self._DIALOG.stop()
-        super().stop()
 
     # 获取对话文件所在的具体路径
     def get_map_file_location(self) -> str:

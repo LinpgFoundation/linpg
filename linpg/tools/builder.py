@@ -1,19 +1,19 @@
 import shutil
 from .abstract import *
 
-
+# 搭建和打包文件的系统
 class BuilderManager(AbstractToolSystem):
     def __init__(self) -> None:
         super().__init__("*", os.path.join(os.path.dirname(__file__), "compiler.py"))
 
     # 移除指定文件夹中的pycache文件夹
-    def __remove_pycache(self, path: str) -> None:
+    def __remove_cache(self, path: str) -> None:
         for file_path in glob(os.path.join(path, "*")):
             if os.path.isdir(file_path):
                 if "pycache" in file_path or "mypy_cache" in file_path:
                     shutil.rmtree(file_path)
                 else:
-                    self.__remove_pycache(file_path)
+                    self.__remove_cache(file_path)
 
     # 删除特定文件夹
     def search_and_remove_folder(self, folder_to_search: str, stuff_to_remove: str) -> None:
@@ -64,7 +64,7 @@ class BuilderManager(AbstractToolSystem):
         source_path_in_target_folder: str = os.path.join(target_folder, source_folder)
         shutil.copytree(source_folder, source_path_in_target_folder)
         # 移除不必要的py缓存
-        self.__remove_pycache(source_path_in_target_folder)
+        self.__remove_cache(source_path_in_target_folder)
         # 把数据写入缓存文件以供编译器读取
         with open("builder_data_cache.json", "w", encoding="utf-8") as f:
             json.dump(

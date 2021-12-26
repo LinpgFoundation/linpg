@@ -1,6 +1,6 @@
 from .converter import *
 
-
+# 图片修复器
 class ImageFixerSystem(AbstractToolSystem):
     def __init__(self) -> None:
         super().__init__("7.1.0", os.path.join(os.path.dirname(__file__), "convert.exe"))

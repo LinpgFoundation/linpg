@@ -1,4 +1,4 @@
-from .environment import *
+from .image import *
 
 # 管理场景装饰物的类
 class DecorationObject(GameObject):

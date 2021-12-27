@@ -411,7 +411,7 @@ class Entity(Position):
             return False
 
     # 获取角色的攻击范围
-    def getAttackRange(self, Map: object, ifHalfMode: bool = False) -> dict:
+    def getAttackRange(self, MAP_POINTER: MapObject, ifHalfMode: bool = False) -> dict:
         # 初始化列表
         for value in self.__attack_range.values():
             value.clear()
@@ -434,7 +434,11 @@ class Entity(Position):
                     round(self.x) - self.__max_effective_range - (y - round(self.y)),
                     round(self.x) + self.__max_effective_range + (y - round(self.y)) + 1,
                 ):
-                    if not (x == round(self.x) and y == round(self.y)) and Map.row > y >= 0 and Map.column > x >= 0:
+                    if (
+                        not (x == round(self.x) and y == round(self.y))
+                        and MAP_POINTER.row > y >= 0
+                        and MAP_POINTER.column > x >= 0
+                    ):
                         if (
                             "far" in self.__effective_range
                             and self.__effective_range["far"] is not None
@@ -464,7 +468,7 @@ class Entity(Position):
                     round(self.x) - self.__max_effective_range + (y - round(self.y)),
                     round(self.x) + self.__max_effective_range - (y - round(self.y)) + 1,
                 ):
-                    if Map.row > y >= 0 and Map.column > x >= 0:
+                    if MAP_POINTER.row > y >= 0 and MAP_POINTER.column > x >= 0:
                         if (
                             "far" in self.__effective_range
                             and self.__effective_range["far"] is not None
@@ -553,14 +557,14 @@ class Entity(Position):
     """画出角色"""
     # 角色画到surface上
     def __blit_entity_img(
-        self, surface: ImageSurface, MapClass: object, action: str = None, pos: Any = None, alpha: int = 155
+        self, surface: ImageSurface, MAP_POINTER: MapObject, action: str = None, pos: Any = None, alpha: int = 155
     ) -> None:
         # 如果没有指定action,则默认使用当前的动作
         if action is None:
             action = self.__current_action
         # 调整小人图片的尺寸
         img_of_char = self.__CHARACTERS_IMAGE_SYS.get_img(self.__type, action, self.__imgId_dict[action]["imgId"])
-        img_width = round(MapClass.block_width * 1.6)
+        img_width = round(MAP_POINTER.block_width * 1.6)
         img_of_char.set_size(img_width, img_width)
         # 调整alpha值
         img_of_char.set_alpha(alpha)
@@ -571,17 +575,17 @@ class Entity(Position):
             img_of_char.flip_back_to_normal()
         # 如果没有指定pos,则默认使用当前的动作
         if pos is None:
-            pos = MapClass.calPosInMap(self.x, self.y)
+            pos = MAP_POINTER.calPosInMap(self.x, self.y)
         # 把角色图片画到屏幕上
-        img_of_char.set_pos(pos[0] - MapClass.block_width * 0.3, pos[1] - MapClass.block_width * 0.85)
+        img_of_char.set_pos(pos[0] - MAP_POINTER.block_width * 0.3, pos[1] - MAP_POINTER.block_width * 0.85)
         img_of_char.draw(surface)
         # 如果是开发者模式，则开启轮廓
         if Setting.developer_mode:
             img_of_char.draw_outline(surface)
 
     # 把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
-    def draw(self, surface: ImageSurface, MapClass: object) -> None:
-        self.__blit_entity_img(surface, MapClass, alpha=self.get_imgAlpaha(self.__current_action))
+    def draw(self, surface: ImageSurface, MAP_POINTER: MapObject) -> None:
+        self.__blit_entity_img(surface, MAP_POINTER, alpha=self.get_imgAlpaha(self.__current_action))
         # 计算imgId
         self.draw_nothing()
 
@@ -612,8 +616,10 @@ class Entity(Position):
                 self._if_play_action_in_reversing = False
                 self.set_action()
 
-    def draw_custom(self, action: str, pos: Any, surface: ImageSurface, MapClass: object, isContinue: bool = True) -> bool:
-        self.__blit_entity_img(surface, MapClass, action, pos)
+    def draw_custom(
+        self, action: str, pos: Any, surface: ImageSurface, MAP_POINTER: MapObject, isContinue: bool = True
+    ) -> bool:
+        self.__blit_entity_img(surface, MAP_POINTER, action, pos)
         # 调整id，并返回对应的bool状态
         if self.__imgId_dict[action]["imgId"] < self.get_imgNum(action) - 1:
             self.__imgId_dict[action]["imgId"] += 1
@@ -638,11 +644,11 @@ class Entity(Position):
         )
 
     # 把角色ui画到屏幕上
-    def drawUI(self, surface: ImageSurface, MapClass: object) -> tuple:
-        xTemp, yTemp = MapClass.calPosInMap(self.x, self.y)
-        xTemp += MapClass.block_width * 0.25
-        yTemp -= MapClass.block_width * 0.2
-        self.__hp_bar.set_size(MapClass.block_width / 2, MapClass.block_width / 10)
+    def _drawUI(self, surface: ImageSurface, MAP_POINTER: MapObject) -> tuple:
+        xTemp, yTemp = MAP_POINTER.calPosInMap(self.x, self.y)
+        xTemp += int(MAP_POINTER.block_width * 0.25)
+        yTemp -= int(MAP_POINTER.block_width * 0.2)
+        self.__hp_bar.set_size(MAP_POINTER.block_width / 2, MAP_POINTER.block_width / 10)
         self.__hp_bar.set_pos(xTemp, yTemp)
         self._draw_health_bar(surface)
         return xTemp, yTemp

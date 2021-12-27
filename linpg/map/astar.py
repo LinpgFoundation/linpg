@@ -1,4 +1,5 @@
-from .weather import *
+from .decoration import *
+from .abstract import AbstractMap
 
 # 点
 class Point(GameObject):
@@ -18,24 +19,24 @@ class Node:
 NULL_NODE: Node = Node(Point(-1, -1), Point(-1, -1))
 
 # 寻路模块
-class AStar:
+class AStar(AbstractMap):
 
     # 可行走标记
     __pass_tag: int = 0
 
-    def __init__(self, row: int, column: int) -> None:
+    def __init__(self) -> None:
         # 寻路用的ndarray地图
-        self._map2d: numpy.ndarray = numpy.zeros((column, row), dtype=int)
-        # 行
-        self.__row = row
-        # 列
-        self.__column = column
+        self._map2d: numpy.ndarray = numpy.asarray([])
         # 终点
         self.__end_point: Point = Point(0, 0)
         # 开启表
         self.__open_list: list = []
         # 关闭表
         self.__close_list: list = []
+
+    def _update(self, row: int, column: int) -> None:
+        super()._update(row, column)
+        self._map2d: numpy.ndarray = numpy.zeros((self.row, self.column), dtype=int)
 
     def __getMinNode(self) -> Node:
         """
@@ -77,9 +78,9 @@ class AStar:
         # 越界检测
         if (
             minF.point.x + offSetX < 0
-            or minF.point.x + offSetX > self.__column - 1
+            or minF.point.x + offSetX > self.column - 1
             or minF.point.y + offSetY < 0
-            or minF.point.y + offSetY > self.__row - 1
+            or minF.point.y + offSetY > self.row - 1
         ):
             return
         # 如果是障碍，就忽略
@@ -117,9 +118,9 @@ class AStar:
         self.__end_point = Point(end_pos[0], end_pos[1])
         if (
             self.__end_point.y < 0
-            or self.__end_point.y >= self.__row
+            or self.__end_point.y >= self.row
             or self.__end_point.x < 0
-            or self.__end_point.x >= self.__column
+            or self.__end_point.x >= self.column
             or self._map2d[self.__end_point.x][self.__end_point.y] != self.__pass_tag  # 如果终点是障碍物
         ):
             return []

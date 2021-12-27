@@ -1,12 +1,42 @@
 from .astar import *
 
 # 地图模块
-class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
+class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
 
     # 获取方块数据库
     __BLOCKS_DATABASE: dict = DataBase.get("Blocks")
 
-    def __init__(self, mapDataDic: dict, perBlockWidth: int_f, perBlockHeight: int_f):
+    def __init__(self):
+        # 寻路模块
+        AStar.__init__(self)
+        # Rectangle模块
+        Rectangle.__init__(self, 0, 0, 0, 0)
+        # 本地坐标模块
+        SurfaceWithLocalPos.__init__(self)
+        # 地图数据
+        self.__MAP: numpy.ndarray = numpy.asarray([])
+        # 地图渲染用的图层
+        self.__MAP_SURFACE: ImageSurface = None
+        # 背景图片路径
+        self.__background_image: str = ""
+        # 背景图片
+        self.__BACKGROUND_IMAGE: ImageSurface = None
+        # 背景图片图层
+        self.__BACKGROUND_SURFACE: ImageSurface = None
+        # 装饰物
+        self.__decorations: list = []
+        # 处于光处的区域
+        self.__light_area: tuple = tuple()
+        # 追踪是否需要更新的参数
+        self.__need_update_surface: bool = True
+        # 追踪目前已经画出的方块
+        self.__block_on_surface: numpy.ndarray = numpy.asarray([])
+        # 是否需要更新地图图层
+        self.__need_to_recheck_block_on_surface: bool = True
+        # 开发者使用的窗口
+        self.__debug_win = None
+
+    def update(self, mapDataDic: dict, perBlockWidth: int_f, perBlockHeight: int_f) -> None:
         # 转换原始的地图数据
         lookup_table: tuple
         MAP_t: list
@@ -37,28 +67,23 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
                         )
                         MAP_t[i][j] = "TileTemplate01"
         # 初始化地图数据
-        self.__MAP: numpy.ndarray = numpy.asarray(MAP_t)
+        self.__MAP = numpy.asarray(MAP_t)
         # 使用numpy的shape决定self.row和self.column
-        self.row, self.column = self.__MAP.shape
-        AStar.__init__(self, self.row, self.column)
+        row, column = self.__MAP.shape
+        super()._update(row, column)
         # 背景图片路径
-        self.__background_image: str = str(mapDataDic["background_image"])
+        self.__background_image = str(mapDataDic["background_image"])
         # 暗度（仅黑夜场景有效）
         AbstractMapImagesModule.set_darkness(155 if "atNight" in mapDataDic and bool(mapDataDic["atNight"]) is True else 0)
-        # 本地坐标模块
-        SurfaceWithLocalPos.__init__(self)
-        # Rectangle模块
-        Rectangle.__init__(
-            self,
-            0,
-            0,
-            int(perBlockWidth * 0.9 * ((self.row + self.column + 1) / 2)),
-            int(perBlockWidth * 0.45 * ((self.row + self.column + 1) / 2) + perBlockWidth),
+        # 更新地图渲染图层的尺寸
+        self.set_size(
+            perBlockWidth * 0.9 * ((self.row + self.column + 1) / 2),
+            perBlockWidth * 0.45 * ((self.row + self.column + 1) / 2) + perBlockWidth,
         )
         # 设置本地坐标
         self.set_local_pos(mapDataDic["local_x"], mapDataDic["local_y"])
-        # 装饰物
-        self.__decorations: list = []
+        # 重置装饰物列表
+        self.__decorations.clear()
         # 加载装饰物
         for decorationType, itemsThatType in mapDataDic["decoration"].items():
             for itemId, itemData in itemsThatType.items():
@@ -66,10 +91,10 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
         # 对装饰物进行排序
         self.__decorations.sort()
         # 初始化环境图片管理模块
-        self.__MAP_SURFACE: ImageSurface = None
-        self.__BACKGROUND_SURFACE: ImageSurface = None
+        self.__MAP_SURFACE = None
+        self.__BACKGROUND_SURFACE = None
         # 背景图片
-        self.__BACKGROUND_IMAGE: ImageSurface = (
+        self.__BACKGROUND_IMAGE = (
             IMG.quickly_load(os.path.join("Assets", "image", "dialog_background", self.__background_image), False).convert()
             if self.__background_image is not None
             else None
@@ -82,14 +107,12 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
         for decoration in self.__decorations:
             DecorationImagesModule.add_image(decoration.get_type(), decoration.image)
         # 处于光处的区域
-        self.__light_area: tuple = tuple()
+        self.__light_area = tuple()
         # 追踪是否需要更新的参数
-        self.__need_update_surface: bool = True
+        self.__need_update_surface = True
         # 追踪目前已经画出的方块
-        self.__block_on_surface: numpy.ndarray = numpy.zeros((self.row, self.column), dtype=int)
-        self.__need_to_recheck_block_on_surface: bool = True
-        # 开发者使用的窗口
-        self.__debug_win = None
+        self.__block_on_surface = numpy.zeros((self.row, self.column), dtype=int)
+        self.__need_to_recheck_block_on_surface = True
 
     @property
     def decorations(self) -> list:
@@ -183,7 +206,7 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
     def find_decoration_on(self, pos: Any) -> DecorationObject:
         for decoration in self.__decorations:
             # 如果坐标一致，则应该是当前装饰物了
-            if Positions.is_same(decoration.get_pos(), pos):
+            if Coordinates.is_same(decoration.get_pos(), pos):
                 return decoration
         return None
 
@@ -222,10 +245,8 @@ class MapObject(SurfaceWithLocalPos, Rectangle, AStar):
 
     # 移除装饰物
     def remove_decoration(self, decoration: DecorationObject) -> None:
-        pos: tuple = decoration.get_pos()
-        i: int
-        for i in range(len(self.__decorations) - 1, -1):
-            if self.__decorations[i].get_pos() == pos:
+        for i in range(len(self.__decorations) - 1, -1, -1):
+            if Coordinates.is_same(self.__decorations[i].get_pos(), decoration.get_pos()):
                 self.__decorations.pop(i)
                 break
 

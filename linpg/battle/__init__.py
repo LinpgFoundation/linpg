@@ -1,5 +1,5 @@
 """
 结构:
-environment -> decoration -> weather -> astar -> map -> battle
+weather -> battle
 """
 from .battle import *

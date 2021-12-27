@@ -174,18 +174,18 @@ class FriendlyCharacter(Entity):
                 surface,
             )
 
-    def drawUI(self, surface: ImageSurface, MapClass: object) -> None:
-        blit_pos = super().drawUI(surface, MapClass)
+    def drawUI(self, surface: ImageSurface, MAP_POINTER: MapObject) -> None:
+        blit_pos = super()._drawUI(surface, MAP_POINTER)
         # 展示被察觉的程度
         if self.__detection > 0:
             # 参数
-            eyeImgWidth: int = round(MapClass.block_width / 6)
-            eyeImgHeight: int = round(MapClass.block_width / 10)
-            numberX: float = (eyeImgWidth - MapClass.block_width / 6) / 2
-            numberY: float = (eyeImgHeight - MapClass.block_width / 10) / 2
+            eyeImgWidth: int = round(MAP_POINTER.block_width / 6)
+            eyeImgHeight: int = round(MAP_POINTER.block_width / 10)
+            numberX: float = (eyeImgWidth - MAP_POINTER.block_width / 6) / 2
+            numberY: float = (eyeImgHeight - MAP_POINTER.block_width / 10) / 2
             # 根据参数调整图片
             self.__beNoticedImage.set_size(eyeImgWidth, eyeImgHeight)
-            self.__beNoticedImage.set_pos(blit_pos[0] + MapClass.block_width * 0.51 - numberX, blit_pos[1] - numberY)
+            self.__beNoticedImage.set_pos(blit_pos[0] + MAP_POINTER.block_width * 0.51 - numberX, blit_pos[1] - numberY)
             self.__beNoticedImage.draw(surface)
         # 重创立绘
         if self.__getHurtImage is not None and self.__getHurtImage.x is not None:
@@ -234,26 +234,26 @@ class HostileCharacter(Entity):
         return self.__vigilance >= 100
 
     # 画UI - 列如血条
-    def drawUI(self, surface: ImageSurface, MapClass: object) -> None:
-        blit_pos = super().drawUI(surface, MapClass)
+    def drawUI(self, surface: ImageSurface, MAP_POINTER: MapObject) -> None:
+        blit_pos = super()._drawUI(surface, MAP_POINTER)
         # 展示警觉的程度
         if self.__vigilance > 0:
             # 参数
-            eyeImgWidth: int = round(MapClass.block_width / 6)
-            eyeImgHeight: int = round(MapClass.block_width / 6)
-            numberX: float = (eyeImgWidth - MapClass.block_width / 6) / 2
-            numberY: float = (eyeImgHeight - MapClass.block_width / 10) / 2
+            eyeImgWidth: int = round(MAP_POINTER.block_width / 6)
+            eyeImgHeight: int = round(MAP_POINTER.block_width / 6)
+            numberX: float = (eyeImgWidth - MAP_POINTER.block_width / 6) / 2
+            numberY: float = (eyeImgHeight - MAP_POINTER.block_width / 10) / 2
             # 根据参数调整图片
             self.__vigilanceImage.set_size(eyeImgWidth, eyeImgHeight)
-            self.__vigilanceImage.set_pos(blit_pos[0] + MapClass.block_width * 0.51 - numberX, blit_pos[1] - numberY)
+            self.__vigilanceImage.set_pos(blit_pos[0] + MAP_POINTER.block_width * 0.51 - numberX, blit_pos[1] - numberY)
             self.__vigilanceImage.draw(surface, False)
 
     def make_decision(
-        self, Map: object, friendlyCharacterData: dict, hostileCharacterData: dict, the_characters_detected_last_round: dict
+        self, MAP_POINTER: MapObject, friendlyCharacters: dict, hostileCharacters: dict, characters_detected_last_round: dict
     ) -> deque:
         # 存储友方角色价值榜
         target_value_board = []
-        for name, theCharacter in friendlyCharacterData.items():
+        for name, theCharacter in friendlyCharacters.items():
             if theCharacter.is_alive() and theCharacter.is_detected:
                 weight: int = 0
                 # 计算距离的分数
@@ -275,7 +275,7 @@ class HostileCharacter(Entity):
                 if data[1] < min_weight:
                     min_weight = data[1]
                     target = data[0]
-            targetCharacterData = friendlyCharacterData[target]
+            targetCharacterData = friendlyCharacters[target]
             if self.can_attack(targetCharacterData):
                 actions.append(DecisionHolder("attack", tuple((target, self.range_target_in(targetCharacterData)))))
                 action_point_can_use -= AP_IS_NEEDED_TO_ATTACK
@@ -290,8 +290,8 @@ class HostileCharacter(Entity):
                 """
             else:
                 # 寻找一条能到达该角色附近的线路
-                the_route = Map.findPath(
-                    self.pos, targetCharacterData.pos, hostileCharacterData, friendlyCharacterData, blocks_can_move, [target]
+                the_route = MAP_POINTER.findPath(
+                    self.pos, targetCharacterData.pos, hostileCharacters, friendlyCharacters, blocks_can_move, [target]
                 )
                 if len(the_route) > 0:
                     potential_attacking_pos_index = {}
@@ -325,8 +325,8 @@ class HostileCharacter(Entity):
             # 如果巡逻坐标点只有一个（意味着角色需要在该坐标上长期镇守）
             if len(self.__patrol_path) == 1:
                 if not Coordinates.is_same(self.pos, self.__patrol_path[0]):
-                    the_route = Map.findPath(
-                        self.pos, self.__patrol_path[0], hostileCharacterData, friendlyCharacterData, blocks_can_move
+                    the_route = MAP_POINTER.findPath(
+                        self.pos, self.__patrol_path[0], hostileCharacters, friendlyCharacters, blocks_can_move
                     )
                     if len(the_route) > 0:
                         actions.append(DecisionHolder("move", the_route))
@@ -337,8 +337,8 @@ class HostileCharacter(Entity):
                     pass
             # 如果巡逻坐标点有多个
             else:
-                the_route = Map.findPath(
-                    self.pos, self.__patrol_path[0], hostileCharacterData, friendlyCharacterData, blocks_can_move
+                the_route = MAP_POINTER.findPath(
+                    self.pos, self.__patrol_path[0], hostileCharacters, friendlyCharacters, blocks_can_move
                 )
                 if len(the_route) > 0:
                     actions.append(DecisionHolder("move", the_route))

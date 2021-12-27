@@ -1,4 +1,4 @@
-from ..character import *
+from ..dialog import *
 
 # 基础的图片管理模块
 class AbstractMapImagesModule:

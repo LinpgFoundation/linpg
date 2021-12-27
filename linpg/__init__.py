@@ -1,6 +1,6 @@
 """
 结构:
-exception -> config -> lang -> tools -> basic -> core -> ui -> dialog -> character -> battle -> api
+exception -> config -> lang -> tools -> basic -> core -> ui -> dialog -> map -> character -> battle -> api
 """
 from .api import *
 from platform import python_version

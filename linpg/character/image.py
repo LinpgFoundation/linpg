@@ -1,4 +1,4 @@
-from ..dialog import *
+from ..map import *
 
 # 角色受伤立绘图形模块
 class EntityGetHurtImage(Square):
@@ -32,7 +32,7 @@ class EntityImageManager:
     __CHARACTERS_IMAGE_DICT: dict = {}
 
     @classmethod
-    def get_img(cls, characterType: str, action: str, imgId: int) -> ImageSurface:
+    def get_img(cls, characterType: str, action: str, imgId: int) -> StaticImage:
         return cls.__CHARACTERS_IMAGE_DICT[characterType][action]["img"][imgId]
 
     @classmethod

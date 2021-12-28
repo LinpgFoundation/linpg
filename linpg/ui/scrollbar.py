@@ -6,7 +6,7 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos):
         super().__init__()
         self._button_tickness: int = 20
         self._move_speed: int = 20
-        self._bar_color: tuple = Colors.WHITE
+        self._bar_color: tuple[int, int, int, int] = Colors.WHITE
 
     # 获取surface宽度（子类需要实现）
     def get_surface_width(self) -> int:
@@ -45,7 +45,7 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos):
         EXCEPTION.fatal("is_hovered()", 1)
 
     # 获取scrollbar的颜色
-    def get_bar_color(self) -> tuple:
+    def get_bar_color(self) -> tuple[int, int, int, int]:
         return self._bar_color
 
     # 修改scrollbar的颜色

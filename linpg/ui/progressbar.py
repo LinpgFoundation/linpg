@@ -22,9 +22,9 @@ class AbstractProgressBar(AbstractImageSurface):
 class ProgressBar(AbstractProgressBar):
     def __init__(self, x: int_f, y: int_f, max_width: int, height: int, color: color_liked, tag: str = ""):
         super().__init__(None, x, y, max_width, height, tag)
-        self.color: tuple = Colors.get(color)
+        self.color: tuple[int, int, int, int] = Colors.get(color)
 
-    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
             Draw.rect(
                 surface,
@@ -184,7 +184,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
         mode: str = "horizontal",
     ):
         super().__init__(imgOnTop, imgOnBottom, x, y, max_width, height, mode)
-        self._percentage_to_be = 0
+        self._percentage_to_be: float = 0.0
         self.__perecent_update_each_time: float = 0.0
         self.__total_update_intervals = 10
 
@@ -206,7 +206,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
         return self._percentage_to_be / self.accuracy
 
     def set_percentage(self, value: float) -> None:
-        self._percentage_to_be = float(round(keep_number_in_range(value, 0, 1) * self.accuracy, 5))
+        self._percentage_to_be = round(keep_number_in_range(value, 0, 1) * self.accuracy, 5)
         self.__perecent_update_each_time = round(
             (self._percentage_to_be - self.__real_current_percentage) / self.__total_update_intervals, 5
         )

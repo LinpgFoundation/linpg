@@ -25,7 +25,9 @@ class FriendlyCharacter(Entity):
         # 技能覆盖范围
         self.__skill_coverage: int = int(characterData["skill_coverage"])
         # 技能施展范围
-        self.__skill_effective_range: dict = dict(characterData["skill_effective_range"])
+        self.__skill_effective_range: dict = {}
+        if "skill_effective_range" in characterData and characterData["skill_effective_range"] is not None:
+            self.__skill_effective_range.update(characterData["skill_effective_range"])
         # 最远技能施展范围
         self.__max_skill_range: int = calculate_range(self.__skill_effective_range)
         # 被察觉程度

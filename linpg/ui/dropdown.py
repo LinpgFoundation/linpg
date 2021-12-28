@@ -13,7 +13,7 @@ class DropDownList(GameObjectsDictContainer):
         self.__chosen_item_key: str = ""
         self.__DEFAULT_CONTENT: str = ""
         # 字体颜色
-        self.__font_color: tuple = Colors.get(font_color)
+        self.__font_color: tuple[int, int, int, int] = Colors.get(font_color)
         # 字体
         self.__FONT = Font.create(font_size)
         # 边缘粗细
@@ -74,7 +74,7 @@ class DropDownList(GameObjectsDictContainer):
     # 把物品画到surface上
     def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         if self.is_visible():
-            current_abs_pos: tuple = Coordinates.add(self.pos, offSet)
+            current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出背景
             if self.img is not None:
                 self.img.display(surface, current_abs_pos)

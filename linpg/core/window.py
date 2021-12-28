@@ -71,11 +71,13 @@ class RenderedWindow(Rectangle):
         self.__win = Renderer(Window(self.title, self.size, always_on_top=self.always_on_top))
 
     def draw_rect(self, rect_pos: RectLiked, color: color_liked) -> None:
-        self.__win.draw_color = Colors.get(color)
+        _color: tuple[int, int, int, int] = Colors.get(color)
+        self.__win.draw_color = pygame.Color(_color[0], _color[1], _color[2], _color[3])
         self.__win.draw_rect(convert_to_pygame_rect(rect_pos))
 
     def fill_rect(self, rect_pos: RectLiked, color: color_liked) -> None:
-        self.__win.draw_color = Colors.get(color)
+        _color: tuple[int, int, int, int] = Colors.get(color)
+        self.__win.draw_color = pygame.Color(_color[0], _color[1], _color[2], _color[3])
         self.__win.fill_rect(convert_to_pygame_rect(rect_pos))
 
     def fill(self, color: color_liked) -> None:

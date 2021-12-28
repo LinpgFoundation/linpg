@@ -96,10 +96,13 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
                 if isinstance(game_object_t, Button):
                     if game_object_t.has_been_hovered() is True:
                         self._item_being_hovered = str(key_of_game_object)
-                elif isinstance(game_object_t, GameObject):
+                elif isinstance(game_object_t, GameObject2d):
                     if game_object_t.is_hovered(current_abs_pos):
                         self._item_being_hovered = str(key_of_game_object)
 
+
+# Dict容器占位符
+NULL_DICT_CONTAINER: GameObjectsDictContainer = GameObjectsDictContainer(None, 0, 0, 0, 0)
 
 # 使用List储存游戏对象的容器，类似html的div
 class GameObjectsListContainer(AbstractGameObjectsContainer):

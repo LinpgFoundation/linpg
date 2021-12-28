@@ -22,7 +22,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
         # 是否重新放大窗口
         self.__if_regenerate_window: bool = True
         # 用于修改并展示内容的surface
-        self._content_surface: ImageSurface = None
+        self._content_surface: ImageSurface = NULL_SURFACE
         # 是否需要更新用于展示内容的surface
         self._if_update_needed: bool = True
         #
@@ -162,7 +162,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
             if self._if_update_needed is True:
                 self._update()
             # 画出内容
-            if self._content_surface is not None:
+            if self._content_surface is not NULL_SURFACE:
                 # 计算坐标
                 abs_pos_x: int = self.x + self.__outline_thickness
                 abs_pos_y: int = self.content_container_y + self.__outline_thickness

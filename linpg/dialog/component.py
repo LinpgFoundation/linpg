@@ -5,7 +5,7 @@ class DialogButtons(HiddenableSurface):
     def __init__(self):
         super().__init__()
         self.__button_hovered: int = 0
-        self.__buttons_container = None
+        self.__buttons_container: GameObjectsDictContainer = NULL_DICT_CONTAINER
         self.initialize()
 
     # 初始化
@@ -53,7 +53,7 @@ class DialogButtons(HiddenableSurface):
         self.showButton = load_button(
             "<!ui>show.png", (Display.get_width() * 0.05, Display.get_height() * 0.05), (self.FONT.size, self.FONT.size), 150
         )
-        self.__buttons_container = UI.generate("dialog_buttons", {"button_size": self.FONT.size})
+        self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self.FONT.size})
 
     @property
     def item_being_hovered(self) -> str:

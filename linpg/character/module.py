@@ -2,7 +2,7 @@ from .sound import *
 
 # 计算最远攻击距离
 def calculate_range(effective_range_dic: dict) -> int:
-    if effective_range_dic is not None:
+    if effective_range_dic is not None and len(effective_range_dic) > 0:
         max_attack_range: int = 0
         if (
             "far" in effective_range_dic

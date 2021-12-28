@@ -94,20 +94,30 @@ class ColorManager:
     def TRANSPARENT(self) -> tuple[int, int, int, int]:
         return self.__TRANSPARENT
 
+    # 转换至rgba颜色tuple
+    @staticmethod
+    def __to_rgba_color(color: tuple) -> tuple[int, int, int, int]:
+        _r: int = int(color[0])
+        _g: int = int(color[1])
+        _b: int = int(color[2])
+        _a: int = int(color[3]) if len(color) >= 4 else 255
+        return _r, _g, _b, _a
+
     """获取颜色"""
     # 给定一个颜色的名字或序号，返回对应的RGB列表
-    def get(self, color: color_liked) -> tuple:
+    @classmethod
+    def get(cls, color: color_liked) -> tuple[int, int, int, int]:
         if isinstance(color, str):
             if color.startswith("#"):
                 return ImageColor.getrgb(color)
             else:
                 try:
-                    return tuple(THECOLORS[color])
+                    return cls.__to_rgba_color(tuple(THECOLORS[color]))
                 except KeyError:
                     EXCEPTION.fatal('The color "{}" is currently not available!'.format(color))
         else:
             try:
-                return tuple(color)
+                return cls.__to_rgba_color(tuple(color))
             except Exception:
                 EXCEPTION.fatal(
                     "The color has to be a string, tuple or list, and {0} (type:{1}) is not acceptable!".format(
@@ -116,9 +126,10 @@ class ColorManager:
                 )
 
     # 获取一个带颜色的Surface
-    def surface(self, size: tuple, color: color_liked) -> ImageSurface:
+    @classmethod
+    def surface(cls, size: tuple, color: color_liked) -> ImageSurface:
         surface_t: ImageSurface = new_surface(size)
-        surface_t.fill(self.get(color))
+        surface_t.fill(cls.get(color))
         return surface_t
 
 

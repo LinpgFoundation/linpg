@@ -20,6 +20,9 @@ def get_texture_missing_surface(size: tuple) -> ImageSurface:
     return texture_missing_surface
 
 
+# null图层占位符
+NULL_SURFACE: ImageSurface = pygame.surface.Surface((0, 0))
+
 # 源图形处理
 class RawImageManafer:
     # 识快速加载图片
@@ -28,23 +31,26 @@ class RawImageManafer:
         if isinstance(path, ImageSurface):
             return path
         elif isinstance(path, str):
-            path_t: str = ASSET.resolve_path(path)
-            if convert_alpha is True:
-                try:
-                    return pygame.image.load(path_t).convert_alpha()
-                except Exception:
-                    if Setting.developer_mode is True:
-                        EXCEPTION.fatal("Cannot load image from path: {}".format(path_t))
-                    else:
-                        return get_texture_missing_surface((192, 108))
+            if path != "<!null>":
+                path_t: str = ASSET.resolve_path(path)
+                if convert_alpha is True:
+                    try:
+                        return pygame.image.load(path_t).convert_alpha()
+                    except Exception:
+                        if Setting.developer_mode is True:
+                            EXCEPTION.fatal("Cannot load image from path: {}".format(path_t))
+                        else:
+                            return get_texture_missing_surface((192, 108))
+                else:
+                    try:
+                        return pygame.image.load(path_t)
+                    except Exception:
+                        if Setting.developer_mode is True:
+                            EXCEPTION.fatal("Cannot load image from path: {}".format(path_t))
+                        else:
+                            return get_texture_missing_surface((192, 108))
             else:
-                try:
-                    return pygame.image.load(path_t)
-                except Exception:
-                    if Setting.developer_mode is True:
-                        EXCEPTION.fatal("Cannot load image from path: {}".format(path_t))
-                    else:
-                        return get_texture_missing_surface((192, 108))
+                return NULL_SURFACE
         else:
             EXCEPTION.fatal("The path '{}' has to be a string or at least a ImageSurface!".format(path))
 

@@ -18,12 +18,16 @@ class DialogEditor(DialogConverter):
         self.please_enter_content: str = ""
         # 默认叙述者名
         self.please_enter_name: str = ""
-        # 默认不播放音乐
-        # self._is_muted = True
         # 是否尝试修复错位
         self.__if_try_to_fix_issues: bool = False
         # 压缩模式
         self.__compress_when_saving: bool = True
+        # 存放并管理编辑器上方所有按钮的容器
+        self.__buttons_ui_container: GameObjectsDictContainer = NULL_DICT_CONTAINER
+        # 未保存数据时警告的窗口
+        self.__no_save_warning: GameObjectsDictContainer = NULL_DICT_CONTAINER
+        # 默认不播放音乐
+        # self._is_muted = True
 
     # 获取对话框模块（按照父类要求实现）
     def _get_dialog_box(self) -> DevDialogBox:
@@ -121,7 +125,7 @@ class DialogEditor(DialogConverter):
             "delete_button_x": int(button_width * 2.25),
             "back_button_x": button_width,
         }
-        self.__buttons_ui_container = UI.generate("dialog_editor_buttons", custom_values)
+        self.__buttons_ui_container = UI.generate_container("dialog_editor_buttons", custom_values)
         self.please_enter_content = CONFIG["please_enter_content"]
         self.please_enter_name = CONFIG["please_enter_name"]
         # 背景音乐
@@ -139,7 +143,7 @@ class DialogEditor(DialogConverter):
         surfaceTmp.blit(self.removeNpcButton, (self.removeNpcButton.get_width() * 0.1, 0))
         self.removeNpcButton = surfaceTmp
         # 未保存离开时的警告
-        self.__no_save_warning = UI.generate("leave_without_saving_warning")
+        self.__no_save_warning = UI.generate_container("leave_without_saving_warning")
         # 切换准备编辑的dialog部分
         self.dialog_key_select = DropDownList(None, button_width * 11, button_y + font_size, font_size)
         for key in self._dialog_data:

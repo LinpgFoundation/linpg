@@ -36,7 +36,7 @@ class AStar(AbstractMap):
 
     def _update(self, row: int, column: int) -> None:
         super()._update(row, column)
-        self._map2d: numpy.ndarray = numpy.zeros((self.row, self.column), dtype=int)
+        self._map2d = numpy.zeros((self.row, self.column), dtype=int)
 
     def __getMinNode(self) -> Node:
         """

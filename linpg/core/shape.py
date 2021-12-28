@@ -76,7 +76,9 @@ class Square(GameObject2d):
         return self.left, self.top, self.__width, self.__width
 
     # 画出轮廓
-    def draw_outline(self, surface: ImageSurface, offSet: tuple = ORIGIN, color: str = "red", thickness: int = 2) -> None:
+    def draw_outline(
+        self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN, color: str = "red", thickness: int = 2
+    ) -> None:
         Draw.rect(surface, Colors.get(color), (Coordinates.add(self.pos, offSet), self.size), thickness)
 
 
@@ -176,5 +178,7 @@ class Circle(Square):
         return round(self.get_width() / 2)
 
     # 画出轮廓
-    def draw_outline(self, surface: ImageSurface, offSet: tuple = ORIGIN, color: str = "red", thickness: int = 2) -> None:
+    def draw_outline(
+        self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN, color: str = "red", thickness: int = 2
+    ) -> None:
         Draw.circle(surface, Colors.get(color), Coordinates.add(self.center, offSet), self.radius, thickness)

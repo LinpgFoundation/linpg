@@ -4,13 +4,13 @@ from .generator import *
 class AbstractInternalMenu(HiddenableSurface):
     def __init__(self, menu_name: str) -> None:
         super().__init__(False)
-        self._CONTENT = None
+        self._CONTENT: GameObjectsDictContainer = NULL_DICT_CONTAINER
         self._initialized: bool = False
         self._menu_name: str = menu_name
 
     # 初始化
     def initialize(self) -> None:
-        self._CONTENT = UI.generate(self._menu_name)
+        self._CONTENT = UI.generate_container(self._menu_name)
         self._initialized = True
 
     # 菜单是否被触碰
@@ -109,9 +109,9 @@ class PauseMenu(AbstractInternalMenu):
         super().__init__("pause_menu")
         self.screenshot = None
         # 返回确认菜单
-        self.__leave_warning = None
+        self.__leave_warning: GameObjectsDictContainer = NULL_DICT_CONTAINER
         # 退出确认菜单
-        self.__exit_warning = None
+        self.__exit_warning: GameObjectsDictContainer = NULL_DICT_CONTAINER
         # 记录被按下的按钮
         self.__button_hovered: str = ""
 
@@ -122,10 +122,10 @@ class PauseMenu(AbstractInternalMenu):
     def initialize(self) -> None:
         super().initialize()
         # 加载返回确认菜单
-        self.__leave_warning = UI.generate("leave_without_saving_progress_warning")
+        self.__leave_warning = UI.generate_container("leave_without_saving_progress_warning")
         self.__leave_warning.set_visible(False)
         # 加载退出确认菜单
-        self.__exit_warning = UI.generate("exit_without_saving_progress_warning")
+        self.__exit_warning = UI.generate_container("exit_without_saving_progress_warning")
         self.__exit_warning.set_visible(False)
 
     def hide(self) -> None:
@@ -190,7 +190,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
         EXCEPTION.fatal("_get_data_need_to_save()", 1)
 
     # 淡入或淡出（子类需实现）
-    def fade(self) -> None:
+    def fade(self, surface: ImageSurface) -> None:
         EXCEPTION.fatal("fade()", 1)
 
     # 停止播放（子类需实现）

@@ -1,3 +1,4 @@
+from collections import deque
 from .module import *
 
 # 人形模块

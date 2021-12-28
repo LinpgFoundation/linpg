@@ -35,6 +35,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         self.__need_to_recheck_block_on_surface: bool = True
         # 开发者使用的窗口
         self.__debug_win = None
+        self.__debug_win_unit: int = 10
 
     def update(self, mapDataDic: dict, perBlockWidth: int_f, perBlockHeight: int_f) -> None:
         # 转换原始的地图数据
@@ -168,14 +169,12 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
     # 开发者模式
     def dev_mode(self) -> None:
         if self.__debug_win is None:
-            unit: int = 10
             self.__debug_win = RenderedWindow(
-                int(self.row * unit + unit / 4 * (self.row + 1)),
-                int(self.column * unit + unit / 4 * (self.row + 1)),
+                int(self.row * self.__debug_win_unit + self.__debug_win_unit / 4 * (self.row + 1)),
+                int(self.column * self.__debug_win_unit + self.__debug_win_unit / 4 * (self.row + 1)),
                 "debug window",
                 True,
             )
-            self.__debug_win.unit = unit
         else:
             self.__debug_win = None
 
@@ -187,15 +186,14 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         y: int
         start_x: int
         start_y: int
-        unit: int = self.__debug_win.unit
         for y in range(len(self.__block_on_surface)):
             for x in range(len(self.__block_on_surface[y])):
-                start_x = int(x * unit * 1.25 + unit / 4)
-                start_y = int(y * unit * 1.25 + unit / 4)
+                start_x = int(x * self.__debug_win_unit * 1.25 + self.__debug_win_unit / 4)
+                start_y = int(y * self.__debug_win_unit * 1.25 + self.__debug_win_unit / 4)
                 if self.__block_on_surface[y][x] == 0:
-                    self.__debug_win.draw_rect((start_x, start_y, unit, unit), "white")
+                    self.__debug_win.draw_rect((start_x, start_y, self.__debug_win_unit, self.__debug_win_unit), "white")
                 else:
-                    self.__debug_win.fill_rect((start_x, start_y, unit, unit), "white")
+                    self.__debug_win.fill_rect((start_x, start_y, self.__debug_win_unit, self.__debug_win_unit), "white")
         self.__debug_win.present()
 
     # 根据index寻找装饰物

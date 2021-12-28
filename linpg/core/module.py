@@ -206,22 +206,22 @@ class GameObject2d(GameObject):
         self.display(Display.window)
 
     # 根据offSet将图片展示到surface的对应位置上 - 子类必须实现
-    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         EXCEPTION.fatal("display()", 1)
 
     # 根据offSet将图片展示到屏幕的对应位置上
-    def display_on_screen(self, offSet: tuple = ORIGIN) -> None:
+    def display_on_screen(self, offSet: tuple[int, int] = ORIGIN) -> None:
         self.display(Display.window, offSet)
 
     # 忽略现有坐标，将图片画到surface的指定位置上
-    def blit(self, surface: ImageSurface, pos: tuple) -> None:
+    def blit(self, surface: ImageSurface, pos: tuple[int, int]) -> None:
         old_pos = self.get_pos()
         self.move_to(pos)
         self.draw(surface)
         self.move_to(old_pos)
 
     # 忽略现有坐标，将图片画到surface的指定位置上
-    def blit_on_screen(self, pos: tuple) -> None:
+    def blit_on_screen(self, pos: tuple[int, int]) -> None:
         old_pos = self.get_pos()
         self.move_to(pos)
         self.draw(Display.window)

@@ -10,7 +10,7 @@ class DisplayController:
     # 窗口比例
     __screen_scale: int = keep_int_in_range(int(Setting.get("ScreenScale")), 0, 100)
     # 主要的窗口
-    __SCREEN_WINDOW: ImageSurface = None
+    __SCREEN_WINDOW: ImageSurface = NULL_SURFACE
     # 窗口尺寸
     __standard_width: int = round(1920 * __screen_scale / 100)
     __standard_height: int = round(1080 * __screen_scale / 100)

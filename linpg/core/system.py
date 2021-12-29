@@ -57,7 +57,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
         super().__init__()
         self.__bgm_path: Optional[str] = None
         self.__bgm_volume: float = 1.0
-        self.__audio = None
+        self.__audio: pygame.mixer.Sound = NULL_SOUND
 
     # 系统退出时，需卸载bgm
     def stop(self) -> None:
@@ -68,10 +68,10 @@ class SystemWithBackgroundMusic(AbstractSystem):
     def unload_bgm(self):
         self.stop_bgm()
         self.__bgm_path = None
-        self.__audio = None
+        self.__audio = NULL_SOUND
 
     # 设置bgm
-    def set_bgm(self, path: Optional[str], forced: bool = False) -> None:
+    def set_bgm(self, path: str, forced: bool = False) -> None:
         # 如果path是None,则
         if path is None:
             if self.__bgm_path is not None:

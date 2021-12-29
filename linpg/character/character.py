@@ -35,7 +35,7 @@ class FriendlyCharacter(Entity):
             int(characterData["detection"]) if "detection" in characterData and characterData["detection"] is not None else 0
         )
         # 生成被察觉的图标
-        self.__beNoticedImage: EntityDynamicProgressBarSurface = EntityDynamicProgressBarSurface()
+        self.__beNoticedImage: FriendlyCharacterDynamicProgressBarSurface = FriendlyCharacterDynamicProgressBarSurface()
         self.__beNoticedImage.set_percentage(self.__detection / 100)
         # 重创立绘
         self.__getHurtImage: Optional[EntityGetHurtImage]
@@ -167,13 +167,17 @@ class FriendlyCharacter(Entity):
             super()._draw_health_bar(surface)
         else:
             self.__hp_bar.set_percentage(self.__down_time / DYING_ROUND_LIMIT)
-            self.__hp_bar.draw(surface, True)
-            display_in_center(
-                self.__ENTITY_UI_FONT.render("{0}/{1}".format(self.__down_time, DYING_ROUND_LIMIT), Colors.BLACK),
-                self.__hp_bar,
-                self.__hp_bar.x,
-                self.__hp_bar.y,
-                surface,
+            self.__hp_bar.set_dying(True)
+            self.__hp_bar.draw(surface)
+            _status_font: ImageSurface = self.__ENTITY_UI_FONT.render(
+                "{0}/{1}".format(self.__down_time, DYING_ROUND_LIMIT), Colors.BLACK
+            )
+            surface.blit(
+                _status_font,
+                (
+                    self.__hp_bar.x + int((self.__hp_bar.get_width() - _status_font.get_width()) / 2),
+                    self.__hp_bar.y + int((self.__hp_bar.get_height() - _status_font.get_height()) / 2),
+                ),
             )
 
     def drawUI(self, surface: ImageSurface, MAP_POINTER: MapObject) -> None:
@@ -210,7 +214,7 @@ class HostileCharacter(Entity):
         super().__init__(characterData, "sangvisFerri", mode)
         self.__patrol_path: deque = deque(characterData["patrol_path"]) if "patrol_path" in characterData else deque()
         self.__vigilance: int = int(characterData["vigilance"]) if "vigilance" in characterData else 0
-        self.__vigilanceImage: EntityDynamicProgressBarSurface = EntityDynamicProgressBarSurface("vertical")
+        self.__vigilanceImage: HostileCharacterDynamicProgressBarSurface = HostileCharacterDynamicProgressBarSurface()
         self.__vigilanceImage.set_percentage(self.__vigilance / 100)
 
     def to_dict(self) -> dict:
@@ -248,7 +252,7 @@ class HostileCharacter(Entity):
             # 根据参数调整图片
             self.__vigilanceImage.set_size(eyeImgWidth, eyeImgHeight)
             self.__vigilanceImage.set_pos(blit_pos[0] + MAP_POINTER.block_width * 0.51 - numberX, blit_pos[1] - numberY)
-            self.__vigilanceImage.draw(surface, False)
+            self.__vigilanceImage.draw(surface)
 
     def make_decision(
         self, MAP_POINTER: MapObject, friendlyCharacters: dict, hostileCharacters: dict, characters_detected_last_round: dict

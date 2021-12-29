@@ -68,7 +68,7 @@ class DialogBox(AbstractDialogBox):
         try:
             self.__textPlayingSound = Sound.load(r"Assets/sound/ui/dialog_words_playing.ogg")
         except FileNotFoundError:
-            self.__textPlayingSound = None
+            self.__textPlayingSound = NULL_SOUND
             EXCEPTION.inform(
                 "Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!\nAs a result, the text playing sound will be disabled."
             )
@@ -133,14 +133,14 @@ class DialogBox(AbstractDialogBox):
 
     # 获取文字播放时的音效的音量
     def get_sound_volume(self) -> float:
-        if self.__textPlayingSound is not None:
+        if self.__textPlayingSound is not NULL_SOUND:
             return self.__textPlayingSound.get_volume()
         else:
             return 0.0
 
     # 修改文字播放时的音效的音量
     def set_sound_volume(self, volume: number) -> None:
-        if self.__textPlayingSound is not None:
+        if self.__textPlayingSound is not NULL_SOUND:
             self.__textPlayingSound.set_volume(volume)
 
     # 是否需要更新
@@ -195,7 +195,7 @@ class DialogBox(AbstractDialogBox):
                     # 如果当前行的字符还没有完全播出
                     if self.__text_index < len(self.content[self.__displayed_lines]):
                         # 播放文字音效
-                        if not LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy() and self.__textPlayingSound is not None:
+                        if not LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy() and self.__textPlayingSound is not NULL_SOUND:
                             LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.play(self.__textPlayingSound)
                         self.__text_index += 1
                     # 当前行的所有字都播出后，播出下一行

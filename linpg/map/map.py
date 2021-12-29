@@ -201,7 +201,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         return self.__decorations[index]
 
     # 根据坐标寻找装饰物
-    def find_decoration_on(self, pos: Any) -> DecorationObject:
+    def find_decoration_on(self, pos: Any) -> Optional[DecorationObject]:
         for decoration in self.__decorations:
             # 如果坐标一致，则应该是当前装饰物了
             if Coordinates.is_same(decoration.get_pos(), pos):

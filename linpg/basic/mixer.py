@@ -15,6 +15,9 @@ LINPG_RESERVED_SOUND_EFFECTS_CHANNEL = pygame.mixer.Channel(_RESERVED_SOUND_EFFE
 _RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID: int = MIXER_CHANNEL_NUM - 1
 LINPG_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL = pygame.mixer.Channel(_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID)
 
+# 音效占位符
+NULL_SOUND: pygame.mixer.Sound = pygame.sndarray.make_sound(numpy.asarray([[0, 0]]))
+
 # 音效管理模块接口
 class AbstractSoundManager:
     def __init__(self, channel_id: int):

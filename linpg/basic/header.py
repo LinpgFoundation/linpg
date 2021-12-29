@@ -91,22 +91,3 @@ def new_surface(size: tuple, surface_flags: Any = None) -> ImageSurface:
 # 获取透明的Surface
 def new_transparent_surface(size: tuple) -> ImageSurface:
     return new_surface(size, pygame.SRCALPHA).convert_alpha()
-
-
-# 中心展示模块1：接受两个item和item2的x和y，将item1展示在item2的中心位置,但不展示item2：
-def display_in_center(
-    item1: ImageSurface,
-    item2: ImageSurface,
-    x: number,
-    y: number,
-    screen: ImageSurface,
-    off_set_x: number = 0,
-    off_set_y: number = 0,
-) -> None:
-    screen.blit(
-        item1,
-        (
-            x + (item2.get_width() - item1.get_width()) / 2 + off_set_x,
-            y + (item2.get_height() - item1.get_height()) / 2 + off_set_y,
-        ),
-    )

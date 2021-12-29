@@ -102,7 +102,7 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
 
 
 # Dict容器占位符
-NULL_DICT_CONTAINER: GameObjectsDictContainer = GameObjectsDictContainer(None, 0, 0, 0, 0)
+NULL_DICT_CONTAINER: GameObjectsDictContainer = GameObjectsDictContainer(NULL_SURFACE, 0, 0, 0, 0)
 
 # 使用List储存游戏对象的容器，类似html的div
 class GameObjectsListContainer(AbstractGameObjectsContainer):

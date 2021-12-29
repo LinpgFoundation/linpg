@@ -83,7 +83,7 @@ class AdvancedAbstractImageSurface(AbstractImageSurface, SurfaceWithLocalPos):
 class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
     def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         super().__init__(img, x, y, width, height, tag=tag)
-        self._processed_img: ImageSurface = None
+        self._processed_img: ImageSurface = NULL_SURFACE
         self._need_update: bool = True if self.get_width() >= 0 and self.get_height() >= 0 else False
 
     # 处理图片（子类必须实现）
@@ -98,7 +98,7 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
     # 设置透明度
     def set_alpha(self, value: int) -> None:
         self._set_alpha(value, False)
-        if self._processed_img is not None:
+        if self._processed_img is not NULL_SURFACE:
             self._processed_img.set_alpha(self.get_alpha())
 
     # 宽度
@@ -115,7 +115,7 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 是否被鼠标触碰
     def is_hovered(self, off_set: tuple = NoPos) -> bool:
-        if self._processed_img is not None:
+        if self._processed_img is not NULL_SURFACE:
             mouse_pos: tuple[int, int] = (
                 Controller.mouse.pos if off_set is NoPos else Coordinates.subtract(Controller.mouse.pos, off_set)
             )

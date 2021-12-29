@@ -635,13 +635,17 @@ class Entity(Position):
     # 把角色血条画到屏幕上
     def _draw_health_bar(self, surface: ImageSurface) -> None:
         self.__hp_bar.set_percentage(self.__current_hp / self.__max_hp)
-        self.__hp_bar.draw(surface, False)
-        display_in_center(
-            self.__ENTITY_UI_FONT.render("{0}/{1}".format(self.__current_hp, self.__max_hp), Colors.BLACK),
-            self.__hp_bar,
-            self.__hp_bar.x,
-            self.__hp_bar.y,
-            surface,
+        self.__hp_bar.set_dying(False)
+        self.__hp_bar.draw(surface)
+        _status_font: ImageSurface = self.__ENTITY_UI_FONT.render(
+            "{0}/{1}".format(self.__current_hp, self.__max_hp), Colors.BLACK
+        )
+        surface.blit(
+            _status_font,
+            (
+                self.__hp_bar.x + int((self.__hp_bar.get_width() - _status_font.get_width()) / 2),
+                self.__hp_bar.y + int((self.__hp_bar.get_height() - _status_font.get_height()) / 2),
+            ),
         )
 
     # 把角色ui画到屏幕上

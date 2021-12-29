@@ -165,12 +165,12 @@ class VideoSurface(AbstractVideo):
         super().__init__(path, buffer_num, play_range)
         self.__loop: bool = loop
         self.__looped_times: int = 0
-        self.__audio = Sound.load_from_video(path) if with_audio is True else None
+        self.__audio: pygame.mixer.Sound = Sound.load_from_video(path) if with_audio is True else NULL_SOUND
         self.__audio_channel = None
 
     # 返回一个复制
     def copy(self) -> "VideoSurface":
-        with_audio = True if self.__audio is not None else False
+        with_audio = True if self.__audio is not NULL_SOUND else False
         new_t = VideoSurface(self._path, self.__loop, with_audio, self.play_range)
         if with_audio is True:
             new_t.set_volume(self.get_volume())
@@ -179,13 +179,13 @@ class VideoSurface(AbstractVideo):
     # 音量
     @property
     def volume(self) -> float:
-        return self.__audio.get_volume()
+        return self.get_volume()
 
     def get_volume(self) -> float:
-        return self.__audio.get_volume()
+        return self.__audio.get_volume() if self.__audio is not NULL_SOUND else -1.0
 
     def set_volume(self, value: float) -> None:
-        if self.__audio is not None:
+        if self.__audio is not NULL_SOUND:
             self.__audio.set_volume(value)
 
     def stop(self) -> None:
@@ -201,7 +201,7 @@ class VideoSurface(AbstractVideo):
         super().draw(surface)
         if self.is_playing():
             # 播放背景音乐
-            if not self.__audio_channel.get_busy() and self.__audio is not None:
+            if not self.__audio_channel.get_busy() and self.__audio is not NULL_SOUND:
                 self.__audio_channel.play(self.__audio)
             # 检测循环
             if self.get_frame_index() < self.get_frame_num():

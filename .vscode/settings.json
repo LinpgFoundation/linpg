@@ -54,6 +54,7 @@
         "sangvis",
         "setuptools",
         "sfpsp",
+        "sndarray",
         "SRCALPHA",
         "surfarray",
         "swapaxes",

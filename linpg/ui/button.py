@@ -9,11 +9,11 @@ class Button(AbstractImageSurface):
             height = img.get_height()
         super().__init__(img, x, y, width, height, tag)
         # self.img是未被触碰时的默认图片，img2是被鼠标触碰时展示的图片
-        self.img2 = None
+        self.__img2: ImageSurface = NULL_SURFACE
         self.__is_hovered: bool = False
 
     def set_hover_img(self, img: ImageSurface) -> None:
-        self.img2 = img
+        self.__img2 = img
 
     def has_been_hovered(self) -> bool:
         return self.__is_hovered
@@ -22,7 +22,9 @@ class Button(AbstractImageSurface):
         if self.is_visible():
             self.__is_hovered = self.is_hovered(offSet)
             surface.blit(
-                IMG.resize(self.img2 if self.__is_hovered is True and self.img2 is not None else self.img, self.size),
+                IMG.resize(
+                    self.__img2 if self.__is_hovered is True and self.__img2 is not NULL_SURFACE else self.img, self.size
+                ),
                 Coordinates.add(self.pos, offSet),
             )
         else:

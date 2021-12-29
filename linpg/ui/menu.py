@@ -107,7 +107,7 @@ OptionMenu: DefaultOptionMenu = DefaultOptionMenu()
 class PauseMenu(AbstractInternalMenu):
     def __init__(self) -> None:
         super().__init__("pause_menu")
-        self.screenshot = None
+        self.__screenshot: ImageSurface = NULL_SURFACE
         # 返回确认菜单
         self.__leave_warning: GameObjectsDictContainer = NULL_DICT_CONTAINER
         # 退出确认菜单
@@ -132,7 +132,7 @@ class PauseMenu(AbstractInternalMenu):
         self.set_visible(False)
         self.__exit_warning.set_visible(False)
         self.__leave_warning.set_visible(False)
-        self.screenshot = None
+        self.__screenshot = NULL_SURFACE
 
     def draw(self, surface: ImageSurface) -> None:
         self.__button_hovered = ""
@@ -140,10 +140,10 @@ class PauseMenu(AbstractInternalMenu):
             if not self._initialized:
                 self.initialize()
             # 展示原先的背景
-            if self.screenshot is None:
-                self.screenshot = IMG.add_darkness(surface, 10)
+            if self.__screenshot is NULL_SURFACE:
+                self.__screenshot = IMG.add_darkness(surface, 10)
             # 画出原先的背景
-            surface.blit(self.screenshot, (0, 0))
+            surface.blit(self.__screenshot, (0, 0))
             # 画出选项
             if self.__leave_warning.is_hidden() and self.__exit_warning.is_hidden():
                 super().draw(surface)

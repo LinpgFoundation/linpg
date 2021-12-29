@@ -61,10 +61,11 @@ class DecorationImagesModule(AbstractMapImagesModule):
             if fileName not in cls.__DECORATION_IMAGE_DICT[decorationType]:
                 # 生成图片
                 cls.__DECORATION_IMAGE_DICT[decorationType][fileName] = StaticImage(imgPath, 0, 0)
-                # 如果是夜战模式
-                if cls.get_darkness() > 0:
-                    if decorationType not in cls.__DECORATION_IMAGE_DICT_DARK:
-                        cls.__DECORATION_IMAGE_DICT_DARK[decorationType] = {}
+            # 如果是夜战模式
+            if cls.get_darkness() > 0:
+                if decorationType not in cls.__DECORATION_IMAGE_DICT_DARK:
+                    cls.__DECORATION_IMAGE_DICT_DARK[decorationType] = {}
+                if fileName not in cls.__DECORATION_IMAGE_DICT_DARK[decorationType]:
                     cls.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName] = cls.__DECORATION_IMAGE_DICT[decorationType][
                         fileName
                     ].copy()

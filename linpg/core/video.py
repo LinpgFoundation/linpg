@@ -166,7 +166,7 @@ class VideoSurface(AbstractVideo):
         self.__loop: bool = loop
         self.__looped_times: int = 0
         self.__audio: pygame.mixer.Sound = Sound.load_from_video(path) if with_audio is True else NULL_SOUND
-        self.__audio_channel = None
+        self.__audio_channel: pygame.mixer.Channel = None
 
     # 返回一个复制
     def copy(self) -> "VideoSurface":

@@ -103,6 +103,6 @@ class EntityImageManager:
                         img.flip_original_img()
                 return {"imgId": 0, "alpha": 255}
             else:
-                return None
+                return {}
         else:
-            return None
+            return {}

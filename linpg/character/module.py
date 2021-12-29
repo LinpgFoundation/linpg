@@ -84,9 +84,9 @@ class DecisionHolder:
         self.data = data
 
     @property
-    def route(self):
+    def route(self) -> list:
         if self.action == "move":
-            return self.data
+            return list(self.data)
         else:
             EXCEPTION.fatal("The character does not decide to move!")
 

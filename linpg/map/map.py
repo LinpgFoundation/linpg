@@ -68,7 +68,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                         )
                         MAP_t[i][j] = "TileTemplate01"
         # 初始化地图数据
-        self.__MAP = numpy.asarray(MAP_t)
+        self.__MAP = numpy.asarray(MAP_t, dtype=numpy.dtype("<U32"))
         # 使用numpy的shape决定self.row和self.column
         row, column = self.__MAP.shape
         super()._update(row, column)
@@ -112,7 +112,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         # 追踪是否需要更新的参数
         self.__need_update_surface = True
         # 追踪目前已经画出的方块
-        self.__block_on_surface = numpy.zeros((self.row, self.column), dtype=int)
+        self.__block_on_surface = numpy.zeros((self.row, self.column), dtype=numpy.int8)
         self.__need_to_recheck_block_on_surface = True
 
     @property

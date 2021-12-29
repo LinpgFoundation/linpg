@@ -15,7 +15,7 @@ class AbstractInternalMenu(HiddenableSurface):
 
     # 菜单是否被触碰
     def is_hovered(self) -> bool:
-        if self.is_visible() and self._CONTENT is not None:
+        if self.is_visible() and self._CONTENT is not NULL_DICT_CONTAINER:
             return self._CONTENT.is_hovered()
         else:
             return False

@@ -152,6 +152,7 @@ class UiGenerator:
             # 如果没有提供最大高度，则默认使用屏幕高度
             if max_height < 0:
                 max_height = Display.get_height()
+            item_t: GameObject2d
             # 如果对象是文字
             if data["type"] == "text" or data["type"] == "dynamic_text" or data["type"] == "drop_down_single_choice_list":
                 # 转换字体大小
@@ -165,8 +166,8 @@ class UiGenerator:
                     data["italic"] = False
                 if "src" not in data:
                     data["src"] = None
-                else:
-                    data["src"] = cls.__convert_text(data["src"])
+                elif data["src"] is not None:
+                    data["src"] = cls.__convert_text(str(data["src"]))
                 # 生成文字图层
                 if data["type"] == "text":
                     item_t = TextSurface(
@@ -258,7 +259,7 @@ class UiGenerator:
     def __get_data_in_dict(cls, data: Union[str, dict]) -> dict:
         if isinstance(data, str):
             try:
-                return dict(cls.__UI_TEMPLATES[data])
+                return dict(deepcopy(cls.__UI_TEMPLATES[data]))
             except KeyError:
                 EXCEPTION.fatal('The ui called "{}" does not exist!'.format(data))
         else:

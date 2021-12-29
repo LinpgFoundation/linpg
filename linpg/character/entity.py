@@ -92,9 +92,6 @@ class Entity(Position):
             "magazine_capacity": self.__magazine_capacity,
             "max_hp": self.__max_hp,
             "current_hp": self.__current_hp,
-            "irrecoverable_armor": self.__irrecoverable_armor,
-            "recoverable_armor": self.__max_recoverable_armor,
-            "current_recoverable_armor": self.__current_recoverable_armor,
             "effective_range": self.__effective_range,
             "kind": self.__kind,
             "type": self.__type,
@@ -104,8 +101,15 @@ class Entity(Position):
             "current_action": self.__current_action,
             "if_action_loop": self.__if_action_loop,
             "if_play_action_in_reversing": self._if_play_action_in_reversing,
-            "if_invincible": self.__if_invincible,
         }
+        if self.__irrecoverable_armor > 0:
+            data["irrecoverable_armor"] = self.__irrecoverable_armor
+        if self.__max_recoverable_armor > 0:
+            data["recoverable_armor"] = self.__max_recoverable_armor
+        if self.__current_recoverable_armor > 0:
+            data["current_recoverable_armor"] = self.__current_recoverable_armor
+        if self.__if_invincible is True:
+            data["if_invincible"] = self.__if_invincible
         if len(self.__moving_path) > 0:
             data["moving_path"] = [list(pos) for pos in self.__moving_path]
         if not self.__moving_complete:
@@ -184,10 +188,10 @@ class Entity(Position):
     # 获取角色特定动作的图片播放ID
     def get_imgId(self, action: str) -> int:
         try:
-            action_dict: dict = self.__imgId_dict[action]
+            action_dict: dict = dict(self.__imgId_dict[action])
         except KeyError:
             EXCEPTION.fatal('Action "{}" is invalid!'.format(action))
-        return action_dict["imgId"] if action_dict is not None else -1
+        return action_dict["imgId"] if len(action_dict) > 0 else -1
 
     # 获取角色特定动作的图片总数量
     def get_imgNum(self, action: str) -> int:
@@ -348,8 +352,8 @@ class Entity(Position):
         self.__CHARACTERS_SOUND_SYSTEM.play(self.__type, kind_of_sound)
 
     # 设置需要移动的路径
-    def move_follow(self, path: Iterable) -> None:
-        if isinstance(path, Iterable) and len(path) > 0:
+    def move_follow(self, path: list) -> None:
+        if isinstance(path, list) and len(path) > 0:
             self.__moving_path = deque(path)
             self.__moving_complete = False
             self.set_action("move")
@@ -526,7 +530,7 @@ class Entity(Position):
 
     # 判断是否在攻击范围内
     def can_attack(self, otherEntity: "Entity") -> bool:
-        return self.range_target_in(otherEntity) is not None
+        return self.range_target_in(otherEntity) != "None"
 
     # 返回该角色的理想攻击范围
     @property

@@ -7,8 +7,8 @@ class AbstractBattleSystem(AbstractGameSystem):
         # 用于判断是否移动屏幕的参数
         self.__mouse_move_temp_x: int = -1
         self.__mouse_move_temp_y: int = -1
-        self.screen_to_move_x = None
-        self.screen_to_move_y = None
+        self._screen_to_move_x: int = None
+        self._screen_to_move_y: int = None
         # 是否是死亡的那个
         self.the_dead_one: dict = {}
         # 用于检测是否有方向键被按到的字典
@@ -21,9 +21,6 @@ class AbstractBattleSystem(AbstractGameSystem):
         # 方格标准尺寸
         self._standard_block_width: int = int(Display.get_width() / 10)
         self._standard_block_height: int = int(Display.get_height() / 10)
-        # 缩进
-        self.zoomIn = 100
-        self.zoomIntoBe = 100
         # 天气系统
         self._weather_system: WeatherSystem = WeatherSystem()
 
@@ -56,8 +53,8 @@ class AbstractBattleSystem(AbstractGameSystem):
     def _display_map(self, screen: ImageSurface) -> None:
         self._check_if_move_screen()
         self._move_screen()
-        self.screen_to_move_x, self.screen_to_move_y = self._MAP.display_map(
-            screen, self.screen_to_move_x, self.screen_to_move_y
+        self._screen_to_move_x, self._screen_to_move_y = self._MAP.display_map(
+            screen, self._screen_to_move_x, self._screen_to_move_y
         )
 
     # 展示场景装饰物
@@ -143,50 +140,50 @@ class AbstractBattleSystem(AbstractGameSystem):
     def _check_if_move_screen(self) -> None:
         # 根据按键情况设定要移动的数值
         if self.__pressKeyToMove["up"] is True:
-            if self.screen_to_move_y is None:
-                self.screen_to_move_y = self._MAP.block_height / 4
+            if self._screen_to_move_y is None:
+                self._screen_to_move_y = int(self._MAP.block_height / 4)
             else:
-                self.screen_to_move_y += self._MAP.block_height / 4
+                self._screen_to_move_y += int(self._MAP.block_height / 4)
         if self.__pressKeyToMove["down"] is True:
-            if self.screen_to_move_y is None:
-                self.screen_to_move_y = -self._MAP.block_height / 4
+            if self._screen_to_move_y is None:
+                self._screen_to_move_y = int(-self._MAP.block_height / 4)
             else:
-                self.screen_to_move_y -= self._MAP.block_height / 4
+                self._screen_to_move_y -= int(self._MAP.block_height / 4)
         if self.__pressKeyToMove["left"] is True:
-            if self.screen_to_move_x is None:
-                self.screen_to_move_x = self._MAP.block_width / 4
+            if self._screen_to_move_x is None:
+                self._screen_to_move_x = int(self._MAP.block_width / 4)
             else:
-                self.screen_to_move_x += self._MAP.block_width / 4
+                self._screen_to_move_x += int(self._MAP.block_width / 4)
         if self.__pressKeyToMove["right"] is True:
-            if self.screen_to_move_x is None:
-                self.screen_to_move_x = -self._MAP.block_width / 4
+            if self._screen_to_move_x is None:
+                self._screen_to_move_x = int(-self._MAP.block_width / 4)
             else:
-                self.screen_to_move_x -= self._MAP.block_width / 4
+                self._screen_to_move_x -= int(self._MAP.block_width / 4)
 
     def _move_screen(self) -> None:
         # 如果需要移动屏幕
-        if self.screen_to_move_x is not None and self.screen_to_move_x != 0:
+        if self._screen_to_move_x is not None and self._screen_to_move_x != 0:
             temp_value: int
             if (
                 Display.get_width() - self._MAP.get_width()
-                <= (temp_value := int(self._MAP.get_local_x() + self.screen_to_move_x * 0.2))
+                <= (temp_value := int(self._MAP.get_local_x() + self._screen_to_move_x * 0.2))
                 <= 0
             ):
                 self._MAP.set_local_x(temp_value)
-                self.screen_to_move_x *= 0.8
-                if round(self.screen_to_move_x) == 0:
-                    self.screen_to_move_x = 0
+                self._screen_to_move_x = int(self._screen_to_move_x * 0.8)
+                if self._screen_to_move_x == 0:
+                    self._screen_to_move_x = 0
             else:
-                self.screen_to_move_x = 0
-        if self.screen_to_move_y is not None and self.screen_to_move_y != 0:
+                self._screen_to_move_x = 0
+        if self._screen_to_move_y is not None and self._screen_to_move_y != 0:
             if (
                 Display.get_height() - self._MAP.get_height()
-                <= (temp_value := int(self._MAP.get_local_y() + self.screen_to_move_y * 0.2))
+                <= (temp_value := int(self._MAP.get_local_y() + self._screen_to_move_y * 0.2))
                 <= 0
             ):
                 self._MAP.set_local_y(temp_value)
-                self.screen_to_move_y *= 0.8
-                if round(self.screen_to_move_y) == 0:
-                    self.screen_to_move_y = 0
+                self._screen_to_move_y = int(self._screen_to_move_y * 0.8)
+                if self._screen_to_move_y == 0:
+                    self._screen_to_move_y = 0
             else:
-                self.screen_to_move_y = 0
+                self._screen_to_move_y = 0

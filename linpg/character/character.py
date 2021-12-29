@@ -307,7 +307,7 @@ class HostileCharacter(Entity):
                         # 获取可能的攻击范围
                         range_target_in_if_can_attack = self.range_target_in(targetCharacterData, pos_on_route)
                         if (
-                            range_target_in_if_can_attack is not None
+                            range_target_in_if_can_attack != "None"
                             and range_target_in_if_can_attack not in potential_attacking_pos_index
                         ):
                             potential_attacking_pos_index[range_target_in_if_can_attack] = i + 1

@@ -10,8 +10,8 @@ class Point(GameObject):
 # 描述AStar算法中的节点数据
 class Node:
     def __init__(self, point: Point, endPoint: Point, g: number = 0):
-        self.point = point  # 自己的坐标
-        self.father = None  # 父节点
+        self.point: Point = point  # 自己的坐标
+        self.father: Node = None  # 父节点
         self.g = g  # g值，g值在用到的时候会重新算
         self.h = (abs(endPoint.x - point.x) + abs(endPoint.y - point.y)) * 10  # 计算h值
 
@@ -36,7 +36,7 @@ class AStar(AbstractMap):
 
     def _update(self, row: int, column: int) -> None:
         super()._update(row, column)
-        self._map2d = numpy.zeros((self.row, self.column), dtype=int)
+        self._map2d = numpy.zeros((self.row, self.column), dtype=numpy.int8)
 
     def __getMinNode(self) -> Node:
         """

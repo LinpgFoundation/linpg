@@ -9,20 +9,22 @@ class Button(AbstractImageSurface):
             height = img.get_height()
         super().__init__(img, x, y, width, height, tag)
         # self.img是未被触碰时的默认图片，img2是被鼠标触碰时展示的图片
-        self.img2 = None
+        self.__img2: ImageSurface = NULL_SURFACE
         self.__is_hovered: bool = False
 
     def set_hover_img(self, img: ImageSurface) -> None:
-        self.img2 = img
+        self.__img2 = img
 
     def has_been_hovered(self) -> bool:
         return self.__is_hovered
 
-    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         if self.is_visible():
             self.__is_hovered = self.is_hovered(offSet)
             surface.blit(
-                IMG.resize(self.img2 if self.__is_hovered is True and self.img2 is not None else self.img, self.size),
+                IMG.resize(
+                    self.__img2 if self.__is_hovered is True and self.__img2 is not NULL_SURFACE else self.img, self.size
+                ),
                 Coordinates.add(self.pos, offSet),
             )
         else:
@@ -81,10 +83,10 @@ class ButtonWithDes(Button):
         super().__init__(img, x, y, width, height, tag)
         self.des: str = str(des)
         self.des_surface = Font.render_description_box(
-            self.des, Color.BLACK, self.get_height() * 0.4, self.get_height() * 0.2, Color.WHITE
+            self.des, Colors.BLACK, self.get_height() * 0.4, int(self.get_height() * 0.2), Colors.WHITE
         )
 
-    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         super().display(surface, offSet)
         if self.has_been_hovered():
             surface.blit(self.des_surface, Controller.mouse.pos)
@@ -95,12 +97,9 @@ def load_button_with_des(
     path: PoI, tag: str, position: tuple, size: tuple, alpha_when_not_hover: int = 255
 ) -> ButtonWithDes:
     if alpha_when_not_hover < 255:
-        fading_button = ButtonWithDes(
-            IMG.load(path, alpha=alpha_when_not_hover), tag, position[0], position[1], size[0], size[1]
-        )
-        img2 = fading_button.get_image_copy()
-        img2.set_alpha(255)
-        fading_button.set_hover_img(img2)
+        imgT: ImageSurface = IMG.load(path, alpha=alpha_when_not_hover)
+        fading_button = ButtonWithDes(imgT, tag, position[0], position[1], size[0], size[1])
+        fading_button.set_hover_img(imgT.copy())
         return fading_button
     else:
         return ButtonWithDes(IMG.load(path), tag, position[0], position[1], size[0], size[1])

@@ -13,7 +13,7 @@ class CharacterImageManager:
         self.__darkness: int = 50
         self.__img_width: int = int(Display.get_width() / 2)
         try:
-            self.__communication_surface_rect: Rect = Rect(
+            self.__communication_surface_rect: Rectangle = Rectangle(
                 int(self.__img_width * 0.25), 0, int(self.__img_width * 0.5), int(self.__img_width * 0.56)
             )
             self.__communication = StaticImage(
@@ -60,7 +60,9 @@ class CharacterImageManager:
             nameTemp = name.replace("<c>", "").replace("<d>", "")
             self.__ensure_the_existence_of(nameTemp)
             # 加载npc的基础立绘
-            img = self.__character_image[nameTemp]["dark"] if "<d>" in name else self.__character_image[nameTemp]["normal"]
+            img: StaticImage = (
+                self.__character_image[nameTemp]["dark"] if "<d>" in name else self.__character_image[nameTemp]["normal"]
+            )
             img.set_size(self.__img_width, self.__img_width)
             img.set_alpha(alpha)
             img.set_pos(x, y)
@@ -78,10 +80,10 @@ class CharacterImageManager:
                     )
                     self.__communication.draw(surface)
             else:
-                img.set_crop_rect(None)
+                img.set_crop_rect(NULL_RECT)
                 img.draw(surface)
             # 如果是开发模式
-            if self.dev_mode is True and is_hovering(img, (x, y)):
+            if self.dev_mode is True and img.is_hovered():
                 img.draw_outline(surface)
                 self.character_get_click = name
 

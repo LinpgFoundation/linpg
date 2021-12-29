@@ -8,8 +8,6 @@ clean_up: bool = False
 
 if clean_up is True:
 
-    from linpgtoolkit import Builder
-
     # 移除__pycache__文件（debug用途）
     Builder.search_and_remove_folder(os.path.join(os.path.dirname(__file__), "linpg"), "__pycache__")
     # 整理语言

@@ -1,13 +1,11 @@
 from .module import *
 
-RectLiked = Union[Rect, pygame.Rect, tuple]
-
 # 正方形类
 class Square(GameObject2d):
-    def __init__(self, x: int_f, y: int_f, width: int):
+    def __init__(self, x: int_f, y: int_f, width: int_f):
         super().__init__(x, y)
         self.__width: int = int(width)
-        self.__min_width: int = 1
+        self.__min_width: int = 0
         self.__max_width: int = -1
 
     # 宽度
@@ -74,26 +72,28 @@ class Square(GameObject2d):
         self.set_width(self.get_width())
 
     # 获取rect
-    def get_rect(self) -> tuple[int]:
+    def get_rect(self) -> tuple[int, int, int, int]:
         return self.left, self.top, self.__width, self.__width
 
-    # 根据给与的rect画出轮廓（static method）
-    @staticmethod
-    def draw_(surface: ImageSurface, color: tuple[int], rect: tuple[int], thickness: int) -> None:
-        pygame.draw.rect(surface, color, rect, thickness)
-
     # 画出轮廓
-    def draw_outline(self, surface: ImageSurface, offSet: Iterable = ORIGIN, color: str = "red", thickness: int = 2) -> None:
-        self.draw_(surface, Color.get(color), (Coordinates.add(self.pos, offSet), self.size), thickness)
+    def draw_outline(
+        self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN, color: str = "red", thickness: int = 2
+    ) -> None:
+        Draw.rect(surface, Colors.get(color), (Coordinates.add(self.pos, offSet), self.size), thickness)
 
 
 # 用于兼容的长方类
-class Rect(Square):
-    def __init__(self, left: int_f, top: int_f, width: int, height: int):
+class Rectangle(Square):
+    def __init__(self, left: int_f, top: int_f, width: int_f, height: int_f):
         super().__init__(left, top, width)
         self.__height: int = int(height)
-        self.__min_height: int = 1
+        self.__min_height: int = 0
         self.__max_height: int = -1
+
+    # 新建一个形状类
+    @staticmethod
+    def new(pos: tuple, size: tuple) -> "Rectangle":
+        return Rectangle(pos[0], pos[1], size[0], size[1])
 
     # 高度
     def get_height(self) -> int:
@@ -164,7 +164,7 @@ class Rect(Square):
         self.set_height(height)
 
     # 获取rect
-    def get_rect(self) -> tuple[int]:
+    def get_rect(self) -> tuple[int, int, int, int]:
         return self.x, self.y, self.get_width(), self.__height
 
 
@@ -174,14 +174,11 @@ class Circle(Square):
         super().__init__(x, y, diameter)
 
     @property
-    def radius(self) -> number:
-        return self.get_width() / 2
-
-    # 根据给与的中心点画出一个圆（static method）
-    @staticmethod
-    def draw_(surface: ImageSurface, color: tuple[int], center_pos: tuple[int], radius: int, thickness: int) -> None:
-        pygame.draw.circle(surface, color, center_pos, radius, thickness)
+    def radius(self) -> int:
+        return round(self.get_width() / 2)
 
     # 画出轮廓
-    def draw_outline(self, surface: ImageSurface, offSet: Iterable = ORIGIN, color: str = "red", thickness: int = 2) -> None:
-        self.draw_(surface, Color.get(color), Coordinates.add(self.center, offSet), self.radius, thickness)
+    def draw_outline(
+        self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN, color: str = "red", thickness: int = 2
+    ) -> None:
+        Draw.circle(surface, Colors.get(color), Coordinates.add(self.center, offSet), self.radius, thickness)

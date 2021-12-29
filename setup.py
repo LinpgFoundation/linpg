@@ -40,11 +40,5 @@ setup(
     include_package_data=True,
     packages=find_packages(where="src"),
     python_requires=">=3.9",
-    install_requires=[
-        "linpgtoolkit",
-        "pygame",
-        "pyyaml",
-        "opencv-python",
-        "numpy",
-    ],
+    install_requires=["pygame", "opencv-python", "numpy", "pillow"],
 )

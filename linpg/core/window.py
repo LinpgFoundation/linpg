@@ -49,12 +49,12 @@ class Message:
 
 
 # 窗口
-class RenderedWindow(Rect):
+class RenderedWindow(Rectangle):
     def __init__(self, width: int, height: int, title: str, is_win_always_on_top: bool):
         super().__init__(0, 0, width, height)
         self.title: str = title
         self.always_on_top: bool = is_win_always_on_top
-        self.__win = None
+        self.__win: Renderer = None
         self.__update_window()
 
     # 设置尺寸
@@ -70,12 +70,14 @@ class RenderedWindow(Rect):
     def __update_window(self) -> None:
         self.__win = Renderer(Window(self.title, self.size, always_on_top=self.always_on_top))
 
-    def draw_rect(self, rect_pos: Iterable, color: color_liked) -> None:
-        self.__win.draw_color = Color.get(color)
+    def draw_rect(self, rect_pos: RectLiked, color: color_liked) -> None:
+        _color: tuple[int, int, int, int] = Colors.get(color)
+        self.__win.draw_color = pygame.Color(_color[0], _color[1], _color[2], _color[3])
         self.__win.draw_rect(convert_to_pygame_rect(rect_pos))
 
-    def fill_rect(self, rect_pos: Iterable, color: color_liked) -> None:
-        self.__win.draw_color = Color.get(color)
+    def fill_rect(self, rect_pos: RectLiked, color: color_liked) -> None:
+        _color: tuple[int, int, int, int] = Colors.get(color)
+        self.__win.draw_color = pygame.Color(_color[0], _color[1], _color[2], _color[3])
         self.__win.fill_rect(convert_to_pygame_rect(rect_pos))
 
     def fill(self, color: color_liked) -> None:

@@ -4,9 +4,9 @@ from .inputbox import *
 class Console(SingleLineInputBox, HiddenableSurface):
     def __init__(self, x: int_f, y: int_f, font_size: int = 32, default_width: int = 150):
         HiddenableSurface.__init__(self, False)
-        self.color_active = Color.get("dodgerblue2")
+        self.color_active = Colors.get("dodgerblue2")
         SingleLineInputBox.__init__(self, x, y, font_size, self.color_active, default_width)
-        self.color_inactive = Color.get("lightskyblue3")
+        self.color_inactive = Colors.get("lightskyblue3")
         self.color = self.color_active
         self.active: bool = True
         self._text_history: list = []
@@ -14,7 +14,7 @@ class Console(SingleLineInputBox, HiddenableSurface):
         self._txt_output: list = []
         self.command_indicator: str = "/"
 
-    def _check_key_down(self, event: object) -> bool:
+    def _check_key_down(self, event: pygame.event.Event) -> bool:
         if super()._check_key_down(event):
             return True
         # 向上-过去历史
@@ -86,7 +86,7 @@ class Console(SingleLineInputBox, HiddenableSurface):
             else:
                 self._txt_output.append("Unknown status for dev command.")
         elif conditions[0] == "linpg" and len(conditions) > 1 and conditions[1] == "info":
-            self._txt_output.append("Linpg Version: {}".format(Info.current_version))
+            self._txt_output.append("Linpg Version: {}".format(Info.get_current_version()))
         elif conditions[0] == "quit":
             Display.quit()
         else:
@@ -128,6 +128,6 @@ class Console(SingleLineInputBox, HiddenableSurface):
                     (self.x + self.FONT.size * 0.25, self.y - (len(self._txt_output) - i) * self.FONT.size * 1.5),
                 )
             # 画出输入框
-            draw_rect(screen, self.color, self.input_box, 2)
+            Draw.rect(screen, self.color, self.input_box.get_rect(), 2)
             # 画出文字
             self._draw_content(screen)

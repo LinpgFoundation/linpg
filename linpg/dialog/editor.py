@@ -8,6 +8,8 @@ class DialogEditor(DialogConverter):
         self.__dialog_navigation_window: DialogNavigationWindow = DialogNavigationWindow(
             0, 0, Display.get_width() / 10, Display.get_height() / 10
         )
+        # 加载对话框系统
+        self.__dialog_txt_system: DevDialogBox = DevDialogBox(self._FONT_SIZE)
         # 存储视觉小说默认数据的参数
         self._dialog_data_default: dict = {}
         # 是否是父类
@@ -16,26 +18,32 @@ class DialogEditor(DialogConverter):
         self.please_enter_content: str = ""
         # 默认叙述者名
         self.please_enter_name: str = ""
-        # 默认不播放音乐
-        # self._is_muted = True
         # 是否尝试修复错位
         self.__if_try_to_fix_issues: bool = False
         # 压缩模式
         self.__compress_when_saving: bool = True
+        # 存放并管理编辑器上方所有按钮的容器
+        self.__buttons_ui_container: GameObjectsDictContainer = NULL_DICT_CONTAINER
+        # 未保存数据时警告的窗口
+        self.__no_save_warning: GameObjectsDictContainer = NULL_DICT_CONTAINER
+        # 默认不播放音乐
+        # self._is_muted = True
+
+    # 获取对话框模块（按照父类要求实现）
+    def _get_dialog_box(self) -> DevDialogBox:
+        return self.__dialog_txt_system
 
     # 加载数据
     def load(self, chapterType: str, chapterId: int, part: str, projectName: str = None) -> None:
         self._initialize(chapterType, chapterId, part, projectName)
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_dialog_file_location())
-        # 加载对话框系统
-        self._dialog_txt_system.dev_mode()
         # 将npc立绘系统设置为开发者模式
         self._npc_manager.dev_mode = True
         # 加载容器
         container_width = int(Display.get_width() * 0.2)
         self.UIContainerRightImage = IMG.load("<!ui>container.png", (container_width, Display.get_height()))
         # 右侧容器尺寸
-        RightContainerRect: Rect = Rect(
+        RightContainerRect: Rectangle = Rectangle(
             int(container_width * 0.075),
             int(Display.get_height() * 0.1),
             int(container_width * 0.85),
@@ -117,35 +125,35 @@ class DialogEditor(DialogConverter):
             "delete_button_x": int(button_width * 2.25),
             "back_button_x": button_width,
         }
-        self.__buttons_ui_container = UI.generate("dialog_editor_buttons", custom_values)
+        self.__buttons_ui_container = UI.generate_container("dialog_editor_buttons", custom_values)
         self.please_enter_content = CONFIG["please_enter_content"]
         self.please_enter_name = CONFIG["please_enter_name"]
         # 背景音乐
-        self.dialog_bgm_select = DropDownSingleChoiceList(None, button_width * 11, button_y + font_size * 3, font_size)
+        self.dialog_bgm_select = DropDownList(None, button_width * 11, button_y + font_size * 3, font_size)
         self.dialog_bgm_select.set("null", Lang.get_text("DialogCreator", "no_bgm"))
         for file_name in os.listdir(ASSET.PATH_DICT["music"]):
             self.dialog_bgm_select.set(file_name, file_name)
         # 从配置文件中加载数据
         self._load_content()
         # 移除按钮
-        self.removeNpcButton = self._dialog_txt_system.FONT.render(CONFIG["remove_npc"], Color.BLACK)
-        surfaceTmp = Color.surface(
-            (self.removeNpcButton.get_width() * 1.2, self.removeNpcButton.get_height() * 1.2), Color.WHITE
+        self.removeNpcButton = Font.render(CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE)
+        surfaceTmp = Colors.surface(
+            (self.removeNpcButton.get_width() * 1.2, self.removeNpcButton.get_height() * 1.2), Colors.WHITE
         )
         surfaceTmp.blit(self.removeNpcButton, (self.removeNpcButton.get_width() * 0.1, 0))
         self.removeNpcButton = surfaceTmp
         # 未保存离开时的警告
-        self.__no_save_warning = UI.generate("leave_without_saving_warning")
+        self.__no_save_warning = UI.generate_container("leave_without_saving_warning")
         # 切换准备编辑的dialog部分
-        self.dialog_key_select = DropDownSingleChoiceList(None, button_width * 11, button_y + font_size, font_size)
+        self.dialog_key_select = DropDownList(None, button_width * 11, button_y + font_size, font_size)
         for key in self._dialog_data:
             self.dialog_key_select.set(key, key)
-        self.dialog_key_select.set_current_selected_item(self._part)
+        self.dialog_key_select.set_selected_item(self._part)
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
         original_data: dict = (
-            Config.load(self.get_dialog_file_location()) if os.path.exists(self.get_dialog_file_location()) else {}
+            Config.load_file(self.get_dialog_file_location()) if os.path.exists(self.get_dialog_file_location()) else {}
         )
         original_data["dialogs"] = self.__slipt_the_stuff_need_save()
         return original_data
@@ -171,7 +179,7 @@ class DialogEditor(DialogConverter):
     # 读取章节信息
     def _load_content(self) -> None:
         if os.path.exists(path := self.get_dialog_file_location()):
-            if "dialogs" in (data_t := Config.load(path)):
+            if "dialogs" in (data_t := Config.load_file(path)):
                 try:
                     self._dialog_data = dict(data_t["dialogs"])
                 except Exception:
@@ -224,8 +232,8 @@ class DialogEditor(DialogConverter):
 
     # 分离需要保存的数据
     def __slipt_the_stuff_need_save(self) -> dict:
-        self._current_dialog_content["narrator"] = self._dialog_txt_system.narrator.get_text()
-        self._current_dialog_content["content"] = self._dialog_txt_system.content.get_text()
+        self._current_dialog_content["narrator"] = self.__dialog_txt_system.narrator.get_text()
+        self._current_dialog_content["content"] = self.__dialog_txt_system.content.get_text()
         data_need_save: dict = deepcopy(self._dialog_data)
         if not self._is_default_dialog and self.__compress_when_saving is True:
             # 移除掉相似的内容
@@ -250,9 +258,9 @@ class DialogEditor(DialogConverter):
     def __update_ui(self) -> None:
         # 更新背景音乐选项菜单
         if (file_name := self._current_dialog_content["background_music"]) is not None:
-            self.dialog_bgm_select.set_current_selected_item(file_name)
+            self.dialog_bgm_select.set_selected_item(file_name)
         else:
-            self.dialog_bgm_select.set_current_selected_item("null")
+            self.dialog_bgm_select.set_selected_item("null")
         # 更新按钮
         if self.does_current_dialog_have_next_dialog() is True:
             self.__buttons_ui_container.get("add").set_visible(False)
@@ -268,7 +276,7 @@ class DialogEditor(DialogConverter):
     def _update_scene(self, dialog_id: str) -> None:
         # 确保当前版块有对话数据。如果当前版块为空，则加载默认模板
         if len(self.dialog_content) <= 0:
-            self.dialog_content.update(Config.load_internal("template.json", "dialog_example"))
+            self.dialog_content.update(Template.get("dialog_example"))
             for key in self.dialog_content:
                 self.dialog_content[key]["content"].append(self.please_enter_content)
                 self.dialog_content[key]["narrator"] = self.please_enter_name
@@ -397,38 +405,37 @@ class DialogEditor(DialogConverter):
     def draw(self, surface: ImageSurface) -> None:
         super().draw(surface)
         # 更新对话框数据
-        if self._dialog_txt_system.narrator.need_save:
-            self._current_dialog_content["narrator"] = self._dialog_txt_system.narrator.get_text()
-        if self._dialog_txt_system.content.need_save:
-            self._current_dialog_content["content"] = self._dialog_txt_system.content.get_text()
+        if self.__dialog_txt_system.narrator.need_save:
+            self._current_dialog_content["narrator"] = self.__dialog_txt_system.narrator.get_text()
+        if self.__dialog_txt_system.content.need_save:
+            self._current_dialog_content["content"] = self.__dialog_txt_system.content.get_text()
         # 展示按钮
         self.__buttons_ui_container.draw(surface)
         # 展示出当前可供使用的背景音乐
         self.dialog_bgm_select.draw(surface)
-        if (
-            current_bgm := self._current_dialog_content["background_music"]
-        ) != self.dialog_bgm_select.get_current_selected_item():
-            if self.dialog_bgm_select.get_current_selected_item() == "null" and current_bgm is None:
+        if (current_bgm := self._current_dialog_content["background_music"]) != self.dialog_bgm_select.get_selected_item():
+            if self.dialog_bgm_select.get_selected_item() == "null" and current_bgm is None:
                 pass
             else:
-                if self.dialog_bgm_select.get_current_selected_item() == "null" and current_bgm is not None:
+                if self.dialog_bgm_select.get_selected_item() == "null" and current_bgm is not None:
                     self._current_dialog_content["background_music"] = None
                 else:
                     self._current_dialog_content["background_music"] = self.dialog_bgm_select.get(
-                        self.dialog_bgm_select.get_current_selected_item()
+                        self.dialog_bgm_select.get_selected_item()
                     )
                 self._update_scene(self._dialog_id)
         # 展示出当前可供编辑的dialog部分
         self.dialog_key_select.draw(surface)
         # 切换当前正在浏览编辑的dialog部分
-        if self.dialog_key_select.get_current_selected_item() != self._part:
-            self._part = self.dialog_key_select.get_current_selected_item()
+        if self.dialog_key_select.get_selected_item() != self._part:
+            self._part = self.dialog_key_select.get_selected_item()
             if self._dialog_id in self.dialog_content:
                 self._update_scene(self._dialog_id)
             else:
                 self._update_scene("head")
         # 处理输入事件
         confirm_event_tag: bool = False
+        lastId: str
         if not self.__dialog_navigation_window.is_hovered():
             if Controller.get_event("confirm"):
                 if self.UIContainerRightButton.is_hovered():
@@ -447,7 +454,7 @@ class DialogEditor(DialogConverter):
                     else:
                         EXCEPTION.inform("There is no last dialog id.")
                 elif self.__buttons_ui_container.item_being_hovered == "delete":
-                    lastId: str = self.__get_last_id()
+                    lastId = self.__get_last_id()
                     nextId: str = self.__try_get_next_id(surface)
                     self.__make_connection(lastId, nextId)
                     needDeleteId: str = self._dialog_id

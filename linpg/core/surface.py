@@ -1,11 +1,11 @@
 from .feature import *
 
 # 图形接口
-class AbstractImageSurface(Rect, HiddenableSurface):
-    def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str):
-        Rect.__init__(self, x, y, width, height)
+class AbstractImageSurface(Rectangle, HiddenableSurface):
+    def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str):
+        Rectangle.__init__(self, x, y, width, height)
         HiddenableSurface.__init__(self)
-        self.img: any = img
+        self.img: Any = img
         self.tag: str = str(tag)
         # 确保长宽均已输入且为正整数
         if self.get_width() < 0 and self.get_height() < 0:
@@ -25,7 +25,7 @@ class AbstractImageSurface(Rect, HiddenableSurface):
         return self.img.get_alpha()
 
     def set_alpha(self, value: int) -> None:
-        self.img.set_alpha(keep_in_range(int(value), 0, 255))
+        self.img.set_alpha(keep_int_in_range(int(value), 0, 255))
 
     def add_alpha(self, value: int) -> None:
         self.set_alpha(self.get_alpha() + value)
@@ -34,7 +34,7 @@ class AbstractImageSurface(Rect, HiddenableSurface):
         self.set_alpha(self.get_alpha() - value)
 
     # 获取图片复制品
-    def get_image_copy(self) -> any:
+    def get_image_copy(self) -> Any:
         return self.img.copy()
 
     # 更新图片
@@ -60,26 +60,30 @@ class AbstractImageSurface(Rect, HiddenableSurface):
 
 # 有本地坐标的图形接口
 class AdvancedAbstractImageSurface(AbstractImageSurface, SurfaceWithLocalPos):
-    def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
+    def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         AbstractImageSurface.__init__(self, img, x, y, width, height, tag)
         SurfaceWithLocalPos.__init__(self)
         self._alpha: int = 255
 
-    # 透明度
+    # 获取透明度
     def get_alpha(self) -> int:
         return self._alpha
 
-    def set_alpha(self, value: int, update_original: bool = True) -> None:
-        self._alpha = keep_in_range(int(value), 0, 255)
+    # 设置透明度
+    def set_alpha(self, value: int) -> None:
+        self._set_alpha(value)
+
+    def _set_alpha(self, value: int, update_original: bool = True) -> None:
+        self._alpha = keep_int_in_range(int(value), 0, 255)
         if update_original is True and isinstance(self.img, ImageSurface):
             super().set_alpha(self._alpha)
 
 
 # 带缓存的高级图片拟态类
 class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
-    def __init__(self, img: any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
+    def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         super().__init__(img, x, y, width, height, tag=tag)
-        self._processed_img: ImageSurface = None
+        self._processed_img: ImageSurface = NULL_SURFACE
         self._need_update: bool = True if self.get_width() >= 0 and self.get_height() >= 0 else False
 
     # 处理图片（子类必须实现）
@@ -93,8 +97,8 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 设置透明度
     def set_alpha(self, value: int) -> None:
-        super().set_alpha(value, False)
-        if self._processed_img is not None:
+        self._set_alpha(value, False)
+        if self._processed_img is not NULL_SURFACE:
             self._processed_img.set_alpha(self.get_alpha())
 
     # 宽度
@@ -110,24 +114,11 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
             self._need_update = True
 
     # 是否被鼠标触碰
-    def is_hovered(self, off_set: Iterable = NoPos) -> bool:
-        if self._processed_img is not None:
-            mouse_pos: tuple[int] = (
+    def is_hovered(self, off_set: tuple = NoPos) -> bool:
+        if self._processed_img is not NULL_SURFACE:
+            mouse_pos: tuple[int, int] = (
                 Controller.mouse.pos if off_set is NoPos else Coordinates.subtract(Controller.mouse.pos, off_set)
             )
-            return (
-                0 < mouse_pos[0] - self.x - self.local_x < self._processed_img.get_width()
-                and 0 < mouse_pos[1] - self.y - self.local_y < self._processed_img.get_height()
-            )
-        else:
-            return False
-
-    """3.2弃置"""
-
-    def is_hover(self, mouse_pos: Iterable = NoSize) -> bool:
-        if self._processed_img is not None:
-            if mouse_pos is NoSize:
-                mouse_pos = Controller.mouse.pos
             return (
                 0 < mouse_pos[0] - self.x - self.local_x < self._processed_img.get_width()
                 and 0 < mouse_pos[1] - self.y - self.local_y < self._processed_img.get_height()
@@ -158,14 +149,16 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 画出轮廓
     def draw_outline(
-        self, surface: ImageSurface, offSet: Iterable = ORIGIN, color: color_liked = "red", line_width: int = 2
+        self, surface: ImageSurface, offSet: tuple = ORIGIN, color: color_liked = "red", line_width: int = 2
     ) -> None:
         if self._need_update is True:
             self._update_img()
-        draw_rect(surface, color, (Coordinates.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width)
+        Draw.rect(
+            surface, Colors.get(color), (Coordinates.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width
+        )
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: Iterable = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         if self.is_visible():
             # 如果图片需要更新，则先更新
             if self._need_update is True:

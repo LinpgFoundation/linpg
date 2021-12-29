@@ -1,5 +1,5 @@
 import threading
-from ..api import *
+from ..basic import *
 
 # 使用多线程保存数据
 class SaveDataThread(threading.Thread):
@@ -10,7 +10,7 @@ class SaveDataThread(threading.Thread):
         self.result: bool = False
 
     # 返回一个线程的复制
-    def copy(self) -> object:
+    def copy(self) -> "SaveDataThread":
         return SaveDataThread(self.path, self.data)
 
     def run(self) -> None:
@@ -47,7 +47,7 @@ class AbstractSystem:
         return self.__current_language != Lang.current_language
 
     # 更新语言
-    def updated_language(self) -> None:
+    def update_language(self) -> None:
         self.__current_language = Lang.current_language
 
 
@@ -55,9 +55,9 @@ class AbstractSystem:
 class SystemWithBackgroundMusic(AbstractSystem):
     def __init__(self) -> None:
         super().__init__()
-        self.__bgm_path = None
+        self.__bgm_path: Optional[str] = None
         self.__bgm_volume: float = 1.0
-        self.__audio = None
+        self.__audio: pygame.mixer.Sound = NULL_SOUND
 
     # 系统退出时，需卸载bgm
     def stop(self) -> None:
@@ -68,7 +68,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
     def unload_bgm(self):
         self.stop_bgm()
         self.__bgm_path = None
-        self.__audio = None
+        self.__audio = NULL_SOUND
 
     # 设置bgm
     def set_bgm(self, path: str, forced: bool = False) -> None:
@@ -120,11 +120,11 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
         # 参数
         self._chapter_type: str = ""
         self._chapter_id: int = 0
-        self._project_name = None
+        self._project_name: Optional[str] = None
         # 储存进度存档的文件夹的路径
         self.folder_for_save_file: str = "Save"
         # 存档文件的名称
-        self.name_for_save_file: str = "save.yaml"
+        self.name_for_save_file: str = "save.{}".format(Config.get_file_type())
         # 是否已经初始化
         self.__initialized: bool = False
 

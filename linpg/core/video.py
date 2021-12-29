@@ -3,7 +3,7 @@ from .window import *
 # 尝试导入opencv库
 _OPENCV_INITIALIZED: bool = False
 try:
-    import cv2
+    import cv2  # type: ignore
 
     _OPENCV_INITIALIZED = True
 except ImportError:
@@ -20,7 +20,7 @@ def _video_validator(path: str) -> None:
 
 
 # 获取视频封面
-def get_preview_of_video(path: str, size: tuple[int] = NoSize) -> ImageSurface:
+def get_preview_of_video(path: str, size: tuple[int, int] = NoSize) -> ImageSurface:
     _video_validator(path)
     video_stream = cv2.VideoCapture(path)
     video_stream.set(cv2.CAP_PROP_POS_FRAMES, int(video_stream.get(cv2.CAP_PROP_FRAME_COUNT) * 0.1))
@@ -34,7 +34,7 @@ def get_preview_of_video(path: str, size: tuple[int] = NoSize) -> ImageSurface:
 
 # 视频抽象类
 class AbstractVideo:
-    def __init__(self, path: str, buffer_num: int, play_range: tuple[int] = (0, -1)):
+    def __init__(self, path: str, buffer_num: int, play_range: tuple[int, int] = (0, -1)):
         _video_validator(path)
         self._path: str = path
         # 确保路径存在
@@ -100,7 +100,7 @@ class AbstractVideo:
 
     def set_frame_index(self, num: int) -> None:
         if num > self.get_frame_num():
-            EXCEPTION.fatal('Frame index "{1}" is out of range "{2}"'.format(num, self.get_frame_num()))
+            EXCEPTION.fatal('Frame index "{0}" is out of range "{1}"'.format(num, self.get_frame_num()))
         elif num < 0:
             EXCEPTION.fatal("You cannot set negative frame index.")
         else:
@@ -129,8 +129,8 @@ class AbstractVideo:
 
     # 播放范围
     @property
-    def play_range(self) -> tuple[int]:
-        return (self._starting_point, self._ending_point)
+    def play_range(self) -> tuple[int, int]:
+        return self._starting_point, self._ending_point
 
     # 是否还在播放
     def is_playing(self) -> bool:
@@ -155,17 +155,22 @@ class AbstractVideo:
 # 类似Wallpaper Engine的视频背景，但音乐不与画面同步
 class VideoSurface(AbstractVideo):
     def __init__(
-        self, path: str, loop: bool = True, with_audio: bool = True, play_range: tuple[int] = (0, -1), buffer_num: int = 10
+        self,
+        path: str,
+        loop: bool = True,
+        with_audio: bool = True,
+        play_range: tuple[int, int] = (0, -1),
+        buffer_num: int = 10,
     ) -> None:
         super().__init__(path, buffer_num, play_range)
         self.__loop: bool = loop
         self.__looped_times: int = 0
-        self.__audio = Sound.load_from_video(path) if with_audio is True else None
-        self.__audio_channel = None
+        self.__audio: pygame.mixer.Sound = Sound.load_from_video(path) if with_audio is True else NULL_SOUND
+        self.__audio_channel: pygame.mixer.Channel = None
 
     # 返回一个复制
-    def copy(self) -> object:
-        with_audio = True if self.__audio is not None else False
+    def copy(self) -> "VideoSurface":
+        with_audio = True if self.__audio is not NULL_SOUND else False
         new_t = VideoSurface(self._path, self.__loop, with_audio, self.play_range)
         if with_audio is True:
             new_t.set_volume(self.get_volume())
@@ -174,13 +179,13 @@ class VideoSurface(AbstractVideo):
     # 音量
     @property
     def volume(self) -> float:
-        return self.__audio.get_volume()
+        return self.get_volume()
 
     def get_volume(self) -> float:
-        return self.__audio.get_volume()
+        return self.__audio.get_volume() if self.__audio is not NULL_SOUND else -1.0
 
     def set_volume(self, value: float) -> None:
-        if self.__audio is not None:
+        if self.__audio is not NULL_SOUND:
             self.__audio.set_volume(value)
 
     def stop(self) -> None:
@@ -196,7 +201,7 @@ class VideoSurface(AbstractVideo):
         super().draw(surface)
         if self.is_playing():
             # 播放背景音乐
-            if not self.__audio_channel.get_busy() and self.__audio is not None:
+            if not self.__audio_channel.get_busy() and self.__audio is not NULL_SOUND:
                 self.__audio_channel.play(self.__audio)
             # 检测循环
             if self.get_frame_index() < self.get_frame_num():
@@ -224,7 +229,7 @@ class VideoPlayer(AbstractVideo):
         self.__audio_path: str = ""
 
     # 返回一个复制
-    def copy(self) -> object:
+    def copy(self) -> "VideoPlayer":
         return VideoPlayer(self._path, self._frame_buffer_num)
 
     # 设置帧坐标

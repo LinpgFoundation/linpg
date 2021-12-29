@@ -4,7 +4,7 @@ from .scrollpane import *
 # 尝试导入pysimplegui
 _PYSIMPLEGUI_INITIALIZED: bool = False
 try:
-    import PySimpleGUI
+    import PySimpleGUI  # type: ignore
 
     _PYSIMPLEGUI_INITIALIZED = True
 except ImportError:
@@ -17,11 +17,10 @@ class AbstractInputBox(GameObject2d):
         self.FONT = Font.create(font_size)
         self.default_width = default_width
         self.default_height = int(self.FONT.size * 1.5)
-        self.input_box = Rect(x, y, default_width, self.default_height)
-        self.color = Color.get("lightskyblue3")
-        self.txt_color = Color.get(txt_color)
+        self.input_box = Rectangle(x, y, default_width, self.default_height)
+        self.color = Colors.get("lightskyblue3")
+        self.txt_color = Colors.get(txt_color)
         self.active: bool = False
-        self._text = None
         self._holder = self.FONT.render_with_bounding("|", self.txt_color)
         self.holderIndex = 0
         self.need_save = False
@@ -40,7 +39,7 @@ class AbstractInputBox(GameObject2d):
 
     def set_pos(self, x: int_f, y: int_f) -> None:
         super().set_pos(x, y)
-        self.input_box = Rect(x, y, self.default_width, self.FONT.size * 1.5)
+        self.input_box = Rectangle(x, y, self.default_width, int(self.FONT.size * 1.5))
 
 
 # 单行输入框
@@ -54,7 +53,7 @@ class SingleLineInputBox(AbstractInputBox):
     def get_text(self) -> str:
         self.need_save = False
         if self._text == "":
-            return None
+            return ""
         else:
             return self._text
 
@@ -94,7 +93,7 @@ class SingleLineInputBox(AbstractInputBox):
         new_width: int = 0
         i: int = 0
         for i in range(len(self._text)):
-            new_width = self.FONT.estimate_text_width(self._text[:i]) + self.FONT.size * 0.25
+            new_width = self.FONT.estimate_text_width(self._text[:i]) + int(self.FONT.size * 0.25)
             if new_width > local_x:
                 break
             else:
@@ -112,7 +111,7 @@ class SingleLineInputBox(AbstractInputBox):
         else:
             self.input_box.set_width(self.default_width)
 
-    def _check_key_down(self, event: object) -> bool:
+    def _check_key_down(self, event: pygame.event.Event) -> bool:
         if event.key == Key.BACKSPACE:
             self._remove_char("ahead")
             return True
@@ -182,7 +181,7 @@ class SingleLineInputBox(AbstractInputBox):
                 self._reset_holderIndex(Controller.mouse.x)
         # 画出输入框
         if self.active:
-            draw_rect(screen, self.color, self.input_box, 2)
+            Draw.rect(screen, self.color, self.input_box.get_rect(), 2)
         self._draw_content(screen, self.active)
 
 
@@ -192,14 +191,14 @@ class MultipleLinesInputBox(AbstractInputBox):
         super().__init__(x, y, font_size, txt_color, default_width)
         self._text: list[str] = [""]
         self.lineId = 0
-        self.__using_PySimpleGUI_input_box = (
+        self.__using_PySimpleGUI_input_box: Button = (
             load_button("<!ui>back.png", (0, 0), (self.FONT.size, self.FONT.size)) if _PYSIMPLEGUI_INITIALIZED else None
         )
 
     def get_text(self) -> list:
         self.need_save = False
         if len(self._text) == 0 or self._text == [""]:
-            return None
+            return []
         else:
             return self._text
 
@@ -228,14 +227,12 @@ class MultipleLinesInputBox(AbstractInputBox):
         self._reset_inputbox_size()
 
     def _reset_inputbox_width(self) -> None:
+        width: int = self.default_width
         if self._text is not None and len(self._text) > 0:
-            width = self.default_width
             for txtTmp in self._text:
-                new_width = self.FONT.estimate_text_width(txtTmp) + self.FONT.size / 2
+                new_width: int = int(self.FONT.estimate_text_width(txtTmp) + self.FONT.size / 2)
                 if new_width > width:
                     width = new_width
-        else:
-            width = self.default_width
         self.input_box.set_width(width)
 
     def _reset_inputbox_height(self) -> None:
@@ -315,7 +312,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         new_width: int = 0
         i: int = 0
         for i in range(len(self._text[self.lineId])):
-            new_width = self.FONT.estimate_text_width(self._text[self.lineId][:i]) + self.FONT.size * 0.25
+            new_width = int(self.FONT.estimate_text_width(self._text[self.lineId][:i]) + self.FONT.size * 0.25)
             if new_width > local_x:
                 break
             else:
@@ -345,7 +342,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                     self._remove_char("all")
                     self._add_char(values["-CONTENT-"])
 
-    def draw(self, screen: ImageSurface) -> bool:
+    def draw(self, screen: ImageSurface) -> None:
         for event in Controller.events:
             if self.active:
                 if event.type == Key.DOWN:
@@ -419,7 +416,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                 )
         if self.active:
             # 画出输入框
-            draw_rect(screen, self.color, self.input_box, 2)
+            Draw.rect(screen, self.color, self.input_box.get_rect(), 2)
             # 画出 “|” 符号
             if int(time.time() % 2) == 0 or len(Controller.events) > 0:
                 screen.blit(

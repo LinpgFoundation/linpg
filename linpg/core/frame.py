@@ -22,7 +22,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
         # 是否重新放大窗口
         self.__if_regenerate_window: bool = True
         # 用于修改并展示内容的surface
-        self._content_surface: ImageSurface = None
+        self._content_surface: ImageSurface = NULL_SURFACE
         # 是否需要更新用于展示内容的surface
         self._if_update_needed: bool = True
         #
@@ -36,9 +36,9 @@ class AbstractFrame(AdvancedAbstractImageSurface):
     # 更新窗口
     def __update_window_frame(self) -> None:
         if self.__if_regenerate_window is True:
-            self.img = Color.surface(self.size, Color.WHITE)
-            draw_rect(self.img, Color.LIGHT_GRAY, ((0, 0), (self.get_width(), self.__bar_height)))
-            draw_rect(self.img, Color.GRAY, self.img.get_rect(), self.__outline_thickness)
+            self.img: ImageSurface = Colors.surface(self.size, Colors.WHITE)
+            Draw.rect(self.img, Colors.LIGHT_GRAY, (ORIGIN, (self.get_width(), self.__bar_height)))
+            Draw.rect(self.img, Colors.GRAY, (ORIGIN, self.size), self.__outline_thickness)
             if self.__rescale_icon_0 is None:
                 self.__rescale_icon_0 = StaticImage(
                     "<!ui>rescale.png", 0, 0, self.__bar_height * 1.5, self.__bar_height * 1.5
@@ -105,7 +105,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
                     and Controller.mouse.get_pressed(0)
                     and not self._any_content_container_event()
                 ):
-                    if new_rect((self.x, self.y), (self.get_width(), self.__bar_height)).is_hovered():
+                    if Rectangle.new((self.x, self.y), (self.get_width(), self.__bar_height)).is_hovered():
                         self.__mouse_hovered_offset_pos = Coordinates.subtract(Controller.mouse.get_pos(), self.pos)
                     elif self.is_hovered():
                         self.__if_move_local_pos = True
@@ -162,7 +162,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
             if self._if_update_needed is True:
                 self._update()
             # 画出内容
-            if self._content_surface is not None:
+            if self._content_surface is not NULL_SURFACE:
                 # 计算坐标
                 abs_pos_x: int = self.x + self.__outline_thickness
                 abs_pos_y: int = self.content_container_y + self.__outline_thickness
@@ -177,12 +177,12 @@ class AbstractFrame(AdvancedAbstractImageSurface):
                 else:
                     real_local_y = self.local_y
                 # 计算尺寸
-                width_of_sub: int = keep_in_range(
+                width_of_sub: int = keep_int_in_range(
                     self.get_width() - self.__outline_thickness + self.local_x,
                     0,
                     min(self._content_surface.get_width() - real_local_x, self.get_width() - self.__outline_thickness),
                 )
-                height_of_sub: int = keep_in_range(
+                height_of_sub: int = keep_int_in_range(
                     self.get_height() - self.__bar_height - self.__outline_thickness + self.local_y,
                     0,
                     min(

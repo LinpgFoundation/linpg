@@ -4,26 +4,21 @@ from .generator import *
 class AbstractInternalMenu(HiddenableSurface):
     def __init__(self, menu_name: str) -> None:
         super().__init__(False)
-        self._CONTENT = None
+        self._CONTENT: GameObjectsDictContainer = NULL_DICT_CONTAINER
         self._initialized: bool = False
         self._menu_name: str = menu_name
 
     # 初始化
     def initialize(self) -> None:
-        self._CONTENT = UI.generate(self._menu_name)
+        self._CONTENT = UI.generate_container(self._menu_name)
         self._initialized = True
 
     # 菜单是否被触碰
     def is_hovered(self) -> bool:
-        if self.is_visible() and self._CONTENT is not None:
+        if self.is_visible() and self._CONTENT is not NULL_DICT_CONTAINER:
             return self._CONTENT.is_hovered()
         else:
             return False
-
-    """3.2弃置"""
-
-    def is_hover(self) -> bool:
-        return self.is_hovered()
 
     # 画出内容
     def draw(self, surface: ImageSurface) -> None:
@@ -46,7 +41,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
                 lang_drop_down = self._CONTENT.get("lang_drop_down")
                 for lang_choice in Lang.get_available_languages():
                     lang_drop_down.set(lang_choice, lang_choice)
-                lang_drop_down.set_current_selected_item(Lang.current_language)
+                lang_drop_down.set_selected_item(Lang.current_language)
             else:
                 lang_drop_down = self._CONTENT.get("lang_drop_down")
             # 更新百分比
@@ -57,14 +52,11 @@ class DefaultOptionMenu(AbstractInternalMenu):
             # 画出
             super().draw(surface)
             # 如果需要更新语言
-            if (
-                lang_drop_down.get_current_selected_item() != Lang.current_language
-                and lang_drop_down.get_current_selected_item() != ""
-            ):
+            if lang_drop_down.get_selected_item() != Lang.current_language and lang_drop_down.get_selected_item() != "":
                 # 更新语言并保存新的参数到本地
                 Setting.set(
                     "Language",
-                    value=Lang.get_language_id(lang_drop_down.get_current_selected_item()),
+                    value=Lang.get_language_id(lang_drop_down.get_selected_item()),
                 )
                 Setting.save()
                 Lang.reload()
@@ -115,11 +107,11 @@ OptionMenu: DefaultOptionMenu = DefaultOptionMenu()
 class PauseMenu(AbstractInternalMenu):
     def __init__(self) -> None:
         super().__init__("pause_menu")
-        self.screenshot = None
+        self.__screenshot: ImageSurface = NULL_SURFACE
         # 返回确认菜单
-        self.__leave_warning = None
+        self.__leave_warning: GameObjectsDictContainer = NULL_DICT_CONTAINER
         # 退出确认菜单
-        self.__exit_warning = None
+        self.__exit_warning: GameObjectsDictContainer = NULL_DICT_CONTAINER
         # 记录被按下的按钮
         self.__button_hovered: str = ""
 
@@ -130,17 +122,17 @@ class PauseMenu(AbstractInternalMenu):
     def initialize(self) -> None:
         super().initialize()
         # 加载返回确认菜单
-        self.__leave_warning = UI.generate("leave_without_saving_progress_warning")
+        self.__leave_warning = UI.generate_container("leave_without_saving_progress_warning")
         self.__leave_warning.set_visible(False)
         # 加载退出确认菜单
-        self.__exit_warning = UI.generate("exit_without_saving_progress_warning")
+        self.__exit_warning = UI.generate_container("exit_without_saving_progress_warning")
         self.__exit_warning.set_visible(False)
 
     def hide(self) -> None:
         self.set_visible(False)
         self.__exit_warning.set_visible(False)
         self.__leave_warning.set_visible(False)
-        self.screenshot = None
+        self.__screenshot = NULL_SURFACE
 
     def draw(self, surface: ImageSurface) -> None:
         self.__button_hovered = ""
@@ -148,10 +140,10 @@ class PauseMenu(AbstractInternalMenu):
             if not self._initialized:
                 self.initialize()
             # 展示原先的背景
-            if self.screenshot is None:
-                self.screenshot = IMG.add_darkness(surface, 10)
+            if self.__screenshot is NULL_SURFACE:
+                self.__screenshot = IMG.add_darkness(surface, 10)
             # 画出原先的背景
-            surface.blit(self.screenshot, (0, 0))
+            surface.blit(self.__screenshot, (0, 0))
             # 画出选项
             if self.__leave_warning.is_hidden() and self.__exit_warning.is_hidden():
                 super().draw(surface)
@@ -193,6 +185,26 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
         self.__pause_menu = None
         self.__pause_menu_enabled: bool = False
 
+    # 保存进度（子类需实现）
+    def save_progress(self) -> None:
+        EXCEPTION.fatal("_get_data_need_to_save()", 1)
+
+    # 淡入或淡出（子类需实现）
+    def fade(self, surface: ImageSurface) -> None:
+        EXCEPTION.fatal("fade()", 1)
+
+    # 停止播放（子类需实现）
+    def stop(self) -> None:
+        EXCEPTION.fatal("stop()", 1)
+
+    # 更新音量（子类需实现）
+    def _update_sound_volume(self) -> None:
+        EXCEPTION.fatal("_update_sound_volume()", 1)
+
+    # 更新语言（子类需实现）
+    def update_language(self) -> None:
+        EXCEPTION.fatal("update_language()", 1)
+
     def _enable_pause_menu(self) -> None:
         self.__pause_menu = PauseMenu()
         self.__pause_menu_enabled = True
@@ -207,7 +219,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
     def _show_pause_menu(self, surface: ImageSurface) -> None:
         Media.pause()
         progress_saved_text = StaticImage(
-            Font.render(Lang.get_text("Global", "progress_has_been_saved"), Color.WHITE, int(Display.get_width() * 0.015)),
+            Font.render(Lang.get_text("Global", "progress_has_been_saved"), Colors.WHITE, int(Display.get_width() * 0.015)),
             0,
             0,
         )
@@ -244,7 +256,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
                     self._update_sound_volume()
                 # 更新语言
                 if OptionMenu.need_update["language"] is True:
-                    self.updated_language()
+                    self.update_language()
             # 显示进度已保存的文字
             progress_saved_text.draw(surface)
             progress_saved_text.subtract_alpha(5)

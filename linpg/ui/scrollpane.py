@@ -33,6 +33,10 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
     def set_item_per_line(self, value: int) -> None:
         self.__item_per_line = int(value)
 
+    def switch_mode(self) -> None:
+        super().switch_mode()
+        self.clear()
+
     # 把素材画到屏幕上
     def display(self, surface: ImageSurface, off_set: tuple = ORIGIN) -> None:
         self._item_being_hovered = None
@@ -67,10 +71,10 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                             new_width = item.get_width()
                             if new_width > self.get_width():
                                 new_width = self.get_width()
-                            subsurface_rect = Rect(0, 0, new_width, new_height)
+                            subsurface_rect = Rectangle(0, 0, new_width, new_height)
                             surface.blit(get_img_subsurface(item, subsurface_rect), (current_x, current_y))
                             if subsurface_rect.is_hovered((current_x, current_y)):
-                                self._item_being_hovered = key
+                                self._item_being_hovered = str(key)
                         elif -(item.get_height()) <= abs_local_y < 0:
                             crop_height = -abs_local_y
                             new_height = item.get_height() - crop_height
@@ -79,10 +83,10 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                             new_width = item.get_width()
                             if new_width > self.get_width():
                                 new_width = self.get_width()
-                            subsurface_rect = Rect(0, crop_height, new_width, new_height)
+                            subsurface_rect = Rectangle(0, crop_height, new_width, new_height)
                             surface.blit(get_img_subsurface(item, subsurface_rect), (current_x, current_y + crop_height))
                             if subsurface_rect.is_hovered((current_x, current_y)):
-                                self._item_being_hovered = key
+                                self._item_being_hovered = str(key)
                         # 换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line - 1:
                             current_y += self.distance_between_item + item.get_height()
@@ -100,13 +104,13 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                             new_height = item.get_height()
                             if new_height > self.get_height():
                                 new_height = self.get_height()
-                            subsurface_rect = Rect(0, 0, new_width, new_height)
+                            subsurface_rect = Rectangle(0, 0, new_width, new_height)
                             surface.blit(
                                 get_img_subsurface(item, subsurface_rect),
                                 (current_x, current_y),
                             )
                             if subsurface_rect.is_hovered((current_x, current_y)):
-                                self._item_being_hovered = key
+                                self._item_being_hovered = str(key)
                         elif -(item.get_width()) <= abs_local_x < 0:
                             crop_width = -abs_local_x
                             new_width = item.get_width() - crop_width
@@ -115,10 +119,10 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                             new_height = item.get_height()
                             if new_height > self.get_height():
                                 new_height = self.get_height()
-                            subsurface_rect = Rect(crop_width, 0, new_width, new_height)
+                            subsurface_rect = Rectangle(crop_width, 0, new_width, new_height)
                             surface.blit(get_img_subsurface(item, subsurface_rect), (current_x + crop_width, current_y))
                             if subsurface_rect.is_hovered((current_x, current_y)):
-                                self._item_being_hovered = key
+                                self._item_being_hovered = str(key)
                         # 换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line - 1:
                             current_x += self.distance_between_item + item.get_width()

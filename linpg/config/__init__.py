@@ -1,8 +1,9 @@
 """
 结构:
-base -> setting -> glob -> info
+base -> setting -> manager
 """
-from .info import *
+from .manager import *
+
 
 # 加载设置配置文件
 Setting.reload()

@@ -21,14 +21,14 @@ class LanguageManager:
     # 重新加载语言文件
     def reload(self) -> None:
         # 加载引擎内部的默认语言文件
-        self.__LANG_DATA = dict(Config.load(os.path.join(os.path.dirname(__file__), "{}.json".format(Setting.language))))
+        self.__LANG_DATA = Config.load_file(os.path.join(os.path.dirname(__file__), "{}.json".format(Setting.language)))
         # 加载游戏自定义的外部语言文件
         path_t: str
         if os.path.exists(
-            path_t := os.path.join(self.__EX_LANG_FOLDER, "{}.yaml".format(Setting.language))
+            path_t := os.path.join(self.__EX_LANG_FOLDER, "{0}.{1}".format(Setting.language, Config.get_file_type()))
         ) or os.path.exists(path_t := os.path.join(self.__EX_LANG_FOLDER, "{}.json".format(Setting.language))):
             try:
-                self.__LANG_DATA.update(Config.load(path_t))
+                self.__LANG_DATA.update(Config.load_file(path_t))
             except Exception:
                 EXCEPTION.inform("Linpg cannot load additional language file.")
         # 获取当前所有完整的可用语言的列表
@@ -73,7 +73,7 @@ class LanguageManager:
         return str(get_value_by_keys(self.__LANG_DATA, keys if isinstance(keys, tuple) else tuple(keys)))
 
     # 根据key(s)获取对应的语言 - 与get_text不同，这里返回的是any，通常是列表或者字典
-    def get_texts(self, *key: str) -> any:
+    def get_texts(self, *key: str) -> Any:
         return get_value_by_keys(self.__LANG_DATA, key)
 
     # 获取本地化的数字

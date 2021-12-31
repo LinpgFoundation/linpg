@@ -10,16 +10,16 @@ class Entity(Position):
     __CHARACTERS_SOUND_SYSTEM: EntitySoundManager = EntitySoundManager(5)
     # 储存角色图片的常量
     __CHARACTERS_IMAGE_SYS: EntityImageManager = EntityImageManager()
+    # idle动作
+    __IDLE_ACTION: str = "wait"
 
     def __init__(self, DATA: dict, faction: str, mode: str):
         super().__init__(DATA["x"], DATA["y"])
         # 最大行动值
-        self.__max_action_point: int = (
-            int(DATA["max_action_point"]) if "max_action_point" in DATA else int(DATA["action_point"])
-        )
+        self.__max_action_point: int = int(DATA["max_action_point"])
         # 当前行动值
         self.__current_action_point: int = (
-            int(DATA["current_action_point"]) if "current_action_point" in DATA else int(DATA["action_point"])
+            int(DATA["current_action_point"]) if "current_action_point" in DATA else self.__max_action_point
         )
         # 攻击范围
         self.__attack_coverage: int = int(DATA["attack_coverage"])
@@ -32,7 +32,7 @@ class Entity(Position):
         # 不可再生的护甲值
         self.__irrecoverable_armor: int = int(DATA["irrecoverable_armor"]) if "irrecoverable_armor" in DATA else 0
         # 最大可再生的护甲值
-        self.__max_recoverable_armor: int = int(DATA["recoverable_armor"]) if "recoverable_armor" in DATA else 0
+        self.__max_recoverable_armor: int = int(DATA["max_recoverable_armor"]) if "max_recoverable_armor" in DATA else 0
         # 当前可再生的护甲值
         self.__current_recoverable_armor: int = (
             int(DATA["current_recoverable_armor"]) if "current_recoverable_armor" in DATA else self.__max_recoverable_armor
@@ -53,10 +53,8 @@ class Entity(Position):
         self.__type: str = str(DATA["type"])
         # 是否图片镜像
         self.__if_flip: bool = bool(DATA["if_flip"]) if "if_flip" in DATA else False
-        # idle动作
-        self.__idle_action: str = "wait"
         # 当前动作
-        self.__current_action: str = str(DATA["current_action"]) if "current_action" in DATA else self.__idle_action
+        self.__current_action: str = str(DATA["current_action"]) if "current_action" in DATA else self.__IDLE_ACTION
         # 动作是否重复
         self.__if_action_loop: bool = bool(DATA["if_action_loop"]) if "if_action_loop" in DATA else True
         # 动作是正序列播放还是反序播放
@@ -87,25 +85,30 @@ class Entity(Position):
             "x": self.x,
             "y": self.y,
             "max_action_point": self.__max_action_point,
-            "current_action_point": self.__current_action_point,
             "attack_coverage": self.__attack_coverage,
             "magazine_capacity": self.__magazine_capacity,
             "max_hp": self.__max_hp,
-            "current_hp": self.__current_hp,
             "effective_range": self.__effective_range,
             "kind": self.__kind,
             "type": self.__type,
             "max_damage": self.__max_damage,
             "min_damage": self.__min_damage,
-            "if_flip": self.__if_flip,
-            "current_action": self.__current_action,
-            "if_action_loop": self.__if_action_loop,
-            "if_play_action_in_reversing": self._if_play_action_in_reversing,
         }
+        """以下是可选数据"""
+        if self.__if_flip is True:
+            data["if_flip"] = self.__if_flip
+        if self.__current_action_point != self.__max_action_point:
+            data["current_action_point"] = self.__current_action_point
+        if self.__current_action != self.__IDLE_ACTION:
+            data["current_action"] = self.__current_action
+            data["if_action_loop"] = self.__if_action_loop
+            data["if_play_action_in_reversing"] = self._if_play_action_in_reversing
+        if self.__current_hp != self.__max_hp:
+            data["current_hp"] = self.__current_hp
+        if self.__max_recoverable_armor > 0:
+            data["max_recoverable_armor"] = self.__max_recoverable_armor
         if self.__irrecoverable_armor > 0:
             data["irrecoverable_armor"] = self.__irrecoverable_armor
-        if self.__max_recoverable_armor > 0:
-            data["recoverable_armor"] = self.__max_recoverable_armor
         if self.__current_recoverable_armor > 0:
             data["current_recoverable_armor"] = self.__current_recoverable_armor
         if self.__if_invincible is True:
@@ -183,7 +186,7 @@ class Entity(Position):
 
     # 是否闲置
     def is_idle(self) -> bool:
-        return self.__current_action == self.__idle_action
+        return self.__current_action == self.__IDLE_ACTION
 
     # 获取角色特定动作的图片播放ID
     def get_imgId(self, action: str) -> int:

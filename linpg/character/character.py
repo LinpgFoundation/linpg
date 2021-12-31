@@ -5,6 +5,8 @@ AP_IS_NEEDED_TO_ATTACK: int = 5
 AP_IS_NEEDED_TO_MOVE_ONE_BLOCK: int = 2
 # 濒死回合限制
 DYING_ROUND_LIMIT: int = 3
+# 角色数据库
+CHARACTER_DATABASE: dict = loadCharacterData()
 
 # 友方角色类
 class FriendlyCharacter(Entity):
@@ -49,14 +51,31 @@ class FriendlyCharacter(Entity):
                 print("And also its icon.")
 
     def to_dict(self) -> dict:
-        return super().to_dict() | {
-            "down_time": self.__down_time,
-            "current_bullets": self.__current_bullets,
-            "bullets_carried": self.__bullets_carried,
-            "skill_coverage": self.__skill_coverage,
-            "skill_effective_range": self.__skill_effective_range,
-            "detection": self.__detection,
-        }
+        # 获取父类信息
+        new_data: dict = super().to_dict()
+        # 写入子类独有信息
+        new_data.update(
+            {
+                "bullets_carried": self.__bullets_carried,
+                "skill_coverage": self.__skill_coverage,
+                "skill_effective_range": self.__skill_effective_range,
+            }
+        )
+        # 除去重复数据
+        o_data: dict = dict(CHARACTER_DATABASE[new_data["type"]])
+        _keys: tuple = tuple(new_data.keys())
+        for key in _keys:
+            if key in o_data and o_data[key] == new_data[key]:
+                del new_data[key]
+        """加入友方角色可选数据"""
+        if self.__current_bullets != self.magazine_capacity:
+            new_data["current_bullets"] = self.__current_bullets
+        if self.__detection > 0:
+            new_data["detection"] = self.__detection
+        if not self.is_alive():
+            new_data["down_time"] = self.__down_time
+        # 返回优化后的数据
+        return new_data
 
     """
     子弹
@@ -218,7 +237,22 @@ class HostileCharacter(Entity):
         self.__vigilanceImage.set_percentage(self.__vigilance / 100)
 
     def to_dict(self) -> dict:
-        return super().to_dict() | {"patrol_path": list(self.__patrol_path), "vigilance": self.__vigilance}
+        # 获取父类信息
+        new_data: dict = super().to_dict()
+        # 写入子类独有信息
+        if len(self.__patrol_path) > 0:
+            new_data["patrol_path"] = list(self.__patrol_path)
+        # 除去重复数据
+        o_data: dict = dict(CHARACTER_DATABASE[new_data["type"]])
+        _keys: tuple = tuple(new_data.keys())
+        for key in _keys:
+            if key in o_data and o_data[key] == new_data[key]:
+                del new_data[key]
+        """加入敌方角色可选数据"""
+        if self.__vigilance > 0:
+            new_data["vigilance"] = self.__vigilance
+        # 返回优化后的数据
+        return new_data
 
     def alert(self, value: int = 10) -> None:
         self.__vigilance += value
@@ -363,24 +397,23 @@ class HostileCharacter(Entity):
 class CharacterDataLoader(threading.Thread):
     def __init__(self, alliances: dict, enemies: dict, mode: str) -> None:
         super().__init__()
-        self.DATABASE = loadCharacterData()
-        self.alliances = deepcopy(alliances)
-        self.enemies = deepcopy(enemies)
-        self.totalNum = len(alliances) + len(enemies)
-        self.currentID = 0
-        self.mode = mode
+        self.alliances: dict = deepcopy(alliances)
+        self.enemies: dict = deepcopy(enemies)
+        self.totalNum: int = len(alliances) + len(enemies)
+        self.currentID: int = 0
+        self.mode: str = mode
 
     def run(self) -> None:
         data_t: dict
         for key, value in self.alliances.items():
-            data_t = deepcopy(self.DATABASE[value["type"]])
+            data_t = deepcopy(CHARACTER_DATABASE[value["type"]])
             data_t.update(value)
             self.alliances[key] = FriendlyCharacter(data_t, self.mode)
             self.currentID += 1
             if Setting.developer_mode:
                 print("total: {0}, current: {1}".format(self.totalNum, self.currentID))
         for key, value in self.enemies.items():
-            data_t = deepcopy(self.DATABASE[value["type"]])
+            data_t = deepcopy(CHARACTER_DATABASE[value["type"]])
             data_t.update(value)
             self.enemies[key] = HostileCharacter(data_t, self.mode)
             self.currentID += 1

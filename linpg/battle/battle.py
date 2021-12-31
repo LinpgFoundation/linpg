@@ -72,9 +72,6 @@ class AbstractBattleSystem(AbstractGameSystem):
             return True
         else:
             self.alliances_data, self.enemies_data = self.__characterDataLoaderThread.getResult()
-            if self.__characterDataLoaderThread.mode == "dev":
-                # 如果是开发模式，则保存数据库
-                self.DATABASE = self.__characterDataLoaderThread.DATABASE
             del self.__characterDataLoaderThread
             return False
 

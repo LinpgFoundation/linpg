@@ -29,51 +29,55 @@ def calculate_range(effective_range_dic: dict) -> int:
 
 # 加载并更新更新位于Data中的角色数据配置文件-character_data.yaml
 def loadCharacterData() -> dict:
-    loadData: dict = Config.load_file("Data/character_data.yaml")
-    ifAnythingChange = False
-    for path in glob(r"Assets/image/character/*"):
-        name = os.path.basename(path)
-        if name not in loadData:
-            loadData[name] = {
-                "action_point": 1,
-                "skill_coverage": 1,
-                "effective_range": {
-                    "far": [5, 6],
-                    "middle": [3, 4],
-                    "near": [1, 2],
-                },
-                "kind": None,
-                "magazine_capacity": 1,
-                "max_damage": 1,
-                "max_hp": 1,
-                "min_damage": 1,
-                "skill_coverage": None,
-                "skill_effective_range": None,
-            }
-            ifAnythingChange = True
-            EXCEPTION.inform("A new character call {} has been updated to the data file.".format(name))
-    for path in glob(r"Assets/image/sangvisFerri/*"):
-        name = os.path.basename(path)
-        if name not in loadData:
-            loadData[name] = {
-                "action_point": 1,
-                "skill_coverage": 1,
-                "effective_range": {
-                    "far": [5, 6],
-                    "middle": [3, 4],
-                    "near": [1, 2],
-                },
-                "kind": None,
-                "magazine_capacity": 1,
-                "max_damage": 1,
-                "max_hp": 1,
-                "min_damage": 1,
-            }
-            ifAnythingChange = True
-            EXCEPTION.inform("A new character call {} has been updated to the data file.".format(name))
-    if ifAnythingChange is True:
-        Config.save("Data/character_data.yaml", loadData)
-    EntitySoundManager.mkdir()
+    _path: str = os.path.join("Data", "character_data.yaml")
+    if os.path.exists(_path):
+        loadData: dict = Config.load_file(_path)
+        ifAnythingChange: bool = False
+        for path in glob(r"Assets/image/character/*"):
+            name = os.path.basename(path)
+            if name not in loadData:
+                loadData[name] = {
+                    "max_action_point": 1,
+                    "skill_coverage": 1,
+                    "effective_range": {
+                        "far": [5, 6],
+                        "middle": [3, 4],
+                        "near": [1, 2],
+                    },
+                    "kind": None,
+                    "magazine_capacity": 1,
+                    "max_damage": 1,
+                    "max_hp": 1,
+                    "min_damage": 1,
+                    "skill_coverage": 1,
+                    "skill_effective_range": None,
+                }
+                ifAnythingChange = True
+                EXCEPTION.inform("A new character call {} has been updated to the data file.".format(name))
+        for path in glob(r"Assets/image/sangvisFerri/*"):
+            name = os.path.basename(path)
+            if name not in loadData:
+                loadData[name] = {
+                    "max_action_point": 1,
+                    "skill_coverage": 1,
+                    "effective_range": {
+                        "far": [5, 6],
+                        "middle": [3, 4],
+                        "near": [1, 2],
+                    },
+                    "kind": None,
+                    "magazine_capacity": 1,
+                    "max_damage": 1,
+                    "max_hp": 1,
+                    "min_damage": 1,
+                }
+                ifAnythingChange = True
+                EXCEPTION.inform("A new character call {} has been updated to the data file.".format(name))
+        if ifAnythingChange is True:
+            Config.save("Data/character_data.yaml", loadData)
+        EntitySoundManager.mkdir()
+    else:
+        return {}
     return loadData
 
 

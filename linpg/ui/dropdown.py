@@ -76,7 +76,7 @@ class DropDownList(GameObjectsDictContainer):
         if self.is_visible():
             current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出背景
-            if self.img is not None:
+            if self.img is not None and self.img is not NULL_SURFACE:
                 self.img.display(surface, current_abs_pos)
             else:
                 Draw.rect(surface, Colors.WHITE, (current_abs_pos, self.size))

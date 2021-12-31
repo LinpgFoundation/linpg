@@ -21,12 +21,10 @@ class Button(AbstractImageSurface):
     def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         if self.is_visible():
             self.__is_hovered = self.is_hovered(offSet)
-            surface.blit(
-                IMG.resize(
-                    self.__img2 if self.__is_hovered is True and self.__img2 is not NULL_SURFACE else self.img, self.size
-                ),
-                Coordinates.add(self.pos, offSet),
-            )
+            if self.__is_hovered is True and self.__img2 is not NULL_SURFACE:
+                surface.blit(IMG.resize(self.__img2, self.size), Coordinates.add(self.pos, offSet))
+            elif self.img is not NULL_SURFACE:
+                surface.blit(IMG.resize(self.img, self.size), Coordinates.add(self.pos, offSet))
         else:
             self.__is_hovered = False
 

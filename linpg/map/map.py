@@ -75,7 +75,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         # 背景图片路径
         self.__background_image = str(mapDataDic["background_image"])
         # 暗度（仅黑夜场景有效）
-        AbstractMapImagesModule.set_darkness(155 if "atNight" in mapDataDic and bool(mapDataDic["atNight"]) is True else 0)
+        AbstractMapImagesModule.set_darkness(155 if "at_night" in mapDataDic and bool(mapDataDic["at_night"]) is True else 0)
         # 更新地图渲染图层的尺寸
         self.set_size(
             perBlockWidth * 0.9 * ((self.row + self.column + 1) / 2),
@@ -129,17 +129,8 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
     def block_height(self) -> int:
         return AbstractMapImagesModule.get_block_height()
 
-    # 将地图模块所有数据以字典的形式返回
-    def to_dict(self) -> dict:
-        return {
-            "background_image": self.__background_image,
-            "local_x": self.local_x,
-            "local_y": self.local_y,
-            "atNight": self.night_mode,
-        } | self.get_map_in_dict()
-
     # 以字典的形式获取地图的数据
-    def get_map_in_dict(self) -> dict:
+    def to_dict(self) -> dict:
         # 转换场景装饰物数据
         decoration_dict: dict = {}
         for theDecoration in self.__decorations:

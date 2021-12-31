@@ -51,7 +51,12 @@ class DialogEditor(DialogConverter):
         )
         # 背景图片编辑模块
         self.UIContainerRight_bg = SurfaceContainerWithScrollbar(
-            None, RightContainerRect.x, RightContainerRect.y, RightContainerRect.width, RightContainerRect.height, "vertical"
+            "<!null>",
+            RightContainerRect.x,
+            RightContainerRect.y,
+            RightContainerRect.width,
+            RightContainerRect.height,
+            "vertical",
         )
         self.UIContainerRight_bg.set_scroll_bar_pos("right")
         # 加载背景图片
@@ -75,7 +80,12 @@ class DialogEditor(DialogConverter):
         self.__current_select_bg_copy = None
         # npc立绘编辑模块
         self.UIContainerRight_npc = SurfaceContainerWithScrollbar(
-            None, RightContainerRect.x, RightContainerRect.y, RightContainerRect.width, RightContainerRect.height, "vertical"
+            "<!null>",
+            RightContainerRect.x,
+            RightContainerRect.y,
+            RightContainerRect.width,
+            RightContainerRect.height,
+            "vertical",
         )
         self.UIContainerRight_npc.set_scroll_bar_pos("right")
         # 加载npc立绘
@@ -129,7 +139,7 @@ class DialogEditor(DialogConverter):
         self.please_enter_content = CONFIG["please_enter_content"]
         self.please_enter_name = CONFIG["please_enter_name"]
         # 背景音乐
-        self.dialog_bgm_select = DropDownList(None, button_width * 11, button_y + font_size * 3, font_size)
+        self.dialog_bgm_select = DropDownList("<!null>", button_width * 11, button_y + font_size * 3, font_size)
         self.dialog_bgm_select.set("null", Lang.get_text("DialogCreator", "no_bgm"))
         for file_name in os.listdir(ASSET.PATH_DICT["music"]):
             self.dialog_bgm_select.set(file_name, file_name)
@@ -145,7 +155,7 @@ class DialogEditor(DialogConverter):
         # 未保存离开时的警告
         self.__no_save_warning = UI.generate_container("leave_without_saving_warning")
         # 切换准备编辑的dialog部分
-        self.dialog_key_select = DropDownList(None, button_width * 11, button_y + font_size, font_size)
+        self.dialog_key_select = DropDownList("<!null>", button_width * 11, button_y + font_size, font_size)
         for key in self._dialog_data:
             self.dialog_key_select.set(key, key)
         self.dialog_key_select.set_selected_item(self._part)
@@ -305,7 +315,7 @@ class DialogEditor(DialogConverter):
         }
         self._current_dialog_content["next_dialog_id"] = {"target": dialogId, "type": "default"}
         lastId = self.__get_last_id()
-        if lastId is not None:
+        if lastId != "<!null>":
             self.dialog_content[dialogId]["narrator"] = self.dialog_content[lastId]["narrator"]
             self.dialog_content[dialogId]["characters_img"] = deepcopy(self.dialog_content[lastId]["characters_img"])
         # 检测是否自动保存
@@ -351,25 +361,20 @@ class DialogEditor(DialogConverter):
         if "last_dialog_id" in self._current_dialog_content and self._current_dialog_content["last_dialog_id"] is not None:
             return str(self._current_dialog_content["last_dialog_id"])
         elif child_node == "head":
-            return None
+            return "<!null>"
         else:
             for key, dialog_data in self.dialog_content.items():
                 if dialog_data["next_dialog_id"] is not None:
                     if (
                         dialog_data["next_dialog_id"]["type"] == "default"
-                        and dialog_data["next_dialog_id"]["target"] == child_node
-                    ):
-                        return str(key)
-                    elif (
-                        dialog_data["next_dialog_id"]["type"] == "changeScene"
-                        and dialog_data["next_dialog_id"]["target"] == child_node
-                    ):
+                        or dialog_data["next_dialog_id"]["type"] == "changeScene"
+                    ) and dialog_data["next_dialog_id"]["target"] == child_node:
                         return str(key)
                     elif dialog_data["next_dialog_id"]["type"] == "option":
                         for optionChoice in dialog_data["next_dialog_id"]["target"]:
                             if optionChoice["id"] == child_node:
                                 return str(key)
-            return None
+            return "<!null>"
 
     # 获取下一个对话的ID
     def __try_get_next_id(self, surface: ImageSurface) -> str:
@@ -400,7 +405,7 @@ class DialogEditor(DialogConverter):
                         Display.flip()
                 elif len(theNext["target"]) == 1:
                     return self._current_dialog_content["next_dialog_id"]["target"][0]["id"]
-        return None
+        return "<!null>"
 
     def draw(self, surface: ImageSurface) -> None:
         super().draw(surface)
@@ -449,19 +454,29 @@ class DialogEditor(DialogConverter):
                         self.__no_save_warning.set_visible(True)
                 elif self.__buttons_ui_container.item_being_hovered == "previous":
                     lastId = self.__get_last_id()
-                    if lastId is not None:
+                    if lastId != "<!null>":
                         self._update_scene(str(lastId))
                     else:
                         EXCEPTION.inform("There is no last dialog id.")
                 elif self.__buttons_ui_container.item_being_hovered == "delete":
                     lastId = self.__get_last_id()
                     nextId: str = self.__try_get_next_id(surface)
-                    self.__make_connection(lastId, nextId)
-                    needDeleteId: str = self._dialog_id
-                    self._update_scene(str(lastId))
-                    del self.dialog_content[needDeleteId]
+                    if lastId != "<!null>":
+                        if nextId != "<!null>":
+                            self.__make_connection(lastId, nextId)
+                        needDeleteId: str = self._dialog_id
+                        self._update_scene(str(lastId))
+                        del self.dialog_content[needDeleteId]
+                    elif nextId != "<!null>":
+                        needDeleteId: str = self._dialog_id
+                        self._update_scene(str(nextId))
+                        del self.dialog_content[needDeleteId]
+                    else:
+                        EXCEPTION.inform(
+                            "Cannot delete this dialog because there is no valid last and next id. You need to delete it manually"
+                        )
                 elif self.__buttons_ui_container.item_being_hovered == "next":
-                    if (nextId := self.__try_get_next_id(surface)) is not None:
+                    if (nextId := self.__try_get_next_id(surface)) != "<!null>":
                         self._update_scene(str(nextId))
                     else:
                         EXCEPTION.inform("There is no next dialog id.")

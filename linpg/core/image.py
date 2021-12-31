@@ -135,6 +135,9 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         self._need_update = False
 
 
+# 空的静态图片占位符
+NULL_STATIC_IMAGE: StaticImage = StaticImage("<!null>", 0, 0, 0, 0, "<!null>")
+
 # 需要移动的动态图片
 class MovableImage(StaticImage):
     def __init__(

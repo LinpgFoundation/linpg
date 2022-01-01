@@ -92,13 +92,9 @@ class ProgressBarSurface(AbstractProgressBar):
             if self.percentage > 0:
                 imgOnTop = IMG.resize(self.img, self.size)
                 if self._mode:
-                    surface.blit(
-                        imgOnTop.subsurface((0, 0, int(self.get_width() * self.percentage), self.get_height())), pos
-                    )
+                    surface.blit(imgOnTop.subsurface((0, 0, int(self.get_width() * self.percentage), self.get_height())), pos)
                 else:
-                    surface.blit(
-                        imgOnTop.subsurface((0, 0, self.get_width(), int(self.get_height() * self.percentage))), pos
-                    )
+                    surface.blit(imgOnTop.subsurface((0, 0, self.get_width(), int(self.get_height() * self.percentage))), pos)
 
 
 # 进度条形式的调整器
@@ -259,15 +255,12 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                 if self._mode:
                     if self.__real_current_percentage < self._percentage_to_be:
                         img2 = IMG.crop(
-                            img_on_top_t,
-                            size=(int(self.get_width() * self._percentage_to_be / self.accuracy), self.get_height()),
+                            img_on_top_t, size=(int(self.get_width() * self._percentage_to_be / self.accuracy), self.get_height())
                         )
                         img2.set_alpha(100)
                         surface.blit(img2, _abs_pos)
                         surface.blit(
-                            img_on_top_t.subsurface(
-                                (0, 0, int(self.get_width() * super().get_percentage()), self.get_height())
-                            ),
+                            img_on_top_t.subsurface((0, 0, int(self.get_width() * super().get_percentage()), self.get_height())),
                             _abs_pos,
                         )
                     else:
@@ -286,15 +279,12 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                 else:
                     if self.__real_current_percentage < self._percentage_to_be:
                         img2 = IMG.crop(
-                            img_on_top_t,
-                            size=(self.get_width(), int(self.get_height() * self._percentage_to_be / self.accuracy)),
+                            img_on_top_t, size=(self.get_width(), int(self.get_height() * self._percentage_to_be / self.accuracy))
                         )
                         img2.set_alpha(100)
                         surface.blit(img2, _abs_pos)
                         surface.blit(
-                            img_on_top_t.subsurface(
-                                (0, 0, self.get_width(), int(self.get_height() * super().get_percentage()))
-                            ),
+                            img_on_top_t.subsurface((0, 0, self.get_width(), int(self.get_height() * super().get_percentage()))),
                             _abs_pos,
                         )
                     else:

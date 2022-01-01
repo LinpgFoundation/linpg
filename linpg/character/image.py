@@ -8,16 +8,16 @@ class EntityGetHurtImage(Square):
     __IMAGE_FOLDER_PATH: str = os.path.join("Assets", "image", "npc")
 
     def __init__(self, self_type: str, y: number, width: int):
-        super().__init__(None, y, width)
-        self.yToGo: int = 255
-        self.alpha: int = 255
+        super().__init__(0, y, width)
+        self.delay: int = 255
+        self.alpha: int = 0
         self.add(self_type)
 
     def draw(self, screen: ImageSurface, characterType: str) -> None:  # type: ignore[override]
-        GetHurtImage = IMG.resize(self.__CHARACTERS_GET_HURT_IMAGE_DICT[characterType], self.size)
+        _image = IMG.resize(self.__CHARACTERS_GET_HURT_IMAGE_DICT[characterType], self.size)
         if self.alpha != 255:
-            GetHurtImage.set_alpha(self.alpha)
-        screen.blit(GetHurtImage, self.pos)
+            _image.set_alpha(self.alpha)
+        screen.blit(_image, self.pos)
 
     def add(self, characterType: str) -> None:
         if characterType not in self.__CHARACTERS_GET_HURT_IMAGE_DICT:

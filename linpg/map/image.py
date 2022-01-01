@@ -49,10 +49,10 @@ class DecorationImagesModule(AbstractMapImagesModule):
     # 加载场景装饰物图片
     @classmethod
     def add_image(cls, decorationType: str, fileName: str) -> None:
-        imgPath: str
         # 如果是未被加载过的类型
         if decorationType not in cls.__DECORATION_IMAGE_DICT:
             cls.__DECORATION_IMAGE_DICT[decorationType] = {}
+        imgPath: str
         # 常规装饰物
         if os.path.exists(
             (imgPath := os.path.join(ASSET.get_internal_environment_image_path("decoration"), "{}.png".format(fileName)))
@@ -71,9 +71,7 @@ class DecorationImagesModule(AbstractMapImagesModule):
                     ].copy()
                     cls.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName].add_darkness(cls.get_darkness())
         # 类Gif形式，decorationType应该与fileName一致
-        elif os.path.exists(
-            (imgPath := os.path.join(ASSET.get_internal_environment_image_path("decoration"), decorationType))
-        ):
+        elif os.path.exists((imgPath := os.path.join(ASSET.get_internal_environment_image_path("decoration"), decorationType))):
             for img_path in glob(os.path.join(imgPath, "*.png")):
                 cls.__DECORATION_IMAGE_DICT[decorationType][os.path.basename(img_path).removesuffix(".png")] = StaticImage(
                     img_path, 0, 0
@@ -147,9 +145,7 @@ class TileMapImagesModule(AbstractMapImagesModule):
                 cls.__ENV_IMAGE_DICT_DARK[fileName].add_darkness(cls.get_darkness())
         else:
             EXCEPTION.fatal(
-                'Cannot find image "{0}" in folder "{1}"'.format(
-                    fileName, ASSET.get_internal_environment_image_path("block")
-                )
+                'Cannot find image "{0}" in folder "{1}"'.format(fileName, ASSET.get_internal_environment_image_path("block"))
             )
 
     # 获取图片

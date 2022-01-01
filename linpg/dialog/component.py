@@ -88,9 +88,7 @@ class DialogButtons(HiddenableSurface):
                     surface.blit(
                         rotatedIcon,
                         (
-                            self.autoButtonHovered_abs_x
-                            + self.autoIconHovered.get_width() / 2
-                            - rotatedIcon.get_width() / 2,
+                            self.autoButtonHovered_abs_x + self.autoIconHovered.get_width() / 2 - rotatedIcon.get_width() / 2,
                             self.autoButtonHovered.y
                             + self.icon_y
                             + self.autoIconHovered.get_height() / 2
@@ -102,9 +100,7 @@ class DialogButtons(HiddenableSurface):
                     else:
                         self.autoIconDegree = 0
                 else:
-                    surface.blit(
-                        self.autoIconHovered, (self.autoButtonHovered_abs_x, self.autoButtonHovered.y + self.icon_y)
-                    )
+                    surface.blit(self.autoIconHovered, (self.autoButtonHovered_abs_x, self.autoButtonHovered.y + self.icon_y))
                 self.__button_hovered = 3
             else:
                 if self.autoMode:
@@ -113,9 +109,7 @@ class DialogButtons(HiddenableSurface):
                     surface.blit(
                         rotatedIcon,
                         (
-                            self.autoButtonHovered_abs_x
-                            + self.autoIconHovered.get_width() / 2
-                            - rotatedIcon.get_width() / 2,
+                            self.autoButtonHovered_abs_x + self.autoIconHovered.get_width() / 2 - rotatedIcon.get_width() / 2,
                             self.autoButtonHovered.y
                             + self.icon_y
                             + self.autoIconHovered.get_height() / 2

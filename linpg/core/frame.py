@@ -42,9 +42,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
             Draw.rect(self.img, Colors.GRAY, (ORIGIN, self.size), self.__outline_thickness)
             # 初始化图标
             if not self.__rescale_icon_initialized:
-                self.__rescale_icon_0 = StaticImage(
-                    "<!ui>rescale.png", 0, 0, self.__bar_height * 1.5, self.__bar_height * 1.5
-                )
+                self.__rescale_icon_0 = StaticImage("<!ui>rescale.png", 0, 0, self.__bar_height * 1.5, self.__bar_height * 1.5)
                 self.__rescale_icon_45 = self.__rescale_icon_0.copy()
                 self.__rescale_icon_45.rotate(45)
                 self.__rescale_icon_45.scale_n_times(1.5)

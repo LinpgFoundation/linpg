@@ -7,8 +7,8 @@ class AbstractBattleSystem(AbstractGameSystem):
         # 用于判断是否移动屏幕的参数
         self.__mouse_move_temp_x: int = -1
         self.__mouse_move_temp_y: int = -1
-        self._screen_to_move_x: int = None
-        self._screen_to_move_y: int = None
+        self._screen_to_move_x: Optional[int] = None
+        self._screen_to_move_y: Optional[int] = None
         # 用于检测是否有方向键被按到的字典
         self.__moving_screen_in_direction: dict[str, bool] = {"up": False, "down": False, "left": False, "right": False}
         # 角色数据
@@ -58,9 +58,9 @@ class AbstractBattleSystem(AbstractGameSystem):
     def _display_map(self, screen: ImageSurface) -> None:
         self._check_if_move_screen()
         self._move_screen()
-        self._screen_to_move_x, self._screen_to_move_y = self._MAP.display_map(
-            screen, self._screen_to_move_x, self._screen_to_move_y
-        )
+        _x: int = self._screen_to_move_x if self._screen_to_move_x is not None else 0
+        _y: int = self._screen_to_move_y if self._screen_to_move_y is not None else 0
+        self._screen_to_move_x, self._screen_to_move_y = self._MAP.display_map(screen, _x, _y)
 
     # 展示场景装饰物
     def _display_decoration(self, screen: ImageSurface) -> None:
@@ -164,13 +164,10 @@ class AbstractBattleSystem(AbstractGameSystem):
 
     def _move_screen(self) -> None:
         # 如果需要移动屏幕
+        temp_value: int = 0
         if self._screen_to_move_x is not None and self._screen_to_move_x != 0:
-            temp_value: int
-            if (
-                Display.get_width() - self._MAP.get_width()
-                <= (temp_value := int(self._MAP.get_local_x() + self._screen_to_move_x * 0.2))
-                <= 0
-            ):
+            temp_value = int(self._MAP.get_local_x() + self._screen_to_move_x * 0.2)
+            if Display.get_width() - self._MAP.get_width() <= temp_value <= 0:
                 self._MAP.set_local_x(temp_value)
                 self._screen_to_move_x = int(self._screen_to_move_x * 0.8)
                 if self._screen_to_move_x == 0:
@@ -178,11 +175,8 @@ class AbstractBattleSystem(AbstractGameSystem):
             else:
                 self._screen_to_move_x = 0
         if self._screen_to_move_y is not None and self._screen_to_move_y != 0:
-            if (
-                Display.get_height() - self._MAP.get_height()
-                <= (temp_value := int(self._MAP.get_local_y() + self._screen_to_move_y * 0.2))
-                <= 0
-            ):
+            temp_value = int(self._MAP.get_local_y() + self._screen_to_move_y * 0.2)
+            if Display.get_height() - self._MAP.get_height() <= temp_value <= 0:
                 self._MAP.set_local_y(temp_value)
                 self._screen_to_move_y = int(self._screen_to_move_y * 0.8)
                 if self._screen_to_move_y == 0:

@@ -54,13 +54,7 @@ def load_button_with_text_in_center(
 
 # 加载中间有文字按钮
 def load_button_with_text_in_center_and_different_background(
-    path: PoI,
-    path2: PoI,
-    txt: str,
-    font_color: color_liked,
-    font_size: int,
-    position: tuple,
-    alpha_when_not_hover: int = 255,
+    path: PoI, path2: PoI, txt: str, font_color: color_liked, font_size: int, position: tuple, alpha_when_not_hover: int = 255
 ) -> Button:
     txt_surface = Font.render(txt, font_color, font_size)
     panding: int = int(font_size * 0.5)
@@ -75,9 +69,7 @@ def load_button_with_text_in_center_and_different_background(
 
 # 带描述的按钮
 class ButtonWithDes(Button):
-    def __init__(
-        self, img: ImageSurface, des: str, x: int, y: int, width: int = -1, height: int = -1, tag: str = ""
-    ) -> None:
+    def __init__(self, img: ImageSurface, des: str, x: int, y: int, width: int = -1, height: int = -1, tag: str = "") -> None:
         super().__init__(img, x, y, width, height, tag)
         self.des: str = str(des)
         self.des_surface = Font.render_description_box(
@@ -91,9 +83,7 @@ class ButtonWithDes(Button):
 
 
 # 加载按钮
-def load_button_with_des(
-    path: PoI, tag: str, position: tuple, size: tuple, alpha_when_not_hover: int = 255
-) -> ButtonWithDes:
+def load_button_with_des(path: PoI, tag: str, position: tuple, size: tuple, alpha_when_not_hover: int = 255) -> ButtonWithDes:
     if alpha_when_not_hover < 255:
         imgT: ImageSurface = IMG.load(path, alpha=alpha_when_not_hover)
         fading_button = ButtonWithDes(imgT, tag, position[0], position[1], size[0], size[1])

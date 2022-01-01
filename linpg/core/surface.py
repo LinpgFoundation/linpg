@@ -103,13 +103,15 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 宽度
     def set_width(self, value: int_f) -> None:
-        if (value := int(value)) != self.get_width():
+        _value: int = int(value)
+        if _value != self.get_width():
             super().set_width(value)
             self._need_update = True
 
     # 高度
     def set_height(self, value: int_f) -> None:
-        if (value := int(value)) != self.get_height():
+        _value: int = int(value)
+        if _value != self.get_height():
             super().set_height(value)
             self._need_update = True
 
@@ -153,9 +155,7 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
     ) -> None:
         if self._need_update is True:
             self._update_img()
-        Draw.rect(
-            surface, Colors.get(color), (Coordinates.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width
-        )
+        Draw.rect(surface, Colors.get(color), (Coordinates.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width)
 
     # 展示
     def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:

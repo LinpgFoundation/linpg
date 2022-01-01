@@ -75,9 +75,7 @@ class CharacterImageManager:
                     )
                     self.__communication_dark.draw(surface)
                 else:
-                    self.__communication.set_pos(
-                        x + self.__communication_surface_rect.x, y + self.__communication_surface_rect.y
-                    )
+                    self.__communication.set_pos(x + self.__communication_surface_rect.x, y + self.__communication_surface_rect.y)
                     self.__communication.draw(surface)
             else:
                 img.set_crop_rect(NULL_RECT)
@@ -196,9 +194,7 @@ class CharacterImageManager:
                     if self.__move_x + window_x / 4 < window_x / 2:
                         self.__move_x += int(window_x / 40)
                     # 显示左边立绘
-                    self.__display_character(
-                        self.__characters_this_round[0], 0, npcImg_y, self.__this_round_image_alpha, surface
-                    )
+                    self.__display_character(self.__characters_this_round[0], 0, npcImg_y, self.__this_round_image_alpha, surface)
                     # 显示右边立绘
                     self.__display_character(
                         self.__characters_last_round[0],
@@ -266,9 +262,7 @@ class CharacterImageManager:
                     if self.__move_x + window_x / 2 > window_x / 4:
                         self.__move_x -= int(window_x / 40)
                     # 左边立绘消失
-                    self.__display_character(
-                        self.__characters_last_round[0], 0, npcImg_y, self.__last_round_image_alpha, surface
-                    )
+                    self.__display_character(self.__characters_last_round[0], 0, npcImg_y, self.__last_round_image_alpha, surface)
                     # 右边立绘向左移动
                     self.__display_character(
                         self.__characters_last_round[1],
@@ -326,15 +320,11 @@ class CharacterImageManager:
                         surface,
                     )
                 else:
-                    self.__display_character(
-                        self.__characters_last_round[0], 0, npcImg_y, self.__last_round_image_alpha, surface
-                    )
+                    self.__display_character(self.__characters_last_round[0], 0, npcImg_y, self.__last_round_image_alpha, surface)
                     self.__display_character(
                         self.__characters_last_round[1], window_x / 2, npcImg_y, self.__last_round_image_alpha, surface
                     )
-                    self.__display_character(
-                        self.__characters_this_round[0], 0, npcImg_y, self.__this_round_image_alpha, surface
-                    )
+                    self.__display_character(self.__characters_this_round[0], 0, npcImg_y, self.__this_round_image_alpha, surface)
                     self.__display_character(
                         self.__characters_this_round[1], window_x / 2, npcImg_y, self.__this_round_image_alpha, surface
                     )

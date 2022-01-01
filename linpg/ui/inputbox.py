@@ -105,9 +105,7 @@ class SingleLineInputBox(AbstractInputBox):
 
     def _reset_inputbox_width(self) -> None:
         if self._text is not None and len(self._text) > 0:
-            self.input_box.set_width(
-                max(self.default_width, self.FONT.estimate_text_width(self._text) + self.FONT.size * 0.6)
-            )
+            self.input_box.set_width(max(self.default_width, self.FONT.estimate_text_width(self._text) + self.FONT.size * 0.6))
         else:
             self.input_box.set_width(self.default_width)
 

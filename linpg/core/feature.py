@@ -52,10 +52,7 @@ def is_same_rect(rect1: RectLiked, rect2: RectLiked) -> bool:
     rect2_t: Rectangle = convert_rect(rect2)
     # 比较并返回结果
     return (
-        rect1_t.x == rect2_t.x
-        and rect1_t.y == rect2_t.y
-        and rect1_t.width == rect2_t.width
-        and rect1_t.height == rect2_t.height
+        rect1_t.x == rect2_t.x and rect1_t.y == rect2_t.y and rect1_t.width == rect2_t.width and rect1_t.height == rect2_t.height
     )
 
 

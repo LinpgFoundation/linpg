@@ -624,9 +624,7 @@ class Entity(Position):
                 self._if_play_action_in_reversing = False
                 self.set_action()
 
-    def draw_custom(
-        self, action: str, pos: Any, surface: ImageSurface, MAP_POINTER: MapObject, isContinue: bool = True
-    ) -> bool:
+    def draw_custom(self, action: str, pos: Any, surface: ImageSurface, MAP_POINTER: MapObject, isContinue: bool = True) -> bool:
         self.__blit_entity_img(surface, MAP_POINTER, action, pos)
         # 调整id，并返回对应的bool状态
         if self.__imgId_dict[action]["imgId"] < self.get_imgNum(action) - 1:

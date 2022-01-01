@@ -3,7 +3,7 @@ from .img import *
 # 手柄控制组件
 class JoystickController:
 
-    __input: pygame.joystick.Joystick = None
+    __input: Optional[pygame.joystick.Joystick] = None
 
     def __init__(self):
         # 如果pygame的手柄组件没有初始化，则初始化
@@ -14,14 +14,14 @@ class JoystickController:
 
     # 手柄是否初始化
     def get_init(self) -> bool:
-        return self.__input.get_init() if self.is_active() is True else False
+        return self.__input.get_init() if self.is_active() is True else False  # type: ignore
 
     # 获取该按钮的详情
     def get_button(self, buttonId: int) -> bool:
-        return self.__input.get_button(buttonId) if self.get_init() is True else False
+        return self.__input.get_button(buttonId) if self.get_init() is True else False  # type: ignore
 
     def get_axis(self, buttonId: int) -> float:
-        return round(self.__input.get_axis(buttonId), 1) if self.get_init() is True else 0.0
+        return round(self.__input.get_axis(buttonId), 1) if self.get_init() is True else 0.0  # type: ignore
 
     # 是否启动
     def is_active(self) -> bool:

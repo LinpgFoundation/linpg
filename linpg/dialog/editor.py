@@ -118,9 +118,7 @@ class DialogEditor(DialogConverter):
         self.button_select_npc = load_button_with_text_in_center(
             "<!ui>button.png", CONFIG["npc"], "black", font_size, (0, button_y * 2), 150
         )
-        panding: int = int(
-            (container_width - self.button_select_background.get_width() - self.button_select_npc.get_width()) / 3
-        )
+        panding: int = int((container_width - self.button_select_background.get_width() - self.button_select_npc.get_width()) / 3)
         self.button_select_background.set_left(panding)
         self.button_select_npc.set_left(self.button_select_background.get_right() + panding)
         # 页面右上方的一排按钮
@@ -339,15 +337,10 @@ class DialogEditor(DialogConverter):
                             break
                 else:
                     # 如果当前next_dialog_id的类型不支持的话，报错
-                    EXCEPTION.fatal(
-                        "Cannot recognize next_dialog_id type: {}, please fix it".format(seniorNodePointer["type"])
-                    )
+                    EXCEPTION.fatal("Cannot recognize next_dialog_id type: {}, please fix it".format(seniorNodePointer["type"]))
                 # 修改下一个对白配置文件中的"last_dialog_id"的参数
                 if key2 is not None:
-                    if (
-                        "last_dialog_id" in self.dialog_content[key2]
-                        and self.dialog_content[key2]["last_dialog_id"] is not None
-                    ):
+                    if "last_dialog_id" in self.dialog_content[key2] and self.dialog_content[key2]["last_dialog_id"] is not None:
                         self.dialog_content[key2]["last_dialog_id"] = key1
                 else:
                     self.dialog_content[key1]["next_dialog_id"] = None
@@ -461,14 +454,15 @@ class DialogEditor(DialogConverter):
                 elif self.__buttons_ui_container.item_being_hovered == "delete":
                     lastId = self.__get_last_id()
                     nextId: str = self.__try_get_next_id(surface)
+                    needDeleteId: str = ""
                     if lastId != "<!null>":
                         if nextId != "<!null>":
                             self.__make_connection(lastId, nextId)
-                        needDeleteId: str = self._dialog_id
+                        needDeleteId = self._dialog_id
                         self._update_scene(str(lastId))
                         del self.dialog_content[needDeleteId]
                     elif nextId != "<!null>":
-                        needDeleteId: str = self._dialog_id
+                        needDeleteId = self._dialog_id
                         self._update_scene(str(nextId))
                         del self.dialog_content[needDeleteId]
                     else:
@@ -510,10 +504,7 @@ class DialogEditor(DialogConverter):
             # self.UIContainerRight_bg.draw_outline(surface,(self.UIContainerRightButton.right,0))
             # self.UIContainerRight_npc.draw_outline(surface,(self.UIContainerRightButton.right,0))
             # 检测按钮
-            if (
-                self.button_select_background.is_hovered((self.UIContainerRightButton.right, 0))
-                and confirm_event_tag is True
-            ):
+            if self.button_select_background.is_hovered((self.UIContainerRightButton.right, 0)) and confirm_event_tag is True:
                 self.UIContainerRight_bg.set_visible(True)
                 self.UIContainerRight_npc.set_visible(False)
                 confirm_event_tag = False
@@ -540,9 +531,9 @@ class DialogEditor(DialogConverter):
                     if imgName is not None:
                         if self._current_dialog_content["characters_img"] is None:
                             self._current_dialog_content["characters_img"] = []
-                        if len(self._current_dialog_content["characters_img"]) < 2:
-                            self._current_dialog_content["characters_img"].append(imgName)
-                            self._npc_manager.update(self._current_dialog_content["characters_img"])
+                        if len(self._current_dialog_content["characters_img"]) < 2:  # type: ignore
+                            self._current_dialog_content["characters_img"].append(imgName)  # type: ignore
+                            self._npc_manager.update(self._current_dialog_content["characters_img"])  # type: ignore
 
         # 展示dialog navigation窗口
         self.__dialog_navigation_window.present_on(surface)

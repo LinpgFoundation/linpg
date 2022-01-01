@@ -279,9 +279,7 @@ class MovableImage(StaticImage):
 
 # gif图片管理
 class GifImage(AdvancedAbstractImageSurface):
-    def __init__(
-        self, imgList: tuple, x: int_f, y: int_f, width: int_f, height: int_f, updateGap: int_f, tag: str = ""
-    ) -> None:
+    def __init__(self, imgList: tuple, x: int_f, y: int_f, width: int_f, height: int_f, updateGap: int_f, tag: str = "") -> None:
         super().__init__(imgList, x, y, width, height, tag)
         self.imgId: int = 0
         self.updateGap: int = max(int(updateGap), 0)

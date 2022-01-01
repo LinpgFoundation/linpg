@@ -2,9 +2,7 @@ from .scrollbar import *
 
 # 带有滚动条的Surface容器
 class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWithScrollbar):
-    def __init__(
-        self, img: PoI, x: int_f, y: int_f, width: int, height: int, mode: str = "horizontal", tag: str = ""
-    ) -> None:
+    def __init__(self, img: PoI, x: int_f, y: int_f, width: int, height: int, mode: str = "horizontal", tag: str = "") -> None:
         GameObjectsDictContainer.__init__(self, IMG.load(img, (width, height)), x, y, width, height, tag)
         AbstractSurfaceWithScrollbar.__init__(self)
         self.__surface_width: int = 0

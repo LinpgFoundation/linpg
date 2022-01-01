@@ -147,7 +147,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                     lookup_table[item] = 0
                 else:
                     lookup_table[item] += 1
-        sorted_lookup_table: list = sorted(lookup_table, key=lookup_table.get, reverse=True)
+        sorted_lookup_table: list = sorted(lookup_table, key=lookup_table.get, reverse=True)  # type: ignore
         # 返回数据
         return {
             "map": {
@@ -453,28 +453,18 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                 if y < alliances_data[each_chara].y:
                     for x in range(
                         int(
-                            alliances_data[each_chara].x
-                            - the_character_effective_range
-                            - (y - alliances_data[each_chara].y)
-                            + 1
+                            alliances_data[each_chara].x - the_character_effective_range - (y - alliances_data[each_chara].y) + 1
                         ),
-                        int(
-                            alliances_data[each_chara].x + the_character_effective_range + (y - alliances_data[each_chara].y)
-                        ),
+                        int(alliances_data[each_chara].x + the_character_effective_range + (y - alliances_data[each_chara].y)),
                     ):
                         if (x, y) not in lightArea:
                             lightArea.append((x, y))
                 else:
                     for x in range(
                         int(
-                            alliances_data[each_chara].x
-                            - the_character_effective_range
-                            + (y - alliances_data[each_chara].y)
-                            + 1
+                            alliances_data[each_chara].x - the_character_effective_range + (y - alliances_data[each_chara].y) + 1
                         ),
-                        int(
-                            alliances_data[each_chara].x + the_character_effective_range - (y - alliances_data[each_chara].y)
-                        ),
+                        int(alliances_data[each_chara].x + the_character_effective_range - (y - alliances_data[each_chara].y)),
                     ):
                         if (x, y) not in lightArea:
                             lightArea.append((x, y))
@@ -502,9 +492,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
 
     def calAbsPosInMap(self, x: int_f, y: int_f) -> tuple[int, int]:
         widthTmp: float = self.block_width * 0.43
-        return round((x - y) * widthTmp + self.row * widthTmp), round(
-            (y + x) * self.block_width * 0.22 + self.block_width * 0.4
-        )
+        return round((x - y) * widthTmp + self.row * widthTmp), round((y + x) * self.block_width * 0.22 + self.block_width * 0.4)
 
     # 查看角色是否在光亮范围内
     def inLightArea(self, entity: GameObject) -> bool:

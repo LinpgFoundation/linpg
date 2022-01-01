@@ -2,9 +2,7 @@ from .container import *
 
 # 下拉选项菜单
 class DropDownList(GameObjectsDictContainer):
-    def __init__(
-        self, bg_img: PoI, x: int_f, y: int_f, font_size: int, font_color: color_liked = "black", tag: str = ""
-    ) -> None:
+    def __init__(self, bg_img: PoI, x: int_f, y: int_f, font_size: int, font_color: color_liked = "black", tag: str = "") -> None:
         # 方格高度
         self.__block_height: int = int(font_size * 1.5)
         # 是否折叠选项
@@ -27,8 +25,9 @@ class DropDownList(GameObjectsDictContainer):
 
     # 根据物品判定是否需要更新宽度
     def __update_width(self, item: strint) -> None:
-        if self.get_width() < (new_item_width := int(self.__FONT.estimate_text_width(item) + self.__FONT.size * 7)):
-            self.set_width(new_item_width)
+        _new_width: int = int(self.__FONT.estimate_text_width(item) + self.__FONT.size * 7)
+        if self.get_width() < _new_width:
+            self.set_width(_new_width)
 
     # 更新font的尺寸
     def update_font_size(self, font_size: int) -> None:
@@ -85,9 +84,7 @@ class DropDownList(GameObjectsDictContainer):
             font_surface: ImageSurface = self.__FONT.render_with_bounding(self.get_selected_item(), self.__font_color)
             surface.blit(
                 font_surface,
-                Coordinates.add(
-                    current_pos, (self.__FONT.size * 3, int((self.__block_height - font_surface.get_height()) / 2))
-                ),
+                Coordinates.add(current_pos, (self.__FONT.size * 3, int((self.__block_height - font_surface.get_height()) / 2))),
             )
             rect_of_outline = Rectangle.new(current_pos, (self.width, self.__block_height))
             Draw.rect(surface, self.__font_color, rect_of_outline.get_rect(), self.outline_thickness)

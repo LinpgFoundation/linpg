@@ -103,8 +103,7 @@ class DialogBox(AbstractDialogBox):
     def is_all_played(self) -> bool:
         # 如果self.content是空的，也就是说没有任何内容，那么应当视为所有内容都被播放了
         return len(self.content) == 0 or (
-            self.__displayed_lines >= len(self.content) - 1
-            and self.__text_index >= len(self.content[self.__displayed_lines]) - 1
+            self.__displayed_lines >= len(self.content) - 1 and self.__text_index >= len(self.content[self.__displayed_lines]) - 1
         )
 
     # 立刻播出所有内容
@@ -177,9 +176,7 @@ class DialogBox(AbstractDialogBox):
                     y: int = int(surface.get_height() * 0.73)
                     # 写上当前讲话人的名字
                     if len(self.narrator) > 0:
-                        surface.blit(
-                            self.FONT.render(self.narrator, Colors.WHITE), (x, self._dialoguebox.y + self.FONT.size)
-                        )
+                        surface.blit(self.FONT.render(self.narrator, Colors.WHITE), (x, self._dialoguebox.y + self.FONT.size))
                     # 对话框已播放的内容
                     for i in range(self.__displayed_lines):
                         surface.blit(
@@ -187,9 +184,7 @@ class DialogBox(AbstractDialogBox):
                         )
                     # 对话框正在播放的内容
                     surface.blit(
-                        self.FONT.render_with_bounding(
-                            self.content[self.__displayed_lines][: self.__text_index], Colors.WHITE
-                        ),
+                        self.FONT.render_with_bounding(self.content[self.__displayed_lines][: self.__text_index], Colors.WHITE),
                         (x, y + self.FONT.size * 1.5 * self.__displayed_lines),
                     )
                     # 如果当前行的字符还没有完全播出

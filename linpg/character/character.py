@@ -14,9 +14,7 @@ class FriendlyCharacter(Entity):
         super().__init__(characterData, "character", mode)
         # 是否濒死
         self.__down_time: int = (
-            int(characterData["down_time"])
-            if "down_time" in characterData
-            else (-1 if self.is_alive() else DYING_ROUND_LIMIT)
+            int(characterData["down_time"]) if "down_time" in characterData else (-1 if self.is_alive() else DYING_ROUND_LIMIT)
         )
         # 当前弹夹的子弹数
         self.__current_bullets: int = (
@@ -171,7 +169,7 @@ class FriendlyCharacter(Entity):
             if self.__getHurtImage is not None:
                 self.__getHurtImage.x = -self.__getHurtImage.width
                 self.__getHurtImage.alpha = 255
-                self.__getHurtImage.yToGo = 255
+                self.__getHurtImage.delay = 255
                 self.play_sound("injured")
 
     def heal(self, hpHealed: int) -> None:
@@ -210,21 +208,21 @@ class FriendlyCharacter(Entity):
             numberY: float = (eyeImgHeight - MAP_POINTER.block_width / 10) / 2
             # 根据参数调整图片
             self.__beNoticedImage.set_size(eyeImgWidth, eyeImgHeight)
-            self.__beNoticedImage.set_pos(blit_pos[0] + MAP_POINTER.block_width * 0.51 - numberX, blit_pos[1] - numberY)
+            self.__beNoticedImage.set_pos(
+                blit_pos[0] + MAP_POINTER.block_width * 0.51 - numberX,
+                blit_pos[1] - numberY,
+            )
             self.__beNoticedImage.draw(surface)
         # 重创立绘
-        if self.__getHurtImage is not None and self.__getHurtImage.x is not None:
+        if self.__getHurtImage is not None and self.__getHurtImage.alpha > 0:
             self.__getHurtImage.draw(surface, self.type)
             if self.__getHurtImage.x < self.__getHurtImage.width / 4:
                 self.__getHurtImage.move_right(self.__getHurtImage.width / 25)
             else:
-                if self.__getHurtImage.yToGo > 0:
-                    self.__getHurtImage.yToGo -= 5
-                else:
-                    if self.__getHurtImage.alpha > 0:
-                        self.__getHurtImage.alpha -= 2
-                    else:
-                        self.__getHurtImage.x = None
+                if self.__getHurtImage.delay > 0:
+                    self.__getHurtImage.delay -= 5
+                elif self.__getHurtImage.alpha > 0:
+                    self.__getHurtImage.alpha -= 5
 
 
 # 敌对角色类

@@ -41,13 +41,11 @@ class FontGenerator:
         if Setting.font_type == "default":
             self.__FONT = pygame.font.SysFont(Setting.font, self.__SIZE, ifBold, ifItalic)
         elif Setting.font_type == "custom":
-            font_path: str
-            if os.path.exists((font_path := os.path.join("Assets", "font", "{}.ttf".format(Setting.font)))):
+            font_path: str = os.path.join("Assets", "font", "{}.ttf".format(Setting.font))
+            if os.path.exists(font_path):
                 self.__FONT = pygame.font.Font(font_path, self.__SIZE)
             else:
-                EXCEPTION.warn(
-                    "Cannot find the {}.ttf file, the engine's font has been changed to default.".format(Setting.font)
-                )
+                EXCEPTION.warn("Cannot find the {}.ttf file, the engine's font has been changed to default.".format(Setting.font))
                 Setting.set_font("arial")
                 Setting.set_font_type("default")
                 self.__FONT = pygame.font.SysFont(Setting.font, self.__SIZE, ifBold, ifItalic)
@@ -118,9 +116,7 @@ class FontManager:
         return self.get_global_font(key).size
 
     # 获取全局文字
-    def render_global_font(
-        self, key: str, txt: str, color: color_liked, background_color: color_liked = None
-    ) -> ImageSurface:
+    def render_global_font(self, key: str, txt: str, color: color_liked, background_color: color_liked = None) -> ImageSurface:
         return self.get_global_font(key).render(txt, color, background_color)
 
     # 删除全局文字

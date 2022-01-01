@@ -222,9 +222,7 @@ class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface):
             else:
                 EXCEPTION.fatal("You cannot put the scroll bar on the bottom during vertical mode!")
         else:
-            EXCEPTION.fatal(
-                'Scroll bar position "{}" is not supported! Try sth like "right" or "bottom" instead.'.format(pos)
-            )
+            EXCEPTION.fatal('Scroll bar position "{}" is not supported! Try sth like "right" or "bottom" instead.'.format(pos))
 
     # 获取滚动条按钮的Rect
     def _get_scroll_button_rect(self, off_set_x: number, off_set_y: number) -> Rectangle:

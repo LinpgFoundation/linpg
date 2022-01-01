@@ -93,9 +93,7 @@ class UiGenerator:
                         break
                 if find_close_bracket is True:
                     find_close_bracket = False
-                    final_text_list.append(
-                        Lang.get_text_by_keys(tuple([b.strip() for b in text[text_index + 1 : a].split(",")]))
-                    )
+                    final_text_list.append(Lang.get_text_by_keys(tuple([b.strip() for b in text[text_index + 1 : a].split(",")])))
                     text_index = a
                 else:
                     EXCEPTION.fatal("Cannot find close bracket for text: {}".format(text))
@@ -170,9 +168,7 @@ class UiGenerator:
                     data["src"] = cls.__convert_text(str(data["src"]))
                 # 生成文字图层
                 if data["type"] == "text":
-                    item_t = TextSurface(
-                        Font.render(data["src"], data["color"], font_size, data["bold"], data["italic"]), 0, 0
-                    )
+                    item_t = TextSurface(Font.render(data["src"], data["color"], font_size, data["bold"], data["italic"]), 0, 0)
                 elif data["type"] == "dynamic_text":
                     item_t = DynamicTextSurface(
                         Font.render(data["src"], data["color"], font_size, data["bold"], data["italic"]),

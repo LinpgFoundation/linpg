@@ -21,9 +21,7 @@ class Loader:
 
     # 可自行移动的图片
     @staticmethod
-    def movable_image(
-        path: str, position: tuple, target_position: tuple, move_speed: tuple, size: tuple, tag=""
-    ) -> MovableImage:
+    def movable_image(path: str, position: tuple, target_position: tuple, move_speed: tuple, size: tuple, tag="") -> MovableImage:
         return MovableImage(
             path,
             position[0],
@@ -77,9 +75,7 @@ class Loader:
 
     # 普通文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class
     @staticmethod
-    def text(
-        txt: strint, color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False
-    ) -> TextSurface:
+    def text(txt: strint, color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False) -> TextSurface:
         return TextSurface(Font.render(txt, color, size, ifBold, ifItalic), pos[0], pos[1])
 
     # 高级文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号

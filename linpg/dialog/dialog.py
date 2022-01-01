@@ -224,9 +224,9 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             elif self._dialog_options_container.item_being_hovered >= 0:
                 # 获取下一个对话的id
                 nextDialogId = str(
-                    self._current_dialog_content["next_dialog_id"]["target"][
-                        self._dialog_options_container.item_being_hovered
-                    ]["id"]
+                    self._current_dialog_content["next_dialog_id"]["target"][self._dialog_options_container.item_being_hovered][
+                        "id"
+                    ]
                 )
                 # 记录玩家选项
                 self._dialog_options[self._dialog_id] = {

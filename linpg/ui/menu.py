@@ -64,33 +64,29 @@ class DefaultOptionMenu(AbstractInternalMenu):
                 self.need_update["language"] = True
             # 按键的判定按钮
             if self._CONTENT.item_being_hovered is not None and not lang_drop_down.is_hovered():
-                item_percentage_t: int
+                item_percentage_t: int = 0
                 # 如果碰到全局音量条
                 if self._CONTENT.item_being_hovered == "global_sound_volume":
-                    if (item_percentage_t := int(self._CONTENT.get("global_sound_volume").percentage * 100)) != Setting.get(
-                        "Sound", "global_value"
-                    ):
+                    item_percentage_t = int(self._CONTENT.get("global_sound_volume").percentage * 100)
+                    if item_percentage_t != int(Setting.get("Sound", "global_value")):
                         Setting.set("Sound", "global_value", value=item_percentage_t)
                         self.need_update["volume"] = True
                 elif self._CONTENT.item_being_hovered == "background_music_sound_volume":
-                    if (
-                        item_percentage_t := int(self._CONTENT.get("background_music_sound_volume").percentage * 100)
-                    ) != Setting.get("Sound", "background_music"):
+                    item_percentage_t = int(self._CONTENT.get("background_music_sound_volume").percentage * 100)
+                    if item_percentage_t != int(Setting.get("Sound", "background_music")):
                         Setting.set("Sound", "background_music", value=item_percentage_t)
                         Music.set_volume(Media.volume.background_music / 100.0)
                         self.need_update["volume"] = True
                 # 如果碰到音效的音量条
                 elif self._CONTENT.item_being_hovered == "effects_sound_volume":
-                    if (item_percentage_t := int(self._CONTENT.get("effects_sound_volume").percentage * 100)) != Setting.get(
-                        "Sound", "effects"
-                    ):
+                    item_percentage_t = int(self._CONTENT.get("effects_sound_volume").percentage * 100)
+                    if item_percentage_t != int(Setting.get("Sound", "effects")):
                         Setting.set("Sound", "effects", value=item_percentage_t)
                         self.need_update["volume"] = True
                 # 如果碰到环境声的音量条
                 elif self._CONTENT.item_being_hovered == "environment_sound_volume":
-                    if (
-                        item_percentage_t := int(self._CONTENT.get("environment_sound_volume").percentage * 100)
-                    ) != Setting.get("Sound", "environment"):
+                    item_percentage_t = int(self._CONTENT.get("environment_sound_volume").percentage * 100)
+                    if item_percentage_t != int(Setting.get("Sound", "environment")):
                         Setting.set("Sound", "environment", value=item_percentage_t)
                         self.need_update["volume"] = True
                 # 保存新的参数
@@ -219,9 +215,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
     def _show_pause_menu(self, surface: ImageSurface) -> None:
         Media.pause()
         progress_saved_text = StaticImage(
-            Font.render(Lang.get_text("Global", "progress_has_been_saved"), Colors.WHITE, int(Display.get_width() * 0.015)),
-            0,
-            0,
+            Font.render(Lang.get_text("Global", "progress_has_been_saved"), Colors.WHITE, int(Display.get_width() * 0.015)), 0, 0
         )
         progress_saved_text.set_alpha(0)
         progress_saved_text.set_center(surface.get_width() / 2, surface.get_height() / 2)

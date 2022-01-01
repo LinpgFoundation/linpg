@@ -90,16 +90,17 @@ class AbstractDialogSystem(AbstractGameSystem):
     # 生产一个新的推荐id
     def generate_a_new_recommended_key(self, index: int = 1) -> str:
         while True:
+            newId: str = ""
             if index <= 9:
-                if (newId := "id_00" + str(index)) not in self.dialog_content:
-                    return newId
+                newId = "id_00" + str(index)
             elif index <= 99:
-                if (newId := "id_0" + str(index)) not in self.dialog_content:
-                    return newId
+                newId = "id_0" + str(index)
             else:
-                if (newId := "id_" + str(index)) not in self.dialog_content:
-                    return newId
-            index += 1
+                newId = "id_" + str(index)
+            if newId in self.dialog_content:
+                index += 1
+            else:
+                return newId
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
@@ -121,9 +122,7 @@ class AbstractDialogSystem(AbstractGameSystem):
             for key in ("characters_img", "background_img", "narrator", "content"):
                 if key not in currentDialogContent:
                     EXCEPTION.fatal(
-                        'Cannot find critical key "{0}" in part "{1}" with id "{2}".'.format(
-                            key, self._part, self._dialog_id
-                        )
+                        'Cannot find critical key "{0}" in part "{1}" with id "{2}".'.format(key, self._part, self._dialog_id)
                     )
         return currentDialogContent
 

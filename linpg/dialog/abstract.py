@@ -21,7 +21,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 背景图片路径
         self._background_image_folder_path: str = os.path.join("Assets", "image", "dialog_background")
         # 背景图片
-        self.__background_image_name = None
+        self.__background_image_name: Optional[str] = None
         self.__background_image_surface = self._black_bg.copy()
         # 是否开启自动保存
         self.auto_save: bool = False
@@ -70,10 +70,7 @@ class AbstractDialogSystem(AbstractGameSystem):
             if self._project_name is None
             else Config.load(
                 os.path.join(
-                    self._dialog_folder_path,
-                    self._chapter_type,
-                    self._project_name,
-                    "info.{}".format(Config.get_file_type()),
+                    self._dialog_folder_path, self._chapter_type, self._project_name, "info.{}".format(Config.get_file_type())
                 ),
                 "default_lang",
             )
@@ -140,7 +137,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         chapterType: str,
         chapterId: int,
         part: str,
-        projectName: str,
+        projectName: Optional[str],
         dialogId: str = "head",
         dialog_options: dict = {},
     ) -> None:
@@ -180,7 +177,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._update_scene(self._dialog_id)
 
     # 更新背景图片
-    def _update_background_image(self, image_name: str) -> None:
+    def _update_background_image(self, image_name: Optional[str]) -> None:
         if self.__background_image_name != image_name:
             # 更新背景的名称
             self.__background_image_name = image_name
@@ -198,8 +195,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                     # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
                     elif os.path.exists(os.path.join(ASSET.PATH_DICT["movie"], self.__background_image_name)):
                         self.__background_image_surface = VideoSurface(
-                            os.path.join(ASSET.PATH_DICT["movie"], self.__background_image_name),
-                            with_audio=False,
+                            os.path.join(ASSET.PATH_DICT["movie"], self.__background_image_name), with_audio=False
                         )
                     else:
                         EXCEPTION.fatal(
@@ -269,8 +265,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                 (0, 0),
             )
             optionButton.set_pos(
-                (Display.get_width() - optionButton.get_width()) / 2,
-                (i + 1) * 4 * self._FONT_SIZE + optionBox_y_base,
+                (Display.get_width() - optionButton.get_width()) / 2, (i + 1) * 4 * self._FONT_SIZE + optionBox_y_base
             )
             self._dialog_options_container.append(optionButton)
         self._dialog_options_container.set_visible(True)

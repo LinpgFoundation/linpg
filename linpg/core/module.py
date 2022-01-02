@@ -253,20 +253,3 @@ class GameObject2point5d(GameObject):
         super().set_pos(x, y)
         if z is not None:
             self.z = int(z)
-
-
-# 需要被打印的物品
-class ItemNeedBlit(GameObject2point5d):
-    def __init__(self, image: object, weight: number, pos: tuple, offSet: tuple):
-        super().__init__(pos[0], pos[1], weight)
-        self.image = image
-        self.offSet = offSet
-
-    def draw(self, surface: ImageSurface) -> None:
-        if isinstance(self.image, ImageSurface):
-            surface.blit(self.image, Coordinates.add(self.pos, self.offSet))
-        else:
-            try:
-                self.image.display(surface, self.offSet)
-            except Exception:
-                self.image.draw(surface)

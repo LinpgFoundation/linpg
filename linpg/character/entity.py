@@ -57,6 +57,10 @@ class Entity(Position):
         self.__current_action: str = str(DATA["current_action"]) if "current_action" in DATA else self.__IDLE_ACTION
         # 动作是否重复
         self.__if_action_loop: bool = bool(DATA["if_action_loop"]) if "if_action_loop" in DATA else True
+        # 是否动作完成后返回idle
+        self.__if_switch_to_idle_afterwards: bool = (
+            bool(DATA["if_switch_to_idle_afterwards"]) if "if_switch_to_idle_afterwards" in DATA else True
+        )
         # 动作是正序列播放还是反序播放
         self._if_play_action_in_reversing: bool = (
             bool(DATA["if_play_action_in_reversing"]) if "if_play_action_in_reversing" in DATA else False
@@ -103,6 +107,7 @@ class Entity(Position):
             data["current_action"] = self.__current_action
             data["if_action_loop"] = self.__if_action_loop
             data["if_play_action_in_reversing"] = self._if_play_action_in_reversing
+            data["if_switch_to_idle_afterwards"] = self.__if_switch_to_idle_afterwards
         if self.__current_hp != self.__max_hp:
             data["current_hp"] = self.__current_hp
         if self.__max_recoverable_armor > 0:
@@ -179,10 +184,11 @@ class Entity(Position):
         return self.__current_action
 
     # 设置动作
-    def set_action(self, action: str = "wait", ifLoop: bool = True) -> None:
+    def set_action(self, action: str = "wait", ifLoop: bool = True, ifSwitchToIdleAfterwards: bool = True) -> None:
         self.reset_imgId(self.__current_action)
         self.__current_action = action
         self.__if_action_loop = ifLoop
+        self.__if_switch_to_idle_afterwards = ifSwitchToIdleAfterwards
 
     # 是否闲置
     def is_idle(self) -> bool:
@@ -327,7 +333,7 @@ class Entity(Position):
             # 如果角色血量小等于0，进入死亡状态
             if self.__current_hp <= 0:
                 self.__current_hp = 0
-                self.set_action("die", None)
+                self.set_action("die", False, False)
         elif self.__if_invincible or damage == 0:
             pass
         else:
@@ -610,7 +616,7 @@ class Entity(Position):
             elif self.__if_action_loop is True:
                 self.__imgId_dict[self.__current_action]["imgId"] = 0
             # 如果角色图片播放完但不打算重新播
-            elif self.__if_action_loop is None:
+            elif not self.__if_switch_to_idle_afterwards:
                 pass
             # 如果角色图片播放完需要回到待机状态
             elif not self.__if_action_loop:

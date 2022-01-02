@@ -189,7 +189,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         super().__init__(x, y, font_size, txt_color, default_width)
         self._text: list[str] = [""]
         self.lineId = 0
-        self.__using_PySimpleGUI_input_box: Button = (
+        self.__using_PySimpleGUI_input_box: Optional[Button] = (
             load_button("<!ui>back.png", (0, 0), (self.FONT.size, self.FONT.size)) if _PYSIMPLEGUI_INITIALIZED else None
         )
 
@@ -321,7 +321,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             self.holderIndex = i - 1
 
     def show_external_input_box(self, screen: ImageSurface) -> None:
-        if _PYSIMPLEGUI_INITIALIZED:
+        if self.__using_PySimpleGUI_input_box is not None:
             self.__using_PySimpleGUI_input_box.set_right(self.input_box.right)
             self.__using_PySimpleGUI_input_box.set_bottom(self.input_box.bottom)
             self.__using_PySimpleGUI_input_box.draw(screen)

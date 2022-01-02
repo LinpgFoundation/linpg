@@ -138,7 +138,7 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
         return self.__initialized
 
     # 初始化关键参数
-    def _initialize(self, chapterType: str, chapterId: int, projectName: str) -> None:
+    def _initialize(self, chapterType: str, chapterId: int, projectName: Optional[str]) -> None:
         # 类型
         self._chapter_type = chapterType
         # 章节id

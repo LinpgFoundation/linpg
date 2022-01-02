@@ -11,7 +11,7 @@ class Point(GameObject):
 class Node:
     def __init__(self, point: Point, endPoint: Point, g: number = 0):
         self.point: Point = point  # 自己的坐标
-        self.father: Node = None  # 父节点
+        self.father: Optional[Node] = None  # 父节点
         self.g = g  # g值，g值在用到的时候会重新算
         self.h = (abs(endPoint.x - point.x) + abs(endPoint.y - point.y)) * 10  # 计算h值
 

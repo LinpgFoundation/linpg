@@ -166,7 +166,7 @@ class VideoSurface(AbstractVideo):
         self.__loop: bool = loop
         self.__looped_times: int = 0
         self.__audio: pygame.mixer.Sound = Sound.load_from_video(path) if with_audio is True else NULL_SOUND
-        self.__audio_channel: pygame.mixer.Channel = None
+        self.__audio_channel: Optional[pygame.mixer.Channel] = None
 
     # 返回一个复制
     def copy(self) -> "VideoSurface":
@@ -190,7 +190,8 @@ class VideoSurface(AbstractVideo):
 
     def stop(self) -> None:
         super().stop()
-        self.__audio_channel.stop()
+        if self.__audio_channel is not None:
+            self.__audio_channel.stop()
 
     def _init(self) -> None:
         super()._init()
@@ -201,7 +202,7 @@ class VideoSurface(AbstractVideo):
         super().draw(surface)
         if self.is_playing():
             # 播放背景音乐
-            if not self.__audio_channel.get_busy() and self.__audio is not NULL_SOUND:
+            if self.__audio_channel is not None and not self.__audio_channel.get_busy() and self.__audio is not NULL_SOUND:
                 self.__audio_channel.play(self.__audio)
             # 检测循环
             if self.get_frame_index() < self.get_frame_num():

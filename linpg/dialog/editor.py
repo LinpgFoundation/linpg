@@ -26,6 +26,8 @@ class DialogEditor(DialogConverter):
         self.__buttons_ui_container: GameObjectsDictContainer = NULL_DICT_CONTAINER
         # 未保存数据时警告的窗口
         self.__no_save_warning: GameObjectsDictContainer = NULL_DICT_CONTAINER
+        # 当前选择的背景的名称
+        self.__current_select_bg_name: Optional[str] = None
         # 默认不播放音乐
         # self._is_muted = True
 
@@ -167,7 +169,7 @@ class DialogEditor(DialogConverter):
         return original_data
 
     # 更新背景选项栏
-    def _update_background_image(self, image_name: str) -> None:
+    def _update_background_image(self, image_name: Optional[str]) -> None:
         super()._update_background_image(image_name)
         if image_name is not None:
             if self.__current_select_bg_name is not None:
@@ -179,7 +181,8 @@ class DialogEditor(DialogConverter):
             self.__current_select_bg_copy = current_select_bg.copy()
             current_select_bg.blit(IMG.smoothly_resize(self.background_deselect, current_select_bg.get_size()), (0, 0))
         else:
-            self.UIContainerRight_bg.set(self.__current_select_bg_name, self.__current_select_bg_copy)
+            if self.__current_select_bg_name is not None:
+                self.UIContainerRight_bg.set(self.__current_select_bg_name, self.__current_select_bg_copy)
             self.UIContainerRight_bg.set("current_select", None)
             self.__current_select_bg_name = None
             self.__current_select_bg_copy = None

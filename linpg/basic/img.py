@@ -43,7 +43,7 @@ class RawImageManafer:
                             return get_texture_missing_surface((192, 108))
                 else:
                     try:
-                        return pygame.image.load(path_t)
+                        return pygame.image.load(path_t).convert()
                     except Exception:
                         if Setting.developer_mode is True:
                             EXCEPTION.fatal("Cannot load image from path: {}".format(path_t))

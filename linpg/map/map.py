@@ -16,13 +16,11 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         # 地图数据
         self.__MAP: numpy.ndarray = numpy.asarray([])
         # 地图渲染用的图层
-        self.__MAP_SURFACE: ImageSurface = None
+        self.__MAP_SURFACE: Optional[ImageSurface] = None
         # 背景图片路径
         self.__background_image: str = ""
         # 背景图片
-        self.__BACKGROUND_IMAGE: ImageSurface = None
-        # 背景图片图层
-        self.__BACKGROUND_SURFACE: ImageSurface = None
+        self.__BACKGROUND_SURFACE: Optional[StaticImage] = None
         # 装饰物
         self.__decorations: list = []
         # 处于光处的区域
@@ -93,13 +91,17 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         self.__decorations.sort()
         # 初始化环境图片管理模块
         self.__MAP_SURFACE = None
-        self.__BACKGROUND_SURFACE = None
         # 背景图片
-        self.__BACKGROUND_IMAGE = (
-            IMG.quickly_load(os.path.join("Assets", "image", "dialog_background", self.__background_image), False).convert()
-            if self.__background_image is not None
-            else None
-        )
+        if self.__background_image is not None:
+            self.__BACKGROUND_SURFACE = StaticImage(
+                IMG.quickly_load(os.path.join("Assets", "image", "dialog_background", self.__background_image), False),
+                0,
+                0,
+                0,
+                0,
+            )
+        else:
+            self.__BACKGROUND_SURFACE = None
         # 更新尺寸
         AbstractMapImagesModule.set_block_size(round(perBlockWidth), round(perBlockHeight))
         # 加载图片
@@ -304,19 +306,20 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         if self.__debug_win is not None and not self.__need_to_recheck_block_on_surface:
             self.__display_dev_panel()
         # 画出背景
-        screen.blit(self.__BACKGROUND_SURFACE, (0, 0))
-        screen.blit(self.__MAP_SURFACE, self.get_local_pos())
+        if self.__BACKGROUND_SURFACE is not None:
+            self.__BACKGROUND_SURFACE.draw(screen)
+        else:
+            screen.fill(Colors.BLACK)
+        if self.__MAP_SURFACE is not None:
+            screen.blit(self.__MAP_SURFACE, self.get_local_pos())
         # 返回offset
         return screen_to_move_x, screen_to_move_y
 
     # 重新绘制地图
     def __update_map_surface(self, window_size: tuple) -> None:
         if self.__need_to_recheck_block_on_surface is True:
-            self.__BACKGROUND_SURFACE = (
-                IMG.resize(self.__BACKGROUND_IMAGE, window_size)
-                if self.__BACKGROUND_IMAGE is not None
-                else new_surface(window_size)
-            )
+            if self.__BACKGROUND_SURFACE is not None:
+                self.__BACKGROUND_SURFACE.set_size(window_size[0], window_size[1])
             if self.__MAP_SURFACE is not None:
                 self.__MAP_SURFACE.fill(Colors.TRANSPARENT)
             else:
@@ -336,7 +339,8 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                     if self.__block_on_surface[y][x] == 0:
                         evn_img = TileMapImagesModule.get_image(str(self.__MAP[y][x]), not self.isPosInLightArea(x, y))
                         evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
-                        evn_img.draw(self.__MAP_SURFACE)
+                        if self.__MAP_SURFACE is not None:
+                            evn_img.draw(self.__MAP_SURFACE)
                         self.__block_on_surface[y][x] = 1
                         if y < self.row - 1:
                             self.__block_on_surface[y + 1][x] = 0

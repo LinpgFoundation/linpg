@@ -56,7 +56,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         self._load_content()
 
     # 新建章节
-    def new(self, chapterType: str, chapterId: int, part: str, projectName: str = None) -> None:
+    def new(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str] = None) -> None:
         self._initialize(chapterType, chapterId, part, projectName)
         # 根据已有参数载入数据
         self._load_content()

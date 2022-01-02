@@ -8,7 +8,7 @@ class FriendlyCharacterDynamicProgressBarSurface(DynamicProgressBarSurface):
     __BEING_NOTICED_IMG: ImageSurface = NULL_SURFACE
     __img_initialized: bool = False
 
-    def __init__(self):
+    def __init__(self) -> None:
         # 检测图标是否生成，如果没有则生成
         if not self.__img_initialized:
             self.__FULLY_EXPOSED_IMG = IMG.quickly_load(r"Assets/image/UI/eye_red.png")
@@ -25,7 +25,7 @@ class HostileCharacterDynamicProgressBarSurface(DynamicProgressBarSurface):
     __RED_VIGILANCE_IMG: ImageSurface = NULL_SURFACE
     __img_initialized: bool = False
 
-    def __init__(self):
+    def __init__(self) -> None:
         # 检测图标是否生成，如果没有则生成
         if not self.__img_initialized:
             self.__ORANGE_VIGILANCE_IMG = IMG.quickly_load(r"Assets/image/UI/vigilance_orange.png")

@@ -24,10 +24,15 @@ int_f = Union[int, float]
 number = Union[int, float]
 # 颜色类
 color_liked = Union[Iterable[int], str]
-
 # 图形类
 ImageSurface = pygame.surface.Surface
 PoI = Union[str, pygame.surface.Surface]
+# 声音 type alias
+PG_Sound = pygame.mixer.Sound
+# 频道 type alias
+PG_Channel = pygame.mixer.Channel
+# 事件 type alias
+PG_Event = pygame.event.Event
 
 """linpg自带常量"""
 NoSize: tuple[int, int] = (-1, -1)

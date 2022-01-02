@@ -306,7 +306,7 @@ class Entity(Position):
             EXCEPTION.fatal("You cannot heal a negative value")
 
     # 降低血量
-    def injury(self, damage: int):
+    def injury(self, damage: int) -> None:
         if not self.__if_invincible and damage > 0:
             # 如果有可再生的护甲
             if self.__current_recoverable_armor > 0:
@@ -554,7 +554,7 @@ class Entity(Position):
             EXCEPTION.fatal("This character has no valid effective range!")
 
     # 根据坐标反转角色
-    def set_flip_based_on_pos(self, pos: Any):
+    def set_flip_based_on_pos(self, pos: Any) -> None:
         # 转换坐标
         x, y = Positions.convert(pos)
         # 检测坐标

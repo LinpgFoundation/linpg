@@ -95,15 +95,15 @@ class DecisionHolder:
             EXCEPTION.fatal("The character does not decide to move!")
 
     @property
-    def target(self):
+    def target(self) -> str:
         if self.action == "attack":
-            return self.data[0]
+            return str(self.data[0])
         else:
             EXCEPTION.fatal("The character does not decide to attack!")
 
     @property
-    def target_area(self):
+    def target_area(self) -> str:
         if self.action == "attack":
-            return self.data[1]
+            return str(self.data[1])
         else:
             EXCEPTION.fatal("The character does not decide to attack!")

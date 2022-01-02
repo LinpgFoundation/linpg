@@ -2,7 +2,7 @@ from .character import *
 
 # 视觉小说系统接口
 class AbstractDialogSystem(AbstractGameSystem):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # 存储视觉小说数据的参数
         self._dialog_data: dict = {}
@@ -15,14 +15,14 @@ class AbstractDialogSystem(AbstractGameSystem):
             Colors.surface(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height()
         )
         # UI按钮
-        self._buttons_mananger = None
+        self._buttons_mananger: Optional[DialogButtons] = None
         # 对话文件路径
         self._dialog_folder_path: str = "Data"
         # 背景图片路径
         self._background_image_folder_path: str = os.path.join("Assets", "image", "dialog_background")
         # 背景图片
         self.__background_image_name: Optional[str] = None
-        self.__background_image_surface = self._black_bg.copy()
+        self.__background_image_surface: Union[StaticImage, VideoSurface, None] = self._black_bg.copy()
         # 是否开启自动保存
         self.auto_save: bool = False
         # 是否静音
@@ -30,7 +30,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 指向当前对话的数据的指针
         self._current_dialog_content: dict = {}
         # 选项菜单
-        self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer(None, 0, 0, 0, 0)
+        self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer("<!null>", 0, 0, 0, 0)
         self._dialog_options_container.set_visible(False)
         # 更新背景音乐音量
         self.set_bgm_volume(Media.volume.background_music / 100)
@@ -246,7 +246,7 @@ class AbstractDialogSystem(AbstractGameSystem):
     # 将背景图片画到surface上
     def display_background_image(self, surface: ImageSurface) -> None:
         if self.__background_image_surface is not None:
-            if isinstance(self.__background_image_surface, Rectangle):
+            if isinstance(self.__background_image_surface, StaticImage):
                 self.__background_image_surface.set_size(surface.get_width(), surface.get_height())
             self.__background_image_surface.draw(surface)
 

@@ -86,7 +86,7 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
         if self.is_visible():
             current_abs_pos: tuple = Coordinates.add(self.pos, offSet)
             # 画出背景
-            if self.img is not None:
+            if self.img is not None and self.img is not NULL_SURFACE:
                 self.img.display(surface, current_abs_pos)
             # 画出物品
             for key_of_game_object, game_object_t in self.__items_container_dict.items():
@@ -141,7 +141,7 @@ class GameObjectsListContainer(AbstractGameObjectsContainer):
         if self.is_visible():
             current_abs_pos: tuple = Coordinates.add(self.pos, offSet)
             # 画出背景
-            if self.img is not None:
+            if self.img is not None and self.img is not NULL_SURFACE:
                 self.img.display(surface, current_abs_pos)
             # 画出物品
             for i in range(len(self.__items_container_list)):

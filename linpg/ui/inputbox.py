@@ -109,7 +109,7 @@ class SingleLineInputBox(AbstractInputBox):
         else:
             self.input_box.set_width(self.default_width)
 
-    def _check_key_down(self, event: pygame.event.Event) -> bool:
+    def _check_key_down(self, event: PG_Event) -> bool:
         if event.key == Key.BACKSPACE:
             self._remove_char("ahead")
             return True

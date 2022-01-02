@@ -113,18 +113,14 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         if self.__is_flipped_horizontally is True or self.__is_flipped_vertically is True:
             imgTmp = IMG.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)
         # 获取切割rect
-        rect = imgTmp.get_bounding_rect()
         crop_rect_exists: bool = self.__crop_rect is not NULL_RECT
+        rect: Rectangle = convert_rect(imgTmp.get_bounding_rect())
         if self.width != rect.width or self.height != rect.height or crop_rect_exists:
             if crop_rect_exists:
                 new_x: int = max(rect.x, self.__crop_rect.x)
                 new_y: int = max(rect.y, self.__crop_rect.y)
-                rect = Rectangle(
-                    new_x,
-                    new_y,
-                    min(rect.right, self.__crop_rect.right) - new_x,
-                    min(rect.bottom, self.__crop_rect.bottom) - new_y,
-                )
+                rect.move_to((new_x, new_y))
+                rect.set_size(min(rect.right, self.__crop_rect.right) - new_x, min(rect.bottom, self.__crop_rect.bottom) - new_y)
             self._processed_img = new_transparent_surface(rect.size)
             self.set_local_pos(rect.x, rect.y)
             self._processed_img.blit(imgTmp, (-self.local_x, -self.local_y))

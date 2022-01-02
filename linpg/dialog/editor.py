@@ -2,7 +2,7 @@ from .converter import *
 
 # 对话制作器
 class DialogEditor(DialogConverter):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # 导航窗口
         self.__dialog_navigation_window: DialogNavigationWindow = DialogNavigationWindow(
@@ -327,7 +327,7 @@ class DialogEditor(DialogConverter):
         self.__update_ui()
 
     # 连接2个dialog node
-    def __make_connection(self, key1: str, key2: str, addNode: bool = False) -> None:
+    def __make_connection(self, key1: Optional[str], key2: Optional[str], addNode: bool = False) -> None:
         if key1 is not None:
             seniorNodePointer = self.dialog_content[key1]["next_dialog_id"]
             if not addNode:

@@ -2,7 +2,7 @@ from .dialogbox import *
 
 # 对话系统按钮UI模块
 class DialogButtons(HiddenableSurface):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.__button_hovered: int = 0
         self.__buttons_container: GameObjectsDictContainer = NULL_DICT_CONTAINER
@@ -18,7 +18,7 @@ class DialogButtons(HiddenableSurface):
         tempButtonIcon = IMG.load("<!ui>next.png", (self.FONT.size, self.FONT.size))
         tempButtonTxt = self.FONT.render(dialog_txt["skip"], Colors.WHITE)
         temp_w = tempButtonTxt.get_width() + self.FONT.size * 1.5
-        self.choiceTxt = dialog_txt["choice"]
+
         skipButton: ImageSurface = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
         skipButtonHovered: ImageSurface = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
         self.icon_y = (tempButtonTxt.get_height() - tempButtonIcon.get_height()) / 2
@@ -170,7 +170,7 @@ class DialogNavigationWindow(AbstractFrame):
         self._if_update_needed = True
 
     # 重新添加全部的key
-    def readd_all(self, dialogs_data: dict):
+    def readd_all(self, dialogs_data: dict) -> None:
         self.__nodes_map.clear()
         for key in dialogs_data:
             next_keys: list[str] = []

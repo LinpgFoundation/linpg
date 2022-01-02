@@ -2,6 +2,9 @@ from .abstract import *
 
 # 视觉小说系统模块
 class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
+
+    __CHOICE_TEXT: str = str(Lang.get_texts("Dialog", "choice"))
+
     def __init__(self, basic_features_only: bool = False) -> None:
         AbstractDialogSystem.__init__(self)
         PauseMenuModuleForGameSystem.__init__(self)
@@ -299,9 +302,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                             else:
                                 break
                         elif self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "option":
-                            narratorTemp = self.__dialog_txt_system.FONT.render(
-                                self._buttons_mananger.choiceTxt + ":", (0, 191, 255)
-                            )
+                            narratorTemp = self.__dialog_txt_system.FONT.render(self.__CHOICE_TEXT + ":", (0, 191, 255))
                             self.__history_surface.blit(
                                 narratorTemp,
                                 (

@@ -4,9 +4,9 @@ _FONT_IS_NOT_INITIALIZED_MSG: str = "Font is not initialized!"
 
 # 文字渲染模块
 class FontGenerator:
-    def __init__(self):
+    def __init__(self) -> None:
         self.__SIZE: int = 0
-        self.__FONT = None
+        self.__FONT: Optional[pygame.font.Font] = None
 
     # 是否加粗
     @property
@@ -70,16 +70,22 @@ class FontGenerator:
         if self.__SIZE > 0:
             if not isinstance(txt, (str, int)):
                 EXCEPTION.fatal("The text must be a unicode or bytes, not {}".format(txt))
-            if background_color is None:
-                return self.__FONT.render(str(txt), Setting.antialias, Colors.get(color))
+            if self.__FONT is not None:
+                if background_color is None:
+                    return self.__FONT.render(str(txt), Setting.antialias, Colors.get(color))
+                else:
+                    return self.__FONT.render(str(txt), Setting.antialias, Colors.get(color), Colors.get(background_color))
             else:
-                return self.__FONT.render(str(txt), Setting.antialias, Colors.get(color), Colors.get(background_color))
+                EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
         else:
             EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
 
     # 估计文字的宽度
     def estimate_text_width(self, text: strint) -> int:
-        return self.__FONT.size(text)[0]
+        if self.__FONT is not None:
+            return self.__FONT.size(str(text))[0]
+        else:
+            EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
 
     # 检测是否需要更新
     def check_for_update(self, size: int, ifBold: bool = False, ifItalic: bool = False) -> None:

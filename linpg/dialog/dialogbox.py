@@ -2,7 +2,7 @@ from ..ui import *
 
 # 对话框模块基础框架
 class AbstractDialogBox(HiddenableSurface):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # 对胡框数据
         self.dialoguebox_max_height: int = int(Display.get_height() / 4)
@@ -36,7 +36,7 @@ class DevDialogBox(AbstractDialogBox):
         self._dialoguebox.set_height(self.dialoguebox_max_height)
 
     # 更新内容
-    def update(self, narrator: str, content: list) -> None:
+    def update(self, narrator: Optional[str], content: Optional[list]) -> None:
         if narrator is None:
             self.narrator.set_text()
         else:
@@ -65,10 +65,11 @@ class DialogBox(AbstractDialogBox):
         self.narrator: str = ""
         self.__text_index: int = 0
         self.__displayed_lines: int = 0
+        self.__textPlayingSound: Optional[PG_Sound] = None
         try:
             self.__textPlayingSound = Sound.load(r"Assets/sound/ui/dialog_words_playing.ogg")
         except FileNotFoundError:
-            self.__textPlayingSound = NULL_SOUND
+            self.__textPlayingSound = None
             EXCEPTION.inform(
                 "Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!\nAs a result, the text playing sound will be disabled."
             )
@@ -113,7 +114,7 @@ class DialogBox(AbstractDialogBox):
             self.__text_index = max(len(self.content[self.__displayed_lines]) - 1, 0)
 
     # 更新内容
-    def update(self, narrator: str, content: list, forceNotResizeDialoguebox: bool = False) -> None:
+    def update(self, narrator: Optional[str], content: Optional[list], forceNotResizeDialoguebox: bool = False) -> None:
         self.stop_playing_text_sound()
         self.__total_letters = 0
         self.__read_time = 0
@@ -132,14 +133,14 @@ class DialogBox(AbstractDialogBox):
 
     # 获取文字播放时的音效的音量
     def get_sound_volume(self) -> float:
-        if self.__textPlayingSound is not NULL_SOUND:
+        if self.__textPlayingSound is not None:
             return self.__textPlayingSound.get_volume()
         else:
             return 0.0
 
     # 修改文字播放时的音效的音量
     def set_sound_volume(self, volume: number) -> None:
-        if self.__textPlayingSound is not NULL_SOUND:
+        if self.__textPlayingSound is not None:
             self.__textPlayingSound.set_volume(volume)
 
     # 是否需要更新
@@ -190,7 +191,7 @@ class DialogBox(AbstractDialogBox):
                     # 如果当前行的字符还没有完全播出
                     if self.__text_index < len(self.content[self.__displayed_lines]):
                         # 播放文字音效
-                        if not LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy() and self.__textPlayingSound is not NULL_SOUND:
+                        if not LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy() and self.__textPlayingSound is not None:
                             LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.play(self.__textPlayingSound)
                         self.__text_index += 1
                     # 当前行的所有字都播出后，播出下一行

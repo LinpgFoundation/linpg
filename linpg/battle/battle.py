@@ -89,7 +89,7 @@ class AbstractBattleSystem(AbstractGameSystem):
         return self.__characterDataLoaderThread.totalNum
 
     # 检测按下按键的事件
-    def _check_key_down(self, event: pygame.event.Event) -> None:
+    def _check_key_down(self, event: PG_Event) -> None:
         if event.key == Key.ARROW_UP:
             self.__moving_screen_in_direction["up"] = True
         elif event.key == Key.ARROW_DOWN:
@@ -102,7 +102,7 @@ class AbstractBattleSystem(AbstractGameSystem):
             self._MAP.dev_mode()
 
     # 检测按键回弹的事件
-    def _check_key_up(self, event: pygame.event.Event) -> None:
+    def _check_key_up(self, event: PG_Event) -> None:
         if event.key == Key.ARROW_UP:
             self.__moving_screen_in_direction["up"] = False
         elif event.key == Key.ARROW_DOWN:

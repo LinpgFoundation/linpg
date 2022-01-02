@@ -83,7 +83,7 @@ class RawImageManafer:
 
     # 精准地缩放尺寸
     @staticmethod
-    def smoothly_resize(img: ImageSurface, size: tuple):
+    def smoothly_resize(img: ImageSurface, size: tuple) -> ImageSurface:
         # 编辑图片
         if size[1] is not None and size[1] >= 0 and size[0] is None:
             img = pygame.transform.smoothscale(img, (round(size[1] / img.get_height() * img.get_width()), round(size[1])))

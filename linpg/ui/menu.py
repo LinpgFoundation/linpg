@@ -176,10 +176,9 @@ class PauseMenu(AbstractInternalMenu):
 
 # 暂停菜单处理模块
 class PauseMenuModuleForGameSystem(AbstractInternalMenu):
-    def __init__(self):
+    def __init__(self) -> None:
         # 暂停菜单
-        self.__pause_menu = None
-        self.__pause_menu_enabled: bool = False
+        self.__pause_menu: Optional[PauseMenu] = None
 
     # 保存进度（子类需实现）
     def save_progress(self) -> None:
@@ -203,57 +202,59 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
 
     def _enable_pause_menu(self) -> None:
         self.__pause_menu = PauseMenu()
-        self.__pause_menu_enabled = True
 
     def is_pause_menu_enabled(self) -> bool:
-        return self.__pause_menu_enabled
+        return self.__pause_menu is not None
 
     def _initialize_pause_menu(self) -> None:
-        if self.__pause_menu_enabled is True:
+        if self.__pause_menu is not None:
             self.__pause_menu.initialize()
 
     def _show_pause_menu(self, surface: ImageSurface) -> None:
-        Media.pause()
-        progress_saved_text = StaticImage(
-            Font.render(Lang.get_text("Global", "progress_has_been_saved"), Colors.WHITE, int(Display.get_width() * 0.015)), 0, 0
-        )
-        progress_saved_text.set_alpha(0)
-        progress_saved_text.set_center(surface.get_width() / 2, surface.get_height() / 2)
-        self.__pause_menu.set_visible(True)
-        while self.__pause_menu.is_visible():
-            Display.flip()
-            if OptionMenu.is_hidden():
-                self.__pause_menu.draw(surface)
-                if self.__pause_menu.get_button_clicked() == "resume":
-                    OptionMenu.set_visible(False)
-                    self.__pause_menu.set_visible(False)
-                elif self.__pause_menu.get_button_clicked() == "save":
-                    self.save_progress()
-                    progress_saved_text.set_alpha(255)
-                elif self.__pause_menu.get_button_clicked() == "option_menu":
-                    OptionMenu.set_visible(True)
-                elif self.__pause_menu.get_button_clicked() == "back_to_mainMenu":
-                    try:
-                        self.fade(surface)
-                    except Exception:
-                        Media.unload()
-                    OptionMenu.set_visible(False)
-                    progress_saved_text.set_alpha(0)
-                    self.__pause_menu.set_visible(False)
-                    GlobalValue.set("BackToMainMenu", True)
-                    self.stop()
-            else:
-                # 展示设置UI
-                OptionMenu.draw(surface)
-                # 更新音量
-                if OptionMenu.need_update["volume"] is True:
-                    self._update_sound_volume()
-                # 更新语言
-                if OptionMenu.need_update["language"] is True:
-                    self.update_language()
-            # 显示进度已保存的文字
-            progress_saved_text.draw(surface)
-            progress_saved_text.subtract_alpha(5)
-        del progress_saved_text
-        self.__pause_menu.hide()
-        Media.unpause()
+        if self.__pause_menu is not None:
+            Media.pause()
+            progress_saved_text = StaticImage(
+                Font.render(Lang.get_text("Global", "progress_has_been_saved"), Colors.WHITE, int(Display.get_width() * 0.015)),
+                0,
+                0,
+            )
+            progress_saved_text.set_alpha(0)
+            progress_saved_text.set_center(surface.get_width() / 2, surface.get_height() / 2)
+            self.__pause_menu.set_visible(True)
+            while self.__pause_menu.is_visible():
+                Display.flip()
+                if OptionMenu.is_hidden():
+                    self.__pause_menu.draw(surface)
+                    if self.__pause_menu.get_button_clicked() == "resume":
+                        OptionMenu.set_visible(False)
+                        self.__pause_menu.set_visible(False)
+                    elif self.__pause_menu.get_button_clicked() == "save":
+                        self.save_progress()
+                        progress_saved_text.set_alpha(255)
+                    elif self.__pause_menu.get_button_clicked() == "option_menu":
+                        OptionMenu.set_visible(True)
+                    elif self.__pause_menu.get_button_clicked() == "back_to_mainMenu":
+                        try:
+                            self.fade(surface)
+                        except Exception:
+                            Media.unload()
+                        OptionMenu.set_visible(False)
+                        progress_saved_text.set_alpha(0)
+                        self.__pause_menu.set_visible(False)
+                        GlobalValue.set("BackToMainMenu", True)
+                        self.stop()
+                else:
+                    # 展示设置UI
+                    OptionMenu.draw(surface)
+                    # 更新音量
+                    if OptionMenu.need_update["volume"] is True:
+                        self._update_sound_volume()
+                    # 更新语言
+                    if OptionMenu.need_update["language"] is True:
+                        self.update_language()
+                # 显示进度已保存的文字
+                progress_saved_text.draw(surface)
+                progress_saved_text.subtract_alpha(5)
+            del progress_saved_text
+            self.__pause_menu.hide()
+            Media.unpause()

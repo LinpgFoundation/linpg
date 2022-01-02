@@ -5,7 +5,7 @@ class JoystickController:
 
     __input: Optional[pygame.joystick.Joystick] = None
 
-    def __init__(self):
+    def __init__(self) -> None:
         # 如果pygame的手柄组件没有初始化，则初始化
         if not pygame.joystick.get_init():
             pygame.joystick.init()
@@ -161,7 +161,7 @@ class GameController:
     __joystick: JoystickController = JoystickController()
     __mouse: MouseController = MouseController()
     # 输入事件
-    __INPUT_EVENTS: list = []
+    __INPUT_EVENTS: tuple = tuple()
     # 检测特定事件
     __SPECIFIC_EVENTS: dict[str, bool] = {
         # 是否有确认事件
@@ -190,11 +190,11 @@ class GameController:
 
     # 输入事件
     @property
-    def events(self):
+    def events(self) -> tuple:
         return self.__INPUT_EVENTS
 
     # 获取所有输入事件
-    def get_events(self):
+    def get_events(self) -> tuple:
         return self.__INPUT_EVENTS
 
     # 获取单个事件
@@ -232,7 +232,7 @@ class GameController:
             elif is_y_need_update is True:
                 self.mouse.set_pos((self.mouse.x, int(self.mouse.y + self.mouse.moving_speed * y_axis_value)))
         # 更新综合输入事件
-        self.__INPUT_EVENTS = pygame.event.get()
+        self.__INPUT_EVENTS = tuple(pygame.event.get())
         # 重设用于判断常见事件的参数
         for key in self.__SPECIFIC_EVENTS:
             self.__SPECIFIC_EVENTS[key] = False

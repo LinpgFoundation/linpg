@@ -2,7 +2,7 @@ from ..character import *
 
 # 天气系统
 class WeatherSystem:
-    def __init__(self):
+    def __init__(self) -> None:
         self.__initialized: bool = False
         self.__items: tuple = tuple()
         self.__img_list: list = []

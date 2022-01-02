@@ -2,7 +2,7 @@ from .component import *
 
 # 角色立绘系统
 class CharacterImageManager:
-    def __init__(self):
+    def __init__(self) -> None:
         # 用于存放立绘的字典
         self.__character_image: dict = {}
         # 如果是开发模式，则在初始化时加载所有图片
@@ -12,10 +12,12 @@ class CharacterImageManager:
         self.__this_round_image_alpha: int = 0
         self.__darkness: int = 50
         self.__img_width: int = int(Display.get_width() / 2)
+        self.__communication_surface_rect: Rectangle = Rectangle(
+            int(self.__img_width * 0.25), 0, int(self.__img_width * 0.5), int(self.__img_width * 0.56)
+        )
+        self.__communication: Optional[StaticImage] = None
+        self.__communication_dark: Optional[StaticImage] = None
         try:
-            self.__communication_surface_rect: Rectangle = Rectangle(
-                int(self.__img_width * 0.25), 0, int(self.__img_width * 0.5), int(self.__img_width * 0.56)
-            )
             self.__communication = StaticImage(
                 os.path.join(r"Assets/image/UI/communication.png"),
                 0,
@@ -36,7 +38,7 @@ class CharacterImageManager:
         # 开发者模式
         self.dev_mode: bool = False
         # 被点击的角色
-        self.character_get_click = None
+        self.character_get_click: Optional[str] = None
         # npc立绘路径
         self.image_folder_path: str = os.path.join("Assets", "image", "npc")
 
@@ -70,13 +72,21 @@ class CharacterImageManager:
                 img.set_crop_rect(self.__communication_surface_rect)
                 img.draw(surface)
                 if "<d>" in name:
-                    self.__communication_dark.set_pos(
-                        x + self.__communication_surface_rect.x, y + self.__communication_surface_rect.y
-                    )
-                    self.__communication_dark.draw(surface)
+                    if self.__communication_dark is not None:
+                        self.__communication_dark.set_pos(
+                            x + self.__communication_surface_rect.x, y + self.__communication_surface_rect.y
+                        )
+                        self.__communication_dark.draw(surface)
+                    else:
+                        EXCEPTION.fatal("The communication_dark surface is not initialized!")
                 else:
-                    self.__communication.set_pos(x + self.__communication_surface_rect.x, y + self.__communication_surface_rect.y)
-                    self.__communication.draw(surface)
+                    if self.__communication is not None:
+                        self.__communication.set_pos(
+                            x + self.__communication_surface_rect.x, y + self.__communication_surface_rect.y
+                        )
+                        self.__communication.draw(surface)
+                    else:
+                        EXCEPTION.fatal("The communication surface is not initialized!")
             else:
                 img.set_crop_rect(NULL_RECT)
                 img.draw(surface)

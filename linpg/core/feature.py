@@ -3,7 +3,7 @@ from .shape import *
 # 无数据的RECT，用于规范化Typing
 NULL_RECT: Rectangle = Rectangle(1, 1, -2, -2)
 
-RectLiked = Union[Rectangle, pygame.Rect, tuple]
+RectLiked = Union[Rectangle, pygame.rect.Rect, tuple]
 
 # 转换pygame的rect类至linpg引擎的rect类
 def convert_rect(rect: RectLiked) -> Rectangle:
@@ -26,7 +26,7 @@ def convert_rect(rect: RectLiked) -> Rectangle:
 
 
 # 转换linpg.Rect至pygame.Rect
-def convert_to_pygame_rect(rect: RectLiked) -> pygame.Rect:
+def convert_to_pygame_rect(rect: RectLiked) -> pygame.rect.Rect:
     # 如果是pygame.Rect类，则没必要转换
     if isinstance(rect, pygame.Rect):
         return rect

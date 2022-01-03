@@ -40,7 +40,7 @@ class DropDownList(GameObjectsDictContainer):
         self.__font_color = Colors.get(font_color)
 
     # 新增一个物品
-    def set(self, key: str, new_item: strint) -> None:
+    def set(self, key: str, new_item: strint) -> None:  # type: ignore[override]
         super().set(key, new_item)
         self.__update_width(new_item)
 

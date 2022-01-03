@@ -26,7 +26,7 @@ class Coordinate:
         self.set_pos(pos[0], pos[1])
 
     # 检测是否在给定的位置上
-    def on_pos(self, pos: Any) -> bool:
+    def on_pos(self, pos: object) -> bool:
         return Coordinates.is_same(self.pos, pos)
 
 

@@ -84,7 +84,7 @@ def loadCharacterData() -> dict:
 # 用于存放角色做出的决定
 class DecisionHolder:
     def __init__(self, action: str, data: Any):
-        self.action = action
+        self.action: str = action
         self.data = data
 
     @property

@@ -10,12 +10,12 @@ class GlobalValue:
 
     # 获取特定的全局数据
     @staticmethod
-    def get(key: str) -> Any:
+    def get(key: str) -> object:
         return _GLOBAL_VALUES_DICT[key]
 
     # 设置特定的全局数据
     @staticmethod
-    def set(key: str, value: Any) -> None:
+    def set(key: str, value: object) -> None:
         _GLOBAL_VALUES_DICT[key] = value
 
     # 删除特定的全局数据
@@ -30,7 +30,7 @@ class GlobalValue:
 
     # 如果不是对应的值，则设置为对应的值，返回是否对应
     @staticmethod
-    def if_get_set(key: str, valueToGet: Any, valueToSet: Any) -> bool:
+    def if_get_set(key: str, valueToGet: object, valueToSet: object) -> bool:
         if _GLOBAL_VALUES_DICT[key] == valueToGet:
             _GLOBAL_VALUES_DICT[key] = valueToSet
             return True
@@ -142,7 +142,7 @@ class Cache:
 
     # 根据md5值获取数据
     @staticmethod
-    def get_data(md5: str) -> Optional[Any]:
+    def get_data(md5: str) -> object:
         try:
             return _CACHE_FILES_DATA[md5]
         except KeyError:

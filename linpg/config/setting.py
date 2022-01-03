@@ -52,7 +52,7 @@ class SettingSystem:
         return get_value_by_keys(self.__SETTING_DATA, key, False)
 
     # 修改设置数据
-    def set(self, *key: str, value: Any) -> None:
+    def set(self, *key: str, value: object) -> None:
         return set_value_by_keys(self.__SETTING_DATA, key, value)
 
     """其他常用的重要参数"""

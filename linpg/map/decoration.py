@@ -22,16 +22,16 @@ class DecorationObject(GameObject):
             data_t["status"] = deepcopy(self.__status)
         return data_t
 
-    def is_on_pos(self, pos: Any) -> bool:
+    def is_on_pos(self, pos: object) -> bool:
         return Coordinates.is_same(self.get_pos(), pos)
 
     def _has_status(self, key: str) -> bool:
         return key in self.__status
 
-    def get_status(self, key: str) -> Any:
+    def get_status(self, key: str) -> object:
         return self.__status[key]
 
-    def set_status(self, key: str, value: Any) -> None:
+    def set_status(self, key: str, value: object) -> None:
         self.__status[key] = value
 
     def remove_status(self, key: str) -> None:

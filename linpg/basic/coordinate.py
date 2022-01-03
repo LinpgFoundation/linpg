@@ -21,7 +21,7 @@ class Positions:
 
     # 判断2个坐标是否相同
     @staticmethod
-    def is_same(pos1: Any, pos2: Any) -> bool:
+    def is_same(pos1: object, pos2: object) -> bool:
         return Positions.convert(pos1) == Positions.convert(pos2)
 
     # 相加2个坐标
@@ -64,7 +64,7 @@ class Coordinates:
 
     # 判断2个坐标是否相同
     @staticmethod
-    def is_same(pos1: Any, pos2: Any) -> bool:
+    def is_same(pos1: object, pos2: object) -> bool:
         return Coordinates.convert(pos1) == Coordinates.convert(pos2)
 
     # 相加2个坐标

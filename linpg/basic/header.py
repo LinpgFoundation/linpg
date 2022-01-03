@@ -89,7 +89,7 @@ def make_surface_from_array(surface_array: numpy.ndarray, swap_axes: bool = True
 
 
 # 获取Surface
-def new_surface(size: tuple, surface_flags: Any = None) -> ImageSurface:
+def new_surface(size: tuple, surface_flags: Optional[int] = None) -> ImageSurface:
     return pygame.Surface(size, flags=surface_flags) if surface_flags is not None else pygame.Surface(size).convert()
 
 

@@ -55,7 +55,7 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
         return tuple(self.__items_container_dict.keys())
 
     # 新增一个物品
-    def set(self, key: str, new_item: Any) -> None:
+    def set(self, key: str, new_item: object) -> None:
         self.__items_container_dict[key] = new_item
 
     # 获取一个物品
@@ -118,7 +118,7 @@ class GameObjectsListContainer(AbstractGameObjectsContainer):
         return self.__items_container_list
 
     # 新增一个物品
-    def append(self, new_item: Any) -> None:
+    def append(self, new_item: object) -> None:
         self.__items_container_list.append(new_item)
 
     # 获取一个物品

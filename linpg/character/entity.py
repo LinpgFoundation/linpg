@@ -1,4 +1,5 @@
 from collections import deque
+from typing import Sequence
 from .module import *
 
 # 人形模块
@@ -510,7 +511,7 @@ class Entity(Position):
         return self.__attack_range
 
     # 目标角色所在的攻击范围内
-    def range_target_in(self, otherEntity: "Entity", custom_pos: Any = None) -> str:
+    def range_target_in(self, otherEntity: "Entity", custom_pos: Optional[Sequence] = None) -> str:
         distanceBetween: int = (
             abs(int(otherEntity.x - self.x)) + abs(int(otherEntity.y - self.y))
             if custom_pos is None
@@ -554,7 +555,7 @@ class Entity(Position):
             EXCEPTION.fatal("This character has no valid effective range!")
 
     # 根据坐标反转角色
-    def set_flip_based_on_pos(self, pos: Any) -> None:
+    def set_flip_based_on_pos(self, pos: object) -> None:
         # 转换坐标
         x, y = Positions.convert(pos)
         # 检测坐标
@@ -571,7 +572,7 @@ class Entity(Position):
     """画出角色"""
     # 角色画到surface上
     def __blit_entity_img(
-        self, surface: ImageSurface, MAP_POINTER: MapObject, action: str = None, pos: Any = None, alpha: int = 155
+        self, surface: ImageSurface, MAP_POINTER: MapObject, action: str = None, pos: tuple = tuple(), alpha: int = 155
     ) -> None:
         # 如果没有指定action,则默认使用当前的动作
         if action is None:
@@ -588,7 +589,7 @@ class Entity(Position):
         else:
             img_of_char.flip_back_to_normal()
         # 如果没有指定pos,则默认使用当前的动作
-        if pos is None:
+        if len(pos) < 1:
             pos = MAP_POINTER.calPosInMap(self.x, self.y)
         # 把角色图片画到屏幕上
         img_of_char.set_pos(pos[0] - MAP_POINTER.block_width * 0.3, pos[1] - MAP_POINTER.block_width * 0.85)
@@ -630,7 +631,9 @@ class Entity(Position):
                 self._if_play_action_in_reversing = False
                 self.set_action()
 
-    def draw_custom(self, action: str, pos: Any, surface: ImageSurface, MAP_POINTER: MapObject, isContinue: bool = True) -> bool:
+    def draw_custom(
+        self, action: str, pos: tuple, surface: ImageSurface, MAP_POINTER: MapObject, isContinue: bool = True
+    ) -> bool:
         self.__blit_entity_img(surface, MAP_POINTER, action, pos)
         # 调整id，并返回对应的bool状态
         if self.__imgId_dict[action]["imgId"] < self.get_imgNum(action) - 1:

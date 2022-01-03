@@ -180,7 +180,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         return self.__decorations[index]
 
     # 根据坐标寻找装饰物
-    def find_decoration_on(self, pos: Any) -> Optional[DecorationObject]:
+    def find_decoration_on(self, pos: object) -> Optional[DecorationObject]:
         for decoration in self.__decorations:
             # 如果坐标一致，则应该是当前装饰物了
             if Coordinates.is_same(decoration.get_pos(), pos):
@@ -509,8 +509,8 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
     # 以下是A星寻路功能
     def findPath(
         self,
-        start_p: Any,
-        end_p: Any,
+        start_p: object,
+        end_p: object,
         friendData: dict,
         enemyData: dict,
         routeLen: int = -1,

@@ -22,7 +22,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._background_image_folder_path: str = os.path.join("Assets", "image", "dialog_background")
         # 背景图片
         self.__background_image_name: Optional[str] = None
-        self.__background_image_surface: Union[StaticImage, VideoSurface, None] = self._black_bg.copy()
+        self.__background_image_surface: Union[StaticImage, VideoSurface] = self._black_bg.copy()
         # 是否开启自动保存
         self.auto_save: bool = False
         # 是否静音
@@ -62,7 +62,7 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 获取对话文件的主语言
     def get_default_lang(self) -> str:
-        return (
+        return str(
             Config.load(
                 os.path.join(self._dialog_folder_path, self._chapter_type, "info.{}".format(Config.get_file_type())),
                 "default_lang",
@@ -77,7 +77,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         )
 
     # 获取下一个dialog node的类型
-    def get_next_dialog_type(self) -> str:
+    def get_next_dialog_type(self) -> Optional[str]:
         return (
             self._current_dialog_content["next_dialog_id"]["type"]
             if self._current_dialog_content["next_dialog_id"] is not None
@@ -109,7 +109,7 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     @property
     def dialog_content(self) -> dict:
-        return self._dialog_data[self._part]
+        return dict(self._dialog_data[self._part])
 
     # 获取当前对话的信息
     def __get_current_dialog_content(self, safe_mode: bool = False) -> dict:
@@ -204,7 +204,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                 elif self._npc_manager.dev_mode is True:
                     self.__background_image_surface = StaticImage(get_texture_missing_surface(Display.get_size()), 0, 0)
                 else:
-                    self.__background_image_surface = None
+                    self.__background_image_surface = NULL_STATIC_IMAGE
             else:
                 self.__background_image_surface = self._black_bg.copy()
 
@@ -245,7 +245,7 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 将背景图片画到surface上
     def display_background_image(self, surface: ImageSurface) -> None:
-        if self.__background_image_surface is not None:
+        if self.__background_image_surface is not NULL_STATIC_IMAGE:
             if isinstance(self.__background_image_surface, StaticImage):
                 self.__background_image_surface.set_size(surface.get_width(), surface.get_height())
             self.__background_image_surface.draw(surface)

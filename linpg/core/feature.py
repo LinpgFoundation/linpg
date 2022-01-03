@@ -62,7 +62,7 @@ def is_hovering(imgObject: ImageSurface, objectPos: tuple = ORIGIN) -> bool:
     mouse_pos: tuple = Positions.subtract(Controller.mouse.pos, objectPos)
     # 返回结果
     try:
-        return 0 < mouse_pos[0] < imgObject.get_width() and 0 < mouse_pos[1] < imgObject.get_height()
+        return bool(0 < mouse_pos[0] < imgObject.get_width() and 0 < mouse_pos[1] < imgObject.get_height())
     except Exception:
         EXCEPTION.fatal("Unable to check current object: {0} (type:{1})".format(imgObject, type(imgObject)))
 

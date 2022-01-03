@@ -55,7 +55,7 @@ class SoundManagement(AbstractSoundManager):
         return self.get_volume()
 
     def get_volume(self) -> float:
-        return self.__sounds_list[0].get_volume()
+        return float(self.__sounds_list[0].get_volume())
 
     # 设置音量
     def set_volume(self, volume: number) -> None:

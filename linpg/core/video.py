@@ -88,7 +88,7 @@ class AbstractVideo:
         return self.get_frame_num()
 
     def get_frame_num(self) -> int:
-        return self.__video_stream.get(cv2.CAP_PROP_FRAME_COUNT) if self.__video_stream is not None else 0
+        return int(self.__video_stream.get(cv2.CAP_PROP_FRAME_COUNT)) if self.__video_stream is not None else 0
 
     # 当前帧坐标
     @property

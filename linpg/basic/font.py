@@ -97,7 +97,7 @@ class FontGenerator:
 class FontManager:
     def __init__(self) -> None:
         # 引擎标准文件渲染器
-        self.__LINPG_GLOBAL_FONTS: dict = {}
+        self.__LINPG_GLOBAL_FONTS: dict[str, FontGenerator] = {}
         # 上一次render的字体
         self.__LINPG_LAST_FONT: FontGenerator = FontGenerator()
 

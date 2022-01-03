@@ -96,17 +96,17 @@ class Info:
     # 获取作者邮箱
     @staticmethod
     def get_author_email() -> str:
-        return _INFO_DATA_DICT["author_email"]
+        return str(_INFO_DATA_DICT["author_email"])
 
     # 获取github项目地址
     @staticmethod
     def get_repository_url() -> str:
-        return _INFO_DATA_DICT["repository_url"]
+        return str(_INFO_DATA_DICT["repository_url"])
 
     # 获取项目简介
     @staticmethod
     def get_short_description() -> str:
-        return _INFO_DATA_DICT["short_description"]
+        return str(_INFO_DATA_DICT["short_description"])
 
 
 # 缓存文件夹路径

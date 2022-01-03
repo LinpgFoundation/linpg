@@ -56,7 +56,7 @@ class UiGenerator:
                         else 'The "{0}" needs to an interger instead of "{1}".'.format(key, item[key])
                     )
         else:
-            return item[key]
+            return int(item[key])
 
     # 检测坐标是否合法
     @classmethod
@@ -76,7 +76,7 @@ class UiGenerator:
                 except Exception:
                     EXCEPTION.fatal("Valid value for {0}: {1}.".format(key, item[key]))
         else:
-            return item[key]
+            return int(item[key])
 
     # 转换文字
     @staticmethod

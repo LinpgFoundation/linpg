@@ -22,7 +22,7 @@ class AbstractImageSurface(Rectangle, HiddenableSurface):
         return self.get_alpha()
 
     def get_alpha(self) -> int:
-        return self.img.get_alpha()
+        return int(self.img.get_alpha())
 
     def set_alpha(self, value: int) -> None:
         self.img.set_alpha(keep_int_in_range(int(value), 0, 255))

@@ -50,7 +50,6 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: object, warning: 
                         keys[index]
                     )
                 )
-            return keys[index]
 
 
 # 配置文件管理模块
@@ -73,12 +72,12 @@ class Config:
                 # 使用yaml模块加载配置文件
                 if path.endswith(".yaml") or path.endswith(".yml"):
                     if _YAML_INITIALIZED is True:
-                        return yaml.load(f.read(), Loader=yaml.Loader)
+                        return dict(yaml.load(f.read(), Loader=yaml.Loader))
                     else:
                         EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.")
                 # 使用json模块加载配置文件
                 elif path.endswith(".json"):
-                    return json.load(f)
+                    return dict(json.load(f))
                 else:
                     EXCEPTION.fatal("Linpg can only load json and yaml (when pyyaml is installed).")
 

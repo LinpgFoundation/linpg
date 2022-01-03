@@ -261,7 +261,7 @@ class DialogEditor(DialogConverter):
     # 检查是否有任何改动
     def __no_changes_were_made(self) -> bool:
         if os.path.exists((dialog_file_location_t := self.get_dialog_file_location())):
-            return Config.load(dialog_file_location_t, "dialogs") == self.__slipt_the_stuff_need_save()
+            return bool(Config.load(dialog_file_location_t, "dialogs") == self.__slipt_the_stuff_need_save())
         else:
             return False
 
@@ -400,7 +400,7 @@ class DialogEditor(DialogConverter):
                             break
                         Display.flip()
                 elif len(theNext["target"]) == 1:
-                    return self._current_dialog_content["next_dialog_id"]["target"][0]["id"]
+                    return str(self._current_dialog_content["next_dialog_id"]["target"][0]["id"])
         return "<!null>"
 
     def draw(self, surface: ImageSurface) -> None:

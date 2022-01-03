@@ -118,8 +118,8 @@ class DecorationImagesModule(AbstractMapImagesModule):
 class TileMapImagesModule(AbstractMapImagesModule):
 
     # 环境
-    __ENV_IMAGE_DICT: dict = {}
-    __ENV_IMAGE_DICT_DARK: dict = {}
+    __ENV_IMAGE_DICT: dict[str, StaticImage] = {}
+    __ENV_IMAGE_DICT_DARK: dict[str, StaticImage] = {}
 
     # 调整尺寸
     @classmethod

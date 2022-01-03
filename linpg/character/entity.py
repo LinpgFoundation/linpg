@@ -201,7 +201,7 @@ class Entity(Position):
             action_dict: dict = dict(self.__imgId_dict[action])
         except KeyError:
             EXCEPTION.fatal('Action "{}" is invalid!'.format(action))
-        return action_dict["imgId"] if len(action_dict) > 0 else -1
+        return int(action_dict["imgId"]) if len(action_dict) > 0 else -1
 
     # 获取角色特定动作的图片总数量
     def get_imgNum(self, action: str) -> int:
@@ -221,7 +221,7 @@ class Entity(Position):
 
     # 获取角色特定动作的图片透明度
     def get_imgAlpaha(self, action: str) -> int:
-        return self.__imgId_dict[action]["alpha"]
+        return int(self.__imgId_dict[action]["alpha"])
 
     # 设定角色特定动作的图片透明度
     def set_imgAlpaha(self, action: str, alpha: int) -> None:
@@ -546,11 +546,11 @@ class Entity(Position):
     @property
     def ideal_attack_range(self) -> int:
         if "near" in self.__effective_range and self.__effective_range["near"] is not None:
-            return self.__effective_range["near"][-1]
+            return int(self.__effective_range["near"][-1])
         elif "middle" in self.__effective_range and self.__effective_range["middle"] is not None:
-            return self.__effective_range["middle"][-1]
+            return int(self.__effective_range["middle"][-1])
         elif "far" in self.__effective_range and self.__effective_range["far"] is not None:
-            return self.__effective_range["far"][-1]
+            return int(self.__effective_range["far"][-1])
         else:
             EXCEPTION.fatal("This character has no valid effective range!")
 

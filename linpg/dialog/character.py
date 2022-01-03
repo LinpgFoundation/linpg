@@ -115,16 +115,14 @@ class CharacterImageManager:
         window_y: int = surface.get_height()
         npcImg_y: int = int(window_y - window_x / 2)
         # 调整alpha值
+        x_moved_forNpcLastRound: int = 0
         if self.__last_round_image_alpha > 0:
             self.__last_round_image_alpha -= 15
-            x_moved_forNpcLastRound = self.__img_width / 4 - self.__img_width / 4 * self.__last_round_image_alpha / 255
-        else:
-            x_moved_forNpcLastRound = 0
+            x_moved_forNpcLastRound = int(self.__img_width / 4 - self.__img_width / 4 * self.__last_round_image_alpha / 255)
+        x_moved_forNpcThisRound: int = 0
         if self.__this_round_image_alpha < 255:
             self.__this_round_image_alpha += 25
-            x_moved_forNpcThisRound = self.__img_width / 4 * self.__this_round_image_alpha / 255 - self.__img_width / 4
-        else:
-            x_moved_forNpcThisRound = 0
+            x_moved_forNpcThisRound = int(self.__img_width / 4 * self.__this_round_image_alpha / 255 - self.__img_width / 4)
         # 初始化被选择的角色名字
         self.character_get_click = None
         # 画上上一幕的立绘
@@ -144,11 +142,7 @@ class CharacterImageManager:
             # 同时新增左右两边的立绘
             elif len(self.__characters_this_round) == 2:
                 self.__display_character(
-                    self.__characters_this_round[0],
-                    x_moved_forNpcThisRound,
-                    npcImg_y,
-                    self.__this_round_image_alpha,
-                    surface,
+                    self.__characters_this_round[0], x_moved_forNpcThisRound, npcImg_y, self.__this_round_image_alpha, surface
                 )
                 self.__display_character(
                     self.__characters_this_round[1],
@@ -238,11 +232,7 @@ class CharacterImageManager:
             # 隐藏之前的左右两边立绘
             if len(self.__characters_this_round) == 0:
                 self.__display_character(
-                    self.__characters_last_round[0],
-                    x_moved_forNpcLastRound,
-                    npcImg_y,
-                    self.__last_round_image_alpha,
-                    surface,
+                    self.__characters_last_round[0], x_moved_forNpcLastRound, npcImg_y, self.__last_round_image_alpha, surface
                 )
                 self.__display_character(
                     self.__characters_last_round[1],

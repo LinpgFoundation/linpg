@@ -37,7 +37,7 @@ class EntityImageManager:
 
     @classmethod
     def get_img_num(cls, characterType: str, action: str) -> int:
-        return cls.__CHARACTERS_IMAGE_DICT[characterType][action]["imgNum"]
+        return int(cls.__CHARACTERS_IMAGE_DICT[characterType][action]["imgNum"])
 
     # 动图字典制作模块：接受一个友方角色名，返回对应的动图字典
     @classmethod

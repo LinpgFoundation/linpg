@@ -109,7 +109,7 @@ class ColorManager:
     def get(cls, color: color_liked) -> tuple[int, int, int, int]:
         if isinstance(color, str):
             if color.startswith("#"):
-                return ImageColor.getrgb(color)
+                return cls.__to_rgba_color(ImageColor.getrgb(color))
             else:
                 try:
                     return cls.__to_rgba_color(tuple(THECOLORS[color]))

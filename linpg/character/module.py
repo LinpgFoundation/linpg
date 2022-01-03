@@ -9,19 +9,19 @@ def calculate_range(effective_range_dic: dict) -> int:
             and effective_range_dic["far"] is not None
             and max_attack_range < effective_range_dic["far"][-1]
         ):
-            return effective_range_dic["far"][-1]
+            return int(effective_range_dic["far"][-1])
         if (
             "middle" in effective_range_dic
             and effective_range_dic["middle"] is not None
             and max_attack_range < effective_range_dic["middle"][-1]
         ):
-            return effective_range_dic["middle"][-1]
+            return int(effective_range_dic["middle"][-1])
         if (
             "near" in effective_range_dic
             and effective_range_dic["near"] is not None
             and max_attack_range < effective_range_dic["near"][-1]
         ):
-            return effective_range_dic["near"][-1]
+            return int(effective_range_dic["near"][-1])
         return max_attack_range
     else:
         return 0

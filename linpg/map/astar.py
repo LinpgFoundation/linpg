@@ -30,9 +30,9 @@ class AStar(AbstractMap):
         # 终点
         self.__end_point: Point = Point(0, 0)
         # 开启表
-        self.__open_list: list = []
+        self.__open_list: list[Node] = []
         # 关闭表
-        self.__close_list: list = []
+        self.__close_list: list[Node] = []
 
     def _update(self, row: int, column: int) -> None:
         super()._update(row, column)

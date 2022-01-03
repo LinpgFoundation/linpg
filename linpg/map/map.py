@@ -22,7 +22,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         # 背景图片
         self.__BACKGROUND_SURFACE: Optional[StaticImage] = None
         # 装饰物
-        self.__decorations: list = []
+        self.__decorations: list[DecorationObject] = []
         # 处于光处的区域
         self.__light_area: tuple = tuple()
         # 追踪是否需要更新的参数
@@ -474,7 +474,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                         if (x, y) not in lightArea:
                             lightArea.append((x, y))
         for item in self.__decorations:
-            if item.get_type() == "campfire" and item.get_status("lit") is True:
+            if isinstance(item, CampfireObject) and item.get_status("lit") is True:
                 for y in range(int(item.y - item.range), int(item.y + item.range)):
                     if y < item.y:
                         for x in range(int(item.x - item.range - (y - item.y) + 1), int(item.x + item.range + (y - item.y))):

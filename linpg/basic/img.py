@@ -2,7 +2,7 @@ from ..asset import ASSET
 from .draw import *
 
 # 获取材质缺失的临时警示材质
-def get_texture_missing_surface(size: tuple) -> ImageSurface:
+def get_texture_missing_surface(size: tuple[int, int]) -> ImageSurface:
     texture_missing_surface: ImageSurface = new_surface(size)
     texture_missing_surface.fill(Colors.BLACK)
     half_width: int = int(size[0] / 2)

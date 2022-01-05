@@ -17,7 +17,7 @@ class DialogButtons(HiddenableSurface):
         # 生成跳过按钮
         tempButtonIcon = IMG.load("<!ui>next.png", (self.FONT.size, self.FONT.size))
         tempButtonTxt = self.FONT.render(dialog_txt["skip"], Colors.WHITE)
-        temp_w = tempButtonTxt.get_width() + self.FONT.size * 1.5
+        temp_w: int = int(tempButtonTxt.get_width() + self.FONT.size * 1.5)
 
         skipButton: ImageSurface = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
         skipButtonHovered: ImageSurface = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
@@ -38,7 +38,7 @@ class DialogButtons(HiddenableSurface):
         self.autoMode: bool = False
         # 自动播放
         tempButtonTxt = self.FONT.render(dialog_txt["auto"], Colors.GRAY)
-        temp_w = tempButtonTxt.get_width() + self.FONT.size * 1.5
+        temp_w = int(tempButtonTxt.get_width() + self.FONT.size * 1.5)
         autoButton = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
         autoButtonHovered = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
         autoButton.blit(tempButtonTxt, (0, 0))

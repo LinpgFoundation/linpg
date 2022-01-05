@@ -1,5 +1,6 @@
 {
     "ConfigFileType": "yaml",
+    "SaveFolderPath": "Save",
     "ThirdPartyLibraries": {
         "ffmpeg": "ffmpeg.exe"
     }

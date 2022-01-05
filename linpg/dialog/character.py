@@ -330,7 +330,7 @@ class CharacterImageManager:
                     )
 
     # 更新立绘
-    def update(self, characterNameList: Iterable[str]) -> None:
+    def update(self, characterNameList: Sequence[str]) -> None:
         self.__characters_last_round = self.__characters_this_round
         self.__characters_this_round = tuple(characterNameList) if characterNameList is not None else tuple()
         self.__last_round_image_alpha = 255

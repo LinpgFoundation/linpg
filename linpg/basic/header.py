@@ -1,5 +1,5 @@
 from random import randint as RANDINT
-from typing import Iterable
+from typing import Optional, Sequence
 
 import numpy
 
@@ -23,7 +23,7 @@ int_f = Union[int, float]
 # number，即数字，建议int但接受float
 number = Union[int, float]
 # 颜色类
-color_liked = Union[Iterable[int], str]
+color_liked = Union[Sequence[int], str]
 # 图形类
 ImageSurface = pygame.surface.Surface
 PoI = Union[str, pygame.surface.Surface]
@@ -78,7 +78,8 @@ def make_surface_from_array(surface_array: numpy.ndarray, swap_axes: bool = True
         return pygame.surfarray.make_surface(surface_array).convert()
     else:
         # by llindstrom
-        surface: ImageSurface = new_transparent_surface(surface_array.shape[0:2])
+        _shape: tuple = surface_array.shape
+        surface: ImageSurface = new_transparent_surface((int(_shape[0]), int(_shape[1])))
         # Copy the rgb part of array to the new surface.
         pygame.pixelcopy.array_to_surface(surface, surface_array[:, :, 0:3])
         # Copy the alpha part of array to the surface using a pixels-alpha
@@ -89,10 +90,10 @@ def make_surface_from_array(surface_array: numpy.ndarray, swap_axes: bool = True
 
 
 # 获取Surface
-def new_surface(size: tuple, surface_flags: Optional[int] = None) -> ImageSurface:
+def new_surface(size: tuple[int, int], surface_flags: Optional[int] = None) -> ImageSurface:
     return pygame.Surface(size, flags=surface_flags) if surface_flags is not None else pygame.Surface(size).convert()
 
 
 # 获取透明的Surface
-def new_transparent_surface(size: tuple) -> ImageSurface:
+def new_transparent_surface(size: tuple[int, int]) -> ImageSurface:
     return new_surface(size, pygame.SRCALPHA).convert_alpha()

@@ -46,7 +46,7 @@ class Loader:
 
     # gif图片
     @staticmethod
-    def gif(gif_path_or_img_list: Union[str, Iterable], position: tuple, size: tuple, updateGap: int = 1) -> GifImage:
+    def gif(gif_path_or_img_list: Union[str, Sequence], position: tuple, size: tuple, updateGap: int = 1) -> GifImage:
         imgList: list = []
         # 如果是gif文件
         if isinstance(gif_path_or_img_list, str) and gif_path_or_img_list.endswith(".gif"):
@@ -58,7 +58,7 @@ class Loader:
                     StaticImage(make_surface_from_array(numpy.asarray(gif_image.convert("RGBA"))), 0, 0, size[0], size[1])
                 )
         # 如果是一个列表的文件路径
-        elif isinstance(gif_path_or_img_list, Iterable):
+        elif isinstance(gif_path_or_img_list, Sequence):
             for image_path in gif_path_or_img_list:
                 imgList.append(StaticImage(image_path, 0, 0, size[0], size[1]))
         else:

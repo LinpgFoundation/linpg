@@ -1,5 +1,4 @@
 from collections import deque
-from typing import Sequence
 from .module import *
 
 # 人形模块

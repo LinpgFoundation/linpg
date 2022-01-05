@@ -75,7 +75,7 @@ class DialogEditor(DialogConverter):
                 )
         # 加载透明图片
         self.UIContainerRight_bg.set(
-            "<transparent>", get_texture_missing_surface((container_width * 0.8, container_width * 0.45))
+            "<transparent>", get_texture_missing_surface((int(container_width * 0.8), int(container_width * 0.45)))
         )
         self.UIContainerRight_bg.distance_between_item = int(Display.get_height() * 0.02)
         self.__current_select_bg_name = None
@@ -148,7 +148,7 @@ class DialogEditor(DialogConverter):
         # 移除按钮
         self.removeNpcButton = Font.render(CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE)
         surfaceTmp = Colors.surface(
-            (self.removeNpcButton.get_width() * 1.2, self.removeNpcButton.get_height() * 1.2), Colors.WHITE
+            (int(self.removeNpcButton.get_width() * 1.2), int(self.removeNpcButton.get_height() * 1.2)), Colors.WHITE
         )
         surfaceTmp.blit(self.removeNpcButton, (self.removeNpcButton.get_width() * 0.1, 0))
         self.removeNpcButton = surfaceTmp

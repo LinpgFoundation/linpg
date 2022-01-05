@@ -26,8 +26,9 @@ class KeySystem:
     __root.withdraw()
 
     # key是否被按下
-    def get_pressed(self, key_name: Union[str, int]) -> bool:
-        return pygame.key.get_pressed()[self.get_key_code(key_name) if isinstance(key_name, str) else key_name]
+    @classmethod
+    def get_pressed(cls, key_name: strint) -> bool:
+        return pygame.key.get_pressed()[cls.get_key_code(key_name) if isinstance(key_name, str) else key_name]
 
     # 获取key的代号
     @staticmethod
@@ -35,8 +36,9 @@ class KeySystem:
         return pygame.key.key_code(key_name)
 
     # 获取粘贴板内容
-    def get_clipboard(self) -> str:
-        return self.__root.clipboard_get()
+    @classmethod
+    def get_clipboard(cls) -> str:
+        return cls.__root.clipboard_get()
 
 
 Key: KeySystem = KeySystem()

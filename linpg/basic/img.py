@@ -57,7 +57,7 @@ class RawImageManafer:
     # 图片加载模块：接收图片路径,长,高,返回对应图片
     def load(self, path: PoI, size: tuple = tuple(), alpha: int = 255, convert_alpha: bool = True) -> ImageSurface:
         # 加载图片
-        img = IMG.quickly_load(path, convert_alpha)
+        img: ImageSurface = IMG.quickly_load(path, convert_alpha)
         # 根据参数编辑图片
         if alpha < 255:
             img.set_alpha(alpha)

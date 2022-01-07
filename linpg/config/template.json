@@ -34,7 +34,7 @@
         "version": 0
     },
     "setting": {
-        "AllowCache": false,
+        "AllowCache": true,
         "Antialias": true,
         "DeveloperMode": false,
         "FPS": 60,
@@ -45,7 +45,7 @@
         "MouseIconWidth": 18,
         "MouseMoveSpeed": 30,
         "NumberOfChannels": 8,
-        "ReadingSpeed": 0.5,
+        "ReadingSpeed": 1,
         "ScreenScale": 100,
         "Sound": {
             "background_music": 100,

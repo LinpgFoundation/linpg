@@ -40,13 +40,20 @@ class Loader:
     # 进度条Surface
     @staticmethod
     def progress_bar_surface(
-        img_on_top_path: str, img_on_bottom_path: str, position: tuple, size: tuple, mode: str = "horizontal", tag: str = ""
+        img_on_top_path: str,
+        img_on_bottom_path: str,
+        position: tuple[int, int],
+        size: tuple[int, int],
+        mode: str = "horizontal",
+        tag: str = "",
     ) -> ProgressBarSurface:
         return ProgressBarSurface(img_on_top_path, img_on_bottom_path, position[0], position[1], size[0], size[1], mode, tag)
 
     # gif图片
     @staticmethod
-    def gif(gif_path_or_img_list: Union[str, Sequence], position: tuple, size: tuple, updateGap: int = 1) -> GifImage:
+    def gif(
+        gif_path_or_img_list: Union[str, Sequence], position: tuple[int, int], size: tuple[int, int], updateGap: int = 1
+    ) -> GifImage:
         imgList: list = []
         # 如果是gif文件
         if isinstance(gif_path_or_img_list, str) and gif_path_or_img_list.endswith(".gif"):
@@ -66,12 +73,17 @@ class Loader:
         return GifImage(tuple(imgList), position[0], position[1], size[0], size[1], updateGap)
 
     @staticmethod
-    def button(path: str, position: tuple, size: tuple, alpha_when_not_hover: int = 255) -> Button:
+    def button(path: str, position: tuple[int, int], size: tuple[int, int], alpha_when_not_hover: int = 255) -> Button:
         return load_button(path, position, size, alpha_when_not_hover)
 
     @staticmethod
     def button_with_text_in_center(
-        path: str, txt: strint, font_color: color_liked, font_size: int, position: tuple, alpha_when_not_hover: int = 255
+        path: str,
+        txt: strint,
+        font_color: color_liked,
+        font_size: int,
+        position: tuple[int, int],
+        alpha_when_not_hover: int = 255,
     ) -> Button:
         return load_button_with_text_in_center(path, str(txt), font_color, font_size, position, alpha_when_not_hover)
 
@@ -83,7 +95,7 @@ class Loader:
     # 高级文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
     @staticmethod
     def dynamic_text(
-        txt: strint, color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False
+        txt: strint, color: color_liked, pos: tuple[int, int], size: int, ifBold: bool = False, ifItalic: bool = False
     ) -> DynamicTextSurface:
         return DynamicTextSurface(
             Font.render(txt, color, size, ifBold, ifItalic),

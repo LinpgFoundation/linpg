@@ -58,7 +58,7 @@ class Config:
     # 获取默认配置文件类型
     @staticmethod
     def get_file_type() -> str:
-        return str(_SPECIFICATIONS["ConfigFileType"])
+        return str(Specification.get("ConfigFileType"))
 
     # 加载配置文件
     @staticmethod
@@ -190,19 +190,21 @@ class Config:
             return ""
 
 
-_SPECIFICATIONS: dict = Config.load_internal_file("specifications.json")
+# 引擎部分生产的配置文件的模板
+class Template:
+
+    __TEMPLATE: dict = Config.load_internal_file("template.json")
+
+    @classmethod
+    def get(cls, key: str) -> dict:
+        return dict(cls.__TEMPLATE[key])
+
 
 # 使用引擎开发游戏的用户可以自定义的参数
 class Specification:
-    @staticmethod
-    def get(key: str) -> Any:
-        return _SPECIFICATIONS[key]
 
+    __SPECIFICATIONS: dict = Config.load_internal_file("specifications.json")
 
-_TEMPLATE: dict = Config.load_internal_file("template.json")
-
-# 引擎部分生产的配置文件的模板
-class Template:
-    @staticmethod
-    def get(key: str) -> dict:
-        return dict(_TEMPLATE[key])
+    @classmethod
+    def get(cls, *key: str) -> Any:
+        return get_value_by_keys(cls.__SPECIFICATIONS, key)

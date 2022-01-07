@@ -231,6 +231,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
 
     # 获取上方图片（子类可根据需求修改）
     def _get_img_on_top(self) -> ImageSurface:
+        assert isinstance(self.img, ImageSurface)
         return self.img
 
     # 展示

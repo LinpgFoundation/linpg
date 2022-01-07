@@ -73,7 +73,7 @@ class DialogBox(AbstractDialogBox):
             EXCEPTION.inform(
                 "Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!\nAs a result, the text playing sound will be disabled."
             )
-        self.__READING_SPEED: int = int(Setting.get("ReadingSpeed"))
+        self.__READING_SPEED: int = max(int(Setting.get("ReadingSpeed")), 1)
         # 鼠标图标
         self.__mouse_img = GifImage(
             (
@@ -88,7 +88,7 @@ class DialogBox(AbstractDialogBox):
         )
         self.__read_time: int = 0
         self.__total_letters: int = 0
-        self.autoMode = False
+        self.autoMode: bool = False
         self.__fade_out_stage: bool = False
         # 设置对话框高度和坐标
         self._dialoguebox.set_top(-1)

@@ -117,10 +117,10 @@ class Info:
 class Cache:
 
     # 缓存文件夹路径
-    __CACHE_FOLDER: str = "Cache"
+    __CACHE_FOLDER: str = str(Specification.get("FolderPath", "Cache"))
 
     # 如果允许缓存，但缓存文件夹不存在
-    if Setting.get("AllowCache") is True and not os.path.exists(__CACHE_FOLDER):
+    if bool(Setting.get("AllowCache")) is True and not os.path.exists(__CACHE_FOLDER):
         # 则创建缓存文件夹
         os.mkdir(__CACHE_FOLDER)
 

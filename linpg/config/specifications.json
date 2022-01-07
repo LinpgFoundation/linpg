@@ -1,6 +1,9 @@
 {
     "ConfigFileType": "yaml",
-    "SaveFolderPath": "Save",
+    "FolderPath": {
+        "Cache": "Cache",
+        "Save": "Save"
+    },
     "ThirdPartyLibraries": {
         "ffmpeg": "ffmpeg.exe"
     }

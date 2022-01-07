@@ -190,7 +190,7 @@ class UiGenerator:
                         data["alpha_when_not_hover"] = 255
                     if "text" in data:
                         item_t = load_button_with_text_in_center(
-                            IMG.load(data["src"]),
+                            data["src"],
                             cls.__convert_text(data["text"]["src"]),
                             data["text"]["color"],
                             object_height,
@@ -199,18 +199,20 @@ class UiGenerator:
                         )
                     elif "title" in data:
                         item_t = load_button_with_des(
-                            IMG.load(data["src"]),
+                            data["src"],
                             cls.__convert_text(data["title"]),
                             ORIGIN,
                             (object_width, object_height),
                             data["alpha_when_not_hover"],
                         )
                     else:
-                        item_t = load_button(
-                            IMG.load(data["src"]),
-                            ORIGIN,
-                            (object_width, object_height),
-                            data["alpha_when_not_hover"],
+                        item_t = load_button(data["src"], ORIGIN, (object_width, object_height), data["alpha_when_not_hover"])
+                    if "icon" in data:
+                        # 转换尺寸
+                        _icon_width: int = cls.__convert_number(data["icon"], "width", max_width, custom_values)
+                        _icon_height: int = cls.__convert_number(data["icon"], "height", max_height, custom_values)
+                        item_t.set_icon(
+                            load_button_icon(data["icon"]["src"], (_icon_width, _icon_height), data["alpha_when_not_hover"])
                         )
                     if not "name" in data:
                         EXCEPTION.fatal("You have to set a name for button type.")
@@ -243,6 +245,9 @@ class UiGenerator:
                     EXCEPTION.fatal("Current type is not supported")
             # 如果有名字，则以tag的形式进行标注
             item_t.tag = data["name"] if "name" in data else ""
+            # 透明度
+            if "hidden" in data:
+                item_t.set_visible(not data["hidden"])
             # 设置坐标
             item_t.set_pos(
                 cls.__convert_coordinate(data, "x", int((max_width - item_t.get_width()) / 2), max_width, custom_values),

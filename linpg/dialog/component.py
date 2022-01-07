@@ -4,7 +4,7 @@ from .dialogbox import *
 class DialogButtons(HiddenableSurface):
     def __init__(self) -> None:
         super().__init__()
-        self.__button_hovered: int = 0
+        self.__button_hovered_index: int = 0
         self.__buttons_container: GameObjectsDictContainer = NULL_DICT_CONTAINER
         self.initialize()
 
@@ -12,128 +12,57 @@ class DialogButtons(HiddenableSurface):
     def initialize(self) -> None:
         # 从设置中读取信息
         self.FONT = Font.create(Display.get_width() * 0.0175)
-        # 从语言文件中读取按钮文字
-        dialog_txt: dict = Lang.get_texts("Dialog")
-        # 生成跳过按钮
-        tempButtonIcon = IMG.load("<!ui>next.png", (self.FONT.size, self.FONT.size))
-        tempButtonTxt = self.FONT.render(dialog_txt["skip"], Colors.WHITE)
-        temp_w: int = int(tempButtonTxt.get_width() + self.FONT.size * 1.5)
-
-        skipButton: ImageSurface = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
-        skipButtonHovered: ImageSurface = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
-        self.icon_y = (tempButtonTxt.get_height() - tempButtonIcon.get_height()) / 2
-        skipButtonHovered.blit(tempButtonIcon, (tempButtonTxt.get_width() + self.FONT.size * 0.5, self.icon_y))
-        skipButtonHovered.blit(tempButtonTxt, (0, 0))
-        tempButtonTxt = self.FONT.render(dialog_txt["skip"], Colors.GRAY)
-        tempButtonIcon = IMG.add_darkness(tempButtonIcon, 100)
-        skipButton.blit(tempButtonIcon, (tempButtonTxt.get_width() + self.FONT.size * 0.5, self.icon_y))
-        skipButton.blit(tempButtonTxt, (0, 0))
-        self.skipButton: StaticImage = StaticImage(skipButton, Display.get_width() * 0.9, Display.get_height() * 0.05)
-        self.skipButtonHovered = StaticImage(skipButtonHovered, Display.get_width() * 0.9, Display.get_height() * 0.05)
-        # 生成自动播放按钮
-        self.autoIconHovered = IMG.load("<!ui>auto.png", (self.FONT.size, self.FONT.size))
-        self.autoIcon = IMG.add_darkness(self.autoIconHovered, 100)
-        self.autoIconDegree = 0
-        self.autoIconDegreeChange = (2 ** 0.5 - 1) * self.FONT.size / 45
-        self.autoMode: bool = False
-        # 自动播放
-        tempButtonTxt = self.FONT.render(dialog_txt["auto"], Colors.GRAY)
-        temp_w = int(tempButtonTxt.get_width() + self.FONT.size * 1.5)
-        autoButton = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
-        autoButtonHovered = new_transparent_surface((temp_w, tempButtonTxt.get_height()))
-        autoButton.blit(tempButtonTxt, (0, 0))
-        autoButtonHovered.blit(self.FONT.render(dialog_txt["auto"], Colors.WHITE), (0, 0))
-        self.autoButton = DynamicImage(autoButton, Display.get_width() * 0.8, Display.get_height() * 0.05)
-        self.autoButton_abs_x: int = int(self.autoButton.x + self.autoButton.img.get_width() - self.FONT.size)
-        self.autoButtonHovered = DynamicImage(autoButtonHovered, Display.get_width() * 0.8, Display.get_height() * 0.05)
-        self.autoButtonHovered_abs_x: int = int(
-            self.autoButtonHovered.x + self.autoButtonHovered.img.get_width() - self.FONT.size
-        )
         # 取消隐藏按钮
-        self.showButton = load_button(
-            "<!ui>show.png", (Display.get_width() * 0.05, Display.get_height() * 0.05), (self.FONT.size, self.FONT.size), 150
-        )
         self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self.FONT.size})
+        # 自动播放模式
+        self.autoMode: bool = False
+        # 事件查询表
+        self.__button_hovered_lookup_table: tuple[str, ...] = ("", "show", "hide", "skip", "auto", "history")
 
     @property
     def item_being_hovered(self) -> str:
-        if self.__button_hovered == 1:
-            return "hide"
-        elif self.__button_hovered == 2:
-            return "skip"
-        elif self.__button_hovered == 3:
-            return "auto"
-        elif self.__button_hovered == 4:
-            return "history"
+        return self.__button_hovered_lookup_table[self.__button_hovered_index]
+
+    def set_visible(self, visible: bool) -> None:
+        super().set_visible(visible)
+        if self.is_hidden():
+            self.__buttons_container.get("hide").set_visible(False)
+            self.__buttons_container.get("history").set_visible(False)
+            self.__buttons_container.get("not_auto").set_visible(False)
+            self.__buttons_container.get("is_auto").set_visible(False)
+            self.__buttons_container.get("skip").set_visible(False)
+            self.__buttons_container.get("show").set_visible(True)
         else:
-            return ""
+            self.__buttons_container.get("hide").set_visible(True)
+            self.__buttons_container.get("history").set_visible(True)
+            self.__buttons_container.get("not_auto").set_visible(not self.autoMode)
+            self.__buttons_container.get("is_auto").set_visible(self.autoMode)
+            self.__buttons_container.get("skip").set_visible(True)
+            self.__buttons_container.get("show").set_visible(False)
 
     def draw(self, surface: ImageSurface) -> None:
-        self.__button_hovered = 0
+        self.__button_hovered_index = 0
+        self.__buttons_container.draw(surface)
         if self.is_hidden():
-            self.showButton.draw(surface)
-            if self.showButton.is_hovered():
-                self.__button_hovered = 1
-        else:
-            self.__buttons_container.draw(surface)
-            if self.skipButton.is_hovered():
-                self.skipButtonHovered.draw(surface)
-                self.__button_hovered = 2
-            else:
-                self.skipButton.draw(surface)
-            if self.autoButton.is_hovered():
-                self.autoButtonHovered.draw(surface)
-                if self.autoMode:
-                    rotatedIcon = IMG.rotate(self.autoIconHovered, self.autoIconDegree)
-                    surface.blit(
-                        rotatedIcon,
-                        (
-                            self.autoButtonHovered_abs_x + self.autoIconHovered.get_width() / 2 - rotatedIcon.get_width() / 2,
-                            self.autoButtonHovered.y
-                            + self.icon_y
-                            + self.autoIconHovered.get_height() / 2
-                            - rotatedIcon.get_height() / 2,
-                        ),
-                    )
-                    if self.autoIconDegree < 180:
-                        self.autoIconDegree += 1
-                    else:
-                        self.autoIconDegree = 0
-                else:
-                    surface.blit(self.autoIconHovered, (self.autoButtonHovered_abs_x, self.autoButtonHovered.y + self.icon_y))
-                self.__button_hovered = 3
-            else:
-                if self.autoMode:
-                    self.autoButtonHovered.draw(surface)
-                    rotatedIcon = IMG.rotate(self.autoIconHovered, self.autoIconDegree)
-                    surface.blit(
-                        rotatedIcon,
-                        (
-                            self.autoButtonHovered_abs_x + self.autoIconHovered.get_width() / 2 - rotatedIcon.get_width() / 2,
-                            self.autoButtonHovered.y
-                            + self.icon_y
-                            + self.autoIconHovered.get_height() / 2
-                            - rotatedIcon.get_height() / 2,
-                        ),
-                    )
-                    if self.autoIconDegree < 180:
-                        self.autoIconDegree += 1
-                    else:
-                        self.autoIconDegree = 0
-                else:
-                    self.autoButton.draw(surface)
-                    surface.blit(self.autoIcon, (self.autoButton_abs_x, self.autoButton.y + self.icon_y))
+            if self.__buttons_container.item_being_hovered == "show":
+                self.__button_hovered_index = 1
+        elif self.__buttons_container.item_being_hovered is not None:
             if self.__buttons_container.item_being_hovered == "hide":
-                self.__button_hovered = 1
+                self.__button_hovered_index = 2
             elif self.__buttons_container.item_being_hovered == "history":
-                self.__button_hovered = 4
+                self.__button_hovered_index = 5
+            elif (
+                self.__buttons_container.item_being_hovered == "not_auto"
+                or self.__buttons_container.item_being_hovered == "is_auto"
+            ):
+                self.__button_hovered_index = 4
+            elif self.__buttons_container.item_being_hovered == "skip":
+                self.__button_hovered_index = 3
 
     def autoModeSwitch(self) -> None:
-        if not self.autoMode:
-            self.autoMode = True
-        else:
-            self.autoMode = False
-            self.autoIconDegree = 0
+        self.autoMode = not self.autoMode
+        self.__buttons_container.get("not_auto").set_visible(not self.autoMode)
+        self.__buttons_container.get("is_auto").set_visible(self.autoMode)
 
 
 class DialogNode(Button):

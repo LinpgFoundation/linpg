@@ -15,11 +15,79 @@
             {
                 "alpha_when_not_hover": 150,
                 "height": "<#button_size>",
+                "hidden": true,
+                "name": "show",
+                "src": "<!ui>show.png",
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "5%",
+                "y": "5%"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "<#button_size>",
                 "name": "history",
                 "src": "<!ui>history.png",
                 "type": "button",
                 "width": "<#button_size>",
                 "x": "10%",
+                "y": "5%"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "<#button_size>",
+                "icon": {
+                    "height": "<#button_size>",
+                    "src": "<!ui>auto.png",
+                    "width": "<#button_size>"
+                },
+                "name": "not_auto",
+                "src": "<!transparent>",
+                "text": {
+                    "color": "white",
+                    "src": "{Dialog,auto}"
+                },
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "80%",
+                "y": "5%"
+            },
+            {
+                "height": "<#button_size>",
+                "hidden": true,
+                "icon": {
+                    "height": "<#button_size>",
+                    "src": "<!ui>auto.png",
+                    "width": "<#button_size>"
+                },
+                "name": "is_auto",
+                "src": "<!transparent>",
+                "text": {
+                    "color": "white",
+                    "src": "{Dialog,auto}"
+                },
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "80%",
+                "y": "5%"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "height": "<#button_size>",
+                "icon": {
+                    "height": "<#button_size>",
+                    "src": "<!ui>next.png",
+                    "width": "<#button_size>"
+                },
+                "name": "skip",
+                "src": "<!transparent>",
+                "text": {
+                    "color": "white",
+                    "src": "{Dialog,skip}"
+                },
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "90%",
                 "y": "5%"
             }
         ],

@@ -24,8 +24,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         self.history_back = (
             load_button(
                 "<!ui>back.png",
-                (Display.get_width() * 0.04, Display.get_height() * 0.04),
-                (Display.get_width() * 0.03, Display.get_height() * 0.04),
+                Coordinates.convert((Display.get_width() * 0.04, Display.get_height() * 0.04)),
+                Coordinates.convert((Display.get_width() * 0.03, Display.get_height() * 0.04)),
                 150,
             )
             if not basic_features_only
@@ -127,8 +127,11 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
     def __check_button_event(self, surface: ImageSurface) -> bool:
         if self._buttons_mananger is not None and not self.__is_showing_history:
             if self._buttons_mananger.item_being_hovered == "hide":
-                self._buttons_mananger.set_visible(self._buttons_mananger.is_hidden())
-                self.__dialog_txt_system.set_visible(self._buttons_mananger.is_visible())
+                self._buttons_mananger.set_visible(False)
+                self.__dialog_txt_system.set_visible(False)
+            elif self._buttons_mananger.item_being_hovered == "show":
+                self._buttons_mananger.set_visible(True)
+                self.__dialog_txt_system.set_visible(True)
             # 如果接来下没有文档了或者玩家按到了跳过按钮, 则准备淡出并停止播放
             elif self._buttons_mananger.item_being_hovered == "skip":
                 self.fade(surface)

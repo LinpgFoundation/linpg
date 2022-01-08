@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from typing import NoReturn
-from .Error import Error
+from .error import Error
 from .FileNotExists import FileNotExists
 from .FunctionIsNotImplemented import FunctionIsNotImplemented
 from .ToolIsMissing import ToolIsMissing

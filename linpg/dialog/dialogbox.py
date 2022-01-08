@@ -152,6 +152,12 @@ class DialogBox(AbstractDialogBox):
         if LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy():
             LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.stop()
 
+    def set_visible(self, visible: bool) -> None:
+        super().set_visible(visible)
+        # 如果声音在播放时模块被隐藏，则停止播放音效
+        if self.is_hidden():
+            self.stop_playing_text_sound()
+
     # 展示
     def draw(self, surface: ImageSurface) -> None:
         if self.is_visible():

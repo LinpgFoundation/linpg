@@ -1,4 +1,4 @@
-from .Error import Error
+from .error import Error
 
 # 对象文件不存在
 class FileNotExists(Error):

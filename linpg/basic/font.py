@@ -158,7 +158,7 @@ class FontManager:
         self,
         txt: strint,
         color: color_liked,
-        size: int_f,
+        size: int,
         panding: int,
         background_color: color_liked,
         ifBold: bool = False,

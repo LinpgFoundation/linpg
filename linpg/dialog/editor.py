@@ -53,12 +53,7 @@ class DialogEditor(DialogConverter):
         )
         # 背景图片编辑模块
         self.UIContainerRight_bg = SurfaceContainerWithScrollbar(
-            "<!null>",
-            RightContainerRect.x,
-            RightContainerRect.y,
-            RightContainerRect.width,
-            RightContainerRect.height,
-            "vertical",
+            None, RightContainerRect.x, RightContainerRect.y, RightContainerRect.width, RightContainerRect.height, "vertical"
         )
         self.UIContainerRight_bg.set_scroll_bar_pos("right")
         # 加载背景图片
@@ -82,12 +77,7 @@ class DialogEditor(DialogConverter):
         self.__current_select_bg_copy = None
         # npc立绘编辑模块
         self.UIContainerRight_npc = SurfaceContainerWithScrollbar(
-            "<!null>",
-            RightContainerRect.x,
-            RightContainerRect.y,
-            RightContainerRect.width,
-            RightContainerRect.height,
-            "vertical",
+            None, RightContainerRect.x, RightContainerRect.y, RightContainerRect.width, RightContainerRect.height, "vertical"
         )
         self.UIContainerRight_npc.set_scroll_bar_pos("right")
         # 加载npc立绘

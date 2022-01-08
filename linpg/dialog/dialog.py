@@ -10,10 +10,12 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         PauseMenuModuleForGameSystem.__init__(self)
         # 加载对话框系统
         self.__dialog_txt_system: DialogBox = DialogBox(self._FONT_SIZE)
+        # UI按钮
+        self.__buttons_container: Optional[GameObjectsDictContainer] = None
         # 加载ui
         if not basic_features_only:
             # UI按钮
-            self._buttons_mananger = DialogButtons()
+            self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self._FONT_SIZE})
             # 暂停菜单
             self._enable_pause_menu()
         # 是否要显示历史对白页面
@@ -83,6 +85,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
     # 更新语言
     def update_language(self) -> None:
         super().update_language()
+        if self.__buttons_container is not None:
+            self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self._FONT_SIZE})
         self._initialize_pause_menu()
 
     def continue_scene(self, dialog_id: str) -> None:
@@ -125,27 +129,32 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 EXCEPTION.fatal('Type "{}" is not a valid type.'.format(next_dialog_type))
 
     def __check_button_event(self, surface: ImageSurface) -> bool:
-        if self._buttons_mananger is not None and not self.__is_showing_history:
-            if self._buttons_mananger.item_being_hovered == "hide":
-                self._buttons_mananger.set_visible(False)
-                self.__dialog_txt_system.set_visible(False)
-            elif self._buttons_mananger.item_being_hovered == "show":
-                self._buttons_mananger.set_visible(True)
+        if self.__buttons_container is not None:
+            if self.__buttons_container.is_hidden():
+                self.__buttons_container.set_visible(True)
                 self.__dialog_txt_system.set_visible(True)
+            elif self.__buttons_container.item_being_hovered == "hide":
+                self.__buttons_container.set_visible(False)
+                self.__dialog_txt_system.set_visible(False)
             # 如果接来下没有文档了或者玩家按到了跳过按钮, 则准备淡出并停止播放
-            elif self._buttons_mananger.item_being_hovered == "skip":
+            elif self.__buttons_container.item_being_hovered == "skip":
                 self.fade(surface)
                 self.stop()
-            elif self._buttons_mananger.item_being_hovered == "auto":
-                self._buttons_mananger.autoModeSwitch()
-                self.__dialog_txt_system.autoMode = self._buttons_mananger.autoMode
-            elif self._buttons_mananger.item_being_hovered == "history":
+            elif self.__buttons_container.item_being_hovered == "is_auto":
+                self.__dialog_txt_system.autoMode = True
+                self.__buttons_container.get("not_auto").set_visible(True)
+                self.__buttons_container.get("is_auto").set_visible(False)
+            elif self.__buttons_container.item_being_hovered == "not_auto":
+                self.__dialog_txt_system.autoMode = False
+                self.__buttons_container.get("not_auto").set_visible(False)
+                self.__buttons_container.get("is_auto").set_visible(True)
+            elif self.__buttons_container.item_being_hovered == "history":
                 self.__is_showing_history = True
             else:
                 return False
+            return True
         else:
             return False
-        return True
 
     # 过场动画
     def play_cutscene(self, surface: ImageSurface, fade_out_in_ms: int = 3000) -> None:
@@ -214,14 +223,14 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
     def draw(self, surface: ImageSurface) -> None:
         super().draw(surface)
         # 按钮
-        if self._buttons_mananger is not None:
-            self._buttons_mananger.draw(surface)
+        if self.__buttons_container is not None and not self.__is_showing_history:
+            self.__buttons_container.draw(surface)
         # 按键判定
         if Controller.get_event("confirm"):
             if self.history_back is not None and self.history_back.is_hovered() and self.__is_showing_history is True:
                 self.__is_showing_history = False
                 self.__history_surface = NULL_SURFACE
-            elif self.__check_button_event(surface) is True:
+            elif self.__is_showing_history is True or self.__check_button_event(surface) is True:
                 pass
             # 如果所有行都没有播出，则播出所有行
             elif not self.__dialog_txt_system.is_all_played():
@@ -334,12 +343,12 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 self.history_back.is_hovered()
         else:
             # 显示对话选项
-            if self._buttons_mananger is None or self._buttons_mananger.is_visible():
+            if self.__buttons_container is None or self.__buttons_container.is_visible():
                 self._dialog_options_container.display(surface)
             # 当自动播放系统告知需要更新，如果对话被隐藏，则无视进入下一个对白的操作，反之则进入
             if (
-                self._buttons_mananger is not None
-                and self._buttons_mananger.is_visible()
+                self.__buttons_container is not None
+                and self.__buttons_container.is_visible()
                 and self.__dialog_txt_system.needUpdate()
             ):
                 self.__go_to_next(surface)

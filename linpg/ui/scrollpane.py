@@ -2,8 +2,10 @@ from .scrollbar import *
 
 # 带有滚动条的Surface容器
 class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWithScrollbar):
-    def __init__(self, img: PoI, x: int_f, y: int_f, width: int, height: int, mode: str = "horizontal", tag: str = "") -> None:
-        GameObjectsDictContainer.__init__(self, IMG.load(img, (width, height)), x, y, width, height, tag)
+    def __init__(
+        self, img: Optional[PoI], x: int_f, y: int_f, width: int, height: int, mode: str = "horizontal", tag: str = ""
+    ) -> None:
+        GameObjectsDictContainer.__init__(self, img, x, y, width, height, tag)
         AbstractSurfaceWithScrollbar.__init__(self)
         self.__surface_width: int = 0
         self.__surface_height: int = 0
@@ -38,7 +40,7 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
         self._item_being_hovered = None
         if self.is_visible():
             # 如果有背景图片，则画出
-            if self.img is not NULL_SURFACE:
+            if self.img is not None:
                 surface.blit(self.img, Coordinates.add(self.pos, off_set))
             # 计算出基础坐标
             current_x: int = int(self.abs_x + off_set[0])

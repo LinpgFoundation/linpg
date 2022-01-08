@@ -1,4 +1,4 @@
-from .Error import Error
+from .error import Error
 
 # 工具不存在
 class ToolIsMissing(Error):

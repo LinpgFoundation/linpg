@@ -197,14 +197,6 @@ class UiGenerator:
                             ORIGIN,
                             data["alpha_when_not_hover"],
                         )
-                    elif "title" in data:
-                        item_t = load_button_with_des(
-                            data["src"],
-                            cls.__convert_text(data["title"]),
-                            ORIGIN,
-                            (object_width, object_height),
-                            data["alpha_when_not_hover"],
-                        )
                     else:
                         item_t = load_button(data["src"], ORIGIN, (object_width, object_height), data["alpha_when_not_hover"])
                     if "icon" in data:
@@ -212,8 +204,10 @@ class UiGenerator:
                         _icon_width: int = cls.__convert_number(data["icon"], "width", max_width, custom_values)
                         _icon_height: int = cls.__convert_number(data["icon"], "height", max_height, custom_values)
                         item_t.set_icon(
-                            load_button_icon(data["icon"]["src"], (_icon_width, _icon_height), data["alpha_when_not_hover"])
+                            ButtonComponent.icon(data["icon"]["src"], (_icon_width, _icon_height), data["alpha_when_not_hover"])
                         )
+                    if "description" in data:
+                        item_t.set_description(cls.__convert_text(data["description"]))
                     if not "name" in data:
                         EXCEPTION.fatal("You have to set a name for button type.")
                 elif data["type"] == "progress_bar_adjuster":

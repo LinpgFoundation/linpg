@@ -1,4 +1,4 @@
-from .Error import Error
+from .error import Error
 
 # 未实现子类的错误
 class FunctionIsNotImplemented(Error):

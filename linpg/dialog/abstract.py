@@ -5,7 +5,7 @@ class AbstractDialogSystem(AbstractGameSystem):
     def __init__(self) -> None:
         super().__init__()
         # 存储视觉小说数据的参数
-        self._dialog_data: dict = {}
+        self._dialog_data: dict[str, dict] = {}
         # 当前对话的id
         self._dialog_id: str = "head"
         # 加载对话的背景图片模块
@@ -14,8 +14,6 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._black_bg = StaticImage(
             Colors.surface(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height()
         )
-        # UI按钮
-        self._buttons_mananger: Optional[DialogButtons] = None
         # 对话文件路径
         self._dialog_folder_path: str = "Data"
         # 背景图片路径
@@ -109,7 +107,7 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     @property
     def dialog_content(self) -> dict:
-        return dict(self._dialog_data[self._part])
+        return self._dialog_data[self._part]
 
     # 获取当前对话的信息
     def __get_current_dialog_content(self, safe_mode: bool = False) -> dict:
@@ -231,8 +229,6 @@ class AbstractDialogSystem(AbstractGameSystem):
     # 更新语言
     def update_language(self) -> None:
         super().update_language()
-        if self._buttons_mananger is not None:
-            self._buttons_mananger.initialize()
         self._load_content()
 
     # 停止播放

@@ -25,7 +25,7 @@ class AbstractButton(AbstractImageSurface):
 
 
 # 按钮的简单实现
-class IconForButton(AbstractButton):
+class ButtonComponent(AbstractButton):
     def __init__(self, img: ImageSurface, width: int = -1, height: int = -1, tag: str = ""):
         super().__init__(img, 0, 0, width=width, height=height, tag=tag)
         # 是否被触碰的flag
@@ -37,6 +37,18 @@ class IconForButton(AbstractButton):
     def set_is_hovered(self, value: bool) -> None:
         self.__is_hovered = value
 
+    # 加载按钮图标
+    @staticmethod
+    def icon(path: PoI, size: tuple[int, int], alpha_when_not_hover: int = 255) -> "ButtonComponent":
+        if alpha_when_not_hover < 255:
+            fading_button = ButtonComponent(IMG.load(path, alpha=alpha_when_not_hover), size[0], size[1])
+            img2 = fading_button.get_image_copy()
+            img2.set_alpha(255)
+            fading_button.set_hover_img(img2)
+            return fading_button
+        else:
+            return ButtonComponent(IMG.quickly_load(path), size[0], size[1])
+
 
 # 按钮的简单实现
 class Button(AbstractButton):
@@ -45,13 +57,29 @@ class Button(AbstractButton):
         # 是否被触碰的flag
         self.__is_hovered: bool = False
         # 图标
-        self.__icon: Optional[IconForButton] = None
+        self.__icon: Optional[ButtonComponent] = None
+        # 描述
+        self.__description: str = ""
+        self.__description_surface: Optional[ImageSurface] = None
 
-    def set_icon(self, _icon: IconForButton) -> None:
+    # 设置图标
+    def set_icon(self, _icon: Optional[ButtonComponent] = None) -> None:
         self.__icon = _icon
 
-    def get_icon(self) -> Optional[IconForButton]:
+    # 获取图标
+    def get_icon(self) -> Optional[ButtonComponent]:
         return self.__icon
+
+    # 设置描述
+    def set_description(self, value: str = "") -> None:
+        self.__description = value
+        self.__description_surface = (
+            Font.render_description_box(
+                self.__description, Colors.BLACK, int(self.get_height() * 0.4), int(self.get_height() * 0.2), Colors.WHITE
+            )
+            if len(self.__description) > 0
+            else None
+        )
 
     def has_been_hovered(self) -> bool:
         return self.__is_hovered
@@ -65,6 +93,8 @@ class Button(AbstractButton):
                 self.__icon.set_right(self.x + offSet[0])
                 self.__icon.set_centery(self.centery + offSet[1])
                 self.__icon.draw(surface)
+            if self.has_been_hovered() and self.__description_surface is not None:
+                surface.blit(self.__description_surface, Controller.mouse.pos)
         else:
             self.__is_hovered = False
 
@@ -79,18 +109,6 @@ def load_button(path: PoI, position: tuple[int, int], size: tuple[int, int], alp
         return fading_button
     else:
         return Button(IMG.quickly_load(path), position[0], position[1], size[0], size[1])
-
-
-# 加载按钮图标
-def load_button_icon(path: PoI, size: tuple[int, int], alpha_when_not_hover: int = 255) -> IconForButton:
-    if alpha_when_not_hover < 255:
-        fading_button = IconForButton(IMG.load(path, alpha=alpha_when_not_hover), size[0], size[1])
-        img2 = fading_button.get_image_copy()
-        img2.set_alpha(255)
-        fading_button.set_hover_img(img2)
-        return fading_button
-    else:
-        return IconForButton(IMG.quickly_load(path), size[0], size[1])
 
 
 # 加载中间有文字按钮
@@ -127,31 +145,3 @@ def load_button_with_text_in_center_and_different_background(
     button_temp = load_button(img, position, img.get_size(), alpha_when_not_hover)
     button_temp.set_hover_img(img2)
     return button_temp
-
-
-# 带描述的按钮
-class ButtonWithDes(Button):
-    def __init__(self, img: ImageSurface, des: str, x: int, y: int, width: int = -1, height: int = -1, tag: str = "") -> None:
-        super().__init__(img, x, y, width, height, tag)
-        self.des: str = str(des)
-        self.des_surface = Font.render_description_box(
-            self.des, Colors.BLACK, self.get_height() * 0.4, int(self.get_height() * 0.2), Colors.WHITE
-        )
-
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
-        super().display(surface, offSet)
-        if self.has_been_hovered():
-            surface.blit(self.des_surface, Controller.mouse.pos)
-
-
-# 加载按钮
-def load_button_with_des(
-    path: PoI, tag: str, position: tuple[int, int], size: tuple[int, int], alpha_when_not_hover: int = 255
-) -> ButtonWithDes:
-    if alpha_when_not_hover < 255:
-        imgT: ImageSurface = IMG.load(path, alpha=alpha_when_not_hover)
-        fading_button = ButtonWithDes(imgT, tag, position[0], position[1], size[0], size[1])
-        fading_button.set_hover_img(imgT.copy())
-        return fading_button
-    else:
-        return ButtonWithDes(IMG.load(path), tag, position[0], position[1], size[0], size[1])

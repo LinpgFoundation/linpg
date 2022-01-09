@@ -1,14 +1,9 @@
 import time
+import PySimpleGUI  # type: ignore
 from .scrollpane import *
 
-# 尝试导入pysimplegui
-_PYSIMPLEGUI_INITIALIZED: bool = False
-try:
-    import PySimpleGUI  # type: ignore
-
-    _PYSIMPLEGUI_INITIALIZED = True
-except ImportError:
-    pass
+# 设置PySimpleGUI主题
+PySimpleGUI.theme(Specification.get("PySimpleGUITheme"))
 
 # 输入框Abstract，请勿实体化
 class AbstractInputBox(GameObject2d):
@@ -189,9 +184,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         super().__init__(x, y, font_size, txt_color, default_width)
         self._text: list[str] = [""]
         self.lineId = 0
-        self.__using_PySimpleGUI_input_box: Optional[Button] = (
-            load_button("<!ui>back.png", (0, 0), (self.FONT.size, self.FONT.size)) if _PYSIMPLEGUI_INITIALIZED else None
-        )
+        self.__using_PySimpleGUI_input_box: Button = load_button("<!ui>back.png", (0, 0), (self.FONT.size, self.FONT.size))
 
     def get_text(self) -> list:
         self.need_save = False
@@ -321,24 +314,24 @@ class MultipleLinesInputBox(AbstractInputBox):
             self.holderIndex = i - 1
 
     def show_external_input_box(self, screen: ImageSurface) -> None:
-        if self.__using_PySimpleGUI_input_box is not None:
-            self.__using_PySimpleGUI_input_box.set_right(self.input_box.right)
-            self.__using_PySimpleGUI_input_box.set_bottom(self.input_box.bottom)
-            self.__using_PySimpleGUI_input_box.draw(screen)
-            if self.__using_PySimpleGUI_input_box.is_hovered() and Controller.get_event("confirm"):
-                event, values = PySimpleGUI.Window(
-                    "",
+        self.__using_PySimpleGUI_input_box.set_right(self.input_box.right)
+        self.__using_PySimpleGUI_input_box.set_bottom(self.input_box.bottom)
+        self.__using_PySimpleGUI_input_box.draw(screen)
+        if self.__using_PySimpleGUI_input_box.is_hovered() and Controller.get_event("confirm"):
+            event, values = PySimpleGUI.Window(
+                "",
+                [
+                    [PySimpleGUI.Multiline(default_text=self.get_raw_text(), key="-CONTENT-")],
                     [
-                        [PySimpleGUI.Multiline(default_text=self.get_raw_text(), key="-CONTENT-")],
-                        [
-                            PySimpleGUI.Submit(Lang.get_text("Global", "save")),
-                            PySimpleGUI.Cancel(Lang.get_text("Global", "cancel")),
-                        ],
+                        PySimpleGUI.Submit(Lang.get_text("Global", "save")),
+                        PySimpleGUI.Cancel(Lang.get_text("Global", "cancel")),
                     ],
-                ).read(close=True)
-                if event == Lang.get_text("Global", "save"):
-                    self._remove_char("all")
-                    self._add_char(values["-CONTENT-"])
+                ],
+                force_toplevel=True,
+            ).read(close=True)
+            if event == Lang.get_text("Global", "save"):
+                self._remove_char("all")
+                self._add_char(values["-CONTENT-"])
 
     def draw(self, screen: ImageSurface) -> None:
         for event in Controller.events:

@@ -97,11 +97,6 @@ class SettingSystem:
     def low_memory_mode(self) -> bool:
         return bool(self.__SETTING_DATA["LowMemoryMode"])
 
-    # 允许缓存
-    @property
-    def allow_cache(self) -> bool:
-        return bool(self.__SETTING_DATA["AllowCache"])
-
     # 作弊模式
     @property
     def cheat_mode(self) -> bool:

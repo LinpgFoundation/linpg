@@ -34,7 +34,6 @@
         "version": 0
     },
     "setting": {
-        "AllowCache": true,
         "Antialias": true,
         "DeveloperMode": false,
         "FPS": 60,

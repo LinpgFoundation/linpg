@@ -62,10 +62,7 @@ class RawImageManafer:
         if alpha < 255:
             img.set_alpha(alpha)
         # 如果没有给size,则直接返回Surface
-        if len(size) == 0:
-            return img
-        else:
-            return self.smoothly_resize(img, size) if Setting.antialias is True else self.resize(img, size)
+        return img if len(size) == 0 else self.smoothly_resize(img, size) if Setting.antialias is True else self.resize(img, size)
 
     # 重新编辑尺寸
     @staticmethod

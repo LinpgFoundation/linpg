@@ -37,8 +37,8 @@ class ProgressBar(AbstractProgressBar):
 class ProgressBarSurface(AbstractProgressBar):
     def __init__(
         self,
-        imgOnTop: Union[PoI, None],
-        imgOnBottom: Union[PoI, None],
+        imgOnTop: Optional[PoI],
+        imgOnBottom: Optional[PoI],
         x: int_f,
         y: int_f,
         max_width: int,
@@ -49,7 +49,7 @@ class ProgressBarSurface(AbstractProgressBar):
         if imgOnTop is not None:
             imgOnTop = IMG.quickly_load(imgOnTop)
         super().__init__(imgOnTop, x, y, max_width, height, tag)
-        self._img2: ImageSurface = IMG.quickly_load(imgOnBottom) if imgOnBottom is not None else NULL_SURFACE
+        self._img2: Optional[ImageSurface] = IMG.quickly_load(imgOnBottom) if imgOnBottom is not None else None
         self._mode: bool = True
         self.set_mode(mode)
 
@@ -73,7 +73,7 @@ class ProgressBarSurface(AbstractProgressBar):
     def copy(self) -> "ProgressBarSurface":
         return ProgressBarSurface(
             self.img.copy(),
-            self._img2.copy() if self._img2 is not NULL_SURFACE else None,
+            self._img2.copy() if self._img2 is not None else None,
             self.x,
             self.y,
             self.get_width(),
@@ -88,7 +88,8 @@ class ProgressBarSurface(AbstractProgressBar):
     def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
             pos = Coordinates.add(self.pos, offSet)
-            surface.blit(IMG.resize(self._img2, self.size), pos)
+            if self._img2 is not None:
+                surface.blit(IMG.resize(self._img2, self.size), pos)
             if self.percentage > 0:
                 imgOnTop = IMG.resize(self.img, self.size)
                 if self._mode:
@@ -101,8 +102,8 @@ class ProgressBarSurface(AbstractProgressBar):
 class ProgressBarAdjuster(ProgressBarSurface):
     def __init__(
         self,
-        imgOnTop: Union[PoI, None],
-        imgOnBottom: Union[PoI, None],
+        imgOnTop: Optional[PoI],
+        imgOnBottom: Optional[PoI],
         indicator_img: PoI,
         x: int_f,
         y: int_f,
@@ -177,8 +178,8 @@ class ProgressBarAdjuster(ProgressBarSurface):
 class DynamicProgressBarSurface(ProgressBarSurface):
     def __init__(
         self,
-        imgOnTop: Union[PoI, None],
-        imgOnBottom: Union[PoI, None],
+        imgOnTop: Optional[PoI],
+        imgOnBottom: Optional[PoI],
         x: int_f,
         y: int_f,
         max_width: int,
@@ -216,7 +217,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
     def copy(self) -> "DynamicProgressBarSurface":
         return DynamicProgressBarSurface(
             self.img.copy(),
-            self._img2.copy() if self._img2 is not NULL_SURFACE else None,
+            self._img2.copy() if self._img2 is not None else None,
             self.x,
             self.y,
             self.get_width(),
@@ -239,7 +240,8 @@ class DynamicProgressBarSurface(ProgressBarSurface):
         if self.is_visible():
             _abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出底层图形
-            surface.blit(IMG.resize(self._img2, self.size), _abs_pos)
+            if self._img2 is not None:
+                surface.blit(IMG.resize(self._img2, self.size), _abs_pos)
             # 检查并更新百分比
             if (
                 self.__real_current_percentage < self._percentage_to_be

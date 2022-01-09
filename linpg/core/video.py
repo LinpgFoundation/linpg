@@ -155,12 +155,18 @@ class AbstractVideo:
 # 类似Wallpaper Engine的视频背景，但音乐不与画面同步
 class VideoSurface(AbstractVideo):
     def __init__(
-        self, path: str, loop: bool = True, with_audio: bool = True, play_range: tuple[int, int] = (0, -1), buffer_num: int = 10
+        self,
+        path: str,
+        loop: bool = True,
+        with_audio: bool = True,
+        play_range: tuple[int, int] = (0, -1),
+        buffer_num: int = 10,
+        cache_key: Optional[str] = None,
     ) -> None:
         super().__init__(path, buffer_num, play_range)
         self.__loop: bool = loop
         self.__looped_times: int = 0
-        self.__audio: Optional[PG_Sound] = Sound.load_from_video(path) if with_audio is True else None
+        self.__audio: Optional[PG_Sound] = Sound.load_from_video(path, cache_key=cache_key) if with_audio is True else None
         self.__audio_channel: Optional[PG_Channel] = None
 
     # 返回一个复制

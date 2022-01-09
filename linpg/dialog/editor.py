@@ -129,7 +129,7 @@ class DialogEditor(DialogConverter):
         self.please_enter_content = CONFIG["please_enter_content"]
         self.please_enter_name = CONFIG["please_enter_name"]
         # 背景音乐
-        self.dialog_bgm_select = DropDownList("<!null>", button_width * 11, button_y + font_size * 3, font_size)
+        self.dialog_bgm_select = DropDownList(None, button_width * 11, button_y + font_size * 3, font_size)
         self.dialog_bgm_select.set("null", Lang.get_text("DialogCreator", "no_bgm"))
         for file_name in os.listdir(ASSET.PATH_DICT["music"]):
             self.dialog_bgm_select.set(file_name, file_name)
@@ -145,7 +145,7 @@ class DialogEditor(DialogConverter):
         # 未保存离开时的警告
         self.__no_save_warning = UI.generate_container("leave_without_saving_warning")
         # 切换准备编辑的dialog部分
-        self.dialog_key_select = DropDownList("<!null>", button_width * 11, button_y + font_size, font_size)
+        self.dialog_key_select = DropDownList(None, button_width * 11, button_y + font_size, font_size)
         for key in self._dialog_data:
             self.dialog_key_select.set(key, key)
         self.dialog_key_select.set_selected_item(self._part)

@@ -1,4 +1,5 @@
 import hashlib
+import shutil
 from .setting import *
 
 # 全局数据
@@ -118,36 +119,83 @@ class Cache:
 
     # 缓存文件夹路径
     __CACHE_FOLDER: str = str(Specification.get("FolderPath", "Cache"))
-
-    # 如果允许缓存，但缓存文件夹不存在
-    if bool(Setting.get("AllowCache")) is True and not os.path.exists(__CACHE_FOLDER):
-        # 则创建缓存文件夹
-        os.mkdir(__CACHE_FOLDER)
-
+    # 缓存文件清单路径
+    __CACHE_FILES_DATA_PATH: str = os.path.join(__CACHE_FOLDER, "files.{}".format(Config.get_file_type()))
     # 缓存文件目录数据
     __CACHE_FILES_DATA: dict = {}
-    # 缓存文件目录
-    __CACHE_FILES_DATA_PATH: str = os.path.join(__CACHE_FOLDER, "files.{}".format(Config.get_file_type()))
 
-    # 如果允许缓存
-    if Setting.allow_cache is True:
-        # 但缓存文件目录不存在
-        if not os.path.exists(__CACHE_FILES_DATA_PATH):
-            # 则创建缓存文件夹
-            Config.save(__CACHE_FILES_DATA_PATH, __CACHE_FILES_DATA)
-        else:
-            __CACHE_FILES_DATA = Config.load_file(__CACHE_FILES_DATA_PATH)
+    # 如果缓存文件夹不存在
+    if not os.path.exists(__CACHE_FOLDER):
+        # 则创建缓存文件夹
+        os.mkdir(__CACHE_FOLDER)
+    # 如果缓存文件目录不存在
+    if not os.path.exists(__CACHE_FILES_DATA_PATH):
+        # 则创建缓存文件夹
+        Config.save(__CACHE_FILES_DATA_PATH, __CACHE_FILES_DATA)
+    else:
+        __CACHE_FILES_DATA.update(Config.load_file(__CACHE_FILES_DATA_PATH))
+
+    # 获取缓存文件夹路径
+    @classmethod
+    def generate_folder_path(cls) -> str:
+        return cls.__CACHE_FOLDER
+
+    @staticmethod
+    def delete_file_if_exist(path: str) -> None:
+        if os.path.exists(path):
+            if os.path.isdir(path):
+                shutil.rmtree(path)
+            else:
+                os.remove(path)
 
     # 为一个文件夹生产md5值
     @staticmethod
-    def generate_md5(path: str) -> str:
-        with open(path, "rb") as f:
-            return hashlib.md5(f.read()).hexdigest()
+    def __generate_md5(path: str) -> str:
+        if os.path.exists(path):
+            with open(path, "rb") as f:
+                return hashlib.md5(f.read()).hexdigest()
+        else:
+            EXCEPTION.fatal("Cannot generate md5 for a file that does not exist in path: {}".format(path))
 
-    # 根据md5值获取数据
+    # 新建一个对比关系
     @classmethod
-    def get_data(cls, md5: str) -> object:
-        try:
-            return cls.__CACHE_FILES_DATA[md5]
-        except KeyError:
-            return None
+    def new(cls, key: str, source_file_path: str, target_file_path: str) -> None:
+        if key not in cls.__CACHE_FILES_DATA:
+            cls.__CACHE_FILES_DATA[key] = {
+                "source": {"path": source_file_path, "md5": cls.__generate_md5(source_file_path)},
+                "target": {"path": target_file_path, "md5": cls.__generate_md5(target_file_path)},
+                "version": Info.get_current_version(),
+            }
+            Config.save(cls.__CACHE_FILES_DATA_PATH, cls.__CACHE_FILES_DATA)
+        else:
+            EXCEPTION.fatal('The key named "{}" already exists. Please create a new unique one!'.format(key))
+
+    # 移除
+    @classmethod
+    def remove(cls, key: str) -> None:
+        print("hit")
+        cls.delete_file_if_exist(cls.__CACHE_FILES_DATA[key]["target"]["path"])
+        del cls.__CACHE_FILES_DATA[key]
+        Config.save(cls.__CACHE_FILES_DATA_PATH, cls.__CACHE_FILES_DATA)
+
+    @classmethod
+    def get_cache_path(cls, key: str) -> str:
+        return str(cls.__CACHE_FILES_DATA[key]["target"]["path"])
+
+    # 对比数据
+    @classmethod
+    def match(cls, key: str, source_file_path: str) -> bool:
+        if key in cls.__CACHE_FILES_DATA:
+            if (
+                Info.get_current_version() == cls.__CACHE_FILES_DATA[key]["version"]
+                and os.path.exists(source_file_path)
+                and source_file_path == cls.__CACHE_FILES_DATA[key]["source"]["path"]
+                and cls.__generate_md5(source_file_path) == cls.__CACHE_FILES_DATA[key]["source"]["md5"]
+                and os.path.exists(cls.__CACHE_FILES_DATA[key]["target"]["path"])
+                and cls.__generate_md5(cls.__CACHE_FILES_DATA[key]["target"]["path"])
+                == cls.__CACHE_FILES_DATA[key]["target"]["md5"]
+            ):
+                return True
+            else:
+                cls.remove(key)
+        return False

@@ -1,4 +1,3 @@
-import shutil
 from .abstract import *
 
 # 搭建和打包文件的系统
@@ -7,16 +6,18 @@ class BuilderManager(AbstractToolSystem):
         super().__init__("*", os.path.join(os.path.dirname(__file__), "compiler.py"))
 
     # 移除指定文件夹中的pycache文件夹
-    def __remove_cache(self, path: str) -> None:
+    @classmethod
+    def __remove_cache(cls, path: str) -> None:
         for file_path in glob(os.path.join(path, "*")):
             if os.path.isdir(file_path):
                 if "pycache" in file_path or "mypy_cache" in file_path:
                     shutil.rmtree(file_path)
                 else:
-                    self.__remove_cache(file_path)
+                    cls.__remove_cache(file_path)
 
     # 删除特定文件夹
-    def search_and_remove_folder(self, folder_to_search: str, stuff_to_remove: str) -> None:
+    @classmethod
+    def search_and_remove_folder(cls, folder_to_search: str, stuff_to_remove: str) -> None:
         # 确保folder_to_search是一个目录
         if not os.path.isdir(folder_to_search):
             EXCEPTION.fatal("You can only search a folder!", 2)
@@ -25,15 +26,12 @@ class BuilderManager(AbstractToolSystem):
             if path.endswith(stuff_to_remove):
                 shutil.rmtree(path)
             elif os.path.isdir(path):
-                self.search_and_remove_folder(path, stuff_to_remove)
+                cls.search_and_remove_folder(path, stuff_to_remove)
 
     # 如果指定文件夹存在，则移除
-    def delete_file_if_exist(self, path: str) -> None:
-        if os.path.exists(path):
-            if os.path.isdir(path):
-                shutil.rmtree(path)
-            else:
-                os.remove(path)
+    @staticmethod
+    def delete_file_if_exist(path: str) -> None:
+        Cache.delete_file_if_exist(path)
 
     # 复制文件
     @staticmethod

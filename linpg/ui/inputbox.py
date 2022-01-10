@@ -1,9 +1,5 @@
 import time
-import PySimpleGUI  # type: ignore
 from .scrollpane import *
-
-# 设置PySimpleGUI主题
-PySimpleGUI.theme(Specification.get("PySimpleGUITheme"))
 
 # 输入框Abstract，请勿实体化
 class AbstractInputBox(GameObject2d):
@@ -47,10 +43,7 @@ class SingleLineInputBox(AbstractInputBox):
 
     def get_text(self) -> str:
         self.need_save = False
-        if self._text == "":
-            return ""
-        else:
-            return self._text
+        return self._text
 
     def set_text(self, new_txt: str = "") -> None:
         if len(new_txt) > 0:
@@ -184,14 +177,11 @@ class MultipleLinesInputBox(AbstractInputBox):
         super().__init__(x, y, font_size, txt_color, default_width)
         self._text: list[str] = [""]
         self.lineId = 0
-        self.__using_PySimpleGUI_input_box: Button = load_button("<!ui>back.png", (0, 0), (self.FONT.size, self.FONT.size))
+        self.__show_PySimpleGUI_input_box: Button = load_button("<!ui>back.png", (0, 0), (self.FONT.size, self.FONT.size))
 
     def get_text(self) -> list:
         self.need_save = False
-        if len(self._text) == 0 or self._text == [""]:
-            return []
-        else:
-            return self._text
+        return [] if (len(self._text) == 0 or self._text == [""]) else self._text
 
     def get_raw_text(self) -> str:
         text: str = ""
@@ -313,26 +303,6 @@ class MultipleLinesInputBox(AbstractInputBox):
         else:
             self.holderIndex = i - 1
 
-    def show_external_input_box(self, screen: ImageSurface) -> None:
-        self.__using_PySimpleGUI_input_box.set_right(self.input_box.right)
-        self.__using_PySimpleGUI_input_box.set_bottom(self.input_box.bottom)
-        self.__using_PySimpleGUI_input_box.draw(screen)
-        if self.__using_PySimpleGUI_input_box.is_hovered() and Controller.get_event("confirm"):
-            event, values = PySimpleGUI.Window(
-                "",
-                [
-                    [PySimpleGUI.Multiline(default_text=self.get_raw_text(), key="-CONTENT-")],
-                    [
-                        PySimpleGUI.Submit(Lang.get_text("Global", "save")),
-                        PySimpleGUI.Cancel(Lang.get_text("Global", "cancel")),
-                    ],
-                ],
-                force_toplevel=True,
-            ).read(close=True)
-            if event == Lang.get_text("Global", "save"):
-                self._remove_char("all")
-                self._add_char(values["-CONTENT-"])
-
     def draw(self, screen: ImageSurface) -> None:
         for event in Controller.events:
             if self.active:
@@ -371,10 +341,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                         if self.holderIndex == len(self._text[self.lineId]):
                             self._text.insert(self.lineId + 1, "")
                         else:
-                            self._text.insert(
-                                self.lineId + 1,
-                                self._text[self.lineId][self.holderIndex :],
-                            )
+                            self._text.insert(self.lineId + 1, self._text[self.lineId][self.holderIndex :])
                             self._text[self.lineId] = self._text[self.lineId][: self.holderIndex]
                         self.lineId += 1
                         self.holderIndex = 0
@@ -419,5 +386,22 @@ class MultipleLinesInputBox(AbstractInputBox):
                         self.y + self.lineId * self.default_height,
                     ),
                 )
-            # 如果PySimpleGUI安装
-            self.show_external_input_box(screen)
+            # 展示基于PySimpleGUI的外部输入框
+            self.__show_PySimpleGUI_input_box.set_right(self.input_box.right)
+            self.__show_PySimpleGUI_input_box.set_bottom(self.input_box.bottom)
+            self.__show_PySimpleGUI_input_box.draw(screen)
+            if self.__show_PySimpleGUI_input_box.is_hovered() and Controller.get_event("confirm"):
+                external_input_event, external_input_values = PySimpleGUI.Window(
+                    "external input",
+                    [
+                        [PySimpleGUI.Multiline(default_text=self.get_raw_text(), key="-CONTENT-")],
+                        [
+                            PySimpleGUI.Submit(Lang.get_text("Global", "save")),
+                            PySimpleGUI.Cancel(Lang.get_text("Global", "cancel")),
+                        ],
+                    ],
+                    keep_on_top=True,
+                ).read(close=True)
+                if external_input_event == Lang.get_text("Global", "save"):
+                    self._remove_char("all")
+                    self._add_char(external_input_values["-CONTENT-"])

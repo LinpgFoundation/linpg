@@ -2,6 +2,7 @@ import hashlib
 import shutil
 from .setting import *
 
+
 # 全局数据
 class GlobalValue:
 

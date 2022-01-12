@@ -24,7 +24,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         self.__history_surface_local_y: int = 0
         # 展示历史界面-返回按钮
         self.history_back = (
-            load_button(
+            Button.load(
                 "<!ui>back.png",
                 Coordinates.convert((Display.get_width() * 0.04, Display.get_height() * 0.04)),
                 Coordinates.convert((Display.get_width() * 0.03, Display.get_height() * 0.04)),

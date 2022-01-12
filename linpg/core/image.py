@@ -1,4 +1,4 @@
-from .surface import *
+from .text import *
 
 # 动态图形类
 class DynamicImage(AbstractImageSurface):

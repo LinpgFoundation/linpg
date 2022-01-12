@@ -142,7 +142,7 @@ class UiGenerator:
 
     # 生成UI主模块
     @classmethod
-    def __generate(cls, data: dict, custom_values: dict, max_width: int = -1, max_height: int = -1) -> AbstractImageSurface:
+    def __generate(cls, data: dict, custom_values: dict, max_width: int = -1, max_height: int = -1) -> GameObject2d:
         # 如果对象是容器
         if data["type"] == "container":
             return cls.__generate_container(data, custom_values, max_width, max_height)
@@ -168,7 +168,7 @@ class UiGenerator:
                     data["src"] = cls.__convert_text(str(data["src"]))
                 # 生成文字图层
                 if data["type"] == "text":
-                    item_t = TextSurface(Font.render(data["src"], data["color"], font_size, data["bold"], data["italic"]), 0, 0)
+                    item_t = StaticTextSurface(data["src"], 0, 0, font_size, data["color"], data["bold"], data["italic"])
                 elif data["type"] == "dynamic_text":
                     item_t = DynamicTextSurface(
                         Font.render(data["src"], data["color"], font_size, data["bold"], data["italic"]),
@@ -188,17 +188,16 @@ class UiGenerator:
                 if data["type"] == "button":
                     if "alpha_when_not_hover" not in data:
                         data["alpha_when_not_hover"] = 255
+                    item_t = Button.load(data["src"], ORIGIN, (object_width, object_height), data["alpha_when_not_hover"])
                     if "text" in data:
-                        item_t = load_button_with_text_in_center(
-                            data["src"],
-                            cls.__convert_text(data["text"]["src"]),
-                            data["text"]["color"],
-                            object_height,
-                            ORIGIN,
-                            data["alpha_when_not_hover"],
+                        item_t.set_text(
+                            ButtonComponent.text(
+                                cls.__convert_text(data["text"]["src"]),
+                                object_height * 0.8,
+                                data["text"]["color"],
+                                alpha_when_not_hover=data["alpha_when_not_hover"],
+                            )
                         )
-                    else:
-                        item_t = load_button(data["src"], ORIGIN, (object_width, object_height), data["alpha_when_not_hover"])
                     if "icon" in data:
                         # 转换尺寸
                         _icon_width: int = cls.__convert_number(data["icon"], "width", max_width, custom_values)
@@ -241,7 +240,10 @@ class UiGenerator:
             item_t.tag = data["name"] if "name" in data else ""
             # 透明度
             if "hidden" in data:
-                item_t.set_visible(not data["hidden"])
+                if isinstance(item_t, HiddenableSurface):
+                    item_t.set_visible(not data["hidden"])
+                else:
+                    EXCEPTION.fatal("This is not a subtype of HiddenableSurface!")
             # 设置坐标
             item_t.set_pos(
                 cls.__convert_coordinate(data, "x", int((max_width - item_t.get_width()) / 2), max_width, custom_values),
@@ -262,7 +264,7 @@ class UiGenerator:
 
     # 生成GameObject2d - 如果目标是str则视为是名称，尝试从ui数据库中加载对应的模板，否则则视为模板
     @classmethod
-    def generate(cls, data: Union[str, dict], custom_values: dict = {}) -> AbstractImageSurface:
+    def generate(cls, data: Union[str, dict], custom_values: dict = {}) -> GameObject2d:
         return cls.__generate(cls.__get_data_in_dict(data), custom_values)
 
     # 生成container - 如果目标是str则视为是名称，尝试从ui数据库中加载对应的模板，否则则视为模板

@@ -74,7 +74,7 @@ class Loader:
 
     @staticmethod
     def button(path: str, position: tuple[int, int], size: tuple[int, int], alpha_when_not_hover: int = 255) -> Button:
-        return load_button(path, position, size, alpha_when_not_hover)
+        return Button.load(path, position, size, alpha_when_not_hover)
 
     @staticmethod
     def button_with_text_in_center(
@@ -89,8 +89,10 @@ class Loader:
 
     # 普通文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class
     @staticmethod
-    def text(txt: strint, color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False) -> TextSurface:
-        return TextSurface(Font.render(txt, color, size, ifBold, ifItalic), pos[0], pos[1])
+    def static_text(
+        txt: strint, color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False
+    ) -> StaticTextSurface:
+        return StaticTextSurface(str(txt), pos[0], pos[1], size, color, ifBold, ifItalic)
 
     # 高级文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
     @staticmethod

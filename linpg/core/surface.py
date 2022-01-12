@@ -2,11 +2,10 @@ from .feature import *
 
 # 图形接口
 class AbstractImageSurface(Rectangle, HiddenableSurface):
-    def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str):
+    def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str) -> None:
         Rectangle.__init__(self, x, y, width, height)
         HiddenableSurface.__init__(self)
         self.img: Any = img
-        self.tag: str = str(tag)
         # 确保长宽均已输入且为正整数
         if self.get_width() < 0 and self.get_height() < 0:
             self.set_size(self.img.get_width(), self.img.get_height())
@@ -60,7 +59,7 @@ class AbstractImageSurface(Rectangle, HiddenableSurface):
 
 # 有本地坐标的图形接口
 class AdvancedAbstractImageSurface(AbstractImageSurface, SurfaceWithLocalPos):
-    def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
+    def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = "") -> None:
         AbstractImageSurface.__init__(self, img, x, y, width, height, tag)
         SurfaceWithLocalPos.__init__(self)
         self._alpha: int = 255
@@ -81,7 +80,7 @@ class AdvancedAbstractImageSurface(AbstractImageSurface, SurfaceWithLocalPos):
 
 # 带缓存的高级图片拟态类
 class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
-    def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
+    def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = "") -> None:
         super().__init__(img, x, y, width, height, tag=tag)
         self._processed_img: ImageSurface = NULL_SURFACE
         self._need_update: bool = True if self.get_width() >= 0 and self.get_height() >= 0 else False
@@ -165,48 +164,3 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
                 self._update_img()
             # 将已经处理好的图片画在给定的图层上
             surface.blit(self._processed_img, Coordinates.add(self.abs_pos, offSet))
-
-
-# 基础文字类
-class TextSurface(AbstractImageSurface):
-    def __init__(self, font_surface: ImageSurface, x: int_f, y: int_f, tag: str = ""):
-        super().__init__(font_surface, x, y, -1, -1, tag)
-
-    # 画出
-    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
-        if self.is_visible():
-            surface.blit(self.img, Coordinates.add(self.pos, offSet))
-
-
-# 动态文字类
-class DynamicTextSurface(TextSurface):
-    def __init__(self, n: ImageSurface, b: ImageSurface, x: int_f, y: int_f):
-        super().__init__(n, x, y)
-        self.__big_font_surface: ImageSurface = b
-        self.__is_hovered: bool = False
-
-    # 设置透明度
-    def set_alpha(self, value: int) -> None:
-        super().set_alpha(value)
-        self.__big_font_surface.set_alpha(value)
-
-    # 用于检测触碰的快捷
-    def has_been_hovered(self) -> bool:
-        return self.__is_hovered
-
-    # 画出
-    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
-        if self.is_visible():
-            self.__is_hovered = self.is_hovered(offSet)
-            if not self.__is_hovered:
-                surface.blit(self.img, Coordinates.add(self.pos, offSet))
-            else:
-                surface.blit(
-                    self.__big_font_surface,
-                    (
-                        int(self.x - (self.__big_font_surface.get_width() - self.img.get_width()) / 2 + offSet[0]),
-                        int(self.y - (self.__big_font_surface.get_height() - self.img.get_height()) / 2 + offSet[1]),
-                    ),
-                )
-        else:
-            self.__is_hovered = False

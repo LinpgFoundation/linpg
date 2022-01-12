@@ -96,6 +96,10 @@ class GameObject(Coordinate):
 
 # 2d游戏对象接口
 class GameObject2d(GameObject):
+    def __init__(self, x: int_f, y: int_f):
+        super().__init__(x, y)
+        self.tag: str = ""
+
     # 宽
     @property
     def width(self) -> int:

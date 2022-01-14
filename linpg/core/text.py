@@ -94,6 +94,7 @@ class StaticTextSurface(AbstractTextSurface):
 
     def set_text(self, value: str) -> None:
         if value != self.__text:
+            super().set_text(value)
             if self.get_alpha() != 255:
                 self.__text_surface.set_alpha(self.get_alpha())
 
@@ -110,9 +111,8 @@ class StaticTextSurface(AbstractTextSurface):
             super().set_italic(value)
 
     def set_alpha(self, value: int) -> None:
-        if self.get_alpha() != value:
-            super().set_alpha(value)
-            self.__text_surface.set_alpha(self.get_alpha())
+        super().set_alpha(value)
+        self.__text_surface.set_alpha(self.get_alpha())
 
     def get_width(self) -> int:
         return self.__text_surface.get_width()
@@ -126,7 +126,7 @@ class StaticTextSurface(AbstractTextSurface):
             surface.blit(self.__text_surface, Coordinates.add(self.pos, offSet))
 
 
-class TrueDynamicTextSurface(AbstractTextSurface):
+class DynamicTextSurface(AbstractTextSurface):
     def __init__(
         self,
         text: str,
@@ -153,16 +153,54 @@ class TrueDynamicTextSurface(AbstractTextSurface):
 
 
 # 动态文字类
-class DynamicTextSurface(AbstractImageSurface):
-    def __init__(self, n: ImageSurface, b: ImageSurface, x: int_f, y: int_f, tag: str = "") -> None:
-        super().__init__(n, x, y, -1, -1, tag)
-        self.__big_font_surface: ImageSurface = b
+class ResizeWhenHoveredTextSurface(StaticTextSurface):
+    def __init__(
+        self,
+        text: str,
+        x: int_f,
+        y: int_f,
+        original_size: int_f,
+        size_when_hovered: int_f,
+        _color: color_liked = Colors.BLACK,
+        _bold: bool = False,
+        _italic: bool = False,
+    ) -> None:
+        super().__init__(text, x, y, original_size, _color, _bold, _italic)
+        self.__text_when_hovered = StaticTextSurface(text, 0, 0, size_when_hovered, _color, _bold, _italic)
+        self.__text_when_hovered.set_center(self.centerx, self.centery)
         self.__is_hovered: bool = False
 
-    # 设置透明度
+    def set_color(self, _color: str) -> None:
+        super().set_color(_color)
+        self.__text_when_hovered.set_color(_color)
+
+    def set_left(self, value: int_f) -> None:
+        super().set_left(value)
+        self.__text_when_hovered.set_centerx(self.centerx)
+
+    def set_top(self, value: int_f) -> None:
+        super().set_top(value)
+        self.__text_when_hovered.set_centery(self.centery)
+
+    def set_text(self, value: str) -> None:
+        super().set_text(value)
+        self.__text_when_hovered.set_text(value)
+
+    def set_font_size(self, value: int) -> None:
+        super().set_font_size(value)
+        self.__text_when_hovered.set_font_size(value)
+
+    def set_bold(self, value: bool) -> None:
+        super().set_bold(value)
+        self.__text_when_hovered.set_bold(value)
+
+    def set_italic(self, value: bool) -> None:
+        super().set_italic(value)
+        self.__text_when_hovered.set_italic(value)
+
     def set_alpha(self, value: int) -> None:
         super().set_alpha(value)
-        self.__big_font_surface.set_alpha(value)
+        self.__text_when_hovered.set_alpha(value)
 
     # 用于检测触碰的快捷
     def has_been_hovered(self) -> bool:
@@ -173,14 +211,8 @@ class DynamicTextSurface(AbstractImageSurface):
         if self.is_visible():
             self.__is_hovered = self.is_hovered(offSet)
             if not self.__is_hovered:
-                surface.blit(self.img, Coordinates.add(self.pos, offSet))
+                super().display(surface, offSet)
             else:
-                surface.blit(
-                    self.__big_font_surface,
-                    (
-                        int(self.x - (self.__big_font_surface.get_width() - self.img.get_width()) / 2 + offSet[0]),
-                        int(self.y - (self.__big_font_surface.get_height() - self.img.get_height()) / 2 + offSet[1]),
-                    ),
-                )
+                self.__text_when_hovered.display(surface, offSet)
         else:
             self.__is_hovered = False

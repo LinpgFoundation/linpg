@@ -152,7 +152,11 @@ class UiGenerator:
                 max_height = Display.get_height()
             item_t: GameObject2d
             # 如果对象是文字
-            if data["type"] == "text" or data["type"] == "dynamic_text" or data["type"] == "drop_down_single_choice_list":
+            if (
+                data["type"] == "text"
+                or data["type"] == "resize_when_hovered_text"
+                or data["type"] == "drop_down_single_choice_list"
+            ):
                 # 转换字体大小
                 font_size: int = cls.__convert_number(data, "font_size", max_height, custom_values)
                 # 补充可选参数
@@ -167,14 +171,11 @@ class UiGenerator:
                 elif data["src"] is not None:
                     data["src"] = cls.__convert_text(str(data["src"]))
                 # 生成文字图层
-                if data["type"] == "text":
+                if data["type"] == "text" or data["type"] == "static_text":
                     item_t = StaticTextSurface(data["src"], 0, 0, font_size, data["color"], data["bold"], data["italic"])
-                elif data["type"] == "dynamic_text":
-                    item_t = DynamicTextSurface(
-                        Font.render(data["src"], data["color"], font_size, data["bold"], data["italic"]),
-                        Font.render(data["src"], data["color"], font_size * 1.5, data["bold"], data["italic"]),
-                        0,
-                        0,
+                elif data["type"] == "resize_when_hovered_text":
+                    item_t = ResizeWhenHoveredTextSurface(
+                        str(data["src"]), 0, 0, font_size, font_size * 1.5, data["color"], data["bold"], data["italic"]
                     )
                 else:
                     item_t = DropDownList(data["src"], 0, 0, font_size, data["color"])
@@ -193,7 +194,7 @@ class UiGenerator:
                         item_t.set_text(
                             ButtonComponent.text(
                                 cls.__convert_text(data["text"]["src"]),
-                                object_height * 0.8,
+                                object_height / 2,
                                 data["text"]["color"],
                                 alpha_when_not_hover=data["alpha_when_not_hover"],
                             )
@@ -205,6 +206,12 @@ class UiGenerator:
                         item_t.set_icon(
                             ButtonComponent.icon(data["icon"]["src"], (_icon_width, _icon_height), data["alpha_when_not_hover"])
                         )
+                    if "scale_for_resizing_width" in data:
+                        item_t.set_scale_for_resizing_width(data["scale_for_resizing_width"])
+                    if "scale_for_resizing_height" in data:
+                        item_t.set_scale_for_resizing_width(data["scale_for_resizing_height"])
+                    if "auto_resize" in data:
+                        item_t.set_auto_resize(data["auto_resize"])
                     if "description" in data:
                         item_t.set_description(cls.__convert_text(data["description"]))
                     if not "name" in data:

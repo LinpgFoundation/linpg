@@ -166,7 +166,7 @@ class AbstractBattleSystem(AbstractGameSystem):
         # 如果需要移动屏幕
         temp_value: int = 0
         if self._screen_to_move_x is not None and self._screen_to_move_x != 0:
-            temp_value = int(self._MAP.get_local_x() + self._screen_to_move_x * 0.2)
+            temp_value = int(self._MAP.get_local_x() + self._screen_to_move_x / 5)
             if Display.get_width() - self._MAP.get_width() <= temp_value <= 0:
                 self._MAP.set_local_x(temp_value)
                 self._screen_to_move_x = int(self._screen_to_move_x * 0.8)
@@ -175,7 +175,7 @@ class AbstractBattleSystem(AbstractGameSystem):
             else:
                 self._screen_to_move_x = 0
         if self._screen_to_move_y is not None and self._screen_to_move_y != 0:
-            temp_value = int(self._MAP.get_local_y() + self._screen_to_move_y * 0.2)
+            temp_value = int(self._MAP.get_local_y() + self._screen_to_move_y / 5)
             if Display.get_height() - self._MAP.get_height() <= temp_value <= 0:
                 self._MAP.set_local_y(temp_value)
                 self._screen_to_move_y = int(self._screen_to_move_y * 0.8)

@@ -118,7 +118,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         # 追踪是否需要更新的参数
         self.__need_update_surface = True
         # 追踪目前已经画出的方块
-        self.__block_on_surface = numpy.zeros((self.row, self.column), dtype=numpy.int8)
+        self.__block_on_surface = numpy.zeros((self.row, self.column), dtype=numpy.byte)
         self.__need_to_recheck_block_on_surface = True
 
     @property
@@ -500,7 +500,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         return round((x - y) * widthTmp + self.row * widthTmp), round((y + x) * self.block_width * 0.22 + self.block_width * 0.4)
 
     # 查看角色是否在光亮范围内
-    def inLightArea(self, entity: GameObject) -> bool:
+    def inLightArea(self, entity: GameObject2d) -> bool:
         return self.isPosInLightArea(entity.x, entity.y)
 
     def isPosInLightArea(self, x: int_f, y: int_f) -> bool:

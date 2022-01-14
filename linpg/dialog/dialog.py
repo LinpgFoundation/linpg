@@ -15,7 +15,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         # 加载ui
         if not basic_features_only:
             # UI按钮
-            self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self._FONT_SIZE})
+            self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self._FONT_SIZE * 2})
             # 暂停菜单
             self._enable_pause_menu()
         # 是否要显示历史对白页面

@@ -252,13 +252,13 @@ class AbstractDialogSystem(AbstractGameSystem):
             Display.get_height() * 3 / 16 - len(self._current_dialog_content["next_dialog_id"]["target"]) * self._FONT_SIZE
         )
         for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
-            optionButton = load_button_with_text_in_center_and_different_background(
-                "<!ui>option.png",
-                "<!ui>option_selected.png",
-                self._current_dialog_content["next_dialog_id"]["target"][i]["txt"],
-                Colors.WHITE,
-                self._FONT_SIZE,
-                (0, 0),
+            optionButton: Button = Button.load("<!ui>option.png", (0, 0), (0, 0))
+            optionButton.set_hover_img(IMG.quickly_load("<!ui>option_selected.png"))
+            optionButton.set_auto_resize(True)
+            optionButton.set_text(
+                ButtonComponent.text(
+                    str(self._current_dialog_content["next_dialog_id"]["target"][i]["txt"]), self._FONT_SIZE, Colors.WHITE
+                )
             )
             optionButton.set_pos(
                 (Display.get_width() - optionButton.get_width()) / 2, (i + 1) * 4 * self._FONT_SIZE + optionBox_y_base

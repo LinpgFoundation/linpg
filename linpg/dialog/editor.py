@@ -42,7 +42,7 @@ class DialogEditor(DialogConverter):
         # 将npc立绘系统设置为开发者模式
         self._npc_manager.dev_mode = True
         # 加载容器
-        container_width = int(Display.get_width() * 0.2)
+        container_width = int(Display.get_width() * 2 / 10)
         self.UIContainerRightImage = IMG.load("<!ui>container.png", (container_width, Display.get_height()))
         # 右侧容器尺寸
         RightContainerRect: Rectangle = Rectangle(
@@ -96,20 +96,22 @@ class DialogEditor(DialogConverter):
             int(container_width / 10),
             0,
             button_width,
-            int(Display.get_height() * 0.2),
+            int(Display.get_height() * 2 / 10),
         )
         self.UIContainerRightButton.rotate(90)
         # UI按钮
         CONFIG = Lang.get_texts("DialogCreator")
-        button_y: int = int(Display.get_height() * 0.03)
+        button_y: int = int(Display.get_height() * 3 / 100)
         font_size: int = int(button_width / 3)
         # 控制容器转换的按钮
-        self.button_select_background = load_button_with_text_in_center(
-            "<!ui>button.png", CONFIG["background"], "black", font_size, (0, button_y * 2), 150
+        self.button_select_background = Button.load("<!ui>button.png", (0, button_y * 2), (0, 0), 150)
+        self.button_select_background.set_text(
+            ButtonComponent.text(str(CONFIG["background"]), font_size, alpha_when_not_hover=150)
         )
-        self.button_select_npc = load_button_with_text_in_center(
-            "<!ui>button.png", CONFIG["npc"], "black", font_size, (0, button_y * 2), 150
-        )
+        self.button_select_background.set_auto_resize(True)
+        self.button_select_npc = Button.load("<!ui>button.png", (0, button_y * 2), (0, 0), 150)
+        self.button_select_npc.set_text(ButtonComponent.text(str(CONFIG["npc"]), font_size, alpha_when_not_hover=150))
+        self.button_select_npc.set_auto_resize(True)
         panding: int = int((container_width - self.button_select_background.get_width() - self.button_select_npc.get_width()) / 3)
         self.button_select_background.set_left(panding)
         self.button_select_npc.set_left(self.button_select_background.get_right() + panding)

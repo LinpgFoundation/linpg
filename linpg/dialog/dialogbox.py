@@ -26,10 +26,10 @@ class DevDialogBox(AbstractDialogBox):
     def __init__(self, fontSize: int):
         super().__init__()
         self.content: MultipleLinesInputBox = MultipleLinesInputBox(
-            Display.get_width() * 0.2, Display.get_height() * 0.73, fontSize, "white"
+            Display.get_width() * 2 / 10, Display.get_height() * 0.73, fontSize, "white"
         )
         self.narrator: SingleLineInputBox = SingleLineInputBox(
-            Display.get_width() * 0.2, self.dialoguebox_max_y + fontSize, fontSize, "white"
+            Display.get_width() * 2 / 10, self.dialoguebox_max_y + fontSize, fontSize, "white"
         )
         # 设置对话框高度和坐标
         self._dialoguebox.set_top(self.dialoguebox_max_y)
@@ -179,7 +179,7 @@ class DialogBox(AbstractDialogBox):
                     self._dialoguebox.move_upward(self.dialoguebox_max_height * Display.sfpsp / 20)
                 # 如果已经放大好了，则将文字画到屏幕上
                 else:
-                    x: int = int(surface.get_width() * 0.2)
+                    x: int = int(surface.get_width() * 2 / 10)
                     y: int = int(surface.get_height() * 0.73)
                     # 写上当前讲话人的名字
                     if len(self.narrator) > 0:

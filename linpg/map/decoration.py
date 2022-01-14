@@ -1,7 +1,7 @@
 from .image import *
 
 # 管理场景装饰物的类
-class DecorationObject(GameObject):
+class DecorationObject(GameObject2d):
     def __init__(self, x: int, y: int, _id: str, itemType: str, image: str, status: dict):
         super().__init__(x, y)
         self.__id: str = _id
@@ -40,7 +40,7 @@ class DecorationObject(GameObject):
         except KeyError:
             EXCEPTION.warn('Cannot remove status "{}" because it does not exist'.format(key))
 
-    def blit(self, surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:
+    def blit(self, surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:  # type: ignore[override]
         imgToBlit = DecorationImagesModule.get_image(self.__type, self.image, is_dark)
         imgToBlit.set_size(
             DecorationImagesModule.get_block_width() * self.scale, DecorationImagesModule.get_block_width() * self.scale
@@ -78,7 +78,7 @@ class CampfireObject(DecorationObject):
         return self.__img_id / 10.0
 
     # 画出篝火（注意，alpha不会被使用，它只因为兼容性和一致性而存在）
-    def blit(self, surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:
+    def blit(self, surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:  # type: ignore[override]
         # 查看篝火的状态是否正在变化，并调整对应的alpha值
         if self.get_status("lit") is True:
             if self.__alpha < 255:

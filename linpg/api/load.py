@@ -76,17 +76,6 @@ class Loader:
     def button(path: str, position: tuple[int, int], size: tuple[int, int], alpha_when_not_hover: int = 255) -> Button:
         return Button.load(path, position, size, alpha_when_not_hover)
 
-    @staticmethod
-    def button_with_text_in_center(
-        path: str,
-        txt: strint,
-        font_color: color_liked,
-        font_size: int,
-        position: tuple[int, int],
-        alpha_when_not_hover: int = 255,
-    ) -> Button:
-        return load_button_with_text_in_center(path, str(txt), font_color, font_size, position, alpha_when_not_hover)
-
     # 普通文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class
     @staticmethod
     def static_text(
@@ -96,15 +85,10 @@ class Loader:
 
     # 高级文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
     @staticmethod
-    def dynamic_text(
-        txt: strint, color: color_liked, pos: tuple[int, int], size: int, ifBold: bool = False, ifItalic: bool = False
-    ) -> DynamicTextSurface:
-        return DynamicTextSurface(
-            Font.render(txt, color, size, ifBold, ifItalic),
-            Font.render(txt, color, size * 1.5, ifBold, ifItalic),
-            pos[0],
-            pos[1],
-        )
+    def resize_when_hovered_text(
+        txt: strint, _color: color_liked, pos: tuple[int, int], size: int, _bold: bool = False, _italic: bool = False
+    ) -> ResizeWhenHoveredTextSurface:
+        return ResizeWhenHoveredTextSurface(str(txt), pos[0], pos[1], size, size * 1.5, _color, _bold, _italic)
 
 
 load: Loader = Loader()

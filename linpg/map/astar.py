@@ -2,7 +2,7 @@ from .decoration import *
 from .abstract import AbstractMap
 
 # 点
-class Point(GameObject):
+class Point(Coordinate):
     def __eq__(self, other: "Point") -> bool:  # type: ignore[override]
         return self.x == other.x and self.y == other.y
 
@@ -36,7 +36,7 @@ class AStar(AbstractMap):
 
     def _update(self, row: int, column: int) -> None:
         super()._update(row, column)
-        self._map2d = numpy.zeros((self.row, self.column), dtype=numpy.int8)
+        self._map2d = numpy.zeros((self.row, self.column), dtype=numpy.byte)
 
     def __getMinNode(self) -> Node:
         """

@@ -664,8 +664,8 @@ class Entity(Position):
     # 把角色ui画到屏幕上
     def _drawUI(self, surface: ImageSurface, MAP_POINTER: MapObject) -> tuple:
         xTemp, yTemp = MAP_POINTER.calPosInMap(self.x, self.y)
-        xTemp += int(MAP_POINTER.block_width * 0.25)
-        yTemp -= int(MAP_POINTER.block_width * 0.2)
+        xTemp += int(MAP_POINTER.block_width / 4)
+        yTemp -= int(MAP_POINTER.block_width / 5)
         self.__hp_bar.set_size(MAP_POINTER.block_width / 2, MAP_POINTER.block_width / 10)
         self.__hp_bar.set_pos(xTemp, yTemp)
         self._draw_health_bar(surface)

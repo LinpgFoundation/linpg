@@ -24,6 +24,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
+                "auto_resize": true,
                 "height": "<#button_size>",
                 "icon": {
                     "height": "<#button_size>",
@@ -31,7 +32,9 @@
                     "width": "<#button_size>"
                 },
                 "name": "not_auto",
-                "src": "<!transparent>",
+                "scale_for_resizing_height": 1,
+                "scale_for_resizing_width": 1,
+                "src": "<!null>",
                 "text": {
                     "color": "white",
                     "src": "{Dialog,auto}"
@@ -42,6 +45,7 @@
                 "y": "5%"
             },
             {
+                "auto_resize": true,
                 "height": "<#button_size>",
                 "hidden": true,
                 "icon": {
@@ -50,7 +54,9 @@
                     "width": "<#button_size>"
                 },
                 "name": "is_auto",
-                "src": "<!transparent>",
+                "scale_for_resizing_height": 1,
+                "scale_for_resizing_width": 1,
+                "src": "<!null>",
                 "text": {
                     "color": "white",
                     "src": "{Dialog,auto}"
@@ -62,6 +68,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
+                "auto_resize": true,
                 "height": "<#button_size>",
                 "icon": {
                     "height": "<#button_size>",
@@ -69,7 +76,9 @@
                     "width": "<#button_size>"
                 },
                 "name": "skip",
-                "src": "<!transparent>",
+                "scale_for_resizing_height": 1,
+                "scale_for_resizing_width": 1,
+                "src": "<!null>",
                 "text": {
                     "color": "white",
                     "src": "{Dialog,skip}"
@@ -211,7 +220,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "14%",
+                "height": "20%",
                 "name": "confirm",
                 "src": "<!ui>button.png",
                 "text": {
@@ -219,13 +228,13 @@
                     "src": "{Global,confirm}"
                 },
                 "type": "button",
-                "width": "10%",
+                "width": "15%",
                 "x": "20%",
                 "y": "70%"
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "14%",
+                "height": "20%",
                 "name": "cancel",
                 "src": "<!ui>button.png",
                 "text": {
@@ -233,7 +242,7 @@
                     "src": "{Global,cancel}"
                 },
                 "type": "button",
-                "width": "10%",
+                "width": "15%",
                 "x": "60%",
                 "y": "70%"
             }
@@ -273,7 +282,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "14%",
+                "height": "20%",
                 "name": "confirm",
                 "src": "<!ui>button.png",
                 "text": {
@@ -281,13 +290,13 @@
                     "src": "{Global,confirm}"
                 },
                 "type": "button",
-                "width": "10%",
+                "width": "15%",
                 "x": "20%",
                 "y": "70%"
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "14%",
+                "height": "20%",
                 "name": "cancel",
                 "src": "<!ui>button.png",
                 "text": {
@@ -295,7 +304,7 @@
                     "src": "{Global,cancel}"
                 },
                 "type": "button",
-                "width": "10%",
+                "width": "15%",
                 "x": "60%",
                 "y": "70%"
             }
@@ -499,7 +508,7 @@
                 "font_size": "5%",
                 "name": "back_button",
                 "src": "{Global,back}",
-                "type": "dynamic_text",
+                "type": "resize_when_hovered_text",
                 "x": "center",
                 "y": "90%"
             },
@@ -533,7 +542,7 @@
                 "font_size": "5%",
                 "name": "resume",
                 "src": "{Global,resume}",
-                "type": "dynamic_text",
+                "type": "resize_when_hovered_text",
                 "x": "10%",
                 "y": "30%"
             },
@@ -542,7 +551,7 @@
                 "font_size": "5%",
                 "name": "save",
                 "src": "{Global,save_current_progress}",
-                "type": "dynamic_text",
+                "type": "resize_when_hovered_text",
                 "x": "10%",
                 "y": "40%"
             },
@@ -551,7 +560,7 @@
                 "font_size": "5%",
                 "name": "option_menu",
                 "src": "{OptionMenu,option_menu}",
-                "type": "dynamic_text",
+                "type": "resize_when_hovered_text",
                 "x": "10%",
                 "y": "50%"
             },
@@ -560,7 +569,7 @@
                 "font_size": "5%",
                 "name": "back_to_mainMenu",
                 "src": "{Global,back_to_main_menu}",
-                "type": "dynamic_text",
+                "type": "resize_when_hovered_text",
                 "x": "10%",
                 "y": "60%"
             },
@@ -569,7 +578,7 @@
                 "font_size": "5%",
                 "name": "exit_to_desktop",
                 "src": "{OptionMenu,exit_to_desktop}",
-                "type": "dynamic_text",
+                "type": "resize_when_hovered_text",
                 "x": "10%",
                 "y": "70%"
             }

@@ -16,8 +16,6 @@ class Node:
         self.h = (abs(endPoint.x - point.x) + abs(endPoint.y - point.y)) * 10  # 计算h值
 
 
-NULL_NODE: Node = Node(Point(-1, -1), Point(-1, -1))
-
 # 寻路模块
 class AStar(AbstractMap):
 
@@ -55,17 +53,17 @@ class AStar(AbstractMap):
                 return True
         return False
 
-    def __pointInOpenList(self, point: Point) -> Node:
+    def __pointInOpenList(self, point: Point) -> Optional[Node]:
         for node in self.__open_list:
             if node.point == point:
                 return node
-        return NULL_NODE
+        return None
 
-    def __end_pointInCloseList(self) -> Node:
+    def __end_pointInCloseList(self) -> Optional[Node]:
         for node in self.__open_list:
             if node.point == self.__end_point:
                 return node
-        return NULL_NODE
+        return None
 
     def __searchNear(self, minF: Node, offSetX: int, offSetY: int) -> None:
         """
@@ -96,8 +94,8 @@ class AStar(AbstractMap):
         else:
             step = 14
         # 如果不再openList中，就把它加入OpenList
-        currentNode: Node = self.__pointInOpenList(currentPoint)
-        if currentNode is NULL_NODE:
+        currentNode: Optional[Node] = self.__pointInOpenList(currentPoint)
+        if currentNode is None:
             currentNode = Node(currentPoint, self.__end_point, g=minF.g + step)
             currentNode.father = minF
             self.__open_list.append(currentNode)
@@ -141,7 +139,7 @@ class AStar(AbstractMap):
             self.__searchNear(minF, 1, 0)
             # 判断是否终止
             point = self.__end_pointInCloseList()
-            if point is not NULL_NODE:  # 如果终点在关闭表中，就返回结果
+            if point is not None:  # 如果终点在关闭表中，就返回结果
                 cPoint = point
                 pathList: list = []
                 while True:

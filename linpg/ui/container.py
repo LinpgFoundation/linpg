@@ -99,9 +99,6 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
                         self._item_being_hovered = str(key_of_game_object)
 
 
-# Dict容器占位符
-NULL_DICT_CONTAINER: GameObjectsDictContainer = GameObjectsDictContainer(NULL_SURFACE, 0, 0, 0, 0)
-
 # 使用List储存游戏对象的容器，类似html的div
 class GameObjectsListContainer(AbstractGameObjectsContainer):
     def __init__(self, bg_img: Optional[PoI], x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:

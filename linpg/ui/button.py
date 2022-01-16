@@ -9,9 +9,10 @@ class ButtonText(StaticTextSurface):
         _color: color_liked = Colors.BLACK,
         _bold: bool = False,
         _italic: bool = False,
+        _with_bounding: bool = True,
         alpha_when_not_hover: int = 255,
     ) -> None:
-        super().__init__(text, 0, 0, size, _color=_color, _bold=_bold, _italic=_italic)
+        super().__init__(text, 0, 0, size, _color, _bold, _italic, _with_bounding)
         self.__text_surface_2: Optional[ImageSurface] = None
         self.__alpha_when_not_hover: int = alpha_when_not_hover
         if self.__alpha_when_not_hover != 255:
@@ -55,9 +56,9 @@ class AbstractButton(AbstractImageSurface):
 
     def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.has_been_hovered() is True and self.__img2 is not NULL_SURFACE:
-            surface.blit(IMG.resize(self.__img2, self.size), Coordinates.add(self.pos, offSet))
+            surface.blit(IMG.smoothly_resize(self.__img2, self.size), Coordinates.add(self.pos, offSet))
         elif self.img is not NULL_SURFACE:
-            surface.blit(IMG.resize(self.img, self.size), Coordinates.add(self.pos, offSet))
+            surface.blit(IMG.smoothly_resize(self.img, self.size), Coordinates.add(self.pos, offSet))
 
 
 # 按钮的简单实现
@@ -92,9 +93,10 @@ class ButtonComponent(AbstractButton):
         _color: color_liked = Colors.BLACK,
         _bold: bool = False,
         _italic: bool = False,
+        _with_bounding: bool = True,
         alpha_when_not_hover: int = 255,
     ) -> ButtonText:
-        return ButtonText(text, size, _color, _bold, _italic, alpha_when_not_hover)
+        return ButtonText(text, size, _color, _bold, _italic, _with_bounding, alpha_when_not_hover)
 
 
 # 按钮的简单实现
@@ -112,17 +114,18 @@ class Button(AbstractButton):
         self.__description_surface: Optional[ImageSurface] = None
         # 是否根据component自动改变宽度
         self.__resize_based_on_components: bool = False
-        self.__scale_for_resizing_width : number = 1.2
-        self.__scale_for_resizing_height : number = 2
+        self.__scale_for_resizing_width: number = 1.5
+        self.__scale_for_resizing_height: number = 2
 
     # 加载按钮
     @staticmethod
     def load(path: PoI, position: tuple[int, int], size: tuple[int, int], alpha_when_not_hover: int = 255) -> "Button":
         if alpha_when_not_hover < 255:
             fading_button: Button = Button(IMG.load(path, alpha=alpha_when_not_hover), position[0], position[1], size[0], size[1])
-            img2 = fading_button.get_image_copy()
-            img2.set_alpha(255)
-            fading_button.set_hover_img(img2)
+            if path != "<!null>":
+                img2 = fading_button.get_image_copy()
+                img2.set_alpha(255)
+                fading_button.set_hover_img(img2)
             return fading_button
         else:
             return Button(IMG.quickly_load(path), position[0], position[1], size[0], size[1])
@@ -134,11 +137,11 @@ class Button(AbstractButton):
             self.__check_if_resize_needed()
         else:
             self.__resize_based_on_components = value
-    
-    def set_scale_for_resizing_width(self, value: number = 1.2) -> None:
+
+    def set_scale_for_resizing_width(self, value: number = 1.5) -> None:
         self.__scale_for_resizing_width = value
         self.__check_if_resize_needed()
-    
+
     def set_scale_for_resizing_height(self, value: number = 2) -> None:
         self.__scale_for_resizing_height = value
         self.__check_if_resize_needed()
@@ -152,9 +155,15 @@ class Button(AbstractButton):
                     max(self.__icon.get_height(), self.__text.get_height()) * self.__scale_for_resizing_height,
                 )
             elif self.__icon is not None:
-                self.set_size(self.__icon.get_width() * self.__scale_for_resizing_width, self.__icon.get_height() * self.__scale_for_resizing_height)
+                self.set_size(
+                    self.__icon.get_width() * self.__scale_for_resizing_width,
+                    self.__icon.get_height() * self.__scale_for_resizing_height,
+                )
             elif self.__text is not None:
-                self.set_size(self.__text.get_width() * self.__scale_for_resizing_width, self.__text.get_height() * self.__scale_for_resizing_height)
+                self.set_size(
+                    self.__text.get_width() * self.__scale_for_resizing_width,
+                    self.__text.get_height() * self.__scale_for_resizing_height,
+                )
             else:
                 self.set_size(0, 0)
 

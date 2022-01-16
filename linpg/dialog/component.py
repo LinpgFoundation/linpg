@@ -4,7 +4,7 @@ from .dialogbox import *
 class DialogNode(Button):
     def __init__(self, key_name: str, font_size: int, next_keys: list[str], tag: str = ""):
         self.__key_name: str = key_name
-        button_surface = Font.render_description_box(self.__key_name, Colors.BLACK, font_size, font_size, Colors.WHITE)
+        button_surface = Font.render_description_box(self.__key_name, Colors.BLACK, font_size, int(font_size / 2), Colors.WHITE)
         super().__init__(button_surface, 0, 0, width=button_surface.get_width(), height=button_surface.get_height(), tag=tag)
         self.__next_keys: tuple[str, ...] = tuple(next_keys)
         self.has_been_displayed: bool = False

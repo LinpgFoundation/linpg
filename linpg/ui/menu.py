@@ -4,7 +4,7 @@ from .generator import *
 class AbstractInternalMenu(HiddenableSurface):
     def __init__(self, menu_name: str) -> None:
         super().__init__(False)
-        self._CONTENT: GameObjectsDictContainer = NULL_DICT_CONTAINER
+        self._CONTENT: Optional[GameObjectsDictContainer] = None
         self._initialized: bool = False
         self._menu_name: str = menu_name
 
@@ -15,14 +15,15 @@ class AbstractInternalMenu(HiddenableSurface):
 
     # 菜单是否被触碰
     def is_hovered(self) -> bool:
-        if self.is_visible() and self._CONTENT is not NULL_DICT_CONTAINER:
+        if self.is_visible() and self._CONTENT is not None:
             return self._CONTENT.is_hovered()
         else:
             return False
 
     # 画出内容
     def draw(self, surface: ImageSurface) -> None:
-        self._CONTENT.draw(surface)
+        if self._CONTENT is not None:
+            self._CONTENT.draw(surface)
 
 
 # 设置UI
@@ -38,11 +39,13 @@ class DefaultOptionMenu(AbstractInternalMenu):
             # 检查是否初始化
             if not self._initialized:
                 self.initialize()
+                assert self._CONTENT is not None
                 lang_drop_down = self._CONTENT.get("lang_drop_down")
                 for lang_choice in Lang.get_available_languages():
                     lang_drop_down.set(lang_choice, lang_choice)
                 lang_drop_down.set_selected_item(Lang.current_language)
             else:
+                assert self._CONTENT is not None
                 lang_drop_down = self._CONTENT.get("lang_drop_down")
             # 更新百分比
             self._CONTENT.get("global_sound_volume").set_percentage(Setting.get("Sound", "global_value") / 100)
@@ -105,9 +108,9 @@ class PauseMenu(AbstractInternalMenu):
         super().__init__("pause_menu")
         self.__screenshot: Optional[ImageSurface] = None
         # 返回确认菜单
-        self.__leave_warning: GameObjectsDictContainer = NULL_DICT_CONTAINER
+        self.__leave_warning: Optional[GameObjectsDictContainer] = None
         # 退出确认菜单
-        self.__exit_warning: GameObjectsDictContainer = NULL_DICT_CONTAINER
+        self.__exit_warning: Optional[GameObjectsDictContainer] = None
         # 记录被按下的按钮
         self.__button_hovered: str = ""
 
@@ -126,7 +129,9 @@ class PauseMenu(AbstractInternalMenu):
 
     def hide(self) -> None:
         self.set_visible(False)
+        assert self.__exit_warning is not None
         self.__exit_warning.set_visible(False)
+        assert self.__leave_warning is not None
         self.__leave_warning.set_visible(False)
         self.__screenshot = None
 
@@ -135,6 +140,10 @@ class PauseMenu(AbstractInternalMenu):
         if self.is_visible():
             if not self._initialized:
                 self.initialize()
+            # 确保所有模块已经正常初始化
+            assert self.__exit_warning is not None
+            assert self.__leave_warning is not None
+            assert self._CONTENT is not None
             # 展示原先的背景
             if self.__screenshot is None:
                 self.__screenshot = IMG.add_darkness(surface, 10)

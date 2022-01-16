@@ -187,11 +187,13 @@ class DialogBox(AbstractDialogBox):
                     # 对话框已播放的内容
                     for i in range(self.__displayed_lines):
                         surface.blit(
-                            self.FONT.render_with_bounding(self.content[i], Colors.WHITE), (x, y + self.FONT.size * 1.5 * i)
+                            self.FONT.render(self.content[i], Colors.WHITE, with_bounding=True), (x, y + self.FONT.size * 1.5 * i)
                         )
                     # 对话框正在播放的内容
                     surface.blit(
-                        self.FONT.render_with_bounding(self.content[self.__displayed_lines][: self.__text_index], Colors.WHITE),
+                        self.FONT.render(
+                            self.content[self.__displayed_lines][: self.__text_index], Colors.WHITE, with_bounding=True
+                        ),
                         (x, y + self.FONT.size * 1.5 * self.__displayed_lines),
                     )
                     # 如果当前行的字符还没有完全播出

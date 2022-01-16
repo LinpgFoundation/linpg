@@ -33,7 +33,8 @@ class EntityImageManager:
 
     @classmethod
     def get_img(cls, characterType: str, action: str, imgId: int) -> StaticImage:
-        return cls.__CHARACTERS_IMAGE_DICT[characterType][action]["img"][imgId]
+        _temp: StaticImage = cls.__CHARACTERS_IMAGE_DICT[characterType][action]["img"][imgId]
+        return _temp
 
     @classmethod
     def get_img_num(cls, characterType: str, action: str) -> int:

@@ -58,28 +58,6 @@ class FontGenerator:
         else:
             EXCEPTION.fatal("FontType option in setting file is incorrect!")
 
-    # 渲染（无边框的）文字
-    def render(self, txt: strint, color: color_liked, background_color: Optional[color_liked] = None) -> ImageSurface:
-        font_surface_t = self.render_with_bounding(txt, color, background_color)
-        return font_surface_t.subsurface(font_surface_t.get_bounding_rect())
-
-    # 渲染有边框的文字
-    def render_with_bounding(
-        self, txt: strint, color: color_liked, background_color: Optional[color_liked] = None
-    ) -> ImageSurface:
-        if self.__SIZE > 0:
-            if not isinstance(txt, (str, int)):
-                EXCEPTION.fatal("The text must be a unicode or bytes, not {}".format(txt))
-            if self.__FONT is not None:
-                if background_color is None:
-                    return self.__FONT.render(str(txt), Setting.antialias, Colors.get(color))
-                else:
-                    return self.__FONT.render(str(txt), Setting.antialias, Colors.get(color), Colors.get(background_color))
-            else:
-                EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
-        else:
-            EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
-
     # 估计文字的宽度
     def estimate_text_width(self, text: strint) -> int:
         if self.__FONT is not None:
@@ -87,10 +65,36 @@ class FontGenerator:
         else:
             EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
 
+    # 估计文字的高度
+    def estimate_text_height(self, text: strint) -> int:
+        if self.__FONT is not None:
+            return self.__FONT.size(str(text))[1]
+        else:
+            EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
+
     # 检测是否需要更新
     def check_for_update(self, size: int, ifBold: bool = False, ifItalic: bool = False) -> None:
         if self.__FONT is None or self.__SIZE != size or self.__FONT.bold != ifBold or self.__FONT.italic != ifItalic:
             self.update(size, ifBold, ifItalic)
+
+    # 渲染文字
+    def render(
+        self, txt: strint, color: color_liked, background_color: Optional[color_liked] = None, with_bounding: bool = False
+    ) -> ImageSurface:
+        if self.__SIZE > 0:
+            if not isinstance(txt, (str, int)):
+                EXCEPTION.fatal("The text must be a unicode or bytes, not {}".format(txt))
+            if self.__FONT is not None:
+                font_surface_t: ImageSurface = (
+                    self.__FONT.render(str(txt), Setting.antialias, Colors.get(color))
+                    if background_color is None
+                    else self.__FONT.render(str(txt), Setting.antialias, Colors.get(color), Colors.get(background_color))
+                )
+                return font_surface_t.subsurface(font_surface_t.get_bounding_rect()) if not with_bounding else font_surface_t
+            else:
+                EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
+        else:
+            EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
 
 
 # 文字渲染器管理模块
@@ -150,9 +154,10 @@ class FontManager:
         ifBold: bool = False,
         ifItalic: bool = False,
         background_color: color_liked = None,
+        with_bounding: bool = False,
     ) -> ImageSurface:
         self.__LINPG_LAST_FONT.check_for_update(int(size), ifBold, ifItalic)
-        return self.__LINPG_LAST_FONT.render(txt, color, background_color)
+        return self.__LINPG_LAST_FONT.render(txt, color, background_color, with_bounding)
 
     def render_description_box(
         self,
@@ -166,7 +171,7 @@ class FontManager:
         outline_color: color_liked = None,
         thickness: int = 2,
     ) -> ImageSurface:
-        font_surface = self.render(txt, color, size, ifBold, ifItalic)
+        font_surface = self.render(txt, color, size, ifBold, ifItalic, with_bounding=True)
         des_surface = Colors.surface(
             (font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2), background_color
         )

@@ -88,7 +88,7 @@ class CharacterImageManager:
                     else:
                         EXCEPTION.fatal("The communication surface is not initialized!")
             else:
-                img.set_crop_rect(NULL_RECT)
+                img.set_crop_rect(None)
                 img.draw(surface)
             # 如果是开发模式
             if self.dev_mode is True and img.is_hovered():

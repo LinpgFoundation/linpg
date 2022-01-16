@@ -83,7 +83,7 @@ class DropDownList(GameObjectsDictContainer):
                 Draw.rect(surface, Colors.WHITE, (current_abs_pos, self.size))
             # 列出当前选中的选项
             current_pos: tuple = current_abs_pos
-            font_surface: ImageSurface = self.__FONT.render_with_bounding(self.get_selected_item(), self.__font_color)
+            font_surface: ImageSurface = self.__FONT.render(self.get_selected_item(), self.__font_color, with_bounding=True)
             surface.blit(
                 font_surface,
                 Coordinates.add(current_pos, (self.__FONT.size * 3, int((self.__block_height - font_surface.get_height()) / 2))),
@@ -111,7 +111,7 @@ class DropDownList(GameObjectsDictContainer):
                 index: int = 1
                 for key_of_game_object, game_object_t in self._get_container().items():
                     current_pos = Coordinates.add(current_abs_pos, (0, index * self.__block_height))
-                    font_surface = self.__FONT.render_with_bounding(game_object_t, self.__font_color)
+                    font_surface = self.__FONT.render(game_object_t, self.__font_color, with_bounding=True)
                     surface.blit(
                         font_surface,
                         Coordinates.add(

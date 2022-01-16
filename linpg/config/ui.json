@@ -228,8 +228,9 @@
                     "src": "{Global,confirm}"
                 },
                 "type": "button",
-                "width": "15%",
-                "x": "20%",
+                "auto_resize": true,
+                "width": 0,
+                "x": "25%",
                 "y": "70%"
             },
             {
@@ -242,7 +243,8 @@
                     "src": "{Global,cancel}"
                 },
                 "type": "button",
-                "width": "15%",
+                "auto_resize": true,
+                "width": 0,
                 "x": "60%",
                 "y": "70%"
             }
@@ -291,7 +293,7 @@
                 },
                 "type": "button",
                 "width": "15%",
-                "x": "20%",
+                "x": "25%",
                 "y": "70%"
             },
             {
@@ -345,7 +347,8 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "10%",
+                "auto_resize": true,
+                "height": "15%",
                 "name": "save",
                 "src": "<!ui>button.png",
                 "text": {
@@ -353,13 +356,14 @@
                     "src": "{Global,save}"
                 },
                 "type": "button",
-                "width": "10%",
-                "x": "10%",
+                "width": 0,
+                "x": "20%",
                 "y": "70%"
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "10%",
+                "auto_resize": true,
+                "height": "15%",
                 "name": "cancel",
                 "src": "<!ui>button.png",
                 "text": {
@@ -367,13 +371,14 @@
                     "src": "{Global,cancel}"
                 },
                 "type": "button",
-                "width": "10%",
+                "width": 0,
                 "x": "40%",
                 "y": "70%"
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "10%",
+                "auto_resize": true,
+                "height": "15%",
                 "name": "dont_save",
                 "src": "<!ui>button.png",
                 "text": {
@@ -381,7 +386,7 @@
                     "src": "{Global,dont_save}"
                 },
                 "type": "button",
-                "width": "10%",
+                "width": 0,
                 "x": "70%",
                 "y": "70%"
             }

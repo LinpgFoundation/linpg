@@ -23,9 +23,9 @@ class DialogEditor(DialogConverter):
         # 压缩模式
         self.__compress_when_saving: bool = True
         # 存放并管理编辑器上方所有按钮的容器
-        self.__buttons_ui_container: GameObjectsDictContainer = NULL_DICT_CONTAINER
+        self.__buttons_ui_container: Optional[GameObjectsDictContainer] = None
         # 未保存数据时警告的窗口
-        self.__no_save_warning: GameObjectsDictContainer = NULL_DICT_CONTAINER
+        self.__no_save_warning: Optional[GameObjectsDictContainer] = None
         # 当前选择的背景的名称
         self.__current_select_bg_name: Optional[str] = None
         # 默认不播放音乐
@@ -265,6 +265,7 @@ class DialogEditor(DialogConverter):
         else:
             self.dialog_bgm_select.set_selected_item("null")
         # 更新按钮
+        assert self.__buttons_ui_container is not None
         if self.does_current_dialog_have_next_dialog() is True:
             self.__buttons_ui_container.get("add").set_visible(False)
             self.__buttons_ui_container.get("next").set_visible(True)
@@ -402,6 +403,9 @@ class DialogEditor(DialogConverter):
             self._current_dialog_content["narrator"] = self.__dialog_txt_system.narrator.get_text()
         if self.__dialog_txt_system.content.need_save:
             self._current_dialog_content["content"] = self.__dialog_txt_system.content.get_text()
+        # 确保按钮初始化
+        assert self.__buttons_ui_container is not None
+        assert self.__no_save_warning is not None
         # 展示按钮
         self.__buttons_ui_container.draw(surface)
         # 展示出当前可供使用的背景音乐

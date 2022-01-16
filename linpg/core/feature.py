@@ -1,8 +1,5 @@
 from .shape import *
 
-# 无数据的RECT，用于规范化Typing
-NULL_RECT: Rectangle = Rectangle(1, 1, -2, -2)
-
 RectLiked = Union[Rectangle, pygame.rect.Rect, tuple]
 
 # 转换pygame的rect类至linpg引擎的rect类

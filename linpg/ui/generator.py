@@ -209,7 +209,7 @@ class UiGenerator:
                     if "scale_for_resizing_width" in data:
                         item_t.set_scale_for_resizing_width(data["scale_for_resizing_width"])
                     if "scale_for_resizing_height" in data:
-                        item_t.set_scale_for_resizing_width(data["scale_for_resizing_height"])
+                        item_t.set_scale_for_resizing_height(data["scale_for_resizing_height"])
                     if "auto_resize" in data:
                         item_t.set_auto_resize(data["auto_resize"])
                     if "description" in data:

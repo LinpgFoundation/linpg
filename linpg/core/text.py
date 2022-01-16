@@ -11,6 +11,7 @@ class AbstractTextSurface(GameObject2d, HiddenableSurface):
         _color: color_liked = Colors.BLACK,
         _bold: bool = False,
         _italic: bool = False,
+        _with_bounding: bool = False,
     ) -> None:
         GameObject2d.__init__(self, x, y)
         HiddenableSurface.__init__(self)
@@ -19,6 +20,7 @@ class AbstractTextSurface(GameObject2d, HiddenableSurface):
         self.__color: tuple[int, int, int, int] = Colors.get(_color)
         self.__bold: bool = _bold
         self.__italic: bool = _italic
+        self.__with_bounding: bool = _with_bounding
         self.__alpha: int = 255
 
     def _update_text_surface(self) -> None:
@@ -59,6 +61,13 @@ class AbstractTextSurface(GameObject2d, HiddenableSurface):
         self.__italic = value
         self._update_text_surface()
 
+    def get_with_bounding(self) -> bool:
+        return self.__with_bounding
+
+    def set_with_bounding(self, value: bool) -> None:
+        self.__with_bounding = value
+        self._update_text_surface()
+
     def get_alpha(self) -> int:
         return self.__alpha
 
@@ -78,15 +87,26 @@ class StaticTextSurface(AbstractTextSurface):
         _color: color_liked = Colors.BLACK,
         _bold: bool = False,
         _italic: bool = False,
+        _with_bounding: bool = False,
     ) -> None:
-        super().__init__(text, x, y, size, _color=_color, _bold=_bold, _italic=_italic)
+        super().__init__(text, x, y, size, _color, _bold, _italic, _with_bounding)
         self.__text_surface: ImageSurface = Font.render(
-            self.get_text(), self.get_color(), self.get_font_size(), self.get_bold(), self.get_italic()
+            self.get_text(),
+            self.get_color(),
+            self.get_font_size(),
+            self.get_bold(),
+            self.get_italic(),
+            with_bounding=self.get_with_bounding(),
         )
 
     def _update_text_surface(self) -> None:
         self.__text_surface = Font.render(
-            self.get_text(), self.get_color(), self.get_font_size(), self.get_bold(), self.get_italic()
+            self.get_text(),
+            self.get_color(),
+            self.get_font_size(),
+            self.get_bold(),
+            self.get_italic(),
+            with_bounding=self.get_with_bounding(),
         )
 
     def _get_text_surface(self) -> ImageSurface:
@@ -136,17 +156,26 @@ class DynamicTextSurface(AbstractTextSurface):
         _color: color_liked = Colors.BLACK,
         _bold: bool = False,
         _italic: bool = False,
+        _with_bounding: bool = False,
     ) -> None:
-        super().__init__(text, x, y, size, _color=_color, _bold=_bold, _italic=_italic)
+        super().__init__(text, x, y, size, _color, _bold, _italic, _with_bounding)
         self.__FONT_GENERATOR: FontGenerator = FontGenerator()
         self.__FONT_GENERATOR.update(self.get_font_size(), self.get_bold(), self.get_italic())
 
     def _update_text_surface(self) -> None:
         self.__FONT_GENERATOR.update(self.get_font_size(), self.get_bold(), self.get_italic())
 
+    def get_width(self) -> int:
+        return self.__FONT_GENERATOR.estimate_text_width(self.get_text())
+
+    def get_height(self) -> int:
+        return self.__FONT_GENERATOR.estimate_text_height(self.get_text())
+
     def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
-            _text_surface: ImageSurface = self.__FONT_GENERATOR.render(self.get_text(), self.get_color())
+            _text_surface: ImageSurface = self.__FONT_GENERATOR.render(
+                self.get_text(), self.get_color(), with_bounding=self.get_with_bounding()
+            )
             if self.get_alpha() != 255:
                 _text_surface.set_alpha(255)
             surface.blit(_text_surface, Coordinates.add(self.pos, offSet))
@@ -164,9 +193,10 @@ class ResizeWhenHoveredTextSurface(StaticTextSurface):
         _color: color_liked = Colors.BLACK,
         _bold: bool = False,
         _italic: bool = False,
+        _with_bounding: bool = False,
     ) -> None:
-        super().__init__(text, x, y, original_size, _color, _bold, _italic)
-        self.__text_when_hovered = StaticTextSurface(text, 0, 0, size_when_hovered, _color, _bold, _italic)
+        super().__init__(text, x, y, original_size, _color, _bold, _italic, _with_bounding)
+        self.__text_when_hovered = StaticTextSurface(text, 0, 0, size_when_hovered, _color, _bold, _italic, _with_bounding)
         self.__text_when_hovered.set_center(self.centerx, self.centery)
         self.__is_hovered: bool = False
 

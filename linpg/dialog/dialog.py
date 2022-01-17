@@ -141,11 +141,11 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 self.fade(surface)
                 self.stop()
             elif self.__buttons_container.item_being_hovered == "is_auto":
-                self.__dialog_txt_system.autoMode = True
+                self.__dialog_txt_system.set_playing_automatically(False)
                 self.__buttons_container.get("not_auto").set_visible(True)
                 self.__buttons_container.get("is_auto").set_visible(False)
             elif self.__buttons_container.item_being_hovered == "not_auto":
-                self.__dialog_txt_system.autoMode = False
+                self.__dialog_txt_system.set_playing_automatically(True)
                 self.__buttons_container.get("not_auto").set_visible(False)
                 self.__buttons_container.get("is_auto").set_visible(True)
             elif self.__buttons_container.item_being_hovered == "history":
@@ -349,6 +349,6 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             if (
                 self.__buttons_container is not None
                 and self.__buttons_container.is_visible()
-                and self.__dialog_txt_system.needUpdate()
+                and self.__dialog_txt_system.is_update_needed()
             ):
                 self.__go_to_next(surface)

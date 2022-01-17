@@ -235,8 +235,8 @@ class DialogEditor(DialogConverter):
 
     # 分离需要保存的数据
     def __slipt_the_stuff_need_save(self) -> dict:
-        self._current_dialog_content["narrator"] = self.__dialog_txt_system.narrator.get_text()
-        self._current_dialog_content["content"] = self.__dialog_txt_system.content.get_text()
+        self._current_dialog_content["narrator"] = self.__dialog_txt_system.get_narrator()
+        self._current_dialog_content["content"] = self.__dialog_txt_system.get_content()
         data_need_save: dict = deepcopy(self._dialog_data)
         if not self._is_default_dialog and self.__compress_when_saving is True:
             # 移除掉相似的内容
@@ -399,10 +399,9 @@ class DialogEditor(DialogConverter):
     def draw(self, surface: ImageSurface) -> None:
         super().draw(surface)
         # 更新对话框数据
-        if self.__dialog_txt_system.narrator.need_save:
-            self._current_dialog_content["narrator"] = self.__dialog_txt_system.narrator.get_text()
-        if self.__dialog_txt_system.content.need_save:
-            self._current_dialog_content["content"] = self.__dialog_txt_system.content.get_text()
+        if self.__dialog_txt_system.any_changed_was_made():
+            self._current_dialog_content["narrator"] = self.__dialog_txt_system.get_narrator()
+            self._current_dialog_content["content"] = self.__dialog_txt_system.get_content()
         # 确保按钮初始化
         assert self.__buttons_ui_container is not None
         assert self.__no_save_warning is not None

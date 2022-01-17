@@ -228,8 +228,7 @@
                     "src": "{Global,confirm}"
                 },
                 "type": "button",
-                "auto_resize": true,
-                "width": 0,
+                "width": "15%",
                 "x": "25%",
                 "y": "70%"
             },
@@ -243,8 +242,7 @@
                     "src": "{Global,cancel}"
                 },
                 "type": "button",
-                "auto_resize": true,
-                "width": 0,
+                "width": "15%",
                 "x": "60%",
                 "y": "70%"
             }

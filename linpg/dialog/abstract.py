@@ -114,7 +114,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         currentDialogContent: dict = self.dialog_content[self._dialog_id]
         # 检测是否缺少关键key
         if safe_mode is True:
-            for key in ("characters_img", "background_img", "narrator", "content"):
+            for key in ("character_images", "background_image", "narrator", "contents"):
                 if key not in currentDialogContent:
                     EXCEPTION.fatal(
                         'Cannot find critical key "{0}" in part "{1}" with id "{2}".'.format(key, self._part, self._dialog_id)
@@ -213,10 +213,10 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 更新当前对话数据的指针
         self._current_dialog_content = self.__get_current_dialog_content(True)
         # 更新立绘和背景
-        self._npc_manager.update(self._current_dialog_content["characters_img"])
-        self._update_background_image(self._current_dialog_content["background_img"])
+        self._npc_manager.update(self._current_dialog_content["character_images"])
+        self._update_background_image(self._current_dialog_content["background_image"])
         # 更新对话框
-        self._get_dialog_box().update(self._current_dialog_content["narrator"], self._current_dialog_content["content"])
+        self._get_dialog_box().update(self._current_dialog_content["narrator"], self._current_dialog_content["contents"])
         # 更新背景音乐
         if (current_bgm := self._current_dialog_content["background_music"]) is not None:
             self.set_bgm(os.path.join(ASSET.PATH_DICT["music"], current_bgm))
@@ -257,7 +257,7 @@ class AbstractDialogSystem(AbstractGameSystem):
             optionButton.set_auto_resize(True)
             optionButton.set_text(
                 ButtonComponent.text(
-                    str(self._current_dialog_content["next_dialog_id"]["target"][i]["txt"]), self._FONT_SIZE, Colors.WHITE
+                    str(self._current_dialog_content["next_dialog_id"]["target"][i]["text"]), self._FONT_SIZE, Colors.WHITE
                 )
             )
             optionButton.set_pos(

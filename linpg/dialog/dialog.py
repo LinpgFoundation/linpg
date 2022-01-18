@@ -238,18 +238,17 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             # 如果玩家需要并做出了选择
             elif self._dialog_options_container.item_being_hovered >= 0:
                 # 获取下一个对话的id
-                nextDialogId = str(
-                    self._current_dialog_content["next_dialog_id"]["target"][self._dialog_options_container.item_being_hovered][
-                        "id"
-                    ]
-                )
+                _option: dict = self._current_dialog_content["next_dialog_id"]["target"][
+                    self._dialog_options_container.item_being_hovered
+                ]
                 # 记录玩家选项
                 self._dialog_options[self._dialog_id] = {
                     "id": self._dialog_options_container.item_being_hovered,
-                    "target": nextDialogId,
+                    "target": _option["id"],
+                    "text": _option["text"],
                 }
                 # 更新场景
-                self._update_scene(nextDialogId)
+                self._update_scene(_option["id"])
             else:
                 self.__go_to_next(surface)
         if Controller.get_event("scroll_up") and self.__history_surface_local_y < 0:
@@ -291,13 +290,13 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                             (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() * 0.1 + local_y),
                         )
                     has_narrator: bool = self.dialog_content[dialogIdTemp]["narrator"] is not None
-                    for i in range(len(self.dialog_content[dialogIdTemp]["content"])):
-                        txt: str = str(self.dialog_content[dialogIdTemp]["content"][i])
+                    for i in range(len(self.dialog_content[dialogIdTemp]["contents"])):
+                        txt: str = str(self.dialog_content[dialogIdTemp]["contents"][i])
                         if has_narrator:
                             if i == 0:
                                 txt = '[ "' + txt
                             # 这里不用elif，以免当对话行数为一的情况
-                            if i == len(self.dialog_content[dialogIdTemp]["content"]) - 1:
+                            if i == len(self.dialog_content[dialogIdTemp]["contents"]) - 1:
                                 txt += '" ]'
                         self.__history_surface.blit(
                             self.__dialog_txt_system.FONT.render(txt, Colors.WHITE),
@@ -324,7 +323,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                             )
                             self.__history_surface.blit(
                                 self.__dialog_txt_system.FONT.render(
-                                    str(self._dialog_options[dialogIdTemp]["target"]), (0, 191, 255)
+                                    str(self._dialog_options[dialogIdTemp]["text"]), (0, 191, 255)
                                 ),
                                 (Display.get_width() * 0.15, Display.get_height() * 0.1 + local_y),
                             )

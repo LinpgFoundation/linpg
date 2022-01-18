@@ -17,7 +17,7 @@ class AbstractDialogBox(HiddenableSurface):
         EXCEPTION.fatal("draw()", 1)
 
     # 更新内容（子类需实现）
-    def update(self, narrator: str, content: list) -> None:
+    def update(self, narrator: str, contents: list) -> None:
         EXCEPTION.fatal("update()", 1)
 
 
@@ -25,7 +25,7 @@ class AbstractDialogBox(HiddenableSurface):
 class DevDialogBox(AbstractDialogBox):
     def __init__(self, fontSize: int):
         super().__init__()
-        self.__content: MultipleLinesInputBox = MultipleLinesInputBox(
+        self.__contents: MultipleLinesInputBox = MultipleLinesInputBox(
             Display.get_width() * 2 / 10, Display.get_height() * 0.73, fontSize, "white"
         )
         self.__narrator: SingleLineInputBox = SingleLineInputBox(
@@ -37,7 +37,7 @@ class DevDialogBox(AbstractDialogBox):
 
     # 是否内容相比上次有任何改变
     def any_changed_was_made(self) -> bool:
-        return self.__narrator.need_save or self.__content.need_save
+        return self.__narrator.need_save or self.__contents.need_save
 
     # 获取当前讲述人
     def get_narrator(self) -> str:
@@ -45,18 +45,18 @@ class DevDialogBox(AbstractDialogBox):
 
     # 获取当前内容
     def get_content(self) -> list:
-        return self.__content.get_text()
+        return self.__contents.get_text()
 
     # 更新内容
-    def update(self, narrator: Optional[str], content: Optional[list]) -> None:
+    def update(self, narrator: Optional[str], contents: Optional[list]) -> None:
         if narrator is None:
             self.__narrator.set_text()
         else:
             self.__narrator.set_text(narrator)
-        if content is None:
-            self.__content.set_text()
+        if contents is None:
+            self.__contents.set_text()
         else:
-            self.__content.set_text(content)
+            self.__contents.set_text(contents)
 
     # 画出
     def draw(self, surface: ImageSurface) -> None:
@@ -65,7 +65,7 @@ class DevDialogBox(AbstractDialogBox):
             self._dialoguebox.draw(surface)
             # 将文字画到屏幕上
             self.__narrator.draw(surface)
-            self.__content.draw(surface)
+            self.__contents.draw(surface)
 
 
 # 对话框和对话框内容
@@ -73,7 +73,7 @@ class DialogBox(AbstractDialogBox):
     def __init__(self, fontSize: int):
         super().__init__()
         self.FONT: FontGenerator = Font.create(fontSize)
-        self.__content: list = []
+        self.__contents: list = []
         self.__narrator: str = ""
         self.__text_index: int = 0
         self.__displayed_lines: int = 0
@@ -116,20 +116,20 @@ class DialogBox(AbstractDialogBox):
 
     # 是否所有内容均已展出
     def is_all_played(self) -> bool:
-        # 如果self.__content是空的，也就是说没有任何内容，那么应当视为所有内容都被播放了
-        return len(self.__content) == 0 or (
-            self.__displayed_lines >= len(self.__content) - 1
-            and self.__text_index >= len(self.__content[self.__displayed_lines]) - 1
+        # 如果self.__contents是空的，也就是说没有任何内容，那么应当视为所有内容都被播放了
+        return len(self.__contents) == 0 or (
+            self.__displayed_lines >= len(self.__contents) - 1
+            and self.__text_index >= len(self.__contents[self.__displayed_lines]) - 1
         )
 
     # 立刻播出所有内容
     def play_all(self) -> None:
         if not self.is_all_played():
-            self.__displayed_lines = max(len(self.__content) - 1, 0)
-            self.__text_index = max(len(self.__content[self.__displayed_lines]) - 1, 0)
+            self.__displayed_lines = max(len(self.__contents) - 1, 0)
+            self.__text_index = max(len(self.__contents[self.__displayed_lines]) - 1, 0)
 
     # 更新内容
-    def update(self, narrator: Optional[str], content: Optional[list], forceNotResizeDialoguebox: bool = False) -> None:
+    def update(self, narrator: Optional[str], contents: Optional[list], forceNotResizeDialoguebox: bool = False) -> None:
         self.stop_playing_text_sound()
         # 重设部分参数
         self.__text_index = 0
@@ -137,9 +137,9 @@ class DialogBox(AbstractDialogBox):
         self.__total_letters = 0
         self.__read_time = 0
         # 更新文字内容
-        self.__content = content if content is not None else []
-        for i in range(len(self.__content)):
-            self.__total_letters += len(self.__content[i])
+        self.__contents = contents if contents is not None else []
+        for text in self.__contents:
+            self.__total_letters += len(text)
         # 更新讲述者名称
         if narrator is None:
             narrator = ""
@@ -207,24 +207,24 @@ class DialogBox(AbstractDialogBox):
                     # 对话框已播放的内容
                     for i in range(self.__displayed_lines):
                         surface.blit(
-                            self.FONT.render(self.__content[i], Colors.WHITE, with_bounding=True),
+                            self.FONT.render(self.__contents[i], Colors.WHITE, with_bounding=True),
                             (x, y + self.FONT.size * 1.5 * i),
                         )
                     # 对话框正在播放的内容
                     surface.blit(
                         self.FONT.render(
-                            self.__content[self.__displayed_lines][: self.__text_index], Colors.WHITE, with_bounding=True
+                            self.__contents[self.__displayed_lines][: self.__text_index], Colors.WHITE, with_bounding=True
                         ),
                         (x, y + self.FONT.size * 1.5 * self.__displayed_lines),
                     )
                     # 如果当前行的字符还没有完全播出
-                    if self.__text_index < len(self.__content[self.__displayed_lines]):
+                    if self.__text_index < len(self.__contents[self.__displayed_lines]):
                         # 播放文字音效
                         if not LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy() and self.__textPlayingSound is not None:
                             LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.play(self.__textPlayingSound)
                         self.__text_index += 1
                     # 当前行的所有字都播出后，播出下一行
-                    elif self.__displayed_lines < len(self.__content) - 1:
+                    elif self.__displayed_lines < len(self.__contents) - 1:
                         self.__text_index = 0
                         self.__displayed_lines += 1
                     # 当所有行都播出后

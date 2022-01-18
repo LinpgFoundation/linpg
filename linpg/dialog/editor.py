@@ -236,7 +236,7 @@ class DialogEditor(DialogConverter):
     # 分离需要保存的数据
     def __slipt_the_stuff_need_save(self) -> dict:
         self._current_dialog_content["narrator"] = self.__dialog_txt_system.get_narrator()
-        self._current_dialog_content["content"] = self.__dialog_txt_system.get_content()
+        self._current_dialog_content["contents"] = self.__dialog_txt_system.get_content()
         data_need_save: dict = deepcopy(self._dialog_data)
         if not self._is_default_dialog and self.__compress_when_saving is True:
             # 移除掉相似的内容
@@ -282,7 +282,7 @@ class DialogEditor(DialogConverter):
         if len(self.dialog_content) <= 0:
             self.dialog_content.update(Template.get("dialog_example"))
             for key in self.dialog_content:
-                self.dialog_content[key]["content"].append(self.please_enter_content)
+                self.dialog_content[key]["contents"].append(self.please_enter_content)
                 self.dialog_content[key]["narrator"] = self.please_enter_name
             self._is_default_dialog = True
             self._dialog_data_default.clear()
@@ -299,10 +299,10 @@ class DialogEditor(DialogConverter):
     # 添加新的对话
     def __add_dialog(self, dialogId: str) -> None:
         self.dialog_content[dialogId] = {
-            "background_img": self._current_dialog_content["background_img"],
+            "background_image": self._current_dialog_content["background_image"],
             "background_music": self._current_dialog_content["background_music"],
-            "characters_img": [],
-            "content": [self.please_enter_content],
+            "character_images": [],
+            "contents": [self.please_enter_content],
             "last_dialog_id": self._dialog_id,
             "narrator": self.please_enter_name,
             "next_dialog_id": None,
@@ -311,7 +311,7 @@ class DialogEditor(DialogConverter):
         lastId = self.__get_last_id()
         if lastId != "<!null>":
             self.dialog_content[dialogId]["narrator"] = self.dialog_content[lastId]["narrator"]
-            self.dialog_content[dialogId]["characters_img"] = deepcopy(self.dialog_content[lastId]["characters_img"])
+            self.dialog_content[dialogId]["character_images"] = deepcopy(self.dialog_content[lastId]["character_images"])
         # 检测是否自动保存
         if self.auto_save:
             self.save_progress()
@@ -401,7 +401,7 @@ class DialogEditor(DialogConverter):
         # 更新对话框数据
         if self.__dialog_txt_system.any_changed_was_made():
             self._current_dialog_content["narrator"] = self.__dialog_txt_system.get_narrator()
-            self._current_dialog_content["content"] = self.__dialog_txt_system.get_content()
+            self._current_dialog_content["contents"] = self.__dialog_txt_system.get_content()
         # 确保按钮初始化
         assert self.__buttons_ui_container is not None
         assert self.__no_save_warning is not None
@@ -486,8 +486,8 @@ class DialogEditor(DialogConverter):
                     confirm_event_tag = True
             # 移除角色立绘
             elif Controller.get_event("delete") and self._npc_manager.character_get_click is not None:
-                self._current_dialog_content["characters_img"].remove(self._npc_manager.character_get_click)
-                self._npc_manager.update(self._current_dialog_content["characters_img"])
+                self._current_dialog_content["character_images"].remove(self._npc_manager.character_get_click)
+                self._npc_manager.update(self._current_dialog_content["character_images"])
                 self._npc_manager.character_get_click = None
         # 显示移除角色的提示
         if self._npc_manager.character_get_click is not None:
@@ -519,19 +519,19 @@ class DialogEditor(DialogConverter):
                     imgName = self.UIContainerRight_bg.item_being_hovered
                     if imgName is not None:
                         if imgName != "current_select":
-                            self._current_dialog_content["background_img"] = imgName
+                            self._current_dialog_content["background_image"] = imgName
                             self._update_background_image(imgName)
                         else:
-                            self._current_dialog_content["background_img"] = None
+                            self._current_dialog_content["background_image"] = None
                             self._update_background_image(None)
                 elif self.UIContainerRight_npc.is_visible():
                     imgName = self.UIContainerRight_npc.item_being_hovered
                     if imgName is not None:
-                        if self._current_dialog_content["characters_img"] is None:
-                            self._current_dialog_content["characters_img"] = []
-                        if len(self._current_dialog_content["characters_img"]) < 2:  # type: ignore
-                            self._current_dialog_content["characters_img"].append(imgName)  # type: ignore
-                            self._npc_manager.update(self._current_dialog_content["characters_img"])  # type: ignore
+                        if self._current_dialog_content["character_images"] is None:
+                            self._current_dialog_content["character_images"] = []
+                        if len(self._current_dialog_content["character_images"]) < 2:  # type: ignore
+                            self._current_dialog_content["character_images"].append(imgName)  # type: ignore
+                            self._npc_manager.update(self._current_dialog_content["character_images"])  # type: ignore
 
         # 展示dialog navigation窗口
         self.__dialog_navigation_window.present_on(surface)

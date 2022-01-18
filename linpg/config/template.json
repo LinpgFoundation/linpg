@@ -1,10 +1,10 @@
 {
     "dialog_example": {
         "head": {
-            "background_img": null,
+            "background_image": null,
             "background_music": null,
-            "characters_img": [],
-            "content": [],
+            "character_images": [],
+            "contents": [],
             "last_dialog_id": null,
             "narrator": "",
             "next_dialog_id": {
@@ -13,10 +13,10 @@
             }
         },
         "id_001": {
-            "background_img": null,
+            "background_image": null,
             "background_music": null,
-            "characters_img": [],
-            "content": [],
+            "character_images": [],
+            "contents": [],
             "last_dialog_id": "head",
             "narrator": "",
             "next_dialog_id": null

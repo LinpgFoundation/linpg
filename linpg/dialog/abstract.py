@@ -2,10 +2,10 @@ from .character import *
 
 # 视觉小说系统接口
 class AbstractDialogSystem(AbstractGameSystem):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # 存储视觉小说数据的参数
-        self._dialog_data: dict = {}
+        self._dialog_data: dict[str, dict] = {}
         # 当前对话的id
         self._dialog_id: str = "head"
         # 加载对话的背景图片模块
@@ -14,15 +14,13 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._black_bg = StaticImage(
             Colors.surface(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height()
         )
-        # UI按钮
-        self._buttons_mananger = None
         # 对话文件路径
         self._dialog_folder_path: str = "Data"
         # 背景图片路径
         self._background_image_folder_path: str = os.path.join("Assets", "image", "dialog_background")
         # 背景图片
-        self.__background_image_name = None
-        self.__background_image_surface = self._black_bg.copy()
+        self.__background_image_name: Optional[str] = None
+        self.__background_image_surface: Union[StaticImage, VideoSurface] = self._black_bg.copy()
         # 是否开启自动保存
         self.auto_save: bool = False
         # 是否静音
@@ -30,7 +28,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 指向当前对话的数据的指针
         self._current_dialog_content: dict = {}
         # 选项菜单
-        self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer(None, 0, 0, 0, 0)
+        self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer("<!null>", 0, 0, 0, 0)
         self._dialog_options_container.set_visible(False)
         # 更新背景音乐音量
         self.set_bgm_volume(Media.volume.background_music / 100)
@@ -62,7 +60,7 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 获取对话文件的主语言
     def get_default_lang(self) -> str:
-        return (
+        return str(
             Config.load(
                 os.path.join(self._dialog_folder_path, self._chapter_type, "info.{}".format(Config.get_file_type())),
                 "default_lang",
@@ -70,17 +68,14 @@ class AbstractDialogSystem(AbstractGameSystem):
             if self._project_name is None
             else Config.load(
                 os.path.join(
-                    self._dialog_folder_path,
-                    self._chapter_type,
-                    self._project_name,
-                    "info.{}".format(Config.get_file_type()),
+                    self._dialog_folder_path, self._chapter_type, self._project_name, "info.{}".format(Config.get_file_type())
                 ),
                 "default_lang",
             )
         )
 
     # 获取下一个dialog node的类型
-    def get_next_dialog_type(self) -> str:
+    def get_next_dialog_type(self) -> Optional[str]:
         return (
             self._current_dialog_content["next_dialog_id"]["type"]
             if self._current_dialog_content["next_dialog_id"] is not None
@@ -90,16 +85,17 @@ class AbstractDialogSystem(AbstractGameSystem):
     # 生产一个新的推荐id
     def generate_a_new_recommended_key(self, index: int = 1) -> str:
         while True:
+            newId: str = ""
             if index <= 9:
-                if (newId := "id_00" + str(index)) not in self.dialog_content:
-                    return newId
+                newId = "id_00" + str(index)
             elif index <= 99:
-                if (newId := "id_0" + str(index)) not in self.dialog_content:
-                    return newId
+                newId = "id_0" + str(index)
             else:
-                if (newId := "id_" + str(index)) not in self.dialog_content:
-                    return newId
-            index += 1
+                newId = "id_" + str(index)
+            if newId in self.dialog_content:
+                index += 1
+            else:
+                return newId
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
@@ -118,12 +114,10 @@ class AbstractDialogSystem(AbstractGameSystem):
         currentDialogContent: dict = self.dialog_content[self._dialog_id]
         # 检测是否缺少关键key
         if safe_mode is True:
-            for key in ("characters_img", "background_img", "narrator", "content"):
+            for key in ("character_images", "background_image", "narrator", "contents"):
                 if key not in currentDialogContent:
                     EXCEPTION.fatal(
-                        'Cannot find critical key "{0}" in part "{1}" with id "{2}".'.format(
-                            key, self._part, self._dialog_id
-                        )
+                        'Cannot find critical key "{0}" in part "{1}" with id "{2}".'.format(key, self._part, self._dialog_id)
                     )
         return currentDialogContent
 
@@ -141,7 +135,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         chapterType: str,
         chapterId: int,
         part: str,
-        projectName: str,
+        projectName: Optional[str],
         dialogId: str = "head",
         dialog_options: dict = {},
     ) -> None:
@@ -181,7 +175,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._update_scene(self._dialog_id)
 
     # 更新背景图片
-    def _update_background_image(self, image_name: str) -> None:
+    def _update_background_image(self, image_name: Optional[str]) -> None:
         if self.__background_image_name != image_name:
             # 更新背景的名称
             self.__background_image_name = image_name
@@ -199,8 +193,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                     # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
                     elif os.path.exists(os.path.join(ASSET.PATH_DICT["movie"], self.__background_image_name)):
                         self.__background_image_surface = VideoSurface(
-                            os.path.join(ASSET.PATH_DICT["movie"], self.__background_image_name),
-                            with_audio=False,
+                            os.path.join(ASSET.PATH_DICT["movie"], self.__background_image_name), with_audio=False
                         )
                     else:
                         EXCEPTION.fatal(
@@ -209,7 +202,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                 elif self._npc_manager.dev_mode is True:
                     self.__background_image_surface = StaticImage(get_texture_missing_surface(Display.get_size()), 0, 0)
                 else:
-                    self.__background_image_surface = None
+                    self.__background_image_surface = NULL_STATIC_IMAGE
             else:
                 self.__background_image_surface = self._black_bg.copy()
 
@@ -220,10 +213,10 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 更新当前对话数据的指针
         self._current_dialog_content = self.__get_current_dialog_content(True)
         # 更新立绘和背景
-        self._npc_manager.update(self._current_dialog_content["characters_img"])
-        self._update_background_image(self._current_dialog_content["background_img"])
+        self._npc_manager.update(self._current_dialog_content["character_images"])
+        self._update_background_image(self._current_dialog_content["background_image"])
         # 更新对话框
-        self._get_dialog_box().update(self._current_dialog_content["narrator"], self._current_dialog_content["content"])
+        self._get_dialog_box().update(self._current_dialog_content["narrator"], self._current_dialog_content["contents"])
         # 更新背景音乐
         if (current_bgm := self._current_dialog_content["background_music"]) is not None:
             self.set_bgm(os.path.join(ASSET.PATH_DICT["music"], current_bgm))
@@ -236,8 +229,6 @@ class AbstractDialogSystem(AbstractGameSystem):
     # 更新语言
     def update_language(self) -> None:
         super().update_language()
-        if self._buttons_mananger is not None:
-            self._buttons_mananger.initialize()
         self._load_content()
 
     # 停止播放
@@ -250,8 +241,8 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 将背景图片画到surface上
     def display_background_image(self, surface: ImageSurface) -> None:
-        if self.__background_image_surface is not None:
-            if isinstance(self.__background_image_surface, Rectangle):
+        if self.__background_image_surface is not NULL_STATIC_IMAGE:
+            if isinstance(self.__background_image_surface, StaticImage):
                 self.__background_image_surface.set_size(surface.get_width(), surface.get_height())
             self.__background_image_surface.draw(surface)
 
@@ -261,17 +252,16 @@ class AbstractDialogSystem(AbstractGameSystem):
             Display.get_height() * 3 / 16 - len(self._current_dialog_content["next_dialog_id"]["target"]) * self._FONT_SIZE
         )
         for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
-            optionButton = load_button_with_text_in_center_and_different_background(
-                "<!ui>option.png",
-                "<!ui>option_selected.png",
-                self._current_dialog_content["next_dialog_id"]["target"][i]["txt"],
-                Colors.WHITE,
-                self._FONT_SIZE,
-                (0, 0),
+            optionButton: Button = Button.load("<!ui>option.png", (0, 0), (0, 0))
+            optionButton.set_hover_img(IMG.quickly_load("<!ui>option_selected.png"))
+            optionButton.set_auto_resize(True)
+            optionButton.set_text(
+                ButtonComponent.text(
+                    str(self._current_dialog_content["next_dialog_id"]["target"][i]["text"]), self._FONT_SIZE, Colors.WHITE
+                )
             )
             optionButton.set_pos(
-                (Display.get_width() - optionButton.get_width()) / 2,
-                (i + 1) * 4 * self._FONT_SIZE + optionBox_y_base,
+                (Display.get_width() - optionButton.get_width()) / 2, (i + 1) * 4 * self._FONT_SIZE + optionBox_y_base
             )
             self._dialog_options_container.append(optionButton)
         self._dialog_options_container.set_visible(True)

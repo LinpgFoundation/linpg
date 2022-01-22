@@ -2,7 +2,7 @@ from ..character import *
 
 # 天气系统
 class WeatherSystem:
-    def __init__(self):
+    def __init__(self) -> None:
         self.__initialized: bool = False
         self.__items: tuple = tuple()
         self.__img_list: list = []
@@ -49,7 +49,7 @@ class WeatherSystem:
 
 
 # 雪花片
-class Snow(GameObject):
+class Snow(Coordinate):
     def __init__(self, imgId: int, size: int, speed: int, x: int, y: int):
         super().__init__(x, y)
         self.imgId: int = imgId

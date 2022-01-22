@@ -30,11 +30,12 @@ Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游
 
 # :hammer_and_wrench: Dependencies / 运行库 
 
-| pygame |
-| ------ |
-| pyyaml |
-| pyav   |
-| numpy  |
+| pygame      |
+| :---------- |
+| pyyaml      |
+| opencv      |
+| numpy       |
+| PySimpleGUI |
 
 ***Special shout out to the developers of these libraries. They make game development using python no longer unthinkable.***
 
@@ -114,10 +115,10 @@ https://github.com/TigeiaWorkshop/linpg/wiki
 
 # :construction: Changes in Linpg Engine through the generations            Linpg引擎历代的变化
 
-| Linpg 1|( Obsolete / 过时，不再维护 )||
-| ------------------------------------------------------------ | -------------------------------- | ------------------ |
-| (Hard coded) Basic implementation of the visual novel system | 视觉小说系统的基本实现           | :white_check_mark: |
-| A extremely simple main menu                                  | 简易的主菜单页面                 | :white_check_mark: |
+| Linpg 1                                                      | ( Obsolete / 过时，不再维护 ) |                    |
+| :----------------------------------------------------------- | ----------------------------- | ------------------ |
+| (Hard coded) Basic implementation of the visual novel system | 视觉小说系统的基本实现        | :white_check_mark: |
+| A extremely simple main menu                                 | 简易的主菜单页面              | :white_check_mark: |
 
 ------
 

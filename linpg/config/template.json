@@ -1,10 +1,10 @@
 {
     "dialog_example": {
         "head": {
-            "background_img": null,
+            "background_image": null,
             "background_music": null,
-            "characters_img": [],
-            "content": [],
+            "character_images": [],
+            "contents": [],
             "last_dialog_id": null,
             "narrator": "",
             "next_dialog_id": {
@@ -13,10 +13,10 @@
             }
         },
         "id_001": {
-            "background_img": null,
+            "background_image": null,
             "background_music": null,
-            "characters_img": [],
-            "content": [],
+            "character_images": [],
+            "contents": [],
             "last_dialog_id": "head",
             "narrator": "",
             "next_dialog_id": null
@@ -34,7 +34,6 @@
         "version": 0
     },
     "setting": {
-        "AllowCache": false,
         "Antialias": true,
         "DeveloperMode": false,
         "FPS": 60,
@@ -45,7 +44,7 @@
         "MouseIconWidth": 18,
         "MouseMoveSpeed": 30,
         "NumberOfChannels": 8,
-        "ReadingSpeed": 0.5,
+        "ReadingSpeed": 1,
         "ScreenScale": 100,
         "Sound": {
             "background_music": 100,

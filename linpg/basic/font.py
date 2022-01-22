@@ -4,9 +4,9 @@ _FONT_IS_NOT_INITIALIZED_MSG: str = "Font is not initialized!"
 
 # 文字渲染模块
 class FontGenerator:
-    def __init__(self):
+    def __init__(self) -> None:
         self.__SIZE: int = 0
-        self.__FONT = None
+        self.__FONT: Optional[pygame.font.Font] = None
 
     # 是否加粗
     @property
@@ -41,13 +41,11 @@ class FontGenerator:
         if Setting.font_type == "default":
             self.__FONT = pygame.font.SysFont(Setting.font, self.__SIZE, ifBold, ifItalic)
         elif Setting.font_type == "custom":
-            font_path: str
-            if os.path.exists((font_path := os.path.join("Assets", "font", "{}.ttf".format(Setting.font)))):
+            font_path: str = os.path.join("Assets", "font", "{}.ttf".format(Setting.font))
+            if os.path.exists(font_path):
                 self.__FONT = pygame.font.Font(font_path, self.__SIZE)
             else:
-                EXCEPTION.warn(
-                    "Cannot find the {}.ttf file, the engine's font has been changed to default.".format(Setting.font)
-                )
+                EXCEPTION.warn("Cannot find the {}.ttf file, the engine's font has been changed to default.".format(Setting.font))
                 Setting.set_font("arial")
                 Setting.set_font_type("default")
                 self.__FONT = pygame.font.SysFont(Setting.font, self.__SIZE, ifBold, ifItalic)
@@ -60,40 +58,50 @@ class FontGenerator:
         else:
             EXCEPTION.fatal("FontType option in setting file is incorrect!")
 
-    # 渲染（无边框的）文字
-    def render(self, txt: strint, color: color_liked, background_color: Optional[color_liked] = None) -> ImageSurface:
-        font_surface_t = self.render_with_bounding(txt, color, background_color)
-        return font_surface_t.subsurface(font_surface_t.get_bounding_rect())
-
-    # 渲染有边框的文字
-    def render_with_bounding(
-        self, txt: strint, color: color_liked, background_color: Optional[color_liked] = None
-    ) -> ImageSurface:
-        if self.__SIZE > 0:
-            if not isinstance(txt, (str, int)):
-                EXCEPTION.fatal("The text must be a unicode or bytes, not {}".format(txt))
-            if background_color is None:
-                return self.__FONT.render(str(txt), Setting.antialias, Colors.get(color))
-            else:
-                return self.__FONT.render(str(txt), Setting.antialias, Colors.get(color), Colors.get(background_color))
+    # 估计文字的宽度
+    def estimate_text_width(self, text: strint) -> int:
+        if self.__FONT is not None:
+            return self.__FONT.size(str(text))[0]
         else:
             EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
 
-    # 估计文字的宽度
-    def estimate_text_width(self, text: strint) -> int:
-        return self.__FONT.size(text)[0]
+    # 估计文字的高度
+    def estimate_text_height(self, text: strint) -> int:
+        if self.__FONT is not None:
+            return self.__FONT.size(str(text))[1]
+        else:
+            EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
 
     # 检测是否需要更新
     def check_for_update(self, size: int, ifBold: bool = False, ifItalic: bool = False) -> None:
         if self.__FONT is None or self.__SIZE != size or self.__FONT.bold != ifBold or self.__FONT.italic != ifItalic:
             self.update(size, ifBold, ifItalic)
 
+    # 渲染文字
+    def render(
+        self, txt: strint, color: color_liked, background_color: Optional[color_liked] = None, with_bounding: bool = False
+    ) -> ImageSurface:
+        if self.__SIZE > 0:
+            if not isinstance(txt, (str, int)):
+                EXCEPTION.fatal("The text must be a unicode or bytes, not {}".format(txt))
+            if self.__FONT is not None:
+                font_surface_t: ImageSurface = (
+                    self.__FONT.render(str(txt), Setting.antialias, Colors.get(color))
+                    if background_color is None
+                    else self.__FONT.render(str(txt), Setting.antialias, Colors.get(color), Colors.get(background_color))
+                )
+                return font_surface_t.subsurface(font_surface_t.get_bounding_rect()) if not with_bounding else font_surface_t
+            else:
+                EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
+        else:
+            EXCEPTION.fatal(_FONT_IS_NOT_INITIALIZED_MSG)
+
 
 # 文字渲染器管理模块
 class FontManager:
     def __init__(self) -> None:
         # 引擎标准文件渲染器
-        self.__LINPG_GLOBAL_FONTS: dict = {}
+        self.__LINPG_GLOBAL_FONTS: dict[str, FontGenerator] = {}
         # 上一次render的字体
         self.__LINPG_LAST_FONT: FontGenerator = FontGenerator()
 
@@ -118,9 +126,7 @@ class FontManager:
         return self.get_global_font(key).size
 
     # 获取全局文字
-    def render_global_font(
-        self, key: str, txt: str, color: color_liked, background_color: color_liked = None
-    ) -> ImageSurface:
+    def render_global_font(self, key: str, txt: str, color: color_liked, background_color: color_liked = None) -> ImageSurface:
         return self.get_global_font(key).render(txt, color, background_color)
 
     # 删除全局文字
@@ -148,15 +154,16 @@ class FontManager:
         ifBold: bool = False,
         ifItalic: bool = False,
         background_color: color_liked = None,
+        with_bounding: bool = False,
     ) -> ImageSurface:
         self.__LINPG_LAST_FONT.check_for_update(int(size), ifBold, ifItalic)
-        return self.__LINPG_LAST_FONT.render(txt, color, background_color)
+        return self.__LINPG_LAST_FONT.render(txt, color, background_color, with_bounding)
 
     def render_description_box(
         self,
         txt: strint,
         color: color_liked,
-        size: int_f,
+        size: int,
         panding: int,
         background_color: color_liked,
         ifBold: bool = False,
@@ -164,7 +171,7 @@ class FontManager:
         outline_color: color_liked = None,
         thickness: int = 2,
     ) -> ImageSurface:
-        font_surface = self.render(txt, color, size, ifBold, ifItalic)
+        font_surface = self.render(txt, color, size, ifBold, ifItalic, with_bounding=True)
         des_surface = Colors.surface(
             (font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2), background_color
         )

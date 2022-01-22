@@ -44,6 +44,11 @@
         "leaving_without_saving_work2": "請問你想要保存你的修改嗎?",
         "progress_will_lost": "任何未被保存的進度將會被棄置"
     },
+    "LinpgVersionIncorrect": {
+        "continue_button": "繼續，我知道我在做什麽",
+        "exit_button": "不，我想退出",
+        "message": "該構建的推薦Linpg引擎版本為{0}. 然而，檢測到的Linpg版本為{1}.\n使用不兼容的Linpg版本可能導致遊戲崩潰或者存檔損壞, 即使你使用的是比推薦版本更新的Linpg構建.\n你確定要繼續運行遊戲嗎?"
+    },
     "Numbers": [
         "零",
         "一",

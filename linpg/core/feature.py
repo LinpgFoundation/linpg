@@ -1,9 +1,6 @@
 from .shape import *
 
-# 无数据的RECT，用于规范化Typing
-NULL_RECT: Rectangle = Rectangle(1, 1, -2, -2)
-
-RectLiked = Union[Rectangle, pygame.Rect, tuple]
+RectLiked = Union[Rectangle, pygame.rect.Rect, tuple]
 
 # 转换pygame的rect类至linpg引擎的rect类
 def convert_rect(rect: RectLiked) -> Rectangle:
@@ -26,7 +23,7 @@ def convert_rect(rect: RectLiked) -> Rectangle:
 
 
 # 转换linpg.Rect至pygame.Rect
-def convert_to_pygame_rect(rect: RectLiked) -> pygame.Rect:
+def convert_to_pygame_rect(rect: RectLiked) -> pygame.rect.Rect:
     # 如果是pygame.Rect类，则没必要转换
     if isinstance(rect, pygame.Rect):
         return rect
@@ -52,10 +49,7 @@ def is_same_rect(rect1: RectLiked, rect2: RectLiked) -> bool:
     rect2_t: Rectangle = convert_rect(rect2)
     # 比较并返回结果
     return (
-        rect1_t.x == rect2_t.x
-        and rect1_t.y == rect2_t.y
-        and rect1_t.width == rect2_t.width
-        and rect1_t.height == rect2_t.height
+        rect1_t.x == rect2_t.x and rect1_t.y == rect2_t.y and rect1_t.width == rect2_t.width and rect1_t.height == rect2_t.height
     )
 
 
@@ -65,7 +59,7 @@ def is_hovering(imgObject: ImageSurface, objectPos: tuple = ORIGIN) -> bool:
     mouse_pos: tuple = Positions.subtract(Controller.mouse.pos, objectPos)
     # 返回结果
     try:
-        return 0 < mouse_pos[0] < imgObject.get_width() and 0 < mouse_pos[1] < imgObject.get_height()
+        return bool(0 < mouse_pos[0] < imgObject.get_width() and 0 < mouse_pos[1] < imgObject.get_height())
     except Exception:
         EXCEPTION.fatal("Unable to check current object: {0} (type:{1})".format(imgObject, type(imgObject)))
 

@@ -1,61 +1,74 @@
-from pygame._sdl2 import Renderer, Window, messagebox
+import PySimpleGUI  # type: ignore
+from pygame._sdl2 import Renderer, Window
 from .frame import *
 
-# 提示窗口
-class Message:
-    def __init__(
-        self,
-        title: str,
-        message: str,
-        buttons: tuple[str],
-        info: bool = False,
-        warn: bool = False,
-        error: bool = False,
-        return_button: int = 0,
-        escape_button: int = 0,
-    ):
+# 设置PySimpleGUI主题
+PySimpleGUI.theme(Specification.get("PySimpleGUITheme"))
+
+# 确认窗口
+class ConfirmMessageWindow:
+    def __init__(self, title: str, message: str, keep_on_top: bool = True) -> None:
         """Display a message box.
         :param str title: A title string or None.
         :param str message: A message string.
-        :param bool info: If ``True``, display an info message.
-        :param bool warn: If ``True``, display a warning message.
-        :param bool error: If ``True``, display an error message.
-        :param tuple buttons: An optional sequence of buttons to show to the user (strings).
-        :param int return_button: 按下回车返回的值 (-1 for none).
-        :param int escape_button: 点击右上角关闭按钮返回的值 (-1 for none).
-        :return: 被按下按钮在self.buttons列表中的index.
+        :param bool _force_toplevel: If ``True``, display an message on toplevel.
         """
-        self.title: str = title
-        self.message: str = message
-        self.buttons: tuple = buttons
-        self.info: bool = info
-        self.warn: bool = warn
-        self.error: bool = error
-        self.return_button: int = return_button
-        self.escape_button: int = escape_button
+        self.__title: str = title
+        self.__message: str = message
+        self.__keep_on_top: bool = keep_on_top
 
-    def show(self) -> int:
-        return messagebox(
-            self.title,
-            self.message,
-            None,
-            self.info,
-            self.warn,
-            self.error,
-            self.buttons,
-            self.return_button,
-            self.escape_button,
+    @staticmethod
+    def YES() -> str:
+        return Lang.get_text("Global", "yes")
+
+    @staticmethod
+    def NO() -> str:
+        return Lang.get_text("Global", "no")
+
+    def show(self) -> str:
+        return str(
+            PySimpleGUI.Window(
+                self.__title,
+                [[PySimpleGUI.Text(self.__message)], [PySimpleGUI.Submit(self.YES()), PySimpleGUI.Cancel(self.NO())]],
+                keep_on_top=self.__keep_on_top,
+            ).read(close=True)[0]
         )
+
+
+# 警告窗口
+class LinpgVersionChecker:
+    def __init__(self, action: str, recommended_revision: int, recommended_patch: int, recommended_version: int = 3) -> None:
+        if not Info.ensure_linpg_version(action, recommended_revision, recommended_patch, recommended_version):
+            _quit_text: str = Lang.get_text("LinpgVersionIncorrect", "exit_button")
+            if (
+                PySimpleGUI.Window(
+                    Lang.get_text("Global", "warning"),
+                    [
+                        [
+                            PySimpleGUI.Text(
+                                Lang.get_text("LinpgVersionIncorrect", "message").format(
+                                    "3.{0}.{1}".format(recommended_revision, recommended_patch), Info.get_current_version()
+                                )
+                            )
+                        ],
+                        [
+                            PySimpleGUI.Submit(Lang.get_text("LinpgVersionIncorrect", "continue_button")),
+                            PySimpleGUI.Cancel(_quit_text),
+                        ],
+                    ],
+                ).read(close=True)[0]
+                == _quit_text
+            ):
+                Display.quit()
 
 
 # 窗口
 class RenderedWindow(Rectangle):
-    def __init__(self, width: int, height: int, title: str, is_win_always_on_top: bool):
+    def __init__(self, width: int, height: int, title: str, is_win_always_on_top: bool) -> None:
         super().__init__(0, 0, width, height)
         self.title: str = title
         self.always_on_top: bool = is_win_always_on_top
-        self.__win: Renderer = None
-        self.__update_window()
+        self.__win: Renderer = Renderer(Window(self.title, self.size, always_on_top=self.always_on_top))
 
     # 设置尺寸
     def set_width(self, value: int_f) -> None:

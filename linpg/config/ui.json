@@ -21,6 +21,72 @@
                 "width": "<#button_size>",
                 "x": "10%",
                 "y": "5%"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "auto_resize": true,
+                "height": "<#button_size>",
+                "icon": {
+                    "height": "<#button_size>",
+                    "src": "<!ui>auto.png",
+                    "width": "<#button_size>"
+                },
+                "name": "not_auto",
+                "scale_for_resizing_height": 1,
+                "scale_for_resizing_width": 1,
+                "src": "<!null>",
+                "text": {
+                    "color": "white",
+                    "src": "{Dialog,auto}"
+                },
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "80%",
+                "y": "5%"
+            },
+            {
+                "auto_resize": true,
+                "height": "<#button_size>",
+                "hidden": true,
+                "icon": {
+                    "height": "<#button_size>",
+                    "src": "<!ui>auto.png",
+                    "width": "<#button_size>"
+                },
+                "name": "is_auto",
+                "scale_for_resizing_height": 1,
+                "scale_for_resizing_width": 1,
+                "src": "<!null>",
+                "text": {
+                    "color": "white",
+                    "src": "{Dialog,auto}"
+                },
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "80%",
+                "y": "5%"
+            },
+            {
+                "alpha_when_not_hover": 150,
+                "auto_resize": true,
+                "height": "<#button_size>",
+                "icon": {
+                    "height": "<#button_size>",
+                    "src": "<!ui>next.png",
+                    "width": "<#button_size>"
+                },
+                "name": "skip",
+                "scale_for_resizing_height": 1,
+                "scale_for_resizing_width": 1,
+                "src": "<!null>",
+                "text": {
+                    "color": "white",
+                    "src": "{Dialog,skip}"
+                },
+                "type": "button",
+                "width": "<#button_size>",
+                "x": "90%",
+                "y": "5%"
             }
         ],
         "type": "container",
@@ -33,10 +99,10 @@
         "items": [
             {
                 "alpha_when_not_hover": 150,
+                "description": "{Global,mute}",
                 "height": "<#button_size>",
                 "name": "mute",
                 "src": "<!ui>mute.png",
-                "title": "{Global,mute}",
                 "type": "button",
                 "width": "<#button_size>",
                 "x": "<#mute_button_x>",
@@ -44,10 +110,10 @@
             },
             {
                 "alpha_when_not_hover": 150,
+                "description": "{Global,save}",
                 "height": "<#button_size>",
                 "name": "save",
                 "src": "<!ui>save.png",
-                "title": "{Global,save}",
                 "type": "button",
                 "width": "<#button_size>",
                 "x": "<#save_button_x>",
@@ -55,10 +121,10 @@
             },
             {
                 "alpha_when_not_hover": 150,
+                "description": "{Global,reload_file}",
                 "height": "<#button_size>",
                 "name": "reload",
                 "src": "<!ui>reload.png",
-                "title": "{Global,reload_file}",
                 "type": "button",
                 "width": "<#button_size>",
                 "x": "<#reload_button_x>",
@@ -66,10 +132,10 @@
             },
             {
                 "alpha_when_not_hover": 150,
+                "description": "{DialogCreator,add}",
                 "height": "<#button_size>",
                 "name": "add",
                 "src": "<!ui>add.png",
-                "title": "{DialogCreator,add}",
                 "type": "button",
                 "width": "<#button_size>",
                 "x": "<#add_and_next_button_x>",
@@ -77,10 +143,10 @@
             },
             {
                 "alpha_when_not_hover": 150,
+                "description": "{DialogCreator,next}",
                 "height": "<#button_size>",
                 "name": "next",
                 "src": "<!ui>next.png",
-                "title": "{DialogCreator,next}",
                 "type": "button",
                 "width": "<#button_size>",
                 "x": "<#add_and_next_button_x>",
@@ -88,10 +154,10 @@
             },
             {
                 "alpha_when_not_hover": 150,
+                "description": "{DialogCreator,previous}",
                 "height": "<#button_size>",
                 "name": "previous",
                 "src": "<!ui>previous.png",
-                "title": "{DialogCreator,previous}",
                 "type": "button",
                 "width": "<#button_size>",
                 "x": "<#previous_button_x>",
@@ -99,10 +165,10 @@
             },
             {
                 "alpha_when_not_hover": 150,
+                "description": "{DialogCreator,delete}",
                 "height": "<#button_size>",
                 "name": "delete",
                 "src": "<!ui>delete.png",
-                "title": "{DialogCreator,delete}",
                 "type": "button",
                 "width": "<#button_size>",
                 "x": "<#delete_button_x>",
@@ -110,10 +176,10 @@
             },
             {
                 "alpha_when_not_hover": 150,
+                "description": "{Global,back_to_main_menu}",
                 "height": "<#button_size>",
                 "name": "back",
                 "src": "<!ui>back.png",
-                "title": "{Global,back_to_main_menu}",
                 "type": "button",
                 "width": "<#button_size>",
                 "x": "<#back_button_x>",
@@ -154,7 +220,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "14%",
+                "height": "20%",
                 "name": "confirm",
                 "src": "<!ui>button.png",
                 "text": {
@@ -162,13 +228,13 @@
                     "src": "{Global,confirm}"
                 },
                 "type": "button",
-                "width": "10%",
-                "x": "20%",
+                "width": "15%",
+                "x": "25%",
                 "y": "70%"
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "14%",
+                "height": "20%",
                 "name": "cancel",
                 "src": "<!ui>button.png",
                 "text": {
@@ -176,7 +242,7 @@
                     "src": "{Global,cancel}"
                 },
                 "type": "button",
-                "width": "10%",
+                "width": "15%",
                 "x": "60%",
                 "y": "70%"
             }
@@ -216,7 +282,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "14%",
+                "height": "20%",
                 "name": "confirm",
                 "src": "<!ui>button.png",
                 "text": {
@@ -224,13 +290,13 @@
                     "src": "{Global,confirm}"
                 },
                 "type": "button",
-                "width": "10%",
-                "x": "20%",
+                "width": "15%",
+                "x": "25%",
                 "y": "70%"
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "14%",
+                "height": "20%",
                 "name": "cancel",
                 "src": "<!ui>button.png",
                 "text": {
@@ -238,7 +304,7 @@
                     "src": "{Global,cancel}"
                 },
                 "type": "button",
-                "width": "10%",
+                "width": "15%",
                 "x": "60%",
                 "y": "70%"
             }
@@ -279,7 +345,8 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "10%",
+                "auto_resize": true,
+                "height": "15%",
                 "name": "save",
                 "src": "<!ui>button.png",
                 "text": {
@@ -287,13 +354,14 @@
                     "src": "{Global,save}"
                 },
                 "type": "button",
-                "width": "10%",
-                "x": "10%",
+                "width": 0,
+                "x": "20%",
                 "y": "70%"
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "10%",
+                "auto_resize": true,
+                "height": "15%",
                 "name": "cancel",
                 "src": "<!ui>button.png",
                 "text": {
@@ -301,13 +369,14 @@
                     "src": "{Global,cancel}"
                 },
                 "type": "button",
-                "width": "10%",
+                "width": 0,
                 "x": "40%",
                 "y": "70%"
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "10%",
+                "auto_resize": true,
+                "height": "15%",
                 "name": "dont_save",
                 "src": "<!ui>button.png",
                 "text": {
@@ -315,7 +384,7 @@
                     "src": "{Global,dont_save}"
                 },
                 "type": "button",
-                "width": "10%",
+                "width": 0,
                 "x": "70%",
                 "y": "70%"
             }
@@ -442,7 +511,7 @@
                 "font_size": "5%",
                 "name": "back_button",
                 "src": "{Global,back}",
-                "type": "dynamic_text",
+                "type": "resize_when_hovered_text",
                 "x": "center",
                 "y": "90%"
             },
@@ -476,7 +545,7 @@
                 "font_size": "5%",
                 "name": "resume",
                 "src": "{Global,resume}",
-                "type": "dynamic_text",
+                "type": "resize_when_hovered_text",
                 "x": "10%",
                 "y": "30%"
             },
@@ -485,7 +554,7 @@
                 "font_size": "5%",
                 "name": "save",
                 "src": "{Global,save_current_progress}",
-                "type": "dynamic_text",
+                "type": "resize_when_hovered_text",
                 "x": "10%",
                 "y": "40%"
             },
@@ -494,7 +563,7 @@
                 "font_size": "5%",
                 "name": "option_menu",
                 "src": "{OptionMenu,option_menu}",
-                "type": "dynamic_text",
+                "type": "resize_when_hovered_text",
                 "x": "10%",
                 "y": "50%"
             },
@@ -503,7 +572,7 @@
                 "font_size": "5%",
                 "name": "back_to_mainMenu",
                 "src": "{Global,back_to_main_menu}",
-                "type": "dynamic_text",
+                "type": "resize_when_hovered_text",
                 "x": "10%",
                 "y": "60%"
             },
@@ -512,7 +581,7 @@
                 "font_size": "5%",
                 "name": "exit_to_desktop",
                 "src": "{OptionMenu,exit_to_desktop}",
-                "type": "dynamic_text",
+                "type": "resize_when_hovered_text",
                 "x": "10%",
                 "y": "70%"
             }

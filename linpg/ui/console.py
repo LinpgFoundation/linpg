@@ -7,14 +7,14 @@ class Console(SingleLineInputBox, HiddenableSurface):
         self.color_active = Colors.get("dodgerblue2")
         SingleLineInputBox.__init__(self, x, y, font_size, self.color_active, default_width)
         self.color_inactive = Colors.get("lightskyblue3")
-        self.color = self.color_active
-        self.active: bool = True
+        self._color = self.color_active
+        self._active: bool = True
         self._text_history: list = []
         self.__backward_id: int = 1
         self._txt_output: list = []
         self.command_indicator: str = "/"
 
-    def _check_key_down(self, event: pygame.event.Event) -> bool:
+    def _check_key_down(self, event: PG_Event) -> bool:
         if super()._check_key_down(event):
             return True
         # 向上-过去历史
@@ -42,9 +42,9 @@ class Console(SingleLineInputBox, HiddenableSurface):
             return True
         # ESC，关闭
         elif event.key == Key.ESCAPE:
-            self.active = False
+            self._active = False
             # Change the current color of the input box.
-            self.color = self.color_active if self.active else self.color_inactive
+            self._color = self.color_active if self._active else self.color_inactive
             return True
         return False
 
@@ -102,17 +102,17 @@ class Console(SingleLineInputBox, HiddenableSurface):
             for event in Controller.events:
                 if event.type == MOUSE_BUTTON_DOWN:
                     if (
-                        self.x <= Controller.mouse.x <= self.x + self.input_box.width
-                        and self.y <= Controller.mouse.y <= self.y + self.input_box.height
+                        self.x <= Controller.mouse.x <= self.x + self._input_box.width
+                        and self.y <= Controller.mouse.y <= self.y + self._input_box.height
                     ):
-                        self.active = not self.active
+                        self._active = not self._active
                         # Change the current color of the input box.
-                        self.color = self.color_active if self.active else self.color_inactive
+                        self._color = self.color_active if self._active else self.color_inactive
                     else:
-                        self.active = False
-                        self.color = self.color_inactive
+                        self._active = False
+                        self._color = self.color_inactive
                 elif event.type == Key.DOWN:
-                    if self.active is True:
+                    if self._active is True:
                         if self._check_key_down(event):
                             pass
                         else:
@@ -124,10 +124,10 @@ class Console(SingleLineInputBox, HiddenableSurface):
             # 画出输出信息
             for i in range(len(self._txt_output)):
                 screen.blit(
-                    self.FONT.render_with_bounding(self._txt_output[i], self.color),
-                    (self.x + self.FONT.size * 0.25, self.y - (len(self._txt_output) - i) * self.FONT.size * 1.5),
+                    self._FONT.render(self._txt_output[i], self._color, with_bounding=True),
+                    (self.x + self._FONT.size * 0.25, self.y - (len(self._txt_output) - i) * self._FONT.size * 1.5),
                 )
             # 画出输入框
-            Draw.rect(screen, self.color, self.input_box.get_rect(), 2)
+            Draw.rect(screen, self._color, self._input_box.get_rect(), 2)
             # 画出文字
             self._draw_content(screen)

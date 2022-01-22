@@ -2,27 +2,34 @@ from .abstract import *
 
 # 视觉小说系统模块
 class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
+
+    __CHOICE_TEXT: str = str(Lang.get_texts("Dialog", "choice"))
+
     def __init__(self, basic_features_only: bool = False) -> None:
         AbstractDialogSystem.__init__(self)
         PauseMenuModuleForGameSystem.__init__(self)
         # 加载对话框系统
         self.__dialog_txt_system: DialogBox = DialogBox(self._FONT_SIZE)
+        # UI按钮
+        self.__buttons_container: Optional[GameObjectsDictContainer] = None
         # 加载ui
         if not basic_features_only:
             # UI按钮
-            self._buttons_mananger = DialogButtons()
+            self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self._FONT_SIZE * 2})
             # 暂停菜单
             self._enable_pause_menu()
         # 是否要显示历史对白页面
         self.__is_showing_history: bool = False
-        self.__history_surface: ImageSurface = NULL_SURFACE
+        self.__history_bg_surface: ImageSurface = Colors.surface(Display.get_size(), Colors.BLACK)
+        self.__history_bg_surface.set_alpha(150)
+        self.__history_text_surface: Optional[ImageSurface] = None
         self.__history_surface_local_y: int = 0
         # 展示历史界面-返回按钮
         self.history_back = (
-            load_button(
+            Button.load(
                 "<!ui>back.png",
-                (Display.get_width() * 0.04, Display.get_height() * 0.04),
-                (Display.get_width() * 0.03, Display.get_height() * 0.04),
+                Coordinates.convert((Display.get_width() * 0.04, Display.get_height() * 0.04)),
+                Coordinates.convert((Display.get_width() * 0.03, Display.get_height() * 0.04)),
                 150,
             )
             if not basic_features_only
@@ -56,7 +63,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         self._load_content()
 
     # 新建章节
-    def new(self, chapterType: str, chapterId: int, part: str, projectName: str = None) -> None:
+    def new(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str] = None) -> None:
         self._initialize(chapterType, chapterId, part, projectName)
         # 根据已有参数载入数据
         self._load_content()
@@ -80,6 +87,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
     # 更新语言
     def update_language(self) -> None:
         super().update_language()
+        if self.__buttons_container is not None:
+            self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self._FONT_SIZE})
         self._initialize_pause_menu()
 
     def continue_scene(self, dialog_id: str) -> None:
@@ -122,24 +131,32 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 EXCEPTION.fatal('Type "{}" is not a valid type.'.format(next_dialog_type))
 
     def __check_button_event(self, surface: ImageSurface) -> bool:
-        if self._buttons_mananger is not None and not self.__is_showing_history:
-            if self._buttons_mananger.item_being_hovered == "hide":
-                self._buttons_mananger.set_visible(self._buttons_mananger.is_hidden())
-                self.__dialog_txt_system.set_visible(self._buttons_mananger.is_visible())
+        if self.__buttons_container is not None:
+            if self.__buttons_container.is_hidden():
+                self.__buttons_container.set_visible(True)
+                self.__dialog_txt_system.set_visible(True)
+            elif self.__buttons_container.item_being_hovered == "hide":
+                self.__buttons_container.set_visible(False)
+                self.__dialog_txt_system.set_visible(False)
             # 如果接来下没有文档了或者玩家按到了跳过按钮, 则准备淡出并停止播放
-            elif self._buttons_mananger.item_being_hovered == "skip":
+            elif self.__buttons_container.item_being_hovered == "skip":
                 self.fade(surface)
                 self.stop()
-            elif self._buttons_mananger.item_being_hovered == "auto":
-                self._buttons_mananger.autoModeSwitch()
-                self.__dialog_txt_system.autoMode = self._buttons_mananger.autoMode
-            elif self._buttons_mananger.item_being_hovered == "history":
+            elif self.__buttons_container.item_being_hovered == "is_auto":
+                self.__dialog_txt_system.set_playing_automatically(False)
+                self.__buttons_container.get("not_auto").set_visible(True)
+                self.__buttons_container.get("is_auto").set_visible(False)
+            elif self.__buttons_container.item_being_hovered == "not_auto":
+                self.__dialog_txt_system.set_playing_automatically(True)
+                self.__buttons_container.get("not_auto").set_visible(False)
+                self.__buttons_container.get("is_auto").set_visible(True)
+            elif self.__buttons_container.item_being_hovered == "history":
                 self.__is_showing_history = True
             else:
                 return False
+            return True
         else:
             return False
-        return True
 
     # 过场动画
     def play_cutscene(self, surface: ImageSurface, fade_out_in_ms: int = 3000) -> None:
@@ -208,14 +225,14 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
     def draw(self, surface: ImageSurface) -> None:
         super().draw(surface)
         # 按钮
-        if self._buttons_mananger is not None:
-            self._buttons_mananger.draw(surface)
+        if self.__buttons_container is not None and not self.__is_showing_history:
+            self.__buttons_container.draw(surface)
         # 按键判定
         if Controller.get_event("confirm"):
             if self.history_back is not None and self.history_back.is_hovered() and self.__is_showing_history is True:
                 self.__is_showing_history = False
-                self.__history_surface = NULL_SURFACE
-            elif self.__check_button_event(surface) is True:
+                self.__history_text_surface = None
+            elif self.__is_showing_history is True or self.__check_button_event(surface) is True:
                 pass
             # 如果所有行都没有播出，则播出所有行
             elif not self.__dialog_txt_system.is_all_played():
@@ -223,26 +240,19 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             # 如果玩家需要并做出了选择
             elif self._dialog_options_container.item_being_hovered >= 0:
                 # 获取下一个对话的id
-                nextDialogId = str(
-                    self._current_dialog_content["next_dialog_id"]["target"][
-                        self._dialog_options_container.item_being_hovered
-                    ]["id"]
-                )
+                _option: dict = self._current_dialog_content["next_dialog_id"]["target"][
+                    self._dialog_options_container.item_being_hovered
+                ]
                 # 记录玩家选项
                 self._dialog_options[self._dialog_id] = {
                     "id": self._dialog_options_container.item_being_hovered,
-                    "target": nextDialogId,
+                    "target": _option["id"],
+                    "text": _option["text"],
                 }
                 # 更新场景
-                self._update_scene(nextDialogId)
+                self._update_scene(_option["id"])
             else:
                 self.__go_to_next(surface)
-        if Controller.get_event("scroll_up") and self.__history_surface_local_y < 0:
-            self.__history_surface = NULL_SURFACE
-            self.__history_surface_local_y += int(Display.get_height() * 0.1)
-        if Controller.get_event("scroll_down"):
-            self.__history_surface = NULL_SURFACE
-            self.__history_surface_local_y -= int(Display.get_height() * 0.1)
         if Controller.get_event("previous") and self._current_dialog_content["last_dialog_id"] is not None:
             self._update_scene(self._current_dialog_content["last_dialog_id"])
         # 暂停菜单
@@ -261,9 +271,14 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             self._get_dialog_options_container_ready()
         # 展示历史
         if self.__is_showing_history is True:
-            if self.__history_surface is NULL_SURFACE:
-                self.__history_surface = Colors.surface(Display.get_size(), Colors.BLACK)
-                self.__history_surface.set_alpha(150)
+            if Controller.get_event("scroll_up") and self.__history_surface_local_y < 0:
+                self.__history_text_surface = None
+                self.__history_surface_local_y += int(Display.get_height() * 0.1)
+            if Controller.get_event("scroll_down"):
+                self.__history_text_surface = None
+                self.__history_surface_local_y -= int(Display.get_height() * 0.1)
+            if self.__history_text_surface is None:
+                self.__history_text_surface = new_transparent_surface(Display.get_size())
                 dialogIdTemp: str = "head"
                 local_y: int = self.__history_surface_local_y
                 while True:
@@ -271,52 +286,47 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                         narratorTemp = self.__dialog_txt_system.FONT.render(
                             self.dialog_content[dialogIdTemp]["narrator"] + ":", Colors.WHITE
                         )
-                        self.__history_surface.blit(
+                        self.__history_text_surface.blit(
                             narratorTemp,
                             (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() * 0.1 + local_y),
                         )
                     has_narrator: bool = self.dialog_content[dialogIdTemp]["narrator"] is not None
-                    for i in range(len(self.dialog_content[dialogIdTemp]["content"])):
-                        txt: str = str(self.dialog_content[dialogIdTemp]["content"][i])
+                    for i in range(len(self.dialog_content[dialogIdTemp]["contents"])):
+                        txt: str = str(self.dialog_content[dialogIdTemp]["contents"][i])
                         if has_narrator:
                             if i == 0:
                                 txt = '[ "' + txt
                             # 这里不用elif，以免当对话行数为一的情况
-                            if i == len(self.dialog_content[dialogIdTemp]["content"]) - 1:
+                            if i == len(self.dialog_content[dialogIdTemp]["contents"]) - 1:
                                 txt += '" ]'
-                        self.__history_surface.blit(
+                        self.__history_text_surface.blit(
                             self.__dialog_txt_system.FONT.render(txt, Colors.WHITE),
                             (Display.get_width() * 0.15, Display.get_height() * 0.1 + local_y),
                         )
                         local_y += int(self.__dialog_txt_system.FONT.size * 1.5)
                     if dialogIdTemp != self._dialog_id:
-                        if (
-                            self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "default"
-                            or self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "changeScene"
-                        ):
+                        _next_dialog_type: str = str(self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"])
+                        if _next_dialog_type == "default" or _next_dialog_type == "changeScene":
                             if (target_temp := self.dialog_content[dialogIdTemp]["next_dialog_id"]["target"]) is not None:
                                 dialogIdTemp = str(target_temp)
                             else:
                                 break
-                        elif self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"] == "option":
-                            narratorTemp = self.__dialog_txt_system.FONT.render(
-                                self._buttons_mananger.choiceTxt + ":", (0, 191, 255)
-                            )
-                            self.__history_surface.blit(
+                        elif _next_dialog_type == "option":
+                            narratorTemp = self.__dialog_txt_system.FONT.render(self.__CHOICE_TEXT + ":", (0, 191, 255))
+                            self.__history_text_surface.blit(
                                 narratorTemp,
-                                (
-                                    Display.get_width() * 0.14 - narratorTemp.get_width(),
-                                    Display.get_height() * 0.1 + local_y,
-                                ),
+                                (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() * 0.1 + local_y),
                             )
-                            self.__history_surface.blit(
+                            self.__history_text_surface.blit(
                                 self.__dialog_txt_system.FONT.render(
-                                    str(self._dialog_options[dialogIdTemp]["target"]), (0, 191, 255)
+                                    str(self._dialog_options[dialogIdTemp]["text"]), (0, 191, 255)
                                 ),
                                 (Display.get_width() * 0.15, Display.get_height() * 0.1 + local_y),
                             )
                             local_y += int(self.__dialog_txt_system.FONT.size * 1.5)
-                            if (target_temp := self._dialog_options[dialogIdTemp]["target"]) is not None:
+                            if (
+                                target_temp := self._dialog_options[dialogIdTemp]["target"]
+                            ) is not None and local_y < Display.get_height():
                                 dialogIdTemp = str(target_temp)
                             else:
                                 break
@@ -324,18 +334,19 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                             break
                     else:
                         break
-            surface.blit(self.__history_surface, (0, 0))
+            surface.blit(self.__history_bg_surface, (0, 0))
+            surface.blit(self.__history_text_surface, (0, 0))
             if self.history_back is not None:
                 self.history_back.draw(surface)
                 self.history_back.is_hovered()
         else:
             # 显示对话选项
-            if self._buttons_mananger is None or self._buttons_mananger.is_visible():
+            if self.__buttons_container is None or self.__buttons_container.is_visible():
                 self._dialog_options_container.display(surface)
             # 当自动播放系统告知需要更新，如果对话被隐藏，则无视进入下一个对白的操作，反之则进入
             if (
-                self._buttons_mananger is not None
-                and self._buttons_mananger.is_visible()
-                and self.__dialog_txt_system.needUpdate()
+                self.__buttons_container is not None
+                and self.__buttons_container.is_visible()
+                and self.__dialog_txt_system.is_update_needed()
             ):
                 self.__go_to_next(surface)

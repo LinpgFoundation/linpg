@@ -1,5 +1,10 @@
 {
     "ConfigFileType": "yaml",
+    "FolderPath": {
+        "Cache": "Cache",
+        "Save": "Save"
+    },
+    "PySimpleGUITheme": "SystemDefault",
     "ThirdPartyLibraries": {
         "ffmpeg": "ffmpeg.exe"
     }

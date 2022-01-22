@@ -9,24 +9,62 @@ class Coordinate:
     def __lt__(self, other: "Coordinate") -> bool:
         return self.y + self.x < other.y + other.x
 
+    # x轴坐标
+    @property
+    def left(self) -> int:
+        return self.x
+
+    def get_left(self) -> int:
+        return self.x
+
+    def set_left(self, value: int_f) -> None:
+        self.x = int(value)
+
+    # 向左移动
+    def move_left(self, value: int_f) -> None:
+        self.set_left(self.x - int(value))
+
+    # 向右移动
+    def move_right(self, value: int_f) -> None:
+        self.set_left(self.x + int(value))
+
+    # y轴坐标
+    @property
+    def top(self) -> int:
+        return self.y
+
+    def get_top(self) -> int:
+        return self.y
+
+    def set_top(self, value: int_f) -> None:
+        self.y = int(value)
+
+    # 向上移动
+    def move_upward(self, value: int_f) -> None:
+        self.set_top(self.y - int(value))
+
+    # 向下移动
+    def move_downward(self, value: int_f) -> None:
+        self.set_top(self.y + int(value))
+
     # 坐标信息
     @property
     def pos(self) -> tuple[int, int]:
-        return int(self.x), int(self.y)
+        return self.x, self.y
 
     def get_pos(self) -> tuple[int, int]:
-        return int(self.x), int(self.y)
+        return self.x, self.y
 
     # 设置坐标
-    def set_pos(self, x: int_f, y: int_f) -> None:
-        self.x = int(x)
-        self.y = int(y)
+    def set_pos(self, _x: int_f, _y: int_f) -> None:
+        self.set_left(_x)
+        self.set_top(_y)
 
     def move_to(self, pos: tuple) -> None:
         self.set_pos(pos[0], pos[1])
 
     # 检测是否在给定的位置上
-    def on_pos(self, pos: Any) -> bool:
+    def on_pos(self, pos: object) -> bool:
         return Coordinates.is_same(self.pos, pos)
 
 
@@ -57,45 +95,12 @@ class Position:
         self.set_pos(pos[0], pos[1])
 
 
-# 游戏对象接口
-class GameObject(Coordinate):
-    # 左侧位置
-    @property
-    def left(self) -> int:
-        return int(self.x)
-
-    def get_left(self) -> int:
-        return int(self.x)
-
-    def set_left(self, value: int_f) -> None:
-        self.x = int(value)
-
-    def move_left(self, value: int_f) -> None:
-        self.x -= int(value)
-
-    def move_right(self, value: int_f) -> None:
-        self.x += int(value)
-
-    # 上方位置
-    @property
-    def top(self) -> int:
-        return int(self.y)
-
-    def get_top(self) -> int:
-        return int(self.y)
-
-    def set_top(self, value: int_f) -> None:
-        self.y = int(value)
-
-    def move_upward(self, value: int_f) -> None:
-        self.y -= int(value)
-
-    def move_downward(self, value: int_f) -> None:
-        self.y += int(value)
-
-
 # 2d游戏对象接口
-class GameObject2d(GameObject):
+class GameObject2d(Coordinate):
+    def __init__(self, x: int_f, y: int_f):
+        super().__init__(x, y)
+        self.tag: str = ""
+
     # 宽
     @property
     def width(self) -> int:
@@ -128,8 +133,8 @@ class GameObject2d(GameObject):
     def get_right(self) -> int:
         return int(self.x + self.get_width())
 
-    def set_right(self, value: number) -> None:
-        self.x = int(value - self.get_width())
+    def set_right(self, value: int_f) -> None:
+        self.set_left(value - self.get_width())
 
     # 底部位置
     @property
@@ -139,8 +144,8 @@ class GameObject2d(GameObject):
     def get_bottom(self) -> int:
         return int(self.y + self.get_height())
 
-    def set_bottom(self, value: number) -> None:
-        self.y = int(value - self.get_height())
+    def set_bottom(self, value: int_f) -> None:
+        self.set_top(value - self.get_height())
 
     # 中心位置
     @property
@@ -150,7 +155,7 @@ class GameObject2d(GameObject):
     def get_centerx(self) -> int:
         return int(self.x + self.get_width() / 2)
 
-    def set_centerx(self, centerx: number) -> None:
+    def set_centerx(self, centerx: int_f) -> None:
         self.x = int(centerx - self.get_width() / 2)
 
     @property
@@ -160,7 +165,7 @@ class GameObject2d(GameObject):
     def get_centery(self) -> int:
         return int(self.y + self.get_height() / 2)
 
-    def set_centery(self, centery: number) -> None:
+    def set_centery(self, centery: int_f) -> None:
         self.y = int(centery - self.get_height() / 2)
 
     @property
@@ -170,7 +175,7 @@ class GameObject2d(GameObject):
     def get_center(self) -> tuple[int, int]:
         return self.centerx, self.centery
 
-    def set_center(self, centerx: number, centery: number) -> None:
+    def set_center(self, centerx: int_f, centery: int_f) -> None:
         self.set_centerx(centerx)
         self.set_centery(centery)
 
@@ -229,7 +234,7 @@ class GameObject2d(GameObject):
 
 
 # 2.5d游戏对象接口 - 使用z轴判断图案的图层
-class GameObject2point5d(GameObject):
+class GameObject2point5d(Coordinate):
     def __init__(self, x: int_f, y: int_f, z: int_f):
         super().__init__(x, y)
         self.z: int = int(z)
@@ -253,20 +258,3 @@ class GameObject2point5d(GameObject):
         super().set_pos(x, y)
         if z is not None:
             self.z = int(z)
-
-
-# 需要被打印的物品
-class ItemNeedBlit(GameObject2point5d):
-    def __init__(self, image: object, weight: number, pos: tuple, offSet: tuple):
-        super().__init__(pos[0], pos[1], weight)
-        self.image = image
-        self.offSet = offSet
-
-    def draw(self, surface: ImageSurface) -> None:
-        if isinstance(self.image, ImageSurface):
-            surface.blit(self.image, Coordinates.add(self.pos, self.offSet))
-        else:
-            try:
-                self.image.display(surface, self.offSet)
-            except Exception:
-                self.image.draw(surface)

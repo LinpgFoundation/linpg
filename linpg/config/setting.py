@@ -52,14 +52,14 @@ class SettingSystem:
         return get_value_by_keys(self.__SETTING_DATA, key, False)
 
     # 修改设置数据
-    def set(self, *key: str, value: Any) -> None:
-        return set_value_by_keys(self.__SETTING_DATA, key, value)
+    def set(self, *key: str, value: object) -> None:
+        set_value_by_keys(self.__SETTING_DATA, key, value)
 
     """其他常用的重要参数"""
     # 文字名称
     @property
     def font(self) -> str:
-        return self.__SETTING_DATA["Font"]
+        return str(self.__SETTING_DATA["Font"])
 
     # 设置文字名称
     def set_font(self, font_name: str) -> None:
@@ -68,7 +68,7 @@ class SettingSystem:
     # 文字类型
     @property
     def font_type(self) -> str:
-        return self.__SETTING_DATA["FontType"]
+        return str(self.__SETTING_DATA["FontType"])
 
     # 设置文字类型
     def set_font_type(self, font_type: str) -> None:
@@ -77,17 +77,17 @@ class SettingSystem:
     # 抗锯齿参数
     @property
     def antialias(self) -> bool:
-        return self.__SETTING_DATA["Antialias"]
+        return bool(self.__SETTING_DATA["Antialias"])
 
     # 语言
     @property
     def language(self) -> str:
-        return self.__SETTING_DATA["Language"]
+        return str(self.__SETTING_DATA["Language"])
 
     # 是否处于开发者模式
     @property
     def developer_mode(self) -> bool:
-        return self.__SETTING_DATA["DeveloperMode"]
+        return bool(self.__SETTING_DATA["DeveloperMode"])
 
     def set_developer_mode(self, value: bool) -> None:
         self.__SETTING_DATA["Cheat"] = bool(value)
@@ -95,17 +95,12 @@ class SettingSystem:
     # 低内存模式
     @property
     def low_memory_mode(self) -> bool:
-        return self.__SETTING_DATA["LowMemoryMode"]
-
-    # 允许缓存
-    @property
-    def allow_cache(self) -> bool:
-        return self.__SETTING_DATA["AllowCache"]
+        return bool(self.__SETTING_DATA["LowMemoryMode"])
 
     # 作弊模式
     @property
     def cheat_mode(self) -> bool:
-        return self.__INTERNAL_SETTING["Cheat"]
+        return bool(self.__INTERNAL_SETTING["Cheat"])
 
     def set_cheat_mode(self, value: bool) -> None:
         self.__INTERNAL_SETTING["Cheat"] = bool(value)

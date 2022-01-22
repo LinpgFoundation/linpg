@@ -8,10 +8,11 @@ class AbstractFrame(AdvancedAbstractImageSurface):
     # 窗口线条的粗细
     __outline_thickness: int = int(Display.get_height() * 0.002)
     # 放大指示图标
-    __rescale_icon_0: StaticImage = None
-    __rescale_icon_45: StaticImage = None
-    __rescale_icon_90: StaticImage = None
-    __rescale_icon_135: StaticImage = None
+    __rescale_icon_0: StaticImage = NULL_STATIC_IMAGE
+    __rescale_icon_45: StaticImage = NULL_STATIC_IMAGE
+    __rescale_icon_90: StaticImage = NULL_STATIC_IMAGE
+    __rescale_icon_135: StaticImage = NULL_STATIC_IMAGE
+    __rescale_icon_initialized: bool = False
 
     def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         super().__init__(None, x, y, width, height, tag=tag)
@@ -39,10 +40,9 @@ class AbstractFrame(AdvancedAbstractImageSurface):
             self.img: ImageSurface = Colors.surface(self.size, Colors.WHITE)
             Draw.rect(self.img, Colors.LIGHT_GRAY, (ORIGIN, (self.get_width(), self.__bar_height)))
             Draw.rect(self.img, Colors.GRAY, (ORIGIN, self.size), self.__outline_thickness)
-            if self.__rescale_icon_0 is None:
-                self.__rescale_icon_0 = StaticImage(
-                    "<!ui>rescale.png", 0, 0, self.__bar_height * 1.5, self.__bar_height * 1.5
-                )
+            # 初始化图标
+            if not self.__rescale_icon_initialized:
+                self.__rescale_icon_0 = StaticImage("<!ui>rescale.png", 0, 0, self.__bar_height * 1.5, self.__bar_height * 1.5)
                 self.__rescale_icon_45 = self.__rescale_icon_0.copy()
                 self.__rescale_icon_45.rotate(45)
                 self.__rescale_icon_45.scale_n_times(1.5)
@@ -51,6 +51,8 @@ class AbstractFrame(AdvancedAbstractImageSurface):
                 self.__rescale_icon_135 = self.__rescale_icon_0.copy()
                 self.__rescale_icon_135.rotate(135)
                 self.__rescale_icon_135.scale_n_times(1.5)
+                self.__rescale_icon_initialized = True
+            # 更新flag
             self.__if_regenerate_window = False
 
     # 更新内容surface（子类必须实现该功能）

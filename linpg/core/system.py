@@ -26,7 +26,7 @@ class SaveDataThread(threading.Thread):
 
 # 系统模块接口
 class AbstractSystem:
-    def __init__(self):
+    def __init__(self) -> None:
         # 判定用于判定是否还在播放的参数
         self.__is_playing: bool = True
         self.__current_language: str = Lang.current_language
@@ -55,9 +55,9 @@ class AbstractSystem:
 class SystemWithBackgroundMusic(AbstractSystem):
     def __init__(self) -> None:
         super().__init__()
+        self.__audio: Optional[PG_Sound] = None
         self.__bgm_path: Optional[str] = None
         self.__bgm_volume: float = 1.0
-        self.__audio: pygame.mixer.Sound = NULL_SOUND
 
     # 系统退出时，需卸载bgm
     def stop(self) -> None:
@@ -65,13 +65,13 @@ class SystemWithBackgroundMusic(AbstractSystem):
         self.unload_bgm()
 
     # 卸载bgm
-    def unload_bgm(self):
+    def unload_bgm(self) -> None:
         self.stop_bgm()
         self.__bgm_path = None
-        self.__audio = NULL_SOUND
+        self.__audio = None
 
     # 设置bgm
-    def set_bgm(self, path: str, forced: bool = False) -> None:
+    def set_bgm(self, path: Optional[str], forced: bool = False) -> None:
         # 如果path是None,则
         if path is None:
             if self.__bgm_path is not None:
@@ -90,14 +90,14 @@ class SystemWithBackgroundMusic(AbstractSystem):
     def set_bgm_volume(self, volume: number) -> None:
         if 1 >= volume >= 0:
             self.__bgm_volume = volume
-            if self.__bgm_path is not None:
+            if self.__audio is not None:
                 self.__audio.set_volume(self.__bgm_volume)
         else:
             EXCEPTION.fatal("Volume '{}' is out of the range! (must between 0 and 1)".format(volume))
 
     # 播放bgm
     def play_bgm(self) -> None:
-        if self.__bgm_path is not None and not LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.get_busy():
+        if self.__audio is not None and not LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.get_busy():
             LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.play(self.__audio)
 
     # 停止播放
@@ -115,14 +115,14 @@ class SystemWithBackgroundMusic(AbstractSystem):
 
 # 游戏模块接口
 class AbstractGameSystem(SystemWithBackgroundMusic):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         # 参数
         self._chapter_type: str = ""
         self._chapter_id: int = 0
         self._project_name: Optional[str] = None
         # 储存进度存档的文件夹的路径
-        self.folder_for_save_file: str = "Save"
+        self.folder_for_save_file: str = str(Specification.get("FolderPath", "Save"))
         # 存档文件的名称
         self.name_for_save_file: str = "save.{}".format(Config.get_file_type())
         # 是否已经初始化
@@ -138,7 +138,7 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
         return self.__initialized
 
     # 初始化关键参数
-    def _initialize(self, chapterType: str, chapterId: int, projectName: str) -> None:
+    def _initialize(self, chapterType: str, chapterId: int, projectName: Optional[str]) -> None:
         # 类型
         self._chapter_type = chapterType
         # 章节id

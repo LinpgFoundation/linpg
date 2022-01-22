@@ -6,7 +6,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
     # 获取方块数据库
     __BLOCKS_DATABASE: dict = DataBase.get("Blocks")
 
-    def __init__(self):
+    def __init__(self) -> None:
         # 寻路模块
         AStar.__init__(self)
         # Rectangle模块
@@ -16,15 +16,13 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         # 地图数据
         self.__MAP: numpy.ndarray = numpy.asarray([])
         # 地图渲染用的图层
-        self.__MAP_SURFACE: ImageSurface = None
+        self.__MAP_SURFACE: Optional[ImageSurface] = None
         # 背景图片路径
         self.__background_image: str = ""
         # 背景图片
-        self.__BACKGROUND_IMAGE: ImageSurface = None
-        # 背景图片图层
-        self.__BACKGROUND_SURFACE: ImageSurface = None
+        self.__BACKGROUND_SURFACE: Optional[StaticImage] = None
         # 装饰物
-        self.__decorations: list = []
+        self.__decorations: list[DecorationObject] = []
         # 处于光处的区域
         self.__light_area: tuple = tuple()
         # 追踪是否需要更新的参数
@@ -34,7 +32,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         # 是否需要更新地图图层
         self.__need_to_recheck_block_on_surface: bool = True
         # 开发者使用的窗口
-        self.__debug_win = None
+        self.__debug_win: Optional[RenderedWindow] = None
         self.__debug_win_unit: int = 10
 
     def update(self, mapDataDic: dict, perBlockWidth: int_f, perBlockHeight: int_f) -> None:
@@ -73,9 +71,13 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         row, column = self.__MAP.shape
         super()._update(row, column)
         # 背景图片路径
-        self.__background_image = str(mapDataDic["background_image"])
+        self.__background_image = (
+            str(mapDataDic["background_image"])
+            if "background_image" in mapDataDic and mapDataDic["background_image"] is not None
+            else ""
+        )
         # 暗度（仅黑夜场景有效）
-        AbstractMapImagesModule.set_darkness(155 if "atNight" in mapDataDic and bool(mapDataDic["atNight"]) is True else 0)
+        AbstractMapImagesModule.set_darkness(155 if "at_night" in mapDataDic and bool(mapDataDic["at_night"]) is True else 0)
         # 更新地图渲染图层的尺寸
         self.set_size(
             perBlockWidth * 0.9 * ((self.row + self.column + 1) / 2),
@@ -93,13 +95,17 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         self.__decorations.sort()
         # 初始化环境图片管理模块
         self.__MAP_SURFACE = None
-        self.__BACKGROUND_SURFACE = None
         # 背景图片
-        self.__BACKGROUND_IMAGE = (
-            IMG.quickly_load(os.path.join("Assets", "image", "dialog_background", self.__background_image), False).convert()
-            if self.__background_image is not None
-            else None
-        )
+        if len(self.__background_image) > 0:
+            self.__BACKGROUND_SURFACE = StaticImage(
+                IMG.quickly_load(os.path.join("Assets", "image", "dialog_background", self.__background_image), False),
+                0,
+                0,
+                0,
+                0,
+            )
+        else:
+            self.__BACKGROUND_SURFACE = None
         # 更新尺寸
         AbstractMapImagesModule.set_block_size(round(perBlockWidth), round(perBlockHeight))
         # 加载图片
@@ -112,7 +118,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         # 追踪是否需要更新的参数
         self.__need_update_surface = True
         # 追踪目前已经画出的方块
-        self.__block_on_surface = numpy.zeros((self.row, self.column), dtype=numpy.int8)
+        self.__block_on_surface = numpy.zeros((self.row, self.column), dtype=numpy.byte)
         self.__need_to_recheck_block_on_surface = True
 
     @property
@@ -129,17 +135,8 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
     def block_height(self) -> int:
         return AbstractMapImagesModule.get_block_height()
 
-    # 将地图模块所有数据以字典的形式返回
-    def to_dict(self) -> dict:
-        return {
-            "background_image": self.__background_image,
-            "local_x": self.local_x,
-            "local_y": self.local_y,
-            "atNight": self.night_mode,
-        } | self.get_map_in_dict()
-
     # 以字典的形式获取地图的数据
-    def get_map_in_dict(self) -> dict:
+    def to_dict(self) -> dict:
         # 转换场景装饰物数据
         decoration_dict: dict = {}
         for theDecoration in self.__decorations:
@@ -156,7 +153,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                     lookup_table[item] = 0
                 else:
                     lookup_table[item] += 1
-        sorted_lookup_table: list = sorted(lookup_table, key=lookup_table.get, reverse=True)
+        sorted_lookup_table: list = sorted(lookup_table, key=lookup_table.get, reverse=True)  # type: ignore
         # 返回数据
         return {
             "map": {
@@ -178,30 +175,12 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         else:
             self.__debug_win = None
 
-    # 显示开发面板
-    def __display_dev_panel(self) -> None:
-        self.__debug_win.clear()
-        self.__debug_win.fill("black")
-        x: int
-        y: int
-        start_x: int
-        start_y: int
-        for y in range(len(self.__block_on_surface)):
-            for x in range(len(self.__block_on_surface[y])):
-                start_x = int(x * self.__debug_win_unit * 1.25 + self.__debug_win_unit / 4)
-                start_y = int(y * self.__debug_win_unit * 1.25 + self.__debug_win_unit / 4)
-                if self.__block_on_surface[y][x] == 0:
-                    self.__debug_win.draw_rect((start_x, start_y, self.__debug_win_unit, self.__debug_win_unit), "white")
-                else:
-                    self.__debug_win.fill_rect((start_x, start_y, self.__debug_win_unit, self.__debug_win_unit), "white")
-        self.__debug_win.present()
-
     # 根据index寻找装饰物
     def find_decoration_with_id(self, index: int) -> DecorationObject:
         return self.__decorations[index]
 
     # 根据坐标寻找装饰物
-    def find_decoration_on(self, pos: Any) -> Optional[DecorationObject]:
+    def find_decoration_on(self, pos: object) -> Optional[DecorationObject]:
         for decoration in self.__decorations:
             # 如果坐标一致，则应该是当前装饰物了
             if Coordinates.is_same(decoration.get_pos(), pos):
@@ -311,21 +290,37 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
             self.__update_map_surface(screen.get_size())
         # 显示调试窗口
         if self.__debug_win is not None and not self.__need_to_recheck_block_on_surface:
-            self.__display_dev_panel()
+            self.__debug_win.clear()
+            self.__debug_win.fill("black")
+            x: int
+            y: int
+            start_x: int
+            start_y: int
+            for y in range(len(self.__block_on_surface)):
+                for x in range(len(self.__block_on_surface[y])):
+                    start_x = int(x * self.__debug_win_unit * 1.25 + self.__debug_win_unit / 4)
+                    start_y = int(y * self.__debug_win_unit * 1.25 + self.__debug_win_unit / 4)
+                    if self.__block_on_surface[y][x] == 0:
+                        self.__debug_win.draw_rect((start_x, start_y, self.__debug_win_unit, self.__debug_win_unit), "white")
+                    else:
+                        self.__debug_win.fill_rect((start_x, start_y, self.__debug_win_unit, self.__debug_win_unit), "white")
+            # 显示开发面板
+            self.__debug_win.present()
         # 画出背景
-        screen.blit(self.__BACKGROUND_SURFACE, (0, 0))
-        screen.blit(self.__MAP_SURFACE, self.get_local_pos())
+        if self.__BACKGROUND_SURFACE is not None:
+            self.__BACKGROUND_SURFACE.draw(screen)
+        else:
+            screen.fill(Colors.BLACK)
+        if self.__MAP_SURFACE is not None:
+            screen.blit(self.__MAP_SURFACE, self.get_local_pos())
         # 返回offset
         return screen_to_move_x, screen_to_move_y
 
     # 重新绘制地图
     def __update_map_surface(self, window_size: tuple) -> None:
         if self.__need_to_recheck_block_on_surface is True:
-            self.__BACKGROUND_SURFACE = (
-                IMG.resize(self.__BACKGROUND_IMAGE, window_size)
-                if self.__BACKGROUND_IMAGE is not None
-                else new_surface(window_size)
-            )
+            if self.__BACKGROUND_SURFACE is not None:
+                self.__BACKGROUND_SURFACE.set_size(window_size[0], window_size[1])
             if self.__MAP_SURFACE is not None:
                 self.__MAP_SURFACE.fill(Colors.TRANSPARENT)
             else:
@@ -345,7 +340,8 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                     if self.__block_on_surface[y][x] == 0:
                         evn_img = TileMapImagesModule.get_image(str(self.__MAP[y][x]), not self.isPosInLightArea(x, y))
                         evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
-                        evn_img.draw(self.__MAP_SURFACE)
+                        if self.__MAP_SURFACE is not None:
+                            evn_img.draw(self.__MAP_SURFACE)
                         self.__block_on_surface[y][x] = 1
                         if y < self.row - 1:
                             self.__block_on_surface[y + 1][x] = 0
@@ -401,7 +397,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         return bool(self.__BLOCKS_DATABASE[self.__MAP[pos["y"]][pos["x"]]]["canPassThrough"])
 
     # 计算在地图中的方块
-    def calBlockInMap(self, pos: tuple[int, int] = None):
+    def calBlockInMap(self, pos: tuple[int, int] = None) -> Optional[dict]:
         if pos is None:
             pos = Controller.mouse.pos
         guess_x: int = int(
@@ -418,7 +414,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         posTupleTemp: tuple
         lenUnitW: float = self.block_width / 5
         lenUnitH: float = self.block_width * 0.8 / 393 * 214
-        block_get_click = None
+        block_get_click: Optional[dict] = None
         for y in range(guess_y - 1, guess_y + 4):
             for x in range(guess_x - 1, guess_x + 4):
                 posTupleTemp = self.calPosInMap(x, y)
@@ -462,33 +458,23 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                 if y < alliances_data[each_chara].y:
                     for x in range(
                         int(
-                            alliances_data[each_chara].x
-                            - the_character_effective_range
-                            - (y - alliances_data[each_chara].y)
-                            + 1
+                            alliances_data[each_chara].x - the_character_effective_range - (y - alliances_data[each_chara].y) + 1
                         ),
-                        int(
-                            alliances_data[each_chara].x + the_character_effective_range + (y - alliances_data[each_chara].y)
-                        ),
+                        int(alliances_data[each_chara].x + the_character_effective_range + (y - alliances_data[each_chara].y)),
                     ):
                         if (x, y) not in lightArea:
                             lightArea.append((x, y))
                 else:
                     for x in range(
                         int(
-                            alliances_data[each_chara].x
-                            - the_character_effective_range
-                            + (y - alliances_data[each_chara].y)
-                            + 1
+                            alliances_data[each_chara].x - the_character_effective_range + (y - alliances_data[each_chara].y) + 1
                         ),
-                        int(
-                            alliances_data[each_chara].x + the_character_effective_range - (y - alliances_data[each_chara].y)
-                        ),
+                        int(alliances_data[each_chara].x + the_character_effective_range - (y - alliances_data[each_chara].y)),
                     ):
                         if (x, y) not in lightArea:
                             lightArea.append((x, y))
         for item in self.__decorations:
-            if item.get_type() == "campfire" and item.get_status("lit") is True:
+            if isinstance(item, CampfireObject) and item.get_status("lit") is True:
                 for y in range(int(item.y - item.range), int(item.y + item.range)):
                     if y < item.y:
                         for x in range(int(item.x - item.range - (y - item.y) + 1), int(item.x + item.range + (y - item.y))):
@@ -511,12 +497,10 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
 
     def calAbsPosInMap(self, x: int_f, y: int_f) -> tuple[int, int]:
         widthTmp: float = self.block_width * 0.43
-        return round((x - y) * widthTmp + self.row * widthTmp), round(
-            (y + x) * self.block_width * 0.22 + self.block_width * 0.4
-        )
+        return round((x - y) * widthTmp + self.row * widthTmp), round((y + x) * self.block_width * 0.22 + self.block_width * 0.4)
 
     # 查看角色是否在光亮范围内
-    def inLightArea(self, entity: GameObject) -> bool:
+    def inLightArea(self, entity: GameObject2d) -> bool:
         return self.isPosInLightArea(entity.x, entity.y)
 
     def isPosInLightArea(self, x: int_f, y: int_f) -> bool:
@@ -525,8 +509,8 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
     # 以下是A星寻路功能
     def findPath(
         self,
-        start_p: Any,
-        end_p: Any,
+        start_p: object,
+        end_p: object,
         friendData: dict,
         enemyData: dict,
         routeLen: int = -1,

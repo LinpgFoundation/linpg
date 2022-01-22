@@ -109,7 +109,7 @@ class ColorManager:
     def get(cls, color: color_liked) -> tuple[int, int, int, int]:
         if isinstance(color, str):
             if color.startswith("#"):
-                return ImageColor.getrgb(color)
+                return cls.__to_rgba_color(ImageColor.getrgb(color))
             else:
                 try:
                     return cls.__to_rgba_color(tuple(THECOLORS[color]))
@@ -127,7 +127,7 @@ class ColorManager:
 
     # 获取一个带颜色的Surface
     @classmethod
-    def surface(cls, size: tuple, color: color_liked) -> ImageSurface:
+    def surface(cls, size: tuple[int, int], color: color_liked) -> ImageSurface:
         surface_t: ImageSurface = new_surface(size)
         surface_t.fill(cls.get(color))
         return surface_t

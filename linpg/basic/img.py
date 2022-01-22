@@ -2,9 +2,8 @@ from ..asset import ASSET
 from .draw import *
 
 # 获取材质缺失的临时警示材质
-def get_texture_missing_surface(size: tuple) -> ImageSurface:
-    texture_missing_surface: ImageSurface = new_surface(size)
-    texture_missing_surface.fill(Colors.BLACK)
+def get_texture_missing_surface(size: tuple[int, int]) -> ImageSurface:
+    texture_missing_surface: ImageSurface = Colors.surface(size, Colors.BLACK)
     half_width: int = int(size[0] / 2)
     half_height: int = int(size[1] / 2)
     pygame.draw.rect(
@@ -43,7 +42,7 @@ class RawImageManafer:
                             return get_texture_missing_surface((192, 108))
                 else:
                     try:
-                        return pygame.image.load(path_t)
+                        return pygame.image.load(path_t).convert()
                     except Exception:
                         if Setting.developer_mode is True:
                             EXCEPTION.fatal("Cannot load image from path: {}".format(path_t))
@@ -57,15 +56,12 @@ class RawImageManafer:
     # 图片加载模块：接收图片路径,长,高,返回对应图片
     def load(self, path: PoI, size: tuple = tuple(), alpha: int = 255, convert_alpha: bool = True) -> ImageSurface:
         # 加载图片
-        img = IMG.quickly_load(path, convert_alpha)
+        img: ImageSurface = IMG.quickly_load(path, convert_alpha)
         # 根据参数编辑图片
         if alpha < 255:
             img.set_alpha(alpha)
         # 如果没有给size,则直接返回Surface
-        if len(size) == 0:
-            return img
-        else:
-            return self.smoothly_resize(img, size) if Setting.antialias is True else self.resize(img, size)
+        return img if len(size) == 0 else self.smoothly_resize(img, size) if Setting.antialias is True else self.resize(img, size)
 
     # 重新编辑尺寸
     @staticmethod
@@ -83,7 +79,7 @@ class RawImageManafer:
 
     # 精准地缩放尺寸
     @staticmethod
-    def smoothly_resize(img: ImageSurface, size: tuple):
+    def smoothly_resize(img: ImageSurface, size: tuple) -> ImageSurface:
         # 编辑图片
         if size[1] is not None and size[1] >= 0 and size[0] is None:
             img = pygame.transform.smoothscale(img, (round(size[1] / img.get_height() * img.get_width()), round(size[1])))

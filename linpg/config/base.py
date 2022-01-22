@@ -15,7 +15,7 @@ except Exception:
     pass
 
 # 根据keys查找值，最后返回一个复制的对象
-def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) -> Any:
+def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) -> object:
     pointer = dict_to_check
     for key in keys:
         try:
@@ -32,7 +32,7 @@ def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) ->
 
 
 # 根据keys查找被设置对应对应对象为指定值
-def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Any, warning: bool = True) -> None:
+def set_value_by_keys(dict_to_check: dict, keys: tuple, value: object, warning: bool = True) -> None:
     pointer = dict_to_check
     key_range: int = len(keys)
     last_key_index: int = key_range - 1
@@ -50,7 +50,6 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Any, warning: boo
                         keys[index]
                     )
                 )
-            return keys[index]
 
 
 # 配置文件管理模块
@@ -59,7 +58,7 @@ class Config:
     # 获取默认配置文件类型
     @staticmethod
     def get_file_type() -> str:
-        return str(_SPECIFICATIONS["ConfigFileType"])
+        return str(Specification.get("ConfigFileType"))
 
     # 加载配置文件
     @staticmethod
@@ -73,12 +72,12 @@ class Config:
                 # 使用yaml模块加载配置文件
                 if path.endswith(".yaml") or path.endswith(".yml"):
                     if _YAML_INITIALIZED is True:
-                        return yaml.load(f.read(), Loader=yaml.Loader)
+                        return dict(yaml.load(f.read(), Loader=yaml.Loader))
                     else:
                         EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.")
                 # 使用json模块加载配置文件
                 elif path.endswith(".json"):
-                    return json.load(f)
+                    return dict(json.load(f))
                 else:
                     EXCEPTION.fatal("Linpg can only load json and yaml (when pyyaml is installed).")
 
@@ -191,19 +190,21 @@ class Config:
             return ""
 
 
-_SPECIFICATIONS: dict = Config.load_internal_file("specifications.json")
+# 引擎部分生产的配置文件的模板
+class Template:
+
+    __TEMPLATE: dict = Config.load_internal_file("template.json")
+
+    @classmethod
+    def get(cls, key: str) -> dict:
+        return dict(cls.__TEMPLATE[key])
+
 
 # 使用引擎开发游戏的用户可以自定义的参数
 class Specification:
-    @staticmethod
-    def get(key: str) -> Any:
-        return _SPECIFICATIONS[key]
 
+    __SPECIFICATIONS: dict = Config.load_internal_file("specifications.json")
 
-_TEMPLATE: dict = Config.load_internal_file("template.json")
-
-# 引擎部分生产的配置文件的模板
-class Template:
-    @staticmethod
-    def get(key: str) -> dict:
-        return dict(_TEMPLATE[key])
+    @classmethod
+    def get(cls, *key: str) -> Any:
+        return get_value_by_keys(cls.__SPECIFICATIONS, key)

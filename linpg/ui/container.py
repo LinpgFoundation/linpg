@@ -2,10 +2,8 @@ from .button import *
 
 # Container抽象
 class AbstractGameObjectsContainer(AbstractImageSurface):
-    def __init__(self, bg_img: PoI, x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
-        super().__init__(
-            StaticImage(bg_img, 0, 0, width, height) if bg_img is not None else bg_img, x, y, width, height, tag
-        )
+    def __init__(self, bg_img: Optional[PoI], x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
+        super().__init__(StaticImage(bg_img, 0, 0, width, height) if bg_img is not None else bg_img, x, y, width, height, tag)
 
     # 获取物品container容器（子类需实现）
     def _get_container(self) -> Union[dict, list]:
@@ -39,7 +37,7 @@ class AbstractGameObjectsContainer(AbstractImageSurface):
 
 # 使用Dict储存游戏对象的容器，类似html的div
 class GameObjectsDictContainer(AbstractGameObjectsContainer):
-    def __init__(self, bg_img: PoI, x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
+    def __init__(self, bg_img: Optional[PoI], x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
         super().__init__(bg_img, x, y, width, height, tag=tag)
         self.__items_container_dict: dict = {}
         self._item_being_hovered: Optional[str] = None
@@ -57,7 +55,7 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
         return tuple(self.__items_container_dict.keys())
 
     # 新增一个物品
-    def set(self, key: str, new_item: Any) -> None:
+    def set(self, key: str, new_item: object) -> None:
         self.__items_container_dict[key] = new_item
 
     # 获取一个物品
@@ -83,12 +81,12 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
         self.__items_container_dict.update(new_content)
 
     # 把物品画到surface上
-    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         self._item_being_hovered = None
         if self.is_visible():
-            current_abs_pos: tuple = Coordinates.add(self.pos, offSet)
+            current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出背景
-            if self.img is not None:
+            if self.img is not None and self.img is not NULL_SURFACE:
                 self.img.display(surface, current_abs_pos)
             # 画出物品
             for key_of_game_object, game_object_t in self.__items_container_dict.items():
@@ -101,12 +99,9 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
                         self._item_being_hovered = str(key_of_game_object)
 
 
-# Dict容器占位符
-NULL_DICT_CONTAINER: GameObjectsDictContainer = GameObjectsDictContainer(NULL_SURFACE, 0, 0, 0, 0)
-
 # 使用List储存游戏对象的容器，类似html的div
 class GameObjectsListContainer(AbstractGameObjectsContainer):
-    def __init__(self, bg_img: PoI, x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
+    def __init__(self, bg_img: Optional[PoI], x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
         super().__init__(bg_img, x, y, width, height, tag=tag)
         self.__items_container_list: list = []
         self._item_being_hovered: int = -1
@@ -120,7 +115,7 @@ class GameObjectsListContainer(AbstractGameObjectsContainer):
         return self.__items_container_list
 
     # 新增一个物品
-    def append(self, new_item: Any) -> None:
+    def append(self, new_item: object) -> None:
         self.__items_container_list.append(new_item)
 
     # 获取一个物品
@@ -135,15 +130,15 @@ class GameObjectsListContainer(AbstractGameObjectsContainer):
 
     # 移除一个物品
     def remove(self, index: int) -> None:
-        self.__items_container_list.remove(index)
+        self.__items_container_list.pop(index)
 
     # 把物品画到surface上
-    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         self._item_being_hovered = -1
         if self.is_visible():
-            current_abs_pos: tuple = Coordinates.add(self.pos, offSet)
+            current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出背景
-            if self.img is not None:
+            if self.img is not None and self.img is not NULL_SURFACE:
                 self.img.display(surface, current_abs_pos)
             # 画出物品
             for i in range(len(self.__items_container_list)):
@@ -151,6 +146,6 @@ class GameObjectsListContainer(AbstractGameObjectsContainer):
                 if isinstance(self.__items_container_list[i], Button):
                     if self.__items_container_list[i].has_been_hovered() is True:
                         self._item_being_hovered = i
-                elif isinstance(self.__items_container_list[i], GameObject):
+                elif isinstance(self.__items_container_list[i], GameObject2d):
                     if self.__items_container_list[i].is_hovered(current_abs_pos):
                         self._item_being_hovered = i

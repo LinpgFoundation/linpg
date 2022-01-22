@@ -7,16 +7,13 @@ pygame.mixer.set_num_channels(MIXER_CHANNEL_NUM)
 """设置linpg引擎保留的"""
 # 背景音乐
 _RESERVED_BACKGROUND_MUSIC_CHANNEL_ID: int = MIXER_CHANNEL_NUM - 3
-LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL = pygame.mixer.Channel(_RESERVED_BACKGROUND_MUSIC_CHANNEL_ID)
+LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL: PG_Channel = pygame.mixer.Channel(_RESERVED_BACKGROUND_MUSIC_CHANNEL_ID)
 # 音效
 _RESERVED_SOUND_EFFECTS_CHANNEL_ID: int = MIXER_CHANNEL_NUM - 2
-LINPG_RESERVED_SOUND_EFFECTS_CHANNEL = pygame.mixer.Channel(_RESERVED_SOUND_EFFECTS_CHANNEL_ID)
+LINPG_RESERVED_SOUND_EFFECTS_CHANNEL: PG_Channel = pygame.mixer.Channel(_RESERVED_SOUND_EFFECTS_CHANNEL_ID)
 # 环境
 _RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID: int = MIXER_CHANNEL_NUM - 1
-LINPG_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL = pygame.mixer.Channel(_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID)
-
-# 音效占位符
-NULL_SOUND: pygame.mixer.Sound = pygame.sndarray.make_sound(numpy.asarray([[0, 0]]))
+LINPG_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL: PG_Channel = pygame.mixer.Channel(_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID)
 
 # 音效管理模块接口
 class AbstractSoundManager:
@@ -58,7 +55,7 @@ class SoundManagement(AbstractSoundManager):
         return self.get_volume()
 
     def get_volume(self) -> float:
-        return self.__sounds_list[0].get_volume()
+        return float(self.__sounds_list[0].get_volume())
 
     # 设置音量
     def set_volume(self, volume: number) -> None:
@@ -67,8 +64,7 @@ class SoundManagement(AbstractSoundManager):
 
 
 # 获取视频的音频 （返回路径）
-def _split_audio_from_video(input_path: str, audio_type="ogg") -> str:
-    output_folder: str = os.path.dirname(input_path)
+def _split_audio_from_video(input_path: str, audio_type: object = "ogg") -> str:
     # 产生不重名的output文件名称
     output_file_name_t: str = os.path.basename(input_path).replace(".", "_") + "{0}.{1}"
     output_file_name: str
@@ -80,7 +76,7 @@ def _split_audio_from_video(input_path: str, audio_type="ogg") -> str:
         else:
             index += 1
     # 生成output路径
-    output_path: str = os.path.join(output_folder, output_file_name)
+    output_path: str = os.path.join(Cache.generate_folder_path(), output_file_name)
     try:
         # 生成视频文件
         VideoConverter.convert_from_video_to_audio(input_path, output_path)
@@ -101,23 +97,35 @@ def _split_audio_from_video(input_path: str, audio_type="ogg") -> str:
 class Sound:
     # 加载音效
     @staticmethod
-    def load(path: str, volume: float = 1.0) -> pygame.mixer.Sound:
-        soundTmp: pygame.mixer.Sound = pygame.mixer.Sound(path)
+    def load(path: str, volume: float = 1.0) -> PG_Sound:
+        soundTmp: PG_Sound = pygame.mixer.Sound(path)
         if volume != 1.0:
             soundTmp.set_volume(volume)
         return soundTmp
 
     # 从一个视频中加载音效
     @staticmethod
-    def load_from_video(path: str, volume: float = 1.0) -> pygame.mixer.Sound:
+    def load_from_video(path: str, volume: float = 1.0, cache_key: Optional[str] = None) -> PG_Sound:
+        # 如果给定了cache_key，则先尝试从缓存中读取音乐文件
+        if cache_key is not None and len(cache_key) > 0 and Cache.match(cache_key, path) is True:
+            try:
+                return Sound.load(Cache.get_cache_path(cache_key), volume)
+            except Exception:
+                pass
+        # 如果读取失败或者没有缓存key或者match失败，则应根据给定的路径生成音乐文件并返回
         path_of_sound: str = _split_audio_from_video(path)
-        sound_audio = Sound.load(path_of_sound, volume)
-        os.remove(path_of_sound)
+        sound_audio: PG_Sound = Sound.load(path_of_sound, volume)
+        # 如果给了缓存key，则应该生成缓存联系并保留缓存文件
+        if cache_key is not None and len(cache_key) > 0:
+            Cache.new(cache_key, path, path_of_sound)
+        # 如果没有缓存key，则删除缓存文件
+        else:
+            os.remove(path_of_sound)
         return sound_audio
 
     # 播放音效
     @staticmethod
-    def play(sound: pygame.mixer.Sound, channel_id: int) -> None:
+    def play(sound: PG_Sound, channel_id: int) -> None:
         pygame.mixer.Channel(channel_id).play(sound)
 
     # 淡出音效
@@ -127,7 +135,7 @@ class Sound:
 
     # 寻找一个可用的频道
     @staticmethod
-    def find_channel(force: bool = False) -> pygame.mixer.Channel:
+    def find_channel(force: bool = False) -> PG_Channel:
         return pygame.mixer.find_channel(force)
 
     # 获取频道的数量
@@ -137,7 +145,7 @@ class Sound:
 
     # 获取对应id的频道
     @staticmethod
-    def get_channel(channel_id: int) -> pygame.mixer.Channel:
+    def get_channel(channel_id: int) -> PG_Channel:
         if channel_id < Sound.get_num_channels():
             return pygame.mixer.Channel(channel_id)
         else:

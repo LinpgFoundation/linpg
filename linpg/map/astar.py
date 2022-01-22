@@ -2,7 +2,7 @@ from .decoration import *
 from .abstract import AbstractMap
 
 # 点
-class Point(GameObject):
+class Point(Coordinate):
     def __eq__(self, other: "Point") -> bool:  # type: ignore[override]
         return self.x == other.x and self.y == other.y
 
@@ -11,12 +11,10 @@ class Point(GameObject):
 class Node:
     def __init__(self, point: Point, endPoint: Point, g: number = 0):
         self.point: Point = point  # 自己的坐标
-        self.father: Node = None  # 父节点
+        self.father: Optional[Node] = None  # 父节点
         self.g = g  # g值，g值在用到的时候会重新算
         self.h = (abs(endPoint.x - point.x) + abs(endPoint.y - point.y)) * 10  # 计算h值
 
-
-NULL_NODE: Node = Node(Point(-1, -1), Point(-1, -1))
 
 # 寻路模块
 class AStar(AbstractMap):
@@ -30,13 +28,13 @@ class AStar(AbstractMap):
         # 终点
         self.__end_point: Point = Point(0, 0)
         # 开启表
-        self.__open_list: list = []
+        self.__open_list: list[Node] = []
         # 关闭表
-        self.__close_list: list = []
+        self.__close_list: list[Node] = []
 
     def _update(self, row: int, column: int) -> None:
         super()._update(row, column)
-        self._map2d = numpy.zeros((self.row, self.column), dtype=numpy.int8)
+        self._map2d = numpy.zeros((self.row, self.column), dtype=numpy.byte)
 
     def __getMinNode(self) -> Node:
         """
@@ -55,17 +53,17 @@ class AStar(AbstractMap):
                 return True
         return False
 
-    def __pointInOpenList(self, point: Point) -> Node:
+    def __pointInOpenList(self, point: Point) -> Optional[Node]:
         for node in self.__open_list:
             if node.point == point:
                 return node
-        return NULL_NODE
+        return None
 
-    def __end_pointInCloseList(self) -> Node:
+    def __end_pointInCloseList(self) -> Optional[Node]:
         for node in self.__open_list:
             if node.point == self.__end_point:
                 return node
-        return NULL_NODE
+        return None
 
     def __searchNear(self, minF: Node, offSetX: int, offSetY: int) -> None:
         """
@@ -96,8 +94,8 @@ class AStar(AbstractMap):
         else:
             step = 14
         # 如果不再openList中，就把它加入OpenList
-        currentNode: Node = self.__pointInOpenList(currentPoint)
-        if currentNode is NULL_NODE:
+        currentNode: Optional[Node] = self.__pointInOpenList(currentPoint)
+        if currentNode is None:
             currentNode = Node(currentPoint, self.__end_point, g=minF.g + step)
             currentNode.father = minF
             self.__open_list.append(currentNode)
@@ -141,7 +139,7 @@ class AStar(AbstractMap):
             self.__searchNear(minF, 1, 0)
             # 判断是否终止
             point = self.__end_pointInCloseList()
-            if point is not NULL_NODE:  # 如果终点在关闭表中，就返回结果
+            if point is not None:  # 如果终点在关闭表中，就返回结果
                 cPoint = point
                 pathList: list = []
                 while True:

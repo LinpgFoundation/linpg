@@ -1,12 +1,12 @@
 from glob import glob
 from os import path as PATH
 from site import getsitepackages
-from linpg.tools.builder import Builder
+from linpg import Builder  # type: ignore
 
 # 编译源代码
 if not PATH.exists("src") or input("Do you want to recompile everything (Y/n):") == "Y":
     # 编译所有文件
-    additional_files: tuple[str] = ("README.md", "LICENSE", "CODE_OF_CONDUCT.md", "doc")
+    additional_files: tuple[str, ...] = ("README.md", "LICENSE", "CODE_OF_CONDUCT.md", "doc")
     Builder.compile("linpg", additional_files=additional_files, ignore_key_words=("compiler.py",))
     # 删除旧的build
     for path in glob(PATH.join(getsitepackages()[1], "linpg", "*")):
@@ -20,7 +20,7 @@ if not PATH.exists("src") or input("Do you want to recompile everything (Y/n):")
     Builder.copy(tuple(glob(PATH.join("src", "linpg", "*"))), PATH.join(getsitepackages()[1], "linpg"))
 
 # 删除不需要的文件
-cache_files: tuple[str] = ("crash_reports", "Save")
+cache_files: tuple[str, ...] = ("crash_reports", "Save", "Cache")
 for folder_p in cache_files:
     Builder.delete_file_if_exist(folder_p)
 

@@ -56,7 +56,7 @@ class UiGenerator:
                         else 'The "{0}" needs to an interger instead of "{1}".'.format(key, item[key])
                     )
         else:
-            return item[key]
+            return int(item[key])
 
     # 检测坐标是否合法
     @classmethod
@@ -76,7 +76,7 @@ class UiGenerator:
                 except Exception:
                     EXCEPTION.fatal("Valid value for {0}: {1}.".format(key, item[key]))
         else:
-            return item[key]
+            return int(item[key])
 
     # 转换文字
     @staticmethod
@@ -93,9 +93,7 @@ class UiGenerator:
                         break
                 if find_close_bracket is True:
                     find_close_bracket = False
-                    final_text_list.append(
-                        Lang.get_text_by_keys(tuple([b.strip() for b in text[text_index + 1 : a].split(",")]))
-                    )
+                    final_text_list.append(Lang.get_text_by_keys(tuple([b.strip() for b in text[text_index + 1 : a].split(",")])))
                     text_index = a
                 else:
                     EXCEPTION.fatal("Cannot find close bracket for text: {}".format(text))
@@ -144,7 +142,7 @@ class UiGenerator:
 
     # 生成UI主模块
     @classmethod
-    def __generate(cls, data: dict, custom_values: dict, max_width: int = -1, max_height: int = -1) -> AbstractImageSurface:
+    def __generate(cls, data: dict, custom_values: dict, max_width: int = -1, max_height: int = -1) -> GameObject2d:
         # 如果对象是容器
         if data["type"] == "container":
             return cls.__generate_container(data, custom_values, max_width, max_height)
@@ -154,7 +152,11 @@ class UiGenerator:
                 max_height = Display.get_height()
             item_t: GameObject2d
             # 如果对象是文字
-            if data["type"] == "text" or data["type"] == "dynamic_text" or data["type"] == "drop_down_single_choice_list":
+            if (
+                data["type"] == "text"
+                or data["type"] == "resize_when_hovered_text"
+                or data["type"] == "drop_down_single_choice_list"
+            ):
                 # 转换字体大小
                 font_size: int = cls.__convert_number(data, "font_size", max_height, custom_values)
                 # 补充可选参数
@@ -169,16 +171,11 @@ class UiGenerator:
                 elif data["src"] is not None:
                     data["src"] = cls.__convert_text(str(data["src"]))
                 # 生成文字图层
-                if data["type"] == "text":
-                    item_t = TextSurface(
-                        Font.render(data["src"], data["color"], font_size, data["bold"], data["italic"]), 0, 0
-                    )
-                elif data["type"] == "dynamic_text":
-                    item_t = DynamicTextSurface(
-                        Font.render(data["src"], data["color"], font_size, data["bold"], data["italic"]),
-                        Font.render(data["src"], data["color"], font_size * 1.5, data["bold"], data["italic"]),
-                        0,
-                        0,
+                if data["type"] == "text" or data["type"] == "static_text":
+                    item_t = StaticTextSurface(data["src"], 0, 0, font_size, data["color"], data["bold"], data["italic"])
+                elif data["type"] == "resize_when_hovered_text":
+                    item_t = ResizeWhenHoveredTextSurface(
+                        str(data["src"]), 0, 0, font_size, font_size * 1.5, data["color"], data["bold"], data["italic"]
                     )
                 else:
                     item_t = DropDownList(data["src"], 0, 0, font_size, data["color"])
@@ -192,30 +189,31 @@ class UiGenerator:
                 if data["type"] == "button":
                     if "alpha_when_not_hover" not in data:
                         data["alpha_when_not_hover"] = 255
+                    item_t = Button.load(data["src"], ORIGIN, (object_width, object_height), data["alpha_when_not_hover"])
                     if "text" in data:
-                        item_t = load_button_with_text_in_center(
-                            IMG.load(data["src"]),
-                            cls.__convert_text(data["text"]["src"]),
-                            data["text"]["color"],
-                            object_height,
-                            ORIGIN,
-                            data["alpha_when_not_hover"],
+                        item_t.set_text(
+                            ButtonComponent.text(
+                                cls.__convert_text(data["text"]["src"]),
+                                object_height / 2,
+                                data["text"]["color"],
+                                alpha_when_not_hover=data["alpha_when_not_hover"],
+                            )
                         )
-                    elif "title" in data:
-                        item_t = load_button_with_des(
-                            IMG.load(data["src"]),
-                            cls.__convert_text(data["title"]),
-                            ORIGIN,
-                            (object_width, object_height),
-                            data["alpha_when_not_hover"],
+                    if "icon" in data:
+                        # 转换尺寸
+                        _icon_width: int = cls.__convert_number(data["icon"], "width", max_width, custom_values)
+                        _icon_height: int = cls.__convert_number(data["icon"], "height", max_height, custom_values)
+                        item_t.set_icon(
+                            ButtonComponent.icon(data["icon"]["src"], (_icon_width, _icon_height), data["alpha_when_not_hover"])
                         )
-                    else:
-                        item_t = load_button(
-                            IMG.load(data["src"]),
-                            ORIGIN,
-                            (object_width, object_height),
-                            data["alpha_when_not_hover"],
-                        )
+                    if "scale_for_resizing_width" in data:
+                        item_t.set_scale_for_resizing_width(data["scale_for_resizing_width"])
+                    if "scale_for_resizing_height" in data:
+                        item_t.set_scale_for_resizing_height(data["scale_for_resizing_height"])
+                    if "auto_resize" in data:
+                        item_t.set_auto_resize(data["auto_resize"])
+                    if "description" in data:
+                        item_t.set_description(cls.__convert_text(data["description"]))
                     if not "name" in data:
                         EXCEPTION.fatal("You have to set a name for button type.")
                 elif data["type"] == "progress_bar_adjuster":
@@ -247,6 +245,12 @@ class UiGenerator:
                     EXCEPTION.fatal("Current type is not supported")
             # 如果有名字，则以tag的形式进行标注
             item_t.tag = data["name"] if "name" in data else ""
+            # 透明度
+            if "hidden" in data:
+                if isinstance(item_t, HiddenableSurface):
+                    item_t.set_visible(not data["hidden"])
+                else:
+                    EXCEPTION.fatal("This is not a subtype of HiddenableSurface!")
             # 设置坐标
             item_t.set_pos(
                 cls.__convert_coordinate(data, "x", int((max_width - item_t.get_width()) / 2), max_width, custom_values),
@@ -267,7 +271,7 @@ class UiGenerator:
 
     # 生成GameObject2d - 如果目标是str则视为是名称，尝试从ui数据库中加载对应的模板，否则则视为模板
     @classmethod
-    def generate(cls, data: Union[str, dict], custom_values: dict = {}) -> AbstractImageSurface:
+    def generate(cls, data: Union[str, dict], custom_values: dict = {}) -> GameObject2d:
         return cls.__generate(cls.__get_data_in_dict(data), custom_values)
 
     # 生成container - 如果目标是str则视为是名称，尝试从ui数据库中加载对应的模板，否则则视为模板

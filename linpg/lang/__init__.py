@@ -52,7 +52,7 @@ class LanguageManager:
     # 获取当前的语言
     @property
     def current_language(self) -> str:
-        return self.__LANG_DATA["Language"]
+        return str(self.__LANG_DATA["Language"])
 
     # 获取语言的名称id
     def get_language_id(self, lang_name: str) -> str:
@@ -79,7 +79,7 @@ class LanguageManager:
     # 获取本地化的数字
     def get_num_in_local_text(self, num: strint) -> str:
         try:
-            return deepcopy(self.__LANG_DATA["Numbers"][int(num)])
+            return str(deepcopy(self.__LANG_DATA["Numbers"][int(num)]))
         except Exception:
             return str(num)
 

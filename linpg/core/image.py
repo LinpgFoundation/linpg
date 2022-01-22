@@ -1,4 +1,4 @@
-from .surface import *
+from .text import *
 
 # 动态图形类
 class DynamicImage(AbstractImageSurface):
@@ -53,22 +53,23 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         super().__init__(IMG.quickly_load(img), x, y, width, height, tag)
         self.__is_flipped_horizontally: bool = False
         self.__is_flipped_vertically: bool = False
-        self.__crop_rect: Rectangle = NULL_RECT
+        self.__crop_rect: Optional[Rectangle] = None
 
     # 截图的范围
     @property
-    def crop_rect(self) -> Rectangle:
+    def crop_rect(self) -> Optional[Rectangle]:
         return self.__crop_rect
 
-    def get_crop_rect(self) -> Rectangle:
+    def get_crop_rect(self) -> Optional[Rectangle]:
         return self.__crop_rect
 
-    def set_crop_rect(self, rect: Rectangle) -> None:
-        if not isinstance(rect, Rectangle):
+    def set_crop_rect(self, rect: Optional[Rectangle]) -> None:
+        if rect is None or isinstance(rect, Rectangle):
+            if self.__crop_rect != rect:
+                self.__crop_rect = rect
+                self._need_update = True
+        else:
             EXCEPTION.fatal("You have to input either a None or a Rectangle, not {}".format(type(rect)))
-        if self.__crop_rect != rect:
-            self.__crop_rect = rect
-            self._need_update = True
 
     # 反转原图，并打上已反转的标记
     def flip(self, horizontal: bool = True, vertical: bool = False) -> None:
@@ -113,18 +114,13 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         if self.__is_flipped_horizontally is True or self.__is_flipped_vertically is True:
             imgTmp = IMG.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)
         # 获取切割rect
-        rect = imgTmp.get_bounding_rect()
-        crop_rect_exists: bool = self.__crop_rect is not NULL_RECT
-        if self.width != rect.width or self.height != rect.height or crop_rect_exists:
-            if crop_rect_exists:
+        rect: Rectangle = convert_rect(imgTmp.get_bounding_rect())
+        if self.width != rect.width or self.height != rect.height or self.__crop_rect is not None:
+            if self.__crop_rect is not None:
                 new_x: int = max(rect.x, self.__crop_rect.x)
                 new_y: int = max(rect.y, self.__crop_rect.y)
-                rect = Rectangle(
-                    new_x,
-                    new_y,
-                    min(rect.right, self.__crop_rect.right) - new_x,
-                    min(rect.bottom, self.__crop_rect.bottom) - new_y,
-                )
+                rect.move_to((new_x, new_y))
+                rect.set_size(min(rect.right, self.__crop_rect.right) - new_x, min(rect.bottom, self.__crop_rect.bottom) - new_y)
             self._processed_img = new_transparent_surface(rect.size)
             self.set_local_pos(rect.x, rect.y)
             self._processed_img.blit(imgTmp, (-self.local_x, -self.local_y))
@@ -134,6 +130,9 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
             self._processed_img.set_alpha(self._alpha)
         self._need_update = False
 
+
+# 空的静态图片占位符
+NULL_STATIC_IMAGE: StaticImage = StaticImage("<!null>", 0, 0, 0, 0, "<!null>")
 
 # 需要移动的动态图片
 class MovableImage(StaticImage):
@@ -276,9 +275,7 @@ class MovableImage(StaticImage):
 
 # gif图片管理
 class GifImage(AdvancedAbstractImageSurface):
-    def __init__(
-        self, imgList: tuple, x: int_f, y: int_f, width: int_f, height: int_f, updateGap: int_f, tag: str = ""
-    ) -> None:
+    def __init__(self, imgList: tuple, x: int_f, y: int_f, width: int_f, height: int_f, updateGap: int_f, tag: str = "") -> None:
         super().__init__(imgList, x, y, width, height, tag)
         self.imgId: int = 0
         self.updateGap: int = max(int(updateGap), 0)
@@ -295,7 +292,8 @@ class GifImage(AdvancedAbstractImageSurface):
     # 当前图片
     @property
     def current_image(self) -> StaticImage:
-        return self.img[self.imgId]
+        _temp: StaticImage = self.img[self.imgId]
+        return _temp
 
     # 展示
     def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:

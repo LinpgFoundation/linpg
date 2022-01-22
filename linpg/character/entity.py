@@ -10,16 +10,16 @@ class Entity(Position):
     __CHARACTERS_SOUND_SYSTEM: EntitySoundManager = EntitySoundManager(5)
     # 储存角色图片的常量
     __CHARACTERS_IMAGE_SYS: EntityImageManager = EntityImageManager()
+    # idle动作
+    __IDLE_ACTION: str = "wait"
 
     def __init__(self, DATA: dict, faction: str, mode: str):
         super().__init__(DATA["x"], DATA["y"])
         # 最大行动值
-        self.__max_action_point: int = (
-            int(DATA["max_action_point"]) if "max_action_point" in DATA else int(DATA["action_point"])
-        )
+        self.__max_action_point: int = int(DATA["max_action_point"])
         # 当前行动值
         self.__current_action_point: int = (
-            int(DATA["current_action_point"]) if "current_action_point" in DATA else int(DATA["action_point"])
+            int(DATA["current_action_point"]) if "current_action_point" in DATA else self.__max_action_point
         )
         # 攻击范围
         self.__attack_coverage: int = int(DATA["attack_coverage"])
@@ -32,7 +32,7 @@ class Entity(Position):
         # 不可再生的护甲值
         self.__irrecoverable_armor: int = int(DATA["irrecoverable_armor"]) if "irrecoverable_armor" in DATA else 0
         # 最大可再生的护甲值
-        self.__max_recoverable_armor: int = int(DATA["recoverable_armor"]) if "recoverable_armor" in DATA else 0
+        self.__max_recoverable_armor: int = int(DATA["max_recoverable_armor"]) if "max_recoverable_armor" in DATA else 0
         # 当前可再生的护甲值
         self.__current_recoverable_armor: int = (
             int(DATA["current_recoverable_armor"]) if "current_recoverable_armor" in DATA else self.__max_recoverable_armor
@@ -53,12 +53,14 @@ class Entity(Position):
         self.__type: str = str(DATA["type"])
         # 是否图片镜像
         self.__if_flip: bool = bool(DATA["if_flip"]) if "if_flip" in DATA else False
-        # idle动作
-        self.__idle_action: str = "wait"
         # 当前动作
-        self.__current_action: str = str(DATA["current_action"]) if "current_action" in DATA else self.__idle_action
+        self.__current_action: str = str(DATA["current_action"]) if "current_action" in DATA else self.__IDLE_ACTION
         # 动作是否重复
         self.__if_action_loop: bool = bool(DATA["if_action_loop"]) if "if_action_loop" in DATA else True
+        # 是否动作完成后返回idle
+        self.__if_switch_to_idle_afterwards: bool = (
+            bool(DATA["if_switch_to_idle_afterwards"]) if "if_switch_to_idle_afterwards" in DATA else True
+        )
         # 动作是正序列播放还是反序播放
         self._if_play_action_in_reversing: bool = (
             bool(DATA["if_play_action_in_reversing"]) if "if_play_action_in_reversing" in DATA else False
@@ -87,25 +89,31 @@ class Entity(Position):
             "x": self.x,
             "y": self.y,
             "max_action_point": self.__max_action_point,
-            "current_action_point": self.__current_action_point,
             "attack_coverage": self.__attack_coverage,
             "magazine_capacity": self.__magazine_capacity,
             "max_hp": self.__max_hp,
-            "current_hp": self.__current_hp,
             "effective_range": self.__effective_range,
             "kind": self.__kind,
             "type": self.__type,
             "max_damage": self.__max_damage,
             "min_damage": self.__min_damage,
-            "if_flip": self.__if_flip,
-            "current_action": self.__current_action,
-            "if_action_loop": self.__if_action_loop,
-            "if_play_action_in_reversing": self._if_play_action_in_reversing,
         }
+        """以下是可选数据"""
+        if self.__if_flip is True:
+            data["if_flip"] = self.__if_flip
+        if self.__current_action_point != self.__max_action_point:
+            data["current_action_point"] = self.__current_action_point
+        if self.__current_action != self.__IDLE_ACTION:
+            data["current_action"] = self.__current_action
+            data["if_action_loop"] = self.__if_action_loop
+            data["if_play_action_in_reversing"] = self._if_play_action_in_reversing
+            data["if_switch_to_idle_afterwards"] = self.__if_switch_to_idle_afterwards
+        if self.__current_hp != self.__max_hp:
+            data["current_hp"] = self.__current_hp
+        if self.__max_recoverable_armor > 0:
+            data["max_recoverable_armor"] = self.__max_recoverable_armor
         if self.__irrecoverable_armor > 0:
             data["irrecoverable_armor"] = self.__irrecoverable_armor
-        if self.__max_recoverable_armor > 0:
-            data["recoverable_armor"] = self.__max_recoverable_armor
         if self.__current_recoverable_armor > 0:
             data["current_recoverable_armor"] = self.__current_recoverable_armor
         if self.__if_invincible is True:
@@ -176,14 +184,15 @@ class Entity(Position):
         return self.__current_action
 
     # 设置动作
-    def set_action(self, action: str = "wait", ifLoop: bool = True) -> None:
+    def set_action(self, action: str = "wait", ifLoop: bool = True, ifSwitchToIdleAfterwards: bool = True) -> None:
         self.reset_imgId(self.__current_action)
         self.__current_action = action
         self.__if_action_loop = ifLoop
+        self.__if_switch_to_idle_afterwards = ifSwitchToIdleAfterwards
 
     # 是否闲置
     def is_idle(self) -> bool:
-        return self.__current_action == self.__idle_action
+        return self.__current_action == self.__IDLE_ACTION
 
     # 获取角色特定动作的图片播放ID
     def get_imgId(self, action: str) -> int:
@@ -191,7 +200,7 @@ class Entity(Position):
             action_dict: dict = dict(self.__imgId_dict[action])
         except KeyError:
             EXCEPTION.fatal('Action "{}" is invalid!'.format(action))
-        return action_dict["imgId"] if len(action_dict) > 0 else -1
+        return int(action_dict["imgId"]) if len(action_dict) > 0 else -1
 
     # 获取角色特定动作的图片总数量
     def get_imgNum(self, action: str) -> int:
@@ -211,7 +220,7 @@ class Entity(Position):
 
     # 获取角色特定动作的图片透明度
     def get_imgAlpaha(self, action: str) -> int:
-        return self.__imgId_dict[action]["alpha"]
+        return int(self.__imgId_dict[action]["alpha"])
 
     # 设定角色特定动作的图片透明度
     def set_imgAlpaha(self, action: str, alpha: int) -> None:
@@ -297,7 +306,7 @@ class Entity(Position):
             EXCEPTION.fatal("You cannot heal a negative value")
 
     # 降低血量
-    def injury(self, damage: int):
+    def injury(self, damage: int) -> None:
         if not self.__if_invincible and damage > 0:
             # 如果有可再生的护甲
             if self.__current_recoverable_armor > 0:
@@ -324,7 +333,7 @@ class Entity(Position):
             # 如果角色血量小等于0，进入死亡状态
             if self.__current_hp <= 0:
                 self.__current_hp = 0
-                self.set_action("die", None)
+                self.set_action("die", False, False)
         elif self.__if_invincible or damage == 0:
             pass
         else:
@@ -501,7 +510,7 @@ class Entity(Position):
         return self.__attack_range
 
     # 目标角色所在的攻击范围内
-    def range_target_in(self, otherEntity: "Entity", custom_pos: Any = None) -> str:
+    def range_target_in(self, otherEntity: "Entity", custom_pos: Optional[Sequence] = None) -> str:
         distanceBetween: int = (
             abs(int(otherEntity.x - self.x)) + abs(int(otherEntity.y - self.y))
             if custom_pos is None
@@ -536,16 +545,16 @@ class Entity(Position):
     @property
     def ideal_attack_range(self) -> int:
         if "near" in self.__effective_range and self.__effective_range["near"] is not None:
-            return self.__effective_range["near"][-1]
+            return int(self.__effective_range["near"][-1])
         elif "middle" in self.__effective_range and self.__effective_range["middle"] is not None:
-            return self.__effective_range["middle"][-1]
+            return int(self.__effective_range["middle"][-1])
         elif "far" in self.__effective_range and self.__effective_range["far"] is not None:
-            return self.__effective_range["far"][-1]
+            return int(self.__effective_range["far"][-1])
         else:
             EXCEPTION.fatal("This character has no valid effective range!")
 
     # 根据坐标反转角色
-    def set_flip_based_on_pos(self, pos: Any):
+    def set_flip_based_on_pos(self, pos: object) -> None:
         # 转换坐标
         x, y = Positions.convert(pos)
         # 检测坐标
@@ -562,7 +571,7 @@ class Entity(Position):
     """画出角色"""
     # 角色画到surface上
     def __blit_entity_img(
-        self, surface: ImageSurface, MAP_POINTER: MapObject, action: str = None, pos: Any = None, alpha: int = 155
+        self, surface: ImageSurface, MAP_POINTER: MapObject, action: str = None, pos: tuple = tuple(), alpha: int = 155
     ) -> None:
         # 如果没有指定action,则默认使用当前的动作
         if action is None:
@@ -579,7 +588,7 @@ class Entity(Position):
         else:
             img_of_char.flip_back_to_normal()
         # 如果没有指定pos,则默认使用当前的动作
-        if pos is None:
+        if len(pos) < 1:
             pos = MAP_POINTER.calPosInMap(self.x, self.y)
         # 把角色图片画到屏幕上
         img_of_char.set_pos(pos[0] - MAP_POINTER.block_width * 0.3, pos[1] - MAP_POINTER.block_width * 0.85)
@@ -607,7 +616,7 @@ class Entity(Position):
             elif self.__if_action_loop is True:
                 self.__imgId_dict[self.__current_action]["imgId"] = 0
             # 如果角色图片播放完但不打算重新播
-            elif self.__if_action_loop is None:
+            elif not self.__if_switch_to_idle_afterwards:
                 pass
             # 如果角色图片播放完需要回到待机状态
             elif not self.__if_action_loop:
@@ -622,7 +631,7 @@ class Entity(Position):
                 self.set_action()
 
     def draw_custom(
-        self, action: str, pos: Any, surface: ImageSurface, MAP_POINTER: MapObject, isContinue: bool = True
+        self, action: str, pos: tuple, surface: ImageSurface, MAP_POINTER: MapObject, isContinue: bool = True
     ) -> bool:
         self.__blit_entity_img(surface, MAP_POINTER, action, pos)
         # 调整id，并返回对应的bool状态
@@ -655,8 +664,8 @@ class Entity(Position):
     # 把角色ui画到屏幕上
     def _drawUI(self, surface: ImageSurface, MAP_POINTER: MapObject) -> tuple:
         xTemp, yTemp = MAP_POINTER.calPosInMap(self.x, self.y)
-        xTemp += int(MAP_POINTER.block_width * 0.25)
-        yTemp -= int(MAP_POINTER.block_width * 0.2)
+        xTemp += int(MAP_POINTER.block_width / 4)
+        yTemp -= int(MAP_POINTER.block_width / 5)
         self.__hp_bar.set_size(MAP_POINTER.block_width / 2, MAP_POINTER.block_width / 10)
         self.__hp_bar.set_pos(xTemp, yTemp)
         self._draw_health_bar(surface)

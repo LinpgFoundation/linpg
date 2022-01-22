@@ -4,7 +4,7 @@ from .generator import *
 class AbstractInternalMenu(HiddenableSurface):
     def __init__(self, menu_name: str) -> None:
         super().__init__(False)
-        self._CONTENT: GameObjectsDictContainer = NULL_DICT_CONTAINER
+        self._CONTENT: Optional[GameObjectsDictContainer] = None
         self._initialized: bool = False
         self._menu_name: str = menu_name
 
@@ -15,14 +15,15 @@ class AbstractInternalMenu(HiddenableSurface):
 
     # 菜单是否被触碰
     def is_hovered(self) -> bool:
-        if self.is_visible() and self._CONTENT is not NULL_DICT_CONTAINER:
+        if self.is_visible() and self._CONTENT is not None:
             return self._CONTENT.is_hovered()
         else:
             return False
 
     # 画出内容
     def draw(self, surface: ImageSurface) -> None:
-        self._CONTENT.draw(surface)
+        if self._CONTENT is not None:
+            self._CONTENT.draw(surface)
 
 
 # 设置UI
@@ -38,11 +39,13 @@ class DefaultOptionMenu(AbstractInternalMenu):
             # 检查是否初始化
             if not self._initialized:
                 self.initialize()
+                assert self._CONTENT is not None
                 lang_drop_down = self._CONTENT.get("lang_drop_down")
                 for lang_choice in Lang.get_available_languages():
                     lang_drop_down.set(lang_choice, lang_choice)
                 lang_drop_down.set_selected_item(Lang.current_language)
             else:
+                assert self._CONTENT is not None
                 lang_drop_down = self._CONTENT.get("lang_drop_down")
             # 更新百分比
             self._CONTENT.get("global_sound_volume").set_percentage(Setting.get("Sound", "global_value") / 100)
@@ -64,33 +67,29 @@ class DefaultOptionMenu(AbstractInternalMenu):
                 self.need_update["language"] = True
             # 按键的判定按钮
             if self._CONTENT.item_being_hovered is not None and not lang_drop_down.is_hovered():
-                item_percentage_t: int
+                item_percentage_t: int = 0
                 # 如果碰到全局音量条
                 if self._CONTENT.item_being_hovered == "global_sound_volume":
-                    if (item_percentage_t := int(self._CONTENT.get("global_sound_volume").percentage * 100)) != Setting.get(
-                        "Sound", "global_value"
-                    ):
+                    item_percentage_t = int(self._CONTENT.get("global_sound_volume").percentage * 100)
+                    if item_percentage_t != int(Setting.get("Sound", "global_value")):
                         Setting.set("Sound", "global_value", value=item_percentage_t)
                         self.need_update["volume"] = True
                 elif self._CONTENT.item_being_hovered == "background_music_sound_volume":
-                    if (
-                        item_percentage_t := int(self._CONTENT.get("background_music_sound_volume").percentage * 100)
-                    ) != Setting.get("Sound", "background_music"):
+                    item_percentage_t = int(self._CONTENT.get("background_music_sound_volume").percentage * 100)
+                    if item_percentage_t != int(Setting.get("Sound", "background_music")):
                         Setting.set("Sound", "background_music", value=item_percentage_t)
                         Music.set_volume(Media.volume.background_music / 100.0)
                         self.need_update["volume"] = True
                 # 如果碰到音效的音量条
                 elif self._CONTENT.item_being_hovered == "effects_sound_volume":
-                    if (item_percentage_t := int(self._CONTENT.get("effects_sound_volume").percentage * 100)) != Setting.get(
-                        "Sound", "effects"
-                    ):
+                    item_percentage_t = int(self._CONTENT.get("effects_sound_volume").percentage * 100)
+                    if item_percentage_t != int(Setting.get("Sound", "effects")):
                         Setting.set("Sound", "effects", value=item_percentage_t)
                         self.need_update["volume"] = True
                 # 如果碰到环境声的音量条
                 elif self._CONTENT.item_being_hovered == "environment_sound_volume":
-                    if (
-                        item_percentage_t := int(self._CONTENT.get("environment_sound_volume").percentage * 100)
-                    ) != Setting.get("Sound", "environment"):
+                    item_percentage_t = int(self._CONTENT.get("environment_sound_volume").percentage * 100)
+                    if item_percentage_t != int(Setting.get("Sound", "environment")):
                         Setting.set("Sound", "environment", value=item_percentage_t)
                         self.need_update["volume"] = True
                 # 保存新的参数
@@ -107,11 +106,11 @@ OptionMenu: DefaultOptionMenu = DefaultOptionMenu()
 class PauseMenu(AbstractInternalMenu):
     def __init__(self) -> None:
         super().__init__("pause_menu")
-        self.__screenshot: ImageSurface = NULL_SURFACE
+        self.__screenshot: Optional[ImageSurface] = None
         # 返回确认菜单
-        self.__leave_warning: GameObjectsDictContainer = NULL_DICT_CONTAINER
+        self.__leave_warning: Optional[GameObjectsDictContainer] = None
         # 退出确认菜单
-        self.__exit_warning: GameObjectsDictContainer = NULL_DICT_CONTAINER
+        self.__exit_warning: Optional[GameObjectsDictContainer] = None
         # 记录被按下的按钮
         self.__button_hovered: str = ""
 
@@ -130,17 +129,23 @@ class PauseMenu(AbstractInternalMenu):
 
     def hide(self) -> None:
         self.set_visible(False)
+        assert self.__exit_warning is not None
         self.__exit_warning.set_visible(False)
+        assert self.__leave_warning is not None
         self.__leave_warning.set_visible(False)
-        self.__screenshot = NULL_SURFACE
+        self.__screenshot = None
 
     def draw(self, surface: ImageSurface) -> None:
         self.__button_hovered = ""
         if self.is_visible():
             if not self._initialized:
                 self.initialize()
+            # 确保所有模块已经正常初始化
+            assert self.__exit_warning is not None
+            assert self.__leave_warning is not None
+            assert self._CONTENT is not None
             # 展示原先的背景
-            if self.__screenshot is NULL_SURFACE:
+            if self.__screenshot is None:
                 self.__screenshot = IMG.add_darkness(surface, 10)
             # 画出原先的背景
             surface.blit(self.__screenshot, (0, 0))
@@ -180,10 +185,9 @@ class PauseMenu(AbstractInternalMenu):
 
 # 暂停菜单处理模块
 class PauseMenuModuleForGameSystem(AbstractInternalMenu):
-    def __init__(self):
+    def __init__(self) -> None:
         # 暂停菜单
-        self.__pause_menu = None
-        self.__pause_menu_enabled: bool = False
+        self.__pause_menu: Optional[PauseMenu] = None
 
     # 保存进度（子类需实现）
     def save_progress(self) -> None:
@@ -207,59 +211,59 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
 
     def _enable_pause_menu(self) -> None:
         self.__pause_menu = PauseMenu()
-        self.__pause_menu_enabled = True
 
     def is_pause_menu_enabled(self) -> bool:
-        return self.__pause_menu_enabled
+        return self.__pause_menu is not None
 
     def _initialize_pause_menu(self) -> None:
-        if self.__pause_menu_enabled is True:
+        if self.__pause_menu is not None:
             self.__pause_menu.initialize()
 
     def _show_pause_menu(self, surface: ImageSurface) -> None:
-        Media.pause()
-        progress_saved_text = StaticImage(
-            Font.render(Lang.get_text("Global", "progress_has_been_saved"), Colors.WHITE, int(Display.get_width() * 0.015)),
-            0,
-            0,
-        )
-        progress_saved_text.set_alpha(0)
-        progress_saved_text.set_center(surface.get_width() / 2, surface.get_height() / 2)
-        self.__pause_menu.set_visible(True)
-        while self.__pause_menu.is_visible():
-            Display.flip()
-            if OptionMenu.is_hidden():
-                self.__pause_menu.draw(surface)
-                if self.__pause_menu.get_button_clicked() == "resume":
-                    OptionMenu.set_visible(False)
-                    self.__pause_menu.set_visible(False)
-                elif self.__pause_menu.get_button_clicked() == "save":
-                    self.save_progress()
-                    progress_saved_text.set_alpha(255)
-                elif self.__pause_menu.get_button_clicked() == "option_menu":
-                    OptionMenu.set_visible(True)
-                elif self.__pause_menu.get_button_clicked() == "back_to_mainMenu":
-                    try:
-                        self.fade(surface)
-                    except Exception:
-                        Media.unload()
-                    OptionMenu.set_visible(False)
-                    progress_saved_text.set_alpha(0)
-                    self.__pause_menu.set_visible(False)
-                    GlobalValue.set("BackToMainMenu", True)
-                    self.stop()
-            else:
-                # 展示设置UI
-                OptionMenu.draw(surface)
-                # 更新音量
-                if OptionMenu.need_update["volume"] is True:
-                    self._update_sound_volume()
-                # 更新语言
-                if OptionMenu.need_update["language"] is True:
-                    self.update_language()
-            # 显示进度已保存的文字
-            progress_saved_text.draw(surface)
-            progress_saved_text.subtract_alpha(5)
-        del progress_saved_text
-        self.__pause_menu.hide()
-        Media.unpause()
+        if self.__pause_menu is not None:
+            Media.pause()
+            progress_saved_text = StaticImage(
+                Font.render(Lang.get_text("Global", "progress_has_been_saved"), Colors.WHITE, int(Display.get_width() * 0.015)),
+                0,
+                0,
+            )
+            progress_saved_text.set_alpha(0)
+            progress_saved_text.set_center(surface.get_width() / 2, surface.get_height() / 2)
+            self.__pause_menu.set_visible(True)
+            while self.__pause_menu.is_visible():
+                Display.flip()
+                if OptionMenu.is_hidden():
+                    self.__pause_menu.draw(surface)
+                    if self.__pause_menu.get_button_clicked() == "resume":
+                        OptionMenu.set_visible(False)
+                        self.__pause_menu.set_visible(False)
+                    elif self.__pause_menu.get_button_clicked() == "save":
+                        self.save_progress()
+                        progress_saved_text.set_alpha(255)
+                    elif self.__pause_menu.get_button_clicked() == "option_menu":
+                        OptionMenu.set_visible(True)
+                    elif self.__pause_menu.get_button_clicked() == "back_to_mainMenu":
+                        try:
+                            self.fade(surface)
+                        except Exception:
+                            Media.unload()
+                        OptionMenu.set_visible(False)
+                        progress_saved_text.set_alpha(0)
+                        self.__pause_menu.set_visible(False)
+                        GlobalValue.set("BackToMainMenu", True)
+                        self.stop()
+                else:
+                    # 展示设置UI
+                    OptionMenu.draw(surface)
+                    # 更新音量
+                    if OptionMenu.need_update["volume"] is True:
+                        self._update_sound_volume()
+                    # 更新语言
+                    if OptionMenu.need_update["language"] is True:
+                        self.update_language()
+                # 显示进度已保存的文字
+                progress_saved_text.draw(surface)
+                progress_saved_text.subtract_alpha(5)
+            del progress_saved_text
+            self.__pause_menu.hide()
+            Media.unpause()

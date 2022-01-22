@@ -2,9 +2,6 @@ from .dialog import *
 
 # dialog修复转换器（希望任何功能都永远不需要被调用）
 class DialogConverter(AbstractDialogSystem):
-    def __init__(self) -> None:
-        super().__init__()
-
     def _check_and_fix_non_str_key(self, part: str) -> None:
         while True:
             looping: bool = False

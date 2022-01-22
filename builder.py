@@ -1,7 +1,7 @@
 from glob import glob
 from os import path as PATH
 from site import getsitepackages
-from linpg.tools.builder import Builder  # type: ignore
+from linpg import Builder  # type: ignore
 
 # 编译源代码
 if not PATH.exists("src") or input("Do you want to recompile everything (Y/n):") == "Y":

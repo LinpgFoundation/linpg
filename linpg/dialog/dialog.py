@@ -88,7 +88,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
     def update_language(self) -> None:
         super().update_language()
         if self.__buttons_container is not None:
-            self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self._FONT_SIZE})
+            self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self._FONT_SIZE * 2})
+            self.__buttons_container.set_visible(self.__dialog_txt_system.is_visible())
         self._initialize_pause_menu()
 
     def continue_scene(self, dialog_id: str) -> None:
@@ -194,7 +195,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 is_skip = True
                 Music.fade_out(fade_out_in_ms)
             if is_skip is True:
-                temp_alpha: Optional[int] = BLACK_CURTAIN.get_alpha()
+                temp_alpha = BLACK_CURTAIN.get_alpha()
                 if temp_alpha is not None and temp_alpha < 255:
                     BLACK_CURTAIN.set_alpha(temp_alpha + 5)
                 else:

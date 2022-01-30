@@ -92,12 +92,9 @@ class DisplayController:
         return "{0}x{1}".format(self.__standard_width, self.__standard_height)
 
     # 初始化屏幕
-    def init(self, flags: Optional[int] = None) -> ImageSurface:
-        if flags is None:
-            if self.__screen_scale >= 100:
-                flags = pygame.FULLSCREEN
-            else:
-                flags = 0
+    def init(self, flags: int = -1) -> ImageSurface:
+        if flags < 0:
+            flags = pygame.FULLSCREEN if self.__screen_scale >= 100 else 0
         self.__SCREEN_WINDOW = pygame.display.set_mode(
             self.get_size(), flags, vsync=1 if Setting.get("VerticalSync") is True else 0
         )

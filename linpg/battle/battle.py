@@ -7,8 +7,8 @@ class AbstractBattleSystem(AbstractGameSystem):
         # 用于判断是否移动屏幕的参数
         self.__mouse_move_temp_x: int = -1
         self.__mouse_move_temp_y: int = -1
-        self._screen_to_move_x: Optional[int] = None
-        self._screen_to_move_y: Optional[int] = None
+        self._screen_to_move_x: Union[int, None] = None
+        self._screen_to_move_y: Union[int, None] = None
         # 用于检测是否有方向键被按到的字典
         self.__moving_screen_in_direction: dict[str, bool] = {"up": False, "down": False, "left": False, "right": False}
         # 角色数据

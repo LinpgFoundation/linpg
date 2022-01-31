@@ -59,7 +59,7 @@ class CharacterImageManager:
     # 画出角色
     def __display_character(self, name: str, x: number, y: number, alpha: int, surface: ImageSurface) -> None:
         if alpha > 0:
-            nameTemp = name.replace("<c>", "").replace("<d>", "")
+            nameTemp: str = name.replace("<c>", "").replace("<d>", "")
             self.__ensure_the_existence_of(nameTemp)
             # 加载npc的基础立绘
             img: StaticImage = (

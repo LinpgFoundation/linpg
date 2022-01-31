@@ -164,7 +164,7 @@ class FriendlyCharacter(Entity):
     def injury(self, damage: int) -> None:
         super().injury(damage)
         # 如果角色在被攻击后处于濒死状态
-        if not self.is_alive() and self.__down_time < 0 and self.__kind != "HOC":
+        if not self.is_alive() and self.__down_time < 0 and self.kind != "HOC":
             self.__down_time = DYING_ROUND_LIMIT
             if self.__getHurtImage is not None:
                 self.__getHurtImage.x = -self.__getHurtImage.width
@@ -178,27 +178,9 @@ class FriendlyCharacter(Entity):
             self.__down_time = -1
             self._if_play_action_in_reversing = True
 
-    # 把角色血条画到屏幕上
-    def _draw_health_bar(self, surface: ImageSurface) -> None:
-        if self.__down_time < 0:
-            super()._draw_health_bar(surface)
-        else:
-            self.__hp_bar.set_percentage(self.__down_time / DYING_ROUND_LIMIT)
-            self.__hp_bar.set_dying(True)
-            self.__hp_bar.draw(surface)
-            _status_font: ImageSurface = self.__ENTITY_UI_FONT.render(
-                "{0}/{1}".format(self.__down_time, DYING_ROUND_LIMIT), Colors.BLACK
-            )
-            surface.blit(
-                _status_font,
-                (
-                    self.__hp_bar.x + int((self.__hp_bar.get_width() - _status_font.get_width()) / 2),
-                    self.__hp_bar.y + int((self.__hp_bar.get_height() - _status_font.get_height()) / 2),
-                ),
-            )
-
     def drawUI(self, surface: ImageSurface, MAP_POINTER: MapObject) -> None:
-        blit_pos = super()._drawUI(surface, MAP_POINTER)
+        customHpData: Optional[tuple] = None if self.__down_time < 0 else (self.__down_time, DYING_ROUND_LIMIT, True)
+        blit_pos = super()._drawUI(surface, MAP_POINTER, customHpData)
         # 展示被察觉的程度
         if self.__detection > 0:
             # 参数

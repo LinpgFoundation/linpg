@@ -4,8 +4,6 @@ from .module import *
 # 人形模块
 class Entity(Position):
 
-    # 角色UI的文字数据
-    __ENTITY_UI_FONT: FontGenerator = Font.create(Display.get_width() / 192)
     # 储存角色音效的常量
     __CHARACTERS_SOUND_SYSTEM: EntitySoundManager = EntitySoundManager(5)
     # 储存角色图片的常量
@@ -83,6 +81,7 @@ class Entity(Position):
         self.__attack_range: dict[str, list] = {"near": [], "middle": [], "far": []}
         # 血条图片
         self.__hp_bar: EntityHpBar = EntityHpBar()
+        self.__status_font: StaticTextSurface = StaticTextSurface("", 0, 0, Display.get_width() / 192)
 
     def to_dict(self) -> dict:
         data: dict = {
@@ -645,28 +644,28 @@ class Entity(Position):
             else:
                 return False
 
-    # 把角色血条画到屏幕上
-    def _draw_health_bar(self, surface: ImageSurface) -> None:
-        self.__hp_bar.set_percentage(self.__current_hp / self.__max_hp)
-        self.__hp_bar.set_dying(False)
-        self.__hp_bar.draw(surface)
-        _status_font: ImageSurface = self.__ENTITY_UI_FONT.render(
-            "{0}/{1}".format(self.__current_hp, self.__max_hp), Colors.BLACK
-        )
-        surface.blit(
-            _status_font,
-            (
-                self.__hp_bar.x + int((self.__hp_bar.get_width() - _status_font.get_width()) / 2),
-                self.__hp_bar.y + int((self.__hp_bar.get_height() - _status_font.get_height()) / 2),
-            ),
-        )
-
     # 把角色ui画到屏幕上
-    def _drawUI(self, surface: ImageSurface, MAP_POINTER: MapObject) -> tuple:
+    def _drawUI(self, surface: ImageSurface, MAP_POINTER: MapObject, customHpData: Optional[tuple] = None) -> tuple:
         xTemp, yTemp = MAP_POINTER.calPosInMap(self.x, self.y)
         xTemp += int(MAP_POINTER.block_width / 4)
         yTemp -= int(MAP_POINTER.block_width / 5)
         self.__hp_bar.set_size(MAP_POINTER.block_width / 2, MAP_POINTER.block_width / 10)
         self.__hp_bar.set_pos(xTemp, yTemp)
-        self._draw_health_bar(surface)
+        # 预处理血条图片
+        if customHpData is None:
+            self.__hp_bar.set_percentage(self.__current_hp / self.__max_hp)
+            self.__hp_bar.set_dying(False)
+            self.__status_font.set_text("{0}/{1}".format(self.__current_hp, self.__max_hp))
+        else:
+            self.__hp_bar.set_percentage(customHpData[0] / customHpData[1])
+            self.__hp_bar.set_dying(customHpData[2])
+            self.__status_font.set_text("{0}/{1}".format(customHpData[0], customHpData[1]))
+        # 把血条画到屏幕上
+        self.__hp_bar.draw(surface)
+        self.__status_font.set_pos(
+            self.__hp_bar.x + int((self.__hp_bar.get_width() - self.__status_font.get_width()) / 2),
+            self.__hp_bar.y + int((self.__hp_bar.get_height() - self.__status_font.get_height()) / 2),
+        )
+        self.__status_font.draw(surface)
+        # 返回坐标以供子类进行处理
         return xTemp, yTemp

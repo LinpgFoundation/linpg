@@ -90,32 +90,30 @@ class StaticTextSurface(AbstractTextSurface):
         _with_bounding: bool = False,
     ) -> None:
         super().__init__(text, x, y, size, _color, _bold, _italic, _with_bounding)
-        self.__text_surface: ImageSurface = Font.render(
-            self.get_text(),
-            self.get_color(),
-            self.get_font_size(),
-            self.get_bold(),
-            self.get_italic(),
-            with_bounding=self.get_with_bounding(),
-        )
+        self.__text_surface: Optional[ImageSurface] = None
+        self._update_text_surface()
 
     def _update_text_surface(self) -> None:
-        self.__text_surface = Font.render(
-            self.get_text(),
-            self.get_color(),
-            self.get_font_size(),
-            self.get_bold(),
-            self.get_italic(),
-            with_bounding=self.get_with_bounding(),
+        self.__text_surface = (
+            Font.render(
+                self.get_text(),
+                self.get_color(),
+                self.get_font_size(),
+                self.get_bold(),
+                self.get_italic(),
+                with_bounding=self.get_with_bounding(),
+            )
+            if self.get_text() != ""
+            else None
         )
 
-    def _get_text_surface(self) -> ImageSurface:
+    def _get_text_surface(self) -> Optional[ImageSurface]:
         return self.__text_surface
 
     def set_text(self, value: str) -> None:
-        if value != self.__text:
+        if value != self.get_text():
             super().set_text(value)
-            if self.get_alpha() != 255:
+            if self.__text_surface is not None and self.get_alpha() != 255:
                 self.__text_surface.set_alpha(self.get_alpha())
 
     def set_font_size(self, value: int) -> None:
@@ -132,17 +130,18 @@ class StaticTextSurface(AbstractTextSurface):
 
     def set_alpha(self, value: int) -> None:
         super().set_alpha(value)
-        self.__text_surface.set_alpha(self.get_alpha())
+        if self.__text_surface is not None:
+            self.__text_surface.set_alpha(self.get_alpha())
 
     def get_width(self) -> int:
-        return self.__text_surface.get_width()
+        return self.__text_surface.get_width() if self.__text_surface is not None else 0
 
     def get_height(self) -> int:
-        return self.__text_surface.get_height()
+        return self.__text_surface.get_height() if self.__text_surface is not None else 0
 
     # 画出
     def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
-        if self.is_visible():
+        if self.is_visible() and self.__text_surface is not None:
             surface.blit(self.__text_surface, Coordinates.add(self.pos, offSet))
 
 

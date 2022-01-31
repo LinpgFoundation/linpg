@@ -12,19 +12,17 @@ class ButtonText(StaticTextSurface):
         _with_bounding: bool = True,
         alpha_when_not_hover: int = 255,
     ) -> None:
-        super().__init__(text, 0, 0, size, _color, _bold, _italic, _with_bounding)
         self.__text_surface_2: Optional[ImageSurface] = None
         self.__alpha_when_not_hover: int = alpha_when_not_hover
-        if self.__alpha_when_not_hover != 255:
-            self.__text_surface_2 = self._get_text_surface().copy()
-            self.__text_surface_2.set_alpha(self.__alpha_when_not_hover)
+        # 初始化文字
+        super().__init__(text, 0, 0, size, _color, _bold, _italic, _with_bounding)
         # 是否被触碰的flag
         self.__is_hovered: bool = False
 
     def _update_text_surface(self) -> None:
         super()._update_text_surface()
-        if self.__alpha_when_not_hover != 255:
-            self.__text_surface_2 = self._get_text_surface().copy()
+        if self.__alpha_when_not_hover != 255 and (_temp_text_surface := self._get_text_surface()) is not None:
+            self.__text_surface_2 = _temp_text_surface.copy()
             self.__text_surface_2.set_alpha(self.__alpha_when_not_hover)
 
     def set_is_hovered(self, value: bool) -> None:

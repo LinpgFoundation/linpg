@@ -5,6 +5,9 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
 
     # 获取方块数据库
     __BLOCKS_DATABASE: dict = DataBase.get("Blocks")
+    # 开发者使用的窗口
+    __debug_win: Optional[RenderedWindow] = None
+    __debug_win_unit: int = 10
 
     def __init__(self) -> None:
         # 寻路模块
@@ -31,15 +34,12 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         self.__block_on_surface: numpy.ndarray = numpy.asarray([])
         # 是否需要更新地图图层
         self.__need_to_recheck_block_on_surface: bool = True
-        # 开发者使用的窗口
-        self.__debug_win: Optional[RenderedWindow] = None
-        self.__debug_win_unit: int = 10
 
     def update(self, mapDataDic: dict, perBlockWidth: int_f, perBlockHeight: int_f) -> None:
         # 转换原始的地图数据
         lookup_table: tuple
         MAP_t: list
-        if isinstance(mapDataDic["map"], (list, tuple)):
+        if isinstance(mapDataDic["map"], Sequence):
             MAP_t = list(mapDataDic["map"])
             # 确认场景需要用到素材
             all_images_needed: list = []

@@ -25,7 +25,7 @@ class DialogEditor(DialogConverter):
         # 存放并管理编辑器上方所有按钮的容器
         self.__buttons_ui_container: Optional[GameObjectsDictContainer] = None
         # 未保存数据时警告的窗口
-        self.__no_save_warning: Optional[GameObjectsDictContainer] = None
+        self.__no_save_warning: GameObjectsDictContainer = UI.generate_container("leave_without_saving_warning")
         # 当前选择的背景的名称
         self.__current_select_bg_name: Optional[str] = None
         # 默认不播放音乐
@@ -143,8 +143,6 @@ class DialogEditor(DialogConverter):
         self.__remove_npc_button = Font.render_description_box(
             CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE, int(self._FONT_SIZE / 5), Colors.WHITE
         )
-        # 未保存离开时的警告
-        self.__no_save_warning = UI.generate_container("leave_without_saving_warning")
         # 切换准备编辑的dialog部分
         self.dialog_key_select = DropDownList(None, button_width * 11, button_y + font_size, font_size)
         for key in self._dialog_data:
@@ -403,7 +401,6 @@ class DialogEditor(DialogConverter):
             self._current_dialog_content["contents"] = self.__dialog_txt_system.get_content()
         # 确保按钮初始化
         assert self.__buttons_ui_container is not None
-        assert self.__no_save_warning is not None
         # 展示按钮
         self.__buttons_ui_container.draw(surface)
         # 展示出当前可供使用的背景音乐

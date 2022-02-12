@@ -39,7 +39,7 @@
         "FPS": 60,
         "Font": "MicrosoftYaHei-2",
         "FontType": "custom",
-        "Language": null,
+        "Language": "English",
         "LowMemoryMode": false,
         "MouseIconWidth": 18,
         "MouseMoveSpeed": 30,

@@ -23,6 +23,11 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__object_to_put_down: dict = {}
         # 未保存离开时的警告
         self.__no_save_warning: GameObjectsDictContainer = UI.generate_container("leave_without_saving_warning")
+        # 绿色方块/方块标准
+        self.__range_green: ImageSurface = NULL_SURFACE
+        self.__range_red: ImageSurface = NULL_SURFACE
+        # 是否是delete模式
+        self.__delete_mode: bool = False
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
@@ -119,8 +124,8 @@ class AbstractMapEditor(AbstractBattleSystem):
         container_height = int(screen.get_height() * 0.3)
         button_width = int(screen.get_width() * 0.14)
         button_height = int(screen.get_height() * 0.05)
-        self.__bottom_container_buttons.get("select_sangvis_ferri").set_left(
-            self.__bottom_container_buttons.get("select_griffin").right + panding
+        self.__bottom_container_buttons.get("select_hostile_characters").set_left(
+            self.__bottom_container_buttons.get("select_friendly_characters").right + panding
         )
         self.__UIContainerBottom = DynamicImage("<!ui>container.png", 0, 0, container_width, container_height)
         self.__UIContainerButtonBottom = MovableImage(
@@ -157,11 +162,10 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__hostileCharactersImagesContainer.set_visible(False)
         self.__hostileCharactersImagesContainer.distance_between_item = panding
         # 绿色方块/方块标准
-        self.greenBlock = IMG.load("<!ui>range_green.png", (self._MAP.block_width * 0.8, None))
-        self.greenBlock.set_alpha(150)
-        self.redBlock = IMG.load("<!ui>range_red.png", (self._MAP.block_width * 0.8, None))
-        self.redBlock.set_alpha(150)
-        self.deleteMode: bool = False
+        self.__range_green = IMG.load("<!ui>range_green.png", (self._MAP.block_width * 0.8, None))
+        self.__range_green.set_alpha(150)
+        self.__range_red = IMG.load("<!ui>range_red.png", (self._MAP.block_width * 0.8, None))
+        self.__range_red.set_alpha(150)
         self.__object_to_put_down.clear()
         # 设置按钮位置
         self.__buttons_container.get("back").set_left(self.__buttons_container.get("save").get_right() + panding)
@@ -178,7 +182,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                 if event.key == Key.ESCAPE:
                     self.__object_to_put_down.clear()
                     self.data_to_edit = None
-                    self.deleteMode = False
+                    self.__delete_mode = False
                 self._check_key_down(event)
             elif event.type == Key.UP:
                 self._check_key_up(event)
@@ -190,7 +194,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                 elif self.__UIContainerButtonBottom.is_hovered():
                     self.__UIContainerButtonBottom.switch()
                     self.__UIContainerButtonBottom.flip(False, True)
-                elif self.deleteMode is True and block_get_click is not None:
+                elif self.__delete_mode is True and block_get_click is not None:
                     # 查看当前位置是否有装饰物
                     decoration = self._MAP.find_decoration_on((block_get_click["x"], block_get_click["y"]))
                     # 如果发现有冲突的装饰物
@@ -289,12 +293,12 @@ class AbstractMapEditor(AbstractBattleSystem):
             and not self.__UIContainerRight.is_hovered((self.__UIContainerButtonRight.right, 0))
             and not self.__UIContainerBottom.is_hovered((self.__UIContainerButtonBottom.bottom, 0))
         ):
-            if self.deleteMode is True:
+            if self.__delete_mode is True:
                 xTemp, yTemp = self._MAP.calPosInMap(block_get_click["x"], block_get_click["y"])
-                screen.blit(self.redBlock, (xTemp + self._MAP.block_width * 0.1, yTemp))
+                screen.blit(self.__range_red, (xTemp + self._MAP.block_width * 0.1, yTemp))
             elif len(self.__object_to_put_down) > 0:
                 xTemp, yTemp = self._MAP.calPosInMap(block_get_click["x"], block_get_click["y"])
-                screen.blit(self.greenBlock, (xTemp + self._MAP.block_width * 0.1, yTemp))
+                screen.blit(self.__range_green, (xTemp + self._MAP.block_width * 0.1, yTemp))
 
         # 角色动画
         for key in self._alliances_data:
@@ -302,8 +306,8 @@ class AbstractMapEditor(AbstractBattleSystem):
             if (
                 len(self.__object_to_put_down) <= 0
                 and Controller.get_event("confirm")
-                and self._alliances_data[key].x == int(Controller.mouse.x / self.greenBlock.get_width())
-                and self._alliances_data[key].y == int(Controller.mouse.y / self.greenBlock.get_height())
+                and self._alliances_data[key].x == int(Controller.mouse.x / self.__range_green.get_width())
+                and self._alliances_data[key].y == int(Controller.mouse.y / self.__range_green.get_height())
             ):
                 self.data_to_edit = self._alliances_data[key]
         for key in self._enemies_data:
@@ -311,8 +315,8 @@ class AbstractMapEditor(AbstractBattleSystem):
             if (
                 len(self.__object_to_put_down) <= 0
                 and Controller.get_event("confirm")
-                and self._enemies_data[key].x == int(Controller.mouse.x / self.greenBlock.get_width())
-                and self._enemies_data[key].y == int(Controller.mouse.y / self.greenBlock.get_height())
+                and self._enemies_data[key].x == int(Controller.mouse.x / self.__range_green.get_width())
+                and self._enemies_data[key].y == int(Controller.mouse.y / self.__range_green.get_height())
             ):
                 self.data_to_edit = self._enemies_data[key]
 
@@ -354,10 +358,10 @@ class AbstractMapEditor(AbstractBattleSystem):
             self.__hostileCharactersImagesContainer.display(screen, (0, self.__UIContainerButtonBottom.bottom))
             self.__bottom_container_buttons.display(screen, (0, self.__UIContainerButtonBottom.bottom))
             if Controller.get_event("confirm"):
-                if self.__bottom_container_buttons.item_being_hovered == "select_griffin":
+                if self.__bottom_container_buttons.item_being_hovered == "select_friendly_characters":
                     self.__friendlyCharactersImagesContainer.set_visible(True)
                     self.__hostileCharactersImagesContainer.set_visible(False)
-                elif self.__bottom_container_buttons.item_being_hovered == "select_sangvis_ferri":
+                elif self.__bottom_container_buttons.item_being_hovered == "select_hostile_characters":
                     self.__friendlyCharactersImagesContainer.set_visible(False)
                     self.__hostileCharactersImagesContainer.set_visible(True)
                 if (
@@ -378,7 +382,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                     }
 
         self.__buttons_container.draw(screen)
-        if Controller.get_event("confirm") and len(self.__object_to_put_down) <= 0 and not self.deleteMode:
+        if Controller.get_event("confirm") and len(self.__object_to_put_down) <= 0 and not self.__delete_mode:
             if self.__buttons_container.item_being_hovered == "save":
                 self.save_progress()
             elif self.__buttons_container.item_being_hovered == "back":
@@ -389,7 +393,7 @@ class AbstractMapEditor(AbstractBattleSystem):
             elif self.__buttons_container.item_being_hovered == "delete":
                 self.__object_to_put_down.clear()
                 self.data_to_edit = None
-                self.deleteMode = True
+                self.__delete_mode = True
             elif self.__buttons_container.item_being_hovered == "reload":
                 tempLocal_x, tempLocal_y = self._MAP.get_local_pos()
                 # 读取地图数据

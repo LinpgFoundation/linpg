@@ -6,10 +6,10 @@ class DialogEditor(DialogConverter):
         super().__init__()
         # 导航窗口
         self.__dialog_navigation_window: DialogNavigationWindow = DialogNavigationWindow(
-            0, 0, Display.get_width() / 10, Display.get_height() / 10
+            0, Display.get_height() / 10, Display.get_width() / 10, Display.get_height() / 10
         )
         # 加载对话框系统
-        self.__dialog_txt_system: DevDialogBox = DevDialogBox(self._FONT_SIZE)
+        self.__dialog_txt_system: EditableDialogBox = EditableDialogBox(self._FONT_SIZE)
         # 存储视觉小说默认数据的参数
         self._dialog_data_default: dict = {}
         # 是否是父类
@@ -32,7 +32,7 @@ class DialogEditor(DialogConverter):
         # self._is_muted = True
 
     # 获取对话框模块（按照父类要求实现）
-    def _get_dialog_box(self) -> DevDialogBox:
+    def _get_dialog_box(self) -> EditableDialogBox:
         return self.__dialog_txt_system
 
     # 加载数据

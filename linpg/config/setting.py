@@ -35,7 +35,11 @@ class SettingSystem:
             # 导入local,查看默认语言
             import locale
 
-            self.__SETTING_DATA["Language"] = "SimplifiedChinese" if locale.getdefaultlocale()[0] == "zh_CN" else "English"
+            # 如果是中文
+            if locale.getdefaultlocale()[0] == "zh_CN":
+                self.__SETTING_DATA["Language"] = "SimplifiedChinese"
+            elif locale.getdefaultlocale()[0] == "zh_TW":
+                self.__SETTING_DATA["Language"] = "TraditionalChinese"
             # 保存设置
             self.save()
 

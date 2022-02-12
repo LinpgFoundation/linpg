@@ -1,4 +1,10 @@
 {
+    "Battle": {
+        "block": "方块",
+        "decoration": "装饰物",
+        "friendly_characters": "友方角色",
+        "hostile_characters": "敌方角色"
+    },
     "Dialog": {
         "auto": "自动",
         "choice": "选项",

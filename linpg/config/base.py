@@ -1,6 +1,6 @@
 from __future__ import annotations
 import json
-from typing import Any
+from typing import Any, Optional
 from copy import deepcopy
 from glob import glob
 from ..exception import *
@@ -72,7 +72,8 @@ class Config:
                 # 使用yaml模块加载配置文件
                 if path.endswith(".yaml") or path.endswith(".yml"):
                     if _YAML_INITIALIZED is True:
-                        return dict(yaml.load(f.read(), Loader=yaml.Loader))
+                        _result: Optional[Any] = yaml.load(f.read(), Loader=yaml.Loader)
+                        return dict(_result) if _result is not None else {}
                     else:
                         EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.")
                 # 使用json模块加载配置文件
@@ -109,7 +110,9 @@ class Config:
                 if _YAML_INITIALIZED is True:
                     yaml.dump(data, f, allow_unicode=True)
                 else:
-                    EXCEPTION.fatal("You cannot save .yaml file because yaml is not imported successfully.")
+                    EXCEPTION.fatal(
+                        "You cannot save .yaml file because yaml is not imported successfully. Maybe try to reinstall PyYaml and try again."
+                    )
             elif path.endswith(".json"):
                 json.dump(data, f, indent=4, ensure_ascii=False, sort_keys=True)
             else:

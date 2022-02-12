@@ -1,5 +1,5 @@
 from random import randint as RANDINT
-from typing import Optional, Sequence
+from typing import Sequence
 
 import numpy
 

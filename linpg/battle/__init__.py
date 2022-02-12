@@ -1,5 +1,5 @@
 """
 结构:
-weather -> battle
+weather -> battle -> editor
 """
-from .battle import *
+from .editor import *

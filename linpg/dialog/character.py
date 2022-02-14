@@ -2,6 +2,12 @@ from .component import *
 
 # 角色立绘系统
 class CharacterImageManager:
+
+    # 立绘配置信息数据库
+    __CHARACTER_IMAGE_DATABASE: dict = DataBase.get("Npc")
+    # 是否立绘配置信息数据库
+    __IS_CHARACTER_IMAGE_DATABASE_ENABLED: bool = len(__CHARACTER_IMAGE_DATABASE) > 0
+
     def __init__(self) -> None:
         # 用于存放立绘的字典
         self.__character_image: dict = {}
@@ -30,9 +36,6 @@ class CharacterImageManager:
         except Exception:
             self.__communication = None
             self.__communication_dark = None
-        # 立绘配置信息数据库
-        self.__CHARACTER_IMAGE_DATABASE: dict = DataBase.get("Npc")
-        self.__IS_CHARACTER_IMAGE_DATABASE_ENABLED: bool = len(self.__CHARACTER_IMAGE_DATABASE) > 0
         # 移动的x
         self.__move_x: int = 0
         # 开发者模式
@@ -96,18 +99,19 @@ class CharacterImageManager:
                 self.character_get_click = name
 
     # 根据文件名判断是否是同一角色名下的图片
-    def __is_the_same_character(self, fileName1: str, fileName2: str) -> bool:
-        if self.__IS_CHARACTER_IMAGE_DATABASE_ENABLED:
+    @classmethod
+    def __is_the_same_character(cls, fileName1: str, fileName2: str) -> bool:
+        if cls.__IS_CHARACTER_IMAGE_DATABASE_ENABLED:
             fileName1 = fileName1.replace("<c>", "").replace("<d>", "")
             fileName2 = fileName2.replace("<c>", "").replace("<d>", "")
             if fileName1 == fileName2:
                 return True
             else:
-                for key in self.__CHARACTER_IMAGE_DATABASE:
-                    if fileName1 in self.__CHARACTER_IMAGE_DATABASE[key]:
-                        return fileName2 in self.__CHARACTER_IMAGE_DATABASE[key]
-                    elif fileName2 in self.__CHARACTER_IMAGE_DATABASE[key]:
-                        return fileName1 in self.__CHARACTER_IMAGE_DATABASE[key]
+                for key in cls.__CHARACTER_IMAGE_DATABASE:
+                    if fileName1 in cls.__CHARACTER_IMAGE_DATABASE[key]:
+                        return fileName2 in cls.__CHARACTER_IMAGE_DATABASE[key]
+                    elif fileName2 in cls.__CHARACTER_IMAGE_DATABASE[key]:
+                        return fileName1 in cls.__CHARACTER_IMAGE_DATABASE[key]
         return False
 
     def draw(self, surface: ImageSurface) -> None:

@@ -592,9 +592,6 @@ class Entity(Position):
         # 把角色图片画到屏幕上
         img_of_char.set_pos(pos[0] - MAP_POINTER.block_width * 0.3, pos[1] - MAP_POINTER.block_width * 0.85)
         img_of_char.draw(surface)
-        # 如果是开发者模式，则开启轮廓
-        if Setting.developer_mode:
-            img_of_char.draw_outline(surface)
 
     # 把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
     def draw(self, surface: ImageSurface, MAP_POINTER: MapObject) -> None:

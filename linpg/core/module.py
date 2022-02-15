@@ -128,10 +128,10 @@ class GameObject2d(Coordinate):
     # 右侧位置
     @property
     def right(self) -> int:
-        return int(self.x + self.get_width())
+        return self.x + self.get_width()
 
     def get_right(self) -> int:
-        return int(self.x + self.get_width())
+        return self.x + self.get_width()
 
     def set_right(self, value: int_f) -> None:
         self.set_left(value - self.get_width())
@@ -139,10 +139,10 @@ class GameObject2d(Coordinate):
     # 底部位置
     @property
     def bottom(self) -> int:
-        return int(self.y + self.get_height())
+        return self.y + self.get_height()
 
     def get_bottom(self) -> int:
-        return int(self.y + self.get_height())
+        return self.y + self.get_height()
 
     def set_bottom(self, value: int_f) -> None:
         self.set_top(value - self.get_height())
@@ -150,20 +150,20 @@ class GameObject2d(Coordinate):
     # 中心位置
     @property
     def centerx(self) -> int:
-        return int(self.x + self.get_width() / 2)
+        return self.x + int(self.get_width() / 2)
 
     def get_centerx(self) -> int:
-        return int(self.x + self.get_width() / 2)
+        return self.x + int(self.get_width() / 2)
 
     def set_centerx(self, centerx: int_f) -> None:
         self.x = int(centerx - self.get_width() / 2)
 
     @property
     def centery(self) -> int:
-        return int(self.y + self.get_height() / 2)
+        return self.y + int(self.get_height() / 2)
 
     def get_centery(self) -> int:
-        return int(self.y + self.get_height() / 2)
+        return self.y + int(self.get_height() / 2)
 
     def set_centery(self, centery: int_f) -> None:
         self.y = int(centery - self.get_height() / 2)

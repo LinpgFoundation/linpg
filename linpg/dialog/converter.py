@@ -48,7 +48,7 @@ class ScriptConverter:
         self.__lang: Optional[str] = None
         self.__part: Optional[str] = None
         self.__last_dialog_id: Optional[str] = None
-        self.__lines:list = []
+        self.__lines: list = []
         self.__last_valid: int = -1
 
     def __generate_id(self, index: int) -> str:
@@ -121,16 +121,23 @@ class ScriptConverter:
                     _data: list[str] = self.__lines[index].removesuffix("\n").split(":")
                     self.__current_data["narrator"] = self.__convert_str(str(_data[0]))
 
-                    narrator_possible_images:list = []
-                    if self.__current_data["narrator"] is not None and self.__current_data["narrator"].lower() in self.__CHARACTER_IMAGE_DATABASE:
+                    narrator_possible_images: list = []
+                    if (
+                        self.__current_data["narrator"] is not None
+                        and self.__current_data["narrator"].lower() in self.__CHARACTER_IMAGE_DATABASE
+                    ):
                         narrator_possible_images = self.__CHARACTER_IMAGE_DATABASE[self.__current_data["narrator"].lower()]
-                    
+
                     for i in range(len(self.__current_data["character_images"])):
-                        if self.__current_data["character_images"][i].replace("<d>", "").replace("<c>", "") in narrator_possible_images:
-                            self.__current_data["character_images"][i] = self.__current_data["character_images"][i].replace("<d>", "")
+                        if (
+                            self.__current_data["character_images"][i].replace("<d>", "").replace("<c>", "")
+                            in narrator_possible_images
+                        ):
+                            self.__current_data["character_images"][i] = self.__current_data["character_images"][i].replace(
+                                "<d>", ""
+                            )
                         elif "<d>" not in self.__current_data["character_images"][i]:
                             self.__current_data["character_images"][i] += "<d>"
-
 
                     self.__current_data["contents"] = [str(_data[1])]
 

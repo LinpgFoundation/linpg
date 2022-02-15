@@ -26,6 +26,10 @@ class AbstractMapEditor(AbstractBattleSystem):
         # 绿色方块/方块标准
         self.__range_green: ImageSurface = NULL_SURFACE
         self.__range_red: ImageSurface = NULL_SURFACE
+        # 选中框
+        self.__select_rect: Rectangle = Rectangle(0, 0, 0, 0)
+        self.__select_pos: tuple = tuple()
+        self.__selected_entities: list[str] = []
         # 是否是delete模式
         self.__delete_mode: bool = False
 
@@ -186,7 +190,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                 self._check_key_down(event)
             elif event.type == Key.UP:
                 self._check_key_up(event)
-            elif event.type == MOUSE_BUTTON_DOWN:
+            elif event.type == MOUSE_BUTTON_DOWN and len(self.__select_pos) <= 0:
                 # 上下滚轮-放大和缩小地图
                 if self.__UIContainerButtonRight.is_hovered():
                     self.__UIContainerButtonRight.switch()
@@ -303,6 +307,18 @@ class AbstractMapEditor(AbstractBattleSystem):
         # 角色动画
         for key in self._alliances_data:
             self._alliances_data[key].draw(screen, self._MAP)
+            """
+            if (
+                0 < self._alliances_data[key].local_x - self.__select_rect.x < self.__select_rect.width
+                and 0 < self._alliances_data[key].local_y - self.__select_rect.y < self.__select_rect.height
+            ):
+                if key not in self.__selected_entities:
+                    self.__selected_entities.append(key)
+            elif key in self.__selected_entities:
+                self.__selected_entities.remove(key)
+            if key in self.__selected_entities:
+                self._alliances_data[key].draw_outline(screen)
+            """
             if (
                 len(self.__object_to_put_down) <= 0
                 and Controller.get_event("confirm")
@@ -312,6 +328,8 @@ class AbstractMapEditor(AbstractBattleSystem):
                 self.data_to_edit = self._alliances_data[key]
         for key in self._enemies_data:
             self._enemies_data[key].draw(screen, self._MAP)
+            if key in self.__selected_entities:
+                self._alliances_data[key].draw_outline(screen)
             if (
                 len(self.__object_to_put_down) <= 0
                 and Controller.get_event("confirm")
@@ -381,6 +399,33 @@ class AbstractMapEditor(AbstractBattleSystem):
                         "id": self.__hostileCharactersImagesContainer.item_being_hovered,
                     }
 
+        # 画出选中框
+        """
+        if Controller.mouse.get_pressed(0) and Controller.mouse.get_pressed_previously(0):
+            if len(self.__select_pos) <= 0:
+                self.__select_pos = Controller.mouse.get_pos()
+                self.__selected_entities.clear()
+            # 设置宽度
+            new_width: int = Controller.mouse.x - self.__select_pos[0]
+            if new_width >= 0:
+                self.__select_rect.set_width(new_width)
+                self.__select_rect.set_left(self.__select_pos[0])
+            else:
+                self.__select_rect.set_width(-new_width)
+                self.__select_rect.set_left(Controller.mouse.x)
+            # 设置高度
+            new_height: int = Controller.mouse.y - self.__select_pos[1]
+            if new_height >= 0:
+                self.__select_rect.set_height(new_height)
+                self.__select_rect.set_top(self.__select_pos[1])
+            else:
+                self.__select_rect.set_height(-new_height)
+                self.__select_rect.set_top(Controller.mouse.y)
+            self.__select_rect.draw_outline(screen)
+        else:
+            self.__select_pos = tuple()
+        """
+        
         self.__buttons_container.draw(screen)
         if Controller.get_event("confirm") and len(self.__object_to_put_down) <= 0 and not self.__delete_mode:
             if self.__buttons_container.item_being_hovered == "save":

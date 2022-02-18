@@ -72,7 +72,7 @@ class Config:
                 # 使用yaml模块加载配置文件
                 if path.endswith(".yaml") or path.endswith(".yml"):
                     if _YAML_INITIALIZED is True:
-                        _result: Optional[Any] = yaml.load(f.read(), Loader=yaml.Loader)
+                        _result: Any = yaml.load(f.read(), Loader=yaml.Loader)
                         return dict(_result) if _result is not None else {}
                     else:
                         EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.")
@@ -200,7 +200,8 @@ class Template:
 
     @classmethod
     def get(cls, key: str) -> dict:
-        return dict(cls.__TEMPLATE[key])
+        # 返回一个复制，以防止原数据被篡改
+        return deepcopy(cls.__TEMPLATE[key])
 
 
 # 使用引擎开发游戏的用户可以自定义的参数

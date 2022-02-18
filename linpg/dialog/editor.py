@@ -61,16 +61,16 @@ class DialogEditor(DialogConverter):
         self.__UIContainerRight_bg.set("current_select", None)
         # 加载静态背景图片
         for imgPath in glob(os.path.join(self._background_image_folder_path, "*")):
-            self.__UIContainerRight_bg.set(os.path.basename(imgPath), IMG.load(imgPath, (container_width * 0.8, None)))
+            self.__UIContainerRight_bg.set(os.path.basename(imgPath), IMG.load(imgPath, (container_width * 4 / 5, None)))
         # 加载动态背景图片
         if os.path.exists(ASSET.PATH_DICT["movie"]):
             for imgPath in glob(os.path.join(ASSET.PATH_DICT["movie"], "*")):
                 self.__UIContainerRight_bg.set(
-                    os.path.basename(imgPath), IMG.resize(get_preview_of_video(imgPath), (container_width * 0.8, None))
+                    os.path.basename(imgPath), IMG.resize(get_preview_of_video(imgPath), (container_width * 4 / 5, None))
                 )
         # 加载透明图片
         self.__UIContainerRight_bg.set(
-            "<transparent>", get_texture_missing_surface((int(container_width * 0.8), int(container_width * 0.45)))
+            "<transparent>", get_texture_missing_surface((int(container_width * 4 / 5), int(container_width * 0.45)))
         )
         self.__UIContainerRight_bg.distance_between_item = int(Display.get_height() * 0.02)
         self.__current_select_bg_name = None
@@ -229,6 +229,9 @@ class DialogEditor(DialogConverter):
                 EXCEPTION.fatal("Part name has to be a string, not {}!".format(part))
         # 更新场景
         self._update_scene(self._dialog_id)
+        # 如果有不同，应该立即保存
+        if not self.__no_changes_were_made():
+            self.save_progress()
 
     # 分离需要保存的数据
     def __slipt_the_stuff_need_save(self) -> dict:
@@ -249,10 +252,11 @@ class DialogEditor(DialogConverter):
 
     # 检查是否有任何改动
     def __no_changes_were_made(self) -> bool:
-        if os.path.exists((dialog_file_location_t := self.get_dialog_file_location())):
-            return bool(Config.load(dialog_file_location_t, "dialogs") == self.__slipt_the_stuff_need_save())
-        else:
-            return False
+        return (
+            bool(Config.load(dialog_file_location_t, "dialogs") == self.__slipt_the_stuff_need_save())
+            if os.path.exists((dialog_file_location_t := self.get_dialog_file_location()))
+            else False
+        )
 
     # 更新UI
     def __update_ui(self) -> None:

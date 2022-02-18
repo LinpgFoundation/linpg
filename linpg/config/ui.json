@@ -4,32 +4,32 @@
         "items": [
             {
                 "alpha_when_not_hover": 150,
-                "height": "<#button_size>",
+                "height": "<!button_size>",
                 "name": "hide",
                 "src": "<!ui>hide.png",
                 "type": "button",
-                "width": "<#button_size>",
+                "width": "<!button_size>",
                 "x": "5%",
                 "y": "5%"
             },
             {
                 "alpha_when_not_hover": 150,
-                "height": "<#button_size>",
+                "height": "<!button_size>",
                 "name": "history",
                 "src": "<!ui>history.png",
                 "type": "button",
-                "width": "<#button_size>",
+                "width": "<!button_size>",
                 "x": "10%",
                 "y": "5%"
             },
             {
                 "alpha_when_not_hover": 150,
                 "auto_resize": true,
-                "height": "<#button_size>",
+                "height": "<!button_size>",
                 "icon": {
-                    "height": "<#button_size>",
+                    "height": "<!button_size>",
                     "src": "<!ui>auto.png",
-                    "width": "<#button_size>"
+                    "width": "<!button_size>"
                 },
                 "name": "not_auto",
                 "scale_for_resizing_height": 1,
@@ -40,18 +40,18 @@
                     "src": "{Dialog,auto}"
                 },
                 "type": "button",
-                "width": "<#button_size>",
+                "width": "<!button_size>",
                 "x": "80%",
                 "y": "5%"
             },
             {
                 "auto_resize": true,
-                "height": "<#button_size>",
-                "hidden": true,
+                "height": "<!button_size>",
+                "visibility": false,
                 "icon": {
-                    "height": "<#button_size>",
+                    "height": "<!button_size>",
                     "src": "<!ui>auto.png",
-                    "width": "<#button_size>"
+                    "width": "<!button_size>"
                 },
                 "name": "is_auto",
                 "scale_for_resizing_height": 1,
@@ -62,18 +62,18 @@
                     "src": "{Dialog,auto}"
                 },
                 "type": "button",
-                "width": "<#button_size>",
+                "width": "<!button_size>",
                 "x": "80%",
                 "y": "5%"
             },
             {
                 "alpha_when_not_hover": 150,
                 "auto_resize": true,
-                "height": "<#button_size>",
+                "height": "<!button_size>",
                 "icon": {
-                    "height": "<#button_size>",
+                    "height": "<!button_size>",
                     "src": "<!ui>next.png",
-                    "width": "<#button_size>"
+                    "width": "<!button_size>"
                 },
                 "name": "skip",
                 "scale_for_resizing_height": 1,
@@ -84,7 +84,7 @@
                     "src": "{Dialog,skip}"
                 },
                 "type": "button",
-                "width": "<#button_size>",
+                "width": "<!button_size>",
                 "x": "90%",
                 "y": "5%"
             }
@@ -100,90 +100,90 @@
             {
                 "alpha_when_not_hover": 150,
                 "description": "{Global,mute}",
-                "height": "<#button_size>",
+                "height": "<!button_size>",
                 "name": "mute",
                 "src": "<!ui>mute.png",
                 "type": "button",
-                "width": "<#button_size>",
-                "x": "<#mute_button_x>",
-                "y": "<#button_y>"
+                "width": "<!button_size>",
+                "x": "<!mute_button_x>",
+                "y": "<!button_y>"
             },
             {
                 "alpha_when_not_hover": 150,
                 "description": "{Global,save}",
-                "height": "<#button_size>",
+                "height": "<!button_size>",
                 "name": "save",
                 "src": "<!ui>save.png",
                 "type": "button",
-                "width": "<#button_size>",
-                "x": "<#save_button_x>",
-                "y": "<#button_y>"
+                "width": "<!button_size>",
+                "x": "<!save_button_x>",
+                "y": "<!button_y>"
             },
             {
                 "alpha_when_not_hover": 150,
                 "description": "{Global,reload_file}",
-                "height": "<#button_size>",
+                "height": "<!button_size>",
                 "name": "reload",
                 "src": "<!ui>reload.png",
                 "type": "button",
-                "width": "<#button_size>",
-                "x": "<#reload_button_x>",
-                "y": "<#button_y>"
+                "width": "<!button_size>",
+                "x": "<!reload_button_x>",
+                "y": "<!button_y>"
             },
             {
                 "alpha_when_not_hover": 150,
                 "description": "{DialogCreator,add}",
-                "height": "<#button_size>",
+                "height": "<!button_size>",
                 "name": "add",
                 "src": "<!ui>add.png",
                 "type": "button",
-                "width": "<#button_size>",
-                "x": "<#add_and_next_button_x>",
-                "y": "<#button_y>"
+                "width": "<!button_size>",
+                "x": "<!add_and_next_button_x>",
+                "y": "<!button_y>"
             },
             {
                 "alpha_when_not_hover": 150,
                 "description": "{DialogCreator,next}",
-                "height": "<#button_size>",
+                "height": "<!button_size>",
                 "name": "next",
                 "src": "<!ui>next.png",
                 "type": "button",
-                "width": "<#button_size>",
-                "x": "<#add_and_next_button_x>",
-                "y": "<#button_y>"
+                "width": "<!button_size>",
+                "x": "<!add_and_next_button_x>",
+                "y": "<!button_y>"
             },
             {
                 "alpha_when_not_hover": 150,
                 "description": "{DialogCreator,previous}",
-                "height": "<#button_size>",
+                "height": "<!button_size>",
                 "name": "previous",
                 "src": "<!ui>previous.png",
                 "type": "button",
-                "width": "<#button_size>",
-                "x": "<#previous_button_x>",
-                "y": "<#button_y>"
+                "width": "<!button_size>",
+                "x": "<!previous_button_x>",
+                "y": "<!button_y>"
             },
             {
                 "alpha_when_not_hover": 150,
                 "description": "{DialogCreator,delete}",
-                "height": "<#button_size>",
+                "height": "<!button_size>",
                 "name": "delete",
                 "src": "<!ui>delete.png",
                 "type": "button",
-                "width": "<#button_size>",
-                "x": "<#delete_button_x>",
-                "y": "<#button_y>"
+                "width": "<!button_size>",
+                "x": "<!delete_button_x>",
+                "y": "<!button_y>"
             },
             {
                 "alpha_when_not_hover": 150,
                 "description": "{Global,back_to_main_menu}",
-                "height": "<#button_size>",
+                "height": "<!button_size>",
                 "name": "back",
                 "src": "<!ui>back.png",
                 "type": "button",
-                "width": "<#button_size>",
-                "x": "<#back_button_x>",
-                "y": "<#button_y>"
+                "width": "<!button_size>",
+                "x": "<!back_button_x>",
+                "y": "<!button_y>"
             }
         ],
         "type": "container",
@@ -317,7 +317,7 @@
     },
     "leave_without_saving_warning": {
         "height": "25%",
-        "hidden": true,
+        "visibility": false,
         "items": [
             {
                 "color": "white",

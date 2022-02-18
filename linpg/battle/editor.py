@@ -357,17 +357,11 @@ class AbstractMapEditor(AbstractBattleSystem):
                     self.__decorationsImgContainer.set_visible(True)
             if Controller.get_event("confirm"):
                 if self.__envImgContainer.is_visible() and self.__envImgContainer.item_being_hovered is not None:
-                    self.__object_to_put_down = {
-                        "type": "block",
-                        "id": self.__envImgContainer.item_being_hovered,
-                    }
+                    self.__object_to_put_down = {"type": "block", "id": self.__envImgContainer.item_being_hovered}
                 elif (
                     self.__decorationsImgContainer.is_visible() and self.__decorationsImgContainer.item_being_hovered is not None
                 ):
-                    self.__object_to_put_down = {
-                        "type": "decoration",
-                        "id": self.__decorationsImgContainer.item_being_hovered,
-                    }
+                    self.__object_to_put_down = {"type": "decoration", "id": self.__decorationsImgContainer.item_being_hovered}
         # 画出下方容器的UI
         self.__UIContainerButtonBottom.draw(screen)
         if self.__UIContainerButtonBottom.bottom < screen.get_height():
@@ -425,7 +419,8 @@ class AbstractMapEditor(AbstractBattleSystem):
         else:
             self.__select_pos = tuple()
         """
-        
+
+        # 画出上方按钮
         self.__buttons_container.draw(screen)
         if Controller.get_event("confirm") and len(self.__object_to_put_down) <= 0 and not self.__delete_mode:
             if self.__buttons_container.item_being_hovered == "save":

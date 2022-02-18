@@ -15,10 +15,7 @@ class AbstractInternalMenu(HiddenableSurface):
 
     # 菜单是否被触碰
     def is_hovered(self) -> bool:
-        if self.is_visible() and self._CONTENT is not None:
-            return self._CONTENT.is_hovered()
-        else:
-            return False
+        return self._CONTENT.is_hovered() if self.is_visible() and self._CONTENT is not None else False
 
     # 画出内容
     def draw(self, surface: ImageSurface) -> None:
@@ -57,10 +54,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
             # 如果需要更新语言
             if lang_drop_down.get_selected_item() != Lang.current_language and lang_drop_down.get_selected_item() != "":
                 # 更新语言并保存新的参数到本地
-                Setting.set(
-                    "Language",
-                    value=Lang.get_language_id(lang_drop_down.get_selected_item()),
-                )
+                Setting.set("Language", value=Lang.get_language_id(lang_drop_down.get_selected_item()))
                 Setting.save()
                 Lang.reload()
                 self._initialized = False

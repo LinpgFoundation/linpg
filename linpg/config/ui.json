@@ -47,7 +47,6 @@
             {
                 "auto_resize": true,
                 "height": "<!button_size>",
-                "visibility": false,
                 "icon": {
                     "height": "<!button_size>",
                     "src": "<!ui>auto.png",
@@ -62,6 +61,7 @@
                     "src": "{Dialog,auto}"
                 },
                 "type": "button",
+                "visibility": false,
                 "width": "<!button_size>",
                 "x": "80%",
                 "y": "5%"
@@ -317,7 +317,6 @@
     },
     "leave_without_saving_warning": {
         "height": "25%",
-        "visibility": false,
         "items": [
             {
                 "color": "white",
@@ -391,6 +390,7 @@
         ],
         "src": "<!ui>container.png",
         "type": "container",
+        "visibility": false,
         "width": "50%",
         "x": "center",
         "y": "center"

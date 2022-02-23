@@ -95,8 +95,10 @@ class DisplayController:
     def init(self, flags: int = -1) -> ImageSurface:
         if flags < 0:
             flags = pygame.FULLSCREEN if self.__screen_scale >= 100 else 0
+            if Setting.get("EnableOpenGL") is True:
+                flags |= pygame.OPENGL
         self.__SCREEN_WINDOW = pygame.display.set_mode(
-            self.get_size(), flags, vsync=1 if Setting.get("VerticalSync") is True else 0
+            self.get_size(), flags, vsync=1 if Setting.get("EnableVerticalSync") is True else 0
         )
         self.__SCREEN_WINDOW.set_alpha(None)
         return self.__SCREEN_WINDOW

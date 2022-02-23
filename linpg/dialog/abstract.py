@@ -99,11 +99,7 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
-        return self.get_data_of_parent_game_system() | {
-            "dialog_id": self._dialog_id,
-            "dialog_options": self._dialog_options,
-            "type": self._part,
-        }
+        return self.get_data_of_parent_game_system() | {"dialog_id": self._dialog_id, "type": self._part}
 
     @property
     def dialog_content(self) -> dict:
@@ -131,19 +127,11 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 初始化关键参数
     def _initialize(  # type: ignore[override]
-        self,
-        chapterType: str,
-        chapterId: int,
-        part: str,
-        projectName: Optional[str],
-        dialogId: str = "head",
-        dialog_options: dict = {},
+        self, chapterType: str, chapterId: int, part: str, projectName: Optional[str], dialogId: str = "head"
     ) -> None:
         super()._initialize(chapterType, chapterId, projectName)
         # 对白id
         self._dialog_id = dialogId
-        # 玩家做出的选项
-        self._dialog_options = dialog_options
         # 播放的部分
         self._part = part
 

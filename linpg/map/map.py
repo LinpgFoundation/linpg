@@ -312,7 +312,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         else:
             screen.fill(Colors.BLACK)
         if self.__MAP_SURFACE is not None:
-            screen.blit(self.__MAP_SURFACE, self.get_local_pos())
+            screen.blit(self.__MAP_SURFACE.subsurface((-self.local_x, -self.local_y), screen.get_size()), (0, 0))
         # 返回offset
         return screen_to_move_x, screen_to_move_y
 

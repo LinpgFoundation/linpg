@@ -36,6 +36,8 @@
     "setting": {
         "Antialias": true,
         "DeveloperMode": false,
+        "EnableOpenGL": false,
+        "EnableVerticalSync": false,
         "FPS": 60,
         "Font": "MicrosoftYaHei-2",
         "FontType": "custom",
@@ -51,7 +53,6 @@
             "effects": 100,
             "environment": 100,
             "global_value": 100
-        },
-        "VerticalSync": true
+        }
     }
 }

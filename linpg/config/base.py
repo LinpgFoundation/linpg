@@ -1,6 +1,6 @@
 from __future__ import annotations
 import json
-from typing import Any
+from typing import Any, Optional
 from copy import deepcopy
 from glob import glob
 from ..exception import *
@@ -32,7 +32,7 @@ def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) ->
 
 
 # 根据keys查找被设置对应对应对象为指定值
-def set_value_by_keys(dict_to_check: dict, keys: tuple, value: object, warning: bool = True) -> None:
+def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Optional[object], warning: bool = True) -> None:
     pointer = dict_to_check
     key_range: int = len(keys)
     last_key_index: int = key_range - 1
@@ -72,7 +72,8 @@ class Config:
                 # 使用yaml模块加载配置文件
                 if path.endswith(".yaml") or path.endswith(".yml"):
                     if _YAML_INITIALIZED is True:
-                        return dict(yaml.load(f.read(), Loader=yaml.Loader))
+                        _result: Any = yaml.load(f.read(), Loader=yaml.Loader)
+                        return dict(_result) if _result is not None else {}
                     else:
                         EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.")
                 # 使用json模块加载配置文件
@@ -109,7 +110,9 @@ class Config:
                 if _YAML_INITIALIZED is True:
                     yaml.dump(data, f, allow_unicode=True)
                 else:
-                    EXCEPTION.fatal("You cannot save .yaml file because yaml is not imported successfully.")
+                    EXCEPTION.fatal(
+                        "You cannot save .yaml file because yaml is not imported successfully. Maybe try to reinstall PyYaml and try again."
+                    )
             elif path.endswith(".json"):
                 json.dump(data, f, indent=4, ensure_ascii=False, sort_keys=True)
             else:
@@ -197,7 +200,8 @@ class Template:
 
     @classmethod
     def get(cls, key: str) -> dict:
-        return dict(cls.__TEMPLATE[key])
+        # 返回一个复制，以防止原数据被篡改
+        return deepcopy(cls.__TEMPLATE[key])
 
 
 # 使用引擎开发游戏的用户可以自定义的参数

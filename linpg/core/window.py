@@ -25,6 +25,11 @@ class ConfirmMessageWindow:
     def NO() -> str:
         return Lang.get_text("Global", "no")
 
+    # 更新信息
+    def update_message(self, message: str) -> None:
+        self.__message = message
+
+    # 展示窗口
     def show(self) -> str:
         return str(
             PySimpleGUI.Window(

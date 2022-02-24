@@ -37,6 +37,27 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         )
         # 初始化音量
         self._update_sound_volume()
+        # 玩家做出的选项
+        self.__dialog_options: dict = {}
+
+    # 初始化关键参数
+    def _initialize(  # type: ignore[override]
+        self,
+        chapterType: str,
+        chapterId: int,
+        part: str,
+        projectName: Optional[str],
+        dialogId: str = "head",
+        dialog_options: dict = {},
+    ) -> None:
+        super()._initialize(chapterType, chapterId, part, projectName, dialogId)
+        # 玩家做出的选项
+        self.__dialog_options.clear()
+        self.__dialog_options.update(dialog_options)
+
+    # 返回需要保存数据
+    def _get_data_need_to_save(self) -> dict:
+        return super()._get_data_need_to_save() | {"dialog_options": self.__dialog_options}
 
     # 获取对话框模块（按照父类要求实现）
     def _get_dialog_box(self) -> DialogBox:
@@ -88,7 +109,9 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
     def update_language(self) -> None:
         super().update_language()
         if self.__buttons_container is not None:
-            self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self._FONT_SIZE})
+            self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self._FONT_SIZE * 2})
+            self.__buttons_container.set_visible(self.__dialog_txt_system.is_visible())
+        self.__CHOICE_TEXT = str(Lang.get_texts("Dialog", "choice"))
         self._initialize_pause_menu()
 
     def continue_scene(self, dialog_id: str) -> None:
@@ -194,7 +217,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 is_skip = True
                 Music.fade_out(fade_out_in_ms)
             if is_skip is True:
-                temp_alpha: Optional[int] = BLACK_CURTAIN.get_alpha()
+                temp_alpha = BLACK_CURTAIN.get_alpha()
                 if temp_alpha is not None and temp_alpha < 255:
                     BLACK_CURTAIN.set_alpha(temp_alpha + 5)
                 else:
@@ -244,10 +267,9 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                     self._dialog_options_container.item_being_hovered
                 ]
                 # 记录玩家选项
-                self._dialog_options[self._dialog_id] = {
+                self.__dialog_options[self._dialog_id] = {
                     "id": self._dialog_options_container.item_being_hovered,
                     "target": _option["id"],
-                    "text": _option["text"],
                 }
                 # 更新场景
                 self._update_scene(_option["id"])
@@ -319,13 +341,18 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                             )
                             self.__history_text_surface.blit(
                                 self.__dialog_txt_system.FONT.render(
-                                    str(self._dialog_options[dialogIdTemp]["text"]), (0, 191, 255)
+                                    str(
+                                        self.dialog_content[dialogIdTemp]["next_dialog_id"]["target"][
+                                            int(self.__dialog_options[dialogIdTemp]["id"])
+                                        ]["text"]
+                                    ),
+                                    (0, 191, 255),
                                 ),
                                 (Display.get_width() * 0.15, Display.get_height() * 0.1 + local_y),
                             )
                             local_y += int(self.__dialog_txt_system.FONT.size * 1.5)
                             if (
-                                target_temp := self._dialog_options[dialogIdTemp]["target"]
+                                target_temp := self.__dialog_options[dialogIdTemp]["target"]
                             ) is not None and local_y < Display.get_height():
                                 dialogIdTemp = str(target_temp)
                             else:

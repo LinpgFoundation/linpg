@@ -81,7 +81,7 @@ class BuilderManager(AbstractToolSystem):
         # 复制额外文件
         self.copy(additional_files, source_path_in_target_folder)
         # 通过复制init修复打包工具无法定位包的bug
-        self.copy(tuple([os.path.join(source_folder, "__init__.py")]), source_path_in_target_folder)
+        # self.copy(tuple([os.path.join(source_folder, "__init__.py")]), source_path_in_target_folder)
         # 删除build文件夹
         if remove_building_cache is True:
             self.delete_file_if_exist("build")

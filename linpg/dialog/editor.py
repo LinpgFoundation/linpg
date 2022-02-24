@@ -6,10 +6,10 @@ class DialogEditor(DialogConverter):
         super().__init__()
         # 导航窗口
         self.__dialog_navigation_window: DialogNavigationWindow = DialogNavigationWindow(
-            0, 0, Display.get_width() / 10, Display.get_height() / 10
+            0, Display.get_height() / 10, Display.get_width() / 10, Display.get_height() / 10
         )
         # 加载对话框系统
-        self.__dialog_txt_system: DevDialogBox = DevDialogBox(self._FONT_SIZE)
+        self.__dialog_txt_system: EditableDialogBox = EditableDialogBox(self._FONT_SIZE)
         # 存储视觉小说默认数据的参数
         self._dialog_data_default: dict = {}
         # 是否是父类
@@ -25,18 +25,18 @@ class DialogEditor(DialogConverter):
         # 存放并管理编辑器上方所有按钮的容器
         self.__buttons_ui_container: Optional[GameObjectsDictContainer] = None
         # 未保存数据时警告的窗口
-        self.__no_save_warning: Optional[GameObjectsDictContainer] = None
+        self.__no_save_warning: GameObjectsDictContainer = UI.generate_container("leave_without_saving_warning")
         # 当前选择的背景的名称
         self.__current_select_bg_name: Optional[str] = None
         # 默认不播放音乐
         # self._is_muted = True
 
     # 获取对话框模块（按照父类要求实现）
-    def _get_dialog_box(self) -> DevDialogBox:
+    def _get_dialog_box(self) -> EditableDialogBox:
         return self.__dialog_txt_system
 
     # 加载数据
-    def load(self, chapterType: str, chapterId: int, part: str, projectName: str = None) -> None:
+    def load(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str] = None) -> None:
         self._initialize(chapterType, chapterId, part, projectName)
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_dialog_file_location())
         # 将npc立绘系统设置为开发者模式
@@ -61,16 +61,16 @@ class DialogEditor(DialogConverter):
         self.__UIContainerRight_bg.set("current_select", None)
         # 加载静态背景图片
         for imgPath in glob(os.path.join(self._background_image_folder_path, "*")):
-            self.__UIContainerRight_bg.set(os.path.basename(imgPath), IMG.load(imgPath, (container_width * 0.8, None)))
+            self.__UIContainerRight_bg.set(os.path.basename(imgPath), IMG.load(imgPath, (container_width * 4 / 5, None)))
         # 加载动态背景图片
         if os.path.exists(ASSET.PATH_DICT["movie"]):
             for imgPath in glob(os.path.join(ASSET.PATH_DICT["movie"], "*")):
                 self.__UIContainerRight_bg.set(
-                    os.path.basename(imgPath), IMG.resize(get_preview_of_video(imgPath), (container_width * 0.8, None))
+                    os.path.basename(imgPath), IMG.resize(get_preview_of_video(imgPath), (container_width * 4 / 5, None))
                 )
         # 加载透明图片
         self.__UIContainerRight_bg.set(
-            "<transparent>", get_texture_missing_surface((int(container_width * 0.8), int(container_width * 0.45)))
+            "<transparent>", get_texture_missing_surface((int(container_width * 4 / 5), int(container_width * 0.45)))
         )
         self.__UIContainerRight_bg.distance_between_item = int(Display.get_height() * 0.02)
         self.__current_select_bg_name = None
@@ -143,8 +143,6 @@ class DialogEditor(DialogConverter):
         self.__remove_npc_button = Font.render_description_box(
             CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE, int(self._FONT_SIZE / 5), Colors.WHITE
         )
-        # 未保存离开时的警告
-        self.__no_save_warning = UI.generate_container("leave_without_saving_warning")
         # 切换准备编辑的dialog部分
         self.dialog_key_select = DropDownList(None, button_width * 11, button_y + font_size, font_size)
         for key in self._dialog_data:
@@ -231,6 +229,9 @@ class DialogEditor(DialogConverter):
                 EXCEPTION.fatal("Part name has to be a string, not {}!".format(part))
         # 更新场景
         self._update_scene(self._dialog_id)
+        # 如果有不同，应该立即保存
+        if not self.__no_changes_were_made():
+            self.save_progress()
 
     # 分离需要保存的数据
     def __slipt_the_stuff_need_save(self) -> dict:
@@ -251,10 +252,11 @@ class DialogEditor(DialogConverter):
 
     # 检查是否有任何改动
     def __no_changes_were_made(self) -> bool:
-        if os.path.exists((dialog_file_location_t := self.get_dialog_file_location())):
-            return bool(Config.load(dialog_file_location_t, "dialogs") == self.__slipt_the_stuff_need_save())
-        else:
-            return False
+        return (
+            bool(Config.load(dialog_file_location_t, "dialogs") == self.__slipt_the_stuff_need_save())
+            if os.path.exists((dialog_file_location_t := self.get_dialog_file_location()))
+            else False
+        )
 
     # 更新UI
     def __update_ui(self) -> None:
@@ -343,7 +345,7 @@ class DialogEditor(DialogConverter):
             EXCEPTION.warn('Fail to make a connection between "{0}" and "{1}".'.format(key1, key2))
 
     # 获取上一个对话的ID
-    def __get_last_id(self, child_node: str = None) -> str:
+    def __get_last_id(self, child_node: Optional[str] = None) -> str:
         if child_node is None:
             child_node = self._dialog_id
         if "last_dialog_id" in self._current_dialog_content and self._current_dialog_content["last_dialog_id"] is not None:
@@ -403,7 +405,6 @@ class DialogEditor(DialogConverter):
             self._current_dialog_content["contents"] = self.__dialog_txt_system.get_content()
         # 确保按钮初始化
         assert self.__buttons_ui_container is not None
-        assert self.__no_save_warning is not None
         # 展示按钮
         self.__buttons_ui_container.draw(surface)
         # 展示出当前可供使用的背景音乐

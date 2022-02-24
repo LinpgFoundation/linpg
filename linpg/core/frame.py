@@ -72,7 +72,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
         self._if_update_needed = True
 
     # 角落是否被触碰
-    def __is_corner_hovered(self, side1: str, side2: str = None) -> bool:
+    def __is_corner_hovered(self, side1: str, side2: Optional[str] = None) -> bool:
         if side2 is None:
             return bool(self.__rescale_directions[side1])
         else:

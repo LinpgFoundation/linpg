@@ -22,7 +22,7 @@ class AbstractDialogBox(HiddenableSurface):
 
 
 # 对话开发模块
-class DevDialogBox(AbstractDialogBox):
+class EditableDialogBox(AbstractDialogBox):
     def __init__(self, fontSize: int):
         super().__init__()
         self.__contents: MultipleLinesInputBox = MultipleLinesInputBox(

@@ -11,7 +11,7 @@ class Positions:
         # 检测坐标
         if isinstance(pos, dict):
             return pos["x"], pos["y"]
-        elif isinstance(pos, (list, tuple, numpy.ndarray)):
+        elif isinstance(pos, (Sequence, numpy.ndarray)):
             return pos[0], pos[1]
         else:
             try:
@@ -54,7 +54,7 @@ class Coordinates:
         # 检测坐标
         if isinstance(pos, dict):
             return int(pos["x"]), int(pos["y"])
-        elif isinstance(pos, (tuple, list, numpy.ndarray)):
+        elif isinstance(pos, (Sequence, numpy.ndarray)):
             return int(pos[0]), int(pos[1])
         else:
             try:

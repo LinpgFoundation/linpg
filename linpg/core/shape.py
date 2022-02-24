@@ -8,6 +8,10 @@ class Square(GameObject2d):
         self.__min_width: int = 0
         self.__max_width: int = -1
 
+    # 高度（应与宽度一致），子类如果是Rect必须重写
+    def get_height(self) -> int:
+        return self.__width
+
     # 宽度
     def get_width(self) -> int:
         return self.__width

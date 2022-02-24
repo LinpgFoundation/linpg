@@ -64,7 +64,7 @@ class SoundManagement(AbstractSoundManager):
 
 
 # 获取视频的音频 （返回路径）
-def _split_audio_from_video(input_path: str, audio_type: object = "ogg") -> str:
+def _split_audio_from_video(input_path: str, audio_type: str = "ogg") -> str:
     # 产生不重名的output文件名称
     output_file_name_t: str = os.path.basename(input_path).replace(".", "_") + "{0}.{1}"
     output_file_name: str

@@ -7,25 +7,32 @@ class UiGenerator:
     __UI_TEMPLATES: dict = Config.load_internal_file("ui.json")
     # 加载自定义的ui数据（如果存在）
     if len(path := Config.resolve_path(os.path.join("Data", "ui"))) > 0:
-        __UI_TEMPLATES.update(Config.load_file(path))
+        for key, value in Config.load_file(path).items():
+            if key not in __UI_TEMPLATES:
+                __UI_TEMPLATES[key] = {}
+            __UI_TEMPLATES[key].update(deepcopy(value))
+        del key, value, path
 
     # 尝试转换特殊的string
     @classmethod
-    def __try_convert_special_string_to_number(cls, value: str, value_in_case_percentage: int, custom_values: dict) -> int:
+    def __try_convert_string_to_number(cls, value: str, value_in_case_percentage: int, custom_values: dict) -> int:
+        # 如果是百分比
         if value.endswith("%"):
             try:
                 return int(convert_percentage(value) * value_in_case_percentage)
             except Exception:
                 EXCEPTION.fatal('Cannot convert "{}" because it is not a valid percentage.'.format(value))
-        elif value.startswith("<#") and value.endswith(">"):
-            the_value = custom_values[value.removeprefix("<#").removesuffix(">")]
+        # 如果是需要从lookup表里寻找的参数
+        elif value.startswith("<!") and value.endswith(">"):
+            the_value = custom_values[value.removeprefix("<!").removesuffix(">")]
             if isinstance(the_value, str):
-                return cls.__try_convert_special_string_to_number(the_value, value_in_case_percentage, custom_values)
+                return cls.__try_convert_string_to_number(the_value, value_in_case_percentage, custom_values)
             else:
                 try:
                     return int(the_value)
                 except Exception:
                     EXCEPTION.fatal('Cannot convert string "{}".'.format(value))
+        # 尝试将
         else:
             try:
                 return int(value)
@@ -45,7 +52,7 @@ class UiGenerator:
             return int(item[key])
         elif not isinstance(item[key], int):
             if isinstance(item[key], str):
-                return cls.__try_convert_special_string_to_number(item[key], value_in_case_percentage, custom_values)
+                return cls.__try_convert_string_to_number(item[key], value_in_case_percentage, custom_values)
             else:
                 try:
                     return int(item[key])
@@ -69,7 +76,7 @@ class UiGenerator:
             if item[key] == "center":
                 return value_in_case_center
             elif isinstance(item[key], str):
-                return cls.__try_convert_special_string_to_number(item[key], value_in_case_percentage, custom_values)
+                return cls.__try_convert_string_to_number(item[key], value_in_case_percentage, custom_values)
             else:
                 try:
                     return int(item[key])
@@ -80,7 +87,7 @@ class UiGenerator:
 
     # 转换文字
     @staticmethod
-    def __convert_text(text: str) -> str:
+    def __load_text(text: str) -> str:
         final_text_list: list = []
         text_index: int = 0
         find_close_bracket: bool = False
@@ -129,8 +136,8 @@ class UiGenerator:
             data["name"] if "name" in data else "",
         )
         # 加载数据
-        if "hidden" in data:
-            container_t.set_visible(not data["hidden"])
+        if "visibility" in data:
+            container_t.set_visible(data["visibility"])
         if "items" in data:
             for each_item in data["items"]:
                 item_r = cls.__generate(each_item, custom_values, container_t.get_width(), container_t.get_height())
@@ -169,7 +176,7 @@ class UiGenerator:
                 if "src" not in data:
                     data["src"] = None
                 elif data["src"] is not None:
-                    data["src"] = cls.__convert_text(str(data["src"]))
+                    data["src"] = cls.__load_text(str(data["src"]))
                 # 生成文字图层
                 if data["type"] == "text" or data["type"] == "static_text":
                     item_t = StaticTextSurface(data["src"], 0, 0, font_size, data["color"], data["bold"], data["italic"])
@@ -193,7 +200,7 @@ class UiGenerator:
                     if "text" in data:
                         item_t.set_text(
                             ButtonComponent.text(
-                                cls.__convert_text(data["text"]["src"]),
+                                cls.__load_text(data["text"]["src"]),
                                 object_height / 2,
                                 data["text"]["color"],
                                 alpha_when_not_hover=data["alpha_when_not_hover"],
@@ -213,15 +220,14 @@ class UiGenerator:
                     if "auto_resize" in data:
                         item_t.set_auto_resize(data["auto_resize"])
                     if "description" in data:
-                        item_t.set_description(cls.__convert_text(data["description"]))
+                        item_t.set_description(cls.__load_text(data["description"]))
                     if not "name" in data:
                         EXCEPTION.fatal("You have to set a name for button type.")
                 elif data["type"] == "progress_bar_adjuster":
                     # 确认按钮存在
-                    try:
-                        assert "indicator" in data
-                    except AssertionError:
+                    if "indicator" not in data:
                         EXCEPTION.fatal("You need to set a indicator for progress_bar_adjuster!")
+                    # 设置模式
                     if "mode" not in data:
                         data["mode"] = "horizontal"
                     # 生成ProgressBarAdjuster
@@ -246,9 +252,9 @@ class UiGenerator:
             # 如果有名字，则以tag的形式进行标注
             item_t.tag = data["name"] if "name" in data else ""
             # 透明度
-            if "hidden" in data:
+            if "visibility" in data:
                 if isinstance(item_t, HiddenableSurface):
-                    item_t.set_visible(not data["hidden"])
+                    item_t.set_visible(data["visibility"])
                 else:
                     EXCEPTION.fatal("This is not a subtype of HiddenableSurface!")
             # 设置坐标

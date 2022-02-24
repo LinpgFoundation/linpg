@@ -1,6 +1,6 @@
 from .dialogbox import *
 
-
+# 对话模块Node
 class DialogNode(Button):
     def __init__(self, key_name: str, font_size: int, next_keys: list[str], tag: str = ""):
         self.__key_name: str = key_name
@@ -19,6 +19,7 @@ class DialogNode(Button):
         return super().display(surface)
 
 
+# 对话key向导窗口
 class DialogNavigationWindow(AbstractFrame):
     def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         super().__init__(x, y, width, height, tag=tag)

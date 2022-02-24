@@ -36,10 +36,7 @@ def _compile(path: str) -> None:
         if path.endswith(".py") and not _if_ignore(path):
             setup(
                 ext_modules=cythonize(
-                    path,
-                    show_all_warnings=_show_all_warnings,
-                    annotate=_generate_html,
-                    language_level=_language_level,
+                    path, show_all_warnings=_show_all_warnings, annotate=_generate_html, language_level=_language_level
                 )
             )
             # 删除c文件

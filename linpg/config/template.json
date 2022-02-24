@@ -36,10 +36,12 @@
     "setting": {
         "Antialias": true,
         "DeveloperMode": false,
+        "EnableOpenGL": false,
+        "EnableVerticalSync": false,
         "FPS": 60,
         "Font": "MicrosoftYaHei-2",
         "FontType": "custom",
-        "Language": null,
+        "Language": "English",
         "LowMemoryMode": false,
         "MouseIconWidth": 18,
         "MouseMoveSpeed": 30,
@@ -51,7 +53,6 @@
             "effects": 100,
             "environment": 100,
             "global_value": 100
-        },
-        "VerticalSync": true
+        }
     }
 }

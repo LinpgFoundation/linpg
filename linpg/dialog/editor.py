@@ -36,7 +36,7 @@ class DialogEditor(DialogConverter):
         return self.__dialog_txt_system
 
     # 加载数据
-    def load(self, chapterType: str, chapterId: int, part: str, projectName: str = None) -> None:
+    def load(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str] = None) -> None:
         self._initialize(chapterType, chapterId, part, projectName)
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_dialog_file_location())
         # 将npc立绘系统设置为开发者模式
@@ -345,7 +345,7 @@ class DialogEditor(DialogConverter):
             EXCEPTION.warn('Fail to make a connection between "{0}" and "{1}".'.format(key1, key2))
 
     # 获取上一个对话的ID
-    def __get_last_id(self, child_node: str = None) -> str:
+    def __get_last_id(self, child_node: Optional[str] = None) -> str:
         if child_node is None:
             child_node = self._dialog_id
         if "last_dialog_id" in self._current_dialog_content and self._current_dialog_content["last_dialog_id"] is not None:

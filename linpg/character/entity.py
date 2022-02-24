@@ -570,7 +570,7 @@ class Entity(Position):
     """画出角色"""
     # 角色画到surface上
     def __blit_entity_img(
-        self, surface: ImageSurface, MAP_POINTER: MapObject, action: str = None, pos: tuple = tuple(), alpha: int = 155
+        self, surface: ImageSurface, MAP_POINTER: MapObject, action: Optional[str] = None, pos: tuple = tuple(), alpha: int = 155
     ) -> None:
         # 如果没有指定action,则默认使用当前的动作
         if action is None:

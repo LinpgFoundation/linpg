@@ -32,7 +32,7 @@ def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) ->
 
 
 # 根据keys查找被设置对应对应对象为指定值
-def set_value_by_keys(dict_to_check: dict, keys: tuple, value: object, warning: bool = True) -> None:
+def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Optional[object], warning: bool = True) -> None:
     pointer = dict_to_check
     key_range: int = len(keys)
     last_key_index: int = key_range - 1

@@ -42,7 +42,7 @@ class AbstractMapEditor(AbstractBattleSystem):
         EXCEPTION.fatal("_load_characters_data()", 1)
 
     # 初始化
-    def load(self, screen: ImageSurface, chapterType: str, chapterId: int, projectName: str = None) -> None:
+    def load(self, screen: ImageSurface, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
         self._initialize(chapterType, chapterId, projectName)
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_map_file_location())
         # 载入地图数据

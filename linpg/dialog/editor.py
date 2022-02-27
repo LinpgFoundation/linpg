@@ -43,7 +43,7 @@ class DialogEditor(DialogConverter):
         self._npc_manager.dev_mode = True
         # 加载容器
         container_width = int(Display.get_width() * 2 / 10)
-        self.__UIContainerRightImage = IMG.load("<!ui>container.png", (container_width, Display.get_height()))
+        self.__UIContainerRightImage = RawImg.load("<!ui>container.png", (container_width, Display.get_height()))
         # 右侧容器尺寸
         RightContainerRect: Rectangle = Rectangle(
             int(container_width * 0.075),
@@ -57,16 +57,16 @@ class DialogEditor(DialogConverter):
         )
         self.__UIContainerRight_bg.set_scroll_bar_pos("right")
         # 加载背景图片
-        self.background_deselect = IMG.load("<!ui>deselect.png")
+        self.background_deselect = RawImg.load("<!ui>deselect.png")
         self.__UIContainerRight_bg.set("current_select", None)
         # 加载静态背景图片
         for imgPath in glob(os.path.join(self._background_image_folder_path, "*")):
-            self.__UIContainerRight_bg.set(os.path.basename(imgPath), IMG.load(imgPath, (container_width * 4 / 5, None)))
+            self.__UIContainerRight_bg.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 4 / 5, None)))
         # 加载动态背景图片
         if os.path.exists(ASSET.PATH_DICT["movie"]):
             for imgPath in glob(os.path.join(ASSET.PATH_DICT["movie"], "*")):
                 self.__UIContainerRight_bg.set(
-                    os.path.basename(imgPath), IMG.resize(get_preview_of_video(imgPath), (container_width * 4 / 5, None))
+                    os.path.basename(imgPath), RawImg.resize(get_preview_of_video(imgPath), (container_width * 4 / 5, None))
                 )
         # 加载透明图片
         self.__UIContainerRight_bg.set(
@@ -82,7 +82,7 @@ class DialogEditor(DialogConverter):
         self.__UIContainerRight_npc.set_scroll_bar_pos("right")
         # 加载npc立绘
         for imgPath in glob(os.path.join(self._npc_manager.image_folder_path, "*")):
-            self.__UIContainerRight_npc.set(os.path.basename(imgPath), IMG.load(imgPath, (container_width * 0.8, None)))
+            self.__UIContainerRight_npc.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 0.8, None)))
         self.__UIContainerRight_npc.set_visible(False)
         self.__UIContainerRight_npc.distance_between_item = 0
         # 容器按钮
@@ -168,7 +168,7 @@ class DialogEditor(DialogConverter):
             self.__current_select_bg_name = image_name
             current_select_bg = self.__UIContainerRight_bg.get("current_select")
             self.__current_select_bg_copy = current_select_bg.copy()
-            current_select_bg.blit(IMG.smoothly_resize(self.background_deselect, current_select_bg.get_size()), (0, 0))
+            current_select_bg.blit(RawImg.smoothly_resize(self.background_deselect, current_select_bg.get_size()), (0, 0))
         else:
             if self.__current_select_bg_name is not None:
                 self.__UIContainerRight_bg.set(self.__current_select_bg_name, self.__current_select_bg_copy)

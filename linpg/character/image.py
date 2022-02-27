@@ -14,14 +14,14 @@ class EntityGetHurtImage(Square):
         self.add(self_type)
 
     def draw(self, screen: ImageSurface, characterType: str) -> None:  # type: ignore[override]
-        _image = IMG.resize(self.__CHARACTERS_GET_HURT_IMAGE_DICT[characterType], self.size)
+        _image = RawImg.resize(self.__CHARACTERS_GET_HURT_IMAGE_DICT[characterType], self.size)
         if self.alpha != 255:
             _image.set_alpha(self.alpha)
         screen.blit(_image, self.pos)
 
     def add(self, characterType: str) -> None:
         if characterType not in self.__CHARACTERS_GET_HURT_IMAGE_DICT:
-            self.__CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = IMG.quickly_load(
+            self.__CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = RawImg.quickly_load(
                 os.path.join(self.__IMAGE_FOLDER_PATH, "{}_hurt.png".format(characterType))
             )
 

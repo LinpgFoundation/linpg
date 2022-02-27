@@ -62,7 +62,7 @@ class DisplayController:
     # 设置窗口图标
     @staticmethod
     def set_icon(path: str) -> None:
-        pygame.display.set_icon(IMG.quickly_load(path, False))
+        pygame.display.set_icon(RawImg.quickly_load(path, False))
 
     # 窗口尺寸
     @property

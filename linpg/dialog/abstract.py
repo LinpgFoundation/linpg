@@ -241,7 +241,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         )
         for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
             optionButton: Button = Button.load("<!ui>option.png", (0, 0), (0, 0))
-            optionButton.set_hover_img(IMG.quickly_load("<!ui>option_selected.png"))
+            optionButton.set_hover_img(RawImg.quickly_load("<!ui>option_selected.png"))
             optionButton.set_auto_resize(True)
             optionButton.set_text(
                 ButtonComponent.text(

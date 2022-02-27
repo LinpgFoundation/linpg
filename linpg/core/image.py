@@ -3,7 +3,7 @@ from .text import *
 # 动态图形类
 class DynamicImage(AbstractImageSurface):
     def __init__(self, img: PoI, x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = ""):
-        super().__init__(IMG.quickly_load(img), x, y, width, height, tag)
+        super().__init__(RawImg.quickly_load(img), x, y, width, height, tag)
         self.__processed_img: ImageSurface = NULL_SURFACE
 
     # 返回一个复制
@@ -18,7 +18,7 @@ class DynamicImage(AbstractImageSurface):
 
     # 反转
     def flip(self, vertical: bool = False, horizontal: bool = False) -> None:
-        self.img = IMG.flip(self.img, vertical, horizontal)
+        self.img = RawImg.flip(self.img, vertical, horizontal)
 
     # 设置透明度
     def set_alpha(self, value: int) -> None:
@@ -41,16 +41,16 @@ class DynamicImage(AbstractImageSurface):
         if self.is_visible():
             if not Setting.low_memory_mode:
                 if self.__processed_img is NULL_SURFACE or self.__processed_img.get_size() != self.size:
-                    self.__processed_img = IMG.smoothly_resize(self.img, self.size)
+                    self.__processed_img = RawImg.smoothly_resize(self.img, self.size)
                 surface.blit(self.__processed_img, Coordinates.add(self.pos, offSet))
             else:
-                surface.blit(IMG.resize(self.img, self.size), Coordinates.add(self.pos, offSet))
+                surface.blit(RawImg.resize(self.img, self.size), Coordinates.add(self.pos, offSet))
 
 
 # 用于静态图片的surface
 class StaticImage(AdvancedAbstractCachingImageSurface):
     def __init__(self, img: PoI, x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = ""):
-        super().__init__(IMG.quickly_load(img), x, y, width, height, tag)
+        super().__init__(RawImg.quickly_load(img), x, y, width, height, tag)
         self.__is_flipped_horizontally: bool = False
         self.__is_flipped_vertically: bool = False
         self.__crop_rect: Optional[Rectangle] = None
@@ -109,10 +109,10 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
     # 更新图片
     def _update_img(self) -> None:
         # 改变尺寸
-        imgTmp = IMG.smoothly_resize(self.img, self.size) if Setting.antialias is True else IMG.resize(self.img, self.size)
+        imgTmp = RawImg.smoothly_resize(self.img, self.size) if Setting.antialias is True else RawImg.resize(self.img, self.size)
         # 翻转图片
         if self.__is_flipped_horizontally is True or self.__is_flipped_vertically is True:
-            imgTmp = IMG.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)
+            imgTmp = RawImg.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)
         # 获取切割rect
         rect: Rectangle = convert_rect(imgTmp.get_bounding_rect())
         if self.width != rect.width or self.height != rect.height or self.__crop_rect is not None:

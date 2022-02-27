@@ -11,10 +11,7 @@ class WeatherSystem:
     # 初始化
     def init(self, weather: str, entityNum: int = 50) -> None:
         self.__initialized = True
-        self.__img_list = [
-            IMG.load(imgPath)
-            for imgPath in glob(os.path.join(ASSET.get_internal_environment_image_path("weather"), weather, "*.png"))
-        ]
+        self.__img_list = list(Sprite.load(ASSET.get_internal_weather_image_path(weather)).values())
         self.__items = tuple(
             [
                 Snow(
@@ -40,7 +37,7 @@ class WeatherSystem:
         for item in self.__items:
             if 0 <= item.x < surface.get_width() and 0 <= item.y < surface.get_height():
                 surface.blit(
-                    IMG.resize(self.__img_list[item.imgId], (perBlockWidth / item.size, perBlockWidth / item.size)), item.pos
+                    RawImg.resize(self.__img_list[item.imgId], (perBlockWidth / item.size, perBlockWidth / item.size)), item.pos
                 )
             item.move(self.__speed_unit)
             if item.x <= 0 or item.y >= surface.get_height():

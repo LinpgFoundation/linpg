@@ -106,7 +106,7 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__envImgContainer.set_size(container_width * 0.85, screen.get_height() * 0.85)
         for imgPath in glob(os.path.join(ASSET.get_internal_environment_image_path("block"), "*.png")):
             self.__envImgContainer.set(
-                os.path.basename(imgPath).replace(".png", ""), IMG.load(imgPath, (self._MAP.block_width / 3, None))
+                os.path.basename(imgPath).replace(".png", ""), RawImg.load(imgPath, (self._MAP.block_width / 3, None))
             )
         self.__envImgContainer.set_item_per_line(4)
         self.__envImgContainer.set_scroll_bar_pos("right")
@@ -117,7 +117,7 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__decorationsImgContainer.set_size(container_width * 0.85, screen.get_height() * 0.85)
         for imgPath in glob(os.path.join(ASSET.get_internal_environment_image_path("decoration"), "*.png")):
             self.__decorationsImgContainer.set(
-                os.path.basename(imgPath).replace(".png", ""), IMG.load(imgPath, (self._MAP.block_width / 3, None))
+                os.path.basename(imgPath).replace(".png", ""), RawImg.load(imgPath, (self._MAP.block_width / 3, None))
             )
         self.__decorationsImgContainer.set_item_per_line(4)
         self.__decorationsImgContainer.set_scroll_bar_pos("right")
@@ -150,7 +150,9 @@ class AbstractMapEditor(AbstractBattleSystem):
         temp_image: ImageSurface
         for imgPath in glob(os.path.join("Assets", "image", "character", "*")):
             img_name = os.path.basename(imgPath)
-            temp_image = IMG.load(os.path.join(imgPath, "wait", "{}_wait_0.png".format(img_name)), (None, container_height * 1.5))
+            temp_image = RawImg.load(
+                os.path.join(imgPath, "wait", "{}_wait_0.png".format(img_name)), (None, container_height * 1.5)
+            )
             self.__friendlyCharactersImagesContainer.set(img_name, temp_image.subsurface(temp_image.get_bounding_rect()))
         self.__friendlyCharactersImagesContainer.set_scroll_bar_pos("bottom")
         self.__friendlyCharactersImagesContainer.set_visible(True)
@@ -160,15 +162,17 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__hostileCharactersImagesContainer.set_size(container_width * 0.95, container_height * 0.7)
         for imgPath in glob(os.path.join("Assets", "image", "sangvisFerri", "*")):
             img_name = os.path.basename(imgPath)
-            temp_image = IMG.load(os.path.join(imgPath, "wait", "{}_wait_0.png".format(img_name)), (None, container_height * 1.5))
+            temp_image = RawImg.load(
+                os.path.join(imgPath, "wait", "{}_wait_0.png".format(img_name)), (None, container_height * 1.5)
+            )
             self.__hostileCharactersImagesContainer.set(img_name, temp_image.subsurface(temp_image.get_bounding_rect()))
         self.__hostileCharactersImagesContainer.set_scroll_bar_pos("bottom")
         self.__hostileCharactersImagesContainer.set_visible(False)
         self.__hostileCharactersImagesContainer.distance_between_item = panding
         # 绿色方块/方块标准
-        self.__range_green = IMG.load("<!ui>range_green.png", (self._MAP.block_width * 0.8, None))
+        self.__range_green = RawImg.load("<!ui>range_green.png", (self._MAP.block_width * 0.8, None))
         self.__range_green.set_alpha(150)
-        self.__range_red = IMG.load("<!ui>range_red.png", (self._MAP.block_width * 0.8, None))
+        self.__range_red = RawImg.load("<!ui>range_red.png", (self._MAP.block_width * 0.8, None))
         self.__range_red.set_alpha(150)
         self.__object_to_put_down.clear()
         # 设置按钮位置

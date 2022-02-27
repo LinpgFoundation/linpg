@@ -13,38 +13,43 @@ class JoystickController:
         self.update()
 
     # 手柄是否初始化
-    def get_init(self) -> bool:
-        return self.__input.get_init() if self.is_active() is True else False  # type: ignore
+    @classmethod
+    def get_init(cls) -> bool:
+        return cls.__input.get_init() if cls.is_active() is True else False  # type: ignore
 
     # 获取该按钮的详情
-    def get_button(self, buttonId: int) -> bool:
-        return self.__input.get_button(buttonId) if self.get_init() is True else False  # type: ignore
+    @classmethod
+    def get_button(cls, buttonId: int) -> bool:
+        return cls.__input.get_button(buttonId) if cls.get_init() is True else False  # type: ignore
 
-    def get_axis(self, buttonId: int) -> float:
-        return round(self.__input.get_axis(buttonId), 1) if self.get_init() is True else 0.0  # type: ignore
+    @classmethod
+    def get_axis(cls, buttonId: int) -> float:
+        return round(cls.__input.get_axis(buttonId), 1) if cls.get_init() is True else 0.0  # type: ignore
 
     # 是否启动
-    def is_active(self) -> bool:
-        return self.__input is not None
+    @classmethod
+    def is_active(cls) -> bool:
+        return cls.__input is not None
 
     # 更新设备
-    def update(self) -> None:
+    @classmethod
+    def update(cls) -> None:
         # 有新的手柄连接了
-        if self.__input is None:
+        if cls.__input is None:
             if pygame.joystick.get_count() > 0:
-                self.__input = pygame.joystick.Joystick(0)
-                self.__input.init()
+                cls.__input = pygame.joystick.Joystick(0)
+                cls.__input.init()
                 EXCEPTION.inform("A joystick is detected and initialized successfully.")
         # 当目前有手柄在连接
         else:
             # 失去与当前手柄的连接
             if pygame.joystick.get_count() == 0:
-                self.__input = None
+                cls.__input = None
                 EXCEPTION.inform("Lost connection with the joystick.")
             # 有新的手柄
-            elif self.__input.get_id() != pygame.joystick.Joystick(0).get_id():
-                self.__input = pygame.joystick.Joystick(0)
-                self.__input.init()
+            elif cls.__input.get_id() != pygame.joystick.Joystick(0).get_id():
+                cls.__input = pygame.joystick.Joystick(0)
+                cls.__input.init()
                 EXCEPTION.inform("Joystick changed! New joystick is detected and initialized successfully.")
 
 
@@ -69,7 +74,7 @@ class MouseController:
         custom: bool = False
         if custom:
             pygame.mouse.set_visible(False)
-            self.__icon_img = IMG.load(
+            self.__icon_img = RawImg.load(
                 "<!ui>mouse_icon.png", (int(Setting.get("MouseIconWidth")), int(Setting.get("MouseIconWidth") * 1.3))
             )
         self.update()

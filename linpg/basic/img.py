@@ -1,4 +1,4 @@
-from ..asset import ASSET
+from linpgassets import ASSET  # type: ignore
 from .draw import *
 
 # 获取材质缺失的临时警示材质
@@ -23,7 +23,8 @@ def get_texture_missing_surface(size: tuple[int, int]) -> ImageSurface:
 NULL_SURFACE: ImageSurface = pygame.surface.Surface((0, 0))
 
 # 源图形处理
-class RawImageManafer:
+class RawImg:
+
     # 识快速加载图片
     @staticmethod
     def quickly_load(path: PoI, convert_alpha: bool = True) -> ImageSurface:
@@ -54,14 +55,15 @@ class RawImageManafer:
             EXCEPTION.fatal("The path '{}' has to be a string or at least a ImageSurface!".format(path))
 
     # 图片加载模块：接收图片路径,长,高,返回对应图片
-    def load(self, path: PoI, size: tuple = tuple(), alpha: int = 255, convert_alpha: bool = True) -> ImageSurface:
+    @classmethod
+    def load(cls, path: PoI, size: tuple = tuple(), alpha: int = 255, convert_alpha: bool = True) -> ImageSurface:
         # 加载图片
-        img: ImageSurface = IMG.quickly_load(path, convert_alpha)
+        img: ImageSurface = RawImg.quickly_load(path, convert_alpha)
         # 根据参数编辑图片
         if alpha < 255:
             img.set_alpha(alpha)
         # 如果没有给size,则直接返回Surface
-        return img if len(size) == 0 else self.smoothly_resize(img, size) if Setting.antialias is True else self.resize(img, size)
+        return img if len(size) == 0 else cls.smoothly_resize(img, size) if Setting.antialias is True else cls.resize(img, size)
 
     # 重新编辑尺寸
     @staticmethod
@@ -127,5 +129,7 @@ class RawImageManafer:
     def fix(path: str) -> None:
         ImageFixer.fix(path)
 
-
-IMG = RawImageManafer()
+    # 保存图片
+    @staticmethod
+    def save(surface: ImageSurface, path: str) -> None:
+        pygame.image.save(surface, path)

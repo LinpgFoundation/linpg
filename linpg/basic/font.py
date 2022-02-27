@@ -98,41 +98,46 @@ class FontGenerator:
 
 
 # 文字渲染器管理模块
-class FontManager:
-    def __init__(self) -> None:
-        # 引擎标准文件渲染器
-        self.__LINPG_GLOBAL_FONTS: dict[str, FontGenerator] = {}
-        # 上一次render的字体
-        self.__LINPG_LAST_FONT: FontGenerator = FontGenerator()
+class Font:
+
+    # 引擎标准文件渲染器
+    __LINPG_GLOBAL_FONTS: dict[str, FontGenerator] = {}
+    # 上一次render的字体
+    __LINPG_LAST_FONT: FontGenerator = FontGenerator()
 
     # 设置全局文字
-    def set_global_font(self, key: str, size: int, ifBold: bool = False, ifItalic: bool = False) -> None:
+    @classmethod
+    def set_global_font(cls, key: str, size: int, ifBold: bool = False, ifItalic: bool = False) -> None:
         if isinstance(size, int) and size > 0:
-            if key not in self.__LINPG_GLOBAL_FONTS:
-                self.__LINPG_GLOBAL_FONTS[key] = FontGenerator()
-            self.__LINPG_GLOBAL_FONTS[key].update(size, ifBold, ifItalic)
+            if key not in cls.__LINPG_GLOBAL_FONTS:
+                cls.__LINPG_GLOBAL_FONTS[key] = FontGenerator()
+            cls.__LINPG_GLOBAL_FONTS[key].update(size, ifBold, ifItalic)
         else:
             EXCEPTION.fatal("Font size must be positive interger not {}!".format(size))
 
     # 获取全局文字
-    def get_global_font(self, key: str) -> FontGenerator:
+    @classmethod
+    def get_global_font(cls, key: str) -> FontGenerator:
         try:
-            return self.__LINPG_GLOBAL_FONTS[key]
+            return cls.__LINPG_GLOBAL_FONTS[key]
         except:
             EXCEPTION.fatal('You did not set any font named "{}".'.format(key))
 
     # 获取全局文字
-    def get_global_font_size(self, key: str) -> int:
-        return self.get_global_font(key).size
+    @classmethod
+    def get_global_font_size(cls, key: str) -> int:
+        return cls.get_global_font(key).size
 
     # 获取全局文字
-    def render_global_font(self, key: str, txt: str, color: color_liked, background_color: color_liked = None) -> ImageSurface:
-        return self.get_global_font(key).render(txt, color, background_color)
+    @classmethod
+    def render_global_font(cls, key: str, txt: str, color: color_liked, background_color: color_liked = None) -> ImageSurface:
+        return cls.get_global_font(key).render(txt, color, background_color)
 
     # 删除全局文字
-    def remove_global_font(self, key: str) -> bool:
+    @classmethod
+    def remove_global_font(cls, key: str) -> bool:
         try:
-            del self.__LINPG_GLOBAL_FONTS[key]
+            del cls.__LINPG_GLOBAL_FONTS[key]
             return True
         except KeyError:
             EXCEPTION.warn('Cannot find font named "{}" when trying to remove the font.'.format(key))
@@ -146,8 +151,9 @@ class FontManager:
         return new_font_t
 
     # 文字制作模块：接受文字，颜色，文字大小，文字样式，模式，返回制作完的文字
+    @classmethod
     def render(
-        self,
+        cls,
         txt: strint,
         color: color_liked,
         size: int_f,
@@ -156,11 +162,12 @@ class FontManager:
         background_color: color_liked = None,
         with_bounding: bool = False,
     ) -> ImageSurface:
-        self.__LINPG_LAST_FONT.check_for_update(int(size), ifBold, ifItalic)
-        return self.__LINPG_LAST_FONT.render(txt, color, background_color, with_bounding)
+        cls.__LINPG_LAST_FONT.check_for_update(int(size), ifBold, ifItalic)
+        return cls.__LINPG_LAST_FONT.render(txt, color, background_color, with_bounding)
 
+    @classmethod
     def render_description_box(
-        self,
+        cls,
         txt: strint,
         color: color_liked,
         size: int,
@@ -171,7 +178,7 @@ class FontManager:
         outline_color: color_liked = None,
         thickness: int = 2,
     ) -> ImageSurface:
-        font_surface = self.render(txt, color, size, ifBold, ifItalic, with_bounding=True)
+        font_surface = cls.render(txt, color, size, ifBold, ifItalic, with_bounding=True)
         des_surface = Colors.surface(
             (font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2), background_color
         )
@@ -183,6 +190,3 @@ class FontManager:
         )
         des_surface.blit(font_surface, (panding, panding))
         return des_surface
-
-
-Font: FontManager = FontManager()

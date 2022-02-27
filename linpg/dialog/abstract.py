@@ -12,7 +12,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._npc_manager: CharacterImageManager = CharacterImageManager()
         # 黑色Void帘幕
         self._black_bg = StaticImage(
-            Colors.surface(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height()
+            Surface.colored(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height()
         )
         # 对话文件路径
         self._dialog_folder_path: str = "Data"
@@ -188,7 +188,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                             "Cannot find a background image or video file called '{}'.".format(self.__background_image_name)
                         )
                 elif self._npc_manager.dev_mode is True:
-                    self.__background_image_surface = StaticImage(get_texture_missing_surface(Display.get_size()), 0, 0)
+                    self.__background_image_surface = StaticImage(Surface.texture_is_missing(Display.get_size()), 0, 0)
                 else:
                     self.__background_image_surface = NULL_STATIC_IMAGE
             else:

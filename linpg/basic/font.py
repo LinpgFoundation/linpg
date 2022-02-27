@@ -179,7 +179,7 @@ class Font:
         thickness: int = 2,
     ) -> ImageSurface:
         font_surface = cls.render(txt, color, size, ifBold, ifItalic, with_bounding=True)
-        des_surface = Colors.surface(
+        des_surface = Surface.colored(
             (font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2), background_color
         )
         Draw.rect(

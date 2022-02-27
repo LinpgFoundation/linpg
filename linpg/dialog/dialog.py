@@ -20,7 +20,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             self._enable_pause_menu()
         # 是否要显示历史对白页面
         self.__is_showing_history: bool = False
-        self.__history_bg_surface: ImageSurface = Colors.surface(Display.get_size(), Colors.BLACK)
+        self.__history_bg_surface: ImageSurface = Surface.colored(Display.get_size(), Colors.BLACK)
         self.__history_bg_surface.set_alpha(150)
         self.__history_text_surface: Optional[ImageSurface] = None
         self.__history_surface_local_y: int = 0
@@ -200,7 +200,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             bar_height, surface.get_height() - bar_height * 2, surface.get_width() - bar_height * 2, bar_height, "white"
         )
         # 生成黑色帘幕
-        BLACK_CURTAIN: ImageSurface = Colors.surface(surface.get_size(), Colors.BLACK)
+        BLACK_CURTAIN: ImageSurface = Surface.colored(surface.get_size(), Colors.BLACK)
         BLACK_CURTAIN.set_alpha(0)
         # 创建视频文件
         VIDEO: VideoPlayer = VideoPlayer(
@@ -300,7 +300,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 self.__history_text_surface = None
                 self.__history_surface_local_y -= int(Display.get_height() * 0.1)
             if self.__history_text_surface is None:
-                self.__history_text_surface = new_transparent_surface(Display.get_size())
+                self.__history_text_surface = Surface.transparent(Display.get_size())
                 dialogIdTemp: str = "head"
                 local_y: int = self.__history_surface_local_y
                 while True:

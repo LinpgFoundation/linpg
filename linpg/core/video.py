@@ -29,7 +29,7 @@ def get_preview_of_video(path: str, size: tuple[int, int] = NoSize) -> ImageSurf
     del video_stream
     if size is not NoSize and (current_frame.shape[0] != size[0] or current_frame.shape[1] != size[1]):
         current_frame = cv2.resize(current_frame, size)
-    return make_surface_from_array(current_frame)
+    return Surface.from_array(current_frame)
 
 
 # 视频抽象类

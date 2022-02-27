@@ -68,32 +68,3 @@ def convert_percentage(percentage: Union[str, float]) -> float:
         return percentage
     else:
         EXCEPTION.fatal('"{}" is not a valid percentage that can be converted'.format(percentage))
-
-
-# 根据array生成Surface
-def make_surface_from_array(surface_array: numpy.ndarray, swap_axes: bool = True) -> ImageSurface:
-    if swap_axes is True:
-        surface_array = surface_array.swapaxes(0, 1)
-    if surface_array.shape[2] < 4:
-        return pygame.surfarray.make_surface(surface_array).convert()
-    else:
-        # by llindstrom
-        _shape: tuple = surface_array.shape
-        surface: ImageSurface = new_transparent_surface((int(_shape[0]), int(_shape[1])))
-        # Copy the rgb part of array to the new surface.
-        pygame.pixelcopy.array_to_surface(surface, surface_array[:, :, 0:3])
-        # Copy the alpha part of array to the surface using a pixels-alpha
-        # view of the surface.
-        surface_alpha = numpy.array(surface.get_view("A"), copy=False)
-        surface_alpha[:, :] = surface_array[:, :, 3]
-        return surface
-
-
-# 获取Surface
-def new_surface(size: tuple[int, int], surface_flags: int = -1) -> ImageSurface:
-    return pygame.Surface(size, flags=surface_flags) if surface_flags >= 0 else pygame.Surface(size).convert()
-
-
-# 获取透明的Surface
-def new_transparent_surface(size: tuple[int, int]) -> ImageSurface:
-    return new_surface(size, pygame.SRCALPHA).convert_alpha()

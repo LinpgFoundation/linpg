@@ -70,7 +70,7 @@ class DialogEditor(DialogConverter):
                 )
         # 加载透明图片
         self.__UIContainerRight_bg.set(
-            "<transparent>", get_texture_missing_surface((int(container_width * 4 / 5), int(container_width * 0.45)))
+            "<transparent>", Surface.texture_is_missing((int(container_width * 4 / 5), int(container_width * 0.45)))
         )
         self.__UIContainerRight_bg.distance_between_item = int(Display.get_height() * 0.02)
         self.__current_select_bg_name = None

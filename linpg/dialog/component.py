@@ -101,7 +101,7 @@ class DialogNavigationWindow(AbstractFrame):
             for key in self.__nodes_map:
                 self.__nodes_map[key].has_been_displayed = False
                 self.__nodes_map[key].y -= self.__most_top
-            self._content_surface = new_transparent_surface((self.__most_right, self.__most_bottom - self.__most_top))
+            self._content_surface = Surface.transparent((self.__most_right, self.__most_bottom - self.__most_top))
             self.__draw_node(self._content_surface)
             self._if_update_needed = False
         else:

@@ -125,12 +125,5 @@ class ColorManager:
                     )
                 )
 
-    # 获取一个带颜色的Surface
-    @classmethod
-    def surface(cls, size: tuple[int, int], color: color_liked) -> ImageSurface:
-        surface_t: ImageSurface = new_surface(size)
-        surface_t.fill(cls.get(color))
-        return surface_t
-
 
 Colors: ColorManager = ColorManager()

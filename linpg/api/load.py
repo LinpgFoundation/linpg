@@ -61,9 +61,7 @@ class Loader:
             frame_index: int = 0
             for frame_index in range(gif_image.n_frames):
                 gif_image.seek(frame_index)
-                imgList.append(
-                    StaticImage(make_surface_from_array(numpy.asarray(gif_image.convert("RGBA"))), 0, 0, size[0], size[1])
-                )
+                imgList.append(StaticImage(Surface.from_array(numpy.asarray(gif_image.convert("RGBA"))), 0, 0, size[0], size[1]))
         # 如果是一个列表的文件路径
         elif isinstance(gif_path_or_img_list, Sequence):
             for image_path in gif_path_or_img_list:

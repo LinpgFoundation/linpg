@@ -24,8 +24,8 @@ class AbstractMapEditor(AbstractBattleSystem):
         # 未保存离开时的警告
         self.__no_save_warning: GameObjectsDictContainer = UI.generate_container("leave_without_saving_warning")
         # 绿色方块/方块标准
-        self.__range_green: ImageSurface = NULL_SURFACE
-        self.__range_red: ImageSurface = NULL_SURFACE
+        self.__range_green: ImageSurface = Surface.NULL
+        self.__range_red: ImageSurface = Surface.NULL
         # 选中框
         self.__select_rect: Rectangle = Rectangle(0, 0, 0, 0)
         self.__select_pos: tuple = tuple()

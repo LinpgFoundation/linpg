@@ -37,7 +37,11 @@ class AbstractMapImagesModule:
 # 装饰物的图片管理模块
 class DecorationImagesModule(AbstractMapImagesModule):
 
-    # 场景装饰物
+    # 引擎自带的场景装饰物
+    DEFAULT_DECORATION_IMAGE_SPRITE_SHEET: Optional[SpriteImage] = None
+    # 项目自带的场景装饰物
+    CUSTOM_DECORATION_IMAGE_SPRITE_SHEET: Optional[SpriteImage] = None
+    # 经过处理的场景装饰物
     __DECORATION_IMAGE_DICT: dict = {}
     __DECORATION_IMAGE_DICT_DARK: dict = {}
 
@@ -52,15 +56,27 @@ class DecorationImagesModule(AbstractMapImagesModule):
         # 如果是未被加载过的类型
         if decorationType not in cls.__DECORATION_IMAGE_DICT:
             cls.__DECORATION_IMAGE_DICT[decorationType] = {}
-        imgPath: str
-        # 常规装饰物
-        if os.path.exists(
-            (imgPath := os.path.join(ASSET.get_internal_environment_image_path("decoration"), "{}.png".format(fileName)))
-        ):
+        # 如果SPRITE SHEET未被初始化，则初始化
+        if cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET is None:
+            cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET = SpriteImage(ASSET.get_internal_environment_image_path("decoration"))
+        if cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET is None:
+            _path: str = os.path.join("Assets", "image", "environment", "decoration.png")
+            # 确认自带的sheet存在; 如果不存在，则加载一个空的sheet
+            cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET = SpriteImage(_path if os.path.exists(_path) else "<!null>")
+        # 从sheet中读取装饰物图片
+        _img: Union[ImageSurface, tuple]
+        if cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.contain(fileName):
+            _img = cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.get(fileName)
+        elif cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.contain(fileName):
+            _img = cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.get(fileName)
+        else:
+            EXCEPTION.fatal('Cannot find decoration image "{}" in the folder'.format(fileName))
+        # 常规的独立图片
+        if not isinstance(_img, tuple):
             # 最后确认一下是不是需要加载
             if fileName not in cls.__DECORATION_IMAGE_DICT[decorationType]:
                 # 生成图片
-                cls.__DECORATION_IMAGE_DICT[decorationType][fileName] = StaticImage(imgPath, 0, 0)
+                cls.__DECORATION_IMAGE_DICT[decorationType][fileName] = StaticImage(_img, 0, 0)
             # 如果是夜战模式
             if cls.get_darkness() > 0:
                 if decorationType not in cls.__DECORATION_IMAGE_DICT_DARK:
@@ -71,24 +87,14 @@ class DecorationImagesModule(AbstractMapImagesModule):
                     ].copy()
                     cls.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName].add_darkness(cls.get_darkness())
         # 类Gif形式，decorationType应该与fileName一致
-        elif os.path.exists((imgPath := os.path.join(ASSET.get_internal_environment_image_path("decoration"), decorationType))):
-            for img_path in glob(os.path.join(imgPath, "*.png")):
-                cls.__DECORATION_IMAGE_DICT[decorationType][os.path.basename(img_path).removesuffix(".png")] = StaticImage(
-                    img_path, 0, 0
-                )
-            if cls.get_darkness() > 0:
-                cls.__DECORATION_IMAGE_DICT_DARK[decorationType] = {}
-                for key in cls.__DECORATION_IMAGE_DICT[decorationType]:
-                    cls.__DECORATION_IMAGE_DICT_DARK[decorationType][key] = cls.__DECORATION_IMAGE_DICT[decorationType][
-                        key
-                    ].copy()
-                    cls.__DECORATION_IMAGE_DICT_DARK[decorationType][key].add_darkness(cls.get_darkness())
         else:
-            EXCEPTION.fatal(
-                'Cannot find image "{0}" in folder "{1}"'.format(
-                    fileName, ASSET.get_internal_environment_image_path("decoration")
-                )
-            )
+            cls.__DECORATION_IMAGE_DICT[decorationType] = [StaticImage(each_img, 0, 0) for each_img in _img]
+            if cls.get_darkness() > 0:
+                cls.__DECORATION_IMAGE_DICT_DARK[decorationType] = []
+                for key in cls.__DECORATION_IMAGE_DICT[decorationType]:
+                    _img_clone = key.copy()
+                    _img_clone.add_darkness(cls.get_darkness())
+                    cls.__DECORATION_IMAGE_DICT_DARK[decorationType].append(_img_clone)
 
     # 获取图片
     @classmethod
@@ -117,6 +123,8 @@ class DecorationImagesModule(AbstractMapImagesModule):
 # 地图贴图的管理模块
 class TileMapImagesModule(AbstractMapImagesModule):
 
+    # 引擎自带的地图贴图
+    DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET: Optional[SpriteImage] = None
     # 环境
     __ENV_IMAGE_DICT: dict[str, StaticImage] = {}
     __ENV_IMAGE_DICT_DARK: dict[str, StaticImage] = {}
@@ -134,19 +142,21 @@ class TileMapImagesModule(AbstractMapImagesModule):
     # 加载图片
     @classmethod
     def add_image(cls, fileName: str) -> None:
-        imgPath: str = os.path.join(ASSET.get_internal_environment_image_path("block"), "{}.png".format(fileName))
-        if os.path.exists(imgPath):
+        if cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET is None:
+            cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET = SpriteImage(ASSET.get_internal_environment_image_path("block"))
+        if cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.contain(fileName):
             if fileName not in cls.__ENV_IMAGE_DICT:
-                cls.__ENV_IMAGE_DICT[fileName] = StaticImage(imgPath, 0, 0)
+                _img: Union[ImageSurface, tuple] = cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.get(fileName)
+                if isinstance(_img, tuple):
+                    EXCEPTION.fatal("Images for tile map cannot be groupped as a collection")
+                cls.__ENV_IMAGE_DICT[fileName] = StaticImage(_img, 0, 0)
                 cls.__ENV_IMAGE_DICT[fileName].set_width_with_original_image_size_locked(cls.get_block_width())
             # 如果是夜战模式
             if cls.get_darkness() > 0:
                 cls.__ENV_IMAGE_DICT_DARK[fileName] = cls.__ENV_IMAGE_DICT[fileName].copy()
                 cls.__ENV_IMAGE_DICT_DARK[fileName].add_darkness(cls.get_darkness())
         else:
-            EXCEPTION.fatal(
-                'Cannot find image "{0}" in folder "{1}"'.format(fileName, ASSET.get_internal_environment_image_path("block"))
-            )
+            EXCEPTION.fatal('Cannot find image "{}" in folder'.format(fileName))
 
     # 获取图片
     @classmethod

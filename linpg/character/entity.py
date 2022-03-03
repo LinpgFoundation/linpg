@@ -273,10 +273,6 @@ class Entity(Position):
     """
 
     # 是否角色还活着
-    @property
-    def isAlive(self) -> bool:
-        return self.__current_hp > 0
-
     def is_alive(self) -> bool:
         return self.__current_hp > 0
 

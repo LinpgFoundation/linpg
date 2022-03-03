@@ -2,21 +2,55 @@ import math
 from .video import *
 
 
-class Sprite:
-
-    # 加载Sprite图片合集
-    @staticmethod
-    def load(img_path: str) -> dict:
+class SpriteImage:
+    def __init__(self, img_path: str) -> None:
+        # 路径
+        self.__PATH: str = img_path
         # 加载Sprite图
-        sprite_sheet: ImageSurface = RawImg.quickly_load(img_path)
+        self.__SHEET: ImageSurface = RawImg.quickly_load(self.__PATH)
         # 加载Sprite图的数据
-        sprite_info: dict = Config.load_file(Config.resolve_path(img_path.removesuffix(".png")))
+        self.__DICTIONARY: dict = {}
+        if self.__PATH != "<!null>":
+            self.__DICTIONARY.update(Config.load_file(Config.resolve_path(self.__PATH.removesuffix(".png"))))
+
+    # 获取一个图片
+    def get(self, key: str) -> Union[ImageSurface, tuple]:
+        if isinstance(self.__DICTIONARY[key], dict):
+            return self.__SHEET.subsurface(self.__DICTIONARY[key]["coordinate"], self.__DICTIONARY[key]["size"])
+        else:
+            return tuple([self.__SHEET.subsurface(_data["coordinate"], _data["size"]) for _data in self.__DICTIONARY[key]])
+
+    # 是否存在key
+    def contain(self, key: str) -> bool:
+        return key in self.__DICTIONARY
+
+    # 将所有图片以dict的形式返回
+    def to_dict(self) -> dict:
         # 将所有Sprite图上的图片以subsurface的形式append进字典中
         result: dict = {}
-        for key, value in sprite_info.items():
-            result[key] = sprite_sheet.subsurface((value["coordinate"], value["size"]))
+        for key in self.__DICTIONARY:
+            result[key] = self.get(key)
         # 将结果以字典的形式返回
         return result
+
+    # 将所有图片以tuple的形式返回
+    def to_tuple(self) -> tuple:
+        return tuple(self.to_dict().values())
+
+    # 返回一个复制品
+    def copy(self) -> "SpriteImage":
+        return SpriteImage(self.__PATH)
+
+    # 获取Sprite图（这是很危险的操作，强烈不建议在引擎外使用）
+    def get_SHEET(self) -> ImageSurface:
+        return self.__SHEET
+
+    # 设置Sprite图（这是很危险的操作，强烈不建议在引擎外使用）
+    def set_SHEET(self, SHEET: ImageSurface) -> None:
+        self.__SHEET = SHEET
+
+
+class Sprites:
 
     # 制作新的Sprite图片合集
     @staticmethod

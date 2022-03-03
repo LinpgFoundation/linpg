@@ -104,10 +104,10 @@ class AbstractMapEditor(AbstractBattleSystem):
         # 加载背景图片
         self.__envImgContainer.set_pos(container_width * 0.075, screen.get_height() * 0.1)
         self.__envImgContainer.set_size(container_width * 0.85, screen.get_height() * 0.85)
-        for imgPath in glob(os.path.join(ASSET.get_internal_environment_image_path("block"), "*.png")):
-            self.__envImgContainer.set(
-                os.path.basename(imgPath).replace(".png", ""), RawImg.load(imgPath, (self._MAP.block_width / 3, None))
-            )
+        if TileMapImagesModule.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET is None:
+            EXCEPTION.fatal("Image sprite sheet for tile map is not loaded correctly!")
+        for key, value in TileMapImagesModule.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.to_dict().items():
+            self.__envImgContainer.set(key, RawImg.resize(value, (self._MAP.block_width / 3, None)))
         self.__envImgContainer.set_item_per_line(4)
         self.__envImgContainer.set_scroll_bar_pos("right")
         self.__envImgContainer.set_visible(True)
@@ -115,10 +115,21 @@ class AbstractMapEditor(AbstractBattleSystem):
         # 加载所有的装饰品
         self.__decorationsImgContainer.set_pos(container_width * 0.075, screen.get_height() * 0.1)
         self.__decorationsImgContainer.set_size(container_width * 0.85, screen.get_height() * 0.85)
-        for imgPath in glob(os.path.join(ASSET.get_internal_environment_image_path("decoration"), "*.png")):
+        # 加载默认装饰物
+        if DecorationImagesModule.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET is None:
+            EXCEPTION.fatal("Image sprite sheet for default decorations is not loaded correctly!")
+        for key, value in DecorationImagesModule.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.to_dict().items():
             self.__decorationsImgContainer.set(
-                os.path.basename(imgPath).replace(".png", ""), RawImg.load(imgPath, (self._MAP.block_width / 3, None))
+                key, RawImg.resize(value if not isinstance(value, tuple) else value[0], (self._MAP.block_width / 3, None))
             )
+        # 加载自带的装饰物
+        if DecorationImagesModule.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET is None:
+            EXCEPTION.fatal("Image sprite sheet for custom decorations is not loaded correctly!")
+        for key, value in DecorationImagesModule.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.to_dict().items():
+            self.__decorationsImgContainer.set(
+                key, RawImg.resize(value if not isinstance(value, tuple) else value[0], (self._MAP.block_width / 3, None))
+            )
+        # 设置容器参数
         self.__decorationsImgContainer.set_item_per_line(4)
         self.__decorationsImgContainer.set_scroll_bar_pos("right")
         self.__decorationsImgContainer.set_visible(False)
@@ -209,19 +220,19 @@ class AbstractMapEditor(AbstractBattleSystem):
                     if decoration is not None:
                         self._MAP.remove_decoration(decoration)
                     else:
-                        any_chara_replace = None
+                        character_collided = None
                         for key, value in {
                             **self._alliances_data,
                             **self._enemies_data,
                         }.items():
                             if value.x == block_get_click["x"] and value.y == block_get_click["y"]:
-                                any_chara_replace = key
+                                character_collided = key
                                 break
-                        if any_chara_replace is not None:
-                            if any_chara_replace in self._alliances_data:
-                                self._alliances_data.pop(any_chara_replace)
-                            elif any_chara_replace in self._enemies_data:
-                                self._enemies_data.pop(any_chara_replace)
+                        if character_collided is not None:
+                            if character_collided in self._alliances_data:
+                                self._alliances_data.pop(character_collided)
+                            elif character_collided in self._enemies_data:
+                                self._enemies_data.pop(character_collided)
                 else:
                     if (
                         Controller.get_event("confirm")
@@ -251,16 +262,16 @@ class AbstractMapEditor(AbstractBattleSystem):
                             self.__object_to_put_down["type"] == "character"
                             or self.__object_to_put_down["type"] == "sangvisFerri"
                         ):
-                            any_chara_replace = None
+                            character_collided = None
                             for key, value in {**self._alliances_data, **self._enemies_data}.items():
                                 if value.x == block_get_click["x"] and value.y == block_get_click["y"]:
-                                    any_chara_replace = key
+                                    character_collided = key
                                     break
-                            if any_chara_replace is not None:
-                                if any_chara_replace in self._alliances_data:
-                                    self._alliances_data.pop(any_chara_replace)
-                                elif any_chara_replace in self._enemies_data:
-                                    self._enemies_data.pop(any_chara_replace)
+                            if character_collided is not None:
+                                if character_collided in self._alliances_data:
+                                    self._alliances_data.pop(character_collided)
+                                elif character_collided in self._enemies_data:
+                                    self._enemies_data.pop(character_collided)
                             the_id = 0
                             if self.__object_to_put_down["type"] == "character":
                                 while self.__object_to_put_down["id"] + "_" + str(the_id) in self._alliances_data:

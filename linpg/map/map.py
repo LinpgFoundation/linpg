@@ -112,7 +112,9 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         for fileName in lookup_table:
             TileMapImagesModule.add_image(fileName)
         for decoration in self.__decorations:
-            DecorationImagesModule.add_image(decoration.get_type(), decoration.image)
+            DecorationImagesModule.add_image(
+                decoration.get_type(), decoration.image if isinstance(decoration.image, str) else decoration.get_type()
+            )
         # 处于光处的区域
         self.__light_area = tuple()
         # 追踪是否需要更新的参数
@@ -442,34 +444,30 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         lightArea: list = []
         x: int
         y: int
-        for each_chara in alliances_data:
+        for key in alliances_data:
             the_character_effective_range = 2
-            if alliances_data[each_chara].current_hp > 0:
-                if alliances_data[each_chara].effective_range["far"] is not None:
-                    the_character_effective_range = alliances_data[each_chara].effective_range["far"][1] + 1
-                elif alliances_data[each_chara].effective_range["middle"] is not None:
-                    the_character_effective_range = alliances_data[each_chara].effective_range["middle"][1] + 1
-                elif alliances_data[each_chara].effective_range["near"] is not None:
-                    the_character_effective_range = alliances_data[each_chara].effective_range["near"][1] + 1
+            if alliances_data[key].current_hp > 0:
+                if alliances_data[key].effective_range["far"] is not None:
+                    the_character_effective_range = alliances_data[key].effective_range["far"][1] + 1
+                elif alliances_data[key].effective_range["middle"] is not None:
+                    the_character_effective_range = alliances_data[key].effective_range["middle"][1] + 1
+                elif alliances_data[key].effective_range["near"] is not None:
+                    the_character_effective_range = alliances_data[key].effective_range["near"][1] + 1
             for y in range(
-                int(alliances_data[each_chara].y - the_character_effective_range),
-                int(alliances_data[each_chara].y + the_character_effective_range),
+                int(alliances_data[key].y - the_character_effective_range),
+                int(alliances_data[key].y + the_character_effective_range),
             ):
-                if y < alliances_data[each_chara].y:
+                if y < alliances_data[key].y:
                     for x in range(
-                        int(
-                            alliances_data[each_chara].x - the_character_effective_range - (y - alliances_data[each_chara].y) + 1
-                        ),
-                        int(alliances_data[each_chara].x + the_character_effective_range + (y - alliances_data[each_chara].y)),
+                        int(alliances_data[key].x - the_character_effective_range - (y - alliances_data[key].y) + 1),
+                        int(alliances_data[key].x + the_character_effective_range + (y - alliances_data[key].y)),
                     ):
                         if (x, y) not in lightArea:
                             lightArea.append((x, y))
                 else:
                     for x in range(
-                        int(
-                            alliances_data[each_chara].x - the_character_effective_range + (y - alliances_data[each_chara].y) + 1
-                        ),
-                        int(alliances_data[each_chara].x + the_character_effective_range - (y - alliances_data[each_chara].y)),
+                        int(alliances_data[key].x - the_character_effective_range + (y - alliances_data[key].y) + 1),
+                        int(alliances_data[key].x + the_character_effective_range - (y - alliances_data[key].y)),
                     ):
                         if (x, y) not in lightArea:
                             lightArea.append((x, y))

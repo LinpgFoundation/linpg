@@ -6,7 +6,12 @@ AP_IS_NEEDED_TO_MOVE_ONE_BLOCK: int = 2
 # 濒死回合限制
 DYING_ROUND_LIMIT: int = 3
 # 角色数据库
-CHARACTER_DATABASE: dict = loadCharacterData()
+CHARACTER_DATABASE: dict = {}
+# 尝试加载角色数据
+_path: str = os.path.join("Data", "character_data." + Config.get_file_type())
+if os.path.exists(_path):
+    CHARACTER_DATABASE.update(Config.load_file(_path))
+del _path
 
 # 友方角色类
 class FriendlyCharacter(Entity):
@@ -29,7 +34,7 @@ class FriendlyCharacter(Entity):
         if "skill_effective_range" in characterData and characterData["skill_effective_range"] is not None:
             self.__skill_effective_range.update(characterData["skill_effective_range"])
         # 最远技能施展范围
-        self.__max_skill_range: int = calculate_range(self.__skill_effective_range)
+        self.__max_skill_range: int = self.calculate_range(self.__skill_effective_range)
         # 被察觉程度
         self.__detection: int = (
             int(characterData["detection"]) if "detection" in characterData and characterData["detection"] is not None else 0
@@ -205,6 +210,34 @@ class FriendlyCharacter(Entity):
                     self.__getHurtImage.delay -= 5
                 elif self.__getHurtImage.alpha > 0:
                     self.__getHurtImage.alpha -= 5
+
+
+# 用于存放角色做出的决定
+class DecisionHolder:
+    def __init__(self, action: str, data: Any):
+        self.action: str = action
+        self.data = data
+
+    @property
+    def route(self) -> list:
+        if self.action == "move":
+            return list(self.data)
+        else:
+            EXCEPTION.fatal("The character does not decide to move!")
+
+    @property
+    def target(self) -> str:
+        if self.action == "attack":
+            return str(self.data[0])
+        else:
+            EXCEPTION.fatal("The character does not decide to attack!")
+
+    @property
+    def target_area(self) -> str:
+        if self.action == "attack":
+            return str(self.data[1])
+        else:
+            EXCEPTION.fatal("The character does not decide to attack!")
 
 
 # 敌对角色类

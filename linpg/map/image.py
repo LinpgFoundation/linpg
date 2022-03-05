@@ -98,7 +98,7 @@ class DecorationImagesModule(AbstractMapImagesModule):
 
     # 获取图片
     @classmethod
-    def get_image(cls, decorationType: str, key: str, darkMode: bool) -> Any:
+    def get_image(cls, decorationType: str, key: Union[str, int], darkMode: bool) -> Any:
         try:
             return (
                 cls.__DECORATION_IMAGE_DICT_DARK[decorationType][key]
@@ -112,6 +112,8 @@ class DecorationImagesModule(AbstractMapImagesModule):
                     key, decorationType
                 )
             )
+            if isinstance(key, int):
+                key = decorationType
             cls.add_image(decorationType, key)
             return (
                 cls.__DECORATION_IMAGE_DICT_DARK[decorationType][key]

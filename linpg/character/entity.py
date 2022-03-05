@@ -1,5 +1,5 @@
 from collections import deque
-from .module import *
+from .sound import *
 
 # 人形模块
 class Entity(Position):
@@ -38,7 +38,7 @@ class Entity(Position):
         # 攻击范围
         self.__effective_range: dict = dict(DATA["effective_range"])
         # 最大攻击距离
-        self.__max_effective_range: int = calculate_range(self.__effective_range)
+        self.__max_effective_range: int = self.calculate_range(self.__effective_range)
         # 最大攻击力
         self.__max_damage: int = int(DATA["max_damage"])
         # 最小攻击力
@@ -82,6 +82,33 @@ class Entity(Position):
         # 血条图片
         self.__hp_bar: EntityHpBar = EntityHpBar()
         self.__status_font: StaticTextSurface = StaticTextSurface("", 0, 0, Display.get_width() / 192)
+
+    # 计算最远攻击距离
+    @staticmethod
+    def calculate_range(effective_range_dic: dict) -> int:
+        if effective_range_dic is not None and len(effective_range_dic) > 0:
+            max_attack_range: int = 0
+            if (
+                "far" in effective_range_dic
+                and effective_range_dic["far"] is not None
+                and max_attack_range < effective_range_dic["far"][-1]
+            ):
+                return int(effective_range_dic["far"][-1])
+            elif (
+                "middle" in effective_range_dic
+                and effective_range_dic["middle"] is not None
+                and max_attack_range < effective_range_dic["middle"][-1]
+            ):
+                return int(effective_range_dic["middle"][-1])
+            elif (
+                "near" in effective_range_dic
+                and effective_range_dic["near"] is not None
+                and max_attack_range < effective_range_dic["near"][-1]
+            ):
+                return int(effective_range_dic["near"][-1])
+            return max_attack_range
+        else:
+            return 0
 
     def to_dict(self) -> dict:
         data: dict = {

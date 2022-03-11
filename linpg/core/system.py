@@ -110,7 +110,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
 
     # 直接画到屏幕上
     def draw_on_screen(self) -> None:
-        self.draw(Display.window)
+        self.draw(Display.get_window())
 
 
 # 游戏模块接口

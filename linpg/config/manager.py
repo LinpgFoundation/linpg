@@ -1,6 +1,6 @@
 import hashlib
 import shutil
-from .setting import *
+from .debug import *
 
 
 # 全局数据

@@ -47,7 +47,11 @@
         "MouseMoveSpeed": 30,
         "NumberOfChannels": 8,
         "ReadingSpeed": 1,
-        "ScreenScale": 100,
+        "Screen": {
+            "height": 1080,
+            "scale": 100,
+            "width": 1920
+        },
         "Sound": {
             "background_music": 100,
             "effects": 100,

@@ -1,6 +1,6 @@
 """
 结构:
-base -> setting -> manager
+base -> setting -> debug -> manager
 """
 from .manager import *
 

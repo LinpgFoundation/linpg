@@ -46,15 +46,7 @@ class GlobalValue:
 class DataBase:
 
     # 用于存放数据库数据的字典
-    __DATA_BASE_DICT: dict = Config.load_internal_file("database.json")
-
-    # 初始化数据库
-    if len(_path := Config.resolve_path(os.path.join("Data", "database"))) > 0:
-        for key, value in Config.load_file(_path).items():
-            if key not in __DATA_BASE_DICT:
-                __DATA_BASE_DICT[key] = value
-            else:
-                __DATA_BASE_DICT[key].update(value)
+    __DATA_BASE_DICT: dict = {"Blocks": {}, "Decorations": {}, "Npc": {}}
 
     @classmethod
     def get(cls, *key: str) -> Any:
@@ -62,6 +54,14 @@ class DataBase:
             return get_value_by_keys(cls.__DATA_BASE_DICT, key)
         except KeyError:
             EXCEPTION.fatal('Cannot find key "{}" in the database'.format(key))
+
+    @classmethod
+    def update(cls, _value: dict) -> None:
+        for key, value in _value.items():
+            if key not in cls.__DATA_BASE_DICT:
+                cls.__DATA_BASE_DICT[key] = value
+            else:
+                cls.__DATA_BASE_DICT[key].update(value)
 
 
 # 版本信息管理模块

@@ -11,7 +11,7 @@ class SpriteImage:
         # 加载Sprite图的数据
         self.__DICTIONARY: dict = {}
         if self.__PATH != "<!null>":
-            self.__DICTIONARY.update(Config.load_file(Config.resolve_path(self.__PATH.removesuffix(".png"))))
+            self.__DICTIONARY.update(Config.load_file(self.__PATH.replace(".png", ".linpg.meta")))
 
     # 获取一个图片
     def get(self, key: str) -> Union[ImageSurface, tuple]:
@@ -105,4 +105,4 @@ class Sprites:
         # 保存sprite图
         RawImg.save(sprite_surface, img_folder_path + ".png")
         # 保存sprite图数据
-        Config.save("{0}.{1}".format(img_folder_path, Config.get_file_type()), _data)
+        Config.save("{}.linpg.meta".format(img_folder_path), _data)

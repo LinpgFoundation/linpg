@@ -1,8 +1,6 @@
 from random import randint as RANDINT
 from typing import Sequence
 
-import numpy
-
 # 导入pygame组件
 import pygame
 from pygame.locals import *

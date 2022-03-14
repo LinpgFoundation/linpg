@@ -2,7 +2,9 @@
     "ConfigFileType": "yaml",
     "FolderPath": {
         "Cache": "Cache",
-        "Save": "Save"
+        "Save": "Save",
+        "Music": "Assets\\music",
+        "Movie": "Assets\\movie"
     },
     "PySimpleGUITheme": "SystemDefault",
     "ThirdPartyLibraries": {

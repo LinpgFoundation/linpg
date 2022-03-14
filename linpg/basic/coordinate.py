@@ -1,3 +1,4 @@
+import numpy
 from .header import *
 
 ORIGIN: tuple[int, int] = (0, 0)

@@ -1,5 +1,19 @@
-from linpgassets import ASSET  # type: ignore
 from .draw import *
+
+# 尝试导入linpgassets
+_LINPGASSETS_INITIALIZED: bool = False
+try:
+    from linpgassets import ASSET  # type: ignore
+
+    _LINPGASSETS_INITIALIZED = True
+    # 初始化linpgassets的数据库
+    DataBase.update(Config.load_file(ASSET.get_database_path()))
+except Exception:
+    _LINPGASSETS_INITIALIZED = False
+
+# 初始化项目自带的数据库
+if len(_path := Config.resolve_path(os.path.join("Data", "database"))) > 0:
+    DataBase.update(Config.load_file(_path))
 
 
 class Surface:
@@ -72,7 +86,7 @@ class RawImg:
             return path
         elif isinstance(path, str):
             if path != "<!null>":
-                path_t: str = ASSET.resolve_path(path)
+                path_t: str = ASSET.resolve_path(path) if _LINPGASSETS_INITIALIZED is True else path
                 if convert_alpha is True:
                     try:
                         return pygame.image.load(path_t).convert_alpha()
@@ -173,3 +187,39 @@ class RawImg:
     @staticmethod
     def save(surface: ImageSurface, path: str) -> None:
         pygame.image.save(surface, path)
+
+    # 加密图片
+    @staticmethod
+    def encrypt(path: str) -> None:
+        # 以bytearray的形式加载图片
+        fin = open(path, "rb")
+        image: bytearray = bytearray(fin.read())
+        fin.close()
+        # 加密图片
+        for index, values in enumerate(image):
+            image[index] = values + 1
+        # 写入文件
+        fin = open(path, "wb")
+        fin.write(image)
+        fin.close()
+
+    # 解密图片
+    @classmethod
+    def decrypt(cls, path: str) -> None:
+        # 解密文件
+        _image_file = cls.__decrypt(path)
+        # 写入文件
+        fin = open(path, "wb")
+        fin.write(_image_file)
+        fin.close()
+
+    @staticmethod
+    def __decrypt(path: str) -> bytearray:
+        # 以bytearray的形式加载图片
+        fin = open(path, "rb")
+        image: bytearray = bytearray(fin.read())
+        fin.close()
+        # 解密文件
+        for index, values in enumerate(image):
+            image[index] = values - 1
+        return image

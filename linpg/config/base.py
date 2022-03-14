@@ -77,7 +77,7 @@ class Config:
                     else:
                         EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.")
                 # 使用json模块加载配置文件
-                elif path.endswith(".json"):
+                elif path.endswith(".json") or path.endswith(".linpg.meta"):
                     return dict(json.load(f))
                 else:
                     EXCEPTION.fatal("Linpg can only load json and yaml (when pyyaml is installed).")
@@ -113,7 +113,7 @@ class Config:
                     EXCEPTION.fatal(
                         "You cannot save .yaml file because yaml is not imported successfully. Maybe try to reinstall PyYaml and try again."
                     )
-            elif path.endswith(".json"):
+            elif path.endswith(".json") or path.endswith(".linpg.meta"):
                 json.dump(data, f, indent=4, ensure_ascii=False, sort_keys=True)
             else:
                 EXCEPTION.fatal(

@@ -54,6 +54,7 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         self.__is_flipped_horizontally: bool = False
         self.__is_flipped_vertically: bool = False
         self.__crop_rect: Optional[Rectangle] = None
+        self.__no_croping_needed: bool = False
 
     # 截图的范围
     @property
@@ -62,6 +63,9 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
 
     def get_crop_rect(self) -> Optional[Rectangle]:
         return self.__crop_rect
+
+    def disable_croping(self) -> None:
+        self.__no_croping_needed = True
 
     def set_crop_rect(self, rect: Optional[Rectangle]) -> None:
         if rect is None or isinstance(rect, Rectangle):
@@ -113,17 +117,22 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         # 翻转图片
         if self.__is_flipped_horizontally is True or self.__is_flipped_vertically is True:
             imgTmp = RawImg.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)
-        # 获取切割rect
-        rect: Rectangle = convert_rect(imgTmp.get_bounding_rect())
-        if self.width != rect.width or self.height != rect.height or self.__crop_rect is not None:
-            if self.__crop_rect is not None:
-                new_x: int = max(rect.x, self.__crop_rect.x)
-                new_y: int = max(rect.y, self.__crop_rect.y)
-                rect.move_to((new_x, new_y))
-                rect.set_size(min(rect.right, self.__crop_rect.right) - new_x, min(rect.bottom, self.__crop_rect.bottom) - new_y)
-            self._processed_img = Surface.transparent(rect.size)
-            self.set_local_pos(rect.x, rect.y)
-            self._processed_img.blit(imgTmp, (-self.local_x, -self.local_y))
+        if not self.__no_croping_needed:
+            # 获取切割rect
+            rect: Rectangle = convert_rect(imgTmp.get_bounding_rect())
+            if self.width != rect.width or self.height != rect.height or self.__crop_rect is not None:
+                if self.__crop_rect is not None:
+                    new_x: int = max(rect.x, self.__crop_rect.x)
+                    new_y: int = max(rect.y, self.__crop_rect.y)
+                    rect.move_to((new_x, new_y))
+                    rect.set_size(
+                        min(rect.right, self.__crop_rect.right) - new_x, min(rect.bottom, self.__crop_rect.bottom) - new_y
+                    )
+                self._processed_img = Surface.transparent(rect.size)
+                self.set_local_pos(rect.x, rect.y)
+                self._processed_img.blit(imgTmp, (-self.local_x, -self.local_y))
+            else:
+                self._processed_img = imgTmp
         else:
             self._processed_img = imgTmp
         if self._alpha < 255:

@@ -7,7 +7,7 @@ class Entity(Position):
     # 储存角色音效的常量
     __CHARACTERS_SOUND_SYSTEM: EntitySoundManager = EntitySoundManager(5)
     # 储存角色图片的常量
-    __CHARACTERS_IMAGE_SYS: EntityImageManager = EntityImageManager()
+    __CHARACTERS_IMAGE_SYS: EntitySpriteImageManager = EntitySpriteImageManager()
     # idle动作
     __IDLE_ACTION: str = "wait"
 

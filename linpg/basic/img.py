@@ -187,39 +187,3 @@ class RawImg:
     @staticmethod
     def save(surface: ImageSurface, path: str) -> None:
         pygame.image.save(surface, path)
-
-    # 加密图片
-    @staticmethod
-    def encrypt(path: str) -> None:
-        # 以bytearray的形式加载图片
-        fin = open(path, "rb")
-        image: bytearray = bytearray(fin.read())
-        fin.close()
-        # 加密图片
-        for index, values in enumerate(image):
-            image[index] = values + 1
-        # 写入文件
-        fin = open(path, "wb")
-        fin.write(image)
-        fin.close()
-
-    # 解密图片
-    @classmethod
-    def decrypt(cls, path: str) -> None:
-        # 解密文件
-        _image_file = cls.__decrypt(path)
-        # 写入文件
-        fin = open(path, "wb")
-        fin.write(_image_file)
-        fin.close()
-
-    @staticmethod
-    def __decrypt(path: str) -> bytearray:
-        # 以bytearray的形式加载图片
-        fin = open(path, "rb")
-        image: bytearray = bytearray(fin.read())
-        fin.close()
-        # 解密文件
-        for index, values in enumerate(image):
-            image[index] = values - 1
-        return image

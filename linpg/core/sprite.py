@@ -11,7 +11,7 @@ class SpriteImage:
         # 加载Sprite图的数据
         self.__DICTIONARY: dict = {}
         if self.__PATH != "<!null>":
-            self.__DICTIONARY.update(Config.load_file(self.__PATH.replace(".png", ".linpg.meta")))
+            self.__DICTIONARY.update(Config.load_file(self.__PATH + ".linpg.meta"))
 
     # 获取一个图片
     def get(self, key: str) -> Union[ImageSurface, tuple]:
@@ -50,23 +50,20 @@ class SpriteImage:
     def set_SHEET(self, SHEET: ImageSurface) -> None:
         self.__SHEET = SHEET
 
-
-class Sprites:
-
     # 制作新的Sprite图片合集
     @staticmethod
-    def make(img_folder_path: str, minimize_pixels: bool = False) -> None:
+    def generate(img_folder_path: str, minimize_pixels: bool = False, resultFileType: str = "png") -> None:
         # 储存数据的字典
         _data: dict = {}
         # 最大尺寸
         max_block_width: int = 0
         max_block_height: int = 0
-        _bounding: Rect
         # 历遍目标文件夹中的图片
         for _path in glob(os.path.join(img_folder_path, "*.png")):
             _img: ImageSurface = RawImg.quickly_load(_path)
+            _name: str = os.path.basename(_path).removesuffix(".png")
+            _data[_name] = {}
             if not minimize_pixels:
-                _data[os.path.basename(_path).removesuffix(".png")] = {"img": _img}
                 # 确认最大尺寸
                 if max_block_width < _img.get_width():
                     max_block_width = _img.get_width()
@@ -74,13 +71,16 @@ class Sprites:
                     max_block_height = _img.get_height()
             else:
                 # 获取图片的透明bounding
-                _bounding = _img.get_bounding_rect()
-                _data[os.path.basename(_path).removesuffix(".png")] = {"img": _img, "bounding": _bounding}
+                _bounding: Rect = _img.get_bounding_rect()
                 # 确认最大尺寸
                 if max_block_width < _bounding.width:
                     max_block_width = _bounding.width
                 if max_block_height < _bounding.height:
                     max_block_height = _bounding.height
+                # 写入bounding尺寸
+                _data[_name]["bounding"] = _bounding
+            # 放入图片
+            _data[_name]["img"] = _img
         # 列数
         columns: int = math.ceil(math.sqrt(len(_data)))
         # 行数
@@ -103,6 +103,7 @@ class Sprites:
                 _data[key] = [_pos[0], _pos[1], _bounding.width, _bounding.height]
             index += 1
         # 保存sprite图
-        RawImg.save(sprite_surface, img_folder_path + ".png")
+        target_file_name: str = "{0}.{1}".format(img_folder_path, resultFileType)
+        RawImg.save(sprite_surface, target_file_name)
         # 保存sprite图数据
-        Config.save("{}.linpg.meta".format(img_folder_path), _data)
+        Config.save(target_file_name + ".linpg.meta", _data)

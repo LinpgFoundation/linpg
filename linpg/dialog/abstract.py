@@ -178,6 +178,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                         (img_path := os.path.join(self._background_image_folder_path, self.__background_image_name))
                     ):
                         self.__background_image_surface = StaticImage(img_path, 0, 0)
+                        self.__background_image_surface.disable_croping()
                     # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
                     elif os.path.exists(os.path.join(Specification.get("FolderPath", "Movie"), self.__background_image_name)):
                         self.__background_image_surface = VideoSurface(
@@ -189,6 +190,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                         )
                 elif self._npc_manager.dev_mode is True:
                     self.__background_image_surface = StaticImage(Surface.texture_is_missing(Display.get_size()), 0, 0)
+                    self.__background_image_surface.disable_croping()
                 else:
                     self.__background_image_surface = NULL_STATIC_IMAGE
             else:

@@ -155,28 +155,30 @@ class AbstractMapEditor(AbstractBattleSystem):
             button_height,
         )
         # 加载所有友方的角色的图片文件
-        self.__friendlyCharactersImagesContainer.set_pos(container_width * 0.025, container_height * 0.2)
-        self.__friendlyCharactersImagesContainer.set_size(container_width * 0.95, container_height * 0.7)
-        img_name: str
-        temp_image: ImageSurface
-        for imgPath in glob(os.path.join("Assets", "image", "character", "*")):
-            img_name = os.path.basename(imgPath)
-            temp_image = RawImg.load(
-                os.path.join(imgPath, "wait", "{}_wait_0.png".format(img_name)), (None, container_height * 1.5)
+        self.__friendlyCharactersImagesContainer.set_pos(container_width * 0.025, container_height * 0.3)
+        self.__friendlyCharactersImagesContainer.set_size(container_width * 0.95, container_height * 0.6)
+        for img_name in os.listdir(os.path.join(Specification.get("FolderPath", "Sprite"), "character")):
+            self.__friendlyCharactersImagesContainer.set(
+                img_name,
+                RawImg.smoothly_resize(
+                    EntitySpriteImageManager.try_get_img("character", img_name, "wait", 0).get_image_copy(),
+                    (None, container_height // 3),
+                ),
             )
-            self.__friendlyCharactersImagesContainer.set(img_name, temp_image.subsurface(temp_image.get_bounding_rect()))
         self.__friendlyCharactersImagesContainer.set_scroll_bar_pos("bottom")
         self.__friendlyCharactersImagesContainer.set_visible(True)
         self.__friendlyCharactersImagesContainer.distance_between_item = panding
         # 加载所有敌对角色的图片文件
-        self.__hostileCharactersImagesContainer.set_pos(container_width * 0.025, container_height * 0.2)
-        self.__hostileCharactersImagesContainer.set_size(container_width * 0.95, container_height * 0.7)
-        for imgPath in glob(os.path.join("Assets", "image", "sangvisFerri", "*")):
-            img_name = os.path.basename(imgPath)
-            temp_image = RawImg.load(
-                os.path.join(imgPath, "wait", "{}_wait_0.png".format(img_name)), (None, container_height * 1.5)
+        self.__hostileCharactersImagesContainer.set_pos(container_width * 0.025, container_height * 0.3)
+        self.__hostileCharactersImagesContainer.set_size(container_width * 0.95, container_height * 0.6)
+        for img_name in os.listdir(os.path.join(Specification.get("FolderPath", "Sprite"), "sangvisFerri")):
+            self.__hostileCharactersImagesContainer.set(
+                img_name,
+                RawImg.smoothly_resize(
+                    EntitySpriteImageManager.try_get_img("sangvisFerri", img_name, "wait", 0).get_image_copy(),
+                    (None, container_height // 3),
+                ),
             )
-            self.__hostileCharactersImagesContainer.set(img_name, temp_image.subsurface(temp_image.get_bounding_rect()))
         self.__hostileCharactersImagesContainer.set_scroll_bar_pos("bottom")
         self.__hostileCharactersImagesContainer.set_visible(False)
         self.__hostileCharactersImagesContainer.distance_between_item = panding

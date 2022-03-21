@@ -6,8 +6,6 @@ class Entity(Position):
 
     # 储存角色音效的常量
     __CHARACTERS_SOUND_SYSTEM: EntitySoundManager = EntitySoundManager(5)
-    # 储存角色图片的常量
-    __CHARACTERS_IMAGE_SYS: EntitySpriteImageManager = EntitySpriteImageManager()
     # idle动作
     __IDLE_ACTION: str = "wait"
 
@@ -71,7 +69,7 @@ class Entity(Position):
         # 是否无敌
         self.__if_invincible: bool = bool(DATA["if_invincible"]) if "if_invincible" in DATA else False
         # gif图片管理
-        self.__imgId_dict: dict = self.__CHARACTERS_IMAGE_SYS.createGifDict(self.__type, faction, mode)
+        self.__imgId_dict: dict = EntitySpriteImageManager.load(faction, self.__type, mode)
         # 加载角色的音效
         if mode != "dev":
             self.__CHARACTERS_SOUND_SYSTEM.add(self.__type)
@@ -230,7 +228,7 @@ class Entity(Position):
 
     # 获取角色特定动作的图片总数量
     def get_imgNum(self, action: str) -> int:
-        return self.__CHARACTERS_IMAGE_SYS.get_img_num(self.__type, action)
+        return EntitySpriteImageManager.get_img_num(self.__type, action)
 
     # 设定角色特定动作的图片播放ID
     def set_imgId(self, action: str, imgId: int) -> None:
@@ -424,7 +422,7 @@ class Entity(Position):
                     self.__if_map_need_update = True
         elif not self.__moving_complete:
             self.__moving_complete = True
-            if self.get_imgId("set") >= 0:
+            if EntitySpriteImageManager.does_action_exist(self.type, "set") is True:
                 self.set_action("set", False)
             else:
                 self.set_action()
@@ -599,8 +597,8 @@ class Entity(Position):
         if action is None:
             action = self.__current_action
         # 调整小人图片的尺寸
-        img_of_char = self.__CHARACTERS_IMAGE_SYS.get_img(self.__type, action, self.__imgId_dict[action]["imgId"])
-        img_width = round(MAP_POINTER.block_width * 1.6)
+        img_of_char = EntitySpriteImageManager.get_img(self.__type, action, self.__imgId_dict[action]["imgId"])
+        img_width = round(MAP_POINTER.block_width * 8 / 5, 2)
         img_of_char.set_size(img_width, img_width)
         # 调整alpha值
         img_of_char.set_alpha(alpha)

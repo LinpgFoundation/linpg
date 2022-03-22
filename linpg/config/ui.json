@@ -395,45 +395,6 @@
         "x": "center",
         "y": "center"
     },
-    "map_editor_bottom_container_buttons": {
-        "height": "100%",
-        "items": [
-            {
-                "alpha_when_not_hover": 100,
-                "auto_resize": true,
-                "height": "3%",
-                "name": "select_friendly_characters",
-                "src": "<!ui>button.png",
-                "text": {
-                    "color": "black",
-                    "src": "{Battle,friendly_characters}"
-                },
-                "type": "button",
-                "width": 0,
-                "x": "2%",
-                "y": 0
-            },
-            {
-                "alpha_when_not_hover": 100,
-                "auto_resize": true,
-                "height": "3%",
-                "name": "select_hostile_characters",
-                "src": "<!ui>button.png",
-                "text": {
-                    "color": "black",
-                    "src": "{Battle,hostile_characters}"
-                },
-                "type": "button",
-                "width": 0,
-                "x": 0,
-                "y": 0
-            }
-        ],
-        "type": "container",
-        "width": "100%",
-        "x": 0,
-        "y": "2%"
-    },
     "map_editor_buttons": {
         "height": "100%",
         "items": [

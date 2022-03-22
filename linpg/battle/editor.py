@@ -7,15 +7,11 @@ class AbstractMapEditor(AbstractBattleSystem):
         super().__init__()
         self.__buttons_container: GameObjectsDictContainer = UI.generate_container("map_editor_buttons")
         self.__right_container_buttons: GameObjectsDictContainer = UI.generate_container("map_editor_right_container_buttons")
-        self.__bottom_container_buttons: GameObjectsDictContainer = UI.generate_container("map_editor_bottom_container_buttons")
         self.__UIContainerRight: DynamicImage = DynamicImage("<!ui>container.png", 0, 0)
         self.__UIContainerRight.rotate(90)
-        self.__hostileCharactersImagesContainer: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(
-            None, 0, 0, 0, 0, "horizontal"
-        )
-        self.__friendlyCharactersImagesContainer: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(
-            None, 0, 0, 0, 0, "horizontal"
-        )
+        self.__bottom_container_buttons: GameObjectsListContainer = GameObjectsListContainer(None, 0, 0, 0, 0)
+        self.__entitiesImagesContainers: list = []
+        self.__entitiesImagesContainerUsingIndex: int = -1
         self.__envImgContainer: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(None, 0, 0, 0, 0, "vertical")
         self.__decorationsImgContainer: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(
             None, 0, 0, 0, 0, "vertical"
@@ -139,9 +135,6 @@ class AbstractMapEditor(AbstractBattleSystem):
         container_height = int(screen.get_height() * 0.3)
         button_width = int(screen.get_width() * 0.14)
         button_height = int(screen.get_height() * 0.05)
-        self.__bottom_container_buttons.get("select_hostile_characters").set_left(
-            self.__bottom_container_buttons.get("select_friendly_characters").right + panding
-        )
         self.__UIContainerBottom = DynamicImage("<!ui>container.png", 0, 0, container_width, container_height)
         self.__UIContainerButtonBottom = MovableImage(
             "<!ui>container_button.png",
@@ -154,34 +147,40 @@ class AbstractMapEditor(AbstractBattleSystem):
             button_width,
             button_height,
         )
-        # 加载所有友方的角色的图片文件
-        self.__friendlyCharactersImagesContainer.set_pos(container_width * 0.025, container_height * 0.3)
-        self.__friendlyCharactersImagesContainer.set_size(container_width * 0.95, container_height * 0.6)
-        for img_name in os.listdir(os.path.join(Specification.get("FolderPath", "Sprite"), "character")):
-            self.__friendlyCharactersImagesContainer.set(
-                img_name,
-                RawImg.smoothly_resize(
-                    EntitySpriteImageManager.try_get_img("character", img_name, "wait", 0).get_image_copy(),
-                    (None, container_height // 3),
-                ),
+        # 加载所有角色的图片文件
+        for faction in os.listdir(Specification.get("FolderPath", "Sprite")):
+            newContainer: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(
+                None,
+                container_width // 40,
+                container_height * 3 // 10,
+                container_width * 19 // 20,
+                container_height * 3 // 5,
+                "horizontal",
+                faction,
             )
-        self.__friendlyCharactersImagesContainer.set_scroll_bar_pos("bottom")
-        self.__friendlyCharactersImagesContainer.set_visible(True)
-        self.__friendlyCharactersImagesContainer.distance_between_item = panding
-        # 加载所有敌对角色的图片文件
-        self.__hostileCharactersImagesContainer.set_pos(container_width * 0.025, container_height * 0.3)
-        self.__hostileCharactersImagesContainer.set_size(container_width * 0.95, container_height * 0.6)
-        for img_name in os.listdir(os.path.join(Specification.get("FolderPath", "Sprite"), "sangvisFerri")):
-            self.__hostileCharactersImagesContainer.set(
-                img_name,
-                RawImg.smoothly_resize(
-                    EntitySpriteImageManager.try_get_img("sangvisFerri", img_name, "wait", 0).get_image_copy(),
-                    (None, container_height // 3),
-                ),
+            for img_name in os.listdir(os.path.join(Specification.get("FolderPath", "Sprite"), faction)):
+                newContainer.set(
+                    img_name,
+                    RawImg.smoothly_resize(
+                        EntitySpriteImageManager.try_get_img(faction, img_name, "wait", 0).get_image_copy(),
+                        (None, container_height // 3),
+                    ),
+                )
+            newContainer.set_scroll_bar_pos("bottom")
+            newContainer.distance_between_item = panding
+            self.__entitiesImagesContainers.append(newContainer)
+            newButton: Button = Button.load("<!ui>button.png", (0, 0), (0, 0), 100)
+            newButton.set_text(
+                ButtonComponent.text(
+                    Lang.get_text("General", faction), button_height // 2, Colors.BLACK, alpha_when_not_hover=100
+                )
             )
-        self.__hostileCharactersImagesContainer.set_scroll_bar_pos("bottom")
-        self.__hostileCharactersImagesContainer.set_visible(False)
-        self.__hostileCharactersImagesContainer.distance_between_item = panding
+            newButton.set_auto_resize(True)
+            if len(self.__bottom_container_buttons) > 0:
+                newButton.set_left(self.__bottom_container_buttons[len(self.__bottom_container_buttons) - 1].right + panding)
+            else:
+                self.__entitiesImagesContainerUsingIndex = 0
+            self.__bottom_container_buttons.append(newButton)
         # 绿色方块/方块标准
         self.__range_green = RawImg.load("<!ui>range_green.png", (self._MAP.block_width * 0.8, None))
         self.__range_green.set_alpha(150)
@@ -217,24 +216,26 @@ class AbstractMapEditor(AbstractBattleSystem):
                     self.__UIContainerButtonBottom.flip(False, True)
                 elif self.__delete_mode is True and block_get_click is not None:
                     # 查看当前位置是否有装饰物
-                    decoration = self._MAP.find_decoration_on((block_get_click["x"], block_get_click["y"]))
+                    decoration: Optional[DecorationObject] = self._MAP.find_decoration_on(
+                        (block_get_click["x"], block_get_click["y"])
+                    )
                     # 如果发现有冲突的装饰物
                     if decoration is not None:
                         self._MAP.remove_decoration(decoration)
                     else:
-                        character_collided = None
+                        decoration_collided: Optional[str] = None
                         for key, value in {
                             **self._alliances_data,
                             **self._enemies_data,
                         }.items():
                             if value.x == block_get_click["x"] and value.y == block_get_click["y"]:
-                                character_collided = key
+                                decoration_collided = key
                                 break
-                        if character_collided is not None:
-                            if character_collided in self._alliances_data:
-                                self._alliances_data.pop(character_collided)
-                            elif character_collided in self._enemies_data:
-                                self._enemies_data.pop(character_collided)
+                        if decoration_collided is not None:
+                            if decoration_collided in self._alliances_data:
+                                self._alliances_data.pop(decoration_collided)
+                            elif decoration_collided in self._enemies_data:
+                                self._enemies_data.pop(decoration_collided)
                 else:
                     if (
                         Controller.get_event("confirm")
@@ -260,27 +261,30 @@ class AbstractMapEditor(AbstractBattleSystem):
                                 DataBase.get("Decorations")[self.__object_to_put_down["id"]],
                                 "{0}_{1}".format(self.__object_to_put_down["id"], self._MAP.count_decorations()),
                             )
-                        elif (
-                            self.__object_to_put_down["type"] == "character"
-                            or self.__object_to_put_down["type"] == "sangvisFerri"
-                        ):
-                            character_collided = None
-                            for key, value in {**self._alliances_data, **self._enemies_data}.items():
-                                if value.x == block_get_click["x"] and value.y == block_get_click["y"]:
+                        elif self.__object_to_put_down["type"] == "entity":
+                            # 移除坐标冲突的角色
+                            character_collided: Optional[str] = None
+                            for key in self._alliances_data:
+                                if Coordinates.is_same(self._alliances_data[key], block_get_click):
                                     character_collided = key
                                     break
-                            if character_collided is not None:
-                                if character_collided in self._alliances_data:
-                                    self._alliances_data.pop(character_collided)
-                                elif character_collided in self._enemies_data:
+                            if character_collided is None:
+                                for key in self._enemies_data:
+                                    if Coordinates.is_same(self._enemies_data[key], block_get_click):
+                                        character_collided = key
+                                        break
+                                if character_collided is not None:
                                     self._enemies_data.pop(character_collided)
-                            the_id = 0
-                            if self.__object_to_put_down["type"] == "character":
+                            else:
+                                self._alliances_data.pop(character_collided)
+                            the_id: int = 0
+                            _new_data: dict = deepcopy(CHARACTER_DATABASE[self.__object_to_put_down["id"]])
+                            if _new_data["faction"] in DataBase.get("Faction", "alliances"):
                                 while self.__object_to_put_down["id"] + "_" + str(the_id) in self._alliances_data:
                                     the_id += 1
                                 nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
                                 self._alliances_data[nameTemp] = FriendlyCharacter(
-                                    deepcopy(CHARACTER_DATABASE[self.__object_to_put_down["id"]])
+                                    _new_data
                                     | {
                                         "x": block_get_click["x"],
                                         "y": block_get_click["y"],
@@ -289,12 +293,12 @@ class AbstractMapEditor(AbstractBattleSystem):
                                     },
                                     "dev",
                                 )
-                            elif self.__object_to_put_down["type"] == "sangvisFerri":
+                            else:
                                 while self.__object_to_put_down["id"] + "_" + str(the_id) in self._enemies_data:
                                     the_id += 1
                                 nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
                                 self._enemies_data[nameTemp] = HostileCharacter(
-                                    deepcopy(CHARACTER_DATABASE[self.__object_to_put_down["id"]])
+                                    _new_data
                                     | {
                                         "x": block_get_click["x"],
                                         "y": block_get_click["y"],
@@ -383,31 +387,22 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__UIContainerButtonBottom.draw(screen)
         if self.__UIContainerButtonBottom.bottom < screen.get_height():
             self.__UIContainerBottom.display(screen, (0, self.__UIContainerButtonBottom.bottom))
-            self.__friendlyCharactersImagesContainer.display(screen, (0, self.__UIContainerButtonBottom.bottom))
-            self.__hostileCharactersImagesContainer.display(screen, (0, self.__UIContainerButtonBottom.bottom))
+            if self.__entitiesImagesContainerUsingIndex >= 0:
+                self.__entitiesImagesContainers[self.__entitiesImagesContainerUsingIndex].display(
+                    screen, (0, self.__UIContainerButtonBottom.bottom)
+                )
             self.__bottom_container_buttons.display(screen, (0, self.__UIContainerButtonBottom.bottom))
             if Controller.get_event("confirm"):
-                if self.__bottom_container_buttons.item_being_hovered == "select_friendly_characters":
-                    self.__friendlyCharactersImagesContainer.set_visible(True)
-                    self.__hostileCharactersImagesContainer.set_visible(False)
-                elif self.__bottom_container_buttons.item_being_hovered == "select_hostile_characters":
-                    self.__friendlyCharactersImagesContainer.set_visible(False)
-                    self.__hostileCharactersImagesContainer.set_visible(True)
-                if (
-                    self.__friendlyCharactersImagesContainer.is_visible()
-                    and self.__friendlyCharactersImagesContainer.item_being_hovered is not None
-                ):
-                    self.__object_to_put_down = {
-                        "type": "character",
-                        "id": self.__friendlyCharactersImagesContainer.item_being_hovered,
-                    }
+                if self.__bottom_container_buttons.item_being_hovered >= 0:
+                    self.__entitiesImagesContainerUsingIndex = self.__bottom_container_buttons.item_being_hovered
                 elif (
-                    self.__hostileCharactersImagesContainer.is_visible()
-                    and self.__hostileCharactersImagesContainer.item_being_hovered is not None
+                    self.__entitiesImagesContainerUsingIndex >= 0
+                    and self.__entitiesImagesContainers[self.__entitiesImagesContainerUsingIndex].item_being_hovered is not None
                 ):
                     self.__object_to_put_down = {
-                        "type": "sangvisFerri",
-                        "id": self.__hostileCharactersImagesContainer.item_being_hovered,
+                        "type": "entity",
+                        "container_id": self.__entitiesImagesContainerUsingIndex,
+                        "id": self.__entitiesImagesContainers[self.__entitiesImagesContainerUsingIndex].item_being_hovered,
                     }
 
         # 画出选中框
@@ -468,10 +463,13 @@ class AbstractMapEditor(AbstractBattleSystem):
                 screen.blit(self.__envImgContainer.get(self.__object_to_put_down["id"]), Controller.mouse.pos)
             elif self.__object_to_put_down["type"] == "decoration":
                 screen.blit(self.__decorationsImgContainer.get(self.__object_to_put_down["id"]), Controller.mouse.pos)
-            elif self.__object_to_put_down["type"] == "character":
-                screen.blit(self.__friendlyCharactersImagesContainer.get(self.__object_to_put_down["id"]), Controller.mouse.pos)
-            elif self.__object_to_put_down["type"] == "sangvisFerri":
-                screen.blit(self.__hostileCharactersImagesContainer.get(self.__object_to_put_down["id"]), Controller.mouse.pos)
+            elif self.__object_to_put_down["type"] == "entity":
+                screen.blit(
+                    self.__entitiesImagesContainers[self.__object_to_put_down["container_id"]].get(
+                        self.__object_to_put_down["id"]
+                    ),
+                    Controller.mouse.pos,
+                )
 
         # 未保存离开时的警告
         self.__no_save_warning.draw(screen)

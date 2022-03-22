@@ -9,7 +9,7 @@ class Entity(Position):
     # idle动作
     __IDLE_ACTION: str = "wait"
 
-    def __init__(self, DATA: dict, faction: str, mode: str):
+    def __init__(self, DATA: dict, mode: str):
         super().__init__(DATA["x"], DATA["y"])
         # 最大行动值
         self.__max_action_point: int = int(DATA["max_action_point"])
@@ -44,7 +44,7 @@ class Entity(Position):
         # 武器类型
         self.__kind: str = str(DATA["kind"])
         # 阵营
-        self.__faction: str = faction
+        self.__faction: str = str(DATA["faction"])
         # 角色武器名称
         self.__type: str = str(DATA["type"])
         # 是否图片镜像
@@ -69,7 +69,7 @@ class Entity(Position):
         # 是否无敌
         self.__if_invincible: bool = bool(DATA["if_invincible"]) if "if_invincible" in DATA else False
         # gif图片管理
-        self.__imgId_dict: dict = EntitySpriteImageManager.load(faction, self.__type, mode)
+        self.__imgId_dict: dict = EntitySpriteImageManager.load(self.__faction, self.__type, mode)
         # 加载角色的音效
         if mode != "dev":
             self.__CHARACTERS_SOUND_SYSTEM.add(self.__type)

@@ -16,7 +16,7 @@ del _path
 # 友方角色类
 class FriendlyCharacter(Entity):
     def __init__(self, characterData: dict, mode: str) -> None:
-        super().__init__(characterData, "character", mode)
+        super().__init__(characterData, mode)
         # 是否濒死
         self.__down_time: int = (
             int(characterData["down_time"]) if "down_time" in characterData else (-1 if self.is_alive() else DYING_ROUND_LIMIT)
@@ -242,8 +242,8 @@ class DecisionHolder:
 
 # 敌对角色类
 class HostileCharacter(Entity):
-    def __init__(self, characterData: dict, mode: str):
-        super().__init__(characterData, "sangvisFerri", mode)
+    def __init__(self, characterData: dict, mode: str) -> None:
+        super().__init__(characterData, mode)
         self.__patrol_path: deque = deque(characterData["patrol_path"]) if "patrol_path" in characterData else deque()
         self.__vigilance: int = int(characterData["vigilance"]) if "vigilance" in characterData else 0
         self.__vigilanceImage: HostileCharacterDynamicProgressBarSurface = HostileCharacterDynamicProgressBarSurface()

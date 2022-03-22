@@ -1,4 +1,3 @@
-from PIL import Image as ImageLoader  # type: ignore
 from ..battle import *
 
 
@@ -56,16 +55,11 @@ class Loader:
     ) -> GifImage:
         imgList: list = []
         # 如果是gif文件
-        if isinstance(gif_path_or_img_list, str) and gif_path_or_img_list.endswith(".gif"):
-            gif_image: ImageLoader.Image = ImageLoader.open(gif_path_or_img_list)
-            frame_index: int = 0
-            for frame_index in range(gif_image.n_frames):
-                gif_image.seek(frame_index)
-                imgList.append(StaticImage(Surface.from_array(numpy.asarray(gif_image.convert("RGBA"))), 0, 0, size[0], size[1]))
+        if isinstance(gif_path_or_img_list, str):
+            imgList = [StaticImage(surf, 0, 0, size[0], size[1]) for surf in RawImg.load_animated(gif_path_or_img_list)]
         # 如果是一个列表的文件路径
         elif isinstance(gif_path_or_img_list, Sequence):
-            for image_path in gif_path_or_img_list:
-                imgList.append(StaticImage(image_path, 0, 0, size[0], size[1]))
+            imgList = [StaticImage(surf, 0, 0, size[0], size[1]) for surf in gif_path_or_img_list]
         else:
             EXCEPTION.fatal('Invalid input for "gif_path_or_img_list": {}'.format(gif_path_or_img_list))
         return GifImage(tuple(imgList), position[0], position[1], size[0], size[1], updateGap)

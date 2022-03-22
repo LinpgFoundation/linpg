@@ -82,9 +82,9 @@ class EntitySpriteImageManager:
     def does_action_exist(cls, characterType: str, action: str) -> bool:
         return action in cls.__CHARACTERS_IMAGE_DICT[characterType]
 
-    # 生成Sprite图片
+    # 生成webp动态图片
     @staticmethod
-    def generate(entityFaction: str, entityType: str, resultFileType: str = "png") -> None:
+    def generate(entityFaction: str, entityType: str) -> None:
         # 储存数据的字典
         _data: dict = {}
         # 目录路径
@@ -115,7 +115,7 @@ class EntitySpriteImageManager:
                         if _bounding.x < crop_rect[0]:
                             crop_rect[0] = _bounding.x
                         if _bounding.y < crop_rect[1]:
-                            crop_rect[1] = _bounding.x
+                            crop_rect[1] = _bounding.y
                         if _bounding.right > crop_rect[2]:
                             crop_rect[2] = _bounding.right
                         if _bounding.bottom > crop_rect[3]:
@@ -127,14 +127,18 @@ class EntitySpriteImageManager:
                     crop_rect[3] -= crop_rect[1]
                     # 写入信息
                     _data[_action_folder] = {"count": len(imgTempList), "subrect": crop_rect, "size": list(_image.get_size())}
-                    # 最终sprite图
-                    sprite_surface: ImageSurface = Surface.transparent((crop_rect[2] * len(imgTempList), crop_rect[3]))
-                    # 生成当前动作的sprite图
+                    # 生成当前动作的webp图
                     for i in range(len(imgTempList)):
-                        sprite_surface.blit(imgTempList[i].subsurface(crop_rect), (i * crop_rect[2], 0))
-                    # 保存当前动作的sprite图
-                    target_file_name: str = "{0}.{1}".format(_action_folder, resultFileType)
-                    RawImg.save(sprite_surface, os.path.join(folder_path, target_file_name))
+                        imgTempList[i] = PILImage.fromarray(Surface.to_array(imgTempList[i].subsurface(crop_rect)))
+                    # 保存当前动作的webp图
+                    target_file_name: str = _action_folder + ".webp"
+                    imgTempList[0].save(
+                        os.path.join(folder_path, target_file_name),
+                        save_all=True,
+                        append_images=imgTempList[1:],
+                        duration=0,
+                        lossless=True,
+                    )
                     # 删除原先的文件夹
                     shutil.rmtree(os.path.join(folder_path, _action_folder))
         # 保存sprite图数据
@@ -169,23 +173,16 @@ class EntitySpriteImageManager:
         # 如果动作已被初始化，则返回对应字典
         elif action in cls.__CHARACTERS_IMAGE_DICT[characterType]:
             return {"imgId": 0, "alpha": 255}
-        # 加载原始sprite图片
-        character_sprite_image: ImageSurface = RawImg.quickly_load(
-            os.path.join(Specification.get("FolderPath", "Sprite"), faction, characterType, action + ".png")
-        )
-        # 根据meta信息切割图片并保存数据
+        # 加载图片
         cls.__CHARACTERS_IMAGE_DICT[characterType][action] = [
             cls.__EntitySpriteImage(
-                character_sprite_image.subsurface(
-                    i * action_meta_data["subrect"][2], 0, action_meta_data["subrect"][2], action_meta_data["subrect"][3]
-                ),
-                action_meta_data["subrect"][2:],
-                action_meta_data["subrect"][:2],
-                action_meta_data["size"],
+                surf, action_meta_data["subrect"][2:], action_meta_data["subrect"][:2], action_meta_data["size"]
             )
-            for i in range(action_meta_data["count"])
+            for surf in RawImg.load_animated(
+                os.path.join(Specification.get("FolderPath", "Sprite"), faction, characterType, action + ".webp")
+            )
         ]
-        if faction == "sangvisFerri":
+        if faction == "enemy":
             for img in cls.__CHARACTERS_IMAGE_DICT[characterType][action]:
                 img.flip_original_img()
         return {"imgId": 0, "alpha": 255}

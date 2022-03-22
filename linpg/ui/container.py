@@ -42,6 +42,15 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
         self.__items_container_dict: dict = {}
         self._item_being_hovered: Optional[str] = None
 
+    def __setitem__(self, key: str, new_item: Optional[object]) -> None:
+        self.__items_container_dict[key] = new_item
+
+    def __getitem__(self, key: str) -> Any:
+        return self.__items_container_dict[key]
+
+    def __len__(self) -> int:
+        return len(self.__items_container_dict)
+
     @property
     def item_being_hovered(self) -> Optional[str]:
         return self._item_being_hovered
@@ -106,6 +115,15 @@ class GameObjectsListContainer(AbstractGameObjectsContainer):
         self.__items_container_list: list = []
         self._item_being_hovered: int = -1
 
+    def __getitem__(self, index: int) -> Any:
+        return self.__items_container_list[index]
+
+    def __setitem__(self, index: int, new_item: Optional[object]) -> None:
+        self.__items_container_list[index] = new_item
+
+    def __len__(self) -> int:
+        return len(self.__items_container_list)
+
     @property
     def item_being_hovered(self) -> int:
         return self._item_being_hovered
@@ -117,10 +135,6 @@ class GameObjectsListContainer(AbstractGameObjectsContainer):
     # 新增一个物品
     def append(self, new_item: Optional[object]) -> None:
         self.__items_container_list.append(new_item)
-
-    # 获取一个物品
-    def get(self, index: int) -> Any:
-        return self.__items_container_list[index]
 
     # 交换2个key名下的图片
     def swap(self, index1: int, index2: int) -> None:

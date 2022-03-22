@@ -1,9 +1,7 @@
 {
     "Battle": {
         "block": "Block",
-        "decoration": "Decoration",
-        "friendly_characters": "Friendly Characters",
-        "hostile_characters": "Hostile Characters"
+        "decoration": "Decoration"
     },
     "Dialog": {
         "auto": "Auto",

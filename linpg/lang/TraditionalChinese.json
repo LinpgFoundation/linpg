@@ -1,9 +1,7 @@
 {
     "Battle": {
         "block": "方塊",
-        "decoration": "裝飾物",
-        "friendly_characters": "友方角色",
-        "hostile_characters": "敵方角色"
+        "decoration": "裝飾物"
     },
     "Dialog": {
         "auto": "自動",

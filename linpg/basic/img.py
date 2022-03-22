@@ -1,3 +1,5 @@
+from PIL import Image as PILImage  # type: ignore
+from PIL import ImageSequence as PILImageSequence  # type: ignore
 from .draw import *
 
 # 尝试导入linpgassets
@@ -56,6 +58,14 @@ class Surface:
             surface_alpha = numpy.array(surface.get_view("A"), copy=False)
             surface_alpha[:, :] = surface_array[:, :, 3]
             return surface
+
+    # 根据Surface生成array
+    @staticmethod
+    def to_array(surface: ImageSurface, with_alpha: bool = True, swap_axes: bool = True) -> numpy.ndarray:
+        surface_3d_rgb_array: numpy.ndarray = pygame.surfarray.array3d(surface)
+        if with_alpha is True:
+            surface_3d_rgb_array = numpy.dstack((surface_3d_rgb_array, pygame.surfarray.array_alpha(surface)))
+        return surface_3d_rgb_array.swapaxes(0, 1) if swap_axes is True else surface_3d_rgb_array
 
     # 获取材质缺失的临时警示材质
     @classmethod
@@ -118,6 +128,14 @@ class RawImg:
             img.set_alpha(alpha)
         # 如果没有给size,则直接返回Surface
         return img if len(size) == 0 else cls.smoothly_resize(img, size) if Setting.antialias is True else cls.resize(img, size)
+
+    # 动态图片加载模块
+    @staticmethod
+    def load_animated(path: str) -> list:
+        return [
+            Surface.from_array(numpy.asarray(frame.convert("RGBA"))).convert_alpha()
+            for frame in PILImageSequence.Iterator(PILImage.open(path))
+        ]
 
     # 重新编辑尺寸
     @staticmethod

@@ -37,11 +37,11 @@ class AbstractBattleSystem(AbstractGameSystem):
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
-        _data: dict = {"character": {}, "sangvisFerri": {}}
+        _data: dict = {"alliances": {}, "enemies": {}}
         for key in self._alliances_data:
-            _data["character"][key] = self._alliances_data[key].to_dict()
+            _data["alliances"][key] = self._alliances_data[key].to_dict()
         for key in self._enemies_data:
-            _data["sangvisFerri"][key] = self._enemies_data[key].to_dict()
+            _data["enemies"][key] = self._enemies_data[key].to_dict()
         _data.update(self.get_data_of_parent_game_system())
         _data.update(self._MAP.to_dict())
         return _data

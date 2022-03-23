@@ -10,12 +10,12 @@ class Display:
     __FPS: int = max(int(Setting.get("FPS")), 1)
     __STANDARD_FPS: int = 60
     # 窗口比例
-    __SCALE: int = keep_int_in_range(int(Setting.get("Screen", "scale")), 0, 100)
+    __SCALE: int = keep_int_in_range(int(Setting.get("Resolution", "scale")), 0, 100)
     # 主要的窗口
     __SCREEN_WINDOW: ImageSurface = Surface.NULL
     # 窗口尺寸
-    __STANDARD_WIDTH: int = max(int(Setting.get("Screen", "width")), 0) * __SCALE // 100
-    __STANDARD_HEIGHT: int = max(int(Setting.get("Screen", "height")), 0) * __SCALE // 100
+    __STANDARD_WIDTH: int = max(int(Setting.get("Resolution", "width")), 0) * __SCALE // 100
+    __STANDARD_HEIGHT: int = max(int(Setting.get("Resolution", "height")), 0) * __SCALE // 100
     # 信息渲染使用的文字模块
     __FONT: pygame.font.Font = pygame.font.SysFont("arial", __STANDARD_HEIGHT // 40)
 
@@ -92,10 +92,21 @@ class Display:
     # 初始化屏幕
     @classmethod
     def init(cls, flags: int = -1) -> ImageSurface:
-        if flags < 0:
-            flags = pygame.FULLSCREEN if cls.__SCALE >= 100 else 0
+        # 如果是全屏模式
+        if cls.__SCALE >= 100:
+            if flags < 0:
+                flags = pygame.FULLSCREEN | pygame.SCALED
             if Setting.get("EnableOpenGL") is True:
                 flags |= pygame.OPENGL
+            # 如果分辨率与设置中的参数不符，则更新设置中的分辨率参数
+            _info = pygame.display.Info()
+            if cls.__STANDARD_WIDTH != _info.current_w or cls.__STANDARD_HEIGHT != _info.current_h:
+                cls.__STANDARD_WIDTH = _info.current_w
+                cls.__STANDARD_HEIGHT = _info.current_h
+                Setting.set("Resolution", "width", value=cls.__STANDARD_WIDTH)
+                Setting.set("Resolution", "height", value=cls.__STANDARD_HEIGHT)
+                Setting.save()
+        # 生成screen
         cls.__SCREEN_WINDOW = pygame.display.set_mode(
             cls.get_size(), flags, vsync=1 if Setting.get("EnableVerticalSync") is True else 0
         )

@@ -162,7 +162,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                 newContainer.set(
                     img_name,
                     RawImg.smoothly_resize(
-                        EntitySpriteImageManager.try_get_img(faction, img_name, "wait", 0).get_image_copy(),
+                        EntitySpriteImageManager.try_get_images(faction, img_name, "wait").get_image(0).get_image_copy(),
                         (None, container_height // 3),
                     ),
                 )

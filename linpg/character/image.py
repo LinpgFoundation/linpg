@@ -31,51 +31,71 @@ class EntitySpriteImageManager:
 
     __CHARACTERS_IMAGE_DICT: dict = {}
 
-    class __EntitySpriteImage(StaticImage):
-        def __init__(self, img: ImageSurface, current_size: list[int], offset: list[int], original_img_size: list[int]) -> None:
-            super().__init__(img, 0, 0, current_size[0], current_size[1])
-            self.__original_width = img.get_width()
-            self.__original_height = img.get_height()
-            self.__offset_x: int = offset[0]
+    # 管理单个动作所有对应图片的模块
+    class __EntityImagesCollection:
+        def __init__(
+            self, imagesList: tuple[StaticImage, ...], crop_size: list[int], offset: list[int], original_img_size: list[int]
+        ) -> None:
+            self.__images: tuple[StaticImage, ...] = imagesList
+            self.__index: int = 0
+            self.__width: number = 0
+            self.__height: number = 0
+            self.__cropped_image_width: int = crop_size[0]
+            self.__cropped_image_height: int = crop_size[1]
+            self.__left_offset_x: int = offset[0]
             self.__offset_y: int = offset[1]
             self.__real_width: int = original_img_size[0]
             self.__real_height: int = original_img_size[1]
+            self.__right_offset_x: int = self.__real_width - self.__cropped_image_width - self.__left_offset_x
 
-        def set_width(self, value: int_f) -> None:
-            super().set_width(value * self.__original_width / self.__real_width)
+        def __len__(self) -> int:
+            return len(self.__images)
 
-        def set_height(self, value: int_f) -> None:
-            super().set_height(value * self.__original_height / self.__real_height)
+        # 获取指定index的图片
+        def get_image(self, index: int) -> StaticImage:
+            return self.__images[index]
+
+        # 设置尺寸
+        def set_size(self, width: number, height: number) -> None:
+            self.__width = width * self.__cropped_image_width / self.__real_width
+            self.__height = height * self.__cropped_image_height / self.__real_height
+
+        # 设置要播放图片的index
+        def set_index(self, new_index: int) -> None:
+            self.__index = new_index
+
+        # 反转所有列表内的图片
+        def flip_all(self) -> None:
+            for _image in self.__images:
+                _image.flip_original_img()
+            temp: int = self.__right_offset_x
+            self.__right_offset_x = self.__left_offset_x
+            self.__left_offset_x = temp
 
         # 展示
-        def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
-            super().display(
-                surface,
-                Coordinates.add(
-                    offSet,
-                    (
-                        self.__offset_x * self.get_width() // self.__original_width,
-                        self.__offset_y * self.get_height() // self.__original_height,
-                    ),
-                ),
-            )
+        def draw_onto(self, surface: ImageSurface, alpha: int, ifFlip: bool, pos: tuple) -> None:
+            self.__images[self.__index].set_size(self.__width, self.__height)
+            self.__images[self.__index].set_alpha(alpha)  # 翻转图片
+            self.__images[self.__index].set_top(self.__offset_y * self.__height / self.__cropped_image_height + pos[1])
+            if ifFlip:
+                self.__images[self.__index].flip_if_not()
+                self.__images[self.__index].set_left(self.__right_offset_x * self.__width / self.__cropped_image_width + pos[0])
+            else:
+                self.__images[self.__index].flip_back_to_normal()
+                self.__images[self.__index].set_left(self.__left_offset_x * self.__width / self.__cropped_image_width + pos[0])
+            self.__images[self.__index].draw(surface)
 
     # 获取图片
     @classmethod
-    def get_img(cls, characterType: str, action: str, imgId: int) -> __EntitySpriteImage:
-        return cls.__CHARACTERS_IMAGE_DICT[characterType][action][imgId]  # type: ignore
+    def get_images(cls, characterType: str, action: str) -> __EntityImagesCollection:
+        return cls.__CHARACTERS_IMAGE_DICT[characterType][action]  # type: ignore
 
     # 尝试获取图片
     @classmethod
-    def try_get_img(cls, faction: str, characterType: str, action: str, imgId: int) -> __EntitySpriteImage:
+    def try_get_images(cls, faction: str, characterType: str, action: str) -> __EntityImagesCollection:
         if characterType not in cls.__CHARACTERS_IMAGE_DICT or action not in cls.__CHARACTERS_IMAGE_DICT[characterType]:
             cls.load(faction, characterType, "dev")
-        return cls.get_img(characterType, action, imgId)
-
-    # 获取图片数量
-    @classmethod
-    def get_img_num(cls, characterType: str, action: str) -> int:
-        return len(cls.__CHARACTERS_IMAGE_DICT[characterType][action])
+        return cls.get_images(characterType, action)
 
     # 是否图片存在
     @classmethod
@@ -174,15 +194,21 @@ class EntitySpriteImageManager:
         elif action in cls.__CHARACTERS_IMAGE_DICT[characterType]:
             return {"imgId": 0, "alpha": 255}
         # 加载图片
-        cls.__CHARACTERS_IMAGE_DICT[characterType][action] = [
-            cls.__EntitySpriteImage(
-                surf, action_meta_data["subrect"][2:], action_meta_data["subrect"][:2], action_meta_data["size"]
-            )
-            for surf in RawImg.load_animated(
-                os.path.join(Specification.get("FolderPath", "Sprite"), faction, characterType, action + ".webp")
-            )
-        ]
+        cls.__CHARACTERS_IMAGE_DICT[characterType][action] = cls.__EntityImagesCollection(
+            tuple(
+                [
+                    StaticImage(surf, 0, 0)
+                    for surf in RawImg.load_animated(
+                        os.path.join(Specification.get("FolderPath", "Sprite"), faction, characterType, action + ".webp")
+                    )
+                ]
+            ),
+            action_meta_data["subrect"][2:],
+            action_meta_data["subrect"][:2],
+            action_meta_data["size"],
+        )
+        # 如果是敌人模块，则flip所有图片
         if faction == "enemy":
-            for img in cls.__CHARACTERS_IMAGE_DICT[characterType][action]:
-                img.flip_original_img()
+            cls.__CHARACTERS_IMAGE_DICT[characterType][action].flip_all()
+        # 返回数据
         return {"imgId": 0, "alpha": 255}

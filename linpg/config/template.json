@@ -47,7 +47,7 @@
         "MouseMoveSpeed": 30,
         "NumberOfChannels": 8,
         "ReadingSpeed": 1,
-        "Screen": {
+        "Resolution": {
             "height": 1080,
             "scale": 100,
             "width": 1920

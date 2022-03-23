@@ -87,7 +87,7 @@ class DialogBox(AbstractDialogBox):
             )
         self.__READING_SPEED: int = max(int(Setting.get("ReadingSpeed")), 1)
         # 鼠标图标
-        self.__mouse_img = GifImage(
+        self.__mouse_img = AnimatedImage(
             (
                 StaticImage("<!ui>mouse_none.png", 0, 0, self.FONT.size, self.FONT.size),
                 StaticImage("<!ui>mouse.png", 0, 0, self.FONT.size, self.FONT.size),

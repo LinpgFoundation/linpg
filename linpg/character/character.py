@@ -44,6 +44,8 @@ class FriendlyCharacter(Entity):
         self.__beNoticedImage.set_percentage(self.__detection / 100)
         # 重创立绘
         self.__getHurtImage: Optional[EntityGetHurtImage]
+        # 设置态度flag
+        self.set_attitude(1)
         # 尝试加载重创立绘
         try:
             self.__getHurtImage = EntityGetHurtImage(self.type, Display.get_height() / 4, int(Display.get_height() / 2))
@@ -248,6 +250,8 @@ class HostileCharacter(Entity):
         self.__vigilance: int = int(characterData["vigilance"]) if "vigilance" in characterData else 0
         self.__vigilanceImage: HostileCharacterDynamicProgressBarSurface = HostileCharacterDynamicProgressBarSurface()
         self.__vigilanceImage.set_percentage(self.__vigilance / 100)
+        # 设置态度flag
+        self.set_attitude(-1)
 
     def to_dict(self) -> dict:
         # 获取父类信息

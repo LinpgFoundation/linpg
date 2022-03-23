@@ -45,6 +45,8 @@ class Entity(Position):
         self.__kind: str = str(DATA["kind"])
         # 阵营
         self.__faction: str = str(DATA["faction"])
+        # 态度： 友方 - 1；敌对 - -1；中立 - 0
+        self.__attitude: int = 0
         # 角色武器名称
         self.__type: str = str(DATA["type"])
         # 是否图片镜像
@@ -153,6 +155,14 @@ class Entity(Position):
     def faction(self) -> str:
         return self.__faction
 
+    # 态度
+    @property
+    def attitude(self) -> int:
+        return self.__attitude
+
+    def set_attitude(self, value: int) -> None:
+        self.__attitude = keep_int_in_range(value, -1, 1)
+
     # 武器类型
     @property
     def kind(self) -> str:
@@ -228,7 +238,7 @@ class Entity(Position):
 
     # 获取角色特定动作的图片总数量
     def get_imgNum(self, action: str) -> int:
-        return EntitySpriteImageManager.get_img_num(self.__type, action)
+        return len(EntitySpriteImageManager.get_images(self.__type, action))
 
     # 设定角色特定动作的图片播放ID
     def set_imgId(self, action: str, imgId: int) -> None:
@@ -596,23 +606,19 @@ class Entity(Position):
         # 如果没有指定action,则默认使用当前的动作
         if action is None:
             action = self.__current_action
+        # 获取对应动作的图片管理模块
+        _images = EntitySpriteImageManager.get_images(self.__type, action)
+        _images.set_index(self.__imgId_dict[action]["imgId"])
         # 调整小人图片的尺寸
-        img_of_char = EntitySpriteImageManager.get_img(self.__type, action, self.__imgId_dict[action]["imgId"])
-        img_width = round(MAP_POINTER.block_width * 8 / 5, 2)
-        img_of_char.set_size(img_width, img_width)
-        # 调整alpha值
-        img_of_char.set_alpha(alpha)
-        # 反转图片
-        if self.__if_flip:
-            img_of_char.flip_if_not()
-        else:
-            img_of_char.flip_back_to_normal()
+        img_width: float = round(MAP_POINTER.block_width * 8 / 5, 2)
+        _images.set_size(img_width, img_width)
         # 如果没有指定pos,则默认使用当前的动作
         if len(pos) < 1:
             pos = MAP_POINTER.calPosInMap(self.x, self.y)
         # 把角色图片画到屏幕上
-        img_of_char.set_pos(pos[0] - MAP_POINTER.block_width * 0.3, pos[1] - MAP_POINTER.block_width * 0.85)
-        img_of_char.draw(surface)
+        _images.draw_onto(
+            surface, alpha, self.__if_flip, (pos[0] - MAP_POINTER.block_width * 0.3, pos[1] - MAP_POINTER.block_width * 0.85)
+        )
 
     # 把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
     def draw(self, surface: ImageSurface, MAP_POINTER: MapObject) -> None:

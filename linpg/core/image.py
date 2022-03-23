@@ -283,7 +283,7 @@ class MovableImage(StaticImage):
 
 
 # gif图片管理
-class GifImage(AdvancedAbstractImageSurface):
+class AnimatedImage(AdvancedAbstractImageSurface):
     def __init__(self, imgList: tuple, x: int_f, y: int_f, width: int_f, height: int_f, updateGap: int_f, tag: str = "") -> None:
         super().__init__(imgList, x, y, width, height, tag)
         self.imgId: int = 0
@@ -291,12 +291,12 @@ class GifImage(AdvancedAbstractImageSurface):
         self.countDown: int = 0
 
     # 返回一个复制
-    def copy(self) -> "GifImage":
-        return GifImage(self.get_image_copy(), self.x, self.y, self.get_width(), self.get_height(), self.updateGap)
+    def copy(self) -> "AnimatedImage":
+        return AnimatedImage(self.get_image_copy(), self.x, self.y, self.get_width(), self.get_height(), self.updateGap)
 
     # 返回一个浅复制品
-    def light_copy(self) -> "GifImage":
-        return GifImage(self.img, self.x, self.y, self.get_width(), self.get_height(), self.updateGap)
+    def light_copy(self) -> "AnimatedImage":
+        return AnimatedImage(self.img, self.x, self.y, self.get_width(), self.get_height(), self.updateGap)
 
     # 当前图片
     @property

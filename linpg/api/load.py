@@ -52,7 +52,7 @@ class Loader:
     @staticmethod
     def gif(
         gif_path_or_img_list: Union[str, Sequence], position: tuple[int, int], size: tuple[int, int], updateGap: int = 1
-    ) -> GifImage:
+    ) -> AnimatedImage:
         imgList: list = []
         # 如果是gif文件
         if isinstance(gif_path_or_img_list, str):
@@ -62,7 +62,7 @@ class Loader:
             imgList = [StaticImage(surf, 0, 0, size[0], size[1]) for surf in gif_path_or_img_list]
         else:
             EXCEPTION.fatal('Invalid input for "gif_path_or_img_list": {}'.format(gif_path_or_img_list))
-        return GifImage(tuple(imgList), position[0], position[1], size[0], size[1], updateGap)
+        return AnimatedImage(tuple(imgList), position[0], position[1], size[0], size[1], updateGap)
 
     @staticmethod
     def button(path: str, position: tuple[int, int], size: tuple[int, int], alpha_when_not_hover: int = 255) -> Button:

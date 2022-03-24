@@ -25,7 +25,6 @@ class AbstractMapEditor(AbstractBattleSystem):
         # 选中框
         self.__select_rect: Rectangle = Rectangle(0, 0, 0, 0)
         self.__select_pos: tuple = tuple()
-        self.__selected_entities: list[str] = []
         # 是否是delete模式
         self.__delete_mode: bool = False
 
@@ -326,38 +325,18 @@ class AbstractMapEditor(AbstractBattleSystem):
                 screen.blit(self.__range_green, (xTemp + self._MAP.block_width * 0.1, yTemp))
 
         # 角色动画
-        for key in self._alliances_data:
-            self._alliances_data[key].draw(screen, self._MAP)
-            """
-            if (
-                0 < self._alliances_data[key].local_x - self.__select_rect.x < self.__select_rect.width
-                and 0 < self._alliances_data[key].local_y - self.__select_rect.y < self.__select_rect.height
-            ):
-                if key not in self.__selected_entities:
-                    self.__selected_entities.append(key)
-            elif key in self.__selected_entities:
-                self.__selected_entities.remove(key)
-            if key in self.__selected_entities:
-                self._alliances_data[key].draw_outline(screen)
-            """
-            if (
-                len(self.__object_to_put_down) <= 0
-                and Controller.get_event("confirm")
-                and self._alliances_data[key].x == int(Controller.mouse.x / self.__range_green.get_width())
-                and self._alliances_data[key].y == int(Controller.mouse.y / self.__range_green.get_height())
-            ):
-                self.data_to_edit = self._alliances_data[key]
-        for key in self._enemies_data:
-            self._enemies_data[key].draw(screen, self._MAP)
-            if key in self.__selected_entities:
-                self._alliances_data[key].draw_outline(screen)
-            if (
-                len(self.__object_to_put_down) <= 0
-                and Controller.get_event("confirm")
-                and self._enemies_data[key].x == int(Controller.mouse.x / self.__range_green.get_width())
-                and self._enemies_data[key].y == int(Controller.mouse.y / self.__range_green.get_height())
-            ):
-                self.data_to_edit = self._enemies_data[key]
+        for value in self._alliances_data.values():
+            value.draw(screen, self._MAP)
+            if len(self.__select_pos) > 0:
+                value.set_selected(value.is_collided_with(self.__select_rect))
+            elif len(self.__object_to_put_down) <= 0 and Controller.get_event("confirm") and value.is_hovered() is True:
+                self.data_to_edit = value
+        for value in self._enemies_data.values():
+            value.draw(screen, self._MAP)
+            if len(self.__select_pos) > 0:
+                value.set_selected(value.is_collided_with(self.__select_rect))
+            elif len(self.__object_to_put_down) <= 0 and Controller.get_event("confirm") and value.is_hovered() is True:
+                self.data_to_edit = value
 
         # 展示设施
         self._display_decoration(screen)
@@ -406,31 +385,21 @@ class AbstractMapEditor(AbstractBattleSystem):
                     }
 
         # 画出选中框
-        """
         if Controller.mouse.get_pressed(0) and Controller.mouse.get_pressed_previously(0):
             if len(self.__select_pos) <= 0:
                 self.__select_pos = Controller.mouse.get_pos()
-                self.__selected_entities.clear()
             # 设置宽度
             new_width: int = Controller.mouse.x - self.__select_pos[0]
-            if new_width >= 0:
-                self.__select_rect.set_width(new_width)
-                self.__select_rect.set_left(self.__select_pos[0])
-            else:
-                self.__select_rect.set_width(-new_width)
-                self.__select_rect.set_left(Controller.mouse.x)
+            self.__select_rect.set_width(abs(new_width))
+            self.__select_rect.set_left(self.__select_pos[0] if new_width >= 0 else Controller.mouse.x)
             # 设置高度
             new_height: int = Controller.mouse.y - self.__select_pos[1]
-            if new_height >= 0:
-                self.__select_rect.set_height(new_height)
-                self.__select_rect.set_top(self.__select_pos[1])
-            else:
-                self.__select_rect.set_height(-new_height)
-                self.__select_rect.set_top(Controller.mouse.y)
+            self.__select_rect.set_height(abs(new_height))
+            self.__select_rect.set_top(self.__select_pos[1] if new_height >= 0 else Controller.mouse.y)
+            # 将选中框画到屏幕上
             self.__select_rect.draw_outline(screen)
         else:
             self.__select_pos = tuple()
-        """
 
         # 画出上方按钮
         self.__buttons_container.draw(screen)

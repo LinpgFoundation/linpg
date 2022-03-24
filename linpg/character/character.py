@@ -34,7 +34,7 @@ class FriendlyCharacter(Entity):
         if "skill_effective_range" in characterData and characterData["skill_effective_range"] is not None:
             self.__skill_effective_range.update(characterData["skill_effective_range"])
         # 最远技能施展范围
-        self.__max_skill_range: int = self.calculate_range(self.__skill_effective_range)
+        self.__max_skill_range: int = self._calculate_range(self.__skill_effective_range)
         # 被察觉程度
         self.__detection: int = (
             int(characterData["detection"]) if "detection" in characterData and characterData["detection"] is not None else 0
@@ -358,7 +358,7 @@ class HostileCharacter(Entity):
                         # 获取可能的攻击范围
                         range_target_in_if_can_attack = self.range_target_in(targetCharacterData, pos_on_route)
                         if (
-                            range_target_in_if_can_attack != "None"
+                            range_target_in_if_can_attack is not None
                             and range_target_in_if_can_attack not in potential_attacking_pos_index
                         ):
                             potential_attacking_pos_index[range_target_in_if_can_attack] = i + 1

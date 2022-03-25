@@ -82,8 +82,8 @@ class Entity(Position):
         # 血条图片
         self.__hp_bar: EntityHpBar = EntityHpBar()
         self.__status_font: StaticTextSurface = StaticTextSurface("", 0, 0, Display.get_width() / 192)
-        # 当前图片的pointer
-        self.__current_image: Optional[EntitySpriteImageManager.EntityImagesCollection] = None
+        # 当前图片的rect
+        self.__current_image_rect: Optional[Rectangle] = None
         # 是否被选中
         self.__is_selected: bool = False
 
@@ -206,10 +206,11 @@ class Entity(Position):
 
     # 是否角色被鼠标触碰
     def is_hovered(self) -> bool:
-        return self.__current_image.is_hovered() if self.__current_image is not None else False
+        return self.__current_image_rect.is_hovered() if self.__current_image_rect is not None else False
 
-    def is_collided_with(self, _rect: Rectangle) -> bool:
-        return self.__current_image.is_collided_with(_rect) if self.__current_image is not None else False
+    # 是否角色纹理与另一个物体overlap
+    def is_overlapped_with(self, _rect: Rectangle) -> bool:
+        return self.__current_image_rect.is_overlapped_with(_rect) if self.__current_image_rect is not None else False
 
     """
     角色动作参数管理
@@ -292,16 +293,13 @@ class Entity(Position):
 
     # 尝试减少行动值，如果成功，返回true,失败则返回false
     def try_reduce_action_point(self, value: int) -> bool:
-        if isinstance(value, int):
-            if self.__current_action_point >= value:
-                # 有足够的行动值来减去
-                self.__current_action_point -= value
-                return True
-            else:
-                # 没有足够的行动值来减去
-                return False
+        # 有足够的行动值来减去
+        if self.__current_action_point >= value:
+            self.__current_action_point -= value
+            return True
+        # 没有足够的行动值来减去
         else:
-            EXCEPTION.fatal("While you reduce the action points, the module cannot reduce a non-int value!")
+            return False
 
     """
     角色血量护甲参数管理
@@ -564,22 +562,24 @@ class Entity(Position):
         if action is None:
             action = self.__current_action
         # 获取对应动作的图片管理模块
-        self.__current_image = EntitySpriteImageManager.get_images(self.__type, action)
-        self.__current_image.set_index(self.__imgId_dict[action]["imgId"])
+        _image = EntitySpriteImageManager.get_images(self.__type, action)
+        _image.set_index(self.__imgId_dict[action]["imgId"])
         # 调整小人图片的尺寸
         img_width: float = round(MAP_POINTER.block_width * 8 / 5, 2)
-        self.__current_image.set_size(img_width, img_width)
+        _image.set_size(img_width, img_width)
         # 如果没有指定pos,则默认使用当前的动作
         if len(pos) < 1:
             pos = MAP_POINTER.calPosInMap(self.x, self.y)
         # 把角色图片画到屏幕上
-        self.__current_image.draw_onto(
+        _image.draw_onto(
             surface,
             alpha,
             self.__if_flip,
             (pos[0] - MAP_POINTER.block_width * 0.3, pos[1] - MAP_POINTER.block_width * 0.85),
             self.__is_selected,
         )
+        # 更新角色的rect
+        self.__current_image_rect = _image.get_rectangle()
 
     # 把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
     def draw(self, surface: ImageSurface, MAP_POINTER: MapObject, update_id_only: bool = False) -> None:

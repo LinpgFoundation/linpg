@@ -205,15 +205,17 @@ class AbstractMapEditor(AbstractBattleSystem):
                 self._check_key_down(event)
             elif event.type == Key.UP:
                 self._check_key_up(event)
-            elif event.type == MOUSE_BUTTON_DOWN and len(self.__select_pos) <= 0:
-                # 上下滚轮-放大和缩小地图
-                if self.__UIContainerButtonRight.is_hovered():
-                    self.__UIContainerButtonRight.switch()
-                    self.__UIContainerButtonRight.flip(True)
-                elif self.__UIContainerButtonBottom.is_hovered():
-                    self.__UIContainerButtonBottom.switch()
-                    self.__UIContainerButtonBottom.flip(False, True)
-                elif self.__delete_mode is True and block_get_click is not None:
+        if Controller.get_event("confirm") and len(self.__select_pos) <= 0:
+            # 显示或隐藏右侧的容器
+            if self.__UIContainerButtonRight.is_hovered():
+                self.__UIContainerButtonRight.switch()
+                self.__UIContainerButtonRight.flip(True)
+            # 显示或隐藏下侧的容器
+            elif self.__UIContainerButtonBottom.is_hovered():
+                self.__UIContainerButtonBottom.switch()
+                self.__UIContainerButtonBottom.flip(False, True)
+            elif block_get_click is not None:
+                if self.__delete_mode is True:
                     # 查看当前位置是否有装饰物
                     decoration: Optional[DecorationObject] = self._MAP.find_decoration_on(
                         (block_get_click["x"], block_get_click["y"])
@@ -235,77 +237,70 @@ class AbstractMapEditor(AbstractBattleSystem):
                                 self._alliances_data.pop(decoration_collided)
                             elif decoration_collided in self._enemies_data:
                                 self._enemies_data.pop(decoration_collided)
-                else:
-                    if (
-                        Controller.get_event("confirm")
-                        and block_get_click is not None
-                        and len(self.__object_to_put_down) > 0
-                        and not self.__UIContainerRight.is_hovered((self.__UIContainerButtonRight.right, 0))
-                        and not self.__UIContainerBottom.is_hovered((self.__UIContainerButtonBottom.bottom, 0))
-                    ):
-                        if self.__object_to_put_down["type"] == "block":
-                            self._MAP.update_block(block_get_click, self.__object_to_put_down["id"])
-                        elif self.__object_to_put_down["type"] == "decoration":
-                            # 查看当前位置是否有装饰物
-                            decoration = self._MAP.find_decoration_on((block_get_click["x"], block_get_click["y"]))
-                            # 如果发现有冲突的装饰物
-                            if decoration is not None:
-                                self._MAP.remove_decoration(decoration)
-                            self._MAP.add_decoration(
-                                {
-                                    "image": self.__object_to_put_down["id"],
-                                    "x": block_get_click["x"],
-                                    "y": block_get_click["y"],
-                                },
-                                DataBase.get("Decorations")[self.__object_to_put_down["id"]],
-                                "{0}_{1}".format(self.__object_to_put_down["id"], self._MAP.count_decorations()),
-                            )
-                        elif self.__object_to_put_down["type"] == "entity":
-                            # 移除坐标冲突的角色
-                            character_collided: Optional[str] = None
-                            for key in self._alliances_data:
-                                if Coordinates.is_same(self._alliances_data[key], block_get_click):
+                elif (
+                    len(self.__object_to_put_down) > 0
+                    and not self.__UIContainerRight.is_hovered((self.__UIContainerButtonRight.right, 0))
+                    and not self.__UIContainerBottom.is_hovered((0, self.__UIContainerButtonBottom.bottom))
+                ):
+                    if self.__object_to_put_down["type"] == "block":
+                        self._MAP.update_block(block_get_click, self.__object_to_put_down["id"])
+                    elif self.__object_to_put_down["type"] == "decoration":
+                        # 查看当前位置是否有装饰物
+                        decoration = self._MAP.find_decoration_on((block_get_click["x"], block_get_click["y"]))
+                        # 如果发现有冲突的装饰物
+                        if decoration is not None:
+                            self._MAP.remove_decoration(decoration)
+                        self._MAP.add_decoration(
+                            {"image": self.__object_to_put_down["id"], "x": block_get_click["x"], "y": block_get_click["y"]},
+                            DataBase.get("Decorations")[self.__object_to_put_down["id"]],
+                            "{0}_{1}".format(self.__object_to_put_down["id"], self._MAP.count_decorations()),
+                        )
+                    elif self.__object_to_put_down["type"] == "entity":
+                        # 移除坐标冲突的角色
+                        character_collided: Optional[str] = None
+                        for key in self._alliances_data:
+                            if Coordinates.is_same(self._alliances_data[key], block_get_click):
+                                character_collided = key
+                                break
+                        if character_collided is None:
+                            for key in self._enemies_data:
+                                if Coordinates.is_same(self._enemies_data[key], block_get_click):
                                     character_collided = key
                                     break
-                            if character_collided is None:
-                                for key in self._enemies_data:
-                                    if Coordinates.is_same(self._enemies_data[key], block_get_click):
-                                        character_collided = key
-                                        break
-                                if character_collided is not None:
-                                    self._enemies_data.pop(character_collided)
-                            else:
-                                self._alliances_data.pop(character_collided)
-                            the_id: int = 0
-                            _new_data: dict = deepcopy(CHARACTER_DATABASE[self.__object_to_put_down["id"]])
-                            if _new_data["faction"] in DataBase.get("Faction", "alliances"):
-                                while self.__object_to_put_down["id"] + "_" + str(the_id) in self._alliances_data:
-                                    the_id += 1
-                                nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
-                                self._alliances_data[nameTemp] = FriendlyCharacter(
-                                    _new_data
-                                    | {
-                                        "x": block_get_click["x"],
-                                        "y": block_get_click["y"],
-                                        "type": self.__object_to_put_down["id"],
-                                        "bullets_carried": 100,
-                                    },
-                                    "dev",
-                                )
-                            else:
-                                while self.__object_to_put_down["id"] + "_" + str(the_id) in self._enemies_data:
-                                    the_id += 1
-                                nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
-                                self._enemies_data[nameTemp] = HostileCharacter(
-                                    _new_data
-                                    | {
-                                        "x": block_get_click["x"],
-                                        "y": block_get_click["y"],
-                                        "type": self.__object_to_put_down["id"],
-                                        "bullets_carried": 100,
-                                    },
-                                    "dev",
-                                )
+                            if character_collided is not None:
+                                self._enemies_data.pop(character_collided)
+                        else:
+                            self._alliances_data.pop(character_collided)
+                        the_id: int = 0
+                        _new_data: dict = deepcopy(CHARACTER_DATABASE[self.__object_to_put_down["id"]])
+                        if _new_data["faction"] in DataBase.get("Faction", "alliances"):
+                            while self.__object_to_put_down["id"] + "_" + str(the_id) in self._alliances_data:
+                                the_id += 1
+                            nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
+                            self._alliances_data[nameTemp] = FriendlyCharacter(
+                                _new_data
+                                | {
+                                    "x": block_get_click["x"],
+                                    "y": block_get_click["y"],
+                                    "type": self.__object_to_put_down["id"],
+                                    "bullets_carried": 100,
+                                },
+                                "dev",
+                            )
+                        else:
+                            while self.__object_to_put_down["id"] + "_" + str(the_id) in self._enemies_data:
+                                the_id += 1
+                            nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
+                            self._enemies_data[nameTemp] = HostileCharacter(
+                                _new_data
+                                | {
+                                    "x": block_get_click["x"],
+                                    "y": block_get_click["y"],
+                                    "type": self.__object_to_put_down["id"],
+                                    "bullets_carried": 100,
+                                },
+                                "dev",
+                            )
         # 其他移动的检查
         self._check_right_click_move()
         self._check_jostick_events()
@@ -315,7 +310,7 @@ class AbstractMapEditor(AbstractBattleSystem):
         if (
             block_get_click is not None
             and not self.__UIContainerRight.is_hovered((self.__UIContainerButtonRight.right, 0))
-            and not self.__UIContainerBottom.is_hovered((self.__UIContainerButtonBottom.bottom, 0))
+            and not self.__UIContainerBottom.is_hovered((0, self.__UIContainerButtonBottom.bottom))
         ):
             if self.__delete_mode is True:
                 xTemp, yTemp = self._MAP.calPosInMap(block_get_click["x"], block_get_click["y"])
@@ -328,13 +323,13 @@ class AbstractMapEditor(AbstractBattleSystem):
         for value in self._alliances_data.values():
             value.draw(screen, self._MAP)
             if len(self.__select_pos) > 0:
-                value.set_selected(value.is_collided_with(self.__select_rect))
+                value.set_selected(value.is_overlapped_with(self.__select_rect))
             elif len(self.__object_to_put_down) <= 0 and Controller.get_event("confirm") and value.is_hovered() is True:
                 self.data_to_edit = value
         for value in self._enemies_data.values():
             value.draw(screen, self._MAP)
             if len(self.__select_pos) > 0:
-                value.set_selected(value.is_collided_with(self.__select_rect))
+                value.set_selected(value.is_overlapped_with(self.__select_rect))
             elif len(self.__object_to_put_down) <= 0 and Controller.get_event("confirm") and value.is_hovered() is True:
                 self.data_to_edit = value
 

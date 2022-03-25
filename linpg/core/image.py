@@ -4,7 +4,7 @@ from .text import *
 class DynamicImage(AbstractImageSurface):
     def __init__(self, img: PoI, x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = ""):
         super().__init__(RawImg.quickly_load(img), x, y, width, height, tag)
-        self.__processed_img: ImageSurface = Surface.NULL
+        self.__processed_img: Optional[ImageSurface] = None
 
     # 返回一个复制
     def copy(self) -> "DynamicImage":
@@ -23,24 +23,24 @@ class DynamicImage(AbstractImageSurface):
     # 设置透明度
     def set_alpha(self, value: int) -> None:
         super().set_alpha(value)
-        if self.__processed_img is not Surface.NULL:
+        if self.__processed_img is not None:
             self.__processed_img.set_alpha(self.get_alpha())
 
     # 更新图片
     def update_image(self, img_path: PoI, ifConvertAlpha: bool = True) -> None:
         super().update_image(img_path, ifConvertAlpha)
-        self.__processed_img = Surface.NULL
+        self.__processed_img = None
 
     # 旋转
     def rotate(self, angle: int) -> None:
         super().rotate(angle)
-        self.__processed_img = Surface.NULL
+        self.__processed_img = None
 
     # 展示
     def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         if self.is_visible():
             if not Setting.low_memory_mode:
-                if self.__processed_img is Surface.NULL or self.__processed_img.get_size() != self.size:
+                if self.__processed_img is None or self.__processed_img.get_size() != self.size:
                     self.__processed_img = RawImg.smoothly_resize(self.img, self.size)
                 surface.blit(self.__processed_img, Coordinates.add(self.pos, offSet))
             else:

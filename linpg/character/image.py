@@ -32,7 +32,7 @@ class EntitySpriteImageManager:
     __CHARACTERS_IMAGE_DICT: dict = {}
 
     # 管理单个动作所有对应图片的模块
-    class EntityImagesCollection:
+    class __EntityImagesCollection:
         def __init__(
             self, imagesList: tuple[StaticImage, ...], crop_size: list[int], offset: list[int], original_img_size: list[int]
         ) -> None:
@@ -72,18 +72,9 @@ class EntitySpriteImageManager:
             self.__right_offset_x = self.__left_offset_x
             self.__left_offset_x = temp
 
-        # 是否角色被鼠标触碰
-        def is_hovered(self) -> bool:
-            return self.__current_image_pointer.is_hovered()
-
-        def is_collided_with(self, _rect: Rectangle) -> bool:
-            return (
-                0 <= self.__current_image_pointer.x - _rect.x <= _rect.width
-                and 0 <= self.__current_image_pointer.y - _rect.y <= _rect.height
-            ) or (
-                0 <= _rect.x - self.__current_image_pointer.x <= self.__current_image_pointer.width
-                and 0 <= _rect.y - self.__current_image_pointer.y <= self.__current_image_pointer.height
-            )
+        # 获取当前图片的rect
+        def get_rectangle(self) -> Rectangle:
+            return self.__current_image_pointer.get_rectangle()
 
         # 展示
         def draw_onto(self, surface: ImageSurface, alpha: int, ifFlip: bool, pos: tuple, draw_outline: bool) -> None:
@@ -102,12 +93,12 @@ class EntitySpriteImageManager:
 
     # 获取图片
     @classmethod
-    def get_images(cls, characterType: str, action: str) -> EntityImagesCollection:
+    def get_images(cls, characterType: str, action: str) -> __EntityImagesCollection:
         return cls.__CHARACTERS_IMAGE_DICT[characterType][action]  # type: ignore
 
     # 尝试获取图片
     @classmethod
-    def try_get_images(cls, faction: str, characterType: str, action: str) -> EntityImagesCollection:
+    def try_get_images(cls, faction: str, characterType: str, action: str) -> __EntityImagesCollection:
         if characterType not in cls.__CHARACTERS_IMAGE_DICT or action not in cls.__CHARACTERS_IMAGE_DICT[characterType]:
             cls.load(faction, characterType, "dev")
         return cls.get_images(characterType, action)
@@ -217,7 +208,7 @@ class EntitySpriteImageManager:
         elif action in cls.__CHARACTERS_IMAGE_DICT[characterType]:
             return {"imgId": 0, "alpha": 255}
         # 加载图片
-        cls.__CHARACTERS_IMAGE_DICT[characterType][action] = cls.EntityImagesCollection(
+        cls.__CHARACTERS_IMAGE_DICT[characterType][action] = cls.__EntityImagesCollection(
             tuple(
                 [
                     StaticImage(surf, 0, 0)

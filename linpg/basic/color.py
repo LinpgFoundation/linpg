@@ -35,64 +35,76 @@ class ColorManager:
     __TRANSPARENT: tuple[int, int, int, int] = (0, 0, 0, 0)
 
     # 白色
+    @classmethod
     @property
-    def WHITE(self) -> tuple[int, int, int, int]:
-        return self.__WHITE
+    def WHITE(cls) -> tuple[int, int, int, int]:
+        return cls.__WHITE
 
     # 灰色
+    @classmethod
     @property
-    def GRAY(self) -> tuple[int, int, int, int]:
-        return self.__GRAY
+    def GRAY(cls) -> tuple[int, int, int, int]:
+        return cls.__GRAY
 
     # 淡灰色
+    @classmethod
     @property
-    def LIGHT_GRAY(self) -> tuple[int, int, int, int]:
-        return self.__LIGHT_GRAY
+    def LIGHT_GRAY(cls) -> tuple[int, int, int, int]:
+        return cls.__LIGHT_GRAY
 
     # 黑色
+    @classmethod
     @property
-    def BLACK(self) -> tuple[int, int, int, int]:
-        return self.__BLACK
+    def BLACK(cls) -> tuple[int, int, int, int]:
+        return cls.__BLACK
 
     # 红色
+    @classmethod
     @property
-    def RED(self) -> tuple[int, int, int, int]:
-        return self.__RED
+    def RED(cls) -> tuple[int, int, int, int]:
+        return cls.__RED
 
     # 橙色
+    @classmethod
     @property
-    def ORANGE(self) -> tuple[int, int, int, int]:
-        return self.__ORANGE
+    def ORANGE(cls) -> tuple[int, int, int, int]:
+        return cls.__ORANGE
 
     # 黄色
+    @classmethod
     @property
-    def YELLOW(self) -> tuple[int, int, int, int]:
-        return self.__YELLOW
+    def YELLOW(cls) -> tuple[int, int, int, int]:
+        return cls.__YELLOW
 
     # 绿色
+    @classmethod
     @property
-    def GREEN(self) -> tuple[int, int, int, int]:
-        return self.__GREEN
+    def GREEN(cls) -> tuple[int, int, int, int]:
+        return cls.__GREEN
 
     # 蓝色
+    @classmethod
     @property
-    def BLUE(self) -> tuple[int, int, int, int]:
-        return self.__BLUE
+    def BLUE(cls) -> tuple[int, int, int, int]:
+        return cls.__BLUE
 
     # 靛蓝色
+    @classmethod
     @property
-    def INDIGO(self) -> tuple[int, int, int, int]:
-        return self.__INDIGO
+    def INDIGO(cls) -> tuple[int, int, int, int]:
+        return cls.__INDIGO
 
     # 紫色
+    @classmethod
     @property
-    def VIOLET(self) -> tuple[int, int, int, int]:
-        return self.__VIOLET
+    def VIOLET(cls) -> tuple[int, int, int, int]:
+        return cls.__VIOLET
 
     # 透明
+    @classmethod
     @property
-    def TRANSPARENT(self) -> tuple[int, int, int, int]:
-        return self.__TRANSPARENT
+    def TRANSPARENT(cls) -> tuple[int, int, int, int]:
+        return cls.__TRANSPARENT
 
     # 转换至rgba颜色tuple
     @staticmethod

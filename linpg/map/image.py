@@ -1,7 +1,7 @@
 from ..dialog import *
 
-# 基础的图片管理模块
-class AbstractMapImagesModule:
+# 地图图片参数管理模块
+class MapImageParameters:
 
     # 方块尺寸
     __BLOCK_WIDTH: int = 0
@@ -19,9 +19,9 @@ class AbstractMapImagesModule:
 
     # 调整尺寸
     @classmethod
-    def set_block_size(cls, newWidth: int, newHeight: int) -> None:
-        cls.__BLOCK_WIDTH = newWidth
-        cls.__BLOCK_HEIGHT = newHeight
+    def set_block_size(cls, _width: int, _height: int) -> None:
+        cls.__BLOCK_WIDTH = _width
+        cls.__BLOCK_HEIGHT = _height
 
     # 获取方块宽度
     @classmethod
@@ -35,7 +35,7 @@ class AbstractMapImagesModule:
 
 
 # 装饰物的图片管理模块
-class DecorationImagesModule(AbstractMapImagesModule):
+class DecorationImagesModule:
 
     # 引擎自带的场景装饰物
     DEFAULT_DECORATION_IMAGE_SPRITE_SHEET: Optional[SpriteImage] = None
@@ -78,27 +78,27 @@ class DecorationImagesModule(AbstractMapImagesModule):
                 # 生成图片
                 cls.__DECORATION_IMAGE_DICT[decorationType][fileName] = StaticImage(_img, 0, 0)
             # 如果是夜战模式
-            if cls.get_darkness() > 0:
+            if MapImageParameters.get_darkness() > 0:
                 if decorationType not in cls.__DECORATION_IMAGE_DICT_DARK:
                     cls.__DECORATION_IMAGE_DICT_DARK[decorationType] = {}
                 if fileName not in cls.__DECORATION_IMAGE_DICT_DARK[decorationType]:
                     cls.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName] = cls.__DECORATION_IMAGE_DICT[decorationType][
                         fileName
                     ].copy()
-                    cls.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName].add_darkness(cls.get_darkness())
+                    cls.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName].add_darkness(MapImageParameters.get_darkness())
         # 类Gif形式，decorationType应该与fileName一致
         else:
             cls.__DECORATION_IMAGE_DICT[decorationType] = [StaticImage(each_img, 0, 0) for each_img in _img]
-            if cls.get_darkness() > 0:
+            if MapImageParameters.get_darkness() > 0:
                 cls.__DECORATION_IMAGE_DICT_DARK[decorationType] = []
                 for key in cls.__DECORATION_IMAGE_DICT[decorationType]:
                     _img_clone = key.copy()
-                    _img_clone.add_darkness(cls.get_darkness())
+                    _img_clone.add_darkness(MapImageParameters.get_darkness())
                     cls.__DECORATION_IMAGE_DICT_DARK[decorationType].append(_img_clone)
 
     # 获取图片
     @classmethod
-    def get_image(cls, decorationType: str, key: Union[str, int], darkMode: bool) -> Any:
+    def get_image(cls, decorationType: str, key: strint, darkMode: bool) -> Any:
         try:
             return (
                 cls.__DECORATION_IMAGE_DICT_DARK[decorationType][key]
@@ -123,7 +123,7 @@ class DecorationImagesModule(AbstractMapImagesModule):
 
 
 # 地图贴图的管理模块
-class TileMapImagesModule(AbstractMapImagesModule):
+class TileMapImagesModule:
 
     # 引擎自带的地图贴图
     DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET: Optional[SpriteImage] = None
@@ -133,13 +133,15 @@ class TileMapImagesModule(AbstractMapImagesModule):
 
     # 调整尺寸
     @classmethod
-    def update_size(cls) -> None:
+    def update_size(cls, _width: int, _height: int) -> None:
+        # 更新尺寸
+        MapImageParameters.set_block_size(_width, _height)
         # 调整地图方块尺寸
         for key in cls.__ENV_IMAGE_DICT:
-            cls.__ENV_IMAGE_DICT[key].set_width_with_original_image_size_locked(cls.get_block_width())
+            cls.__ENV_IMAGE_DICT[key].set_width_with_original_image_size_locked(MapImageParameters.get_block_width())
         # 调整黑夜模式下的地图方块尺寸
         for key in cls.__ENV_IMAGE_DICT_DARK:
-            cls.__ENV_IMAGE_DICT_DARK[key].set_width_with_original_image_size_locked(cls.get_block_width())
+            cls.__ENV_IMAGE_DICT_DARK[key].set_width_with_original_image_size_locked(MapImageParameters.get_block_width())
 
     # 加载图片
     @classmethod
@@ -152,11 +154,11 @@ class TileMapImagesModule(AbstractMapImagesModule):
                 if isinstance(_img, tuple):
                     EXCEPTION.fatal("Images for tile map cannot be groupped as a collection")
                 cls.__ENV_IMAGE_DICT[fileName] = StaticImage(_img, 0, 0)
-                cls.__ENV_IMAGE_DICT[fileName].set_width_with_original_image_size_locked(cls.get_block_width())
+                cls.__ENV_IMAGE_DICT[fileName].set_width_with_original_image_size_locked(MapImageParameters.get_block_width())
             # 如果是夜战模式
-            if cls.get_darkness() > 0:
+            if MapImageParameters.get_darkness() > 0:
                 cls.__ENV_IMAGE_DICT_DARK[fileName] = cls.__ENV_IMAGE_DICT[fileName].copy()
-                cls.__ENV_IMAGE_DICT_DARK[fileName].add_darkness(cls.get_darkness())
+                cls.__ENV_IMAGE_DICT_DARK[fileName].add_darkness(MapImageParameters.get_darkness())
         else:
             EXCEPTION.fatal('Cannot find image "{}" in folder'.format(fileName))
 

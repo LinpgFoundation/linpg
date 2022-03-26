@@ -24,20 +24,10 @@ class Display:
     def get_fps(cls) -> int:
         return cls.__FPS
 
-    # 标准帧数校准器
-    @classmethod
-    def get_sfpsp(cls) -> float:
-        return cls.__STANDARD_FPS / cls.__FPS
-
     # 时间增量
     @classmethod
     def get_delta_time(cls) -> float:
-        return pygame.time.get_ticks() / cls.__FPS
-
-    # 获取 pixel per second
-    @classmethod
-    def get_pps(cls, distcane: float) -> int:
-        return int(pygame.time.get_ticks() * distcane / cls.__FPS)
+        return max(cls.__CLOCK.get_fps() / cls.__STANDARD_FPS, 0.5)
 
     # 更新屏幕
     @classmethod

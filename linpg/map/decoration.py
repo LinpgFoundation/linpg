@@ -6,7 +6,7 @@ class DecorationObject(GameObject2d):
         super().__init__(x, y)
         self.__id: str = _id
         self.__type: str = itemType
-        self.image: Union[str, int] = image
+        self.image: strint = image
         self.__status: dict = status
         self.scale: float = 0.5
 
@@ -42,9 +42,7 @@ class DecorationObject(GameObject2d):
 
     def blit(self, surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:  # type: ignore[override]
         imgToBlit = DecorationImagesModule.get_image(self.__type, self.image, is_dark)
-        imgToBlit.set_size(
-            DecorationImagesModule.get_block_width() * self.scale, DecorationImagesModule.get_block_width() * self.scale
-        )
+        imgToBlit.set_size(MapImageParameters.get_block_width() * self.scale, MapImageParameters.get_block_width() * self.scale)
         imgToBlit.set_alpha(alpha)
         imgToBlit.move_to(pos)
         imgToBlit.draw(surface)

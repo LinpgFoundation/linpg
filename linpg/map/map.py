@@ -21,7 +21,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         # 地图渲染用的图层
         self.__MAP_SURFACE: Optional[ImageSurface] = None
         # 背景图片路径
-        self.__background_image: str = ""
+        self.__background_image: Optional[str] = None
         # 背景图片
         self.__BACKGROUND_SURFACE: Optional[StaticImage] = None
         # 装饰物
@@ -74,29 +74,39 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         self.__background_image = (
             str(mapDataDic["background_image"])
             if "background_image" in mapDataDic and mapDataDic["background_image"] is not None
-            else ""
+            else None
         )
         # 暗度（仅黑夜场景有效）
-        AbstractMapImagesModule.set_darkness(155 if "at_night" in mapDataDic and bool(mapDataDic["at_night"]) is True else 0)
+        MapImageParameters.set_darkness(155 if "at_night" in mapDataDic and bool(mapDataDic["at_night"]) is True else 0)
         # 更新地图渲染图层的尺寸
-        self.set_size(
-            perBlockWidth * 0.9 * ((self.row + self.column + 1) / 2),
-            perBlockWidth * 0.45 * ((self.row + self.column + 1) / 2) + perBlockWidth,
-        )
+        self.set_tile_block_size(perBlockWidth, perBlockHeight)
         # 设置本地坐标
-        self.set_local_pos(mapDataDic["local_x"], mapDataDic["local_y"])
+        _local_x = mapDataDic.get("local_x")
+        if _local_x is None:
+            self.set_local_x(0)
+        elif isinstance(_local_x, str):
+            self.set_local_x(convert_percentage(_local_x) * self.get_width())
+        else:
+            self.set_local_x(_local_x)
+        _local_y = mapDataDic.get("local_y")
+        if _local_y is None:
+            self.set_local_y(0)
+        elif isinstance(_local_y, str):
+            self.set_local_y(convert_percentage(_local_y) * self.get_height())
+        else:
+            self.set_local_y(_local_y)
         # 重置装饰物列表
         self.__decorations.clear()
         # 加载装饰物
         for decorationType, itemsThatType in mapDataDic["decoration"].items():
-            for itemId, itemData in itemsThatType.items():
-                self.add_decoration(itemData, decorationType, itemId)
+            for key in itemsThatType:
+                self.add_decoration(itemsThatType[key], decorationType, key)
         # 对装饰物进行排序
         self.__decorations.sort()
         # 初始化环境图片管理模块
         self.__MAP_SURFACE = None
         # 背景图片
-        if len(self.__background_image) > 0:
+        if self.__background_image is not None:
             self.__BACKGROUND_SURFACE = StaticImage(
                 RawImg.quickly_load(os.path.join("Assets", "image", "dialog_background", self.__background_image), False),
                 0,
@@ -106,8 +116,6 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
             )
         else:
             self.__BACKGROUND_SURFACE = None
-        # 更新尺寸
-        AbstractMapImagesModule.set_block_size(round(perBlockWidth), round(perBlockHeight))
         # 加载图片
         for fileName in lookup_table:
             TileMapImagesModule.add_image(fileName)
@@ -117,8 +125,6 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
             )
         # 处于光处的区域
         self.__light_area = tuple()
-        # 追踪是否需要更新的参数
-        self.__need_update_surface = True
         # 追踪目前已经画出的方块
         self.__block_on_surface = numpy.zeros((self.row, self.column), dtype=numpy.byte)
         self.__need_to_recheck_block_on_surface = True
@@ -130,12 +136,12 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
     # 获取方块宽度
     @property
     def block_width(self) -> int:
-        return AbstractMapImagesModule.get_block_width()
+        return MapImageParameters.get_block_width()
 
     # 获取方块高度
     @property
     def block_height(self) -> int:
-        return AbstractMapImagesModule.get_block_height()
+        return MapImageParameters.get_block_height()
 
     # 以字典的形式获取地图的数据
     def to_dict(self) -> dict:
@@ -163,6 +169,13 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                 "lookup_table": sorted_lookup_table,
             },
             "decoration": decoration_dict,
+        }
+
+    # 以百分比的形式获取本地坐标（一般用于存档数据）
+    def get_local_pos_in_percentage(self) -> dict:
+        return {
+            "local_x": str(round(self.local_x * 100 / self.get_width(), 5)) + "%",
+            "local_y": str(round(self.local_y * 100 / self.get_height(), 5)) + "%",
         }
 
     # 开发者模式
@@ -236,18 +249,19 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
     # 是否夜战
     @property
     def night_mode(self) -> bool:
-        return AbstractMapImagesModule.get_darkness() > 0
+        return MapImageParameters.get_darkness() > 0
 
     # 控制地图放大缩小
-    def changePerBlockSize(self, newPerBlockWidth: int_f, newPerBlockHeight: int_f) -> None:
+    def set_tile_block_size(self, newPerBlockWidth: int_f, newPerBlockHeight: int_f) -> None:
         # 记录老尺寸
         old_width: int = self.get_width()
         old_height: int = self.get_height()
         # 更新尺寸
-        self.set_width(newPerBlockWidth * 0.9 * ((self.row + self.column + 1) / 2))
-        self.set_height(newPerBlockWidth * 0.45 * ((self.row + self.column + 1) / 2) + newPerBlockWidth)
-        AbstractMapImagesModule.set_block_size(round(newPerBlockWidth), round(newPerBlockHeight))
-        TileMapImagesModule.update_size()
+        self.set_size(
+            newPerBlockWidth * 0.9 * ((self.row + self.column + 1) / 2),
+            newPerBlockWidth * 0.45 * ((self.row + self.column + 1) / 2) + newPerBlockWidth,
+        )
+        TileMapImagesModule.update_size(round(newPerBlockWidth), round(newPerBlockHeight))
         if self.get_width() < Display.get_width():
             self.set_width(Display.get_width())
         if self.get_height() < Display.get_height():
@@ -260,13 +274,13 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         self.__need_to_recheck_block_on_surface = True
 
     # 设置local坐标
-    def set_local_x(self, value: number) -> None:
+    def set_local_x(self, value: int_f) -> None:
         old_local_x: int = self.local_x
         super().set_local_x(value)
         if self.local_x != old_local_x:
             self.__need_update_surface = True
 
-    def set_local_y(self, value: number) -> None:
+    def set_local_y(self, value: int_f) -> None:
         old_local_y: int = self.local_y
         super().set_local_y(value)
         if self.local_y != old_local_y:
@@ -334,13 +348,13 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         evn_img: StaticImage
         for y in range(self.row):
             for x in range(self.column):
-                posTupleTemp = self.calPosInMap(x, y)
+                posTupleTemp = self.calculate_position(x, y)
                 if (
-                    -self.block_width <= posTupleTemp[0] < window_size[0]
-                    and -self.block_width <= posTupleTemp[1] < window_size[1]
+                    -MapImageParameters.get_block_width() <= posTupleTemp[0] < window_size[0]
+                    and -MapImageParameters.get_block_width() <= posTupleTemp[1] < window_size[1]
                 ):
                     if self.__block_on_surface[y][x] == 0:
-                        evn_img = TileMapImagesModule.get_image(str(self.__MAP[y][x]), not self.isPosInLightArea(x, y))
+                        evn_img = TileMapImagesModule.get_image(str(self.__MAP[y][x]), not self.is_coordinate_in_light_rea(x, y))
                         evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
                         if self.__MAP_SURFACE is not None:
                             evn_img.draw(self.__MAP_SURFACE)
@@ -353,7 +367,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                         pass
                 elif posTupleTemp[0] >= window_size[0] or posTupleTemp[1] >= window_size[1]:
                     break
-            if self.calPosInMap(0, y + 1)[1] >= window_size[1]:
+            if self.calculate_position(0, y + 1)[1] >= window_size[1]:
                 break
 
     # 把装饰物画到屏幕上
@@ -365,28 +379,39 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
             charactersPos.append((int(dataDic.x) + 1, int(dataDic.y) + 1))
         # 计算offSet
         offSet: tuple[int, int]
-        offSet_normal: tuple[int, int] = (round(self.block_width / 4), -round(self.block_width / 8))
-        offSet_tree: tuple[int, int] = (round(self.block_width * 0.125), -round(self.block_width * 0.375))
+        offSet_normal: tuple[int, int] = (
+            round(MapImageParameters.get_block_width() / 4),
+            -round(MapImageParameters.get_block_width() / 8),
+        )
+        offSet_tree: tuple[int, int] = (
+            round(MapImageParameters.get_block_width() * 0.125),
+            -round(MapImageParameters.get_block_width() * 0.375),
+        )
         # 计算需要画出的范围
-        screen_min: int = -self.block_width
+        screen_min: int = -MapImageParameters.get_block_width()
         # 透明度
         decoration_alpha: int
         # 在地图的坐标
         thePosInMap: tuple[int, int]
         # 历遍装饰物列表里的物品
         for item in self.__decorations:
-            thePosInMap = self.calPosInMap(item.x, item.y)
+            thePosInMap = self.calculate_position(item.x, item.y)
             if screen_min <= thePosInMap[0] < screen.get_width() and screen_min <= thePosInMap[1] < screen.get_height():
                 decoration_alpha = 255
                 # 树
                 if item.get_type() == "tree":
                     offSet = offSet_tree
-                    if item.get_pos() in charactersPos and self.inLightArea(item):
+                    if item.get_pos() in charactersPos and self.is_coordinate_in_light_rea(item.x, item.y):
                         decoration_alpha = 100
                 else:
                     offSet = offSet_normal
                 # 画出
-                item.blit(screen, Coordinates.add(thePosInMap, offSet), not self.inLightArea(item), decoration_alpha)
+                item.blit(
+                    screen,
+                    Coordinates.add(thePosInMap, offSet),
+                    not self.is_coordinate_in_light_rea(item.x, item.y),
+                    decoration_alpha,
+                )
 
     # 更新方块
     def update_block(self, pos: dict, name: str) -> None:
@@ -395,33 +420,37 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         self.__need_to_recheck_block_on_surface = True
 
     # 是否角色能通过该方块
-    def ifBlockCanPassThrough(self, pos: dict) -> bool:
+    def if_block_can_pass_through(self, pos: dict) -> bool:
         return bool(self.__BLOCKS_DATABASE[self.__MAP[pos["y"]][pos["x"]]]["canPassThrough"])
 
     # 计算在地图中的方块
-    def calBlockInMap(self, pos: tuple[int, int] = None) -> Optional[dict]:
+    def calculate_coordinate(self, pos: tuple[int, int] = None) -> Optional[dict]:
         if pos is None:
             pos = Controller.mouse.pos
         guess_x: int = int(
             (
-                (pos[0] - self.local_x - self.row * self.block_width * 0.43) / 0.43
-                + (pos[1] - self.local_y - self.block_width * 0.4) / 0.22
+                (pos[0] - self.local_x - self.row * MapImageParameters.get_block_width() * 0.43) / 0.43
+                + (pos[1] - self.local_y - MapImageParameters.get_block_width() * 0.4) / 0.22
             )
-            / 2
-            / self.block_width
+            // (MapImageParameters.get_block_width() * 2)
         )
-        guess_y: int = int((pos[1] - self.local_y - self.block_width * 0.4) / self.block_width / 0.22) - guess_x
+        guess_y: int = (
+            int(
+                (pos[1] - self.local_y - MapImageParameters.get_block_width() * 0.4) / MapImageParameters.get_block_width() / 0.22
+            )
+            - guess_x
+        )
         x: int
         y: int
         posTupleTemp: tuple
-        lenUnitW: float = self.block_width / 5
-        lenUnitH: float = self.block_width * 0.8 / 393 * 214
+        lenUnitW: float = MapImageParameters.get_block_width() / 5
+        lenUnitH: float = MapImageParameters.get_block_width() * 0.8 / 393 * 214
         block_get_click: Optional[dict] = None
         for y in range(guess_y - 1, guess_y + 4):
             for x in range(guess_x - 1, guess_x + 4):
-                posTupleTemp = self.calPosInMap(x, y)
+                posTupleTemp = self.calculate_position(x, y)
                 if (
-                    lenUnitW < pos[0] - posTupleTemp[0] - self.block_width * 0.05 < lenUnitW * 3
+                    lenUnitW < pos[0] - posTupleTemp[0] - MapImageParameters.get_block_width() * 0.05 < lenUnitW * 3
                     and 0 < pos[1] - posTupleTemp[1] < lenUnitH
                 ):
                     if 0 <= x < self.column and 0 <= y < self.row:
@@ -429,15 +458,14 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                     break
         return block_get_click
 
-    # 计算方块被画出的位置
-    def getBlockExactLocation(self, x: int, y: int) -> dict:
-        xStart, yStart = self.calPosInMap(x, y)
-        return {
-            "xStart": xStart,
-            "xEnd": xStart + self.block_width,
-            "yStart": yStart,
-            "yEnd": yStart + self.block_width * 0.5,
-        }
+    # 计算在地图中的位置
+    def calculate_position(self, x: int_f, y: int_f, absolute_pos: bool = False) -> tuple[int, int]:
+        widthTmp: float = MapImageParameters.get_block_width() * 0.43
+        _pos: tuple[int, int] = (
+            round((x - y) * widthTmp + self.row * widthTmp),
+            round((y + x) * MapImageParameters.get_block_width() * 0.22 + MapImageParameters.get_block_width() * 0.4),
+        )
+        return Coordinates.add(_pos, self.local_pos) if not absolute_pos else _pos
 
     # 计算光亮区域
     def calculate_darkness(self, alliances_data: dict) -> None:
@@ -486,38 +514,16 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         self.__need_update_surface = True
         self.__need_to_recheck_block_on_surface = True
 
-    # 计算在地图中的位置
-    def calPosInMap(self, x: int_f, y: int_f) -> tuple[int, int]:
-        widthTmp: float = self.block_width * 0.43
-        return round((x - y) * widthTmp + self.local_x + self.row * widthTmp), round(
-            (y + x) * self.block_width * 0.22 + self.local_y + self.block_width * 0.4
-        )
-
-    def calAbsPosInMap(self, x: int_f, y: int_f) -> tuple[int, int]:
-        widthTmp: float = self.block_width * 0.43
-        return round((x - y) * widthTmp + self.row * widthTmp), round((y + x) * self.block_width * 0.22 + self.block_width * 0.4)
-
-    # 查看角色是否在光亮范围内
-    def inLightArea(self, entity: GameObject2d) -> bool:
-        return self.isPosInLightArea(entity.x, entity.y)
-
-    def isPosInLightArea(self, x: int_f, y: int_f) -> bool:
+    # 查看坐标是否在光亮范围内
+    def is_coordinate_in_light_rea(self, x: int_f, y: int_f) -> bool:
         return True if not self.night_mode else (int(x), int(y)) in self.__light_area
 
-    # 以下是A星寻路功能
-    def findPath(
-        self,
-        start_p: object,
-        end_p: object,
-        friendData: dict,
-        enemyData: dict,
-        routeLen: int = -1,
-        ignoreEnemyCharacters: list = [],
+    # 寻找2点之间的最短路径
+    def find_path(
+        self, start: object, destination: object, alliances: dict, enemies: dict, routeLen: int = -1, ignored: list = []
     ) -> list:
-        # 检测起点
-        start_pos: tuple[int, int] = Coordinates.convert(start_p)
-        # 检测终点
-        end_pos: tuple[int, int] = Coordinates.convert(end_p)
+        # 获取终点坐标
+        end_pos: tuple[int, int] = Coordinates.convert(destination)
         # 初始化寻路地图
         self._map2d.fill(0)
         # 历遍地图，设置障碍方块
@@ -532,15 +538,15 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
             if item.get_type() == "obstacle" or item.get_type() == "campfire":
                 self._map2d[item.x][item.y] = 1
         # 如果终点有我方角色，则不允许
-        for key, value in friendData.items():
+        for key, value in alliances.items():
             if value.x == end_pos[0] and value.y == end_pos[1]:
                 return []
         # 历遍所有角色，将角色的坐标点设置为障碍方块
-        for key, value in enemyData.items():
-            if key not in ignoreEnemyCharacters:
+        for key, value in enemies.items():
+            if key not in ignored:
                 self._map2d[value.x][value.y] = 1
         # 开始寻路
-        pathList: list = self._startPathFinding(start_pos, end_pos)
+        pathList: list = self._startPathFinding(Coordinates.convert(start), end_pos)
         pathListLen: int = len(pathList)
         # 遍历路径点,讲指定数量的点放到路径列表中
         if pathListLen > 0:

@@ -301,8 +301,7 @@ class AnimatedImage(AdvancedAbstractImageSurface):
     # 当前图片
     @property
     def current_image(self) -> StaticImage:
-        _temp: StaticImage = self.img[self.imgId]
-        return _temp
+        return self.img[self.imgId]  # type: ignore
 
     # 展示
     def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:

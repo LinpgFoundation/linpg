@@ -195,7 +195,7 @@ class AbstractMapEditor(AbstractBattleSystem):
 
     # 将地图制作器的界面画到屏幕上
     def draw(self, screen: ImageSurface) -> None:
-        block_get_click = self._MAP.calBlockInMap()
+        block_get_click = self._MAP.calculate_coordinate()
         for event in Controller.events:
             if event.type == Key.DOWN:
                 if event.key == Key.ESCAPE:
@@ -313,10 +313,10 @@ class AbstractMapEditor(AbstractBattleSystem):
             and not self.__UIContainerBottom.is_hovered((0, self.__UIContainerButtonBottom.bottom))
         ):
             if self.__delete_mode is True:
-                xTemp, yTemp = self._MAP.calPosInMap(block_get_click["x"], block_get_click["y"])
+                xTemp, yTemp = self._MAP.calculate_position(block_get_click["x"], block_get_click["y"])
                 screen.blit(self.__range_red, (xTemp + self._MAP.block_width * 0.1, yTemp))
             elif len(self.__object_to_put_down) > 0:
-                xTemp, yTemp = self._MAP.calPosInMap(block_get_click["x"], block_get_click["y"])
+                xTemp, yTemp = self._MAP.calculate_position(block_get_click["x"], block_get_click["y"])
                 screen.blit(self.__range_green, (xTemp + self._MAP.block_width * 0.1, yTemp))
 
         # 角色动画

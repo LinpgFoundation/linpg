@@ -569,7 +569,7 @@ class Entity(Position):
         _image.set_size(img_width, img_width)
         # 如果没有指定pos,则默认使用当前的动作
         if len(pos) < 1:
-            pos = MAP_POINTER.calPosInMap(self.x, self.y)
+            pos = MAP_POINTER.calculate_position(self.x, self.y)
         # 把角色图片画到屏幕上
         _image.draw_onto(
             surface,
@@ -629,7 +629,7 @@ class Entity(Position):
 
     # 把角色ui画到屏幕上
     def _drawUI(self, surface: ImageSurface, MAP_POINTER: MapObject, customHpData: Optional[tuple] = None) -> tuple:
-        xTemp, yTemp = MAP_POINTER.calPosInMap(self.x, self.y)
+        xTemp, yTemp = MAP_POINTER.calculate_position(self.x, self.y)
         xTemp += int(MAP_POINTER.block_width / 4)
         yTemp -= int(MAP_POINTER.block_width / 5)
         self.__hp_bar.set_size(MAP_POINTER.block_width / 2, MAP_POINTER.block_width / 10)

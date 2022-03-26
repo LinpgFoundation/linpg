@@ -347,7 +347,7 @@ class HostileCharacter(Entity):
                 """
             else:
                 # 寻找一条能到达该角色附近的线路
-                the_route = MAP_POINTER.findPath(
+                the_route = MAP_POINTER.find_path(
                     self.pos, targetCharacterData.pos, hostileCharacters, friendlyCharacters, blocks_can_move, [target]
                 )
                 if len(the_route) > 0:
@@ -382,7 +382,7 @@ class HostileCharacter(Entity):
             # 如果巡逻坐标点只有一个（意味着角色需要在该坐标上长期镇守）
             if len(self.__patrol_path) == 1:
                 if not Coordinates.is_same(self.pos, self.__patrol_path[0]):
-                    the_route = MAP_POINTER.findPath(
+                    the_route = MAP_POINTER.find_path(
                         self.pos, self.__patrol_path[0], hostileCharacters, friendlyCharacters, blocks_can_move
                     )
                     if len(the_route) > 0:
@@ -394,7 +394,7 @@ class HostileCharacter(Entity):
                     pass
             # 如果巡逻坐标点有多个
             else:
-                the_route = MAP_POINTER.findPath(
+                the_route = MAP_POINTER.find_path(
                     self.pos, self.__patrol_path[0], hostileCharacters, friendlyCharacters, blocks_can_move
                 )
                 if len(the_route) > 0:

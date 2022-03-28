@@ -192,6 +192,12 @@ class Config:
         else:
             return ""
 
+    # 解决路径冲突并加载
+    @classmethod
+    def resolve_path_and_load_file(cls, file_location: str) -> dict:
+        path: str = cls.resolve_path(file_location)
+        return cls.load_file(path) if len(path) > 0 else {}
+
 
 # 引擎部分生产的配置文件的模板
 class Template:
@@ -204,10 +210,12 @@ class Template:
         return deepcopy(cls.__TEMPLATE[key])
 
 
-# 使用引擎开发游戏的用户可以自定义的参数
+# 使用引擎的开发者可以自定义的参数
 class Specification:
 
     __SPECIFICATIONS: dict = Config.load_internal_file("specifications.json")
+    # 尝试加载项目自定义的参数
+    __SPECIFICATIONS.update(Config.resolve_path_and_load_file(os.path.join("Data", "specifications")))
 
     @classmethod
     def get(cls, *key: str) -> Any:

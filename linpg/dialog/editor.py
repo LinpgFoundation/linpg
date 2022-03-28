@@ -178,17 +178,14 @@ class DialogEditor(DialogConverter):
 
     # 读取章节信息
     def _load_content(self) -> None:
-        if os.path.exists(path := self.get_dialog_file_location()):
-            if "dialogs" in (data_t := Config.load_file(path)):
-                try:
-                    self._dialog_data = dict(data_t["dialogs"])
-                except Exception:
-                    EXCEPTION.warn("Cannot load dialogs due to invalid data type.")
-                    self._dialog_data = {}
-            else:
-                self._dialog_data = {}
+        if os.path.exists(path := self.get_dialog_file_location()) and "dialogs" in (data_t := Config.load_file(path)):
+            try:
+                self._dialog_data = dict(data_t["dialogs"])
+            except Exception:
+                EXCEPTION.warn("Cannot load dialogs due to invalid data type.")
+                self._dialog_data.clear()
         else:
-            self._dialog_data = {}
+            self._dialog_data.clear()
         # 如果不是默认主语言
         if (default_lang_of_dialog := self.get_default_lang()) != Setting.language:
             self._is_default_dialog = False

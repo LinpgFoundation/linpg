@@ -43,7 +43,7 @@ class FriendlyCharacter(Entity):
         self.__beNoticedImage: FriendlyCharacterDynamicProgressBarSurface = FriendlyCharacterDynamicProgressBarSurface()
         self.__beNoticedImage.set_percentage(self.__detection / 100)
         # 重创立绘
-        self.__getHurtImage: Optional[EntityGetHurtImage]
+        self.__getHurtImage: Optional[EntityGetHurtImage] = None
         # 设置态度flag
         self.set_attitude(1)
         # 尝试加载重创立绘

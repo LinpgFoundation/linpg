@@ -4,18 +4,18 @@ from .draw import *
 
 # 尝试导入linpgassets
 _LINPGASSETS_INITIALIZED: bool = False
-try:
-    from linpgassets import ASSET  # type: ignore
+if bool(Specification.get("ExtraAssets")) is True:
+    try:
+        from linpgassets import ASSET  # type: ignore
 
-    _LINPGASSETS_INITIALIZED = True
-    # 初始化linpgassets的数据库
-    DataBase.update(Config.load_file(ASSET.get_database_path()))
-except Exception:
-    _LINPGASSETS_INITIALIZED = False
+        _LINPGASSETS_INITIALIZED = True
+        # 初始化linpgassets的数据库
+        DataBase.update(Config.load_file(ASSET.get_database_path()))
+    except Exception:
+        _LINPGASSETS_INITIALIZED = False
 
 # 初始化项目自带的数据库
-if len(_path := Config.resolve_path(os.path.join("Data", "database"))) > 0:
-    DataBase.update(Config.load_file(_path))
+DataBase.update(Config.resolve_path_and_load_file(os.path.join("Data", "database")))
 
 
 class Surface:

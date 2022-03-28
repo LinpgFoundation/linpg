@@ -123,9 +123,10 @@ class ColorManager:
             if color.startswith("#"):
                 return cls.__to_rgba_color(ImageColor.getrgb(color))
             else:
-                try:
-                    return cls.__to_rgba_color(tuple(THECOLORS[color]))
-                except KeyError:
+                _the_color = THECOLORS.get(color)
+                if isinstance(_the_color, Sequence):
+                    return cls.__to_rgba_color(tuple(_the_color))
+                else:
                     EXCEPTION.fatal('The color "{}" is currently not available!'.format(color))
         else:
             try:

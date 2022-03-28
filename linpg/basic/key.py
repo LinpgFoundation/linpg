@@ -1,5 +1,8 @@
 from .coordinate import *
 
+# 粘贴板内容模块
+from tkinter import Tk
+
 
 class KeySystem:
 
@@ -18,9 +21,6 @@ class KeySystem:
     RETURN: int = pygame.K_RETURN
     BACKQUOTE: int = pygame.K_BACKQUOTE
     F3: int = pygame.K_F3
-
-    # 粘贴板内容模块
-    from tkinter import Tk
 
     __root: Tk = Tk()
     __root.withdraw()

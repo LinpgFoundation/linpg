@@ -1,7 +1,7 @@
 import json
 import os
 from glob import glob
-from setuptools import setup  # type: ignore
+import setuptools
 from Cython.Build import cythonize  # type: ignore
 
 # py编译模块
@@ -34,7 +34,7 @@ def _if_ignore(path: str) -> bool:
 def _compile(path: str) -> None:
     if not os.path.isdir(path):
         if path.endswith(".py") and not _if_ignore(path):
-            setup(
+            setuptools.setup(
                 ext_modules=cythonize(
                     path, show_all_warnings=_show_all_warnings, annotate=_generate_html, language_level=_language_level
                 )

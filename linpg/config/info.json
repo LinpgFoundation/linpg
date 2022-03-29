@@ -1,8 +1,0 @@
-{
-    "author_email": "yudong9912@gmail.com",
-    "patch": 0,
-    "repository_url": "https://github.com/Tigeia-Workshop/linpg",
-    "revision": 3,
-    "short_description": "A game engine based on pygame, which aims to make game development easier.",
-    "version": 3
-}

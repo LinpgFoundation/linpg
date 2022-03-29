@@ -36,7 +36,7 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
         self.clear()
 
     # 把素材画到屏幕上
-    def display(self, surface: ImageSurface, off_set: tuple = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
         self._item_being_hovered = None
         if self.is_visible():
             # 如果有背景图片，则画出

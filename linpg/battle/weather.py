@@ -5,20 +5,21 @@ class WeatherSystem:
     def __init__(self) -> None:
         self.__initialized: bool = False
         self.__items: tuple = tuple()
-        self.__img_list: list = []
+        self.__img_tuple: tuple = tuple()
         self.__speed_unit: int = 0
 
     # 初始化
     def init(self, weather: str, entityNum: int = 50) -> None:
         self.__initialized = True
-        self.__img_list = [
-            IMG.load(imgPath)
-            for imgPath in glob(os.path.join(ASSET.get_internal_environment_image_path("weather"), weather, "*.png"))
-        ]
+        _temp: Union[ImageSurface, tuple] = SpriteImage(ASSET.get_internal_environment_image_path(weather)).get(weather)
+        if isinstance(_temp, tuple):
+            self.__img_tuple = _temp
+        else:
+            EXCEPTION.fatal("The images for weather has to be in collection!")
         self.__items = tuple(
             [
                 Snow(
-                    imgId=get_random_int(0, len(self.__img_list) - 1),
+                    imgId=get_random_int(0, len(self.__img_tuple) - 1),
                     size=get_random_int(5, 10),
                     speed=get_random_int(1, 4),
                     x=get_random_int(1, int(Display.get_width() * 1.5)),
@@ -40,7 +41,7 @@ class WeatherSystem:
         for item in self.__items:
             if 0 <= item.x < surface.get_width() and 0 <= item.y < surface.get_height():
                 surface.blit(
-                    IMG.resize(self.__img_list[item.imgId], (perBlockWidth / item.size, perBlockWidth / item.size)), item.pos
+                    RawImg.resize(self.__img_tuple[item.imgId], (perBlockWidth / item.size, perBlockWidth / item.size)), item.pos
                 )
             item.move(self.__speed_unit)
             if item.x <= 0 or item.y >= surface.get_height():

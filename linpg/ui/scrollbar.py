@@ -41,7 +41,7 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos):
         EXCEPTION.fatal("get_height()", 1)
 
     # 是否被鼠标触碰（子类需实现）
-    def is_hovered(self, off_set: tuple = NoPos) -> bool:
+    def is_hovered(self, off_set: tuple[int, int] = NoPos) -> bool:
         EXCEPTION.fatal("is_hovered()", 1)
 
     # 获取scrollbar的颜色
@@ -102,7 +102,7 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos):
             else None
         )
 
-    def display_scrollbar(self, surface: ImageSurface, off_set: tuple = ORIGIN) -> None:
+    def display_scrollbar(self, surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
         # 获取滚轮条
         right_scroll_bar_rect: Optional[Rectangle] = self._get_right_scroll_bar_rect(off_set[0], off_set[1])
         right_scroll_button_rect: Optional[Rectangle] = self._get_right_scroll_button_rect(off_set[0], off_set[1])
@@ -274,7 +274,7 @@ class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface):
                 )
         return None
 
-    def display_scrollbar(self, surface: ImageSurface, off_set: tuple = ORIGIN) -> None:
+    def display_scrollbar(self, surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
         # 获取滚轮条
         scroll_bar_rect: Optional[Rectangle] = self._get_scroll_bar_rect(off_set[0], off_set[1])
         scroll_button_rect: Optional[Rectangle] = self._get_scroll_button_rect(off_set[0], off_set[1])

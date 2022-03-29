@@ -6,12 +6,17 @@ AP_IS_NEEDED_TO_MOVE_ONE_BLOCK: int = 2
 # 濒死回合限制
 DYING_ROUND_LIMIT: int = 3
 # 角色数据库
-CHARACTER_DATABASE: dict = loadCharacterData()
+CHARACTER_DATABASE: dict = {}
+# 尝试加载角色数据
+_path: str = os.path.join("Data", "character_data." + Config.get_file_type())
+if os.path.exists(_path):
+    CHARACTER_DATABASE.update(Config.load_file(_path))
+del _path
 
 # 友方角色类
 class FriendlyCharacter(Entity):
     def __init__(self, characterData: dict, mode: str) -> None:
-        super().__init__(characterData, "character", mode)
+        super().__init__(characterData, mode)
         # 是否濒死
         self.__down_time: int = (
             int(characterData["down_time"]) if "down_time" in characterData else (-1 if self.is_alive() else DYING_ROUND_LIMIT)
@@ -29,7 +34,7 @@ class FriendlyCharacter(Entity):
         if "skill_effective_range" in characterData and characterData["skill_effective_range"] is not None:
             self.__skill_effective_range.update(characterData["skill_effective_range"])
         # 最远技能施展范围
-        self.__max_skill_range: int = calculate_range(self.__skill_effective_range)
+        self.__max_skill_range: int = self._calculate_range(self.__skill_effective_range)
         # 被察觉程度
         self.__detection: int = (
             int(characterData["detection"]) if "detection" in characterData and characterData["detection"] is not None else 0
@@ -38,7 +43,9 @@ class FriendlyCharacter(Entity):
         self.__beNoticedImage: FriendlyCharacterDynamicProgressBarSurface = FriendlyCharacterDynamicProgressBarSurface()
         self.__beNoticedImage.set_percentage(self.__detection / 100)
         # 重创立绘
-        self.__getHurtImage: Optional[EntityGetHurtImage]
+        self.__getHurtImage: Optional[EntityGetHurtImage] = None
+        # 设置态度flag
+        self.set_attitude(1)
         # 尝试加载重创立绘
         try:
             self.__getHurtImage = EntityGetHurtImage(self.type, Display.get_height() / 4, int(Display.get_height() / 2))
@@ -207,14 +214,44 @@ class FriendlyCharacter(Entity):
                     self.__getHurtImage.alpha -= 5
 
 
+# 用于存放角色做出的决定
+class DecisionHolder:
+    def __init__(self, action: str, data: Any):
+        self.action: str = action
+        self.data = data
+
+    @property
+    def route(self) -> list:
+        if self.action == "move":
+            return list(self.data)
+        else:
+            EXCEPTION.fatal("The character does not decide to move!")
+
+    @property
+    def target(self) -> str:
+        if self.action == "attack":
+            return str(self.data[0])
+        else:
+            EXCEPTION.fatal("The character does not decide to attack!")
+
+    @property
+    def target_area(self) -> str:
+        if self.action == "attack":
+            return str(self.data[1])
+        else:
+            EXCEPTION.fatal("The character does not decide to attack!")
+
+
 # 敌对角色类
 class HostileCharacter(Entity):
-    def __init__(self, characterData: dict, mode: str):
-        super().__init__(characterData, "sangvisFerri", mode)
+    def __init__(self, characterData: dict, mode: str) -> None:
+        super().__init__(characterData, mode)
         self.__patrol_path: deque = deque(characterData["patrol_path"]) if "patrol_path" in characterData else deque()
         self.__vigilance: int = int(characterData["vigilance"]) if "vigilance" in characterData else 0
         self.__vigilanceImage: HostileCharacterDynamicProgressBarSurface = HostileCharacterDynamicProgressBarSurface()
         self.__vigilanceImage.set_percentage(self.__vigilance / 100)
+        # 设置态度flag
+        self.set_attitude(-1)
 
     def to_dict(self) -> dict:
         # 获取父类信息
@@ -310,7 +347,7 @@ class HostileCharacter(Entity):
                 """
             else:
                 # 寻找一条能到达该角色附近的线路
-                the_route = MAP_POINTER.findPath(
+                the_route = MAP_POINTER.find_path(
                     self.pos, targetCharacterData.pos, hostileCharacters, friendlyCharacters, blocks_can_move, [target]
                 )
                 if len(the_route) > 0:
@@ -321,7 +358,7 @@ class HostileCharacter(Entity):
                         # 获取可能的攻击范围
                         range_target_in_if_can_attack = self.range_target_in(targetCharacterData, pos_on_route)
                         if (
-                            range_target_in_if_can_attack != "None"
+                            range_target_in_if_can_attack is not None
                             and range_target_in_if_can_attack not in potential_attacking_pos_index
                         ):
                             potential_attacking_pos_index[range_target_in_if_can_attack] = i + 1
@@ -345,7 +382,7 @@ class HostileCharacter(Entity):
             # 如果巡逻坐标点只有一个（意味着角色需要在该坐标上长期镇守）
             if len(self.__patrol_path) == 1:
                 if not Coordinates.is_same(self.pos, self.__patrol_path[0]):
-                    the_route = MAP_POINTER.findPath(
+                    the_route = MAP_POINTER.find_path(
                         self.pos, self.__patrol_path[0], hostileCharacters, friendlyCharacters, blocks_can_move
                     )
                     if len(the_route) > 0:
@@ -357,7 +394,7 @@ class HostileCharacter(Entity):
                     pass
             # 如果巡逻坐标点有多个
             else:
-                the_route = MAP_POINTER.findPath(
+                the_route = MAP_POINTER.find_path(
                     self.pos, self.__patrol_path[0], hostileCharacters, friendlyCharacters, blocks_can_move
                 )
                 if len(the_route) > 0:

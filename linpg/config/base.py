@@ -77,7 +77,7 @@ class Config:
                     else:
                         EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.")
                 # 使用json模块加载配置文件
-                elif path.endswith(".json"):
+                elif path.endswith(".json") or path.endswith(".linpg.meta"):
                     return dict(json.load(f))
                 else:
                     EXCEPTION.fatal("Linpg can only load json and yaml (when pyyaml is installed).")
@@ -113,7 +113,7 @@ class Config:
                     EXCEPTION.fatal(
                         "You cannot save .yaml file because yaml is not imported successfully. Maybe try to reinstall PyYaml and try again."
                     )
-            elif path.endswith(".json"):
+            elif path.endswith(".json") or path.endswith(".linpg.meta"):
                 json.dump(data, f, indent=4, ensure_ascii=False, sort_keys=True)
             else:
                 EXCEPTION.fatal(
@@ -192,6 +192,12 @@ class Config:
         else:
             return ""
 
+    # 解决路径冲突并加载
+    @classmethod
+    def resolve_path_and_load_file(cls, file_location: str) -> dict:
+        path: str = cls.resolve_path(file_location)
+        return cls.load_file(path) if len(path) > 0 else {}
+
 
 # 引擎部分生产的配置文件的模板
 class Template:
@@ -204,10 +210,12 @@ class Template:
         return deepcopy(cls.__TEMPLATE[key])
 
 
-# 使用引擎开发游戏的用户可以自定义的参数
+# 使用引擎的开发者可以自定义的参数
 class Specification:
 
     __SPECIFICATIONS: dict = Config.load_internal_file("specifications.json")
+    # 尝试加载项目自定义的参数
+    __SPECIFICATIONS.update(Config.resolve_path_and_load_file(os.path.join("Data", "specifications")))
 
     @classmethod
     def get(cls, *key: str) -> Any:

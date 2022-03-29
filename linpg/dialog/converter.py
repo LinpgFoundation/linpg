@@ -150,7 +150,7 @@ class ScriptConverter:
                         self.__generate_id(len(self.__output[self.__part])) if len(self.__output[self.__part]) > 0 else "head"
                     )
 
-                    if self.__last_dialog_id != None:
+                    if self.__last_dialog_id is not None:
                         self.__current_data["last_dialog_id"] = self.__last_dialog_id
                         self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"] = {
                             "target": this_dialog_id,

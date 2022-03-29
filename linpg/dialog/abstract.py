@@ -12,7 +12,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._npc_manager: CharacterImageManager = CharacterImageManager()
         # 黑色Void帘幕
         self._black_bg = StaticImage(
-            Colors.surface(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height()
+            Surface.colored(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height()
         )
         # 对话文件路径
         self._dialog_folder_path: str = "Data"
@@ -178,17 +178,19 @@ class AbstractDialogSystem(AbstractGameSystem):
                         (img_path := os.path.join(self._background_image_folder_path, self.__background_image_name))
                     ):
                         self.__background_image_surface = StaticImage(img_path, 0, 0)
+                        self.__background_image_surface.disable_croping()
                     # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
-                    elif os.path.exists(os.path.join(ASSET.PATH_DICT["movie"], self.__background_image_name)):
+                    elif os.path.exists(os.path.join(Specification.get("FolderPath", "Movie"), self.__background_image_name)):
                         self.__background_image_surface = VideoSurface(
-                            os.path.join(ASSET.PATH_DICT["movie"], self.__background_image_name), with_audio=False
+                            os.path.join(Specification.get("FolderPath", "Movie"), self.__background_image_name), with_audio=False
                         )
                     else:
                         EXCEPTION.fatal(
                             "Cannot find a background image or video file called '{}'.".format(self.__background_image_name)
                         )
                 elif self._npc_manager.dev_mode is True:
-                    self.__background_image_surface = StaticImage(get_texture_missing_surface(Display.get_size()), 0, 0)
+                    self.__background_image_surface = StaticImage(Surface.texture_is_missing(Display.get_size()), 0, 0)
+                    self.__background_image_surface.disable_croping()
                 else:
                     self.__background_image_surface = NULL_STATIC_IMAGE
             else:
@@ -207,7 +209,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._get_dialog_box().update(self._current_dialog_content["narrator"], self._current_dialog_content["contents"])
         # 更新背景音乐
         if (current_bgm := self._current_dialog_content["background_music"]) is not None:
-            self.set_bgm(os.path.join(ASSET.PATH_DICT["music"], current_bgm))
+            self.set_bgm(os.path.join(Specification.get("FolderPath", "Music"), current_bgm))
         else:
             self.unload_bgm()
         # 隐藏选项菜单
@@ -241,7 +243,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         )
         for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
             optionButton: Button = Button.load("<!ui>option.png", (0, 0), (0, 0))
-            optionButton.set_hover_img(IMG.quickly_load("<!ui>option_selected.png"))
+            optionButton.set_hover_img(RawImg.quickly_load("<!ui>option_selected.png"))
             optionButton.set_auto_resize(True)
             optionButton.set_text(
                 ButtonComponent.text(

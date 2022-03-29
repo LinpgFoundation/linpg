@@ -1,6 +1,6 @@
 import hashlib
 import shutil
-from .setting import *
+from .debug import *
 
 
 # 全局数据
@@ -46,15 +46,7 @@ class GlobalValue:
 class DataBase:
 
     # 用于存放数据库数据的字典
-    __DATA_BASE_DICT: dict = Config.load_internal_file("database.json")
-
-    # 初始化数据库
-    if len(_path := Config.resolve_path(os.path.join("Data", "database"))) > 0:
-        for key, value in Config.load_file(_path).items():
-            if key not in __DATA_BASE_DICT:
-                __DATA_BASE_DICT[key] = value
-            else:
-                __DATA_BASE_DICT[key].update(value)
+    __DATA_BASE_DICT: dict = {"Blocks": {}, "Decorations": {}, "Npc": {}}
 
     @classmethod
     def get(cls, *key: str) -> Any:
@@ -63,57 +55,46 @@ class DataBase:
         except KeyError:
             EXCEPTION.fatal('Cannot find key "{}" in the database'.format(key))
 
+    @classmethod
+    def update(cls, _value: dict) -> None:
+        for key, value in _value.items():
+            if key not in cls.__DATA_BASE_DICT:
+                cls.__DATA_BASE_DICT[key] = value
+            else:
+                cls.__DATA_BASE_DICT[key].update(value)
+
 
 # 版本信息管理模块
 class Info:
 
-    __INFO_DATA_DICT: dict = Config.load_internal_file("info.json")
+    # 引擎主版本号
+    __VERSION: int = 3
+    # 引擎次更新版本号
+    __REVISION: int = 3
+    # 引擎补丁版本
+    __PATCH: int = 0
 
     # 确保linpg版本
     @classmethod
     def ensure_linpg_version(cls, action: str, revision: int, patch: int, version: int = 3) -> bool:
         if action == "==":
-            return (
-                version == int(cls.__INFO_DATA_DICT["version"])
-                and revision == int(cls.__INFO_DATA_DICT["revision"])
-                and patch == int(cls.__INFO_DATA_DICT["patch"])
-            )
+            return version == int(cls.__VERSION) and revision == int(cls.__REVISION) and patch == int(cls.__PATCH)
         elif action == ">=":
-            return (
-                version >= int(cls.__INFO_DATA_DICT["version"])
-                and revision >= int(cls.__INFO_DATA_DICT["revision"])
-                and patch >= int(cls.__INFO_DATA_DICT["patch"])
-            )
+            return version >= int(cls.__VERSION) and revision >= int(cls.__REVISION) and patch >= int(cls.__PATCH)
         elif action == "<=":
-            return (
-                version <= int(cls.__INFO_DATA_DICT["version"])
-                and revision <= int(cls.__INFO_DATA_DICT["revision"])
-                and patch <= int(cls.__INFO_DATA_DICT["patch"])
-            )
+            return version <= int(cls.__VERSION) and revision <= int(cls.__REVISION) and patch <= int(cls.__PATCH)
         else:
             EXCEPTION.fatal('Action "{}" is not supported!'.format(action))
 
     # 获取当前版本号
     @classmethod
     def get_current_version(cls) -> str:
-        return "{0}.{1}.{2}".format(
-            cls.__INFO_DATA_DICT["version"], cls.__INFO_DATA_DICT["revision"], cls.__INFO_DATA_DICT["patch"]
-        )
-
-    # 获取作者邮箱
-    @classmethod
-    def get_author_email(cls) -> str:
-        return str(cls.__INFO_DATA_DICT["author_email"])
+        return "{0}.{1}.{2}".format(cls.__VERSION, cls.__REVISION, cls.__PATCH)
 
     # 获取github项目地址
     @classmethod
     def get_repository_url(cls) -> str:
-        return str(cls.__INFO_DATA_DICT["repository_url"])
-
-    # 获取项目简介
-    @classmethod
-    def get_short_description(cls) -> str:
-        return str(cls.__INFO_DATA_DICT["short_description"])
+        return "https://github.com/Tigeia-Workshop/linpg"
 
 
 class Cache:

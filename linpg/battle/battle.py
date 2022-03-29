@@ -17,8 +17,8 @@ class AbstractBattleSystem(AbstractGameSystem):
         # 地图数据
         self._MAP: MapObject = MapObject()
         # 方格标准尺寸
-        self._standard_block_width: int = int(Display.get_width() / 10)
-        self._standard_block_height: int = int(Display.get_height() / 10)
+        self._standard_block_width: int = Display.get_width() // 10
+        self._standard_block_height: int = Display.get_height() // 10
         # 天气系统
         self._weather_system: WeatherSystem = WeatherSystem()
 
@@ -37,11 +37,11 @@ class AbstractBattleSystem(AbstractGameSystem):
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
-        _data: dict = {"character": {}, "sangvisFerri": {}}
+        _data: dict = {"alliances": {}, "enemies": {}}
         for key in self._alliances_data:
-            _data["character"][key] = self._alliances_data[key].to_dict()
+            _data["alliances"][key] = self._alliances_data[key].to_dict()
         for key in self._enemies_data:
-            _data["sangvisFerri"][key] = self._enemies_data[key].to_dict()
+            _data["enemies"][key] = self._enemies_data[key].to_dict()
         _data.update(self.get_data_of_parent_game_system())
         _data.update(self._MAP.to_dict())
         return _data
@@ -143,30 +143,30 @@ class AbstractBattleSystem(AbstractGameSystem):
         # 根据按键情况设定要移动的数值
         if self.__moving_screen_in_direction["up"] is True:
             if self._screen_to_move_y is None:
-                self._screen_to_move_y = int(self._MAP.block_height / 4)
+                self._screen_to_move_y = self._MAP.block_height // 4
             else:
-                self._screen_to_move_y += int(self._MAP.block_height / 4)
+                self._screen_to_move_y += self._MAP.block_height // 4
         if self.__moving_screen_in_direction["down"] is True:
             if self._screen_to_move_y is None:
-                self._screen_to_move_y = int(-self._MAP.block_height / 4)
+                self._screen_to_move_y = -self._MAP.block_height // 4
             else:
-                self._screen_to_move_y -= int(self._MAP.block_height / 4)
+                self._screen_to_move_y -= self._MAP.block_height // 4
         if self.__moving_screen_in_direction["left"] is True:
             if self._screen_to_move_x is None:
-                self._screen_to_move_x = int(self._MAP.block_width / 4)
+                self._screen_to_move_x = self._MAP.block_width // 4
             else:
-                self._screen_to_move_x += int(self._MAP.block_width / 4)
+                self._screen_to_move_x += self._MAP.block_width // 4
         if self.__moving_screen_in_direction["right"] is True:
             if self._screen_to_move_x is None:
-                self._screen_to_move_x = int(-self._MAP.block_width / 4)
+                self._screen_to_move_x = -self._MAP.block_width // 4
             else:
-                self._screen_to_move_x -= int(self._MAP.block_width / 4)
+                self._screen_to_move_x -= self._MAP.block_width // 4
 
     def _move_screen(self) -> None:
         # 如果需要移动屏幕
         temp_value: int = 0
         if self._screen_to_move_x is not None and self._screen_to_move_x != 0:
-            temp_value = int(self._MAP.get_local_x() + self._screen_to_move_x / 5)
+            temp_value = self._MAP.get_local_x() + self._screen_to_move_x // 5
             if Display.get_width() - self._MAP.get_width() <= temp_value <= 0:
                 self._MAP.set_local_x(temp_value)
                 self._screen_to_move_x = int(self._screen_to_move_x * 0.8)
@@ -175,7 +175,7 @@ class AbstractBattleSystem(AbstractGameSystem):
             else:
                 self._screen_to_move_x = 0
         if self._screen_to_move_y is not None and self._screen_to_move_y != 0:
-            temp_value = int(self._MAP.get_local_y() + self._screen_to_move_y / 5)
+            temp_value = self._MAP.get_local_y() + self._screen_to_move_y // 5
             if Display.get_height() - self._MAP.get_height() <= temp_value <= 0:
                 self._MAP.set_local_y(temp_value)
                 self._screen_to_move_y = int(self._screen_to_move_y * 0.8)

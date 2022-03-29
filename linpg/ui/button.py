@@ -44,7 +44,7 @@ class AbstractButton(AbstractImageSurface):
             height = img.get_height()
         super().__init__(img, x, y, width, height, tag)
         # self.img是未被触碰时的默认图片，img2是被鼠标触碰时展示的图片
-        self.__img2: ImageSurface = NULL_SURFACE
+        self.__img2: ImageSurface = Surface.NULL
 
     def has_been_hovered(self) -> bool:
         return False
@@ -53,10 +53,10 @@ class AbstractButton(AbstractImageSurface):
         self.__img2 = img
 
     def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
-        if self.has_been_hovered() is True and self.__img2 is not NULL_SURFACE:
-            surface.blit(IMG.smoothly_resize(self.__img2, self.size), Coordinates.add(self.pos, offSet))
-        elif self.img is not NULL_SURFACE:
-            surface.blit(IMG.smoothly_resize(self.img, self.size), Coordinates.add(self.pos, offSet))
+        if self.has_been_hovered() is True and self.__img2 is not Surface.NULL:
+            surface.blit(RawImg.smoothly_resize(self.__img2, self.size), Coordinates.add(self.pos, offSet))
+        elif self.img is not Surface.NULL:
+            surface.blit(RawImg.smoothly_resize(self.img, self.size), Coordinates.add(self.pos, offSet))
 
 
 # 按钮的简单实现
@@ -76,13 +76,13 @@ class ButtonComponent(AbstractButton):
     @staticmethod
     def icon(path: PoI, size: tuple[int, int], alpha_when_not_hover: int = 255) -> "ButtonComponent":
         if alpha_when_not_hover < 255:
-            fading_button = ButtonComponent(IMG.load(path, alpha=alpha_when_not_hover), size[0], size[1])
+            fading_button = ButtonComponent(RawImg.load(path, alpha=alpha_when_not_hover), size[0], size[1])
             img2 = fading_button.get_image_copy()
             img2.set_alpha(255)
             fading_button.set_hover_img(img2)
             return fading_button
         else:
-            return ButtonComponent(IMG.quickly_load(path), size[0], size[1])
+            return ButtonComponent(RawImg.quickly_load(path), size[0], size[1])
 
     @staticmethod
     def text(
@@ -119,14 +119,16 @@ class Button(AbstractButton):
     @staticmethod
     def load(path: PoI, position: tuple[int, int], size: tuple[int, int], alpha_when_not_hover: int = 255) -> "Button":
         if alpha_when_not_hover < 255:
-            fading_button: Button = Button(IMG.load(path, alpha=alpha_when_not_hover), position[0], position[1], size[0], size[1])
+            fading_button: Button = Button(
+                RawImg.load(path, alpha=alpha_when_not_hover), position[0], position[1], size[0], size[1]
+            )
             if path != "<!null>":
                 img2 = fading_button.get_image_copy()
                 img2.set_alpha(255)
                 fading_button.set_hover_img(img2)
             return fading_button
         else:
-            return Button(IMG.quickly_load(path), position[0], position[1], size[0], size[1])
+            return Button(RawImg.quickly_load(path), position[0], position[1], size[0], size[1])
 
     # 自动缩放
     def set_auto_resize(self, value: bool) -> None:

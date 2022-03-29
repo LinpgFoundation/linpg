@@ -87,7 +87,7 @@ class DialogBox(AbstractDialogBox):
             )
         self.__READING_SPEED: int = max(int(Setting.get("ReadingSpeed")), 1)
         # 鼠标图标
-        self.__mouse_img = GifImage(
+        self.__mouse_img = AnimatedImage(
             (
                 StaticImage("<!ui>mouse_none.png", 0, 0, self.FONT.size, self.FONT.size),
                 StaticImage("<!ui>mouse.png", 0, 0, self.FONT.size, self.FONT.size),
@@ -192,11 +192,11 @@ class DialogBox(AbstractDialogBox):
                 if self._dialoguebox.height < self._dialoguebox_max_height:
                     self._dialoguebox.set_height(
                         min(
-                            int(self._dialoguebox.height + self._dialoguebox_max_height * Display.sfpsp / 10),
+                            self._dialoguebox.height + self._dialoguebox_max_height / Display.get_delta_time() // 10,
                             self._dialoguebox_max_height,
                         )
                     )
-                    self._dialoguebox.move_upward(self._dialoguebox_max_height * Display.sfpsp / 20)
+                    self._dialoguebox.move_upward(self._dialoguebox_max_height / Display.get_delta_time() // 20)
                 # 如果已经放大好了，则将文字画到屏幕上
                 else:
                     x: int = int(surface.get_width() * 2 / 10)
@@ -238,9 +238,9 @@ class DialogBox(AbstractDialogBox):
             else:
                 # 画出对话框图片
                 self._dialoguebox.draw(surface)
-                height_t: int = int(self._dialoguebox.height - self._dialoguebox_max_height * Display.sfpsp / 10)
+                height_t: int = int(self._dialoguebox.height - self._dialoguebox_max_height / Display.get_delta_time() // 10)
                 if height_t > 0:
                     self._dialoguebox.set_height(height_t)
-                    self._dialoguebox.move_downward(self._dialoguebox_max_height * Display.sfpsp / 20)
+                    self._dialoguebox.move_downward(self._dialoguebox_max_height / Display.get_delta_time() // 20)
                 else:
                     self.reset()

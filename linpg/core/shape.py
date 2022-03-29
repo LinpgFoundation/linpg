@@ -75,10 +75,6 @@ class Square(GameObject2d):
         # 重置宽度
         self.set_width(self.get_width())
 
-    # 获取rect
-    def get_rect(self) -> tuple[int, int, int, int]:
-        return self.left, self.top, self.__width, self.__width
-
     # 画出轮廓
     def draw_outline(
         self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN, color: str = "red", thickness: int = 2
@@ -170,6 +166,9 @@ class Rectangle(Square):
     # 获取rect
     def get_rect(self) -> tuple[int, int, int, int]:
         return self.x, self.y, self.get_width(), self.__height
+
+    def get_rectangle(self) -> "Rectangle":
+        return Rectangle(self.x, self.y, self.get_width(), self.__height)
 
 
 # 圆形类

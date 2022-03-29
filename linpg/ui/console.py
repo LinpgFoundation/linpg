@@ -53,19 +53,32 @@ class Console(SingleLineInputBox, HiddenableSurface):
             if len(conditions) < 2:
                 self._txt_output.append("Unknown status for cheat command.")
             elif conditions[1] == "on":
-                if Setting.cheat_mode is True:
+                if Debug.get_cheat_mode() is True:
                     self._txt_output.append("Cheat mode has already been activated!")
                 else:
-                    Setting.set_cheat_mode(True)
+                    Debug.set_cheat_mode(True)
                     self._txt_output.append("Cheat mode is activated.")
             elif conditions[1] == "off":
-                if not Setting.cheat_mode:
+                if not Debug.get_cheat_mode():
                     self._txt_output.append("Cheat mode has already been deactivated!")
                 else:
-                    Setting.set_cheat_mode(False)
+                    Debug.set_cheat_mode(False)
                     self._txt_output.append("Cheat mode is deactivated.")
             else:
                 self._txt_output.append("Unknown status for cheat command.")
+        elif conditions[0] == "show":
+            if len(conditions) >= 3:
+                if conditions[1] == "fps":
+                    if conditions[2] == "on":
+                        Debug.set_show_fps(True)
+                    elif conditions[2] == "off":
+                        Debug.set_show_fps(False)
+                    else:
+                        self._txt_output.append("Unknown status for show command.")
+                else:
+                    self._txt_output.append("Unknown status for show command.")
+            else:
+                self._txt_output.append("Unknown status for show command.")
         elif conditions[0] == "say":
             self._txt_output.append(self._text[len(self.command_indicator) + 4 :])
         elif conditions[0] == "dev":

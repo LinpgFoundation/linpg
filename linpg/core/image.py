@@ -3,8 +3,8 @@ from .text import *
 # 动态图形类
 class DynamicImage(AbstractImageSurface):
     def __init__(self, img: PoI, x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = ""):
-        super().__init__(IMG.quickly_load(img), x, y, width, height, tag)
-        self.__processed_img: ImageSurface = NULL_SURFACE
+        super().__init__(RawImg.quickly_load(img), x, y, width, height, tag)
+        self.__processed_img: Optional[ImageSurface] = None
 
     # 返回一个复制
     def copy(self) -> "DynamicImage":
@@ -18,42 +18,43 @@ class DynamicImage(AbstractImageSurface):
 
     # 反转
     def flip(self, vertical: bool = False, horizontal: bool = False) -> None:
-        self.img = IMG.flip(self.img, vertical, horizontal)
+        self.img = RawImg.flip(self.img, vertical, horizontal)
 
     # 设置透明度
     def set_alpha(self, value: int) -> None:
         super().set_alpha(value)
-        if self.__processed_img is not NULL_SURFACE:
+        if self.__processed_img is not None:
             self.__processed_img.set_alpha(self.get_alpha())
 
     # 更新图片
     def update_image(self, img_path: PoI, ifConvertAlpha: bool = True) -> None:
         super().update_image(img_path, ifConvertAlpha)
-        self.__processed_img = NULL_SURFACE
+        self.__processed_img = None
 
     # 旋转
     def rotate(self, angle: int) -> None:
         super().rotate(angle)
-        self.__processed_img = NULL_SURFACE
+        self.__processed_img = None
 
     # 展示
     def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         if self.is_visible():
             if not Setting.low_memory_mode:
-                if self.__processed_img is NULL_SURFACE or self.__processed_img.get_size() != self.size:
-                    self.__processed_img = IMG.smoothly_resize(self.img, self.size)
+                if self.__processed_img is None or self.__processed_img.get_size() != self.size:
+                    self.__processed_img = RawImg.smoothly_resize(self.img, self.size)
                 surface.blit(self.__processed_img, Coordinates.add(self.pos, offSet))
             else:
-                surface.blit(IMG.resize(self.img, self.size), Coordinates.add(self.pos, offSet))
+                surface.blit(RawImg.resize(self.img, self.size), Coordinates.add(self.pos, offSet))
 
 
 # 用于静态图片的surface
 class StaticImage(AdvancedAbstractCachingImageSurface):
     def __init__(self, img: PoI, x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = ""):
-        super().__init__(IMG.quickly_load(img), x, y, width, height, tag)
+        super().__init__(RawImg.quickly_load(img), x, y, width, height, tag)
         self.__is_flipped_horizontally: bool = False
         self.__is_flipped_vertically: bool = False
         self.__crop_rect: Optional[Rectangle] = None
+        self.__no_croping_needed: bool = False
 
     # 截图的范围
     @property
@@ -62,6 +63,9 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
 
     def get_crop_rect(self) -> Optional[Rectangle]:
         return self.__crop_rect
+
+    def disable_croping(self) -> None:
+        self.__no_croping_needed = True
 
     def set_crop_rect(self, rect: Optional[Rectangle]) -> None:
         if rect is None or isinstance(rect, Rectangle):
@@ -109,21 +113,26 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
     # 更新图片
     def _update_img(self) -> None:
         # 改变尺寸
-        imgTmp = IMG.smoothly_resize(self.img, self.size) if Setting.antialias is True else IMG.resize(self.img, self.size)
+        imgTmp = RawImg.smoothly_resize(self.img, self.size) if Setting.antialias is True else RawImg.resize(self.img, self.size)
         # 翻转图片
         if self.__is_flipped_horizontally is True or self.__is_flipped_vertically is True:
-            imgTmp = IMG.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)
-        # 获取切割rect
-        rect: Rectangle = convert_rect(imgTmp.get_bounding_rect())
-        if self.width != rect.width or self.height != rect.height or self.__crop_rect is not None:
-            if self.__crop_rect is not None:
-                new_x: int = max(rect.x, self.__crop_rect.x)
-                new_y: int = max(rect.y, self.__crop_rect.y)
-                rect.move_to((new_x, new_y))
-                rect.set_size(min(rect.right, self.__crop_rect.right) - new_x, min(rect.bottom, self.__crop_rect.bottom) - new_y)
-            self._processed_img = new_transparent_surface(rect.size)
-            self.set_local_pos(rect.x, rect.y)
-            self._processed_img.blit(imgTmp, (-self.local_x, -self.local_y))
+            imgTmp = RawImg.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)
+        if not self.__no_croping_needed:
+            # 获取切割rect
+            rect: Rectangle = convert_rect(imgTmp.get_bounding_rect())
+            if self.width != rect.width or self.height != rect.height or self.__crop_rect is not None:
+                if self.__crop_rect is not None:
+                    new_x: int = max(rect.x, self.__crop_rect.x)
+                    new_y: int = max(rect.y, self.__crop_rect.y)
+                    rect.move_to((new_x, new_y))
+                    rect.set_size(
+                        min(rect.right, self.__crop_rect.right) - new_x, min(rect.bottom, self.__crop_rect.bottom) - new_y
+                    )
+                self._processed_img = Surface.transparent(rect.size)
+                self.set_local_pos(rect.x, rect.y)
+                self._processed_img.blit(imgTmp, (-self.local_x, -self.local_y))
+            else:
+                self._processed_img = imgTmp
         else:
             self._processed_img = imgTmp
         if self._alpha < 255:
@@ -274,7 +283,7 @@ class MovableImage(StaticImage):
 
 
 # gif图片管理
-class GifImage(AdvancedAbstractImageSurface):
+class AnimatedImage(AdvancedAbstractImageSurface):
     def __init__(self, imgList: tuple, x: int_f, y: int_f, width: int_f, height: int_f, updateGap: int_f, tag: str = "") -> None:
         super().__init__(imgList, x, y, width, height, tag)
         self.imgId: int = 0
@@ -282,18 +291,17 @@ class GifImage(AdvancedAbstractImageSurface):
         self.countDown: int = 0
 
     # 返回一个复制
-    def copy(self) -> "GifImage":
-        return GifImage(self.get_image_copy(), self.x, self.y, self.get_width(), self.get_height(), self.updateGap)
+    def copy(self) -> "AnimatedImage":
+        return AnimatedImage(self.get_image_copy(), self.x, self.y, self.get_width(), self.get_height(), self.updateGap)
 
     # 返回一个浅复制品
-    def light_copy(self) -> "GifImage":
-        return GifImage(self.img, self.x, self.y, self.get_width(), self.get_height(), self.updateGap)
+    def light_copy(self) -> "AnimatedImage":
+        return AnimatedImage(self.img, self.x, self.y, self.get_width(), self.get_height(), self.updateGap)
 
     # 当前图片
     @property
     def current_image(self) -> StaticImage:
-        _temp: StaticImage = self.img[self.imgId]
-        return _temp
+        return self.img[self.imgId]  # type: ignore
 
     # 展示
     def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:

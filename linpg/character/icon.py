@@ -4,15 +4,15 @@ from .image import *
 class FriendlyCharacterDynamicProgressBarSurface(DynamicProgressBarSurface):
 
     # 指向储存角色被察觉图标的指针
-    __FULLY_EXPOSED_IMG: ImageSurface = NULL_SURFACE
-    __BEING_NOTICED_IMG: ImageSurface = NULL_SURFACE
+    __FULLY_EXPOSED_IMG: ImageSurface = Surface.NULL
+    __BEING_NOTICED_IMG: ImageSurface = Surface.NULL
     __img_initialized: bool = False
 
     def __init__(self) -> None:
         # 检测图标是否生成，如果没有则生成
         if not self.__img_initialized:
-            self.__FULLY_EXPOSED_IMG = IMG.quickly_load(r"Assets/image/UI/eye_red.png")
-            self.__BEING_NOTICED_IMG = IMG.quickly_load(r"Assets/image/UI/eye_orange.png")
+            self.__FULLY_EXPOSED_IMG = RawImg.quickly_load(r"Assets/image/UI/eye_red.png")
+            self.__BEING_NOTICED_IMG = RawImg.quickly_load(r"Assets/image/UI/eye_orange.png")
             # 完成初始化
             self.__img_initialized = True
         super().__init__(self.__FULLY_EXPOSED_IMG, self.__BEING_NOTICED_IMG, 0, 0, 0, 0)
@@ -21,15 +21,15 @@ class FriendlyCharacterDynamicProgressBarSurface(DynamicProgressBarSurface):
 class HostileCharacterDynamicProgressBarSurface(DynamicProgressBarSurface):
 
     # 指向储存敌方角色警觉程度图标的指针
-    __ORANGE_VIGILANCE_IMG: ImageSurface = NULL_SURFACE
-    __RED_VIGILANCE_IMG: ImageSurface = NULL_SURFACE
+    __ORANGE_VIGILANCE_IMG: ImageSurface = Surface.NULL
+    __RED_VIGILANCE_IMG: ImageSurface = Surface.NULL
     __img_initialized: bool = False
 
     def __init__(self) -> None:
         # 检测图标是否生成，如果没有则生成
         if not self.__img_initialized:
-            self.__ORANGE_VIGILANCE_IMG = IMG.quickly_load(r"Assets/image/UI/vigilance_orange.png")
-            self.__RED_VIGILANCE_IMG = IMG.quickly_load(r"Assets/image/UI/vigilance_red.png")
+            self.__ORANGE_VIGILANCE_IMG = RawImg.quickly_load(r"Assets/image/UI/vigilance_orange.png")
+            self.__RED_VIGILANCE_IMG = RawImg.quickly_load(r"Assets/image/UI/vigilance_red.png")
             # 完成初始化
             self.__img_initialized = True
         super().__init__(self.__RED_VIGILANCE_IMG, self.__ORANGE_VIGILANCE_IMG, 0, 0, 0, 0, "vertical")
@@ -39,17 +39,17 @@ class HostileCharacterDynamicProgressBarSurface(DynamicProgressBarSurface):
 class EntityHpBar(DynamicProgressBarSurface):
 
     # 指向储存血条图片的指针（不初始化直到Entity或其子类被调用）
-    __HP_GREEN_IMG: ImageSurface = NULL_SURFACE
-    __HP_RED_IMG: ImageSurface = NULL_SURFACE
-    __HP_EMPTY_IMG: ImageSurface = NULL_SURFACE
+    __HP_GREEN_IMG: ImageSurface = Surface.NULL
+    __HP_RED_IMG: ImageSurface = Surface.NULL
+    __HP_EMPTY_IMG: ImageSurface = Surface.NULL
     __img_initialized: bool = False
 
     def __init__(self) -> None:
         # 检测被察觉的图标是否生产，如果没有则生成
         if not self.__img_initialized:
-            self.__HP_GREEN_IMG = IMG.quickly_load(r"Assets/image/UI/hp_green.png")
-            self.__HP_RED_IMG = IMG.quickly_load(r"Assets/image/UI/hp_red.png")
-            self.__HP_EMPTY_IMG = IMG.quickly_load(r"Assets/image/UI/hp_empty.png")
+            self.__HP_GREEN_IMG = RawImg.quickly_load(r"Assets/image/UI/hp_green.png")
+            self.__HP_RED_IMG = RawImg.quickly_load(r"Assets/image/UI/hp_red.png")
+            self.__HP_EMPTY_IMG = RawImg.quickly_load(r"Assets/image/UI/hp_empty.png")
             # 完成初始化
             self.__img_initialized = True
         # 是否角色死亡

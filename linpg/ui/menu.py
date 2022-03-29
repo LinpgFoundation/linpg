@@ -140,7 +140,7 @@ class PauseMenu(AbstractInternalMenu):
             assert self._CONTENT is not None
             # 展示原先的背景
             if self.__screenshot is None:
-                self.__screenshot = IMG.add_darkness(surface, 10)
+                self.__screenshot = RawImg.add_darkness(surface, 10)
             # 画出原先的背景
             surface.blit(self.__screenshot, (0, 0))
             # 画出选项

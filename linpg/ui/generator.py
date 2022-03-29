@@ -6,12 +6,10 @@ class UiGenerator:
     # 获取默认ui模板
     __UI_TEMPLATES: dict = Config.load_internal_file("ui.json")
     # 加载自定义的ui数据（如果存在）
-    if len(path := Config.resolve_path(os.path.join("Data", "ui"))) > 0:
-        for key, value in Config.load_file(path).items():
-            if key not in __UI_TEMPLATES:
-                __UI_TEMPLATES[key] = {}
-            __UI_TEMPLATES[key].update(deepcopy(value))
-        del key, value, path
+    for key, value in Config.resolve_path_and_load_file(os.path.join("Data", "ui")).items():
+        if key not in __UI_TEMPLATES:
+            __UI_TEMPLATES[key] = {}
+        __UI_TEMPLATES[key].update(deepcopy(value))
 
     # 尝试转换特殊的string
     @classmethod
@@ -269,7 +267,7 @@ class UiGenerator:
     def __get_data_in_dict(cls, data: Union[str, dict]) -> dict:
         if isinstance(data, str):
             try:
-                return dict(deepcopy(cls.__UI_TEMPLATES[data]))
+                return deepcopy(dict(cls.__UI_TEMPLATES[data]))
             except KeyError:
                 EXCEPTION.fatal('The ui called "{}" does not exist!'.format(data))
         else:

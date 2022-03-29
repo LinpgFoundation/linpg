@@ -1,8 +1,12 @@
 {
-    "ConfigFileType": "yaml",
+    "ConfigFileType": "json",
+    "ExtraAssets": true,
     "FolderPath": {
         "Cache": "Cache",
-        "Save": "Save"
+        "Movie": "Assets\\movie",
+        "Music": "Assets\\music",
+        "Save": "Save",
+        "Sprite": "Assets\\image\\sprites"
     },
     "PySimpleGUITheme": "SystemDefault",
     "ThirdPartyLibraries": {

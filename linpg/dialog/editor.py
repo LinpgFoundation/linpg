@@ -43,7 +43,7 @@ class DialogEditor(DialogConverter):
         self._npc_manager.dev_mode = True
         # 加载容器
         container_width = int(Display.get_width() * 2 / 10)
-        self.__UIContainerRightImage = IMG.load("<!ui>container.png", (container_width, Display.get_height()))
+        self.__UIContainerRightImage = RawImg.load("<!ui>container.png", (container_width, Display.get_height()))
         # 右侧容器尺寸
         RightContainerRect: Rectangle = Rectangle(
             int(container_width * 0.075),
@@ -57,20 +57,20 @@ class DialogEditor(DialogConverter):
         )
         self.__UIContainerRight_bg.set_scroll_bar_pos("right")
         # 加载背景图片
-        self.background_deselect = IMG.load("<!ui>deselect.png")
+        self.background_deselect = RawImg.load("<!ui>deselect.png")
         self.__UIContainerRight_bg.set("current_select", None)
         # 加载静态背景图片
         for imgPath in glob(os.path.join(self._background_image_folder_path, "*")):
-            self.__UIContainerRight_bg.set(os.path.basename(imgPath), IMG.load(imgPath, (container_width * 4 / 5, None)))
+            self.__UIContainerRight_bg.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 4 / 5, None)))
         # 加载动态背景图片
-        if os.path.exists(ASSET.PATH_DICT["movie"]):
-            for imgPath in glob(os.path.join(ASSET.PATH_DICT["movie"], "*")):
+        if os.path.exists(Specification.get("FolderPath", "Movie")):
+            for imgPath in glob(os.path.join(Specification.get("FolderPath", "Movie"), "*")):
                 self.__UIContainerRight_bg.set(
-                    os.path.basename(imgPath), IMG.resize(get_preview_of_video(imgPath), (container_width * 4 / 5, None))
+                    os.path.basename(imgPath), RawImg.resize(get_preview_of_video(imgPath), (container_width * 4 / 5, None))
                 )
         # 加载透明图片
         self.__UIContainerRight_bg.set(
-            "<transparent>", get_texture_missing_surface((int(container_width * 4 / 5), int(container_width * 0.45)))
+            "<transparent>", Surface.texture_is_missing((int(container_width * 4 / 5), int(container_width * 0.45)))
         )
         self.__UIContainerRight_bg.distance_between_item = int(Display.get_height() * 0.02)
         self.__current_select_bg_name = None
@@ -82,7 +82,7 @@ class DialogEditor(DialogConverter):
         self.__UIContainerRight_npc.set_scroll_bar_pos("right")
         # 加载npc立绘
         for imgPath in glob(os.path.join(self._npc_manager.image_folder_path, "*")):
-            self.__UIContainerRight_npc.set(os.path.basename(imgPath), IMG.load(imgPath, (container_width * 0.8, None)))
+            self.__UIContainerRight_npc.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 0.8, None)))
         self.__UIContainerRight_npc.set_visible(False)
         self.__UIContainerRight_npc.distance_between_item = 0
         # 容器按钮
@@ -135,7 +135,7 @@ class DialogEditor(DialogConverter):
         # 背景音乐
         self.dialog_bgm_select = DropDownList(None, button_width * 11, button_y + font_size * 3, font_size)
         self.dialog_bgm_select.set("null", Lang.get_text("DialogCreator", "no_bgm"))
-        for file_name in os.listdir(ASSET.PATH_DICT["music"]):
+        for file_name in os.listdir(Specification.get("FolderPath", "Music")):
             self.dialog_bgm_select.set(file_name, file_name)
         # 从配置文件中加载数据
         self._load_content()
@@ -168,7 +168,7 @@ class DialogEditor(DialogConverter):
             self.__current_select_bg_name = image_name
             current_select_bg = self.__UIContainerRight_bg.get("current_select")
             self.__current_select_bg_copy = current_select_bg.copy()
-            current_select_bg.blit(IMG.smoothly_resize(self.background_deselect, current_select_bg.get_size()), (0, 0))
+            current_select_bg.blit(RawImg.smoothly_resize(self.background_deselect, current_select_bg.get_size()), (0, 0))
         else:
             if self.__current_select_bg_name is not None:
                 self.__UIContainerRight_bg.set(self.__current_select_bg_name, self.__current_select_bg_copy)
@@ -178,17 +178,14 @@ class DialogEditor(DialogConverter):
 
     # 读取章节信息
     def _load_content(self) -> None:
-        if os.path.exists(path := self.get_dialog_file_location()):
-            if "dialogs" in (data_t := Config.load_file(path)):
-                try:
-                    self._dialog_data = dict(data_t["dialogs"])
-                except Exception:
-                    EXCEPTION.warn("Cannot load dialogs due to invalid data type.")
-                    self._dialog_data = {}
-            else:
-                self._dialog_data = {}
+        if os.path.exists(path := self.get_dialog_file_location()) and "dialogs" in (data_t := Config.load_file(path)):
+            try:
+                self._dialog_data = dict(data_t["dialogs"])
+            except Exception:
+                EXCEPTION.warn("Cannot load dialogs due to invalid data type.")
+                self._dialog_data.clear()
         else:
-            self._dialog_data = {}
+            self._dialog_data.clear()
         # 如果不是默认主语言
         if (default_lang_of_dialog := self.get_default_lang()) != Setting.language:
             self._is_default_dialog = False

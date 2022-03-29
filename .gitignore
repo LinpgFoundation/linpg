@@ -6,3 +6,4 @@ Save/
 virtualenv/
 test.py
 .mypy_cache/
+linpgassets/

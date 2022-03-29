@@ -88,7 +88,7 @@ class BuilderManager(AbstractToolSystem):
 
     # 打包上传最新的文件
     def upload_package(self) -> None:
-        if os.path.exists("setup.py"):
+        if os.path.exists("setup.py") or os.path.exists("setup.cfg"):
             # 升级build工具
             self._run_raw_cmd(["python", "-m", "pip", "install", "--upgrade", "build"])
             # 打包文件
@@ -102,7 +102,7 @@ class BuilderManager(AbstractToolSystem):
             for path in folders_need_remove:
                 self.delete_file_if_exist(path)
         else:
-            EXCEPTION.fatal("Cannot find setup.py!", 2)
+            EXCEPTION.fatal("Cannot find setup file!", 2)
 
 
 Builder: BuilderManager = BuilderManager()

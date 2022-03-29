@@ -32,11 +32,11 @@ StaticImage适用于尺寸不需要经常改动的图片，相比DynamicImage，
 
 最后，Linpg支持了gif图片：
 
-`linpg.GifImage(imgList: numpy.ndarray, x: Union[int, float], y: Union[int, float], width: int_f, height: int_f, updateGap: int_f, tag: str = "default")`
+`linpg.AnimatedImage(imgList: numpy.ndarray, x: Union[int, float], y: Union[int, float], width: int_f, height: int_f, updateGap: int_f, tag: str = "default")`
 
-`linpg.load.gif(gif_path_or_img_list: Union[str, tuple, list], position: tuple, size: tuple, updateGap: int = 1) -> linpg.GifImage`
+`linpg.load.gif(gif_path_or_img_list: Union[str, tuple, list], position: tuple, size: tuple, updateGap: int = 1) -> linpg.AnimatedImage`
 
-> 注意：你应该永远避免直接调用linpg.GifImage而是使用linpg.load.gif来获取linpg.GifImage类
+> 注意：你应该永远避免直接调用linpg.AnimatedImage而是使用linpg.load.gif来获取linpg.AnimatedImage类
 
 
 

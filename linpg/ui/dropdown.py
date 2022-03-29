@@ -77,7 +77,7 @@ class DropDownList(GameObjectsDictContainer):
         if self.is_visible():
             current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出背景
-            if self.img is not None and self.img is not NULL_SURFACE:
+            if self.img is not None and self.img is not Surface.NULL:
                 self.img.display(surface, current_abs_pos)
             else:
                 Draw.rect(surface, Colors.WHITE, (current_abs_pos, self.size))
@@ -90,7 +90,7 @@ class DropDownList(GameObjectsDictContainer):
             )
             rect_of_outline = Rectangle.new(current_pos, (self.width, self.__block_height))
             Draw.rect(surface, self.__font_color, rect_of_outline.get_rect(), self.outline_thickness)
-            font_surface = IMG.flip(self.__FONT.render("^", self.__font_color), False, True)
+            font_surface = RawImg.flip(self.__FONT.render("^", self.__font_color), False, True)
             surface.blit(
                 font_surface,
                 Coordinates.add(

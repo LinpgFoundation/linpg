@@ -13,38 +13,43 @@ class JoystickController:
         self.update()
 
     # 手柄是否初始化
-    def get_init(self) -> bool:
-        return self.__input.get_init() if self.is_active() is True else False  # type: ignore
+    @classmethod
+    def get_init(cls) -> bool:
+        return cls.__input.get_init() if cls.is_active() is True else False  # type: ignore
 
     # 获取该按钮的详情
-    def get_button(self, buttonId: int) -> bool:
-        return self.__input.get_button(buttonId) if self.get_init() is True else False  # type: ignore
+    @classmethod
+    def get_button(cls, buttonId: int) -> bool:
+        return cls.__input.get_button(buttonId) if cls.get_init() is True else False  # type: ignore
 
-    def get_axis(self, buttonId: int) -> float:
-        return round(self.__input.get_axis(buttonId), 1) if self.get_init() is True else 0.0  # type: ignore
+    @classmethod
+    def get_axis(cls, buttonId: int) -> float:
+        return round(cls.__input.get_axis(buttonId), 1) if cls.get_init() is True else 0.0  # type: ignore
 
     # 是否启动
-    def is_active(self) -> bool:
-        return self.__input is not None
+    @classmethod
+    def is_active(cls) -> bool:
+        return cls.__input is not None
 
     # 更新设备
-    def update(self) -> None:
+    @classmethod
+    def update(cls) -> None:
         # 有新的手柄连接了
-        if self.__input is None:
+        if cls.__input is None:
             if pygame.joystick.get_count() > 0:
-                self.__input = pygame.joystick.Joystick(0)
-                self.__input.init()
+                cls.__input = pygame.joystick.Joystick(0)
+                cls.__input.init()
                 EXCEPTION.inform("A joystick is detected and initialized successfully.")
         # 当目前有手柄在连接
         else:
             # 失去与当前手柄的连接
             if pygame.joystick.get_count() == 0:
-                self.__input = None
+                cls.__input = None
                 EXCEPTION.inform("Lost connection with the joystick.")
             # 有新的手柄
-            elif self.__input.get_id() != pygame.joystick.Joystick(0).get_id():
-                self.__input = pygame.joystick.Joystick(0)
-                self.__input.init()
+            elif cls.__input.get_id() != pygame.joystick.Joystick(0).get_id():
+                cls.__input = pygame.joystick.Joystick(0)
+                cls.__input.init()
                 EXCEPTION.inform("Joystick changed! New joystick is detected and initialized successfully.")
 
 
@@ -58,74 +63,82 @@ class MouseController:
     __last_y: int = 0
     # 鼠标移动速度（使用手柄时）
     __moving_speed: int = int(max(Setting.get("MouseMoveSpeed"), 1))
-
     # 鼠标上次更新时被按下的详情
     __mouse_get_pressed_previously: tuple[bool, ...] = (False, False, False, False, False)
-
     # 鼠标图标
     __icon_img: Optional[ImageSurface] = None
 
     def __init__(self) -> None:
-        custom: bool = False
-        if custom:
-            pygame.mouse.set_visible(False)
-            self.__icon_img = IMG.load(
-                "<!ui>mouse_icon.png", (int(Setting.get("MouseIconWidth")), int(Setting.get("MouseIconWidth") * 1.3))
-            )
         self.update()
 
+    @classmethod
+    def set_custom_icon(cls, path: str = "<!ui>mouse_icon.png") -> None:
+        cls.__icon_img = RawImg.load(path, (int(Setting.get("MouseIconWidth")), int(Setting.get("MouseIconWidth") * 1.3)))
+
     # 灵敏度
+    @classmethod
     @property
-    def moving_speed(self) -> int:
-        return self.__moving_speed
+    def moving_speed(cls) -> int:
+        return cls.__moving_speed
 
     # 鼠标坐标
+    @classmethod
     @property
-    def x(self) -> int:
-        return self.__x
+    def x(cls) -> int:
+        return cls.__x
 
+    @classmethod
     @property
-    def last_x(self) -> int:
-        return self.__last_x
+    def last_x(cls) -> int:
+        return cls.__last_x
 
+    @classmethod
     @property
-    def x_moved(self) -> int:
-        return self.__last_x - self.__x
+    def x_moved(cls) -> int:
+        return cls.__last_x - cls.__x
 
+    @classmethod
     @property
-    def y(self) -> int:
-        return self.__y
+    def y(cls) -> int:
+        return cls.__y
 
+    @classmethod
     @property
-    def last_y(self) -> int:
-        return self.__last_y
+    def last_y(cls) -> int:
+        return cls.__last_y
 
+    @classmethod
     @property
-    def y_moved(self) -> int:
-        return self.__last_y - self.__y
+    def y_moved(cls) -> int:
+        return cls.__last_y - cls.__y
 
+    @classmethod
     @property
-    def pos(self) -> tuple[int, int]:
-        return self.__x, self.__y
+    def pos(cls) -> tuple[int, int]:
+        return cls.__x, cls.__y
 
+    @classmethod
     @property
-    def last_pos(self) -> tuple[int, int]:
-        return self.__last_x, self.__last_y
+    def last_pos(cls) -> tuple[int, int]:
+        return cls.__last_x, cls.__last_y
 
-    def get_pos(self) -> tuple[int, int]:
-        return self.__x, self.__y
+    @classmethod
+    def get_pos(cls) -> tuple[int, int]:
+        return cls.__x, cls.__y
 
-    def get_last_pos(self) -> tuple[int, int]:
-        return self.__last_x, self.__last_y
+    @classmethod
+    def get_last_pos(cls) -> tuple[int, int]:
+        return cls.__last_x, cls.__last_y
 
     # 设置坐标
-    def set_pos(self, pos: tuple) -> None:
+    @classmethod
+    def set_pos(cls, pos: tuple) -> None:
         # 更新前鼠标坐标
-        self.__last_x = self.__x
-        self.__last_y = self.__y
+        cls.__last_x = cls.__x
+        cls.__last_y = cls.__y
         # 更新当前鼠标坐标
-        self.__x, self.__y = Coordinates.convert(pos)
-        pygame.mouse.set_pos(self.get_pos())
+        cls.__x, cls.__y = Coordinates.convert(pos)
+        pygame.mouse.set_pos(cls.get_pos())
 
     # 是否鼠标按钮被点击
     @staticmethod
@@ -133,25 +146,29 @@ class MouseController:
         return pygame.mouse.get_pressed()[button_id]
 
     # 是否鼠标按钮在本次更新被点击
-    def get_pressed_previously(self, button_id: int) -> bool:
-        return self.__mouse_get_pressed_previously[button_id]
+    @classmethod
+    def get_pressed_previously(cls, button_id: int) -> bool:
+        return cls.__mouse_get_pressed_previously[button_id]
 
     # 更新鼠标数据
-    def update(self) -> None:
+    @classmethod
+    def update(cls) -> None:
         # 更新前鼠标坐标
-        self.__last_x = self.__x
-        self.__last_y = self.__y
+        cls.__last_x = cls.__x
+        cls.__last_y = cls.__y
         # 更新当前鼠标坐标
-        self.__x, self.__y = pygame.mouse.get_pos()
+        cls.__x, cls.__y = pygame.mouse.get_pos()
 
     # 完成旧数据的存储
-    def finish_up(self) -> None:
-        self.__mouse_get_pressed_previously = pygame.mouse.get_pressed()
+    @classmethod
+    def finish_up(cls) -> None:
+        cls.__mouse_get_pressed_previously = pygame.mouse.get_pressed()
 
     # 画出自定义的鼠标图标
-    def draw_custom_icon(self, surface: ImageSurface) -> None:
-        if self.__icon_img is not None:
-            surface.blit(self.__icon_img, self.pos)
+    @classmethod
+    def draw_custom_icon(cls, surface: ImageSurface) -> None:
+        if cls.__icon_img is not None:
+            surface.blit(cls.__icon_img, (cls.__x, cls.__y))
 
 
 # 输入管理组件
@@ -179,85 +196,87 @@ class GameController:
     NEED_TO_TAKE_SCREENSHOT: bool = False
 
     # 手柄模块
+    @classmethod
     @property
-    def joystick(self) -> JoystickController:
-        return self.__joystick
+    def joystick(cls) -> JoystickController:
+        return cls.__joystick
 
     # 鼠标模块
+    @classmethod
     @property
-    def mouse(self) -> MouseController:
-        return self.__mouse
+    def mouse(cls) -> MouseController:
+        return cls.__mouse
 
     # 输入事件
+    @classmethod
     @property
-    def events(self) -> tuple:
-        return self.__INPUT_EVENTS
-
-    # 获取所有输入事件
-    def get_events(self) -> tuple:
-        return self.__INPUT_EVENTS
+    def events(cls) -> tuple:
+        return cls.__INPUT_EVENTS
 
     # 获取单个事件
-    def get_event(self, event_type: str) -> bool:
+    @classmethod
+    def get_event(cls, event_type: str) -> bool:
         try:
-            return self.__SPECIFIC_EVENTS[event_type]
+            return cls.__SPECIFIC_EVENTS[event_type]
         except KeyError:
             EXCEPTION.fatal('The event type "{}" is not supported!'.format(event_type))
 
     # 完成这一帧的收尾工作
-    def finish_up(self) -> None:
-        self.__mouse.finish_up()
+    @classmethod
+    def finish_up(cls) -> None:
+        cls.__mouse.finish_up()
 
     # 更新输入
-    def update(self) -> None:
+    @classmethod
+    def update(cls) -> None:
         # 更新手柄输入事件
-        self.__joystick.update()
+        cls.__joystick.update()
         # 更新鼠标输入事件
-        self.__mouse.update()
+        cls.__mouse.update()
         # 根据手柄情况调整鼠标位置（如果手柄启动）
-        if self.__joystick.is_active():
-            x_axis_value: float = self.__joystick.get_axis(0)
+        if cls.__joystick.is_active():
+            x_axis_value: float = cls.__joystick.get_axis(0)
             is_x_need_update: bool = not 0.5 > x_axis_value > -0.5
-            y_axis_value: float = self.__joystick.get_axis(1)
+            y_axis_value: float = cls.__joystick.get_axis(1)
             is_y_need_update: bool = not 0.5 > y_axis_value > -0.5
             if is_x_need_update is True and is_y_need_update is True:
-                self.mouse.set_pos(
+                cls.__mouse.set_pos(
                     (
-                        int(self.mouse.x + self.mouse.moving_speed * x_axis_value),
-                        int(self.mouse.y + self.mouse.moving_speed * y_axis_value),
+                        int(cls.__mouse.x + cls.__mouse.moving_speed * x_axis_value),
+                        int(cls.__mouse.y + cls.__mouse.moving_speed * y_axis_value),
                     )
                 )
             elif is_x_need_update is True:
-                self.mouse.set_pos((int(self.mouse.x + self.mouse.moving_speed * x_axis_value), self.mouse.y))
+                cls.__mouse.set_pos((int(cls.__mouse.x + cls.__mouse.moving_speed * x_axis_value), cls.__mouse.y))
             elif is_y_need_update is True:
-                self.mouse.set_pos((self.mouse.x, int(self.mouse.y + self.mouse.moving_speed * y_axis_value)))
+                cls.__mouse.set_pos((cls.__mouse.x, int(cls.__mouse.y + cls.__mouse.moving_speed * y_axis_value)))
         # 更新综合输入事件
-        self.__INPUT_EVENTS = tuple(pygame.event.get())
+        cls.__INPUT_EVENTS = tuple(pygame.event.get())
         # 重设用于判断常见事件的参数
-        for key in self.__SPECIFIC_EVENTS:
-            self.__SPECIFIC_EVENTS[key] = False
-        for event in self.__INPUT_EVENTS:
+        for key in cls.__SPECIFIC_EVENTS:
+            cls.__SPECIFIC_EVENTS[key] = False
+        for event in cls.__INPUT_EVENTS:
             if event.type == MOUSE_BUTTON_DOWN:
                 if event.button == 1:
-                    self.__SPECIFIC_EVENTS["confirm"] = True
+                    cls.__SPECIFIC_EVENTS["confirm"] = True
                 elif event.button == 3:
-                    self.__SPECIFIC_EVENTS["previous"] = True
+                    cls.__SPECIFIC_EVENTS["previous"] = True
                 elif event.button == 4:
-                    self.__SPECIFIC_EVENTS["scroll_up"] = True
+                    cls.__SPECIFIC_EVENTS["scroll_up"] = True
                 elif event.button == 5:
-                    self.__SPECIFIC_EVENTS["scroll_down"] = True
+                    cls.__SPECIFIC_EVENTS["scroll_down"] = True
             elif event.type == JOYSTICK_BUTTON_DOWN:
-                if self.__joystick.get_button(0) is True:
-                    self.__SPECIFIC_EVENTS["confirm"] = True
-                elif self.__joystick.get_button(1) is True:
-                    self.__SPECIFIC_EVENTS["previous"] = True
+                if cls.__joystick.get_button(0) is True:
+                    cls.__SPECIFIC_EVENTS["confirm"] = True
+                elif cls.__joystick.get_button(1) is True:
+                    cls.__SPECIFIC_EVENTS["previous"] = True
             elif event.type == Key.DOWN:
                 if event.key == Key.ESCAPE:
-                    self.__SPECIFIC_EVENTS["back"] = True
+                    cls.__SPECIFIC_EVENTS["back"] = True
                 elif event.key == Key.F3:
-                    self.NEED_TO_TAKE_SCREENSHOT = True
+                    cls.NEED_TO_TAKE_SCREENSHOT = True
                 elif event.key == Key.DELETE:
-                    self.__SPECIFIC_EVENTS["delete"] = True
+                    cls.__SPECIFIC_EVENTS["delete"] = True
 
 
 # 控制器输入组件初始化

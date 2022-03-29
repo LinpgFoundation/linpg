@@ -196,11 +196,17 @@ class GameObject2d(Coordinate):
         return self.centerx, self.bottom
 
     # 是否被鼠标触碰
-    def is_hovered(self, off_set: tuple = NoPos) -> bool:
+    def is_hovered(self, off_set: tuple[int, int] = NoPos) -> bool:
         mouse_pos: tuple[int, int] = (
             Controller.mouse.pos if off_set is NoPos else Coordinates.subtract(Controller.mouse.pos, off_set)
         )
         return 0 < mouse_pos[0] - self.x < self.get_width() and 0 < mouse_pos[1] - self.y < self.get_height()
+
+    # 检测自身是否覆盖了另一个2d游戏对象
+    def is_overlapped_with(self, _rect: "GameObject2d") -> bool:
+        return max(self.left, _rect.left) < min(self.right, _rect.right) and max(self.top, _rect.top) < min(
+            self.bottom, _rect.bottom
+        )
 
     # 将图片直接画到surface上
     def draw(self, surface: ImageSurface) -> None:
@@ -208,7 +214,7 @@ class GameObject2d(Coordinate):
 
     # 将图片直接画到屏幕上
     def draw_on_screen(self) -> None:
-        self.display(Display.window)
+        self.display(Display.get_window())
 
     # 根据offSet将图片展示到surface的对应位置上 - 子类必须实现
     def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
@@ -216,7 +222,7 @@ class GameObject2d(Coordinate):
 
     # 根据offSet将图片展示到屏幕的对应位置上
     def display_on_screen(self, offSet: tuple[int, int] = ORIGIN) -> None:
-        self.display(Display.window, offSet)
+        self.display(Display.get_window(), offSet)
 
     # 忽略现有坐标，将图片画到surface的指定位置上
     def blit(self, surface: ImageSurface, pos: tuple[int, int]) -> None:
@@ -229,7 +235,7 @@ class GameObject2d(Coordinate):
     def blit_on_screen(self, pos: tuple[int, int]) -> None:
         old_pos = self.get_pos()
         self.move_to(pos)
-        self.draw(Display.window)
+        self.draw(Display.get_window())
         self.move_to(old_pos)
 
 

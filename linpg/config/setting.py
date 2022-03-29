@@ -5,8 +5,6 @@ class SettingSystem:
 
     # 储存设置配置文件的数据
     __SETTING_DATA: dict = {}
-    # 内部的配置参数，每次启动初始化
-    __INTERNAL_SETTING: dict = {"Cheat": False}
     # 当前配置文件保存路径的参数
     __SETTING_FOLDER_PATH: str = "Save"
     __SETTING_FILE_NAME: str = "setting.{}".format(Config.get_file_type())
@@ -100,14 +98,6 @@ class SettingSystem:
     @property
     def low_memory_mode(self) -> bool:
         return bool(self.__SETTING_DATA["LowMemoryMode"])
-
-    # 作弊模式
-    @property
-    def cheat_mode(self) -> bool:
-        return bool(self.__INTERNAL_SETTING["Cheat"])
-
-    def set_cheat_mode(self, value: bool) -> None:
-        self.__INTERNAL_SETTING["Cheat"] = bool(value)
 
 
 Setting: SettingSystem = SettingSystem()

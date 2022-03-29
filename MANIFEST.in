@@ -1,8 +1,1 @@
-recursive-include src/linpg *.pyd
-recursive-include src/linpg *.json
-recursive-include src/linpg *.py
-recursive-include src/linpg *.md
-recursive-include src/linpg *.png
-recursive-include src/linpg *.jpg
-recursive-include src/linpg *.exe
-recursive-include src/linpg LICENSE
+recursive-include src/linpg *

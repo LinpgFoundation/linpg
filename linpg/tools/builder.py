@@ -1,4 +1,5 @@
 from .abstract import *
+from site import getsitepackages
 
 # 搭建和打包文件的系统
 class BuilderManager(AbstractToolSystem):
@@ -43,6 +44,13 @@ class BuilderManager(AbstractToolSystem):
             else:
                 shutil.copy(the_file, os.path.join(target_folder, os.path.basename(the_file)))
 
+    # 删除缓存
+    @staticmethod
+    def __clean_up() -> None:
+        folders_need_remove: tuple = ("dist", "Save", "build", "crash_reports", "Cache")
+        for _path in folders_need_remove:
+            Cache.delete_file_if_exist(_path)
+
     # 编译
     def compile(
         self,
@@ -55,6 +63,7 @@ class BuilderManager(AbstractToolSystem):
         show_all_warnings: bool = True,
         language_level: str = "3",
         remove_building_cache: bool = True,
+        update_the_one_in_sitepackages: bool = True,
     ) -> None:
         self.delete_file_if_exist(target_folder)
         # 复制文件到新建的src文件夹中，准备开始编译
@@ -78,6 +87,8 @@ class BuilderManager(AbstractToolSystem):
             )
         # 编译源代码
         self._run_cmd(["build_ext", "--build-lib", target_folder], True)
+        # 删除缓存
+        self.__clean_up()
         # 复制额外文件
         self.copy(additional_files, source_path_in_target_folder)
         # 通过复制init修复打包工具无法定位包的bug
@@ -85,6 +96,21 @@ class BuilderManager(AbstractToolSystem):
         # 删除build文件夹
         if remove_building_cache is True:
             self.delete_file_if_exist("build")
+        # 删除在sitepackages中的旧build，同时复制新的build
+        if update_the_one_in_sitepackages is True:
+            # 生成package名称
+            pkg_name: str = os.path.basename(source_folder)
+            pkg_path: str = os.path.join(getsitepackages()[1], pkg_name)
+            if os.path.exists(pkg_path):
+                # 删除旧的build
+                for _path in glob(os.path.join(pkg_path, "*")):
+                    # 如果不是.git文件夹
+                    if not os.path.isdir(_path) or ".git" not in _path:
+                        self.delete_file_if_exist(_path)
+            else:
+                os.mkdir(pkg_path)
+            # 复制新的build
+            self.copy(tuple(glob(os.path.join("src", pkg_name, "*"))), pkg_path)
 
     # 打包上传最新的文件
     def upload_package(self) -> None:
@@ -97,10 +123,8 @@ class BuilderManager(AbstractToolSystem):
             self._run_raw_cmd(["python", "-m", "pip", "install", "--upgrade", "twine"])
             # 用twine上传文件
             self._run_raw_cmd(["twine", "upload", "dist/*"])
-            # 删除不需要的文件
-            folders_need_remove: tuple = ("dist", "Save", "build", "crash_reports")
-            for path in folders_need_remove:
-                self.delete_file_if_exist(path)
+            # 删除缓存
+            self.__clean_up()
         else:
             EXCEPTION.fatal("Cannot find setup file!", 2)
 

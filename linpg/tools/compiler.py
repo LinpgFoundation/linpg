@@ -1,7 +1,7 @@
 import json
 import os
 from glob import glob
-import setuptools
+import setuptools  # type: ignore
 from Cython.Build import cythonize  # type: ignore
 
 # py编译模块

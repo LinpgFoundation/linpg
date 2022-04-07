@@ -17,7 +17,7 @@ class CharacterImageManager:
         self.__characters_this_round: tuple = tuple()
         self.__this_round_image_alpha: int = 0
         self.__darkness: int = 50
-        self.__img_width: int = int(Display.get_width() / 2)
+        self.__img_width: int = Display.get_width() // 2
         self.__communication_surface_rect: Rectangle = Rectangle(
             int(self.__img_width * 0.25), 0, int(self.__img_width * 0.5), int(self.__img_width * 0.56)
         )
@@ -115,9 +115,7 @@ class CharacterImageManager:
         return False
 
     def draw(self, surface: ImageSurface) -> None:
-        window_x: int = surface.get_width()
-        window_y: int = surface.get_height()
-        npcImg_y: int = int(window_y - window_x / 2)
+        npcImg_y: int = surface.get_height() - surface.get_width() // 2
         # 调整alpha值
         x_moved_forNpcLastRound: int = 0
         if self.__last_round_image_alpha > 0:
@@ -138,7 +136,7 @@ class CharacterImageManager:
             elif len(self.__characters_this_round) == 1:
                 self.__display_character(
                     self.__characters_this_round[0],
-                    window_x / 4 + x_moved_forNpcThisRound,
+                    surface.get_width() / 4 + x_moved_forNpcThisRound,
                     npcImg_y,
                     self.__this_round_image_alpha,
                     surface,
@@ -150,7 +148,7 @@ class CharacterImageManager:
                 )
                 self.__display_character(
                     self.__characters_this_round[1],
-                    window_x / 2 + x_moved_forNpcThisRound,
+                    surface.get_width() / 2 + x_moved_forNpcThisRound,
                     npcImg_y,
                     self.__this_round_image_alpha,
                     surface,
@@ -160,7 +158,7 @@ class CharacterImageManager:
             if len(self.__characters_this_round) == 0:
                 self.__display_character(
                     self.__characters_last_round[0],
-                    window_x / 4 + x_moved_forNpcLastRound,
+                    surface.get_width() / 4 + x_moved_forNpcLastRound,
                     npcImg_y,
                     self.__last_round_image_alpha,
                     surface,
@@ -168,52 +166,52 @@ class CharacterImageManager:
             # 更换中间的立绘
             elif len(self.__characters_this_round) == 1:
                 self.__display_character(
-                    self.__characters_last_round[0], window_x / 4, npcImg_y, self.__last_round_image_alpha, surface
+                    self.__characters_last_round[0], surface.get_width() / 4, npcImg_y, self.__last_round_image_alpha, surface
                 )
                 self.__display_character(
-                    self.__characters_this_round[0], window_x / 4, npcImg_y, self.__this_round_image_alpha, surface
+                    self.__characters_this_round[0], surface.get_width() / 4, npcImg_y, self.__this_round_image_alpha, surface
                 )
             elif len(self.__characters_this_round) == 2:
                 # 如果之前的中间变成了现在的左边，则立绘应该先向左移动
                 if self.__is_the_same_character(self.__characters_last_round[0], self.__characters_this_round[0]):
-                    if self.__move_x + window_x / 4 > 0:
-                        self.__move_x -= int(window_x / 40)
+                    if self.__move_x + surface.get_width() / 4 > 0:
+                        self.__move_x -= surface.get_width() // 40
                     # 显示左边立绘
                     self.__display_character(
                         self.__characters_last_round[0],
-                        self.__move_x + window_x / 4,
+                        self.__move_x + surface.get_width() / 4,
                         npcImg_y,
                         self.__last_round_image_alpha,
                         surface,
                     )
                     self.__display_character(
                         self.__characters_this_round[0],
-                        self.__move_x + window_x / 4,
+                        self.__move_x + surface.get_width() / 4,
                         npcImg_y,
                         self.__this_round_image_alpha,
                         surface,
                     )
                     # 显示右边立绘
                     self.__display_character(
-                        self.__characters_this_round[1], window_x / 2, npcImg_y, self.__this_round_image_alpha, surface
+                        self.__characters_this_round[1], surface.get_width() / 2, npcImg_y, self.__this_round_image_alpha, surface
                     )
                 # 如果之前的中间变成了现在的右边，则立绘应该先向右移动 - checked
                 elif self.__is_the_same_character(self.__characters_last_round[0], self.__characters_this_round[1]):
-                    if self.__move_x + window_x / 4 < window_x / 2:
-                        self.__move_x += int(window_x / 40)
+                    if self.__move_x + surface.get_width() / 4 < surface.get_width() / 2:
+                        self.__move_x += surface.get_width() // 40
                     # 显示左边立绘
                     self.__display_character(self.__characters_this_round[0], 0, npcImg_y, self.__this_round_image_alpha, surface)
                     # 显示右边立绘
                     self.__display_character(
                         self.__characters_last_round[0],
-                        self.__move_x + window_x / 4,
+                        self.__move_x + surface.get_width() / 4,
                         npcImg_y,
                         self.__last_round_image_alpha,
                         surface,
                     )
                     self.__display_character(
                         self.__characters_this_round[1],
-                        self.__move_x + window_x / 4,
+                        self.__move_x + surface.get_width() / 4,
                         npcImg_y,
                         self.__this_round_image_alpha,
                         surface,
@@ -223,14 +221,22 @@ class CharacterImageManager:
                     if self.__last_round_image_alpha > 0:
                         self.__this_round_image_alpha -= 25
                         self.__display_character(
-                            self.__characters_last_round[0], window_x / 4, npcImg_y, self.__last_round_image_alpha, surface
+                            self.__characters_last_round[0],
+                            surface.get_width() / 4,
+                            npcImg_y,
+                            self.__last_round_image_alpha,
+                            surface,
                         )
                     else:
                         self.__display_character(
                             self.__characters_this_round[0], 0, npcImg_y, self.__this_round_image_alpha, surface
                         )
                         self.__display_character(
-                            self.__characters_this_round[1], window_x / 2, npcImg_y, self.__this_round_image_alpha, surface
+                            self.__characters_this_round[1],
+                            surface.get_width() / 2,
+                            npcImg_y,
+                            self.__this_round_image_alpha,
+                            surface,
                         )
         elif len(self.__characters_last_round) == 2:
             # 隐藏之前的左右两边立绘
@@ -240,7 +246,7 @@ class CharacterImageManager:
                 )
                 self.__display_character(
                     self.__characters_last_round[1],
-                    window_x / 2 + x_moved_forNpcLastRound,
+                    surface.get_width() / 2 + x_moved_forNpcLastRound,
                     npcImg_y,
                     self.__last_round_image_alpha,
                     surface,
@@ -248,8 +254,8 @@ class CharacterImageManager:
             elif len(self.__characters_this_round) == 1:
                 # 如果之前的左边变成了现在的中间，则立绘应该先向右边移动
                 if self.__is_the_same_character(self.__characters_last_round[0], self.__characters_this_round[0]):
-                    if self.__move_x < window_x / 4:
-                        self.__move_x += int(window_x / 40)
+                    if self.__move_x < surface.get_width() / 4:
+                        self.__move_x += surface.get_width() // 40
                     # 左边立绘向右移动
                     self.__display_character(
                         self.__characters_last_round[0], self.__move_x, npcImg_y, self.__last_round_image_alpha, surface
@@ -259,25 +265,25 @@ class CharacterImageManager:
                     )
                     # 右边立绘消失
                     self.__display_character(
-                        self.__characters_last_round[1], window_x / 2, npcImg_y, self.__last_round_image_alpha, surface
+                        self.__characters_last_round[1], surface.get_width() / 2, npcImg_y, self.__last_round_image_alpha, surface
                     )
                 # 如果之前的右边变成了现在的中间，则立绘应该先向左边移动
                 elif self.__is_the_same_character(self.__characters_last_round[1], self.__characters_this_round[0]):
-                    if self.__move_x + window_x / 2 > window_x / 4:
-                        self.__move_x -= int(window_x / 40)
+                    if self.__move_x + surface.get_width() / 2 > surface.get_width() / 4:
+                        self.__move_x -= surface.get_width() // 40
                     # 左边立绘消失
                     self.__display_character(self.__characters_last_round[0], 0, npcImg_y, self.__last_round_image_alpha, surface)
                     # 右边立绘向左移动
                     self.__display_character(
                         self.__characters_last_round[1],
-                        self.__move_x + window_x / 2,
+                        self.__move_x + surface.get_width() / 2,
                         npcImg_y,
                         self.__last_round_image_alpha,
                         surface,
                     )
                     self.__display_character(
                         self.__characters_this_round[0],
-                        self.__move_x + window_x / 2,
+                        self.__move_x + surface.get_width() / 2,
                         npcImg_y,
                         self.__this_round_image_alpha,
                         surface,
@@ -289,18 +295,26 @@ class CharacterImageManager:
                             self.__characters_last_round[0], 0, npcImg_y, self.__last_round_image_alpha, surface
                         )
                         self.__display_character(
-                            self.__characters_last_round[1], window_x / 2, npcImg_y, self.__last_round_image_alpha, surface
+                            self.__characters_last_round[1],
+                            surface.get_width() / 2,
+                            npcImg_y,
+                            self.__last_round_image_alpha,
+                            surface,
                         )
                     else:
                         self.__display_character(
-                            self.__characters_this_round[0], window_x / 4, npcImg_y, self.__this_round_image_alpha, surface
+                            self.__characters_this_round[0],
+                            surface.get_width() / 4,
+                            npcImg_y,
+                            self.__this_round_image_alpha,
+                            surface,
                         )
             elif len(self.__characters_this_round) == 2:
                 if self.__is_the_same_character(
                     self.__characters_last_round[0], self.__characters_this_round[1]
                 ) and self.__is_the_same_character(self.__characters_last_round[1], self.__characters_this_round[0]):
-                    if self.__move_x + window_x / 2 > 0:
-                        self.__move_x -= int(window_x / 30)
+                    if self.__move_x + surface.get_width() / 2 > 0:
+                        self.__move_x -= surface.get_width() // 30
                     # 左边到右边去
                     self.__display_character(
                         self.__characters_last_round[0], -self.__move_x, npcImg_y, self.__last_round_image_alpha, surface
@@ -311,14 +325,14 @@ class CharacterImageManager:
                     # 右边到左边去
                     self.__display_character(
                         self.__characters_last_round[1],
-                        window_x / 2 + self.__move_x,
+                        surface.get_width() / 2 + self.__move_x,
                         npcImg_y,
                         self.__last_round_image_alpha,
                         surface,
                     )
                     self.__display_character(
                         self.__characters_this_round[0],
-                        window_x / 2 + self.__move_x,
+                        surface.get_width() / 2 + self.__move_x,
                         npcImg_y,
                         self.__this_round_image_alpha,
                         surface,
@@ -326,11 +340,11 @@ class CharacterImageManager:
                 else:
                     self.__display_character(self.__characters_last_round[0], 0, npcImg_y, self.__last_round_image_alpha, surface)
                     self.__display_character(
-                        self.__characters_last_round[1], window_x / 2, npcImg_y, self.__last_round_image_alpha, surface
+                        self.__characters_last_round[1], surface.get_width() / 2, npcImg_y, self.__last_round_image_alpha, surface
                     )
                     self.__display_character(self.__characters_this_round[0], 0, npcImg_y, self.__this_round_image_alpha, surface)
                     self.__display_character(
-                        self.__characters_this_round[1], window_x / 2, npcImg_y, self.__this_round_image_alpha, surface
+                        self.__characters_this_round[1], surface.get_width() / 2, npcImg_y, self.__this_round_image_alpha, surface
                     )
 
     # 更新立绘

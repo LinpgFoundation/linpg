@@ -39,7 +39,7 @@ class SingleLineInputBox(AbstractInputBox):
         super().__init__(x, y, font_size, txt_color, default_width)
         self._text: str = ""
         self._left_ctrl_pressing: bool = False
-        self._padding: int = int((self._input_box.height - self._holder.get_height()) / 2)
+        self._padding: int = (self._input_box.height - self._holder.get_height()) // 2
 
     def get_text(self) -> str:
         self.need_save = False
@@ -128,7 +128,7 @@ class SingleLineInputBox(AbstractInputBox):
     def _draw_content(self, surface: ImageSurface, with_holder: bool = True) -> None:
         if self._text is not None and len(self._text) > 0:
             font_t = self._FONT.render(self._text, self._text_color, with_bounding=True)
-            surface.blit(font_t, (self.x + self._padding, self.y + int((self._input_box.height - font_t.get_height()) / 2)))
+            surface.blit(font_t, (self.x + self._padding, self.y + (self._input_box.height - font_t.get_height()) // 2))
         if with_holder is True:
             if int(time.time() % 2) == 0 or len(Controller.events) > 0:
                 surface.blit(
@@ -213,7 +213,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         width: int = self._default_width
         if self._text is not None and len(self._text) > 0:
             for txtTmp in self._text:
-                new_width: int = int(self._FONT.estimate_text_width(txtTmp) + self._FONT.size / 2)
+                new_width: int = self._FONT.estimate_text_width(txtTmp) + self._FONT.size // 2
                 if new_width > width:
                     width = new_width
         self._input_box.set_width(width)

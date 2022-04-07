@@ -7,7 +7,7 @@ class EntityGetHurtImage(Square):
     __CHARACTERS_GET_HURT_IMAGE_DICT: dict = {}
     __IMAGE_FOLDER_PATH: str = os.path.join("Assets", "image", "npc")
 
-    def __init__(self, self_type: str, y: number, width: int):
+    def __init__(self, self_type: str, y: int_f, width: int_f):
         super().__init__(0, y, width)
         self.delay: int = 255
         self.alpha: int = 0
@@ -29,7 +29,10 @@ class EntityGetHurtImage(Square):
 # 角色图片管理模块
 class EntitySpriteImageManager:
 
-    __CHARACTERS_IMAGE_DICT: dict = {}
+    # 用于存放角色图片的字典
+    __CHARACTERS_IMAGES: dict = {}
+    # 角色图片文件夹路径
+    SPRITES_PATH: str = str(Specification.get("FolderPath", "Sprite"))
 
     # 管理单个动作所有对应图片的模块
     class __EntityImagesCollection:
@@ -94,27 +97,27 @@ class EntitySpriteImageManager:
     # 获取图片
     @classmethod
     def get_images(cls, characterType: str, action: str) -> __EntityImagesCollection:
-        return cls.__CHARACTERS_IMAGE_DICT[characterType][action]  # type: ignore
+        return cls.__CHARACTERS_IMAGES[characterType][action]  # type: ignore
 
     # 尝试获取图片
     @classmethod
     def try_get_images(cls, faction: str, characterType: str, action: str) -> __EntityImagesCollection:
-        if characterType not in cls.__CHARACTERS_IMAGE_DICT or action not in cls.__CHARACTERS_IMAGE_DICT[characterType]:
+        if characterType not in cls.__CHARACTERS_IMAGES or action not in cls.__CHARACTERS_IMAGES[characterType]:
             cls.load(faction, characterType, "dev")
         return cls.get_images(characterType, action)
 
     # 是否图片存在
     @classmethod
     def does_action_exist(cls, characterType: str, action: str) -> bool:
-        return action in cls.__CHARACTERS_IMAGE_DICT[characterType]
+        return action in cls.__CHARACTERS_IMAGES[characterType]
 
     # 生成webp动态图片
-    @staticmethod
-    def generate(entityFaction: str, entityType: str) -> None:
+    @classmethod
+    def generate(cls, entityFaction: str, entityType: str) -> None:
         # 储存数据的字典
         _data: dict = {}
         # 目录路径
-        folder_path: str = os.path.join(Specification.get("FolderPath", "Sprite"), entityFaction, entityType)
+        folder_path: str = os.path.join(cls.SPRITES_PATH, entityFaction, entityType)
         # 暂时存放图片的列表
         imgTempList: list = []
         # 历遍目标文件夹中的图片
@@ -174,7 +177,7 @@ class EntitySpriteImageManager:
     # 为Sprite文件夹中的所有角色生成webp动态图片
     @classmethod
     def generate_all(cls) -> None:
-        _path: str = Specification.get("FolderPath", "Sprite")
+        _path: str = cls.SPRITES_PATH
         for faction in os.listdir(_path):
             for key in os.listdir(os.path.join(_path, faction)):
                 cls.generate(faction, key)
@@ -183,7 +186,7 @@ class EntitySpriteImageManager:
     @classmethod
     def load(cls, faction: str, characterType: str, mode: str) -> dict:
         sprite_image_meta_data: dict = Config.load_file(
-            os.path.join(Specification.get("FolderPath", "Sprite"), faction, characterType, characterType + ".linpg.meta")
+            os.path.join(cls.SPRITES_PATH, faction, characterType, characterType + ".linpg.meta")
         )
         imgId_dict: dict = {}
         # 默认模式下，加载所有动作
@@ -202,19 +205,17 @@ class EntitySpriteImageManager:
     @classmethod
     def __load_action(cls, faction: str, characterType: str, action: str, action_meta_data: dict) -> dict:
         # 为尚未初始化的角色init一个字典
-        if characterType not in cls.__CHARACTERS_IMAGE_DICT:
-            cls.__CHARACTERS_IMAGE_DICT[characterType] = {}
+        if characterType not in cls.__CHARACTERS_IMAGES:
+            cls.__CHARACTERS_IMAGES[characterType] = {}
         # 如果动作已被初始化，则返回对应字典
-        elif action in cls.__CHARACTERS_IMAGE_DICT[characterType]:
+        elif action in cls.__CHARACTERS_IMAGES[characterType]:
             return {"imgId": 0, "alpha": 255}
         # 加载图片
-        cls.__CHARACTERS_IMAGE_DICT[characterType][action] = cls.__EntityImagesCollection(
+        cls.__CHARACTERS_IMAGES[characterType][action] = cls.__EntityImagesCollection(
             tuple(
                 [
                     StaticImage(surf, 0, 0)
-                    for surf in RawImg.load_animated(
-                        os.path.join(Specification.get("FolderPath", "Sprite"), faction, characterType, action + ".webp")
-                    )
+                    for surf in RawImg.load_animated(os.path.join(cls.SPRITES_PATH, faction, characterType, action + ".webp"))
                 ]
             ),
             action_meta_data["subrect"][2:],
@@ -223,6 +224,6 @@ class EntitySpriteImageManager:
         )
         # 如果是敌人模块，则flip所有图片
         if faction == "enemy":
-            cls.__CHARACTERS_IMAGE_DICT[characterType][action].flip_all()
+            cls.__CHARACTERS_IMAGES[characterType][action].flip_all()
         # 返回数据
         return {"imgId": 0, "alpha": 255}

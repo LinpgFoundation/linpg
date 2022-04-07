@@ -82,7 +82,7 @@ class CampfireObject(DecorationObject):
             super().blit(surface, pos, is_dark, 255)
         # 顶层 - 燃烧的图片
         if self.__alpha > 0:
-            self.image = int(self.__img_id / 10)
+            self.image = self.__img_id // 10
             super().blit(surface, pos, is_dark, self.__alpha)
             if self.image < DecorationImagesModule.get_image_num(self.get_type()) - 1:
                 self.__img_id += 1

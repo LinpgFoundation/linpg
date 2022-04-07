@@ -150,20 +150,20 @@ class GameObject2d(Coordinate):
     # 中心位置
     @property
     def centerx(self) -> int:
-        return self.x + int(self.get_width() / 2)
+        return self.x + self.get_width() // 2
 
     def get_centerx(self) -> int:
-        return self.x + int(self.get_width() / 2)
+        return self.x + self.get_width() // 2
 
     def set_centerx(self, centerx: int_f) -> None:
         self.x = int(centerx - self.get_width() / 2)
 
     @property
     def centery(self) -> int:
-        return self.y + int(self.get_height() / 2)
+        return self.y + self.get_height() // 2
 
     def get_centery(self) -> int:
-        return self.y + int(self.get_height() / 2)
+        return self.y + self.get_height() // 2
 
     def set_centery(self, centery: int_f) -> None:
         self.y = int(centery - self.get_height() / 2)

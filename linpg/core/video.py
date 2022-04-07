@@ -260,7 +260,7 @@ class VideoPlayer(AbstractVideo):
         if self.is_playing():
             if (
                 self.get_frame_index() <= self.get_frame_num()
-                and (current_frame_index_based_on_music := round(Music.get_pos() / 1000 * self._frame_rate))
+                and (current_frame_index_based_on_music := round(Music.get_pos() * self._frame_rate / 1000))
                 <= self.get_frame_num()
             ):
                 frame_difference: int = int(current_frame_index_based_on_music - self.get_frame_index())

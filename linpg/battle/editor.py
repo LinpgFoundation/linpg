@@ -70,15 +70,13 @@ class AbstractMapEditor(AbstractBattleSystem):
         button_height: int = int(screen.get_height() * 0.2)
         panding: int = int(screen.get_height() * 0.01)
         self.__right_container_buttons.get("select_block").set_left(
-            int(
-                (
-                    container_width
-                    - self.__right_container_buttons.get("select_block").get_width()
-                    - self.__right_container_buttons.get("select_decoration").get_width()
-                    - panding
-                )
-                / 2
+            (
+                container_width
+                - self.__right_container_buttons.get("select_block").get_width()
+                - self.__right_container_buttons.get("select_decoration").get_width()
+                - panding
             )
+            // 2
         )
         self.__right_container_buttons.get("select_decoration").set_left(
             self.__right_container_buttons.get("select_block").right + panding
@@ -87,10 +85,10 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__UIContainerButtonRight = MovableImage(
             "<!ui>container_button.png",
             int(screen.get_width() - button_width),
-            int((screen.get_height() - button_height) / 2),
+            (screen.get_height() - button_height) // 2,
             int(screen.get_width() - button_width - container_width),
-            int((screen.get_height() - button_height) / 2),
-            int(container_width / 10),
+            (screen.get_height() - button_height) // 2,
+            container_width // 10,
             0,
             button_width,
             button_height,
@@ -137,17 +135,17 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__UIContainerBottom = DynamicImage("<!ui>container.png", 0, 0, container_width, container_height)
         self.__UIContainerButtonBottom = MovableImage(
             "<!ui>container_button.png",
-            int((container_width - button_width) / 2),
+            (container_width - button_width) // 2,
             int(screen.get_height() - button_height),
-            int((container_width - button_width) / 2),
+            (container_width - button_width) // 2,
             int(screen.get_height() - button_height - container_height),
             0,
-            int(container_height / 10),
+            container_height // 10,
             button_width,
             button_height,
         )
         # 加载所有角色的图片文件
-        for faction in os.listdir(Specification.get("FolderPath", "Sprite")):
+        for faction in os.listdir(EntitySpriteImageManager.SPRITES_PATH):
             newContainer: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(
                 None,
                 container_width // 40,
@@ -157,7 +155,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                 "horizontal",
                 faction,
             )
-            for img_name in os.listdir(os.path.join(Specification.get("FolderPath", "Sprite"), faction)):
+            for img_name in os.listdir(os.path.join(EntitySpriteImageManager.SPRITES_PATH, faction)):
                 newContainer.set(
                     img_name,
                     RawImg.smoothly_resize(

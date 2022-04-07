@@ -4,8 +4,6 @@ from .sound import *
 # 人形模块
 class Entity(Position):
 
-    # 储存角色音效的常量
-    __CHARACTERS_SOUND_SYSTEM: EntitySoundManager = EntitySoundManager(5)
     # idle动作
     __IDLE_ACTION: str = "wait"
 
@@ -74,7 +72,7 @@ class Entity(Position):
         self.__imgId_dict: dict = EntitySpriteImageManager.load(self.__faction, self.__type, mode)
         # 加载角色的音效
         if mode != "dev":
-            self.__CHARACTERS_SOUND_SYSTEM.add(self.__type)
+            EntitySoundManager.add(self.__type)
         # 是否需要重新渲染地图
         self.__if_map_need_update: bool = False
         # 攻击范围
@@ -386,7 +384,7 @@ class Entity(Position):
 
     # 播放角色声音
     def play_sound(self, kind_of_sound: str) -> None:
-        self.__CHARACTERS_SOUND_SYSTEM.play(self.__type, kind_of_sound)
+        EntitySoundManager.play(self.__type, kind_of_sound)
 
     # 设置需要移动的路径
     def move_follow(self, path: list) -> None:
@@ -630,8 +628,8 @@ class Entity(Position):
     # 把角色ui画到屏幕上
     def _drawUI(self, surface: ImageSurface, MAP_POINTER: MapObject, customHpData: Optional[tuple] = None) -> tuple:
         xTemp, yTemp = MAP_POINTER.calculate_position(self.x, self.y)
-        xTemp += int(MAP_POINTER.block_width / 4)
-        yTemp -= int(MAP_POINTER.block_width / 5)
+        xTemp += MAP_POINTER.block_width // 4
+        yTemp -= MAP_POINTER.block_width // 5
         self.__hp_bar.set_size(MAP_POINTER.block_width / 2, MAP_POINTER.block_width / 10)
         self.__hp_bar.set_pos(xTemp, yTemp)
         # 预处理血条图片
@@ -646,8 +644,8 @@ class Entity(Position):
         # 把血条画到屏幕上
         self.__hp_bar.draw(surface)
         self.__status_font.set_pos(
-            self.__hp_bar.x + int((self.__hp_bar.get_width() - self.__status_font.get_width()) / 2),
-            self.__hp_bar.y + int((self.__hp_bar.get_height() - self.__status_font.get_height()) / 2),
+            self.__hp_bar.x + (self.__hp_bar.get_width() - self.__status_font.get_width()) // 2,
+            self.__hp_bar.y + (self.__hp_bar.get_height() - self.__status_font.get_height()) // 2,
         )
         self.__status_font.draw(surface)
         # 返回坐标以供子类进行处理

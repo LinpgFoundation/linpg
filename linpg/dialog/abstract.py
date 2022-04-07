@@ -238,8 +238,8 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     def _get_dialog_options_container_ready(self) -> None:
         self._dialog_options_container.clear()
-        optionBox_y_base: int = int(
-            Display.get_height() * 3 / 16 - len(self._current_dialog_content["next_dialog_id"]["target"]) * self._FONT_SIZE
+        optionBox_y_base: int = (
+            Display.get_height() * 3 // 16 - len(self._current_dialog_content["next_dialog_id"]["target"]) * self._FONT_SIZE
         )
         for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
             optionButton: Button = Button.load("<!ui>option.png", (0, 0), (0, 0))

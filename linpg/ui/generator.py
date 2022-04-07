@@ -127,8 +127,8 @@ class UiGenerator:
         # 生成容器
         container_t: GameObjectsDictContainer = GameObjectsDictContainer(
             data["src"],
-            cls.__convert_coordinate(data, "x", int((max_width - object_width) / 2), max_width, custom_values),
-            cls.__convert_coordinate(data, "y", int((max_height - object_height) / 2), max_height, custom_values),
+            cls.__convert_coordinate(data, "x", (max_width - object_width) // 2, max_width, custom_values),
+            cls.__convert_coordinate(data, "y", (max_height - object_height) // 2, max_height, custom_values),
             object_width,
             object_height,
             data["name"] if "name" in data else "",
@@ -257,8 +257,8 @@ class UiGenerator:
                     EXCEPTION.fatal("This is not a subtype of HiddenableSurface!")
             # 设置坐标
             item_t.set_pos(
-                cls.__convert_coordinate(data, "x", int((max_width - item_t.get_width()) / 2), max_width, custom_values),
-                cls.__convert_coordinate(data, "y", int((max_height - item_t.get_height()) / 2), max_height, custom_values),
+                cls.__convert_coordinate(data, "x", (max_width - item_t.get_width()) // 2, max_width, custom_values),
+                cls.__convert_coordinate(data, "y", (max_height - item_t.get_height()) // 2, max_height, custom_values),
             )
             return item_t
 

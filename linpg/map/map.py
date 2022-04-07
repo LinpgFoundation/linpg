@@ -182,8 +182,8 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
     def dev_mode(self) -> None:
         if self.__debug_win is None:
             self.__debug_win = RenderedWindow(
-                int(self.row * self.__debug_win_unit + self.__debug_win_unit / 4 * (self.row + 1)),
-                int(self.column * self.__debug_win_unit + self.__debug_win_unit / 4 * (self.row + 1)),
+                self.row * self.__debug_win_unit + self.__debug_win_unit * (self.row + 1) // 4,
+                self.column * self.__debug_win_unit + self.__debug_win_unit * (self.row + 1) // 4,
                 "debug window",
                 True,
             )

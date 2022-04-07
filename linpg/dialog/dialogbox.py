@@ -5,8 +5,8 @@ class AbstractDialogBox(HiddenableSurface):
     def __init__(self) -> None:
         super().__init__()
         # 对胡框数据
-        self._dialoguebox_max_height: int = int(Display.get_height() / 4)
-        self._dialoguebox_max_y: int = int(Display.get_height() * 0.65)
+        self._dialoguebox_max_height: int = Display.get_height() // 4
+        self._dialoguebox_max_y: int = Display.get_height() * 65 // 100
         # 对胡框图片
         self._dialoguebox: StaticImage = StaticImage(
             "<!ui>dialoguebox.png", Display.get_width() * 0.13, 0, Display.get_width() * 0.74
@@ -169,7 +169,7 @@ class DialogBox(AbstractDialogBox):
 
     # 如果音效还在播放则停止播放文字音效
     def stop_playing_text_sound(self) -> None:
-        if LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy():
+        if LINPG_RESERVED_SOUND_EFFECTS_CHANNEL is not None and LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy():
             LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.stop()
 
     def set_visible(self, visible: bool) -> None:
@@ -199,8 +199,8 @@ class DialogBox(AbstractDialogBox):
                     self._dialoguebox.move_upward(self._dialoguebox_max_height / Display.get_delta_time() // 20)
                 # 如果已经放大好了，则将文字画到屏幕上
                 else:
-                    x: int = int(surface.get_width() * 2 / 10)
-                    y: int = int(surface.get_height() * 0.73)
+                    x: int = surface.get_width() * 2 // 10
+                    y: int = surface.get_height() * 73 // 100
                     # 写上当前讲话人的名字
                     if len(self.__narrator) > 0:
                         surface.blit(self.FONT.render(self.__narrator, Colors.WHITE), (x, self._dialoguebox.y + self.FONT.size))
@@ -220,7 +220,11 @@ class DialogBox(AbstractDialogBox):
                     # 如果当前行的字符还没有完全播出
                     if self.__text_index < len(self.__contents[self.__displayed_lines]):
                         # 播放文字音效
-                        if not LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy() and self.__textPlayingSound is not None:
+                        if (
+                            LINPG_RESERVED_SOUND_EFFECTS_CHANNEL is not None
+                            and not LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy()
+                            and self.__textPlayingSound is not None
+                        ):
                             LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.play(self.__textPlayingSound)
                         self.__text_index += 1
                     # 当前行的所有字都播出后，播出下一行
@@ -238,7 +242,7 @@ class DialogBox(AbstractDialogBox):
             else:
                 # 画出对话框图片
                 self._dialoguebox.draw(surface)
-                height_t: int = int(self._dialoguebox.height - self._dialoguebox_max_height / Display.get_delta_time() // 10)
+                height_t: int = self._dialoguebox.height - int(self._dialoguebox_max_height / Display.get_delta_time() / 10)
                 if height_t > 0:
                     self._dialoguebox.set_height(height_t)
                     self._dialoguebox.move_downward(self._dialoguebox_max_height / Display.get_delta_time() // 20)

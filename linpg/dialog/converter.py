@@ -48,10 +48,12 @@ class ScriptConverter:
         self.__lang: Optional[str] = None
         self.__part: Optional[str] = None
         self.__last_dialog_id: Optional[str] = None
-        self.__lines: list = []
+        self.__lines: tuple = tuple()
         self.__last_valid: int = -1
 
-    def __generate_id(self, index: int) -> str:
+    # 生成一个标准id
+    @staticmethod
+    def __generate_id(index: int) -> str:
         if index >= 100:
             return "id_" + str(index)
         elif index >= 10:
@@ -61,12 +63,28 @@ class ScriptConverter:
         else:
             return "head"
 
+    # 转换一个str
+    @staticmethod
+    def __ensure_not_null(text: str) -> Optional[str]:
+        return None if text.lower() == "null" or text.lower() == "none" else text
+
+    # 将参数的falg分离出来
+    @classmethod
+    def __extract_parameter(cls, text: str, prefix: str) -> Optional[str]:
+        sharp_index: int = text.find("#")
+        if sharp_index < 0:
+            return cls.__ensure_not_null(text.removeprefix(prefix).removesuffix("\n"))
+        else:
+            return cls.__ensure_not_null(text[:sharp_index].removeprefix(prefix))
+
+    # 转换
     def convert(self, path: str) -> None:
-        if path.endswith(".rvns"):
+        if path.endswith(".linpg.script"):
             with open(path, "r", encoding="utf-8") as f:
-                self.__lines = f.readlines()
+                self.__lines = tuple(f.readlines())
+        # 如果文件为空
         if len(self.__lines) <= 0:
-            EXCEPTION.fatal("The file is empty!")
+            EXCEPTION.fatal("Cannot convert an empty script file!")
         self.__convert(0)
         if self.__id is None:
             EXCEPTION.fatal("You have to set id!")
@@ -79,26 +97,21 @@ class ScriptConverter:
                 "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type()), {"dialogs": self.__output}
             )
 
-    @staticmethod
-    def __convert_str(text: str) -> Optional[str]:
-        return None if text.lower() == "null" or text.lower() == "none" else text
-
-    @classmethod
-    def __extract_parameter(cls, text: str, prefix: str) -> Optional[str]:
-        sharp_index: int = text.find("#")
-        if sharp_index < 0:
-            return cls.__convert_str(text.removeprefix(prefix).removesuffix("\n"))
-        else:
-            return cls.__convert_str(text[:sharp_index].removeprefix(prefix))
+    def __try_handle_data(self, index: int, parameter_short: str, parameter_full: str) -> bool:
+        if self.__lines[index].startswith(parameter_short):
+            self.__current_data[parameter_full] = self.__extract_parameter(self.__lines[index], parameter_short)
+            return True
+        return False
 
     def __convert(self, staring_index: int) -> None:
         for index in range(staring_index, len(self.__lines)):
-            if not self.__lines[index].startswith("#") and len(self.__lines[index]) > 0:
-                if self.__lines[index].startswith("<!bgi>"):
-                    self.__current_data["background_image"] = self.__extract_parameter(self.__lines[index], "<!bgi>")
-                elif self.__lines[index].startswith("<!bgm>"):
-                    self.__current_data["background_music"] = self.__extract_parameter(self.__lines[index], "<!bgm>")
-                elif self.__lines[index].startswith("<!cin>"):
+            if (
+                not self.__lines[index].startswith("#")
+                and len(self.__lines[index]) > 0
+                and not self.__try_handle_data(index, "<!bgi>", "background_image")
+                and not self.__try_handle_data(index, "<!bgm>", "background_music")
+            ):
+                if self.__lines[index].startswith("<!cin>"):
                     self.__current_data["character_images"].append(self.__extract_parameter(self.__lines[index], "<!cin>"))
                 elif self.__lines[index].startswith("<!cout>"):
                     self.__current_data["character_images"].remove(self.__extract_parameter(self.__lines[index], "<!cout>"))
@@ -119,7 +132,7 @@ class ScriptConverter:
                     break
                 elif ":" in self.__lines[index]:
                     _data: list[str] = self.__lines[index].removesuffix("\n").split(":")
-                    self.__current_data["narrator"] = self.__convert_str(str(_data[0]))
+                    self.__current_data["narrator"] = self.__ensure_not_null(str(_data[0]))
 
                     narrator_possible_images: list = []
                     if (

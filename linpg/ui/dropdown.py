@@ -86,7 +86,7 @@ class DropDownList(GameObjectsDictContainer):
             font_surface: ImageSurface = self.__FONT.render(self.get_selected_item(), self.__font_color, with_bounding=True)
             surface.blit(
                 font_surface,
-                Coordinates.add(current_pos, (self.__FONT.size * 3, int((self.__block_height - font_surface.get_height()) / 2))),
+                Coordinates.add(current_pos, (self.__FONT.size * 3, (self.__block_height - font_surface.get_height()) // 2)),
             )
             rect_of_outline = Rectangle.new(current_pos, (self.width, self.__block_height))
             Draw.rect(surface, self.__font_color, rect_of_outline.get_rect(), self.outline_thickness)
@@ -97,7 +97,7 @@ class DropDownList(GameObjectsDictContainer):
                     current_pos,
                     (
                         int(self.width - font_surface.get_width() * 1.5),
-                        int((self.__block_height - font_surface.get_height()) / 2),
+                        (self.__block_height - font_surface.get_height()) // 2,
                     ),
                 ),
             )
@@ -115,7 +115,7 @@ class DropDownList(GameObjectsDictContainer):
                     surface.blit(
                         font_surface,
                         Coordinates.add(
-                            current_pos, (self.__FONT.size * 3, int((self.__block_height - font_surface.get_height()) / 2))
+                            current_pos, (self.__FONT.size * 3, (self.__block_height - font_surface.get_height()) // 2)
                         ),
                     )
                     rect_of_outline = Rectangle.new(current_pos, (self.width, self.__block_height))

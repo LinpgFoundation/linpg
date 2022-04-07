@@ -97,12 +97,17 @@ class SystemWithBackgroundMusic(AbstractSystem):
 
     # 播放bgm
     def play_bgm(self) -> None:
-        if self.__audio is not None and not LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.get_busy():
+        if (
+            self.__audio is not None
+            and LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL is not None
+            and not LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.get_busy()
+        ):
             LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.play(self.__audio)
 
     # 停止播放
     def stop_bgm(self) -> None:
-        LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.stop()
+        if LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL is not None:
+            LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.stop()
 
     # 把内容画到surface上（子类必须实现）
     def draw(self, surface: ImageSurface) -> None:

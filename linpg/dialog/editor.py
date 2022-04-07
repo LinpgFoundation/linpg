@@ -42,7 +42,7 @@ class DialogEditor(DialogConverter):
         # 将npc立绘系统设置为开发者模式
         self._npc_manager.dev_mode = True
         # 加载容器
-        container_width = int(Display.get_width() * 2 / 10)
+        container_width = Display.get_width() // 5
         self.__UIContainerRightImage = RawImg.load("<!ui>container.png", (container_width, Display.get_height()))
         # 右侧容器尺寸
         RightContainerRect: Rectangle = Rectangle(
@@ -70,9 +70,9 @@ class DialogEditor(DialogConverter):
                 )
         # 加载透明图片
         self.__UIContainerRight_bg.set(
-            "<transparent>", Surface.texture_is_missing((int(container_width * 4 / 5), int(container_width * 0.45)))
+            "<transparent>", Surface.texture_is_missing((container_width * 4 // 5, container_width * 9 // 20))
         )
-        self.__UIContainerRight_bg.distance_between_item = int(Display.get_height() * 0.02)
+        self.__UIContainerRight_bg.distance_between_item = Display.get_height() // 50
         self.__current_select_bg_name = None
         self.__current_select_bg_copy = None
         # npc立绘编辑模块
@@ -86,30 +86,30 @@ class DialogEditor(DialogConverter):
         self.__UIContainerRight_npc.set_visible(False)
         self.__UIContainerRight_npc.distance_between_item = 0
         # 容器按钮
-        button_width: int = int(Display.get_width() * 0.04)
+        button_width: int = Display.get_width() // 25
         self.__UIContainerRightButton = MovableImage(
             "<!ui>container_button.png",
-            int(Display.get_width() - button_width),
-            int(Display.get_height() * 0.4),
-            int(Display.get_width() - button_width - container_width),
-            int(Display.get_height() * 0.4),
-            int(container_width / 10),
+            Display.get_width() - button_width,
+            Display.get_height() * 2 // 5,
+            Display.get_width() - button_width - container_width,
+            Display.get_height() * 2 // 5,
+            container_width // 10,
             0,
             button_width,
-            int(Display.get_height() * 2 / 10),
+            Display.get_height() // 5,
         )
         self.__UIContainerRightButton.rotate(90)
         # UI按钮
         CONFIG = Lang.get_texts("DialogCreator")
-        button_y: int = int(Display.get_height() * 3 / 100)
-        font_size: int = int(button_width / 3)
+        button_y: int = Display.get_height() * 3 // 100
+        font_size: int = button_width // 3
         # 控制容器转换的按钮
-        self.__button_select_background = Button.load("<!ui>button.png", (0, int(button_y * 3 / 2)), (0, 0), 150)
+        self.__button_select_background = Button.load("<!ui>button.png", (0, button_y * 3 // 2), (0, 0), 150)
         self.__button_select_background.set_text(
             ButtonComponent.text(str(CONFIG["background"]), font_size * 2 / 3, alpha_when_not_hover=150)
         )
         self.__button_select_background.set_auto_resize(True)
-        self.__button_select_npc = Button.load("<!ui>button.png", (0, int(button_y * 3 / 2)), (0, 0), 150)
+        self.__button_select_npc = Button.load("<!ui>button.png", (0, button_y * 3 // 2), (0, 0), 150)
         self.__button_select_npc.set_text(ButtonComponent.text(str(CONFIG["npc"]), font_size * 2 / 3, alpha_when_not_hover=150))
         self.__button_select_npc.set_auto_resize(True)
         panding: int = int(
@@ -141,7 +141,7 @@ class DialogEditor(DialogConverter):
         self._load_content()
         # 移除按钮
         self.__remove_npc_button = Font.render_description_box(
-            CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE, int(self._FONT_SIZE / 5), Colors.WHITE
+            CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE, self._FONT_SIZE // 5, Colors.WHITE
         )
         # 切换准备编辑的dialog部分
         self.dialog_key_select = DropDownList(None, button_width * 11, button_y + font_size, font_size)

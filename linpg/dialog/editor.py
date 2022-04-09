@@ -46,10 +46,7 @@ class DialogEditor(DialogConverter):
         self.__UIContainerRightImage = RawImg.load("<!ui>container.png", (container_width, Display.get_height()))
         # 右侧容器尺寸
         RightContainerRect: Rectangle = Rectangle(
-            int(container_width * 0.075),
-            int(Display.get_height() * 0.1),
-            int(container_width * 0.85),
-            int(Display.get_height() * 0.85),
+            container_width * 3 // 40, Display.get_height() // 10, container_width * 17 // 20, Display.get_height() * 17 // 20
         )
         # 背景图片编辑模块
         self.__UIContainerRight_bg = SurfaceContainerWithScrollbar(
@@ -82,7 +79,7 @@ class DialogEditor(DialogConverter):
         self.__UIContainerRight_npc.set_scroll_bar_pos("right")
         # 加载npc立绘
         for imgPath in glob(os.path.join(self._npc_manager.image_folder_path, "*")):
-            self.__UIContainerRight_npc.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 0.8, None)))
+            self.__UIContainerRight_npc.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 4 / 5, None)))
         self.__UIContainerRight_npc.set_visible(False)
         self.__UIContainerRight_npc.distance_between_item = 0
         # 容器按钮

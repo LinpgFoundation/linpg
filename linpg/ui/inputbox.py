@@ -7,7 +7,7 @@ class AbstractInputBox(GameObject2d):
         super().__init__(x, y)
         self._FONT: FontGenerator = Font.create(font_size)
         self._default_width: int = default_width
-        self._default_height: int = int(self._FONT.size * 1.5)
+        self._default_height: int = self._FONT.size * 3 // 2
         self._input_box: Rectangle = Rectangle(x, y, default_width, self._default_height)
         self._color: tuple[int, int, int, int] = Colors.get("lightskyblue3")
         self._text_color: tuple[int, int, int, int] = Colors.get(txt_color)
@@ -30,7 +30,7 @@ class AbstractInputBox(GameObject2d):
 
     def set_pos(self, x: int_f, y: int_f) -> None:
         super().set_pos(x, y)
-        self._input_box = Rectangle(x, y, self._default_width, int(self._FONT.size * 1.5))
+        self._input_box = Rectangle(x, y, self._default_width, self._FONT.size * 3 // 2)
 
 
 # 单行输入框
@@ -81,7 +81,7 @@ class SingleLineInputBox(AbstractInputBox):
         new_width: int = 0
         i: int = 0
         for i in range(len(self._text)):
-            new_width = self._FONT.estimate_text_width(self._text[:i]) + int(self._FONT.size * 0.25)
+            new_width = self._FONT.estimate_text_width(self._text[:i]) + self._FONT.size // 4
             if new_width > local_x:
                 break
             else:
@@ -94,7 +94,7 @@ class SingleLineInputBox(AbstractInputBox):
     def _reset_inputbox_width(self) -> None:
         if self._text is not None and len(self._text) > 0:
             self._input_box.set_width(
-                max(self._default_width, self._FONT.estimate_text_width(self._text) + self._FONT.size * 0.6)
+                max(self._default_width, self._FONT.estimate_text_width(self._text) + self._FONT.size * 3 // 5)
             )
         else:
             self._input_box.set_width(self._default_width)
@@ -295,7 +295,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         new_width: int = 0
         i: int = 0
         for i in range(len(self._text[self.lineId])):
-            new_width = int(self._FONT.estimate_text_width(self._text[self.lineId][:i]) + self._FONT.size * 0.25)
+            new_width = self._FONT.estimate_text_width(self._text[self.lineId][:i]) + self._FONT.size // 4
             if new_width > local_x:
                 break
             else:
@@ -372,7 +372,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                 # 画出文字
                 screen.blit(
                     self._FONT.render(self._text[i], self._text_color, with_bounding=True),
-                    (self.x + self._FONT.size * 0.25, self.y + i * self._default_height),
+                    (self.x + self._FONT.size // 4, self.y + i * self._default_height),
                 )
         if self._active:
             # 画出输入框
@@ -383,7 +383,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                     self._holder,
                     (
                         self.x
-                        + self._FONT.size * 0.1
+                        + self._FONT.size // 10
                         + self._FONT.estimate_text_width(self._text[self.lineId][: self._holder_index]),
                         self.y + self.lineId * self._default_height,
                     ),

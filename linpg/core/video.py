@@ -23,7 +23,7 @@ def _video_validator(path: str) -> None:
 def get_preview_of_video(path: str, size: tuple[int, int] = NoSize) -> ImageSurface:
     _video_validator(path)
     video_stream = cv2.VideoCapture(path)
-    video_stream.set(cv2.CAP_PROP_POS_FRAMES, int(video_stream.get(cv2.CAP_PROP_FRAME_COUNT) * 0.1))
+    video_stream.set(cv2.CAP_PROP_POS_FRAMES, video_stream.get(cv2.CAP_PROP_FRAME_COUNT) // 10)
     current_frame = cv2.cvtColor(video_stream.read()[1], cv2.COLOR_BGR2RGB)
     video_stream.release()
     del video_stream

@@ -197,10 +197,7 @@ class FriendlyCharacter(Entity):
             numberY: float = (eyeImgHeight - MAP_POINTER.block_width / 10) / 2
             # 根据参数调整图片
             self.__beNoticedImage.set_size(eyeImgWidth, eyeImgHeight)
-            self.__beNoticedImage.set_pos(
-                blit_pos[0] + MAP_POINTER.block_width * 0.51 - numberX,
-                blit_pos[1] - numberY,
-            )
+            self.__beNoticedImage.set_pos(blit_pos[0] + MAP_POINTER.block_width * 0.51 - numberX, blit_pos[1] - numberY)
             self.__beNoticedImage.draw(surface)
         # 重创立绘
         if self.__getHurtImage is not None and self.__getHurtImage.alpha > 0:

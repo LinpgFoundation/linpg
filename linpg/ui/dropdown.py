@@ -6,7 +6,7 @@ class DropDownList(GameObjectsDictContainer):
         self, bg_img: Optional[PoI], x: int_f, y: int_f, font_size: int, font_color: color_liked = "black", tag: str = ""
     ) -> None:
         # 方格高度
-        self.__block_height: int = int(font_size * 1.5)
+        self.__block_height: int = font_size * 3 // 2
         # 是否折叠选项
         self.__fold_choice: bool = True
         super().__init__(bg_img, x, y, 0, 0, tag)
@@ -34,7 +34,7 @@ class DropDownList(GameObjectsDictContainer):
     # 更新font的尺寸
     def update_font_size(self, font_size: int) -> None:
         self.__FONT.update(font_size)
-        self.__block_height = round(self.__FONT.size * 1.5)
+        self.__block_height = round(self.__FONT.size * 3 / 2)
         self.__recalculate_width()
 
     # 更新font的颜色
@@ -96,7 +96,7 @@ class DropDownList(GameObjectsDictContainer):
                 Coordinates.add(
                     current_pos,
                     (
-                        int(self.width - font_surface.get_width() * 1.5),
+                        self.width - font_surface.get_width() * 3 // 2,
                         (self.__block_height - font_surface.get_height()) // 2,
                     ),
                 ),
@@ -126,7 +126,7 @@ class DropDownList(GameObjectsDictContainer):
                         surface,
                         self.__font_color,
                         Coordinates.add(current_pos, (self.__FONT.size * 2, self.__block_height / 2)),
-                        int(self.__block_height * 0.15),
+                        self.__block_height * 3 // 20,
                         self.outline_thickness if key_of_game_object != self.__chosen_item_key else 0,
                     )
                     index += 1

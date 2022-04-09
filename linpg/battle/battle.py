@@ -169,7 +169,7 @@ class AbstractBattleSystem(AbstractGameSystem):
             temp_value = self._MAP.get_local_x() + self._screen_to_move_x // 5
             if Display.get_width() - self._MAP.get_width() <= temp_value <= 0:
                 self._MAP.set_local_x(temp_value)
-                self._screen_to_move_x = int(self._screen_to_move_x * 0.8)
+                self._screen_to_move_x = self._screen_to_move_x * 4 // 5
                 if self._screen_to_move_x == 0:
                     self._screen_to_move_x = 0
             else:
@@ -178,7 +178,7 @@ class AbstractBattleSystem(AbstractGameSystem):
             temp_value = self._MAP.get_local_y() + self._screen_to_move_y // 5
             if Display.get_height() - self._MAP.get_height() <= temp_value <= 0:
                 self._MAP.set_local_y(temp_value)
-                self._screen_to_move_y = int(self._screen_to_move_y * 0.8)
+                self._screen_to_move_y = self._screen_to_move_y * 4 // 5
                 if self._screen_to_move_y == 0:
                     self._screen_to_move_y = 0
             else:

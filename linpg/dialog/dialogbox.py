@@ -9,7 +9,7 @@ class AbstractDialogBox(HiddenableSurface):
         self._dialoguebox_max_y: int = Display.get_height() * 65 // 100
         # 对胡框图片
         self._dialoguebox: StaticImage = StaticImage(
-            "<!ui>dialoguebox.png", Display.get_width() * 0.13, 0, Display.get_width() * 0.74
+            "<!ui>dialoguebox.png", Display.get_width() * 13 // 100, 0, Display.get_width() * 74 // 100
         )
 
     # 画出（子类需实现）
@@ -26,7 +26,7 @@ class EditableDialogBox(AbstractDialogBox):
     def __init__(self, fontSize: int):
         super().__init__()
         self.__contents: MultipleLinesInputBox = MultipleLinesInputBox(
-            Display.get_width() * 2 / 10, Display.get_height() * 0.73, fontSize, "white"
+            Display.get_width() * 2 / 10, Display.get_height() * 73 // 100, fontSize, "white"
         )
         self.__narrator: SingleLineInputBox = SingleLineInputBox(
             Display.get_width() * 2 / 10, self._dialoguebox_max_y + fontSize, fontSize, "white"
@@ -92,8 +92,8 @@ class DialogBox(AbstractDialogBox):
                 StaticImage("<!ui>mouse_none.png", 0, 0, self.FONT.size, self.FONT.size),
                 StaticImage("<!ui>mouse.png", 0, 0, self.FONT.size, self.FONT.size),
             ),
-            int(Display.get_width() * 0.82),
-            int(Display.get_height() * 0.83),
+            Display.get_width() * 82 // 100,
+            Display.get_height() * 82 // 100,
             self.FONT.size,
             self.FONT.size,
             50,
@@ -208,14 +208,14 @@ class DialogBox(AbstractDialogBox):
                     for i in range(self.__displayed_lines):
                         surface.blit(
                             self.FONT.render(self.__contents[i], Colors.WHITE, with_bounding=True),
-                            (x, y + self.FONT.size * 1.5 * i),
+                            (x, y + self.FONT.size * 3 * i // 2),
                         )
                     # 对话框正在播放的内容
                     surface.blit(
                         self.FONT.render(
                             self.__contents[self.__displayed_lines][: self.__text_index], Colors.WHITE, with_bounding=True
                         ),
-                        (x, y + self.FONT.size * 1.5 * self.__displayed_lines),
+                        (x, y + self.FONT.size * 3 * self.__displayed_lines // 2),
                     )
                     # 如果当前行的字符还没有完全播出
                     if self.__text_index < len(self.__contents[self.__displayed_lines]):

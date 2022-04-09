@@ -138,7 +138,7 @@ class Console(SingleLineInputBox, HiddenableSurface):
             for i in range(len(self._txt_output)):
                 screen.blit(
                     self._FONT.render(self._txt_output[i], self._color, with_bounding=True),
-                    (self.x + self._FONT.size * 0.25, self.y - (len(self._txt_output) - i) * self._FONT.size * 1.5),
+                    (self.x + self._FONT.size // 4, self.y - (len(self._txt_output) - i) * self._FONT.size * 3 / 2),
                 )
             # 画出输入框
             Draw.rect(screen, self._color, self._input_box.get_rect(), 2)

@@ -3,8 +3,6 @@ from linpg import Builder  # type: ignore
 
 # 编译源代码
 if not PATH.exists("src") or input("Do you want to recompile everything (Y/n):") == "Y":
-    # 删除mypy的缓存
-    Builder.delete_file_if_exist(PATH.join("linpg", ".mypy_cache"))
     # 编译所有文件
     additional_files: tuple[str, ...] = ("README.md", "LICENSE", "CODE_OF_CONDUCT.md", "doc")
     Builder.compile("linpg", additional_files=additional_files, ignore_key_words=("compiler.py",))

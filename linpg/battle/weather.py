@@ -22,7 +22,7 @@ class WeatherSystem:
                     imgId=get_random_int(0, len(self.__img_tuple) - 1),
                     size=get_random_int(5, 10),
                     speed=get_random_int(1, 4),
-                    x=get_random_int(1, int(Display.get_width() * 1.5)),
+                    x=get_random_int(1, Display.get_width() * 3 // 2),
                     y=get_random_int(1, Display.get_height()),
                 )
                 for i in range(entityNum)

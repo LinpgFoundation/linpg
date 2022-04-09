@@ -180,7 +180,7 @@ class UiGenerator:
                     item_t = StaticTextSurface(data["src"], 0, 0, font_size, data["color"], data["bold"], data["italic"])
                 elif data["type"] == "resize_when_hovered_text":
                     item_t = ResizeWhenHoveredTextSurface(
-                        str(data["src"]), 0, 0, font_size, font_size * 1.5, data["color"], data["bold"], data["italic"]
+                        str(data["src"]), 0, 0, font_size, font_size * 3 / 2, data["color"], data["bold"], data["italic"]
                     )
                 else:
                     item_t = DropDownList(data["src"], 0, 0, font_size, data["color"])

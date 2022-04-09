@@ -33,7 +33,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 更新背景音乐音量
         self.set_bgm_volume(Media.volume.background_music / 100)
         # 文字大小
-        self._FONT_SIZE: int = int(Display.get_width() * 0.015)
+        self._FONT_SIZE: int = Display.get_width() * 3 // 200
 
     # 获取对话框模块（子类需实现）
     def _get_dialog_box(self) -> AbstractDialogBox:

@@ -64,11 +64,11 @@ class AbstractMapEditor(AbstractBattleSystem):
         del mapFileData
         """加载右侧的界面"""
         # 加载容器图片
-        container_width: int = int(screen.get_width() * 0.2)
-        container_height: int = int(screen.get_height())
-        button_width: int = int(screen.get_width() * 0.04)
-        button_height: int = int(screen.get_height() * 0.2)
-        panding: int = int(screen.get_height() * 0.01)
+        container_width: int = screen.get_width() // 5
+        container_height: int = screen.get_height()
+        button_width: int = screen.get_width() // 25
+        button_height: int = screen.get_height() // 5
+        panding: int = screen.get_height() // 100
         self.__right_container_buttons.get("select_block").set_left(
             (
                 container_width
@@ -84,9 +84,9 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__UIContainerRight.set_size(container_width, container_height)
         self.__UIContainerButtonRight = MovableImage(
             "<!ui>container_button.png",
-            int(screen.get_width() - button_width),
+            screen.get_width() - button_width,
             (screen.get_height() - button_height) // 2,
-            int(screen.get_width() - button_width - container_width),
+            screen.get_width() - button_width - container_width,
             (screen.get_height() - button_height) // 2,
             container_width // 10,
             0,
@@ -95,8 +95,8 @@ class AbstractMapEditor(AbstractBattleSystem):
         )
         self.__UIContainerButtonRight.rotate(90)
         # 加载背景图片
-        self.__envImgContainer.set_pos(container_width * 0.075, screen.get_height() * 0.1)
-        self.__envImgContainer.set_size(container_width * 0.85, screen.get_height() * 0.85)
+        self.__envImgContainer.set_pos(container_width * 3 // 40, screen.get_height() // 10)
+        self.__envImgContainer.set_size(container_width * 17 // 20, screen.get_height() * 17 // 20)
         if TileMapImagesModule.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET is None:
             EXCEPTION.fatal("Image sprite sheet for tile map is not loaded correctly!")
         for key, value in TileMapImagesModule.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.to_dict().items():
@@ -106,8 +106,8 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__envImgContainer.set_visible(True)
         self.__envImgContainer.distance_between_item = panding
         # 加载所有的装饰品
-        self.__decorationsImgContainer.set_pos(container_width * 0.075, screen.get_height() * 0.1)
-        self.__decorationsImgContainer.set_size(container_width * 0.85, screen.get_height() * 0.85)
+        self.__decorationsImgContainer.set_pos(container_width * 3 // 40, screen.get_height() // 10)
+        self.__decorationsImgContainer.set_size(container_width * 17 // 20, screen.get_height() * 17 // 20)
         # 加载默认装饰物
         if DecorationImagesModule.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET is None:
             EXCEPTION.fatal("Image sprite sheet for default decorations is not loaded correctly!")
@@ -128,10 +128,10 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__decorationsImgContainer.set_visible(False)
         self.__decorationsImgContainer.distance_between_item = panding
         """加载下方的界面"""
-        container_width = int(screen.get_width() * 0.8)
-        container_height = int(screen.get_height() * 0.3)
-        button_width = int(screen.get_width() * 0.14)
-        button_height = int(screen.get_height() * 0.05)
+        container_width = screen.get_width() * 4 // 5
+        container_height = screen.get_height() * 3 // 10
+        button_width = screen.get_width() * 7 // 50
+        button_height = screen.get_height() // 20
         self.__UIContainerBottom = DynamicImage("<!ui>container.png", 0, 0, container_width, container_height)
         self.__UIContainerButtonBottom = MovableImage(
             "<!ui>container_button.png",
@@ -179,9 +179,9 @@ class AbstractMapEditor(AbstractBattleSystem):
                 self.__entitiesImagesContainerUsingIndex = 0
             self.__bottom_container_buttons.append(newButton)
         # 绿色方块/方块标准
-        self.__range_green = RawImg.load("<!ui>range_green.png", (self._MAP.block_width * 0.8, None))
+        self.__range_green = RawImg.load("<!ui>range_green.png", (self._MAP.block_width * 4 // 5, None))
         self.__range_green.set_alpha(150)
-        self.__range_red = RawImg.load("<!ui>range_red.png", (self._MAP.block_width * 0.8, None))
+        self.__range_red = RawImg.load("<!ui>range_red.png", (self._MAP.block_width * 4 // 5, None))
         self.__range_red.set_alpha(150)
         self.__object_to_put_down.clear()
         # 设置按钮位置
@@ -312,10 +312,10 @@ class AbstractMapEditor(AbstractBattleSystem):
         ):
             if self.__delete_mode is True:
                 xTemp, yTemp = self._MAP.calculate_position(block_get_click["x"], block_get_click["y"])
-                screen.blit(self.__range_red, (xTemp + self._MAP.block_width * 0.1, yTemp))
+                screen.blit(self.__range_red, (xTemp + self._MAP.block_width // 10, yTemp))
             elif len(self.__object_to_put_down) > 0:
                 xTemp, yTemp = self._MAP.calculate_position(block_get_click["x"], block_get_click["y"])
-                screen.blit(self.__range_green, (xTemp + self._MAP.block_width * 0.1, yTemp))
+                screen.blit(self.__range_green, (xTemp + self._MAP.block_width // 10, yTemp))
 
         # 角色动画
         for value in self._alliances_data.values():

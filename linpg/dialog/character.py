@@ -19,7 +19,7 @@ class CharacterImageManager:
         self.__darkness: int = 50
         self.__img_width: int = Display.get_width() // 2
         self.__communication_surface_rect: Rectangle = Rectangle(
-            int(self.__img_width * 0.25), 0, int(self.__img_width * 0.5), int(self.__img_width * 0.56)
+            self.__img_width // 4, 0, self.__img_width // 2, self.__img_width * 56 // 100
         )
         self.__communication: Optional[StaticImage] = None
         self.__communication_dark: Optional[StaticImage] = None

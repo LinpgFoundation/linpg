@@ -6,8 +6,8 @@ class AbstractMap:
         self.__column: int = 0
 
     def _update(self, row: int, column: int) -> None:
-        self.__row = int(row)
-        self.__column = int(column)
+        self.__row = row
+        self.__column = column
 
     @property
     def row(self) -> int:

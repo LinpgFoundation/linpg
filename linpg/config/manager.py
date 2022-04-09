@@ -80,11 +80,11 @@ class Info:
     @classmethod
     def ensure_linpg_version(cls, action: str, revision: int, patch: int, version: int = 3) -> bool:
         if action == "==":
-            return version == int(cls.__VERSION) and revision == int(cls.__REVISION) and patch == int(cls.__PATCH)
+            return version == cls.__VERSION and revision == cls.__REVISION and patch == cls.__PATCH
         elif action == ">=":
-            return version >= int(cls.__VERSION) and revision >= int(cls.__REVISION) and patch >= int(cls.__PATCH)
+            return version >= cls.__VERSION and revision >= cls.__REVISION and patch >= cls.__PATCH
         elif action == "<=":
-            return version <= int(cls.__VERSION) and revision <= int(cls.__REVISION) and patch <= int(cls.__PATCH)
+            return version <= cls.__VERSION and revision <= cls.__REVISION and patch <= cls.__PATCH
         else:
             EXCEPTION.fatal('Action "{}" is not supported!'.format(action))
 

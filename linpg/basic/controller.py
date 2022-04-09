@@ -62,7 +62,7 @@ class MouseController:
     __last_x: int = 0
     __last_y: int = 0
     # 鼠标移动速度（使用手柄时）
-    __moving_speed: int = int(max(Setting.get("MouseMoveSpeed"), 1))
+    __moving_speed: int = max(int(Setting.get("MouseMoveSpeed")), 1)
     # 鼠标上次更新时被按下的详情
     __mouse_get_pressed_previously: tuple[bool, ...] = (False, False, False, False, False)
     # 鼠标图标

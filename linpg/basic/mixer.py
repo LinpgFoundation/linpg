@@ -34,7 +34,7 @@ else:
 # 音效管理模块接口
 class AbstractSoundManager:
     def __init__(self, channel_id: int):
-        self._channel_id: int = int(channel_id)
+        self._channel_id: int = channel_id
 
     @property
     def channel_id(self) -> int:
@@ -146,8 +146,8 @@ class Sound:
 
     # 淡出音效
     @staticmethod
-    def fade_out(time: float) -> None:
-        pygame.mixer.fadeout(int(time))
+    def fade_out(time: int) -> None:
+        pygame.mixer.fadeout(time)
 
     # 寻找一个可用的频道
     @staticmethod
@@ -157,7 +157,7 @@ class Sound:
     # 获取频道的数量
     @staticmethod
     def get_num_channels() -> int:
-        return int(pygame.mixer.get_num_channels() - 3)
+        return pygame.mixer.get_num_channels() - 3
 
     # 获取对应id的频道
     @staticmethod
@@ -205,8 +205,8 @@ class Music:
 
     # 淡出背景音乐
     @staticmethod
-    def fade_out(time: number) -> None:
-        pygame.mixer.music.fadeout(int(time))
+    def fade_out(time: int) -> None:
+        pygame.mixer.music.fadeout(time)
 
     # 获取背景音乐播放的位置
     @staticmethod
@@ -300,7 +300,7 @@ class MediaController:
 
     # 淡出所有音乐
     @staticmethod
-    def fade_out(time: float) -> None:
+    def fade_out(time: int) -> None:
         Sound.fade_out(time)
         Music.fade_out(time)
 

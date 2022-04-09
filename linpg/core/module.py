@@ -22,7 +22,7 @@ class Coordinate:
 
     # 向左移动
     def move_left(self, value: int_f) -> None:
-        self.set_left(self.x - int(value))
+        self.set_left(int(self.x - value))
 
     # 向右移动
     def move_right(self, value: int_f) -> None:
@@ -41,7 +41,7 @@ class Coordinate:
 
     # 向上移动
     def move_upward(self, value: int_f) -> None:
-        self.set_top(self.y - int(value))
+        self.set_top(int(self.y - value))
 
     # 向下移动
     def move_downward(self, value: int_f) -> None:

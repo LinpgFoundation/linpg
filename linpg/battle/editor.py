@@ -136,9 +136,9 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__UIContainerButtonBottom = MovableImage(
             "<!ui>container_button.png",
             (container_width - button_width) // 2,
-            int(screen.get_height() - button_height),
+            screen.get_height() - button_height,
             (container_width - button_width) // 2,
-            int(screen.get_height() - button_height - container_height),
+            screen.get_height() - button_height - container_height,
             0,
             container_height // 10,
             button_width,

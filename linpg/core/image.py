@@ -159,8 +159,8 @@ class MovableImage(StaticImage):
         tag: str = "",
     ):
         super().__init__(img, x, y, width, height, tag)
-        self.__default_x: int = int(self.x)
-        self.__default_y: int = int(self.y)
+        self.__default_x: int = self.x
+        self.__default_y: int = self.y
         self.__target_x: int = int(target_x)
         self.__target_y: int = int(target_y)
         self.__move_speed_x: int = int(move_speed_x)

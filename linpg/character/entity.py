@@ -270,7 +270,7 @@ class Entity(Position):
 
     # 设置当前行动值，不建议非开发者使用
     def set_max_action_point(self, point: int) -> None:
-        self.__max_action_point = int(point)
+        self.__max_action_point = point
 
     # 当前行动值
     @property
@@ -279,7 +279,7 @@ class Entity(Position):
 
     # 设置当前行动值，不建议非开发者使用
     def set_current_action_point(self, point: int) -> None:
-        self.__current_action_point = int(point)
+        self.__current_action_point = point
 
     # 重置行动点数
     def reset_action_point(self) -> None:
@@ -367,7 +367,7 @@ class Entity(Position):
 
     # 回复可再生护甲
     def recover_armor(self, value: int) -> None:
-        self.__current_recoverable_armor += int(value)
+        self.__current_recoverable_armor += value
         # 防止可再生护甲的数值越界
         if self.__current_recoverable_armor > self.__max_recoverable_armor:
             self.__current_recoverable_armor = self.__max_recoverable_armor

@@ -2,6 +2,9 @@ from .inputbox import *
 
 # 控制台
 class Console(SingleLineInputBox, HiddenableSurface):
+
+    _COMMAND_INDICATOR: str = "/"
+
     def __init__(self, x: int_f, y: int_f, font_size: int = 32, default_width: int = 150):
         HiddenableSurface.__init__(self, False)
         self.color_active = Colors.get("dodgerblue2")
@@ -12,7 +15,6 @@ class Console(SingleLineInputBox, HiddenableSurface):
         self._text_history: list = []
         self.__backward_id: int = 1
         self._txt_output: list = []
-        self.command_indicator: str = "/"
 
     def _check_key_down(self, event: PG_Event) -> bool:
         if super()._check_key_down(event):
@@ -30,8 +32,8 @@ class Console(SingleLineInputBox, HiddenableSurface):
         # 回车
         elif event.key == Key.RETURN:
             if len(self._text) > 0:
-                if self._text.startswith(self.command_indicator):
-                    self._check_command(self._text.removeprefix(self.command_indicator).split())
+                if self._text.startswith(self._COMMAND_INDICATOR):
+                    self._check_command(self._text.removeprefix(self._COMMAND_INDICATOR).split())
                 else:
                     self._txt_output.append(self._text)
                 self._text_history.append(self._text)
@@ -80,7 +82,7 @@ class Console(SingleLineInputBox, HiddenableSurface):
             else:
                 self._txt_output.append("Unknown status for show command.")
         elif conditions[0] == "say":
-            self._txt_output.append(self._text[len(self.command_indicator) + 4 :])
+            self._txt_output.append(self._text[len(self._COMMAND_INDICATOR) + 4 :])
         elif conditions[0] == "dev":
             if len(conditions) < 2:
                 self._txt_output.append("Unknown status for dev command.")

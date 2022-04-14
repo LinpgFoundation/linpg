@@ -1,6 +1,6 @@
 """
 结构:
-dialogbox-> component -> character -> abstract -> dialog -> converter -> editor
+dialogbox-> component -> character -> script -> abstract -> dialog -> converter -> editor
 """
 from .editor import *
 

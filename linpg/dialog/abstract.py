@@ -1,4 +1,4 @@
-from .character import *
+from .script import *
 
 # 视觉小说系统接口
 class AbstractDialogSystem(AbstractGameSystem):
@@ -39,23 +39,20 @@ class AbstractDialogSystem(AbstractGameSystem):
     def _get_dialog_box(self) -> AbstractDialogBox:
         return EXCEPTION.fatal("_dialogBox()", 1)
 
+    # 获取对话文件所在的文件夹目录
+    def get_dialog_folder_location(self) -> str:
+        return (
+            os.path.join(self._dialog_folder_path, self._chapter_type)
+            if self._project_name is None
+            else os.path.join(self._dialog_folder_path, self._chapter_type, self._project_name)
+        )
+
     # 获取对话文件所在的具体路径
     def get_dialog_file_location(self, lang: str = "") -> str:
         if len(lang) == 0:
             lang = Setting.language
-        return (
-            os.path.join(
-                self._dialog_folder_path,
-                self._chapter_type,
-                "chapter{0}_dialogs_{1}.{2}".format(self._chapter_id, lang, Config.get_file_type()),
-            )
-            if self._project_name is None
-            else os.path.join(
-                self._dialog_folder_path,
-                self._chapter_type,
-                self._project_name,
-                "chapter{0}_dialogs_{1}.{2}".format(self._chapter_id, lang, Config.get_file_type()),
-            )
+        return os.path.join(
+            self.get_dialog_folder_location(), "chapter{0}_dialogs_{1}.{2}".format(self._chapter_id, lang, Config.get_file_type())
         )
 
     # 获取对话文件的主语言
@@ -134,6 +131,10 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._dialog_id = dialogId
         # 播放的部分
         self._part = part
+        # 转换所有文件夹内的linpg自定义的raw脚本
+        _CONVERTER: ScriptConverter = ScriptConverter()
+        for script_file in glob(os.path.join(self.get_dialog_folder_location(), "*.linpg.script")):
+            _CONVERTER.convert(script_file)
 
     # 载入数据
     def _load_content(self) -> None:

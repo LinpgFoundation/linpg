@@ -134,7 +134,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 转换所有文件夹内的linpg自定义的raw脚本
         _CONVERTER: ScriptConverter = ScriptConverter()
         for script_file in glob(os.path.join(self.get_dialog_folder_location(), "*.linpg.script")):
-            _CONVERTER.convert(script_file)
+            _CONVERTER.convert(script_file, self.get_dialog_folder_location())
 
     # 载入数据
     def _load_content(self) -> None:

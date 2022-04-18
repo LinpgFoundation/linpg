@@ -403,17 +403,13 @@ class DialogEditor(DialogConverter):
         self.__buttons_ui_container.draw(surface)
         # 展示出当前可供使用的背景音乐
         self.dialog_bgm_select.draw(surface)
-        if (current_bgm := self._current_dialog_content["background_music"]) != self.dialog_bgm_select.get_selected_item():
-            if self.dialog_bgm_select.get_selected_item() == "null" and current_bgm is None:
-                pass
-            else:
-                if self.dialog_bgm_select.get_selected_item() == "null" and current_bgm is not None:
-                    self._current_dialog_content["background_music"] = None
-                else:
-                    self._current_dialog_content["background_music"] = self.dialog_bgm_select.get(
-                        self.dialog_bgm_select.get_selected_item()
-                    )
-                self._update_scene(self._dialog_id)
+        if self._current_dialog_content["background_music"] != self.dialog_bgm_select.get_selected_item():
+            self._current_dialog_content["background_music"] = (
+                None
+                if self.dialog_bgm_select.get_selected_item() == "null"
+                else self.dialog_bgm_select.get(self.dialog_bgm_select.get_selected_item())
+            )
+            self._update_scene(self._dialog_id)
         # 展示出当前可供编辑的dialog部分
         self.dialog_key_select.draw(surface)
         # 切换当前正在浏览编辑的dialog部分
@@ -481,8 +477,7 @@ class DialogEditor(DialogConverter):
             # 移除角色立绘
             elif Controller.get_event("delete") and self._npc_manager.character_get_click is not None:
                 self._current_dialog_content["character_images"].remove(self._npc_manager.character_get_click)
-                self._npc_manager.update(self._current_dialog_content["character_images"])
-                self._npc_manager.character_get_click = None
+                self._update_scene(self._dialog_id)
         # 显示移除角色的提示
         if self._npc_manager.character_get_click is not None:
             surface.blit(self.__remove_npc_button, Controller.mouse.pos)

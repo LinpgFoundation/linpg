@@ -13,7 +13,7 @@ class ScriptConverter:
         self.__lang: Optional[str] = None
         self.__part: Optional[str] = None
         self.__last_dialog_id: Optional[str] = None
-        self.__lines: tuple = tuple()
+        self.__lines: list[str] = []
         self.__branch_flags: dict[str, str] = {}
         self.__dialog_associate_key: dict[str, str] = {}
 
@@ -43,13 +43,13 @@ class ScriptConverter:
     @staticmethod
     def __extract_string(text: str, prefix: str) -> str:
         sharp_index: int = text.find("#")
-        return text.removeprefix(prefix).removesuffix("\n") if sharp_index < 0 else text[:sharp_index].removeprefix(prefix)
+        return text.removeprefix(prefix) if sharp_index < 0 else text[:sharp_index].removeprefix(prefix)
 
     # 转换
-    def convert(self, path: str) -> None:
+    def convert(self, path: str, out_folder: str) -> None:
         if path.endswith(".linpg.script"):
             with open(path, "r", encoding="utf-8") as f:
-                self.__lines = tuple(f.readlines())
+                self.__lines = f.readlines()
         # 如果文件为空
         if len(self.__lines) <= 0:
             EXCEPTION.fatal("Cannot convert an empty script file!")
@@ -57,6 +57,7 @@ class ScriptConverter:
             last_flag: Optional[str] = None
             # 预处理文件
             for index in range(len(self.__lines)):
+                self.__lines[index] = self.__lines[index].removesuffix("\n")
                 if self.__lines[index].startswith("[flag]"):
                     if last_flag is not None:
                         EXCEPTION.fatal("The flag on line {} is overwriting the previous".format(index))
@@ -72,6 +73,7 @@ class ScriptConverter:
             if last_flag is not None:
                 EXCEPTION.warn("The last flag call {} is not necessary!".format(last_flag))
         self.__convert(0)
+        self.__lines.clear()
         if self.__id is None:
             EXCEPTION.fatal("You have to set id!")
         elif self.__lang is None:
@@ -80,7 +82,8 @@ class ScriptConverter:
             EXCEPTION.fatal("You have to set part!")
         else:
             Config.save(
-                "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type()), {"dialogs": self.__output}
+                os.path.join(out_folder, "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type())),
+                {"dialogs": self.__output},
             )
 
     def __try_handle_data(self, index: int, parameter_short: str, parameter_full: str) -> bool:
@@ -90,7 +93,8 @@ class ScriptConverter:
         return False
 
     def __convert(self, staring_index: int) -> None:
-        for index in range(staring_index, len(self.__lines)):
+        index: int = staring_index
+        while index < len(self.__lines):
             if (
                 not self.__lines[index].startswith("#")
                 and len(self.__lines[index]) > 0
@@ -123,6 +127,10 @@ class ScriptConverter:
                 elif self.__lines[index].startswith("[end]"):
                     self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"] = None
                     break
+                # 转换场景
+                elif self.__lines[index].startswith("[ns]"):
+                    self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"]["type"] = "changeScene"
+                    self.__current_data["background_image"] = self.__extract_parameter(self.__lines[index], "[ns]")
                 # 选项
                 elif self.__lines[index].startswith("[opt]"):
                     # 确认在接下来的一行有branch的flag
@@ -146,7 +154,7 @@ class ScriptConverter:
                     )
                     index += 1
                 elif not self.__lines[index].startswith("[") and ":" in self.__lines[index]:
-                    narrator: str = self.__lines[index].replace(" ", "").removesuffix(":\n")
+                    narrator: str = self.__lines[index].removesuffix(" ").removesuffix(":")
                     self.__current_data["narrator"] = self.__ensure_not_null(narrator)
                     # 获取讲述人可能的立绘名称
                     narrator_possible_images: tuple = tuple()
@@ -184,13 +192,23 @@ class ScriptConverter:
                     # 如果上个dialog存在（不一定非得能返回）
                     if self.__last_dialog_id is not None:
                         self.__current_data["last_dialog_id"] = self.__last_dialog_id
-                        self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"] = {
-                            "target": self.__dialog_associate_key[str(index)],
-                            "type": "default",
-                        }
+                        # 生成数据
+                        if self.__output[self.__part][self.__last_dialog_id].get("next_dialog_id") is not None:
+                            self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"][
+                                "target"
+                            ] = self.__dialog_associate_key[str(index)]
+                        else:
+                            self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"] = {
+                                "target": self.__dialog_associate_key[str(index)],
+                                "type": "default",
+                            }
                     else:
                         self.__current_data["last_dialog_id"] = None
-                    # 更新缓存参数
+                    # 更新key
                     self.__last_dialog_id = self.__dialog_associate_key[str(index)]
+                    # 更新缓存参数
                     index += len(self.__current_data["contents"])
                     self.__output[self.__part][self.__last_dialog_id] = deepcopy(self.__current_data)
+                else:
+                    EXCEPTION.fatal("Cannot process script on line {}!".format(index))
+            index += 1

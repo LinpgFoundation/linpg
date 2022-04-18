@@ -60,7 +60,7 @@ class BuilderManager(AbstractToolSystem):
         ignore_key_words: tuple = tuple(),
         keep_c: bool = False,
         generate_html: bool = False,
-        show_all_warnings: bool = True,
+        enable_multiprocessing: bool = True,
         language_level: str = "3",
         remove_building_cache: bool = True,
         update_the_one_in_sitepackages: bool = True,
@@ -78,7 +78,7 @@ class BuilderManager(AbstractToolSystem):
                 {
                     "keep_c": keep_c,
                     "generate_html": generate_html,
-                    "show_all_warnings": show_all_warnings,
+                    "enable_multiprocessing": enable_multiprocessing,
                     "language_level": language_level,
                     "source_folder": source_path_in_target_folder,
                     "ignore_key_words": ignore_key_words,

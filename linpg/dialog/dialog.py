@@ -304,15 +304,14 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 dialogIdTemp: str = "head"
                 local_y: int = self.__history_surface_local_y
                 while True:
-                    if self.dialog_content[dialogIdTemp]["narrator"] is not None:
-                        narratorTemp = self.__dialog_txt_system.FONT.render(
-                            self.dialog_content[dialogIdTemp]["narrator"] + ":", Colors.WHITE
-                        )
+                    narratorTxt: Optional[str] = self.dialog_content[dialogIdTemp].get("narrator")
+                    has_narrator: bool = narratorTxt is not None and len(narratorTxt) > 0
+                    if has_narrator:
+                        narratorTemp = self.__dialog_txt_system.FONT.render(narratorTxt + ":", Colors.WHITE)  # type: ignore
                         self.__history_text_surface.blit(
                             narratorTemp,
                             (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() // 10 + local_y),
                         )
-                    has_narrator: bool = self.dialog_content[dialogIdTemp]["narrator"] is not None
                     for i in range(len(self.dialog_content[dialogIdTemp]["contents"])):
                         txt: str = str(self.dialog_content[dialogIdTemp]["contents"][i])
                         if has_narrator:

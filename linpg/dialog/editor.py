@@ -260,13 +260,15 @@ class DialogEditor(DialogConverter):
         else:
             self.dialog_bgm_select.set_selected_item("null")
         # 更新按钮
-        assert self.__buttons_ui_container is not None
-        if self.does_current_dialog_have_next_dialog() is True:
-            self.__buttons_ui_container.get("add").set_visible(False)
-            self.__buttons_ui_container.get("next").set_visible(True)
+        if self.__buttons_ui_container is not None:
+            if self.does_current_dialog_have_next_dialog() is True:
+                self.__buttons_ui_container.get("add").set_visible(False)
+                self.__buttons_ui_container.get("next").set_visible(True)
+            else:
+                self.__buttons_ui_container.get("add").set_visible(True)
+                self.__buttons_ui_container.get("next").set_visible(False)
         else:
-            self.__buttons_ui_container.get("add").set_visible(True)
-            self.__buttons_ui_container.get("next").set_visible(False)
+            EXCEPTION.fatal("The ui has not been correctly initialized.")
         # 更新dialog navigation窗口
         self.__dialog_navigation_window.readd_all(self.dialog_content)
         self.__dialog_navigation_window.update_selected(self._dialog_id)
@@ -398,7 +400,8 @@ class DialogEditor(DialogConverter):
             self._current_dialog_content["narrator"] = self.__dialog_txt_system.get_narrator()
             self._current_dialog_content["contents"] = self.__dialog_txt_system.get_content()
         # 确保按钮初始化
-        assert self.__buttons_ui_container is not None
+        if self.__buttons_ui_container is None:
+            EXCEPTION.fatal("The ui has not been correctly initialized.")
         # 展示按钮
         self.__buttons_ui_container.draw(surface)
         # 展示出当前可供使用的背景音乐

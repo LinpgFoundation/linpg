@@ -140,8 +140,8 @@ class CharacterImageManager:
         self.__display_character(name2, x, self.__this_round_image_alpha, surface)
 
     # 渐入所有当前的角色
-    def __fade_in_all_characters_this_round(self, surface: ImageSurface) -> None:
-        for i in range(len(self.__current_characters)):
+    def __fade_in_characters_this_round(self, surface: ImageSurface, _start: int = 0) -> None:
+        for i in range(_start, len(self.__current_characters)):
             self.__display_character(
                 self.__current_characters[i],
                 self.__estimate_x(surface.get_width(), len(self.__current_characters), i) + self.__x_offset_for_this_round,
@@ -150,8 +150,8 @@ class CharacterImageManager:
             )
 
     # 淡出所有之前的角色
-    def __fade_out_all_characters_last_round(self, surface: ImageSurface) -> None:
-        for i in range(len(self.__previous_characters)):
+    def __fade_out_characters_last_round(self, surface: ImageSurface, _start: int = 0) -> None:
+        for i in range(_start, len(self.__previous_characters)):
             self.__display_character(
                 self.__previous_characters[i],
                 self.__estimate_x(surface.get_width(), len(self.__previous_characters), i) + self.__x_offset_for_last_round,
@@ -186,20 +186,20 @@ class CharacterImageManager:
                     self.__display_character(self.__previous_characters[i], npcImg_x, self.__last_round_image_alpha, surface)
                     self.__display_character(self.__current_characters[i], npcImg_x, self.__this_round_image_alpha, surface)
         elif len(self.__current_characters) == 0:
-            self.__fade_out_all_characters_last_round(surface)
+            self.__fade_out_characters_last_round(surface)
         elif len(self.__previous_characters) == 0:
-            self.__fade_in_all_characters_this_round(surface)
+            self.__fade_in_characters_this_round(surface)
         elif len(self.__previous_characters) == 1 and len(self.__current_characters) == 2:
             # 如果之前的中间变成了现在的左边，则立绘应该先向左移动
+            original_x: int = surface.get_width() // 4
             if self.__is_the_same_character(self.__previous_characters[0], self.__current_characters[0]):
-                if self.__move_x + surface.get_width() / 4 > 0:
+                if self.__move_x > -original_x:
                     self.__move_x -= surface.get_width() // 40
+                else:
+                    self.__move_x = -original_x
                 # 渐入左边立绘
                 self.__fade_in_and_out_characters(
-                    self.__previous_characters[0],
-                    self.__current_characters[0],
-                    self.__move_x + surface.get_width() // 4,
-                    surface,
+                    self.__previous_characters[0], self.__current_characters[0], self.__move_x + original_x, surface
                 )
                 # 显示右边立绘
                 self.__display_character(
@@ -207,24 +207,23 @@ class CharacterImageManager:
                 )
             # 如果之前的中间变成了现在的右边，则立绘应该先向右移动
             elif self.__is_the_same_character(self.__previous_characters[0], self.__current_characters[1]):
-                if self.__move_x + surface.get_width() / 4 < surface.get_width() / 2:
+                if self.__move_x < original_x:
                     self.__move_x += surface.get_width() // 40
+                else:
+                    self.__move_x = original_x
                 # 显示左边立绘
                 self.__display_character(self.__current_characters[0], 0, self.__this_round_image_alpha, surface)
                 # 渐入右边立绘
                 self.__fade_in_and_out_characters(
-                    self.__previous_characters[0],
-                    self.__current_characters[1],
-                    self.__move_x + surface.get_width() // 4,
-                    surface,
+                    self.__previous_characters[0], self.__current_characters[1], self.__move_x + original_x, surface
                 )
             # 之前的中间和现在两边无任何关系，先隐藏之前的立绘，然后显示现在的立绘
             else:
                 if self.__last_round_image_alpha > 0:
                     self.__this_round_image_alpha -= 25
-                    self.__fade_out_all_characters_last_round(surface)
+                    self.__fade_out_characters_last_round(surface)
                 else:
-                    self.__fade_in_all_characters_this_round(surface)
+                    self.__fade_in_characters_this_round(surface)
         elif len(self.__previous_characters) == 2 and len(self.__current_characters) == 1:
             # 如果之前的左边变成了现在的中间，则立绘应该先向右边移动
             if self.__is_the_same_character(self.__previous_characters[0], self.__current_characters[0]):
@@ -232,10 +231,7 @@ class CharacterImageManager:
                     self.__move_x += surface.get_width() // 40
                 # 左边立绘向右移动
                 self.__fade_in_and_out_characters(
-                    self.__previous_characters[0],
-                    self.__current_characters[0],
-                    self.__move_x,
-                    surface,
+                    self.__previous_characters[0], self.__current_characters[0], self.__move_x, surface
                 )
                 # 右边立绘消失
                 self.__display_character(
@@ -249,23 +245,20 @@ class CharacterImageManager:
                 self.__display_character(self.__previous_characters[0], 0, self.__last_round_image_alpha, surface)
                 # 右边立绘向左移动
                 self.__fade_in_and_out_characters(
-                    self.__previous_characters[1],
-                    self.__current_characters[0],
-                    self.__move_x + surface.get_width() // 2,
-                    surface,
+                    self.__previous_characters[1], self.__current_characters[0], self.__move_x + surface.get_width() // 2, surface
                 )
             else:
                 if self.__last_round_image_alpha > 0:
                     self.__this_round_image_alpha -= 25
-                    self.__fade_out_all_characters_last_round(surface)
+                    self.__fade_out_characters_last_round(surface)
                 else:
-                    self.__fade_in_all_characters_this_round(surface)
+                    self.__fade_in_characters_this_round(surface)
         else:
             if self.__last_round_image_alpha > 0:
                 self.__this_round_image_alpha -= 25
-                self.__fade_out_all_characters_last_round(surface)
+                self.__fade_out_characters_last_round(surface)
             else:
-                self.__fade_in_all_characters_this_round(surface)
+                self.__fade_in_characters_this_round(surface)
 
     # 更新立绘
     def update(self, characterNameList: Optional[Sequence[str]]) -> None:

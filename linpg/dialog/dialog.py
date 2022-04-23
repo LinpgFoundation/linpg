@@ -227,7 +227,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             Display.flip()
 
     # 淡入或淡出
-    def fade(self, surface: ImageSurface, stage: str = "$out") -> None:  # type: ignore[override]
+    def fade(self, surface: ImageSurface, stage: str = "$out") -> None:
         if stage == "$out":
             Media.fade_out(1000)
             for i in range(0, 255, 5):

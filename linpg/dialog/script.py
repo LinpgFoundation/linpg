@@ -1,4 +1,4 @@
-from .character import *
+from .render import *
 
 
 class ScriptConverter:

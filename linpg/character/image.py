@@ -29,11 +29,6 @@ class EntityGetHurtImage(Square):
 # 角色图片管理模块
 class EntitySpriteImageManager:
 
-    # 用于存放角色图片的字典
-    __CHARACTERS_IMAGES: dict = {}
-    # 角色图片文件夹路径
-    SPRITES_PATH: str = str(Specification.get("FolderPath", "Sprite"))
-
     # 管理单个动作所有对应图片的模块
     class __EntityImagesCollection:
         def __init__(
@@ -94,10 +89,15 @@ class EntitySpriteImageManager:
             if draw_outline is True:
                 self.__current_image_pointer.draw_outline(surface)
 
+    # 用于存放角色图片的字典
+    __CHARACTERS_IMAGES: dict[str, dict[str, __EntityImagesCollection]] = {}
+    # 角色图片文件夹路径
+    SPRITES_PATH: str = str(Specification.get("FolderPath", "Sprite"))
+
     # 获取图片
     @classmethod
     def get_images(cls, characterType: str, action: str) -> __EntityImagesCollection:
-        return cls.__CHARACTERS_IMAGES[characterType][action]  # type: ignore
+        return cls.__CHARACTERS_IMAGES[characterType][action]
 
     # 尝试获取图片
     @classmethod

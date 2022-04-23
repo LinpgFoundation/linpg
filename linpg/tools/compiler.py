@@ -2,7 +2,7 @@ import json
 import os
 from glob import glob
 from multiprocessing import Process
-import setuptools  # type: ignore
+import setuptools
 from Cython.Build import cythonize  # type: ignore
 
 

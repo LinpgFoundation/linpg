@@ -15,8 +15,10 @@ class DialogNode(Button):
         return self.__next_keys
 
     # 展示（注意，你无法在此输入off_set，你必须提前设置）
-    def display(self, surface: ImageSurface) -> None:  # type: ignore[override]
-        return super().display(surface)
+    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+        if offSet != ORIGIN:
+            EXCEPTION.fatal("You cannot set off set for DialogNode object!")
+        super().display(surface, offSet)
 
 
 # 对话key向导窗口

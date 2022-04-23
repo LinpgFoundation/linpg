@@ -519,11 +519,11 @@ class DialogEditor(DialogConverter):
                 elif self.__UIContainerRight_npc.is_visible():
                     imgName = self.__UIContainerRight_npc.item_being_hovered
                     if imgName is not None:
-                        if self._current_dialog_content["character_images"] is None:
+                        if self._current_dialog_content.get("character_images") is None:
                             self._current_dialog_content["character_images"] = []
-                        if len(self._current_dialog_content["character_images"]) < 2:  # type: ignore
-                            self._current_dialog_content["character_images"].append(imgName)  # type: ignore
-                            self._npc_manager.update(self._current_dialog_content["character_images"])  # type: ignore
+                        if len(self._current_dialog_content["character_images"]) < 2:
+                            self._current_dialog_content["character_images"].append(imgName)
+                            self._npc_manager.update(self._current_dialog_content["character_images"])
 
         # 展示dialog navigation窗口
         self.__dialog_navigation_window.present_on(surface)

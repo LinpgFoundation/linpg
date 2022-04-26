@@ -111,7 +111,7 @@ class DialogNavigationWindow(AbstractFrame):
 
     def _any_content_container_event(self) -> bool:
         for key in self.__nodes_map:
-            if convert_rect(
+            if Rectangles.create(
                 (
                     Coordinates.subtract(
                         Coordinates.add(self.__nodes_map[key].pos, (self.x, self.content_container_y)), self.local_pos

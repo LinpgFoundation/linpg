@@ -1,43 +1,112 @@
 from .component import *
 
-# 角色立绘系统
-class CharacterImageManager:
+_DARKNESS: int = 50
+
+# 角色立绘名称预处理模块
+class CharacterImageNameMetaData:
 
     # 立绘配置信息数据库
     __CHARACTER_IMAGE_DATABASE: dict = DataBase.get("Npc")
     # 是否立绘配置信息数据库
     __IS_CHARACTER_IMAGE_DATABASE_ENABLED: bool = len(__CHARACTER_IMAGE_DATABASE) > 0
 
+    def __init__(self, _name: str) -> None:
+        _name_data: list[str] = _name.split("&")
+        self.__name: str = _name_data[0]
+        self.__tags: tuple[str, ...] = tuple(_name_data[1:])
+
+    @property
+    def name(self) -> str:
+        return self.__name
+
+    # 根据文件名判断是否是同一角色名下的图片
+    def equal(self, otherNameData: "CharacterImageNameMetaData", must_be_the_same: bool = False) -> bool:
+        if self.__name == otherNameData.name:
+            return True
+        elif self.__IS_CHARACTER_IMAGE_DATABASE_ENABLED and not must_be_the_same:
+            for key in self.__CHARACTER_IMAGE_DATABASE:
+                if self.__name in self.__CHARACTER_IMAGE_DATABASE[key]:
+                    return otherNameData.name in self.__CHARACTER_IMAGE_DATABASE[key]
+                elif otherNameData.name in self.__CHARACTER_IMAGE_DATABASE[key]:
+                    return self.__name in self.__CHARACTER_IMAGE_DATABASE[key]
+        return False
+
+    # 是否有tag
+    def has_tag(self, _tag: str) -> bool:
+        return _tag in self.__tags
+
+    # 移除tag
+    def remove_tag(self, _tag: str) -> None:
+        new_tags: list[str] = []
+        for original_tag in self.__tags:
+            if original_tag != _tag:
+                new_tags.append(original_tag)
+        self.__tags = tuple(new_tags)
+
+    # 增加tag
+    def add_tag(self, _tag: str) -> None:
+        new_tags: list[str] = []
+        for original_tag in self.__tags:
+            if original_tag != _tag:
+                new_tags.append(original_tag)
+        new_tags.append(_tag)
+        self.__tags = tuple(new_tags)
+
+    # 获取tag和名称结合后的数据名称
+    def get_raw_name(self) -> str:
+        raw_name: str = self.__name
+        for tag in self.__tags:
+            raw_name += "&" + tag
+        return raw_name
+
+
+# 角色立绘滤镜
+class FilterEffect:
+    def __init__(self, path: str) -> None:
+        self.__N_IMAGE: StaticImage = StaticImage(path, 0, 0)
+        self.__D_IMAGE: StaticImage = self.__N_IMAGE.copy()
+        self.__D_IMAGE.add_darkness(_DARKNESS)
+
+    # 设置rect
+    def set_rect(self, _x: int, _y: int, _width: int, _height: int) -> None:
+        self.__N_IMAGE.set_pos(_x, _y)
+        self.__N_IMAGE.set_size(_width, _height)
+        self.__D_IMAGE.set_pos(_x, _y)
+        self.__D_IMAGE.set_size(_width, _height)
+
+    # 将滤镜应用到立绘上并渲染到屏幕上
+    def render(self, characterImage: StaticImage, surface: ImageSurface, is_silent: bool) -> None:
+        if not is_silent:
+            characterImage.set_crop_rect(self.__N_IMAGE.get_rectangle())
+            characterImage.draw(surface)
+            self.__N_IMAGE.set_alpha(characterImage.get_alpha())
+            self.__N_IMAGE.display(surface, characterImage.get_pos())
+        else:
+            characterImage.set_crop_rect(self.__D_IMAGE.get_rectangle())
+            characterImage.draw(surface)
+            self.__D_IMAGE.set_alpha(characterImage.get_alpha())
+            self.__D_IMAGE.display(surface, characterImage.get_pos())
+
+
+# 角色立绘系统
+class CharacterImageManager:
+
+    __filters: dict[str, FilterEffect] = {}
+
     def __init__(self) -> None:
         # 用于存放立绘的字典
         self.__character_image: dict = {}
         # 如果是开发模式，则在初始化时加载所有图片
-        self.__previous_characters: tuple = tuple()
+        self.__previous_characters: tuple[CharacterImageNameMetaData, ...] = tuple()
         self.__last_round_image_alpha: int = 255
-        self.__current_characters: tuple = tuple()
-        self.__this_round_image_alpha: int = 0
-        self.__darkness: int = 50
+        self.__current_characters: tuple[CharacterImageNameMetaData, ...] = tuple()
+        self.__this_round_image_alpha: int = 00
         self.__img_width: int = Display.get_width() // 2
-        self.__communication_surface_rect: Rectangle = Rectangle(
-            self.__img_width // 4, 0, self.__img_width // 2, self.__img_width * 56 // 100
-        )
-        self.__communication: Optional[StaticImage] = None
-        self.__communication_dark: Optional[StaticImage] = None
-        try:
-            self.__communication = StaticImage(
-                os.path.join(r"Assets/image/UI/communication.png"),
-                0,
-                0,
-                self.__communication_surface_rect.width,
-                self.__communication_surface_rect.height,
-            )
-            self.__communication_dark = self.__communication.copy()
-            self.__communication_dark.add_darkness(self.__darkness)
-        except Exception:
-            self.__communication = None
-            self.__communication_dark = None
+        if "communicating" not in self.__filters:
+            self.__filters["communicating"] = FilterEffect("Assets/image/UI/communication.png")
+        self.__filters["communicating"].set_rect(self.__img_width // 4, 0, self.__img_width // 2, self.__img_width * 56 // 100)
         # 移动的x
-        self.__move_x: int = 0
+        self.__x_correction_offset_index: int = 0
         # x轴offset
         self.__x_offset_for_this_round: int = 0
         self.__x_offset_for_last_round: int = 0
@@ -62,61 +131,30 @@ class CharacterImageManager:
         self.__character_image[name]["normal"] = StaticImage(path, 0, 0, self.__img_width, self.__img_width)
         # 生成深色图片
         self.__character_image[name]["dark"] = self.__character_image[name]["normal"].copy()
-        self.__character_image[name]["dark"].add_darkness(self.__darkness)
+        self.__character_image[name]["dark"].add_darkness(_DARKNESS)
 
     # 画出角色
-    def __display_character(self, name: str, x: int, alpha: int, surface: ImageSurface) -> None:
+    def __display_character(self, _name_data: CharacterImageNameMetaData, x: int, alpha: int, surface: ImageSurface) -> None:
         if alpha > 0:
-            nameTemp: str = name.replace("<c>", "").replace("<d>", "")
-            self.__ensure_the_existence_of(nameTemp)
+            self.__ensure_the_existence_of(_name_data.name)
             # 加载npc的基础立绘
             img: StaticImage = (
-                self.__character_image[nameTemp]["dark"] if "<d>" in name else self.__character_image[nameTemp]["normal"]
+                self.__character_image[_name_data.name]["dark"]
+                if _name_data.has_tag("silent")
+                else self.__character_image[_name_data.name]["normal"]
             )
             img.set_size(self.__img_width, self.__img_width)
             img.set_alpha(alpha)
             img.set_pos(x, self.__NPC_Y)
-            if "<c>" in name:
-                img.set_crop_rect(self.__communication_surface_rect)
-                img.draw(surface)
-                if "<d>" in name:
-                    if self.__communication_dark is not None:
-                        self.__communication_dark.set_pos(
-                            img.x + self.__communication_surface_rect.x, self.__NPC_Y + self.__communication_surface_rect.y
-                        )
-                        self.__communication_dark.draw(surface)
-                    else:
-                        EXCEPTION.fatal("The communication_dark surface is not initialized!")
-                else:
-                    if self.__communication is not None:
-                        self.__communication.set_pos(
-                            img.x + self.__communication_surface_rect.x, self.__NPC_Y + self.__communication_surface_rect.y
-                        )
-                        self.__communication.draw(surface)
-                    else:
-                        EXCEPTION.fatal("The communication surface is not initialized!")
+            if _name_data.has_tag("communicating"):
+                self.__filters["communicating"].render(img, surface, _name_data.has_tag("silent"))
             else:
                 img.set_crop_rect(None)
                 img.draw(surface)
             # 如果是开发模式
             if self.dev_mode is True and img.is_hovered():
                 img.draw_outline(surface)
-                self.character_get_click = name
-
-    # 根据文件名判断是否是同一角色名下的图片
-    @classmethod
-    def __is_the_same_character(cls, fileName1: str, fileName2: str, must_be_the_same: bool = False) -> bool:
-        if fileName1 == fileName2:
-            return True
-        elif cls.__IS_CHARACTER_IMAGE_DATABASE_ENABLED and not must_be_the_same:
-            fileName1 = fileName1.replace("<c>", "").replace("<d>", "")
-            fileName2 = fileName2.replace("<c>", "").replace("<d>", "")
-            for key in cls.__CHARACTER_IMAGE_DATABASE:
-                if fileName1 in cls.__CHARACTER_IMAGE_DATABASE[key]:
-                    return fileName2 in cls.__CHARACTER_IMAGE_DATABASE[key]
-                elif fileName2 in cls.__CHARACTER_IMAGE_DATABASE[key]:
-                    return fileName1 in cls.__CHARACTER_IMAGE_DATABASE[key]
-        return False
+                self.character_get_click = _name_data.get_raw_name()
 
     # 根据参数计算立绘的x坐标
     @staticmethod
@@ -135,7 +173,9 @@ class CharacterImageManager:
             return 0
 
     # 渐入name1角色的同时淡出name2角色
-    def __fade_in_and_out_characters(self, name1: str, name2: str, x: int, surface: ImageSurface) -> None:
+    def __fade_in_and_out_characters(
+        self, name1: CharacterImageNameMetaData, name2: CharacterImageNameMetaData, x: int, surface: ImageSurface
+    ) -> None:
         self.__display_character(name1, x, self.__last_round_image_alpha, surface)
         self.__display_character(name2, x, self.__this_round_image_alpha, surface)
 
@@ -159,20 +199,23 @@ class CharacterImageManager:
                 surface,
             )
 
+    # 将立绘画到屏幕上
     def draw(self, surface: ImageSurface) -> None:
         # 更新alpha值，并根据alpha值计算offset
-        self.__x_offset_for_last_round = 0
         if self.__last_round_image_alpha > 0:
             self.__last_round_image_alpha -= 15
             self.__x_offset_for_last_round = int(
                 self.__img_width / 4 - self.__img_width / 4 * self.__last_round_image_alpha / 255
             )
-        self.__x_offset_for_this_round = 0
+        else:
+            self.__x_offset_for_last_round = 0
         if self.__this_round_image_alpha < 255:
             self.__this_round_image_alpha += 25
             self.__x_offset_for_this_round = int(
                 self.__img_width / 4 * self.__this_round_image_alpha / 255 - self.__img_width / 4
             )
+        else:
+            self.__x_offset_for_this_round = 0
         # 初始化被选择的角色名字
         self.character_get_click = None
         # 画上上一幕的立绘
@@ -180,7 +223,7 @@ class CharacterImageManager:
             for i in range(len(self.__previous_characters)):
                 npcImg_x: int = self.__estimate_x(surface.get_width(), len(self.__previous_characters), i)
                 # 渲染立绘
-                if self.__is_the_same_character(self.__previous_characters[i], self.__current_characters[i], True):
+                if self.__previous_characters[i].equal(self.__current_characters[i], True):
                     self.__display_character(self.__current_characters[i], npcImg_x, 255, surface)
                 else:
                     self.__display_character(self.__previous_characters[i], npcImg_x, self.__last_round_image_alpha, surface)
@@ -189,72 +232,95 @@ class CharacterImageManager:
             self.__fade_out_characters_last_round(surface)
         elif len(self.__previous_characters) == 0:
             self.__fade_in_characters_this_round(surface)
-        elif len(self.__previous_characters) == 1 and len(self.__current_characters) == 2:
-            # 如果之前的中间变成了现在的左边，则立绘应该先向左移动
-            original_x: int = surface.get_width() // 4
-            if self.__is_the_same_character(self.__previous_characters[0], self.__current_characters[0]):
-                if self.__move_x > -original_x:
-                    self.__move_x -= surface.get_width() // 40
-                else:
-                    self.__move_x = -original_x
-                # 渐入左边立绘
-                self.__fade_in_and_out_characters(
-                    self.__previous_characters[0], self.__current_characters[0], self.__move_x + original_x, surface
-                )
-                # 显示右边立绘
-                self.__display_character(
-                    self.__current_characters[1], surface.get_width() // 2, self.__this_round_image_alpha, surface
-                )
-            # 如果之前的中间变成了现在的右边，则立绘应该先向右移动
-            elif self.__is_the_same_character(self.__previous_characters[0], self.__current_characters[1]):
-                if self.__move_x < original_x:
-                    self.__move_x += surface.get_width() // 40
-                else:
-                    self.__move_x = original_x
-                # 显示左边立绘
-                self.__display_character(self.__current_characters[0], 0, self.__this_round_image_alpha, surface)
-                # 渐入右边立绘
-                self.__fade_in_and_out_characters(
-                    self.__previous_characters[0], self.__current_characters[1], self.__move_x + original_x, surface
-                )
-            # 之前的中间和现在两边无任何关系，先隐藏之前的立绘，然后显示现在的立绘
-            else:
-                if self.__last_round_image_alpha > 0:
-                    self.__this_round_image_alpha -= 25
-                    self.__fade_out_characters_last_round(surface)
-                else:
-                    self.__fade_in_characters_this_round(surface)
-        elif len(self.__previous_characters) == 2 and len(self.__current_characters) == 1:
-            # 如果之前的左边变成了现在的中间，则立绘应该先向右边移动
-            if self.__is_the_same_character(self.__previous_characters[0], self.__current_characters[0]):
-                if self.__move_x < surface.get_width() / 4:
-                    self.__move_x += surface.get_width() // 40
-                # 左边立绘向右移动
-                self.__fade_in_and_out_characters(
-                    self.__previous_characters[0], self.__current_characters[0], self.__move_x, surface
-                )
-                # 右边立绘消失
-                self.__display_character(
-                    self.__previous_characters[1], surface.get_width() // 2, self.__last_round_image_alpha, surface
-                )
-            # 如果之前的右边变成了现在的中间，则立绘应该先向左边移动
-            elif self.__is_the_same_character(self.__previous_characters[1], self.__current_characters[0]):
-                if self.__move_x + surface.get_width() / 2 > surface.get_width() / 4:
-                    self.__move_x -= surface.get_width() // 40
-                # 左边立绘消失
-                self.__display_character(self.__previous_characters[0], 0, self.__last_round_image_alpha, surface)
-                # 右边立绘向左移动
-                self.__fade_in_and_out_characters(
-                    self.__previous_characters[1], self.__current_characters[0], self.__move_x + surface.get_width() // 2, surface
-                )
-            else:
-                if self.__last_round_image_alpha > 0:
-                    self.__this_round_image_alpha -= 25
-                    self.__fade_out_characters_last_round(surface)
-                else:
-                    self.__fade_in_characters_this_round(surface)
         else:
-            if self.__last_round_image_alpha > 0:
+            # 初始化previous_x坐标
+            previous_x: int = 0
+            if len(self.__previous_characters) == 1 and len(self.__current_characters) == 2:
+                previous_x = self.__estimate_x(surface.get_width(), len(self.__previous_characters), 0)
+                # 如果之前的中间变成了现在的左边，则立绘应该先向左移动
+                if self.__previous_characters[0].equal(self.__current_characters[0]):
+                    if self.__x_correction_offset_index < 100:
+                        self.__x_correction_offset_index += 10
+                    # 渐入左边立绘
+                    self.__fade_in_and_out_characters(
+                        self.__previous_characters[0],
+                        self.__current_characters[0],
+                        self.__x_correction_offset_index
+                        * (self.__estimate_x(surface.get_width(), len(self.__current_characters), 0) - previous_x)
+                        // 100
+                        + previous_x,
+                        surface,
+                    )
+                    # 显示右边立绘
+                    self.__display_character(
+                        self.__current_characters[1], surface.get_width() // 2, self.__this_round_image_alpha, surface
+                    )
+                # 如果之前的中间变成了现在的右边，则立绘应该先向右移动
+                elif self.__previous_characters[0].equal(self.__current_characters[1]):
+                    if self.__x_correction_offset_index < 100:
+                        self.__x_correction_offset_index += 10
+                    # 显示左边立绘
+                    self.__display_character(self.__current_characters[0], 0, self.__this_round_image_alpha, surface)
+                    # 渐入右边立绘
+                    self.__fade_in_and_out_characters(
+                        self.__previous_characters[0],
+                        self.__current_characters[1],
+                        self.__x_correction_offset_index
+                        * (self.__estimate_x(surface.get_width(), len(self.__current_characters), 1) - previous_x)
+                        // 100
+                        + previous_x,
+                        surface,
+                    )
+                # 之前的中间和现在两边无任何关系，先隐藏之前的立绘，然后显示现在的立绘
+                elif self.__last_round_image_alpha > 0:
+                    self.__this_round_image_alpha -= 25
+                    self.__fade_out_characters_last_round(surface)
+                else:
+                    self.__fade_in_characters_this_round(surface)
+            elif len(self.__previous_characters) == 2 and len(self.__current_characters) == 1:
+                current_x: int = self.__estimate_x(surface.get_width(), len(self.__current_characters), 0)
+                # 如果之前的左边变成了现在的中间，则立绘应该先向右边移动
+                if self.__previous_characters[0].equal(self.__current_characters[0]):
+                    if self.__x_correction_offset_index < 100:
+                        self.__x_correction_offset_index += 10
+                        previous_x = self.__estimate_x(surface.get_width(), len(self.__previous_characters), 0)
+                        # 左边立绘向右移动
+                        self.__fade_in_and_out_characters(
+                            self.__previous_characters[0],
+                            self.__current_characters[0],
+                            self.__x_correction_offset_index * (current_x - previous_x) // 100 + previous_x,
+                            surface,
+                        )
+                    else:
+                        # 显示左方立绘
+                        self.__display_character(self.__current_characters[0], current_x, self.__this_round_image_alpha, surface)
+                    # 右边立绘消失
+                    self.__display_character(
+                        self.__previous_characters[1], surface.get_width() // 2, self.__last_round_image_alpha, surface
+                    )
+                # 如果之前的右边变成了现在的中间，则立绘应该先向左边移动
+                elif self.__previous_characters[1].equal(self.__current_characters[0]):
+                    if self.__x_correction_offset_index < 100:
+                        self.__x_correction_offset_index += 10
+                        previous_x = self.__estimate_x(surface.get_width(), len(self.__previous_characters), 1)
+                        # 右边立绘向左移动
+                        self.__fade_in_and_out_characters(
+                            self.__previous_characters[1],
+                            self.__current_characters[0],
+                            self.__x_correction_offset_index * (current_x - previous_x) // 100 + previous_x,
+                            surface,
+                        )
+                    else:
+                        # 显示右方立绘
+                        self.__display_character(self.__current_characters[0], current_x, self.__this_round_image_alpha, surface)
+                    # 左边立绘消失
+                    self.__display_character(self.__previous_characters[0], 0, self.__last_round_image_alpha, surface)
+                elif self.__last_round_image_alpha > 0:
+                    self.__this_round_image_alpha -= 25
+                    self.__fade_out_characters_last_round(surface)
+                else:
+                    self.__fade_in_characters_this_round(surface)
+            elif self.__last_round_image_alpha > 0:
                 self.__this_round_image_alpha -= 25
                 self.__fade_out_characters_last_round(surface)
             else:
@@ -263,7 +329,11 @@ class CharacterImageManager:
     # 更新立绘
     def update(self, characterNameList: Optional[Sequence[str]]) -> None:
         self.__previous_characters = self.__current_characters
-        self.__current_characters = tuple(characterNameList) if characterNameList is not None else tuple()
+        self.__current_characters = (
+            tuple([CharacterImageNameMetaData(_name) for _name in characterNameList])
+            if characterNameList is not None
+            else tuple()
+        )
         self.__last_round_image_alpha = 255
         self.__this_round_image_alpha = 5
-        self.__move_x = 0
+        self.__x_correction_offset_index = 0

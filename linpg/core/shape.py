@@ -90,11 +90,6 @@ class Rectangle(Square):
         self.__min_height: int = 0
         self.__max_height: int = -1
 
-    # 新建一个形状类
-    @staticmethod
-    def new(pos: tuple, size: tuple) -> "Rectangle":
-        return Rectangle(pos[0], pos[1], size[0], size[1])
-
     # 高度
     def get_height(self) -> int:
         return self.__height

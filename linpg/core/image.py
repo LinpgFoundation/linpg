@@ -68,12 +68,9 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         self.__no_croping_needed = True
 
     def set_crop_rect(self, rect: Optional[Rectangle]) -> None:
-        if rect is None or isinstance(rect, Rectangle):
-            if self.__crop_rect != rect:
-                self.__crop_rect = rect
-                self._need_update = True
-        else:
-            EXCEPTION.fatal("You have to input either a None or a Rectangle, not {}".format(type(rect)))
+        if not Rectangles.equal(self.__crop_rect, rect):
+            self.__crop_rect = rect
+            self._need_update = True
 
     # 反转原图，并打上已反转的标记
     def flip(self, horizontal: bool = True, vertical: bool = False) -> None:
@@ -119,7 +116,7 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
             imgTmp = RawImg.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)
         if not self.__no_croping_needed:
             # 获取切割rect
-            rect: Rectangle = convert_rect(imgTmp.get_bounding_rect())
+            rect: Rectangle = Rectangles.create(imgTmp.get_bounding_rect())
             if self.width != rect.width or self.height != rect.height or self.__crop_rect is not None:
                 if self.__crop_rect is not None:
                     new_x: int = max(rect.x, self.__crop_rect.x)

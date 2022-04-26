@@ -109,7 +109,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
                     and Controller.mouse.get_pressed(0)
                     and not self._any_content_container_event()
                 ):
-                    if Rectangle.new((self.x, self.y), (self.get_width(), self.__bar_height)).is_hovered():
+                    if Rectangle(self.x, self.y, self.get_width(), self.__bar_height).is_hovered():
                         self.__mouse_hovered_offset_pos = Coordinates.subtract(Controller.mouse.get_pos(), self.pos)
                     elif self.is_hovered():
                         self.__if_move_local_pos = True

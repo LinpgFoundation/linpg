@@ -58,7 +58,7 @@ class SingleLineInputBox(AbstractInputBox):
             self._text = self._text[: self._holder_index] + char + self._text[self._holder_index :]
             self._holder_index += len(char)
             self._reset_inputbox_width()
-        else:
+        elif Debug.get_developer_mode():
             EXCEPTION.inform("The value of event.unicode is empty!")
 
     def _remove_char(self, action: str) -> None:

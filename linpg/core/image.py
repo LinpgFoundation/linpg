@@ -39,7 +39,7 @@ class DynamicImage(AbstractImageSurface):
     # 展示
     def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         if self.is_visible():
-            if not Setting.low_memory_mode:
+            if not Setting.get_low_memory_mode():
                 if self.__processed_img is None or self.__processed_img.get_size() != self.size:
                     self.__processed_img = RawImg.smoothly_resize(self.img, self.size)
                 surface.blit(self.__processed_img, Coordinates.add(self.pos, offSet))
@@ -110,7 +110,7 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
     # 更新图片
     def _update_img(self) -> None:
         # 改变尺寸
-        imgTmp = RawImg.smoothly_resize(self.img, self.size) if Setting.antialias is True else RawImg.resize(self.img, self.size)
+        imgTmp = RawImg.smoothly_resize(self.img, self.size) if Setting.get_antialias() else RawImg.resize(self.img, self.size)
         # 翻转图片
         if self.__is_flipped_horizontally is True or self.__is_flipped_vertically is True:
             imgTmp = RawImg.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)

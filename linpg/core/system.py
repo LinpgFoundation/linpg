@@ -18,7 +18,7 @@ class SaveDataThread(threading.Thread):
             Config.save(self.path, self.data)
             self.result = True
         except Exception:
-            if Setting.developer_mode is True:
+            if Debug.get_developer_mode() is True:
                 EXCEPTION.fatal("Cannot save data to path: {}".format(self.path))
             else:
                 pass

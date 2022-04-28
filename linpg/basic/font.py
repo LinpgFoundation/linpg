@@ -38,17 +38,19 @@ class FontGenerator:
             EXCEPTION.fatal("Font size must be greater than 0!")
         self.__SIZE = int(size)
         # 根据类型处理
-        if Setting.font_type == "default":
-            self.__FONT = pygame.font.SysFont(Setting.font, self.__SIZE, ifBold, ifItalic)
-        elif Setting.font_type == "custom":
-            font_path: str = os.path.join("Assets", "font", "{}.ttf".format(Setting.font))
+        if Setting.get_font_type() == "default":
+            self.__FONT = pygame.font.SysFont(Setting.get_font(), self.__SIZE, ifBold, ifItalic)
+        elif Setting.get_font_type() == "custom":
+            font_path: str = os.path.join("Assets", "font", "{}.ttf".format(Setting.get_font()))
             if os.path.exists(font_path):
                 self.__FONT = pygame.font.Font(font_path, self.__SIZE)
             else:
-                EXCEPTION.warn("Cannot find the {}.ttf file, the engine's font has been changed to default.".format(Setting.font))
+                EXCEPTION.warn(
+                    "Cannot find the {}.ttf file, the engine's font has been changed to default.".format(Setting.get_font())
+                )
                 Setting.set_font("arial")
                 Setting.set_font_type("default")
-                self.__FONT = pygame.font.SysFont(Setting.font, self.__SIZE, ifBold, ifItalic)
+                self.__FONT = pygame.font.SysFont(Setting.get_font(), self.__SIZE, ifBold, ifItalic)
             # 加粗
             if ifBold is True:
                 self.__FONT.set_bold(ifBold)
@@ -86,9 +88,9 @@ class FontGenerator:
                 EXCEPTION.fatal("The text must be a unicode or bytes, not {}".format(txt))
             if self.__FONT is not None:
                 font_surface_t: ImageSurface = (
-                    self.__FONT.render(str(txt), Setting.antialias, Colors.get(color))
+                    self.__FONT.render(str(txt), Setting.get_antialias(), Colors.get(color))
                     if background_color is None
-                    else self.__FONT.render(str(txt), Setting.antialias, Colors.get(color), Colors.get(background_color))
+                    else self.__FONT.render(str(txt), Setting.get_antialias(), Colors.get(color), Colors.get(background_color))
                 )
                 return font_surface_t.subsurface(font_surface_t.get_bounding_rect()) if not with_bounding else font_surface_t
             else:

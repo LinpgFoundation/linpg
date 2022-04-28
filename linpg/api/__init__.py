@@ -19,3 +19,4 @@ font = Font
 position = Positions
 coordinates = Coordinates
 surface = Surface
+debug = Debug

@@ -1,33 +1,32 @@
 from .base import *
 
-
-class SettingSystem:
+# 设置参数管理系统
+class Setting:
 
     # 储存设置配置文件的数据
     __SETTING_DATA: dict = {}
     # 当前配置文件保存路径的参数
     __SETTING_FOLDER_PATH: str = "Save"
-    __SETTING_FILE_NAME: str = "setting.{}".format(Config.get_file_type())
-
-    # 初始化
-    def __init__(self) -> None:
-        self.reload()
+    __SETTING_FILE_NAME: str = "setting." + Config.get_file_type()
 
     # 获取配置文件保存的路径
-    def get_config_path(self) -> str:
-        return os.path.join(self.__SETTING_FOLDER_PATH, self.__SETTING_FILE_NAME)
+    @classmethod
+    def get_config_path(cls) -> str:
+        return os.path.join(cls.__SETTING_FOLDER_PATH, cls.__SETTING_FILE_NAME)
 
     # 设置配置文件保存的路径
-    def set_config_path(self, path: str) -> None:
-        self.__SETTING_FOLDER_PATH, self.__SETTING_FILE_NAME = os.path.split(path)
+    @classmethod
+    def set_config_path(cls, path: str) -> None:
+        cls.__SETTING_FOLDER_PATH, cls.__SETTING_FILE_NAME = os.path.split(path)
 
     # 重新加载设置数据
-    def reload(self) -> None:
+    @classmethod
+    def reload(cls) -> None:
         # 加载内部默认的设置配置文件
-        self.__SETTING_DATA = Template.get("setting")
+        cls.__SETTING_DATA = Template.get("setting")
         # 如果自定义的设置配置文件存在，则加载
-        if os.path.exists(self.get_config_path()):
-            self.__SETTING_DATA.update(Config.load_file(self.get_config_path()))
+        if os.path.exists(cls.get_config_path()):
+            cls.__SETTING_DATA.update(Config.load_file(cls.get_config_path()))
         # 如果不存在自定义的设置配置文件，则应该创建一个
         else:
             # 导入local,查看默认语言
@@ -35,69 +34,68 @@ class SettingSystem:
 
             # 如果是中文
             if locale.getdefaultlocale()[0] == "zh_CN":
-                self.__SETTING_DATA["Language"] = "SimplifiedChinese"
+                cls.__SETTING_DATA["Language"] = "SimplifiedChinese"
             elif locale.getdefaultlocale()[0] == "zh_TW":
-                self.__SETTING_DATA["Language"] = "TraditionalChinese"
+                cls.__SETTING_DATA["Language"] = "TraditionalChinese"
             # 保存设置
-            self.save()
+            cls.save()
 
     # 保存设置数据
-    def save(self) -> None:
-        Config.save(self.get_config_path(), self.__SETTING_DATA)
+    @classmethod
+    def save(cls) -> None:
+        Config.save(cls.get_config_path(), cls.__SETTING_DATA)
 
     # 获取设置数据
-    def get(self, *key: str) -> Any:
-        return get_value_by_keys(self.__SETTING_DATA, key)
+    @classmethod
+    def get(cls, *key: str) -> Any:
+        return get_value_by_keys(cls.__SETTING_DATA, key)
 
     # 在不确定的情况下尝试获取设置数据
-    def try_get(self, *key: str) -> Any:
-        return get_value_by_keys(self.__SETTING_DATA, key, False)
+    @classmethod
+    def try_get(cls, *key: str) -> Any:
+        return get_value_by_keys(cls.__SETTING_DATA, key, False)
 
     # 修改设置数据
-    def set(self, *key: str, value: object) -> None:
-        set_value_by_keys(self.__SETTING_DATA, key, value)
+    @classmethod
+    def set(cls, *key: str, value: object) -> None:
+        set_value_by_keys(cls.__SETTING_DATA, key, value)
 
     """其他常用的重要参数"""
     # 文字名称
-    @property
-    def font(self) -> str:
-        return str(self.__SETTING_DATA["Font"])
+    @classmethod
+    def get_font(cls) -> str:
+        return str(cls.__SETTING_DATA["Font"])
 
     # 设置文字名称
-    def set_font(self, font_name: str) -> None:
-        self.__SETTING_DATA["Font"] = font_name
+    @classmethod
+    def set_font(cls, font_name: str) -> None:
+        cls.__SETTING_DATA["Font"] = font_name
 
     # 文字类型
-    @property
-    def font_type(self) -> str:
-        return str(self.__SETTING_DATA["FontType"])
+    @classmethod
+    def get_font_type(cls) -> str:
+        return str(cls.__SETTING_DATA["FontType"])
 
     # 设置文字类型
-    def set_font_type(self, font_type: str) -> None:
-        self.__SETTING_DATA["FontType"] = font_type
+    @classmethod
+    def set_font_type(cls, font_type: str) -> None:
+        cls.__SETTING_DATA["FontType"] = font_type
 
     # 抗锯齿参数
-    @property
-    def antialias(self) -> bool:
-        return bool(self.__SETTING_DATA["Antialias"])
+    @classmethod
+    def get_antialias(cls) -> bool:
+        return bool(cls.__SETTING_DATA["Antialias"])
 
     # 语言
-    @property
-    def language(self) -> str:
-        return str(self.__SETTING_DATA["Language"])
-
-    # 是否处于开发者模式
-    @property
-    def developer_mode(self) -> bool:
-        return bool(self.__SETTING_DATA["DeveloperMode"])
-
-    def set_developer_mode(self, value: bool) -> None:
-        self.__SETTING_DATA["Cheat"] = bool(value)
+    @classmethod
+    def get_language(cls) -> str:
+        return str(cls.__SETTING_DATA["Language"])
 
     # 低内存模式
-    @property
-    def low_memory_mode(self) -> bool:
-        return bool(self.__SETTING_DATA["LowMemoryMode"])
+    @classmethod
+    def get_low_memory_mode(cls) -> bool:
+        return bool(cls.__SETTING_DATA["LowMemoryMode"])
 
 
-Setting: SettingSystem = SettingSystem()
+# 初始化
+Setting.reload()

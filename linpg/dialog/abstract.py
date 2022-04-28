@@ -50,7 +50,7 @@ class AbstractDialogSystem(AbstractGameSystem):
     # 获取对话文件所在的具体路径
     def get_dialog_file_location(self, lang: str = "") -> str:
         if len(lang) == 0:
-            lang = Setting.language
+            lang = Setting.get_language()
         return os.path.join(
             self.get_dialog_folder_location(), "chapter{0}_dialogs_{1}.{2}".format(self._chapter_id, lang, Config.get_file_type())
         )
@@ -143,7 +143,7 @@ class AbstractDialogSystem(AbstractGameSystem):
             # 获取目标对话数据
             dialogData_t: dict = dict(Config.load(self.get_dialog_file_location(), "dialogs", self._part))
             # 如果该dialog文件是另一个语言dialog文件的子类
-            if (default_lang_of_dialog := self.get_default_lang()) != Setting.language:
+            if (default_lang_of_dialog := self.get_default_lang()) != Setting.get_language():
                 self._dialog_data[self._part] = dict(
                     Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._part)
                 )

@@ -87,16 +87,16 @@ class Console(SingleLineInputBox, HiddenableSurface):
             if len(conditions) < 2:
                 self._txt_output.append("Unknown status for dev command.")
             elif conditions[1] == "on":
-                if Setting.developer_mode is True:
+                if Debug.get_developer_mode() is True:
                     self._txt_output.append("Developer mode has been activated!")
                 else:
-                    Setting.set_developer_mode(True)
+                    Debug.set_developer_mode(True)
                     self._txt_output.append("Developer mode is activated.")
             elif conditions[1] == "off":
-                if not Setting.developer_mode:
+                if not Debug.get_developer_mode():
                     self._txt_output.append("Developer mode has been deactivated!")
                 else:
-                    Setting.set_developer_mode(False)
+                    Debug.set_developer_mode(False)
                     self._txt_output.append("Developer mode is deactivated.")
             else:
                 self._txt_output.append("Unknown status for dev command.")

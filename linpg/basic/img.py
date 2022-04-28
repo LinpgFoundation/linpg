@@ -101,7 +101,7 @@ class RawImg:
                     try:
                         return pygame.image.load(path_t).convert_alpha()
                     except Exception:
-                        if Setting.developer_mode is True:
+                        if Debug.get_developer_mode() is True:
                             EXCEPTION.fatal("Cannot load image from path: {}".format(path_t))
                         else:
                             return Surface.texture_is_missing((192, 108))
@@ -109,7 +109,7 @@ class RawImg:
                     try:
                         return pygame.image.load(path_t).convert()
                     except Exception:
-                        if Setting.developer_mode is True:
+                        if Debug.get_developer_mode() is True:
                             EXCEPTION.fatal("Cannot load image from path: {}".format(path_t))
                         else:
                             return Surface.texture_is_missing((192, 108))
@@ -127,7 +127,7 @@ class RawImg:
         if alpha < 255:
             img.set_alpha(alpha)
         # 如果没有给size,则直接返回Surface
-        return img if len(size) == 0 else cls.smoothly_resize(img, size) if Setting.antialias is True else cls.resize(img, size)
+        return img if len(size) == 0 else cls.smoothly_resize(img, size) if Setting.get_antialias() else cls.resize(img, size)
 
     # 动态图片加载模块
     @staticmethod

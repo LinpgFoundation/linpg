@@ -424,14 +424,14 @@ class CharacterDataLoader(threading.Thread):
             data_t.update(value)
             self.alliances[key] = FriendlyCharacter(data_t, self.mode)
             self.currentID += 1
-            if Setting.developer_mode:
+            if Debug.get_developer_mode():
                 print("total: {0}, current: {1}".format(self.totalNum, self.currentID))
         for key, value in self.enemies.items():
             data_t = deepcopy(CHARACTER_DATABASE[value["type"]])
             data_t.update(value)
             self.enemies[key] = HostileCharacter(data_t, self.mode)
             self.currentID += 1
-            if Setting.developer_mode:
+            if Debug.get_developer_mode():
                 print("total: {0}, current: {1}".format(self.totalNum, self.currentID))
 
     def getResult(self) -> tuple[dict, dict]:

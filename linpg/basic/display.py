@@ -35,7 +35,7 @@ class Display:
         Controller.finish_up()
         # 展示帧率信息
         if Debug.get_show_fps():
-            _text: ImageSurface = cls.__FONT.render(str(round(cls.__CLOCK.get_fps())), Setting.antialias, Colors.WHITE)
+            _text: ImageSurface = cls.__FONT.render(str(round(cls.__CLOCK.get_fps())), Setting.get_antialias(), Colors.WHITE)
             cls.__SCREEN_WINDOW.blit(
                 _text, (cls.__STANDARD_WIDTH - cls.__FONT.get_height() - _text.get_width(), cls.__FONT.get_height())
             )

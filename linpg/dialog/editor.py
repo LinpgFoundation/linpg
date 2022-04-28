@@ -184,7 +184,7 @@ class DialogEditor(DialogConverter):
         else:
             self._dialog_data.clear()
         # 如果不是默认主语言
-        if (default_lang_of_dialog := self.get_default_lang()) != Setting.language:
+        if (default_lang_of_dialog := self.get_default_lang()) != Setting.get_language():
             self._is_default_dialog = False
             # 读取原始数据
             self._dialog_data_default = dict(Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs"))

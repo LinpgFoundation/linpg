@@ -46,7 +46,7 @@ class GlobalValue:
 class DataBase:
 
     # 用于存放数据库数据的字典
-    __DATA_BASE_DICT: dict = {"Blocks": {}, "Decorations": {}, "Npc": {}}
+    __DATA_BASE_DICT: dict = {"Blocks": {}, "Decorations": {}, "Npc": {}, "Filters": {}}
 
     @classmethod
     def get(cls, *key: str) -> Any:

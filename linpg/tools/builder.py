@@ -115,8 +115,10 @@ class BuilderManager(AbstractToolSystem):
             self._run_raw_cmd(["python", "-m", "build", "--no-isolation"])
             # 升级twine
             self._run_raw_cmd(["python", "-m", "pip", "install", "--upgrade", "twine"])
-            # 用twine上传文件
-            self._run_raw_cmd(["twine", "upload", "dist/*"])
+            # 要求用户确认dist文件夹中的打包好的文件之后在继续
+            if input('Please confirm the files in "dist" folder and enter Y to continue:') == "Y":
+                # 用twine上传文件
+                self._run_raw_cmd(["twine", "upload", "dist/*"])
             # 删除缓存
             self.__clean_up()
         else:

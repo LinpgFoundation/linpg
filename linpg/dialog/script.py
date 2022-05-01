@@ -103,13 +103,20 @@ class ScriptConverter:
             ):
                 # 角色进场
                 if self.__lines[index].startswith("[cin]"):
-                    self.__current_data["character_images"].append(self.__extract_string(self.__lines[index], "[cin]"))
+                    for _name in self.__extract_string(self.__lines[index], "[cin]").split("&"):
+                        self.__current_data["character_images"].append(_name)
                 # 角色退场
                 elif self.__lines[index].startswith("[cout]"):
-                    self.__current_data["character_images"].remove(self.__extract_string(self.__lines[index], "[cout]"))
+                    for _name in self.__extract_string(self.__lines[index], "[cout]").split("&"):
+                        self.__current_data["character_images"].remove(_name)
                 # 清空角色列表
                 elif self.__lines[index].startswith("[cempty]"):
                     self.__current_data["character_images"].clear()
+                # 清空角色列表
+                elif self.__lines[index].startswith("[crein]"):
+                    self.__current_data["character_images"].clear()
+                    for _name in self.__extract_string(self.__lines[index], "[crein]").split("&"):
+                        self.__current_data["character_images"].append(_name)
                 # 章节id
                 elif self.__lines[index].startswith("[id]"):
                     _id: Optional[str] = self.__extract_parameter(self.__lines[index], "[id]")

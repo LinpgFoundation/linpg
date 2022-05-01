@@ -26,82 +26,83 @@ class EntityGetHurtImage(Square):
             )
 
 
+# 管理单个动作所有对应图片的模块
+class _EntityImagesCollection:
+    def __init__(
+        self, imagesList: tuple[StaticImage, ...], crop_size: list[int], offset: list[int], original_img_size: list[int]
+    ) -> None:
+        self.__images: tuple[StaticImage, ...] = imagesList
+        self.__current_image_pointer: StaticImage = self.__images[0]
+        self.__width: number = 0
+        self.__height: number = 0
+        self.__cropped_image_width: int = crop_size[0]
+        self.__cropped_image_height: int = crop_size[1]
+        self.__left_offset_x: int = offset[0]
+        self.__offset_y: int = offset[1]
+        self.__real_width: int = original_img_size[0]
+        self.__real_height: int = original_img_size[1]
+        self.__right_offset_x: int = self.__real_width - self.__cropped_image_width - self.__left_offset_x
+
+    def __len__(self) -> int:
+        return len(self.__images)
+
+    # 获取指定index的图片
+    def get_image(self, index: int) -> StaticImage:
+        return self.__images[index]
+
+    # 设置尺寸
+    def set_size(self, width: number, height: number) -> None:
+        self.__width = width * self.__cropped_image_width / self.__real_width
+        self.__height = height * self.__cropped_image_height / self.__real_height
+
+    # 设置要播放图片的index
+    def set_index(self, index: int) -> None:
+        self.__current_image_pointer = self.__images[index]
+
+    # 反转所有列表内的图片
+    def flip_all(self) -> None:
+        for _image in self.__images:
+            _image.flip_original_img()
+        temp: int = self.__right_offset_x
+        self.__right_offset_x = self.__left_offset_x
+        self.__left_offset_x = temp
+
+    # 获取当前图片的rect
+    def get_rectangle(self) -> Rectangle:
+        return self.__current_image_pointer.get_rectangle()
+
+    # 展示
+    def draw_onto(self, surface: ImageSurface, alpha: int, ifFlip: bool, pos: tuple, draw_outline: bool) -> None:
+        self.__current_image_pointer.set_size(self.__width, self.__height)
+        self.__current_image_pointer.set_alpha(alpha)  # 翻转图片
+        self.__current_image_pointer.set_top(self.__offset_y * self.__height / self.__cropped_image_height + pos[1])
+        if ifFlip:
+            self.__current_image_pointer.flip_if_not()
+            self.__current_image_pointer.set_left(self.__right_offset_x * self.__width / self.__cropped_image_width + pos[0])
+        else:
+            self.__current_image_pointer.flip_back_to_normal()
+            self.__current_image_pointer.set_left(self.__left_offset_x * self.__width / self.__cropped_image_width + pos[0])
+        self.__current_image_pointer.draw(surface)
+        if draw_outline is True:
+            self.__current_image_pointer.draw_outline(surface)
+
+
 # 角色图片管理模块
 class EntitySpriteImageManager:
 
-    # 管理单个动作所有对应图片的模块
-    class __EntityImagesCollection:
-        def __init__(
-            self, imagesList: tuple[StaticImage, ...], crop_size: list[int], offset: list[int], original_img_size: list[int]
-        ) -> None:
-            self.__images: tuple[StaticImage, ...] = imagesList
-            self.__current_image_pointer: StaticImage = self.__images[0]
-            self.__width: number = 0
-            self.__height: number = 0
-            self.__cropped_image_width: int = crop_size[0]
-            self.__cropped_image_height: int = crop_size[1]
-            self.__left_offset_x: int = offset[0]
-            self.__offset_y: int = offset[1]
-            self.__real_width: int = original_img_size[0]
-            self.__real_height: int = original_img_size[1]
-            self.__right_offset_x: int = self.__real_width - self.__cropped_image_width - self.__left_offset_x
-
-        def __len__(self) -> int:
-            return len(self.__images)
-
-        # 获取指定index的图片
-        def get_image(self, index: int) -> StaticImage:
-            return self.__images[index]
-
-        # 设置尺寸
-        def set_size(self, width: number, height: number) -> None:
-            self.__width = width * self.__cropped_image_width / self.__real_width
-            self.__height = height * self.__cropped_image_height / self.__real_height
-
-        # 设置要播放图片的index
-        def set_index(self, index: int) -> None:
-            self.__current_image_pointer = self.__images[index]
-
-        # 反转所有列表内的图片
-        def flip_all(self) -> None:
-            for _image in self.__images:
-                _image.flip_original_img()
-            temp: int = self.__right_offset_x
-            self.__right_offset_x = self.__left_offset_x
-            self.__left_offset_x = temp
-
-        # 获取当前图片的rect
-        def get_rectangle(self) -> Rectangle:
-            return self.__current_image_pointer.get_rectangle()
-
-        # 展示
-        def draw_onto(self, surface: ImageSurface, alpha: int, ifFlip: bool, pos: tuple, draw_outline: bool) -> None:
-            self.__current_image_pointer.set_size(self.__width, self.__height)
-            self.__current_image_pointer.set_alpha(alpha)  # 翻转图片
-            self.__current_image_pointer.set_top(self.__offset_y * self.__height / self.__cropped_image_height + pos[1])
-            if ifFlip:
-                self.__current_image_pointer.flip_if_not()
-                self.__current_image_pointer.set_left(self.__right_offset_x * self.__width / self.__cropped_image_width + pos[0])
-            else:
-                self.__current_image_pointer.flip_back_to_normal()
-                self.__current_image_pointer.set_left(self.__left_offset_x * self.__width / self.__cropped_image_width + pos[0])
-            self.__current_image_pointer.draw(surface)
-            if draw_outline is True:
-                self.__current_image_pointer.draw_outline(surface)
-
     # 用于存放角色图片的字典
-    __CHARACTERS_IMAGES: dict[str, dict[str, __EntityImagesCollection]] = {}
+    __CHARACTERS_IMAGES: dict[str, dict[str, _EntityImagesCollection]] = {}
     # 角色图片文件夹路径
     SPRITES_PATH: str = str(Specification.get("FolderPath", "Sprite"))
 
     # 获取图片
     @classmethod
-    def get_images(cls, characterType: str, action: str) -> __EntityImagesCollection:
+    def get_images(cls, characterType: str, action: str) -> _EntityImagesCollection:
         return cls.__CHARACTERS_IMAGES[characterType][action]
 
     # 尝试获取图片
     @classmethod
-    def try_get_images(cls, faction: str, characterType: str, action: str) -> __EntityImagesCollection:
+    def try_get_images(cls, faction: str, characterType: str, action: str) -> _EntityImagesCollection:
         if characterType not in cls.__CHARACTERS_IMAGES or action not in cls.__CHARACTERS_IMAGES[characterType]:
             cls.load(faction, characterType, "dev")
         return cls.get_images(characterType, action)
@@ -211,7 +212,7 @@ class EntitySpriteImageManager:
         elif action in cls.__CHARACTERS_IMAGES[characterType]:
             return {"imgId": 0, "alpha": 255}
         # 加载图片
-        cls.__CHARACTERS_IMAGES[characterType][action] = cls.__EntityImagesCollection(
+        cls.__CHARACTERS_IMAGES[characterType][action] = _EntityImagesCollection(
             tuple(
                 [
                     StaticImage(surf, 0, 0)

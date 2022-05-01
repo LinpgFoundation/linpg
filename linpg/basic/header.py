@@ -55,9 +55,11 @@ def keep_number_in_range(number: number, min_value: number, max_value: number) -
 
 
 # 转换string形式的百分比
-def convert_percentage(percentage: Union[str, float]) -> float:
+def convert_percentage(percentage: Union[str, float, int]) -> float:
     if isinstance(percentage, str) and percentage.endswith("%"):
         return float(percentage.strip("%")) / 100
+    elif isinstance(percentage, int):
+        return float(percentage)
     elif isinstance(percentage, float):
         return percentage
     else:

@@ -13,11 +13,19 @@ class CharacterImageNameMetaData:
     def __init__(self, _name: str) -> None:
         _name_data: list[str] = _name.split("&")
         self.__name: str = _name_data[0]
-        self.__tags: tuple[str, ...] = tuple(_name_data[1:])
+        self.__tags: set[str] = set(_name_data[1:])
+        self.__slient: bool = False
+        if "silent" in self.__tags:
+            self.__slient = True
+            self.__tags.remove("silent")
 
     @property
     def name(self) -> str:
         return self.__name
+
+    @property
+    def tags(self) -> set[str]:
+        return self.__tags
 
     # 根据文件名判断是否是同一角色名下的图片
     def equal(self, otherNameData: "CharacterImageNameMetaData", must_be_the_same: bool = False) -> bool:
@@ -33,66 +41,75 @@ class CharacterImageNameMetaData:
 
     # 是否有tag
     def has_tag(self, _tag: str) -> bool:
-        return _tag in self.__tags
+        if _tag == "silent":
+            return self.__slient
+        else:
+            return _tag in self.__tags
 
     # 移除tag
     def remove_tag(self, _tag: str) -> None:
-        new_tags: list[str] = []
-        for original_tag in self.__tags:
-            if original_tag != _tag:
-                new_tags.append(original_tag)
-        self.__tags = tuple(new_tags)
+        if _tag == "silent":
+            self.__slient = False
+        else:
+            new_tags: list[str] = []
+            for original_tag in self.__tags:
+                if original_tag != _tag:
+                    new_tags.append(original_tag)
+            self.__tags = set(new_tags)
 
     # 增加tag
     def add_tag(self, _tag: str) -> None:
-        new_tags: list[str] = []
-        for original_tag in self.__tags:
-            if original_tag != _tag:
-                new_tags.append(original_tag)
-        new_tags.append(_tag)
-        self.__tags = tuple(new_tags)
+        if _tag == "silent":
+            self.__slient = True
+        else:
+            new_tags: list[str] = []
+            for original_tag in self.__tags:
+                if original_tag != _tag:
+                    new_tags.append(original_tag)
+            new_tags.append(_tag)
+            self.__tags = set(new_tags)
 
     # 获取tag和名称结合后的数据名称
     def get_raw_name(self) -> str:
         raw_name: str = self.__name
+        if self.__slient is True:
+            raw_name += "&silent"
         for tag in self.__tags:
             raw_name += "&" + tag
         return raw_name
 
 
 # 角色立绘滤镜
-class FilterEffect:
-    def __init__(self, path: str) -> None:
-        self.__N_IMAGE: StaticImage = StaticImage(path, 0, 0)
+class _FilterEffect:
+    def __init__(self, path: str, _x: int, _y: int, _width: int, _height: int) -> None:
+        self.__N_IMAGE: StaticImage = StaticImage(path, _x, _y, _width, _height)
         self.__D_IMAGE: StaticImage = self.__N_IMAGE.copy()
         self.__D_IMAGE.add_darkness(_DARKNESS)
+        self.__crop_rect: Optional[Rectangle] = None
 
-    # 设置rect
-    def set_rect(self, _x: int, _y: int, _width: int, _height: int) -> None:
-        self.__N_IMAGE.set_pos(_x, _y)
-        self.__N_IMAGE.set_size(_width, _height)
-        self.__D_IMAGE.set_pos(_x, _y)
-        self.__D_IMAGE.set_size(_width, _height)
+    def get_rect(self) -> Rectangle:
+        return self.__N_IMAGE.get_rectangle()
+
+    def set_crop_rect(self, rect: Optional[Rectangle]) -> None:
+        self.__crop_rect = rect
 
     # 将滤镜应用到立绘上并渲染到屏幕上
     def render(self, characterImage: StaticImage, surface: ImageSurface, is_silent: bool) -> None:
+        # 如果自定义的crop_rect为None，则以self.__N_IMAGE的rect为中心
+        characterImage.set_crop_rect(self.__crop_rect if self.__crop_rect is not None else self.get_rect())
+        # 画出立绘
+        characterImage.draw(surface)
+        # 画出滤镜
         if not is_silent:
-            characterImage.set_crop_rect(self.__N_IMAGE.get_rectangle())
-            characterImage.draw(surface)
             self.__N_IMAGE.set_alpha(characterImage.get_alpha())
             self.__N_IMAGE.display(surface, characterImage.get_pos())
         else:
-            characterImage.set_crop_rect(self.__D_IMAGE.get_rectangle())
-            characterImage.draw(surface)
             self.__D_IMAGE.set_alpha(characterImage.get_alpha())
             self.__D_IMAGE.display(surface, characterImage.get_pos())
 
 
 # 角色立绘系统
 class CharacterImageManager:
-
-    __filters: dict[str, FilterEffect] = {}
-
     def __init__(self) -> None:
         # 用于存放立绘的字典
         self.__character_image: dict = {}
@@ -102,9 +119,28 @@ class CharacterImageManager:
         self.__current_characters: tuple[CharacterImageNameMetaData, ...] = tuple()
         self.__this_round_image_alpha: int = 00
         self.__img_width: int = Display.get_width() // 2
-        if "communicating" not in self.__filters:
-            self.__filters["communicating"] = FilterEffect("Assets/image/UI/communication.png")
-        self.__filters["communicating"].set_rect(self.__img_width // 4, 0, self.__img_width // 2, self.__img_width * 56 // 100)
+        # 加载滤镜
+        self.__filters: dict[str, _FilterEffect] = {}
+        for key, value in DataBase.get("Filters").items():
+            if value.get("type") == "image":
+                self.__filters[key] = _FilterEffect(
+                    value["path"],
+                    round(Display.get_width() * convert_percentage(value["rect"][0])),
+                    round(Display.get_width() * convert_percentage(value["rect"][1])),
+                    round(Display.get_width() * convert_percentage(value["rect"][2])),
+                    round(Display.get_width() * convert_percentage(value["rect"][3])),
+                )
+                _crop: Optional[list] = value.get("crop")
+                if _crop is not None:
+                    _rect: Rectangle = self.__filters[key].get_rect()
+                    self.__filters[key].set_crop_rect(
+                        Rectangle(
+                            _rect.x + round(_rect.width * convert_percentage(_crop[0])),
+                            _rect.y + round(_rect.height * convert_percentage(_crop[1])),
+                            round(_rect.width * convert_percentage(_crop[2])),
+                            round(_rect.height * convert_percentage(_crop[3])),
+                        )
+                    )
         # 移动的x
         self.__x_correction_offset_index: int = 0
         # x轴offset
@@ -146,8 +182,9 @@ class CharacterImageManager:
             img.set_size(self.__img_width, self.__img_width)
             img.set_alpha(alpha)
             img.set_pos(x, self.__NPC_Y)
-            if _name_data.has_tag("communicating"):
-                self.__filters["communicating"].render(img, surface, _name_data.has_tag("silent"))
+            if len(_name_data.tags) > 0:
+                for _tag in _name_data.tags:
+                    self.__filters[_tag].render(img, surface, _name_data.has_tag("silent"))
             else:
                 img.set_crop_rect(None)
                 img.draw(surface)
@@ -158,16 +195,16 @@ class CharacterImageManager:
 
     # 根据参数计算立绘的x坐标
     @staticmethod
-    def __estimate_x(_width: int, _num: int, index: int) -> int:
+    def __estimate_x(_width: int, _num: int, _index: int) -> int:
         if _num == 1:
             return _width // 4
         elif _num == 2:
-            return index * _width // _num
+            return _index * _width // _num
         elif _num > 2:
             return (
-                int((index + 1) * _width / (_num + 1) - _width / 4)
+                int((_index + 1) * _width / (_num + 1) - _width / 4)
                 if _num % 2 == 0
-                else int((index - _num // 2) * _width / _num + _width / 4)
+                else int((_index - _num // 2) * _width / _num + _width / 4)
             )
         else:
             return 0

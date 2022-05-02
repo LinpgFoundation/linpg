@@ -45,8 +45,8 @@ class ScriptConverter:
         sharp_index: int = text.find("#")
         return text.removeprefix(prefix) if sharp_index < 0 else text[:sharp_index].removeprefix(prefix)
 
-    # 转换
-    def convert(self, path: str, out_folder: str) -> None:
+    # 处理数据
+    def __process(self, path: str) -> None:
         if path.endswith(".linpg.script"):
             with open(path, "r", encoding="utf-8") as f:
                 self.__lines = f.readlines()
@@ -74,17 +74,26 @@ class ScriptConverter:
                 EXCEPTION.warn("The last flag call {} is not necessary!".format(last_flag))
         self.__convert(0)
         self.__lines.clear()
+        # 确保重要参数已被初始化
         if self.__id is None:
             EXCEPTION.fatal("You have to set id!")
         elif self.__lang is None:
             EXCEPTION.fatal("You have to set lang!")
         elif self.__part is None:
             EXCEPTION.fatal("You have to set part!")
-        else:
-            Config.save(
-                os.path.join(out_folder, "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type())),
-                {"dialogs": self.__output},
-            )
+
+    # 直接加载
+    def load(self, path: str) -> dict:
+        self.__process(path)
+        return self.__output
+
+    # 转换
+    def compile(self, path: str, out_folder: str) -> None:
+        self.__process(path)
+        Config.save(
+            os.path.join(out_folder, "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type())),
+            {"dialogs": self.__output},
+        )
 
     def __try_handle_data(self, index: int, parameter_short: str, parameter_full: str) -> bool:
         if self.__lines[index].startswith(parameter_short):

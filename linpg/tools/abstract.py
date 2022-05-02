@@ -30,11 +30,15 @@ class AbstractToolSystem:
     def _run_cmd(self, command_line: list[str], show_cmd_output: bool = False) -> None:
         command_line.insert(0, self.__TOOL_PATH)
         if self.__TOOL_PATH.endswith(".py") or self.__TOOL_PATH.endswith(".pyd"):
-            command_line.insert(0, "python")
+            command_line.insert(0, "python" if Debug.is_running_on_windows() else "python3")
         if not show_cmd_output:
             check_call(command_line, stdout=DEVNULL, stderr=STDOUT)
         else:
             self._run_raw_cmd(command_line)
+
+    # 运行python命令
+    def _run_py_cmd(self, command_line: list[str]) -> None:
+        check_call([*["python" if Debug.is_running_on_windows() else "python3", "-m"], *command_line])
 
     # 直接运行命令
     def _run_raw_cmd(self, command_line: list[str]) -> None:

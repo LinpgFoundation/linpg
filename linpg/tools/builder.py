@@ -92,29 +92,20 @@ class BuilderManager(AbstractToolSystem):
             self.delete_file_if_exist("build")
         # 删除在sitepackages中的旧build，同时复制新的build
         if update_the_one_in_sitepackages is True:
-            # 生成package名称
-            pkg_name: str = os.path.basename(source_folder)
-            pkg_path: str = os.path.join(getsitepackages()[1], pkg_name)
-            if os.path.exists(pkg_path):
-                # 删除旧的build
-                for _path in glob(os.path.join(pkg_path, "*")):
-                    # 如果不是.git文件夹
-                    if not os.path.isdir(_path) or ".git" not in _path:
-                        self.delete_file_if_exist(_path)
-            else:
-                os.mkdir(pkg_path)
-            # 复制新的build
-            self.copy(tuple(glob(os.path.join("src", pkg_name, "*"))), pkg_path)
+            #移除旧的build
+            self._run_py_cmd(["pip", "uninstall", os.path.basename(source_folder)])
+            # 安装新的build
+            self._run_py_cmd(["pip", "install", "."])
 
     # 打包上传最新的文件
     def upload_package(self) -> None:
         if os.path.exists("setup.py") or os.path.exists("setup.cfg"):
             # 升级build工具
-            self._run_raw_cmd(["python", "-m", "pip", "install", "--upgrade", "build"])
+            self._run_py_cmd(["pip", "install", "--upgrade", "build"])
             # 打包文件
-            self._run_raw_cmd(["python", "-m", "build", "--no-isolation"])
+            self._run_py_cmd(["build", "--no-isolation"])
             # 升级twine
-            self._run_raw_cmd(["python", "-m", "pip", "install", "--upgrade", "twine"])
+            self._run_py_cmd(["pip", "install", "--upgrade", "twine"])
             # 要求用户确认dist文件夹中的打包好的文件之后在继续
             if input('Please confirm the files in "dist" folder and enter Y to continue:') == "Y":
                 # 用twine上传文件

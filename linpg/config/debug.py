@@ -1,3 +1,4 @@
+import sys
 from .setting import *
 
 # debug模块
@@ -9,6 +10,8 @@ class Debug:
     __ENABLE_CHEATING: bool = False
     # 是否展示Fps
     __SHOW_FPS: bool = False
+    # 是否在windows上运行
+    __RUNNING_WINDOWS: bool = sys.platform.startswith("win")
 
     # 开发者模式
     @classmethod
@@ -36,3 +39,8 @@ class Debug:
     @classmethod
     def set_show_fps(cls, value: bool) -> None:
         cls.__SHOW_FPS = value
+
+    # 是否在windows上运行
+    @classmethod
+    def is_running_on_windows(cls) -> bool:
+        return cls.__RUNNING_WINDOWS

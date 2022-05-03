@@ -48,7 +48,7 @@ class FriendlyCharacter(Entity):
         self.set_attitude(1)
         # 尝试加载重创立绘
         try:
-            self.__getHurtImage = EntityGetHurtImage(self.type, Display.get_height() / 4, int(Display.get_height() / 2))
+            self.__getHurtImage = EntityGetHurtImage(self.type, Display.get_height() // 4, Display.get_height() // 2)
         except Exception:
             EXCEPTION.inform("Character {} does not have damaged artwork!".format(self.type))
             self.__getHurtImage = None
@@ -197,10 +197,7 @@ class FriendlyCharacter(Entity):
             numberY: float = (eyeImgHeight - MAP_POINTER.block_width / 10) / 2
             # 根据参数调整图片
             self.__beNoticedImage.set_size(eyeImgWidth, eyeImgHeight)
-            self.__beNoticedImage.set_pos(
-                blit_pos[0] + MAP_POINTER.block_width * 0.51 - numberX,
-                blit_pos[1] - numberY,
-            )
+            self.__beNoticedImage.set_pos(blit_pos[0] + MAP_POINTER.block_width * 0.51 - numberX, blit_pos[1] - numberY)
             self.__beNoticedImage.draw(surface)
         # 重创立绘
         if self.__getHurtImage is not None and self.__getHurtImage.alpha > 0:
@@ -319,7 +316,7 @@ class HostileCharacter(Entity):
                 weight += int(self.current_hp * self.hp_precentage)
                 target_value_board.append((name, weight))
         # 最大移动距离
-        blocks_can_move: int = int(self.max_action_point / AP_IS_NEEDED_TO_MOVE_ONE_BLOCK)
+        blocks_can_move: int = self.max_action_point // AP_IS_NEEDED_TO_MOVE_ONE_BLOCK
         # 角色将会在该回合采取的行动
         actions: deque = deque()
         # 如果角色有可以攻击的对象，且角色至少有足够的行动点数攻击
@@ -352,7 +349,7 @@ class HostileCharacter(Entity):
                 )
                 if len(the_route) > 0:
                     potential_attacking_pos_index = {}
-                    for i in range(len(the_route) - int(AP_IS_NEEDED_TO_ATTACK / AP_IS_NEEDED_TO_MOVE_ONE_BLOCK + 1)):
+                    for i in range(len(the_route) - AP_IS_NEEDED_TO_ATTACK // AP_IS_NEEDED_TO_MOVE_ONE_BLOCK + 1):
                         # 当前正在处理的坐标
                         pos_on_route = the_route[i]
                         # 获取可能的攻击范围
@@ -427,14 +424,14 @@ class CharacterDataLoader(threading.Thread):
             data_t.update(value)
             self.alliances[key] = FriendlyCharacter(data_t, self.mode)
             self.currentID += 1
-            if Setting.developer_mode:
+            if Debug.get_developer_mode():
                 print("total: {0}, current: {1}".format(self.totalNum, self.currentID))
         for key, value in self.enemies.items():
             data_t = deepcopy(CHARACTER_DATABASE[value["type"]])
             data_t.update(value)
             self.enemies[key] = HostileCharacter(data_t, self.mode)
             self.currentID += 1
-            if Setting.developer_mode:
+            if Debug.get_developer_mode():
                 print("total: {0}, current: {1}".format(self.totalNum, self.currentID))
 
     def getResult(self) -> tuple[dict, dict]:

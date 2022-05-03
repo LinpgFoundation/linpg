@@ -166,6 +166,4 @@ https://github.com/TigeiaWorkshop/linpg/wiki
 
 Please check LICENSE. (We will use GPL-3.0 after reaching 1k star and open source)
 
-**Note:** To fight back UW Bothell's controversial admission system for the CSSE program, any CSSE students and professors from the UW Bothell campus are prohibited from using Linpg without permission from the Tigeia Workshop development team. If you are a student or professor from UW Bothell and would like to know more about this requirement, feel free to reach out to the Tigeia Workshop development team by sending an email. This requirement does not apply to students and professors from Tacoma and Seattle campuses, as well as Non-CSSE students and professors from UW Bothell.
-
 版权信息请查看LICENSE文件。（软件达到一千star开源后将使用GPL-3.0）

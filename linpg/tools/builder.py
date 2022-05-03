@@ -1,4 +1,5 @@
 from .abstract import *
+from site import getsitepackages
 
 # 搭建和打包文件的系统
 class BuilderManager(AbstractToolSystem):
@@ -43,6 +44,13 @@ class BuilderManager(AbstractToolSystem):
             else:
                 shutil.copy(the_file, os.path.join(target_folder, os.path.basename(the_file)))
 
+    # 删除缓存
+    @staticmethod
+    def __clean_up() -> None:
+        folders_need_remove: tuple = ("dist", "Save", "build", "crash_reports", "Cache")
+        for _path in folders_need_remove:
+            Cache.delete_file_if_exist(_path)
+
     # 编译
     def compile(
         self,
@@ -50,11 +58,9 @@ class BuilderManager(AbstractToolSystem):
         target_folder: str = "src",
         additional_files: tuple = tuple(),
         ignore_key_words: tuple = tuple(),
-        keep_c: bool = False,
-        generate_html: bool = False,
-        show_all_warnings: bool = True,
-        language_level: str = "3",
+        enable_multiprocessing: bool = True,
         remove_building_cache: bool = True,
+        update_the_one_in_sitepackages: bool = True,
     ) -> None:
         self.delete_file_if_exist(target_folder)
         # 复制文件到新建的src文件夹中，准备开始编译
@@ -67,10 +73,7 @@ class BuilderManager(AbstractToolSystem):
         with open("builder_data_cache.json", "w", encoding="utf-8") as f:
             json.dump(
                 {
-                    "keep_c": keep_c,
-                    "generate_html": generate_html,
-                    "show_all_warnings": show_all_warnings,
-                    "language_level": language_level,
+                    "enable_multiprocessing": enable_multiprocessing,
                     "source_folder": source_path_in_target_folder,
                     "ignore_key_words": ignore_key_words,
                 },
@@ -78,6 +81,8 @@ class BuilderManager(AbstractToolSystem):
             )
         # 编译源代码
         self._run_cmd(["build_ext", "--build-lib", target_folder], True)
+        # 删除缓存
+        self.__clean_up()
         # 复制额外文件
         self.copy(additional_files, source_path_in_target_folder)
         # 通过复制init修复打包工具无法定位包的bug
@@ -85,22 +90,28 @@ class BuilderManager(AbstractToolSystem):
         # 删除build文件夹
         if remove_building_cache is True:
             self.delete_file_if_exist("build")
+        # 删除在sitepackages中的旧build，同时复制新的build
+        if update_the_one_in_sitepackages is True:
+            #移除旧的build
+            self._run_py_cmd(["pip", "uninstall", os.path.basename(source_folder)])
+            # 安装新的build
+            self._run_py_cmd(["pip", "install", "."])
 
     # 打包上传最新的文件
     def upload_package(self) -> None:
         if os.path.exists("setup.py") or os.path.exists("setup.cfg"):
             # 升级build工具
-            self._run_raw_cmd(["python", "-m", "pip", "install", "--upgrade", "build"])
+            self._run_py_cmd(["pip", "install", "--upgrade", "build"])
             # 打包文件
-            self._run_raw_cmd(["python", "-m", "build", "--no-isolation"])
+            self._run_py_cmd(["build", "--no-isolation"])
             # 升级twine
-            self._run_raw_cmd(["python", "-m", "pip", "install", "--upgrade", "twine"])
-            # 用twine上传文件
-            self._run_raw_cmd(["twine", "upload", "dist/*"])
-            # 删除不需要的文件
-            folders_need_remove: tuple = ("dist", "Save", "build", "crash_reports")
-            for path in folders_need_remove:
-                self.delete_file_if_exist(path)
+            self._run_py_cmd(["pip", "install", "--upgrade", "twine"])
+            # 要求用户确认dist文件夹中的打包好的文件之后在继续
+            if input('Please confirm the files in "dist" folder and enter Y to continue:') == "Y":
+                # 用twine上传文件
+                self._run_raw_cmd(["twine", "upload", "dist/*"])
+            # 删除缓存
+            self.__clean_up()
         else:
             EXCEPTION.fatal("Cannot find setup file!", 2)
 

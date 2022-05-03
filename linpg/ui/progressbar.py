@@ -128,7 +128,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
                 x, y = Coordinates.add(
                     (
                         int(self.get_width() * self.percentage - self.__indicator.width / 2),
-                        int((self.get_height() - self.__indicator.height) / 2),
+                        (self.get_height() - self.__indicator.height) // 2,
                     ),
                     abs_pos,
                 )
@@ -139,13 +139,13 @@ class ProgressBarAdjuster(ProgressBarSurface):
                     value_font,
                     Coordinates.add(
                         abs_pos,
-                        (self.get_width() + self.__indicator.width * 0.7, (self.get_height() - value_font.get_height()) / 2),
+                        (self.get_width() + self.__indicator.width * 7 // 10, (self.get_height() - value_font.get_height()) / 2),
                     ),
                 )
             else:
                 x, y = Coordinates.add(
                     (
-                        int((self.get_width() - self.__indicator.width) / 2),
+                        (self.get_width() - self.__indicator.width) // 2,
                         int(self.get_height() * self.percentage - self.__indicator.height / 2),
                     ),
                     abs_pos,
@@ -158,7 +158,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
                     value_font,
                     Coordinates.add(
                         abs_pos,
-                        ((self.get_width() - value_font.get_width()) / 2, self.get_height() + self.__indicator.height * 0.7),
+                        ((self.get_width() - value_font.get_width()) / 2, self.get_height() + self.__indicator.height * 7 // 10),
                     ),
                 )
             if self.is_hovered(offSet):

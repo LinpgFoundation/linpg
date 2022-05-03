@@ -1,4 +1,4 @@
-from .character import *
+from .script import *
 
 # 视觉小说系统接口
 class AbstractDialogSystem(AbstractGameSystem):
@@ -33,29 +33,26 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 更新背景音乐音量
         self.set_bgm_volume(Media.volume.background_music / 100)
         # 文字大小
-        self._FONT_SIZE: int = int(Display.get_width() * 0.015)
+        self._FONT_SIZE: int = Display.get_width() * 3 // 200
 
     # 获取对话框模块（子类需实现）
     def _get_dialog_box(self) -> AbstractDialogBox:
         return EXCEPTION.fatal("_dialogBox()", 1)
 
+    # 获取对话文件所在的文件夹目录
+    def get_dialog_folder_location(self) -> str:
+        return (
+            os.path.join(self._dialog_folder_path, self._chapter_type)
+            if self._project_name is None
+            else os.path.join(self._dialog_folder_path, self._chapter_type, self._project_name)
+        )
+
     # 获取对话文件所在的具体路径
     def get_dialog_file_location(self, lang: str = "") -> str:
         if len(lang) == 0:
-            lang = Setting.language
-        return (
-            os.path.join(
-                self._dialog_folder_path,
-                self._chapter_type,
-                "chapter{0}_dialogs_{1}.{2}".format(self._chapter_id, lang, Config.get_file_type()),
-            )
-            if self._project_name is None
-            else os.path.join(
-                self._dialog_folder_path,
-                self._chapter_type,
-                self._project_name,
-                "chapter{0}_dialogs_{1}.{2}".format(self._chapter_id, lang, Config.get_file_type()),
-            )
+            lang = Setting.get_language()
+        return os.path.join(
+            self.get_dialog_folder_location(), "chapter{0}_dialogs_{1}.{2}".format(self._chapter_id, lang, Config.get_file_type())
         )
 
     # 获取对话文件的主语言
@@ -134,6 +131,9 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._dialog_id = dialogId
         # 播放的部分
         self._part = part
+        # 转换所有文件夹内的linpg自定义的raw脚本
+        for script_file in glob(os.path.join(self.get_dialog_folder_location(), "*.linpg.script")):
+            ScriptConverter().compile(script_file, self.get_dialog_folder_location())
 
     # 载入数据
     def _load_content(self) -> None:
@@ -142,7 +142,7 @@ class AbstractDialogSystem(AbstractGameSystem):
             # 获取目标对话数据
             dialogData_t: dict = dict(Config.load(self.get_dialog_file_location(), "dialogs", self._part))
             # 如果该dialog文件是另一个语言dialog文件的子类
-            if (default_lang_of_dialog := self.get_default_lang()) != Setting.language:
+            if (default_lang_of_dialog := self.get_default_lang()) != Setting.get_language():
                 self._dialog_data[self._part] = dict(
                     Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._part)
                 )
@@ -238,8 +238,8 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     def _get_dialog_options_container_ready(self) -> None:
         self._dialog_options_container.clear()
-        optionBox_y_base: int = int(
-            Display.get_height() * 3 / 16 - len(self._current_dialog_content["next_dialog_id"]["target"]) * self._FONT_SIZE
+        optionBox_y_base: int = (
+            Display.get_height() * 3 // 16 - len(self._current_dialog_content["next_dialog_id"]["target"]) * self._FONT_SIZE
         )
         for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
             optionButton: Button = Button.load("<!ui>option.png", (0, 0), (0, 0))

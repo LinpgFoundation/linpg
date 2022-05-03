@@ -46,7 +46,7 @@ class GlobalValue:
 class DataBase:
 
     # 用于存放数据库数据的字典
-    __DATA_BASE_DICT: dict = {"Blocks": {}, "Decorations": {}, "Npc": {}}
+    __DATA_BASE_DICT: dict = {"Blocks": {}, "Decorations": {}, "Npc": {}, "Filters": {}}
 
     @classmethod
     def get(cls, *key: str) -> Any:
@@ -67,22 +67,24 @@ class DataBase:
 # 版本信息管理模块
 class Info:
 
+    # 最低支持的python版本号
+    __PYTHON3_REVISION: int = 10
     # 引擎主版本号
     __VERSION: int = 3
     # 引擎次更新版本号
     __REVISION: int = 3
     # 引擎补丁版本
-    __PATCH: int = 0
+    __PATCH: int = 1
 
     # 确保linpg版本
     @classmethod
     def ensure_linpg_version(cls, action: str, revision: int, patch: int, version: int = 3) -> bool:
         if action == "==":
-            return version == int(cls.__VERSION) and revision == int(cls.__REVISION) and patch == int(cls.__PATCH)
+            return version == cls.__VERSION and revision == cls.__REVISION and patch == cls.__PATCH
         elif action == ">=":
-            return version >= int(cls.__VERSION) and revision >= int(cls.__REVISION) and patch >= int(cls.__PATCH)
+            return version >= cls.__VERSION and revision >= cls.__REVISION and patch >= cls.__PATCH
         elif action == "<=":
-            return version <= int(cls.__VERSION) and revision <= int(cls.__REVISION) and patch <= int(cls.__PATCH)
+            return version <= cls.__VERSION and revision <= cls.__REVISION and patch <= cls.__PATCH
         else:
             EXCEPTION.fatal('Action "{}" is not supported!'.format(action))
 
@@ -155,7 +157,6 @@ class Cache:
     # 移除
     @classmethod
     def remove(cls, key: str) -> None:
-        print("hit")
         cls.delete_file_if_exist(cls.__CACHE_FILES_DATA[key]["target"]["path"])
         del cls.__CACHE_FILES_DATA[key]
         Config.save(cls.__CACHE_FILES_DATA_PATH, cls.__CACHE_FILES_DATA)

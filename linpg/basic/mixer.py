@@ -1,24 +1,40 @@
 from .display import *
 
-# 根据设置参数改变声道数量
-MIXER_CHANNEL_NUM: int = max(int(Setting.get("NumberOfChannels")), 8) + 3
-pygame.mixer.set_num_channels(MIXER_CHANNEL_NUM)
+# 声音 type alias
+PG_Sound = pygame.mixer.Sound
+# 频道 type alias
+PG_Channel = pygame.mixer.Channel
 
-"""设置linpg引擎保留的"""
+# 根据设置参数改变声道数量
+__MIXER_CHANNEL_NUM: int = max(int(Setting.get("NumberOfChannels")), 8) + 3
+"""
+linpg引擎保留的频道
+"""
 # 背景音乐
-_RESERVED_BACKGROUND_MUSIC_CHANNEL_ID: int = MIXER_CHANNEL_NUM - 3
-LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL: PG_Channel = pygame.mixer.Channel(_RESERVED_BACKGROUND_MUSIC_CHANNEL_ID)
+__RESERVED_BACKGROUND_MUSIC_CHANNEL_ID: int = __MIXER_CHANNEL_NUM - 3
+LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL: Optional[PG_Channel] = None
 # 音效
-_RESERVED_SOUND_EFFECTS_CHANNEL_ID: int = MIXER_CHANNEL_NUM - 2
-LINPG_RESERVED_SOUND_EFFECTS_CHANNEL: PG_Channel = pygame.mixer.Channel(_RESERVED_SOUND_EFFECTS_CHANNEL_ID)
+__RESERVED_SOUND_EFFECTS_CHANNEL_ID: int = __MIXER_CHANNEL_NUM - 2
+LINPG_RESERVED_SOUND_EFFECTS_CHANNEL: Optional[PG_Channel] = None
 # 环境
-_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID: int = MIXER_CHANNEL_NUM - 1
-LINPG_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL: PG_Channel = pygame.mixer.Channel(_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID)
+__RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID: int = __MIXER_CHANNEL_NUM - 1
+LINPG_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL: Optional[PG_Channel] = None
+"""
+初始化对应频道
+"""
+if pygame.mixer.get_init() is not None:
+    pygame.mixer.set_num_channels(__MIXER_CHANNEL_NUM)
+    LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL = pygame.mixer.Channel(__RESERVED_BACKGROUND_MUSIC_CHANNEL_ID)
+    LINPG_RESERVED_SOUND_EFFECTS_CHANNEL = pygame.mixer.Channel(__RESERVED_SOUND_EFFECTS_CHANNEL_ID)
+    LINPG_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL = pygame.mixer.Channel(__RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID)
+else:
+    EXCEPTION.warn("Mixer has not been initialized correctly!")
+    print("One possible cause could be no output device, anyway, please double check your output device(s)!")
 
 # 音效管理模块接口
 class AbstractSoundManager:
     def __init__(self, channel_id: int):
-        self._channel_id: int = int(channel_id)
+        self._channel_id: int = channel_id
 
     @property
     def channel_id(self) -> int:
@@ -130,8 +146,8 @@ class Sound:
 
     # 淡出音效
     @staticmethod
-    def fade_out(time: float) -> None:
-        pygame.mixer.fadeout(int(time))
+    def fade_out(time: int) -> None:
+        pygame.mixer.fadeout(time)
 
     # 寻找一个可用的频道
     @staticmethod
@@ -141,7 +157,7 @@ class Sound:
     # 获取频道的数量
     @staticmethod
     def get_num_channels() -> int:
-        return int(pygame.mixer.get_num_channels() - 3)
+        return pygame.mixer.get_num_channels() - 3
 
     # 获取对应id的频道
     @staticmethod
@@ -189,8 +205,8 @@ class Music:
 
     # 淡出背景音乐
     @staticmethod
-    def fade_out(time: number) -> None:
-        pygame.mixer.music.fadeout(int(time))
+    def fade_out(time: int) -> None:
+        pygame.mixer.music.fadeout(time)
 
     # 获取背景音乐播放的位置
     @staticmethod
@@ -284,7 +300,7 @@ class MediaController:
 
     # 淡出所有音乐
     @staticmethod
-    def fade_out(time: float) -> None:
+    def fade_out(time: int) -> None:
         Sound.fade_out(time)
         Music.fade_out(time)
 

@@ -80,7 +80,7 @@ class Loader:
     def resize_when_hovered_text(
         txt: strint, _color: color_liked, pos: tuple[int, int], size: int, _bold: bool = False, _italic: bool = False
     ) -> ResizeWhenHoveredTextSurface:
-        return ResizeWhenHoveredTextSurface(str(txt), pos[0], pos[1], size, size * 1.5, _color, _bold, _italic)
+        return ResizeWhenHoveredTextSurface(str(txt), pos[0], pos[1], size, size * 3 / 2, _color, _bold, _italic)
 
 
 load: Loader = Loader()

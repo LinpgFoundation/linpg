@@ -4,9 +4,9 @@ from .image import *
 class AbstractFrame(AdvancedAbstractImageSurface):
 
     # 窗口上方bar的高度
-    __bar_height: int = int(Display.get_height() * 0.02)
+    __bar_height: int = Display.get_height() // 50
     # 窗口线条的粗细
-    __outline_thickness: int = int(Display.get_height() * 0.002)
+    __outline_thickness: int = Display.get_height() // 500
     # 放大指示图标
     __rescale_icon_0: StaticImage = NULL_STATIC_IMAGE
     __rescale_icon_45: StaticImage = NULL_STATIC_IMAGE
@@ -42,7 +42,9 @@ class AbstractFrame(AdvancedAbstractImageSurface):
             Draw.rect(self.img, Colors.GRAY, (ORIGIN, self.size), self.__outline_thickness)
             # 初始化图标
             if not self.__rescale_icon_initialized:
-                self.__rescale_icon_0 = StaticImage("<!ui>rescale.png", 0, 0, self.__bar_height * 1.5, self.__bar_height * 1.5)
+                self.__rescale_icon_0 = StaticImage(
+                    "<!ui>rescale.png", 0, 0, self.__bar_height * 3 / 2, self.__bar_height * 3 / 2
+                )
                 self.__rescale_icon_45 = self.__rescale_icon_0.copy()
                 self.__rescale_icon_45.rotate(45)
                 self.__rescale_icon_45.scale_n_times(1.5)
@@ -107,7 +109,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
                     and Controller.mouse.get_pressed(0)
                     and not self._any_content_container_event()
                 ):
-                    if Rectangle.new((self.x, self.y), (self.get_width(), self.__bar_height)).is_hovered():
+                    if Rectangle(self.x, self.y, self.get_width(), self.__bar_height).is_hovered():
                         self.__mouse_hovered_offset_pos = Coordinates.subtract(Controller.mouse.get_pos(), self.pos)
                     elif self.is_hovered():
                         self.__if_move_local_pos = True

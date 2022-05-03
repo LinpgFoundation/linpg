@@ -6,7 +6,7 @@ class DropDownList(GameObjectsDictContainer):
         self, bg_img: Optional[PoI], x: int_f, y: int_f, font_size: int, font_color: color_liked = "black", tag: str = ""
     ) -> None:
         # 方格高度
-        self.__block_height: int = int(font_size * 1.5)
+        self.__block_height: int = font_size * 3 // 2
         # 是否折叠选项
         self.__fold_choice: bool = True
         super().__init__(bg_img, x, y, 0, 0, tag)
@@ -27,14 +27,14 @@ class DropDownList(GameObjectsDictContainer):
 
     # 根据物品判定是否需要更新宽度
     def __update_width(self, item: strint) -> None:
-        _new_width: int = int(self.__FONT.estimate_text_width(item) + self.__FONT.size * 7)
+        _new_width: int = self.__FONT.estimate_text_width(item) + self.__FONT.size * 7
         if self.get_width() < _new_width:
             self.set_width(_new_width)
 
     # 更新font的尺寸
     def update_font_size(self, font_size: int) -> None:
         self.__FONT.update(font_size)
-        self.__block_height = round(self.__FONT.size * 1.5)
+        self.__block_height = round(self.__FONT.size * 3 / 2)
         self.__recalculate_width()
 
     # 更新font的颜色
@@ -86,9 +86,9 @@ class DropDownList(GameObjectsDictContainer):
             font_surface: ImageSurface = self.__FONT.render(self.get_selected_item(), self.__font_color, with_bounding=True)
             surface.blit(
                 font_surface,
-                Coordinates.add(current_pos, (self.__FONT.size * 3, int((self.__block_height - font_surface.get_height()) / 2))),
+                Coordinates.add(current_pos, (self.__FONT.size * 3, (self.__block_height - font_surface.get_height()) // 2)),
             )
-            rect_of_outline = Rectangle.new(current_pos, (self.width, self.__block_height))
+            rect_of_outline = Rectangle(current_pos[0], current_pos[1], self.width, self.__block_height)
             Draw.rect(surface, self.__font_color, rect_of_outline.get_rect(), self.outline_thickness)
             font_surface = RawImg.flip(self.__FONT.render("^", self.__font_color), False, True)
             surface.blit(
@@ -96,15 +96,15 @@ class DropDownList(GameObjectsDictContainer):
                 Coordinates.add(
                     current_pos,
                     (
-                        int(self.width - font_surface.get_width() * 1.5),
-                        int((self.__block_height - font_surface.get_height()) / 2),
+                        self.width - font_surface.get_width() * 3 // 2,
+                        (self.__block_height - font_surface.get_height()) // 2,
                     ),
                 ),
             )
             if Controller.get_event("confirm"):
                 if rect_of_outline.is_hovered():
                     self.__fold_choice = not self.__fold_choice
-                elif not self.__fold_choice and not Rectangle.new(current_abs_pos, self.size).is_hovered():
+                elif not self.__fold_choice and not Rectangles.create((current_abs_pos, self.size)).is_hovered():
                     self.__fold_choice = True
             # 列出选择
             if not self.__fold_choice:
@@ -115,10 +115,10 @@ class DropDownList(GameObjectsDictContainer):
                     surface.blit(
                         font_surface,
                         Coordinates.add(
-                            current_pos, (self.__FONT.size * 3, int((self.__block_height - font_surface.get_height()) / 2))
+                            current_pos, (self.__FONT.size * 3, (self.__block_height - font_surface.get_height()) // 2)
                         ),
                     )
-                    rect_of_outline = Rectangle.new(current_pos, (self.width, self.__block_height))
+                    rect_of_outline = Rectangle(current_pos[0], current_pos[1], self.width, self.__block_height)
                     Draw.rect(surface, self.__font_color, rect_of_outline.get_rect(), self.outline_thickness)
                     if rect_of_outline.is_hovered() and Controller.get_event("confirm"):
                         self.__chosen_item_key = key_of_game_object
@@ -126,7 +126,7 @@ class DropDownList(GameObjectsDictContainer):
                         surface,
                         self.__font_color,
                         Coordinates.add(current_pos, (self.__FONT.size * 2, self.__block_height / 2)),
-                        int(self.__block_height * 0.15),
+                        self.__block_height * 3 // 20,
                         self.outline_thickness if key_of_game_object != self.__chosen_item_key else 0,
                     )
                     index += 1

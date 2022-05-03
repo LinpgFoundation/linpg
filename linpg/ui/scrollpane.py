@@ -29,7 +29,7 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
         return self.__item_per_line
 
     def set_item_per_line(self, value: int) -> None:
-        self.__item_per_line = int(value)
+        self.__item_per_line = value
 
     def switch_mode(self) -> None:
         super().switch_mode()
@@ -43,8 +43,8 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
             if self.img is not None:
                 surface.blit(self.img, Coordinates.add(self.pos, off_set))
             # 计算出基础坐标
-            current_x: int = int(self.abs_x + off_set[0])
-            current_y: int = int(self.abs_y + off_set[1])
+            current_x: int = self.abs_x + off_set[0]
+            current_y: int = self.abs_y + off_set[1]
             if not self._mode:
                 current_x += self.panding
             else:
@@ -61,7 +61,7 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
             for key, item in self._get_container().items():
                 if item is not None:
                     if not self._mode:
-                        abs_local_y = int(current_y - self.y)
+                        abs_local_y = current_y - self.y
                         if 0 <= abs_local_y < self.get_height():
                             new_height = self.get_height() - abs_local_y
                             if new_height > item.get_height():
@@ -88,13 +88,13 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                         # 换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line - 1:
                             current_y += self.distance_between_item + item.get_height()
-                            current_x = int(self.abs_x + off_set[0] + self.panding)
+                            current_x = self.abs_x + off_set[0] + self.panding
                             item_has_been_dawn_on_this_line = 0
                         else:
                             current_x += self.distance_between_item + item.get_width()
                             item_has_been_dawn_on_this_line += 1
                     else:
-                        abs_local_x = int(current_x - self.x)
+                        abs_local_x = current_x - self.x
                         if 0 <= abs_local_x < self.get_width():
                             new_width = self.get_width() - abs_local_x
                             if new_width > item.get_width():
@@ -124,19 +124,19 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                         # 换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line - 1:
                             current_x += self.distance_between_item + item.get_width()
-                            current_y = int(self.abs_y + off_set[1] + self.panding)
+                            current_y = self.abs_y + off_set[1] + self.panding
                             item_has_been_dawn_on_this_line = 0
                         else:
                             current_y += self.distance_between_item + item.get_height()
                             item_has_been_dawn_on_this_line += 1
             # 处理总长宽
             if not self._mode:
-                self.__surface_height = int(current_y - self.abs_y - off_set[1])
+                self.__surface_height = current_y - self.abs_y - off_set[1]
                 if item_has_been_dawn_on_this_line > 0:
                     self.__surface_height += item.get_height()
                 self.__surface_width = self.get_width()
             else:
-                self.__surface_width = int(current_x - self.abs_x - off_set[0])
+                self.__surface_width = current_x - self.abs_x - off_set[0]
                 if item_has_been_dawn_on_this_line > 0:
                     self.__surface_width += item.get_width()
                 self.__surface_height = self.get_height()

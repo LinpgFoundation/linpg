@@ -39,7 +39,7 @@ class DynamicImage(AbstractImageSurface):
     # 展示
     def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
         if self.is_visible():
-            if not Setting.low_memory_mode:
+            if not Setting.get_low_memory_mode():
                 if self.__processed_img is None or self.__processed_img.get_size() != self.size:
                     self.__processed_img = RawImg.smoothly_resize(self.img, self.size)
                 surface.blit(self.__processed_img, Coordinates.add(self.pos, offSet))
@@ -68,12 +68,9 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         self.__no_croping_needed = True
 
     def set_crop_rect(self, rect: Optional[Rectangle]) -> None:
-        if rect is None or isinstance(rect, Rectangle):
-            if self.__crop_rect != rect:
-                self.__crop_rect = rect
-                self._need_update = True
-        else:
-            EXCEPTION.fatal("You have to input either a None or a Rectangle, not {}".format(type(rect)))
+        if not Rectangles.equal(self.__crop_rect, rect):
+            self.__crop_rect = rect
+            self._need_update = True
 
     # 反转原图，并打上已反转的标记
     def flip(self, horizontal: bool = True, vertical: bool = False) -> None:
@@ -113,13 +110,13 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
     # 更新图片
     def _update_img(self) -> None:
         # 改变尺寸
-        imgTmp = RawImg.smoothly_resize(self.img, self.size) if Setting.antialias is True else RawImg.resize(self.img, self.size)
+        imgTmp = RawImg.smoothly_resize(self.img, self.size) if Setting.get_antialias() else RawImg.resize(self.img, self.size)
         # 翻转图片
         if self.__is_flipped_horizontally is True or self.__is_flipped_vertically is True:
             imgTmp = RawImg.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)
         if not self.__no_croping_needed:
             # 获取切割rect
-            rect: Rectangle = convert_rect(imgTmp.get_bounding_rect())
+            rect: Rectangle = Rectangles.create(imgTmp.get_bounding_rect())
             if self.width != rect.width or self.height != rect.height or self.__crop_rect is not None:
                 if self.__crop_rect is not None:
                     new_x: int = max(rect.x, self.__crop_rect.x)
@@ -159,8 +156,8 @@ class MovableImage(StaticImage):
         tag: str = "",
     ):
         super().__init__(img, x, y, width, height, tag)
-        self.__default_x: int = int(self.x)
-        self.__default_y: int = int(self.y)
+        self.__default_x: int = self.x
+        self.__default_y: int = self.y
         self.__target_x: int = int(target_x)
         self.__target_y: int = int(target_y)
         self.__move_speed_x: int = int(move_speed_x)

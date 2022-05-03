@@ -42,14 +42,11 @@ class DialogEditor(DialogConverter):
         # 将npc立绘系统设置为开发者模式
         self._npc_manager.dev_mode = True
         # 加载容器
-        container_width = int(Display.get_width() * 2 / 10)
+        container_width = Display.get_width() // 5
         self.__UIContainerRightImage = RawImg.load("<!ui>container.png", (container_width, Display.get_height()))
         # 右侧容器尺寸
         RightContainerRect: Rectangle = Rectangle(
-            int(container_width * 0.075),
-            int(Display.get_height() * 0.1),
-            int(container_width * 0.85),
-            int(Display.get_height() * 0.85),
+            container_width * 3 // 40, Display.get_height() // 10, container_width * 17 // 20, Display.get_height() * 17 // 20
         )
         # 背景图片编辑模块
         self.__UIContainerRight_bg = SurfaceContainerWithScrollbar(
@@ -70,9 +67,9 @@ class DialogEditor(DialogConverter):
                 )
         # 加载透明图片
         self.__UIContainerRight_bg.set(
-            "<transparent>", Surface.texture_is_missing((int(container_width * 4 / 5), int(container_width * 0.45)))
+            "<transparent>", Surface.texture_is_missing((container_width * 4 // 5, container_width * 9 // 20))
         )
-        self.__UIContainerRight_bg.distance_between_item = int(Display.get_height() * 0.02)
+        self.__UIContainerRight_bg.distance_between_item = Display.get_height() // 50
         self.__current_select_bg_name = None
         self.__current_select_bg_copy = None
         # npc立绘编辑模块
@@ -82,34 +79,34 @@ class DialogEditor(DialogConverter):
         self.__UIContainerRight_npc.set_scroll_bar_pos("right")
         # 加载npc立绘
         for imgPath in glob(os.path.join(self._npc_manager.image_folder_path, "*")):
-            self.__UIContainerRight_npc.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 0.8, None)))
+            self.__UIContainerRight_npc.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 4 / 5, None)))
         self.__UIContainerRight_npc.set_visible(False)
         self.__UIContainerRight_npc.distance_between_item = 0
         # 容器按钮
-        button_width: int = int(Display.get_width() * 0.04)
+        button_width: int = Display.get_width() // 25
         self.__UIContainerRightButton = MovableImage(
             "<!ui>container_button.png",
-            int(Display.get_width() - button_width),
-            int(Display.get_height() * 0.4),
-            int(Display.get_width() - button_width - container_width),
-            int(Display.get_height() * 0.4),
-            int(container_width / 10),
+            Display.get_width() - button_width,
+            Display.get_height() * 2 // 5,
+            Display.get_width() - button_width - container_width,
+            Display.get_height() * 2 // 5,
+            container_width // 10,
             0,
             button_width,
-            int(Display.get_height() * 2 / 10),
+            Display.get_height() // 5,
         )
         self.__UIContainerRightButton.rotate(90)
         # UI按钮
         CONFIG = Lang.get_texts("DialogCreator")
-        button_y: int = int(Display.get_height() * 3 / 100)
-        font_size: int = int(button_width / 3)
+        button_y: int = Display.get_height() * 3 // 100
+        font_size: int = button_width // 3
         # 控制容器转换的按钮
-        self.__button_select_background = Button.load("<!ui>button.png", (0, int(button_y * 3 / 2)), (0, 0), 150)
+        self.__button_select_background = Button.load("<!ui>button.png", (0, button_y * 3 // 2), (0, 0), 150)
         self.__button_select_background.set_text(
             ButtonComponent.text(str(CONFIG["background"]), font_size * 2 / 3, alpha_when_not_hover=150)
         )
         self.__button_select_background.set_auto_resize(True)
-        self.__button_select_npc = Button.load("<!ui>button.png", (0, int(button_y * 3 / 2)), (0, 0), 150)
+        self.__button_select_npc = Button.load("<!ui>button.png", (0, button_y * 3 // 2), (0, 0), 150)
         self.__button_select_npc.set_text(ButtonComponent.text(str(CONFIG["npc"]), font_size * 2 / 3, alpha_when_not_hover=150))
         self.__button_select_npc.set_auto_resize(True)
         panding: int = int(
@@ -141,7 +138,7 @@ class DialogEditor(DialogConverter):
         self._load_content()
         # 移除按钮
         self.__remove_npc_button = Font.render_description_box(
-            CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE, int(self._FONT_SIZE / 5), Colors.WHITE
+            CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE, self._FONT_SIZE // 5, Colors.WHITE
         )
         # 切换准备编辑的dialog部分
         self.dialog_key_select = DropDownList(None, button_width * 11, button_y + font_size, font_size)
@@ -187,7 +184,7 @@ class DialogEditor(DialogConverter):
         else:
             self._dialog_data.clear()
         # 如果不是默认主语言
-        if (default_lang_of_dialog := self.get_default_lang()) != Setting.language:
+        if (default_lang_of_dialog := self.get_default_lang()) != Setting.get_language():
             self._is_default_dialog = False
             # 读取原始数据
             self._dialog_data_default = dict(Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs"))
@@ -263,13 +260,15 @@ class DialogEditor(DialogConverter):
         else:
             self.dialog_bgm_select.set_selected_item("null")
         # 更新按钮
-        assert self.__buttons_ui_container is not None
-        if self.does_current_dialog_have_next_dialog() is True:
-            self.__buttons_ui_container.get("add").set_visible(False)
-            self.__buttons_ui_container.get("next").set_visible(True)
+        if self.__buttons_ui_container is not None:
+            if self.does_current_dialog_have_next_dialog() is True:
+                self.__buttons_ui_container.get("add").set_visible(False)
+                self.__buttons_ui_container.get("next").set_visible(True)
+            else:
+                self.__buttons_ui_container.get("add").set_visible(True)
+                self.__buttons_ui_container.get("next").set_visible(False)
         else:
-            self.__buttons_ui_container.get("add").set_visible(True)
-            self.__buttons_ui_container.get("next").set_visible(False)
+            EXCEPTION.fatal("The ui has not been correctly initialized.")
         # 更新dialog navigation窗口
         self.__dialog_navigation_window.readd_all(self.dialog_content)
         self.__dialog_navigation_window.update_selected(self._dialog_id)
@@ -401,22 +400,19 @@ class DialogEditor(DialogConverter):
             self._current_dialog_content["narrator"] = self.__dialog_txt_system.get_narrator()
             self._current_dialog_content["contents"] = self.__dialog_txt_system.get_content()
         # 确保按钮初始化
-        assert self.__buttons_ui_container is not None
+        if self.__buttons_ui_container is None:
+            EXCEPTION.fatal("The ui has not been correctly initialized.")
         # 展示按钮
         self.__buttons_ui_container.draw(surface)
         # 展示出当前可供使用的背景音乐
         self.dialog_bgm_select.draw(surface)
-        if (current_bgm := self._current_dialog_content["background_music"]) != self.dialog_bgm_select.get_selected_item():
-            if self.dialog_bgm_select.get_selected_item() == "null" and current_bgm is None:
-                pass
-            else:
-                if self.dialog_bgm_select.get_selected_item() == "null" and current_bgm is not None:
-                    self._current_dialog_content["background_music"] = None
-                else:
-                    self._current_dialog_content["background_music"] = self.dialog_bgm_select.get(
-                        self.dialog_bgm_select.get_selected_item()
-                    )
-                self._update_scene(self._dialog_id)
+        if self._current_dialog_content["background_music"] != self.dialog_bgm_select.get_selected_item():
+            self._current_dialog_content["background_music"] = (
+                None
+                if self.dialog_bgm_select.get_selected_item() == "null"
+                else self.dialog_bgm_select.get(self.dialog_bgm_select.get_selected_item())
+            )
+            self._update_scene(self._dialog_id)
         # 展示出当前可供编辑的dialog部分
         self.dialog_key_select.draw(surface)
         # 切换当前正在浏览编辑的dialog部分
@@ -484,8 +480,7 @@ class DialogEditor(DialogConverter):
             # 移除角色立绘
             elif Controller.get_event("delete") and self._npc_manager.character_get_click is not None:
                 self._current_dialog_content["character_images"].remove(self._npc_manager.character_get_click)
-                self._npc_manager.update(self._current_dialog_content["character_images"])
-                self._npc_manager.character_get_click = None
+                self._update_scene(self._dialog_id)
         # 显示移除角色的提示
         if self._npc_manager.character_get_click is not None:
             surface.blit(self.__remove_npc_button, Controller.mouse.pos)
@@ -524,11 +519,11 @@ class DialogEditor(DialogConverter):
                 elif self.__UIContainerRight_npc.is_visible():
                     imgName = self.__UIContainerRight_npc.item_being_hovered
                     if imgName is not None:
-                        if self._current_dialog_content["character_images"] is None:
+                        if self._current_dialog_content.get("character_images") is None:
                             self._current_dialog_content["character_images"] = []
-                        if len(self._current_dialog_content["character_images"]) < 2:  # type: ignore
-                            self._current_dialog_content["character_images"].append(imgName)  # type: ignore
-                            self._npc_manager.update(self._current_dialog_content["character_images"])  # type: ignore
+                        if len(self._current_dialog_content["character_images"]) < 2:
+                            self._current_dialog_content["character_images"].append(imgName)
+                            self._npc_manager.update(self._current_dialog_content["character_images"])
 
         # 展示dialog navigation窗口
         self.__dialog_navigation_window.present_on(surface)

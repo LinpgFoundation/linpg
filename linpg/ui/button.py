@@ -185,7 +185,7 @@ class Button(AbstractButton):
         self.__description = value
         self.__description_surface = (
             Font.render_description_box(
-                self.__description, Colors.BLACK, int(self.get_height() / 5 * 2), int(self.get_height() / 5), Colors.WHITE
+                self.__description, Colors.BLACK, self.get_height() * 2 // 5, self.get_height() // 5, Colors.WHITE
             )
             if len(self.__description) > 0
             else None
@@ -211,7 +211,7 @@ class Button(AbstractButton):
             if self.__icon is not None and self.__text is not None:
                 # 计算真实尺寸
                 self.__icon.set_left(
-                    self.x + int((self.get_width() - self.__icon.get_width() - self.__text.get_width()) / 2) + offSet[0]
+                    self.x + (self.get_width() - self.__icon.get_width() - self.__text.get_width()) // 2 + offSet[0]
                 )
                 self.__text.set_left(self.__icon.right)
             elif self.__icon is not None:

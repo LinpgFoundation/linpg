@@ -90,11 +90,11 @@ class SurfaceWithLocalPos:
     # 绝对的本地坐标
     @property
     def abs_x(self) -> int:
-        return int(self.get_left() + self.__local_x)
+        return self.get_left() + self.__local_x
 
     @property
     def abs_y(self) -> int:
-        return int(self.get_top() + self.__local_y)
+        return self.get_top() + self.__local_y
 
     @property
     def abs_pos(self) -> tuple[int, int]:

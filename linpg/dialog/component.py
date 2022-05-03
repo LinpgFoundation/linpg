@@ -4,7 +4,7 @@ from .dialogbox import *
 class DialogNode(Button):
     def __init__(self, key_name: str, font_size: int, next_keys: list[str], tag: str = ""):
         self.__key_name: str = key_name
-        button_surface = Font.render_description_box(self.__key_name, Colors.BLACK, font_size, int(font_size / 2), Colors.WHITE)
+        button_surface = Font.render_description_box(self.__key_name, Colors.BLACK, font_size, font_size // 2, Colors.WHITE)
         super().__init__(button_surface, 0, 0, width=button_surface.get_width(), height=button_surface.get_height(), tag=tag)
         self.__next_keys: tuple[str, ...] = tuple(next_keys)
         self.has_been_displayed: bool = False
@@ -15,8 +15,10 @@ class DialogNode(Button):
         return self.__next_keys
 
     # 展示（注意，你无法在此输入off_set，你必须提前设置）
-    def display(self, surface: ImageSurface) -> None:  # type: ignore[override]
-        return super().display(surface)
+    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+        if offSet != ORIGIN:
+            EXCEPTION.fatal("You cannot set off set for DialogNode object!")
+        super().display(surface, offSet)
 
 
 # 对话key向导窗口
@@ -109,7 +111,7 @@ class DialogNavigationWindow(AbstractFrame):
 
     def _any_content_container_event(self) -> bool:
         for key in self.__nodes_map:
-            if convert_rect(
+            if Rectangles.create(
                 (
                     Coordinates.subtract(
                         Coordinates.add(self.__nodes_map[key].pos, (self.x, self.content_container_y)), self.local_pos

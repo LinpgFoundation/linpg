@@ -56,8 +56,8 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos):
     def _get_right_scroll_bar_rect(self, off_set_x: number, off_set_y: number) -> Optional[Rectangle]:
         return (
             Rectangle(
-                int(self.get_right() - self._button_tickness + off_set_x),
-                int(self.get_top() + off_set_y),
+                self.get_right() - self._button_tickness + int(off_set_x),
+                self.get_top() + int(off_set_y),
                 self._button_tickness,
                 self.get_height(),
             )
@@ -68,8 +68,8 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos):
     def _get_bottom_scroll_bar_rect(self, off_set_x: number, off_set_y: number) -> Optional[Rectangle]:
         return (
             Rectangle(
-                int(self.get_left() + off_set_x),
-                int(self.get_bottom() - self._button_tickness + off_set_y),
+                self.get_left() + int(off_set_x),
+                self.get_bottom() - self._button_tickness + int(off_set_y),
                 self.get_width(),
                 self._button_tickness,
             )
@@ -81,10 +81,10 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos):
     def _get_right_scroll_button_rect(self, off_set_x: number, off_set_y: number) -> Optional[Rectangle]:
         return (
             Rectangle(
-                int(self.get_right() - self._button_tickness + off_set_x),
+                self.get_right() - self._button_tickness + int(off_set_x),
                 int(self.get_top() - self.get_height() * self.local_y / self.get_surface_height() + off_set_y),
                 self._button_tickness,
-                int(self.get_height() * self.get_height() / self.get_surface_height()),
+                self.get_height() * self.get_height() // self.get_surface_height(),
             )
             if self.get_surface_height() > self.get_height()
             else None
@@ -94,8 +94,8 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos):
         return (
             Rectangle(
                 int(self.get_left() - self.get_width() * self.local_x / self.get_surface_width() + off_set_x),
-                int(self.get_bottom() - self._button_tickness + off_set_y),
-                int(self.get_width() * self.get_width() / self.get_surface_width()),
+                self.get_bottom() - self._button_tickness + int(off_set_y),
+                self.get_width() * self.get_width() // self.get_surface_width(),
                 self._button_tickness,
             )
             if self.get_surface_width() > self.get_width()
@@ -239,10 +239,10 @@ class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface):
                 return self._get_right_scroll_button_rect(off_set_x, off_set_y)
             elif self.get_surface_height() > self.get_height():
                 return Rectangle(
-                    int(self.abs_x + off_set_x),
+                    self.abs_x + int(off_set_x),
                     int(self.get_top() - self.get_height() * self.local_y / self.get_surface_height() + off_set_y),
                     self._button_tickness,
-                    int(self.get_height() * self.get_height() / self.get_surface_height()),
+                    self.get_height() * self.get_height() // self.get_surface_height(),
                 )
         else:
             if not self.__scroll_bar_pos:
@@ -250,8 +250,8 @@ class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface):
             elif self.get_surface_width() > self.get_width():
                 return Rectangle(
                     int(self.get_left() - self.get_width() * self.local_x / self.get_surface_width() + off_set_x),
-                    int(self.abs_y + off_set_y),
-                    int(self.get_width() * self.get_width() / self.get_surface_width()),
+                    self.abs_y + int(off_set_y),
+                    self.get_width() * self.get_width() // self.get_surface_width(),
                     self._button_tickness,
                 )
         return None
@@ -263,14 +263,14 @@ class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface):
                 return self._get_right_scroll_bar_rect(off_set_x, off_set_y)
             elif self.get_surface_height() > self.get_height():
                 return Rectangle(
-                    int(self.abs_x + off_set_x), int(self.get_top() + off_set_y), self._button_tickness, self.get_height()
+                    self.abs_x + int(off_set_x), self.get_top() + int(off_set_y), self._button_tickness, self.get_height()
                 )
         else:
             if not self.__scroll_bar_pos:
                 return self._get_bottom_scroll_bar_rect(off_set_x, off_set_y)
             elif self.get_surface_width() > self.get_width():
                 return Rectangle(
-                    int(self.get_left() + off_set_x), int(self.abs_y + off_set_y), self.get_width(), self._button_tickness
+                    self.get_left() + int(off_set_x), self.abs_y + int(off_set_y), self.get_width(), self._button_tickness
                 )
         return None
 

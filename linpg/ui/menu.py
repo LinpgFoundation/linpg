@@ -36,13 +36,15 @@ class DefaultOptionMenu(AbstractInternalMenu):
             # 检查是否初始化
             if not self._initialized:
                 self.initialize()
-                assert self._CONTENT is not None
+                if self._CONTENT is None:
+                    EXCEPTION.fatal("The ui has not been correctly initialized.")
                 lang_drop_down = self._CONTENT.get("lang_drop_down")
                 for lang_choice in Lang.get_available_languages():
                     lang_drop_down.set(lang_choice, lang_choice)
                 lang_drop_down.set_selected_item(Lang.current_language)
             else:
-                assert self._CONTENT is not None
+                if self._CONTENT is None:
+                    EXCEPTION.fatal("The ui has not been correctly initialized.")
                 lang_drop_down = self._CONTENT.get("lang_drop_down")
             # 更新百分比
             self._CONTENT.get("global_sound_volume").set_percentage(Setting.get("Sound", "global_value") / 100)
@@ -123,10 +125,10 @@ class PauseMenu(AbstractInternalMenu):
 
     def hide(self) -> None:
         self.set_visible(False)
-        assert self.__exit_warning is not None
-        self.__exit_warning.set_visible(False)
-        assert self.__leave_warning is not None
-        self.__leave_warning.set_visible(False)
+        if self.__exit_warning is not None:
+            self.__exit_warning.set_visible(False)
+        if self.__leave_warning is not None:
+            self.__leave_warning.set_visible(False)
         self.__screenshot = None
 
     def draw(self, surface: ImageSurface) -> None:
@@ -135,9 +137,8 @@ class PauseMenu(AbstractInternalMenu):
             if not self._initialized:
                 self.initialize()
             # 确保所有模块已经正常初始化
-            assert self.__exit_warning is not None
-            assert self.__leave_warning is not None
-            assert self._CONTENT is not None
+            if self.__exit_warning is None or self.__leave_warning is None or self._CONTENT is None:
+                EXCEPTION.fatal("The ui has not been correctly initialized.")
             # 展示原先的背景
             if self.__screenshot is None:
                 self.__screenshot = RawImg.add_darkness(surface, 10)
@@ -217,7 +218,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
         if self.__pause_menu is not None:
             Media.pause()
             progress_saved_text = StaticImage(
-                Font.render(Lang.get_text("Global", "progress_has_been_saved"), Colors.WHITE, int(Display.get_width() * 0.015)),
+                Font.render(Lang.get_text("Global", "progress_has_been_saved"), Colors.WHITE, Display.get_width() * 3 // 200),
                 0,
                 0,
             )

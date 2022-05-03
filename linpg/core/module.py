@@ -22,7 +22,7 @@ class Coordinate:
 
     # 向左移动
     def move_left(self, value: int_f) -> None:
-        self.set_left(self.x - int(value))
+        self.set_left(int(self.x - value))
 
     # 向右移动
     def move_right(self, value: int_f) -> None:
@@ -41,7 +41,7 @@ class Coordinate:
 
     # 向上移动
     def move_upward(self, value: int_f) -> None:
-        self.set_top(self.y - int(value))
+        self.set_top(int(self.y - value))
 
     # 向下移动
     def move_downward(self, value: int_f) -> None:
@@ -150,20 +150,20 @@ class GameObject2d(Coordinate):
     # 中心位置
     @property
     def centerx(self) -> int:
-        return self.x + int(self.get_width() / 2)
+        return self.x + self.get_width() // 2
 
     def get_centerx(self) -> int:
-        return self.x + int(self.get_width() / 2)
+        return self.x + self.get_width() // 2
 
     def set_centerx(self, centerx: int_f) -> None:
         self.x = int(centerx - self.get_width() / 2)
 
     @property
     def centery(self) -> int:
-        return self.y + int(self.get_height() / 2)
+        return self.y + self.get_height() // 2
 
     def get_centery(self) -> int:
-        return self.y + int(self.get_height() / 2)
+        return self.y + self.get_height() // 2
 
     def set_centery(self, centery: int_f) -> None:
         self.y = int(centery - self.get_height() / 2)

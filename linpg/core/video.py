@@ -23,7 +23,7 @@ def _video_validator(path: str) -> None:
 def get_preview_of_video(path: str, size: tuple[int, int] = NoSize) -> ImageSurface:
     _video_validator(path)
     video_stream = cv2.VideoCapture(path)
-    video_stream.set(cv2.CAP_PROP_POS_FRAMES, int(video_stream.get(cv2.CAP_PROP_FRAME_COUNT) * 0.1))
+    video_stream.set(cv2.CAP_PROP_POS_FRAMES, video_stream.get(cv2.CAP_PROP_FRAME_COUNT) // 10)
     current_frame = cv2.cvtColor(video_stream.read()[1], cv2.COLOR_BGR2RGB)
     video_stream.release()
     del video_stream
@@ -43,13 +43,13 @@ class AbstractVideo:
         """视频流"""
         self.__video_stream: cv2.VideoCapture = None
         self._frame_rate: int = 0
-        self._frame_buffer_num: int = int(buffer_num)
+        self._frame_buffer_num: int = buffer_num
         """参数"""
         # 确保play_range参数合法
         if len(play_range) < 2:
             EXCEPTION.fatal("The length of play_range parameter must >= 2.")
-        self._starting_point: int = int(play_range[0])
-        self._ending_point: int = int(play_range[1])
+        self._starting_point: int = play_range[0]
+        self._ending_point: int = play_range[1]
         self.__stopped: bool = False
         self.__started: bool = False
         self.__frame_index_to_set: int = -1
@@ -68,7 +68,7 @@ class AbstractVideo:
         self.__started = True
 
     def set_starting_point(self, index: int) -> None:
-        self._starting_point = int(index)
+        self._starting_point = index
 
     # 每秒帧数
     @property
@@ -104,7 +104,7 @@ class AbstractVideo:
         elif num < 0:
             EXCEPTION.fatal("You cannot set negative frame index.")
         else:
-            self.__frame_index_to_set = int(num)
+            self.__frame_index_to_set = num
 
     # 已经播放的百分比
     def get_percentage_played(self) -> float:
@@ -260,10 +260,10 @@ class VideoPlayer(AbstractVideo):
         if self.is_playing():
             if (
                 self.get_frame_index() <= self.get_frame_num()
-                and (current_frame_index_based_on_music := round(Music.get_pos() / 1000 * self._frame_rate))
+                and (current_frame_index_based_on_music := round(Music.get_pos() * self._frame_rate / 1000))
                 <= self.get_frame_num()
             ):
-                frame_difference: int = int(current_frame_index_based_on_music - self.get_frame_index())
+                frame_difference: int = current_frame_index_based_on_music - self.get_frame_index()
                 # 如果播放速度太慢
                 if frame_difference >= self._frame_buffer_num:
                     self.set_frame_index(current_frame_index_based_on_music)

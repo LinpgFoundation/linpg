@@ -11,8 +11,8 @@ class FriendlyCharacterDynamicProgressBarSurface(DynamicProgressBarSurface):
     def __init__(self) -> None:
         # 检测图标是否生成，如果没有则生成
         if not self.__img_initialized:
-            self.__FULLY_EXPOSED_IMG = RawImg.quickly_load(r"Assets/image/UI/eye_red.png")
-            self.__BEING_NOTICED_IMG = RawImg.quickly_load(r"Assets/image/UI/eye_orange.png")
+            self.__FULLY_EXPOSED_IMG = RawImg.quickly_load("<&ui>eye_red.png")
+            self.__BEING_NOTICED_IMG = RawImg.quickly_load("<&ui>eye_orange.png")
             # 完成初始化
             self.__img_initialized = True
         super().__init__(self.__FULLY_EXPOSED_IMG, self.__BEING_NOTICED_IMG, 0, 0, 0, 0)
@@ -28,8 +28,8 @@ class HostileCharacterDynamicProgressBarSurface(DynamicProgressBarSurface):
     def __init__(self) -> None:
         # 检测图标是否生成，如果没有则生成
         if not self.__img_initialized:
-            self.__ORANGE_VIGILANCE_IMG = RawImg.quickly_load(r"Assets/image/UI/vigilance_orange.png")
-            self.__RED_VIGILANCE_IMG = RawImg.quickly_load(r"Assets/image/UI/vigilance_red.png")
+            self.__ORANGE_VIGILANCE_IMG = RawImg.quickly_load("<&ui>vigilance_orange.png")
+            self.__RED_VIGILANCE_IMG = RawImg.quickly_load("<&ui>vigilance_red.png")
             # 完成初始化
             self.__img_initialized = True
         super().__init__(self.__RED_VIGILANCE_IMG, self.__ORANGE_VIGILANCE_IMG, 0, 0, 0, 0, "vertical")
@@ -47,9 +47,9 @@ class EntityHpBar(DynamicProgressBarSurface):
     def __init__(self) -> None:
         # 检测被察觉的图标是否生产，如果没有则生成
         if not self.__img_initialized:
-            self.__HP_GREEN_IMG = RawImg.quickly_load(r"Assets/image/UI/hp_green.png")
-            self.__HP_RED_IMG = RawImg.quickly_load(r"Assets/image/UI/hp_red.png")
-            self.__HP_EMPTY_IMG = RawImg.quickly_load(r"Assets/image/UI/hp_empty.png")
+            self.__HP_GREEN_IMG = RawImg.quickly_load("<&ui>hp_green.png")
+            self.__HP_RED_IMG = RawImg.quickly_load("<&ui>hp_red.png")
+            self.__HP_EMPTY_IMG = RawImg.quickly_load("<&ui>hp_empty.png")
             # 完成初始化
             self.__img_initialized = True
         # 是否角色死亡

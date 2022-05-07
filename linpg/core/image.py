@@ -138,7 +138,7 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
 
 
 # 空的静态图片占位符
-NULL_STATIC_IMAGE: StaticImage = StaticImage("<!null>", 0, 0, 0, 0, "<!null>")
+NULL_STATIC_IMAGE: StaticImage = StaticImage("<NULL>", 0, 0, 0, 0)
 
 # 需要移动的动态图片
 class MovableImage(StaticImage):

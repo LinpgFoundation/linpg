@@ -9,7 +9,7 @@ class AbstractDialogBox(HiddenableSurface):
         self._dialoguebox_max_y: int = Display.get_height() * 65 // 100
         # 对胡框图片
         self._dialoguebox: StaticImage = StaticImage(
-            "<!ui>dialoguebox.png", Display.get_width() * 13 // 100, 0, Display.get_width() * 74 // 100
+            "<&ui>dialoguebox.png", Display.get_width() * 13 // 100, 0, Display.get_width() * 74 // 100
         )
 
     # 画出（子类需实现）
@@ -89,8 +89,8 @@ class DialogBox(AbstractDialogBox):
         # 鼠标图标
         self.__mouse_img = AnimatedImage(
             (
-                StaticImage("<!ui>mouse_none.png", 0, 0, self.FONT.size, self.FONT.size),
-                StaticImage("<!ui>mouse.png", 0, 0, self.FONT.size, self.FONT.size),
+                StaticImage("<&ui>mouse_none.png", 0, 0, self.FONT.size, self.FONT.size),
+                StaticImage("<&ui>mouse.png", 0, 0, self.FONT.size, self.FONT.size),
             ),
             Display.get_width() * 82 // 100,
             Display.get_height() * 82 // 100,

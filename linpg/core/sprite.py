@@ -10,8 +10,17 @@ class SpriteImage:
         self.__SHEET: ImageSurface = RawImg.quickly_load(self.__PATH)
         # 加载Sprite图的数据
         self.__DICTIONARY: dict = {}
-        if self.__PATH != "<!null>":
+        if not self.__PATH.startswith("<"):
             self.__DICTIONARY.update(Config.load_file(self.__PATH + ".linpg.meta"))
+        elif self.__PATH != "<NULL>":
+            self.__DICTIONARY.update(
+                Config.load_file(
+                    os.path.join(
+                        RawImg.get_directory_of_implicit_image_just_loaded(),
+                        self.__PATH[self.__PATH.index(">") + 1 :] + ".linpg.meta",
+                    )
+                )
+            )
 
     # 获取一个图片
     def get(self, key: str) -> Union[ImageSurface, tuple]:

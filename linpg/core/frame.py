@@ -43,7 +43,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
             # 初始化图标
             if not self.__rescale_icon_initialized:
                 self.__rescale_icon_0 = StaticImage(
-                    "<!ui>rescale.png", 0, 0, self.__bar_height * 3 / 2, self.__bar_height * 3 / 2
+                    "<&ui>rescale.png", 0, 0, self.__bar_height * 3 / 2, self.__bar_height * 3 / 2
                 )
                 self.__rescale_icon_45 = self.__rescale_icon_0.copy()
                 self.__rescale_icon_45.rotate(45)

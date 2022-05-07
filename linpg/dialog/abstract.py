@@ -28,7 +28,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 指向当前对话的数据的指针
         self._current_dialog_content: dict = {}
         # 选项菜单
-        self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer("<!null>", 0, 0, 0, 0)
+        self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer("<NULL>", 0, 0, 0, 0)
         self._dialog_options_container.set_visible(False)
         # 更新背景音乐音量
         self.set_bgm_volume(Media.volume.background_music / 100)
@@ -242,8 +242,8 @@ class AbstractDialogSystem(AbstractGameSystem):
             Display.get_height() * 3 // 16 - len(self._current_dialog_content["next_dialog_id"]["target"]) * self._FONT_SIZE
         )
         for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
-            optionButton: Button = Button.load("<!ui>option.png", (0, 0), (0, 0))
-            optionButton.set_hover_img(RawImg.quickly_load("<!ui>option_selected.png"))
+            optionButton: Button = Button.load("<&ui>option.png", (0, 0), (0, 0))
+            optionButton.set_hover_img(RawImg.quickly_load("<&ui>option_selected.png"))
             optionButton.set_auto_resize(True)
             optionButton.set_text(
                 ButtonComponent.text(

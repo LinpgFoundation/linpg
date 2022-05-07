@@ -72,7 +72,7 @@ class MouseController:
         self.update()
 
     @classmethod
-    def set_custom_icon(cls, path: str = "<!ui>mouse_icon.png") -> None:
+    def set_custom_icon(cls, path: str = "<&ui>mouse_icon.png") -> None:
         cls.__icon_img = RawImg.load(path, (int(Setting.get("MouseIconWidth")), int(Setting.get("MouseIconWidth") * 1.3)))
 
     # 灵敏度

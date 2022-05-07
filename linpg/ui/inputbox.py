@@ -179,7 +179,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         super().__init__(x, y, font_size, txt_color, default_width)
         self._text: list[str] = [""]
         self.lineId = 0
-        self.__show_PySimpleGUI_input_box: Button = Button.load("<!ui>back.png", (0, 0), (self._FONT.size, self._FONT.size))
+        self.__show_PySimpleGUI_input_box: Button = Button.load("<&ui>back.png", (0, 0), (self._FONT.size, self._FONT.size))
 
     def get_text(self) -> list:
         self.need_save = False

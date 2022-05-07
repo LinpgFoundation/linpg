@@ -7,7 +7,7 @@ class AbstractMapEditor(AbstractBattleSystem):
         super().__init__()
         self.__buttons_container: GameObjectsDictContainer = UI.generate_container("map_editor_buttons")
         self.__right_container_buttons: GameObjectsDictContainer = UI.generate_container("map_editor_right_container_buttons")
-        self.__UIContainerRight: DynamicImage = DynamicImage("<!ui>container.png", 0, 0)
+        self.__UIContainerRight: DynamicImage = DynamicImage("<&ui>container.png", 0, 0)
         self.__UIContainerRight.rotate(90)
         self.__bottom_container_buttons: GameObjectsListContainer = GameObjectsListContainer(None, 0, 0, 0, 0)
         self.__entitiesImagesContainers: list = []
@@ -83,7 +83,7 @@ class AbstractMapEditor(AbstractBattleSystem):
         )
         self.__UIContainerRight.set_size(container_width, container_height)
         self.__UIContainerButtonRight = MovableImage(
-            "<!ui>container_button.png",
+            "<&ui>container_button.png",
             screen.get_width() - button_width,
             (screen.get_height() - button_height) // 2,
             screen.get_width() - button_width - container_width,
@@ -132,9 +132,9 @@ class AbstractMapEditor(AbstractBattleSystem):
         container_height = screen.get_height() * 3 // 10
         button_width = screen.get_width() * 7 // 50
         button_height = screen.get_height() // 20
-        self.__UIContainerBottom = DynamicImage("<!ui>container.png", 0, 0, container_width, container_height)
+        self.__UIContainerBottom = DynamicImage("<&ui>container.png", 0, 0, container_width, container_height)
         self.__UIContainerButtonBottom = MovableImage(
-            "<!ui>container_button.png",
+            "<&ui>container_button.png",
             (container_width - button_width) // 2,
             screen.get_height() - button_height,
             (container_width - button_width) // 2,
@@ -166,7 +166,7 @@ class AbstractMapEditor(AbstractBattleSystem):
             newContainer.set_scroll_bar_pos("bottom")
             newContainer.distance_between_item = panding
             self.__entitiesImagesContainers.append(newContainer)
-            newButton: Button = Button.load("<!ui>button.png", (0, 0), (0, 0), 100)
+            newButton: Button = Button.load("<&ui>button.png", (0, 0), (0, 0), 100)
             newButton.set_text(
                 ButtonComponent.text(
                     Lang.get_text("General", faction), button_height // 2, Colors.BLACK, alpha_when_not_hover=100
@@ -179,9 +179,9 @@ class AbstractMapEditor(AbstractBattleSystem):
                 self.__entitiesImagesContainerUsingIndex = 0
             self.__bottom_container_buttons.append(newButton)
         # 绿色方块/方块标准
-        self.__range_green = RawImg.load("<!ui>range_green.png", (self._MAP.block_width * 4 // 5, None))
+        self.__range_green = RawImg.load("<&ui>range_green.png", (self._MAP.block_width * 4 // 5, None))
         self.__range_green.set_alpha(150)
-        self.__range_red = RawImg.load("<!ui>range_red.png", (self._MAP.block_width * 4 // 5, None))
+        self.__range_red = RawImg.load("<&ui>range_red.png", (self._MAP.block_width * 4 // 5, None))
         self.__range_red.set_alpha(150)
         self.__object_to_put_down.clear()
         # 设置按钮位置

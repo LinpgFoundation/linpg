@@ -58,11 +58,11 @@ class DecorationImagesModule:
             cls.__DECORATION_IMAGE_DICT[decorationType] = {}
         # 如果SPRITE SHEET未被初始化，则初始化
         if cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET is None:
-            cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET = SpriteImage(ASSET.get_internal_environment_image_path("decoration"))
+            cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET = SpriteImage("<!env>decoration.png")
         if cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET is None:
             _path: str = os.path.join("Assets", "image", "environment", "decoration.png")
             # 确认自带的sheet存在; 如果不存在，则加载一个空的sheet
-            cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET = SpriteImage(_path if os.path.exists(_path) else "<!null>")
+            cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET = SpriteImage(_path if os.path.exists(_path) else "<NULL>")
         # 从sheet中读取装饰物图片
         _img: Union[ImageSurface, tuple]
         if cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.contain(fileName):
@@ -70,7 +70,7 @@ class DecorationImagesModule:
         elif cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.contain(fileName):
             _img = cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.get(fileName)
         else:
-            EXCEPTION.fatal('Cannot find decoration image "{}" in the folder'.format(fileName))
+            EXCEPTION.fatal('Cannot find decoration image "{}"'.format(fileName))
         # 常规的独立图片
         if not isinstance(_img, tuple):
             # 最后确认一下是不是需要加载
@@ -147,7 +147,7 @@ class TileMapImagesModule:
     @classmethod
     def add_image(cls, fileName: str) -> None:
         if cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET is None:
-            cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET = SpriteImage(ASSET.get_internal_environment_image_path("block"))
+            cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET = SpriteImage("<!env>block.png")
         if cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.contain(fileName):
             if fileName not in cls.__ENV_IMAGE_DICT:
                 _img: Union[ImageSurface, tuple] = cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.get(fileName)

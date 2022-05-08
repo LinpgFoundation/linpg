@@ -180,9 +180,9 @@ class AbstractDialogSystem(AbstractGameSystem):
                         self.__background_image_surface = StaticImage(img_path, 0, 0)
                         self.__background_image_surface.disable_croping()
                     # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
-                    elif os.path.exists(os.path.join(Specification.get("FolderPath", "Movie"), self.__background_image_name)):
+                    elif os.path.exists(Specification.get_directory("Movie", self.__background_image_name)):
                         self.__background_image_surface = VideoSurface(
-                            os.path.join(Specification.get("FolderPath", "Movie"), self.__background_image_name), with_audio=False
+                            Specification.get_directory("Movie", self.__background_image_name), with_audio=False
                         )
                     else:
                         EXCEPTION.fatal(
@@ -209,7 +209,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._get_dialog_box().update(self._current_dialog_content["narrator"], self._current_dialog_content["contents"])
         # 更新背景音乐
         if (current_bgm := self._current_dialog_content["background_music"]) is not None:
-            self.set_bgm(os.path.join(Specification.get("FolderPath", "Music"), current_bgm))
+            self.set_bgm(Specification.get_directory("Music", current_bgm))
         else:
             self.unload_bgm()
         # 隐藏选项菜单

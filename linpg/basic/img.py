@@ -93,8 +93,6 @@ _KEY: bytes = bytes("82&939DcaO6002#*", "utf-8")
 # 源图形处理
 class RawImg:
 
-    # 自定义素材路径
-    __CUSTOM_IMAGE_PATH: str = os.path.join("Assets", "image")
     # 真实坐标
     __TRUE_PATH: str = ""
 
@@ -125,7 +123,7 @@ class RawImg:
                     file_name: str
                     if path.startswith("<&ui>"):
                         file_name = path[path.index(">") + 1 :]
-                        cls.__TRUE_PATH = os.path.join(cls.__CUSTOM_IMAGE_PATH, "ui", file_name)
+                        cls.__TRUE_PATH = Specification.get_directory("UserInterface", file_name)
                         if os.path.exists(cls.__TRUE_PATH):
                             _imageR = pygame.image.load(cls.__TRUE_PATH)
                         else:
@@ -140,7 +138,7 @@ class RawImg:
                                 EXCEPTION.fatal('Cannot find (essential) ui file "{}"'.format(file_name))
                     elif path.startswith("<&env>"):
                         file_name = path[path.index(">") + 1 :]
-                        cls.__TRUE_PATH = os.path.join(cls.__CUSTOM_IMAGE_PATH, "environment", file_name)
+                        cls.__TRUE_PATH = Specification.get_directory("Environment", file_name)
                         if os.path.exists(cls.__TRUE_PATH):
                             _imageR = pygame.image.load(cls.__TRUE_PATH)
                         else:

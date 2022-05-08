@@ -60,8 +60,8 @@ class DialogEditor(DialogConverter):
         for imgPath in glob(os.path.join(self._background_image_folder_path, "*")):
             self.__UIContainerRight_bg.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 4 / 5, None)))
         # 加载动态背景图片
-        if os.path.exists(Specification.get("FolderPath", "Movie")):
-            for imgPath in glob(os.path.join(Specification.get("FolderPath", "Movie"), "*")):
+        if os.path.exists(Specification.get_directory("Movie")):
+            for imgPath in glob(Specification.get_directory("Movie", "*")):
                 self.__UIContainerRight_bg.set(
                     os.path.basename(imgPath), RawImg.resize(get_preview_of_video(imgPath), (container_width * 4 / 5, None))
                 )
@@ -132,7 +132,7 @@ class DialogEditor(DialogConverter):
         # 背景音乐
         self.dialog_bgm_select = DropDownList(None, button_width * 11, button_y + font_size * 3, font_size)
         self.dialog_bgm_select.set("null", Lang.get_text("DialogCreator", "no_bgm"))
-        for file_name in os.listdir(Specification.get("FolderPath", "Music")):
+        for file_name in os.listdir(Specification.get_directory("Music")):
             self.dialog_bgm_select.set(file_name, file_name)
         # 从配置文件中加载数据
         self._load_content()

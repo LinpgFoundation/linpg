@@ -100,7 +100,7 @@ class Info:
 class Cache:
 
     # 缓存文件夹路径
-    __CACHE_FOLDER: str = str(Specification.get("FolderPath", "Cache"))
+    __CACHE_FOLDER: str = Specification.get_directory("Cache")
     # 缓存文件清单路径
     __CACHE_FILES_DATA_PATH: str = os.path.join(__CACHE_FOLDER, "files.{}".format(Config.get_file_type()))
     # 缓存文件目录数据

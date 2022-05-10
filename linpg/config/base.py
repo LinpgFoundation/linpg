@@ -55,6 +55,9 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Optional[object],
 # 配置文件管理模块
 class Config:
 
+    # 支持的配置文件后缀
+    __EXTENSIONS_SUPPORTED: tuple[str, ...] = (".yml", ".yaml", ".json")
+
     # 获取默认配置文件类型
     @staticmethod
     def get_file_type() -> str:
@@ -180,17 +183,13 @@ class Config:
             Config.optimize_cn_content(configFilePath)
 
     # 解决路径冲突
-    @staticmethod
-    def resolve_path(file_location: str) -> str:
+    @classmethod
+    def resolve_path(cls, file_location: str) -> str:
         path: str
-        if (
-            os.path.exists(path := file_location + ".yml")
-            or os.path.exists(path := file_location + ".yaml")
-            or os.path.exists(path := file_location + ".json")
-        ):
-            return path
-        else:
-            return ""
+        for fileType in cls.__EXTENSIONS_SUPPORTED:
+            if os.path.exists(path := file_location + fileType):
+                return path
+        return ""
 
     # 解决路径冲突并加载
     @classmethod

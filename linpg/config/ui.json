@@ -132,7 +132,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "description": "{DialogCreator,add}",
+                "description": "{Editor,add}",
                 "height": "<!button_size>",
                 "name": "add",
                 "src": "<&ui>add.png",
@@ -143,7 +143,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "description": "{DialogCreator,next}",
+                "description": "{Editor,next}",
                 "height": "<!button_size>",
                 "name": "next",
                 "src": "<&ui>next.png",
@@ -154,7 +154,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "description": "{DialogCreator,previous}",
+                "description": "{Editor,previous}",
                 "height": "<!button_size>",
                 "name": "previous",
                 "src": "<&ui>previous.png",
@@ -165,7 +165,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "description": "{DialogCreator,delete}",
+                "description": "{Editor,delete}",
                 "height": "<!button_size>",
                 "name": "delete",
                 "src": "<&ui>delete.png",

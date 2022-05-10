@@ -8,10 +8,11 @@
         "choice": "Choice",
         "skip": "Skip"
     },
-    "DialogCreator": {
+    "Editor": {
         "add": "New dialog",
         "background": "Background Image",
         "delete": "Delete current dialog",
+        "example_project": "Example Project",
         "next": "Next dialog",
         "no_bgm": "No background music",
         "npc": "Npc",

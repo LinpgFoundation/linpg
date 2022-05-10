@@ -63,7 +63,7 @@ class DialogEditor(DialogConverter):
         if os.path.exists(Specification.get_directory("Movie")):
             for imgPath in glob(Specification.get_directory("Movie", "*")):
                 self.__UIContainerRight_bg.set(
-                    os.path.basename(imgPath), RawImg.resize(get_preview_of_video(imgPath), (container_width * 4 / 5, None))
+                    os.path.basename(imgPath), RawImg.resize(VideoSurface.get_preview(imgPath), (container_width * 4 / 5, None))
                 )
         # 加载透明图片
         self.__UIContainerRight_bg.set(
@@ -97,7 +97,7 @@ class DialogEditor(DialogConverter):
         )
         self.__UIContainerRightButton.rotate(90)
         # UI按钮
-        CONFIG = Lang.get_texts("DialogCreator")
+        CONFIG = Lang.get_texts("Editor")
         button_y: int = Display.get_height() * 3 // 100
         font_size: int = button_width // 3
         # 控制容器转换的按钮
@@ -131,7 +131,7 @@ class DialogEditor(DialogConverter):
         self.__please_enter_name = str(CONFIG["please_enter_name"])
         # 背景音乐
         self.dialog_bgm_select = DropDownList(None, button_width * 11, button_y + font_size * 3, font_size)
-        self.dialog_bgm_select.set("null", Lang.get_text("DialogCreator", "no_bgm"))
+        self.dialog_bgm_select.set("null", Lang.get_text("Editor", "no_bgm"))
         for file_name in os.listdir(Specification.get_directory("Music")):
             self.dialog_bgm_select.set(file_name, file_name)
         # 从配置文件中加载数据

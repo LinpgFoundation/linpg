@@ -73,11 +73,8 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 获取下一个dialog node的类型
     def get_next_dialog_type(self) -> Optional[str]:
-        return (
-            self._current_dialog_content["next_dialog_id"]["type"]
-            if self._current_dialog_content["next_dialog_id"] is not None
-            else None
-        )
+        _next: Optional[dict] = self._current_dialog_content.get("next_dialog_id")
+        return _next.get("type") if _next is not None else None
 
     # 生产一个新的推荐id
     def generate_a_new_recommended_key(self, index: int = 1) -> str:
@@ -116,11 +113,8 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 检测当前对话是否带有合法的下一个对话对象的id
     def does_current_dialog_have_next_dialog(self) -> bool:
-        return (
-            "next_dialog_id" in self._current_dialog_content
-            and self._current_dialog_content["next_dialog_id"] is not None
-            and len(self._current_dialog_content["next_dialog_id"]) > 0
-        )
+        _next: Optional[dict] = self._current_dialog_content.get("next_dialog_id")
+        return _next is not None and len(_next) > 0
 
     # 初始化关键参数
     def _initialize(  # type: ignore[override]

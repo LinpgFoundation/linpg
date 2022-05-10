@@ -19,19 +19,6 @@ def _video_validator(path: str) -> None:
         EXCEPTION.fatal('Cannot find file on path: "{}"'.format(path))
 
 
-# 获取视频封面
-def get_preview_of_video(path: str, size: tuple[int, int] = NoSize) -> ImageSurface:
-    _video_validator(path)
-    video_stream = cv2.VideoCapture(path)
-    video_stream.set(cv2.CAP_PROP_POS_FRAMES, video_stream.get(cv2.CAP_PROP_FRAME_COUNT) // 10)
-    current_frame = cv2.cvtColor(video_stream.read()[1], cv2.COLOR_BGR2RGB)
-    video_stream.release()
-    del video_stream
-    if size is not NoSize and (current_frame.shape[0] != size[0] or current_frame.shape[1] != size[1]):
-        current_frame = cv2.resize(current_frame, size)
-    return Surface.from_array(current_frame)
-
-
 # 视频抽象类
 class AbstractVideo:
     def __init__(self, path: str, buffer_num: int, play_range: tuple[int, int] = (0, -1)):
@@ -168,6 +155,19 @@ class VideoSurface(AbstractVideo):
         self.__looped_times: int = 0
         self.__audio: Optional[PG_Sound] = Sound.load_from_video(path, cache_key=cache_key) if with_audio is True else None
         self.__audio_channel: Optional[PG_Channel] = None
+
+    # 获取视频封面
+    @staticmethod
+    def get_preview(path: str, size: tuple[int, int] = NoSize) -> ImageSurface:
+        _video_validator(path)
+        video_stream = cv2.VideoCapture(path)
+        video_stream.set(cv2.CAP_PROP_POS_FRAMES, video_stream.get(cv2.CAP_PROP_FRAME_COUNT) // 10)
+        current_frame = cv2.cvtColor(video_stream.read()[1], cv2.COLOR_BGR2RGB)
+        video_stream.release()
+        del video_stream
+        if size is not NoSize and (current_frame.shape[0] != size[0] or current_frame.shape[1] != size[1]):
+            current_frame = cv2.resize(current_frame, size)
+        return Surface.from_array(current_frame)
 
     # 返回一个复制
     def copy(self) -> "VideoSurface":

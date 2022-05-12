@@ -58,11 +58,18 @@ class DecorationImagesModule:
             cls.__DECORATION_IMAGE_DICT[decorationType] = {}
         # 如果SPRITE SHEET未被初始化，则初始化
         if cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET is None:
-            cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET = SpriteImage("<!env>decoration.png")
+            cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET = SpriteImage(
+                "<!env>decoration.png"
+                if os.path.exists(RawImg.generate_path_according_to_prefix("<!env>decoration.png"))
+                else "<NULL>"
+            )
         if cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET is None:
-            _path: str = os.path.join("Assets", "image", "environment", "decoration.png")
             # 确认自带的sheet存在; 如果不存在，则加载一个空的sheet
-            cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET = SpriteImage(_path if os.path.exists(_path) else "<NULL>")
+            cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET = SpriteImage(
+                "<@env>decoration.png"
+                if os.path.exists(RawImg.generate_path_according_to_prefix("<@env>decoration.png"))
+                else "<NULL>"
+            )
         # 从sheet中读取装饰物图片
         _img: Union[ImageSurface, tuple]
         if cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.contain(fileName):
@@ -147,7 +154,9 @@ class TileMapImagesModule:
     @classmethod
     def add_image(cls, fileName: str) -> None:
         if cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET is None:
-            cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET = SpriteImage("<!env>block.png")
+            cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET = SpriteImage(
+                "<!env>block.png" if os.path.exists(RawImg.generate_path_according_to_prefix("<!env>block.png")) else "<NULL>"
+            )
         if cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.contain(fileName):
             if fileName not in cls.__ENV_IMAGE_DICT:
                 _img: Union[ImageSurface, tuple] = cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.get(fileName)

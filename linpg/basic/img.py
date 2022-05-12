@@ -101,6 +101,28 @@ class RawImg:
     def get_directory_of_implicit_image_just_loaded(cls) -> str:
         return os.path.dirname(cls.__TRUE_PATH)
 
+    # 根据flag
+    @staticmethod
+    def generate_path_according_to_prefix(path: str) -> str:
+        file_name: str = path[path.index(">") + 1 :]
+        if path.startswith("<&env>"):
+            if os.path.exists(real_path := Specification.get_directory("Environment", file_name)):
+                return real_path
+            elif _LINPGASSETS_INITIALIZED is True:
+                return os.path.join(linpgassets.get_image_location(), "environment", file_name + ".zip")
+            else:
+                return ""
+        elif path.startswith("<!env>"):
+            return (
+                os.path.join(linpgassets.get_image_location(), "environment", file_name + ".zip")
+                if _LINPGASSETS_INITIALIZED is True
+                else ""
+            )
+        elif path.startswith("<@env>"):
+            return Specification.get_directory("Environment", file_name)
+        else:
+            EXCEPTION.fatal('Invaid tag: "{}"'.format(path))
+
     # 识快速加载图片
     @classmethod
     def quickly_load(cls, path: PoI, convert_alpha: bool = True) -> ImageSurface:
@@ -120,9 +142,8 @@ class RawImg:
                             _imageR = None
                 # 如果需要加载属于linpgassets的图片
                 elif _LINPGASSETS_INITIALIZED is True:
-                    file_name: str
                     if path.startswith("<&ui>"):
-                        file_name = path[path.index(">") + 1 :]
+                        file_name: str = path[path.index(">") + 1 :]
                         cls.__TRUE_PATH = Specification.get_directory("UserInterface", file_name)
                         if os.path.exists(cls.__TRUE_PATH):
                             _imageR = pygame.image.load(cls.__TRUE_PATH)
@@ -136,30 +157,19 @@ class RawImg:
                                     EXCEPTION.fatal('Cannot find (essential) ui file "{}"'.format(file_name))
                             else:
                                 EXCEPTION.fatal('Cannot find (essential) ui file "{}"'.format(file_name))
-                    elif path.startswith("<&env>"):
-                        file_name = path[path.index(">") + 1 :]
-                        cls.__TRUE_PATH = Specification.get_directory("Environment", file_name)
+                    else:
+                        cls.__TRUE_PATH = cls.generate_path_according_to_prefix(path)
                         if os.path.exists(cls.__TRUE_PATH):
-                            _imageR = pygame.image.load(cls.__TRUE_PATH)
-                        else:
-                            cls.__TRUE_PATH = os.path.join(linpgassets.get_image_location(), "environment", file_name + ".zip")
-                            if os.path.exists(cls.__TRUE_PATH):
+                            if not cls.__TRUE_PATH.endswith(".zip"):
+                                _imageR = pygame.image.load(cls.__TRUE_PATH)
+                            elif "linpgassets" in cls.__TRUE_PATH:
                                 _imageR = pygame.image.load(
-                                    io.BytesIO(zipfile.ZipFile(cls.__TRUE_PATH, "r").read(file_name, pwd=_KEY))
+                                    io.BytesIO(zipfile.ZipFile(cls.__TRUE_PATH, "r").read(path[path.index(">") + 1 :], pwd=_KEY))
                                 )
                             else:
-                                EXCEPTION.fatal('Cannot find (essential) environment file "{}"'.format(file_name))
-                    elif path.startswith("<!env>"):
-                        file_name = path[path.index(">") + 1 :]
-                        cls.__TRUE_PATH = os.path.join(linpgassets.get_image_location(), "environment", file_name + ".zip")
-                        if os.path.exists(cls.__TRUE_PATH):
-                            _imageR = pygame.image.load(
-                                io.BytesIO(zipfile.ZipFile(cls.__TRUE_PATH, "r").read(file_name, pwd=_KEY))
-                            )
+                                EXCEPTION.fatal("Cannot load image from path: {}".format(cls.__TRUE_PATH))
                         else:
-                            EXCEPTION.fatal('Cannot find (essential) environment file "{}"'.format(file_name))
-                    else:
-                        EXCEPTION.fatal('Invaid tag: "{}"'.format(path))
+                            EXCEPTION.fatal('Cannot find (essential) file "{}"'.format(path))
                 else:
                     EXCEPTION.fatal("You are trying to load an asset from linpgassets while linpgassets is not installed!")
                 # 根据参数处理并返回加载好的图片

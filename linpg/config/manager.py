@@ -103,23 +103,16 @@ class Cache:
     __CACHE_FOLDER: str = Specification.get_directory("Cache")
     # 缓存文件清单路径
     __CACHE_FILES_DATA_PATH: str = os.path.join(__CACHE_FOLDER, "files.{}".format(Config.get_file_type()))
-    # 缓存文件目录数据
-    __CACHE_FILES_DATA: dict = {}
-
-    # 如果缓存文件夹不存在
-    if not os.path.exists(__CACHE_FOLDER):
-        # 则创建缓存文件夹
-        os.mkdir(__CACHE_FOLDER)
-    # 如果缓存文件目录不存在
-    if not os.path.exists(__CACHE_FILES_DATA_PATH):
-        # 则创建缓存文件夹
-        Config.save(__CACHE_FILES_DATA_PATH, __CACHE_FILES_DATA)
-    else:
-        __CACHE_FILES_DATA.update(Config.load_file(__CACHE_FILES_DATA_PATH))
+    # 如果缓存文件目录存在, 则加载数据， 否则初始化一个新的空字典
+    __CACHE_FILES_DATA: dict = Config.load_file(__CACHE_FILES_DATA_PATH) if os.path.exists(__CACHE_FILES_DATA_PATH) else {}
 
     # 获取缓存文件夹路径
     @classmethod
-    def generate_folder_path(cls) -> str:
+    def get_directory(cls) -> str:
+        # 如果缓存文件夹不存在， 则创建缓存文件夹
+        if not os.path.exists(cls.__CACHE_FOLDER):
+            os.mkdir(cls.__CACHE_FOLDER)
+        # 返回文件夹路径
         return cls.__CACHE_FOLDER
 
     @staticmethod
@@ -148,6 +141,7 @@ class Cache:
                 "target": {"path": target_file_path, "md5": cls.__generate_md5(target_file_path)},
                 "version": Info.get_current_version(),
             }
+            # 保存缓存文件的相关数据
             Config.save(cls.__CACHE_FILES_DATA_PATH, cls.__CACHE_FILES_DATA)
         else:
             EXCEPTION.fatal('The key named "{}" already exists. Please create a new unique one!'.format(key))

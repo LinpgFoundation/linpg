@@ -92,7 +92,7 @@ def _split_audio_from_video(input_path: str, audio_type: str = "ogg") -> str:
         else:
             index += 1
     # 生成output路径
-    output_path: str = os.path.join(Cache.generate_folder_path(), output_file_name)
+    output_path: str = os.path.join(Cache.get_directory(), output_file_name)
     try:
         # 生成视频文件
         VideoConverter.convert_from_video_to_audio(input_path, output_path)

@@ -6,7 +6,7 @@ class DialogEditor(DialogConverter):
         super().__init__()
         # 导航窗口
         self.__dialog_navigation_window: DialogNavigationWindow = DialogNavigationWindow(
-            0, Display.get_height() / 10, Display.get_width() / 10, Display.get_height() / 10
+            Display.get_width() // 10, Display.get_height() // 5, Display.get_width() // 10, Display.get_height() // 10
         )
         # 加载对话框系统
         self.__dialog_txt_system: EditableDialogBox = EditableDialogBox(self._FONT_SIZE)
@@ -28,6 +28,8 @@ class DialogEditor(DialogConverter):
         self.__no_save_warning: GameObjectsDictContainer = UI.generate_container("leave_without_saving_warning")
         # 当前选择的背景的名称
         self.__current_select_bg_name: Optional[str] = None
+        # 用于选择小说脚本的key的下拉菜单
+        self.__dialog_part_selection: DropDownList = DropDownList(None, 0, 0, 1)
         # 默认不播放音乐
         # self._is_muted = True
 
@@ -58,12 +60,12 @@ class DialogEditor(DialogConverter):
         self.__UIContainerRight_bg.set("current_select", None)
         # 加载静态背景图片
         for imgPath in glob(os.path.join(self._background_image_folder_path, "*")):
-            self.__UIContainerRight_bg.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 4 / 5, None)))
+            self.__UIContainerRight_bg.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 4 // 5, None)))
         # 加载动态背景图片
         if os.path.exists(Specification.get_directory("Movie")):
             for imgPath in glob(Specification.get_directory("Movie", "*")):
                 self.__UIContainerRight_bg.set(
-                    os.path.basename(imgPath), RawImg.resize(VideoSurface.get_preview(imgPath), (container_width * 4 / 5, None))
+                    os.path.basename(imgPath), RawImg.resize(VideoSurface.get_preview(imgPath), (container_width * 4 // 5, None))
                 )
         # 加载透明图片
         self.__UIContainerRight_bg.set(
@@ -79,7 +81,7 @@ class DialogEditor(DialogConverter):
         self.__UIContainerRight_npc.set_scroll_bar_pos("right")
         # 加载npc立绘
         for imgPath in glob(os.path.join(self._npc_manager.image_folder_path, "*")):
-            self.__UIContainerRight_npc.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 4 / 5, None)))
+            self.__UIContainerRight_npc.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 4 // 5, None)))
         self.__UIContainerRight_npc.set_visible(False)
         self.__UIContainerRight_npc.distance_between_item = 0
         # 容器按钮
@@ -107,11 +109,9 @@ class DialogEditor(DialogConverter):
         )
         self.__button_select_background.set_auto_resize(True)
         self.__button_select_npc = Button.load("<&ui>button.png", (0, button_y * 3 // 2), (0, 0), 150)
-        self.__button_select_npc.set_text(ButtonComponent.text(str(CONFIG["npc"]), font_size * 2 / 3, alpha_when_not_hover=150))
+        self.__button_select_npc.set_text(ButtonComponent.text(str(CONFIG["npc"]), font_size * 2 // 3, alpha_when_not_hover=150))
         self.__button_select_npc.set_auto_resize(True)
-        panding: int = int(
-            (container_width - self.__button_select_background.get_width() - self.__button_select_npc.get_width()) / 3
-        )
+        panding: int = (container_width - self.__button_select_background.get_width() - self.__button_select_npc.get_width()) // 3
         self.__button_select_background.set_left(panding)
         self.__button_select_npc.set_left(self.__button_select_background.get_right() + panding)
         # 页面右上方的一排按钮
@@ -140,11 +140,14 @@ class DialogEditor(DialogConverter):
         self.__remove_npc_button = Font.render_description_box(
             CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE, self._FONT_SIZE // 5, Colors.WHITE
         )
-        # 切换准备编辑的dialog部分
-        self.dialog_key_select = DropDownList(None, button_width * 11, button_y + font_size, font_size)
+        # 初始化用于选择小说脚本的key的下拉菜单
+        self.__dialog_part_selection.clear()
+        self.__dialog_part_selection.set_pos(button_width * 11, button_y + font_size)
+        self.__dialog_part_selection.update_font_size(font_size)
+        # 将脚本的不同部分的key载入到ui中
         for key in self._dialog_data:
-            self.dialog_key_select.set(key, key)
-        self.dialog_key_select.set_selected_item(self._part)
+            self.__dialog_part_selection.set(key, key)
+        self.__dialog_part_selection.set_selected_item(self._part)
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
@@ -406,7 +409,9 @@ class DialogEditor(DialogConverter):
         self.__buttons_ui_container.draw(surface)
         # 展示出当前可供使用的背景音乐
         self.dialog_bgm_select.draw(surface)
-        if self._current_dialog_content["background_music"] != self.dialog_bgm_select.get_selected_item():
+        if self._current_dialog_content["background_music"] != self.dialog_bgm_select.get_selected_item() and not (
+            self._current_dialog_content["background_music"] is None and self.dialog_bgm_select.get_selected_item() == "null"
+        ):
             self._current_dialog_content["background_music"] = (
                 None
                 if self.dialog_bgm_select.get_selected_item() == "null"
@@ -414,10 +419,10 @@ class DialogEditor(DialogConverter):
             )
             self._update_scene(self._dialog_id)
         # 展示出当前可供编辑的dialog部分
-        self.dialog_key_select.draw(surface)
+        self.__dialog_part_selection.draw(surface)
         # 切换当前正在浏览编辑的dialog部分
-        if self.dialog_key_select.get_selected_item() != self._part:
-            self._part = self.dialog_key_select.get_selected_item()
+        if self.__dialog_part_selection.get_selected_item() != self._part:
+            self._part = self.__dialog_part_selection.get_selected_item()
             if self._dialog_id in self.dialog_content:
                 self._update_scene(self._dialog_id)
             else:

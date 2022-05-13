@@ -93,7 +93,7 @@ class EntitySpriteImageManager:
     # 用于存放角色图片的字典
     __CHARACTERS_IMAGES: dict[str, dict[str, _EntityImagesCollection]] = {}
     # 角色图片文件夹路径
-    SPRITES_PATH: str = Specification.get_directory("Sprite")
+    SPRITES_PATH: str = Specification.get_directory("sprite")
 
     # 获取图片
     @classmethod

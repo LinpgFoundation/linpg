@@ -204,7 +204,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         BLACK_CURTAIN.set_alpha(0)
         # 创建视频文件
         VIDEO: VideoPlayer = VideoPlayer(
-            Specification.get_directory("Movie", self._current_dialog_content["next_dialog_id"]["target"])
+            Specification.get_directory("movie", self._current_dialog_content["next_dialog_id"]["target"])
         )
         VIDEO.pre_init()
         # 播放主循环

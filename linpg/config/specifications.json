@@ -1,34 +1,37 @@
 {
     "ConfigFileType": "json",
     "Directory": {
-        "Cache": [
+        "cache": [
             "Cache"
         ],
-        "Environment": [
+        "environment": [
             "Assets",
             "image",
             "environment"
         ],
-        "Movie": [
+        "movie": [
             "Assets",
             "movie"
         ],
-        "Music": [
+        "music": [
             "Assets",
             "music"
         ],
-        "Save": [
+        "save": [
             "Save"
         ],
-        "Sprite": [
+        "sprite": [
             "Assets",
             "image",
             "sprites"
         ],
-        "UserInterface": [
+        "user_interface": [
             "Assets",
             "image",
             "ui"
+        ],
+        "setting": [
+            "Save"
         ]
     },
     "ExtraAssets": false,

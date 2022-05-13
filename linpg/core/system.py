@@ -127,7 +127,7 @@ class AbstractGameSystem(SystemWithBackgroundMusic):
         self._chapter_id: int = 0
         self._project_name: Optional[str] = None
         # 储存进度存档的文件夹的路径
-        self.folder_for_save_file: str = Specification.get_directory("Save")
+        self.folder_for_save_file: str = Specification.get_directory("save")
         # 存档文件的名称
         self.name_for_save_file: str = "save.{}".format(Config.get_file_type())
         # 是否已经初始化

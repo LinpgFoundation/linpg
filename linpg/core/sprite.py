@@ -14,12 +14,7 @@ class SpriteImage:
             self.__DICTIONARY.update(Config.load_file(self.__PATH + ".linpg.meta"))
         elif self.__PATH != "<NULL>":
             self.__DICTIONARY.update(
-                Config.load_file(
-                    os.path.join(
-                        RawImg.get_directory_of_implicit_image_just_loaded(),
-                        self.__PATH[self.__PATH.index(">") + 1 :] + ".linpg.meta",
-                    )
-                )
+                Config.load_file(RawImg.generate_path_according_to_prefix(self.__PATH).removesuffix(".zip") + ".linpg.meta")
             )
 
     # 获取一个图片

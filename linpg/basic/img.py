@@ -93,35 +93,32 @@ _KEY: bytes = bytes("82&939DcaO6002#*", "utf-8")
 # 源图形处理
 class RawImg:
 
-    # 真实坐标
-    __TRUE_PATH: str = ""
-
-    # 获取上次隐式坐标加载（使用tag）的图片所在的文件夹
-    @classmethod
-    def get_directory_of_implicit_image_just_loaded(cls) -> str:
-        return os.path.dirname(cls.__TRUE_PATH)
+    # flag查询表
+    __FLAG_LOOKUP_TABLE: dict[str, str] = {"env": "environment", "ui": "user_interface"}
 
     # 根据flag
-    @staticmethod
-    def generate_path_according_to_prefix(path: str) -> str:
-        file_name: str = path[path.index(">") + 1 :]
-        if path.startswith("<&env>"):
-            if os.path.exists(real_path := Specification.get_directory("Environment", file_name)):
-                return real_path
-            elif _LINPGASSETS_INITIALIZED is True:
-                return os.path.join(linpgassets.get_image_location(), "environment", file_name + ".zip")
-            else:
-                return ""
-        elif path.startswith("<!env>"):
-            return (
-                os.path.join(linpgassets.get_image_location(), "environment", file_name + ".zip")
-                if _LINPGASSETS_INITIALIZED is True
-                else ""
-            )
-        elif path.startswith("<@env>"):
-            return Specification.get_directory("Environment", file_name)
-        else:
-            EXCEPTION.fatal('Invaid tag: "{}"'.format(path))
+    @classmethod
+    def generate_path_according_to_prefix(cls, path: str) -> str:
+        flag_end_index: int = path.index(">")
+        file_name: str = path[flag_end_index + 1 :]
+        flag_key: Optional[str] = cls.__FLAG_LOOKUP_TABLE.get(path[2:flag_end_index])
+        if flag_key is not None:
+            if path[1] == "&":
+                if os.path.exists(real_path := Specification.get_directory(flag_key, file_name)):
+                    return real_path
+                elif _LINPGASSETS_INITIALIZED is True:
+                    return os.path.join(linpgassets.get_image_location(), flag_key, file_name + ".zip")
+                else:
+                    return ""
+            elif path[1] == "!":
+                return (
+                    os.path.join(linpgassets.get_image_location(), flag_key, file_name + ".zip")
+                    if _LINPGASSETS_INITIALIZED is True
+                    else ""
+                )
+            elif path[1] == "@":
+                return Specification.get_directory(flag_key, file_name)
+        EXCEPTION.fatal('Invaid tag: "{}"'.format(path))
 
     # 识快速加载图片
     @classmethod
@@ -141,37 +138,17 @@ class RawImg:
                         else:
                             _imageR = None
                 # 如果需要加载属于linpgassets的图片
-                elif _LINPGASSETS_INITIALIZED is True:
-                    if path.startswith("<&ui>"):
-                        file_name: str = path[path.index(">") + 1 :]
-                        cls.__TRUE_PATH = Specification.get_directory("UserInterface", file_name)
-                        if os.path.exists(cls.__TRUE_PATH):
-                            _imageR = pygame.image.load(cls.__TRUE_PATH)
-                        else:
-                            cls.__TRUE_PATH = os.path.join(linpgassets.get_image_location(), "ui.zip")
-                            if os.path.exists(cls.__TRUE_PATH):
-                                ui_zip: zipfile.ZipFile = zipfile.ZipFile(cls.__TRUE_PATH, "r")
-                                if file_name in ui_zip.namelist():
-                                    _imageR = pygame.image.load(io.BytesIO(ui_zip.read(file_name, pwd=_KEY)))
-                                else:
-                                    EXCEPTION.fatal('Cannot find (essential) ui file "{}"'.format(file_name))
-                            else:
-                                EXCEPTION.fatal('Cannot find (essential) ui file "{}"'.format(file_name))
+                elif os.path.exists(_path := cls.generate_path_according_to_prefix(path)):
+                    if not _path.endswith(".zip"):
+                        _imageR = pygame.image.load(_path)
+                    elif "linpgassets" in _path:
+                        _imageR = pygame.image.load(
+                            io.BytesIO(zipfile.ZipFile(_path, "r").read(path[path.index(">") + 1 :], pwd=_KEY))
+                        )
                     else:
-                        cls.__TRUE_PATH = cls.generate_path_according_to_prefix(path)
-                        if os.path.exists(cls.__TRUE_PATH):
-                            if not cls.__TRUE_PATH.endswith(".zip"):
-                                _imageR = pygame.image.load(cls.__TRUE_PATH)
-                            elif "linpgassets" in cls.__TRUE_PATH:
-                                _imageR = pygame.image.load(
-                                    io.BytesIO(zipfile.ZipFile(cls.__TRUE_PATH, "r").read(path[path.index(">") + 1 :], pwd=_KEY))
-                                )
-                            else:
-                                EXCEPTION.fatal("Cannot load image from path: {}".format(cls.__TRUE_PATH))
-                        else:
-                            EXCEPTION.fatal('Cannot find (essential) file "{}"'.format(path))
+                        EXCEPTION.fatal("Cannot load image from path: {}".format(_path))
                 else:
-                    EXCEPTION.fatal("You are trying to load an asset from linpgassets while linpgassets is not installed!")
+                    EXCEPTION.fatal('Cannot find (essential) file "{}"'.format(path))
                 # 根据参数处理并返回加载好的图片
                 if _imageR is not None:
                     return _imageR.convert_alpha() if convert_alpha is True else _imageR.convert()

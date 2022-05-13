@@ -20,12 +20,10 @@ class ScriptConverter:
     # 生成一个标准id
     @staticmethod
     def __generate_id(index: int) -> str:
-        if index >= 100:
+        if index >= 10:
             return "id_" + str(index)
-        elif index >= 10:
-            return "id_0" + str(index)
         elif index > 0:
-            return "id_00" + str(index)
+            return "id_0" + str(index)
         else:
             return "head"
 

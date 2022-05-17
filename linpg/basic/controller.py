@@ -150,6 +150,11 @@ class MouseController:
     def get_pressed_previously(cls, button_id: int) -> bool:
         return cls.__mouse_get_pressed_previously[button_id]
 
+    # 是否鼠标指针在指定的方形范围内
+    @classmethod
+    def is_in_rect(cls, _x: int, _y: int, _width: int, _hieght: int) -> bool:
+        return 0 < cls.__x - _x < _width and 0 < cls.__y - _y < _hieght
+
     # 更新鼠标数据
     @classmethod
     def update(cls) -> None:

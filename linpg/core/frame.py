@@ -4,7 +4,7 @@ from .image import *
 class AbstractFrame(AdvancedAbstractImageSurface):
 
     # 窗口上方bar的高度
-    __bar_height: int = Display.get_height() // 50
+    _bar_height: int = Display.get_height() // 50
     # 窗口线条的粗细
     __outline_thickness: int = Display.get_height() // 500
     # 放大指示图标
@@ -26,25 +26,18 @@ class AbstractFrame(AdvancedAbstractImageSurface):
         self._content_surface: ImageSurface = Surface.NULL
         # 是否需要更新用于展示内容的surface
         self._if_update_needed: bool = True
-        #
+        # 是否正在移动本地坐标
         self.__if_move_local_pos: bool = False
-
-    # 内容窗口的坐标
-    @property
-    def content_container_y(self) -> int:
-        return self.y + self.__bar_height
 
     # 更新窗口
     def __update_window_frame(self) -> None:
         if self.__if_regenerate_window is True:
             self.img: ImageSurface = Surface.colored(self.size, Colors.WHITE)
-            Draw.rect(self.img, Colors.LIGHT_GRAY, (ORIGIN, (self.get_width(), self.__bar_height)))
+            Draw.rect(self.img, Colors.LIGHT_GRAY, (ORIGIN, (self.get_width(), self._bar_height)))
             Draw.rect(self.img, Colors.GRAY, (ORIGIN, self.size), self.__outline_thickness)
             # 初始化图标
             if not self.__rescale_icon_initialized:
-                self.__rescale_icon_0 = StaticImage(
-                    "<&ui>rescale.png", 0, 0, self.__bar_height * 3 / 2, self.__bar_height * 3 / 2
-                )
+                self.__rescale_icon_0 = StaticImage("<&ui>rescale.png", 0, 0, self._bar_height * 3 / 2, self._bar_height * 3 / 2)
                 self.__rescale_icon_45 = self.__rescale_icon_0.copy()
                 self.__rescale_icon_45.rotate(45)
                 self.__rescale_icon_45.scale_n_times(1.5)
@@ -86,6 +79,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
 
     # 展示
     def present_on(self, surface: ImageSurface) -> None:
+        # 如果未被隐藏
         if self.is_visible():
             # 如果鼠标之前没有被按下
             if not Controller.mouse.get_pressed_previously(0):
@@ -104,21 +98,16 @@ class AbstractFrame(AdvancedAbstractImageSurface):
                     for key in self.__rescale_directions:
                         self.__rescale_directions[key] = False
                 # 如果鼠标按住bar
-                if (
-                    True not in self.__rescale_directions.values()
-                    and Controller.mouse.get_pressed(0)
-                    and not self._any_content_container_event()
-                ):
-                    if Rectangle(self.x, self.y, self.get_width(), self.__bar_height).is_hovered():
+                if Controller.mouse.get_pressed(0) and True not in self.__rescale_directions.values():
+                    if Controller.mouse.is_in_rect(self.x, self.y, self.get_width(), self._bar_height):
                         self.__mouse_hovered_offset_pos = Coordinates.subtract(Controller.mouse.get_pos(), self.pos)
-                    elif self.is_hovered():
+                    elif self.is_hovered() and not self._any_content_container_event():
                         self.__if_move_local_pos = True
                         self.__mouse_hovered_offset_pos = Coordinates.subtract(Controller.mouse.get_pos(), self.local_pos)
             elif Controller.mouse.get_pressed(0):
                 # 根据鼠标位置修改本地坐标
                 if self.__if_move_local_pos is True:
                     self.locally_move_to(Coordinates.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_offset_pos))
-
                 # 移动窗口
                 elif len(self.__mouse_hovered_offset_pos) > 0:
                     self.move_to(Coordinates.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_offset_pos))
@@ -140,7 +129,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
                             self.__rescale_directions["left"] = True
                     # 向上放大
                     if self.__rescale_directions["top"] is True:
-                        if Controller.mouse.y < self.bottom - self.__bar_height:
+                        if Controller.mouse.y < self.bottom - self._bar_height:
                             self.set_height(self.bottom - Controller.mouse.y)
                             self.set_top(Controller.mouse.y)
                         else:
@@ -169,7 +158,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
             if self._content_surface is not Surface.NULL:
                 # 计算坐标
                 abs_pos_x: int = self.x + self.__outline_thickness
-                abs_pos_y: int = self.content_container_y + self.__outline_thickness
+                abs_pos_y: int = self.y + self._bar_height + self.__outline_thickness
                 real_local_x: int = 0
                 real_local_y: int = 0
                 if self.local_x < 0:
@@ -187,11 +176,11 @@ class AbstractFrame(AdvancedAbstractImageSurface):
                     min(self._content_surface.get_width() - real_local_x, self.get_width() - self.__outline_thickness),
                 )
                 height_of_sub: int = keep_int_in_range(
-                    self.get_height() - self.__bar_height - self.__outline_thickness + self.local_y,
+                    self.get_height() - self._bar_height - self.__outline_thickness + self.local_y,
                     0,
                     min(
                         self._content_surface.get_height() - real_local_y,
-                        self.get_height() - self.__bar_height - self.__outline_thickness,
+                        self.get_height() - self._bar_height - self.__outline_thickness,
                     ),
                 )
                 # 展示内容

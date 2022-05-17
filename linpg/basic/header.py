@@ -28,10 +28,6 @@ PoI = Union[str, pygame.surface.Surface]
 # 事件 type alias
 PG_Event = pygame.event.Event
 
-"""linpg自带常量"""
-NoSize: tuple[int, int] = (-1, -1)
-NoPos: tuple[int, int] = (-1, -1)
-
 """指向pygame事件的指针"""
 # 鼠标
 MOUSE_BUTTON_DOWN = pygame.MOUSEBUTTONDOWN

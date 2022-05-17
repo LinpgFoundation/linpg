@@ -158,14 +158,14 @@ class VideoSurface(AbstractVideo):
 
     # 获取视频封面
     @staticmethod
-    def get_preview(path: str, size: tuple[int, int] = NoSize) -> ImageSurface:
+    def get_preview(path: str, size: Optional[tuple[int, int]] = None) -> ImageSurface:
         _video_validator(path)
         video_stream = cv2.VideoCapture(path)
         video_stream.set(cv2.CAP_PROP_POS_FRAMES, video_stream.get(cv2.CAP_PROP_FRAME_COUNT) // 10)
         current_frame = cv2.cvtColor(video_stream.read()[1], cv2.COLOR_BGR2RGB)
         video_stream.release()
         del video_stream
-        if size is not NoSize and (current_frame.shape[0] != size[0] or current_frame.shape[1] != size[1]):
+        if size is not None and (current_frame.shape[0] != size[0] or current_frame.shape[1] != size[1]):
             current_frame = cv2.resize(current_frame, size)
         return Surface.from_array(current_frame)
 

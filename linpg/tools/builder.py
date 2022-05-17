@@ -1,5 +1,4 @@
 from .abstract import *
-from site import getsitepackages
 
 # 搭建和打包文件的系统
 class BuilderManager(AbstractToolSystem):

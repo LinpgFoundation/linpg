@@ -104,7 +104,9 @@ class DropDownList(GameObjectsDictContainer):
             if Controller.get_event("confirm"):
                 if rect_of_outline.is_hovered():
                     self.__fold_choice = not self.__fold_choice
-                elif not self.__fold_choice and not Rectangles.create((current_abs_pos, self.size)).is_hovered():
+                elif not self.__fold_choice and not Controller.mouse.is_in_rect(
+                    current_abs_pos[0], current_abs_pos[1], self.get_width(), self.get_height()
+                ):
                     self.__fold_choice = True
             # 列出选择
             if not self.__fold_choice:

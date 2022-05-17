@@ -145,10 +145,8 @@ class RawImg:
                         _imageR = pygame.image.load(
                             io.BytesIO(zipfile.ZipFile(_path, "r").read(path[path.index(">") + 1 :], pwd=_KEY))
                         )
-                    else:
-                        EXCEPTION.fatal("Cannot load image from path: {}".format(_path))
-                else:
-                    EXCEPTION.fatal('Cannot find (essential) file "{}"'.format(path))
+                    elif Debug.get_developer_mode() is True:
+                        EXCEPTION.fatal("Cannot find essential image with path: {}".format(_path))
                 # 根据参数处理并返回加载好的图片
                 if _imageR is not None:
                     return _imageR.convert_alpha() if convert_alpha is True else _imageR.convert()

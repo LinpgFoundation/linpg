@@ -115,15 +115,14 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
             self._need_update = True
 
     # 是否被鼠标触碰
-    def is_hovered(self, off_set: tuple = NoPos) -> bool:
+    def is_hovered(self, off_set: Optional[tuple[int, int]] = None) -> bool:
         if self._processed_img is not None:
-            mouse_pos: tuple[int, int] = (
-                Controller.mouse.pos if off_set is NoPos else Coordinates.subtract(Controller.mouse.pos, off_set)
-            )
-            return (
-                0 < mouse_pos[0] - self.x - self.local_x < self._processed_img.get_width()
-                and 0 < mouse_pos[1] - self.y - self.local_y < self._processed_img.get_height()
-            )
+            _x: int = self.x + self.local_x
+            _y: int = self.y + self.local_y
+            if off_set is not None:
+                _x += off_set[0]
+                _y += off_set[1]
+            return Controller.mouse.is_in_rect(_x, _y, self._processed_img.get_width(), self._processed_img.get_height())
         else:
             return False
 

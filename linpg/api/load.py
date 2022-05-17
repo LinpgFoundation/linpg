@@ -10,12 +10,12 @@ class Loader:
 
     # 静态图片
     @staticmethod
-    def static_image(path: str, position: tuple, size: tuple = NoSize, tag: str = "") -> StaticImage:
+    def static_image(path: str, position: tuple, size: tuple = (-1, -1), tag: str = "") -> StaticImage:
         return StaticImage(path, position[0], position[1], size[0], size[1], tag)
 
     # 动态图片
     @staticmethod
-    def dynamic_image(path: str, position: tuple, size: tuple = NoSize, tag: str = "") -> DynamicImage:
+    def dynamic_image(path: str, position: tuple, size: tuple = (-1, -1), tag: str = "") -> DynamicImage:
         return DynamicImage(path, position[0], position[1], size[0], size[1], tag)
 
     # 可自行移动的图片

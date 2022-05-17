@@ -110,15 +110,13 @@ class DialogNavigationWindow(AbstractFrame):
             EXCEPTION.fatal("Head is missing")
 
     def _any_content_container_event(self) -> bool:
-        for key in self.__nodes_map:
-            if Rectangles.create(
-                (
-                    Coordinates.subtract(
-                        Coordinates.add(self.__nodes_map[key].pos, (self.x, self.content_container_y)), self.local_pos
-                    ),
-                    self.__nodes_map[key].get_size(),
-                )
-            ).is_hovered():
+        for key, value in self.__nodes_map.items():
+            if Controller.mouse.is_in_rect(
+                value.x + self.x - self.get_local_x(),
+                value.y + self.y + self._bar_height - self.get_local_y(),
+                value.get_width(),
+                value.get_height(),
+            ):
                 self.update_selected(key)
                 return True
         return False

@@ -8,11 +8,11 @@
             "last_dialog_id": null,
             "narrator": "",
             "next_dialog_id": {
-                "target": "id_001",
+                "target": "id_01",
                 "type": "default"
             }
         },
-        "id_001": {
+        "id_01": {
             "background_image": null,
             "background_music": null,
             "character_images": [],
@@ -21,17 +21,6 @@
             "narrator": "",
             "next_dialog_id": null
         }
-    },
-    "info": {
-        "author": "Put your name here",
-        "default_lang": null,
-        "link": "https://whateve-you-want/maybe-your-github-link",
-        "title": {
-            "English": "Example Project",
-            "SimplifiedChinese": "演示项目",
-            "TraditionalChinese": "演示項目"
-        },
-        "version": 0
     },
     "setting": {
         "Antialias": true,

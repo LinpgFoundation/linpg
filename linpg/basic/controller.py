@@ -72,7 +72,7 @@ class MouseController:
         self.update()
 
     @classmethod
-    def set_custom_icon(cls, path: str = "<!ui>mouse_icon.png") -> None:
+    def set_custom_icon(cls, path: str = "<&ui>mouse_icon.png") -> None:
         cls.__icon_img = RawImg.load(path, (int(Setting.get("MouseIconWidth")), int(Setting.get("MouseIconWidth") * 1.3)))
 
     # 灵敏度
@@ -149,6 +149,11 @@ class MouseController:
     @classmethod
     def get_pressed_previously(cls, button_id: int) -> bool:
         return cls.__mouse_get_pressed_previously[button_id]
+
+    # 是否鼠标指针在指定的方形范围内
+    @classmethod
+    def is_in_rect(cls, _x: int, _y: int, _width: int, _hieght: int) -> bool:
+        return 0 < cls.__x - _x < _width and 0 < cls.__y - _y < _hieght
 
     # 更新鼠标数据
     @classmethod

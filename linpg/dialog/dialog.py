@@ -27,7 +27,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         # 展示历史界面-返回按钮
         self.history_back = (
             Button.load(
-                "<!ui>back.png",
+                "<&ui>back.png",
                 Coordinates.convert((Display.get_width() * 0.04, Display.get_height() * 0.04)),
                 Coordinates.convert((Display.get_width() * 0.03, Display.get_height() * 0.04)),
                 150,
@@ -188,7 +188,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         is_playing: bool = True
         # 初始化跳过按钮的参数
         skip_button: StaticImage = StaticImage(
-            "<!ui>next.png",
+            "<&ui>next.png",
             surface.get_width() * 23 // 25,
             surface.get_height() // 20,
             surface.get_width() * 11 // 200,
@@ -204,7 +204,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         BLACK_CURTAIN.set_alpha(0)
         # 创建视频文件
         VIDEO: VideoPlayer = VideoPlayer(
-            os.path.join(Specification.get("FolderPath", "Movie"), self._current_dialog_content["next_dialog_id"]["target"])
+            Specification.get_directory("movie", self._current_dialog_content["next_dialog_id"]["target"])
         )
         VIDEO.pre_init()
         # 播放主循环

@@ -6,18 +6,7 @@ class Setting:
     # 储存设置配置文件的数据
     __SETTING_DATA: dict = {}
     # 当前配置文件保存路径的参数
-    __SETTING_FOLDER_PATH: str = "Save"
-    __SETTING_FILE_NAME: str = "setting." + Config.get_file_type()
-
-    # 获取配置文件保存的路径
-    @classmethod
-    def get_config_path(cls) -> str:
-        return os.path.join(cls.__SETTING_FOLDER_PATH, cls.__SETTING_FILE_NAME)
-
-    # 设置配置文件保存的路径
-    @classmethod
-    def set_config_path(cls, path: str) -> None:
-        cls.__SETTING_FOLDER_PATH, cls.__SETTING_FILE_NAME = os.path.split(path)
+    __SETTING_FILE_NAME: str = Specification.get_directory("setting", "setting." + Config.get_file_type())
 
     # 重新加载设置数据
     @classmethod
@@ -25,8 +14,8 @@ class Setting:
         # 加载内部默认的设置配置文件
         cls.__SETTING_DATA = Template.get("setting")
         # 如果自定义的设置配置文件存在，则加载
-        if os.path.exists(cls.get_config_path()):
-            cls.__SETTING_DATA.update(Config.load_file(cls.get_config_path()))
+        if os.path.exists(cls.__SETTING_FILE_NAME):
+            cls.__SETTING_DATA.update(Config.load_file(cls.__SETTING_FILE_NAME))
         # 如果不存在自定义的设置配置文件，则应该创建一个
         else:
             # 导入local,查看默认语言
@@ -43,7 +32,7 @@ class Setting:
     # 保存设置数据
     @classmethod
     def save(cls) -> None:
-        Config.save(cls.get_config_path(), cls.__SETTING_DATA)
+        Config.save(cls.__SETTING_FILE_NAME, cls.__SETTING_DATA)
 
     # 获取设置数据
     @classmethod

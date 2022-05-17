@@ -1,5 +1,4 @@
 from .abstract import *
-from site import getsitepackages
 
 # 搭建和打包文件的系统
 class BuilderManager(AbstractToolSystem):
@@ -92,7 +91,7 @@ class BuilderManager(AbstractToolSystem):
             self.delete_file_if_exist("build")
         # 删除在sitepackages中的旧build，同时复制新的build
         if update_the_one_in_sitepackages is True:
-            #移除旧的build
+            # 移除旧的build
             self._run_py_cmd(["pip", "uninstall", os.path.basename(source_folder)])
             # 安装新的build
             self._run_py_cmd(["pip", "install", "."])

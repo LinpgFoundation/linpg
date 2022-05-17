@@ -1,3 +1,5 @@
+import io
+import zipfile
 from PIL import Image as PILImage  # type: ignore
 from PIL import ImageSequence as PILImageSequence  # type: ignore
 from .draw import *
@@ -6,11 +8,11 @@ from .draw import *
 _LINPGASSETS_INITIALIZED: bool = False
 if bool(Specification.get("ExtraAssets")) is True:
     try:
-        from linpgassets import ASSET  # type: ignore
+        import linpgassets  # type: ignore
 
         _LINPGASSETS_INITIALIZED = True
         # 初始化linpgassets的数据库
-        DataBase.update(Config.load_file(ASSET.get_database_path()))
+        DataBase.update(Config.load_file(linpgassets.get_database_path()))
     except Exception:
         _LINPGASSETS_INITIALIZED = False
 
@@ -86,33 +88,71 @@ class Surface:
         return texture_missing_surface
 
 
+_KEY: bytes = bytes("82&939DcaO6002#*", "utf-8")
+
 # 源图形处理
 class RawImg:
 
+    # flag查询表
+    __FLAG_LOOKUP_TABLE: dict[str, str] = {"env": "environment", "ui": "user_interface"}
+
+    # 根据flag
+    @classmethod
+    def generate_path_according_to_prefix(cls, path: str) -> str:
+        flag_end_index: int = path.index(">")
+        file_name: str = path[flag_end_index + 1 :]
+        flag_key: Optional[str] = cls.__FLAG_LOOKUP_TABLE.get(path[2:flag_end_index])
+        if flag_key is not None:
+            if path[1] == "&":
+                if os.path.exists(real_path := Specification.get_directory(flag_key, file_name)):
+                    return real_path
+                elif _LINPGASSETS_INITIALIZED is True:
+                    return os.path.join(linpgassets.get_image_location(), flag_key, file_name + ".zip")
+                else:
+                    return ""
+            elif path[1] == "!":
+                return (
+                    os.path.join(linpgassets.get_image_location(), flag_key, file_name + ".zip")
+                    if _LINPGASSETS_INITIALIZED is True
+                    else ""
+                )
+            elif path[1] == "@":
+                return Specification.get_directory(flag_key, file_name)
+        EXCEPTION.fatal('Invaid tag: "{}"'.format(path))
+
     # 识快速加载图片
-    @staticmethod
-    def quickly_load(path: PoI, convert_alpha: bool = True) -> ImageSurface:
+    @classmethod
+    def quickly_load(cls, path: PoI, convert_alpha: bool = True) -> ImageSurface:
         if isinstance(path, ImageSurface):
             return path
         elif isinstance(path, str):
-            if path != "<!null>":
-                path_t: str = ASSET.resolve_path(path) if _LINPGASSETS_INITIALIZED is True else path
-                if convert_alpha is True:
+            if path != "<NULL>":
+                _imageR: Optional[ImageSurface] = None
+                # 如果正在加载不属于linpgassets的图片
+                if not path.startswith("<"):
                     try:
-                        return pygame.image.load(path_t).convert_alpha()
+                        _imageR = pygame.image.load(path)
                     except Exception:
                         if Debug.get_developer_mode() is True:
-                            EXCEPTION.fatal("Cannot load image from path: {}".format(path_t))
+                            EXCEPTION.fatal("Cannot load image from path: {}".format(path))
                         else:
-                            return Surface.texture_is_missing((192, 108))
+                            _imageR = None
+                # 如果需要加载属于linpgassets的图片
+                elif os.path.exists(_path := cls.generate_path_according_to_prefix(path)):
+                    if not _path.endswith(".zip"):
+                        _imageR = pygame.image.load(_path)
+                    elif "linpgassets" in _path:
+                        _imageR = pygame.image.load(
+                            io.BytesIO(zipfile.ZipFile(_path, "r").read(path[path.index(">") + 1 :], pwd=_KEY))
+                        )
+                    elif Debug.get_developer_mode() is True:
+                        EXCEPTION.fatal("Cannot find essential image with path: {}".format(_path))
+                # 根据参数处理并返回加载好的图片
+                if _imageR is not None:
+                    return _imageR.convert_alpha() if convert_alpha is True else _imageR.convert()
+                # 如果图片加载出错
                 else:
-                    try:
-                        return pygame.image.load(path_t).convert()
-                    except Exception:
-                        if Debug.get_developer_mode() is True:
-                            EXCEPTION.fatal("Cannot load image from path: {}".format(path_t))
-                        else:
-                            return Surface.texture_is_missing((192, 108))
+                    return Surface.texture_is_missing((192, 108))
             else:
                 return Surface.NULL
         else:

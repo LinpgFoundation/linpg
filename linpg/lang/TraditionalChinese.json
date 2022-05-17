@@ -8,10 +8,11 @@
         "choice": "選項",
         "skip": "跳過"
     },
-    "DialogCreator": {
+    "Editor": {
         "add": "新增對話",
         "background": "背景圖片",
         "delete": "刪除當前對話",
+        "example_project": "演示項目",
         "next": "下一個對話",
         "no_bgm": "無背景音樂",
         "npc": "立繪",

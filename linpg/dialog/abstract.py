@@ -28,7 +28,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 指向当前对话的数据的指针
         self._current_dialog_content: dict = {}
         # 选项菜单
-        self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer("<!null>", 0, 0, 0, 0)
+        self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer("<NULL>", 0, 0, 0, 0)
         self._dialog_options_container.set_visible(False)
         # 更新背景音乐音量
         self.set_bgm_volume(Media.volume.background_music / 100)
@@ -73,19 +73,14 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 获取下一个dialog node的类型
     def get_next_dialog_type(self) -> Optional[str]:
-        return (
-            self._current_dialog_content["next_dialog_id"]["type"]
-            if self._current_dialog_content["next_dialog_id"] is not None
-            else None
-        )
+        _next: Optional[dict] = self._current_dialog_content.get("next_dialog_id")
+        return _next.get("type") if _next is not None else None
 
     # 生产一个新的推荐id
     def generate_a_new_recommended_key(self, index: int = 1) -> str:
         while True:
             newId: str = ""
             if index <= 9:
-                newId = "id_00" + str(index)
-            elif index <= 99:
                 newId = "id_0" + str(index)
             else:
                 newId = "id_" + str(index)
@@ -116,11 +111,8 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 检测当前对话是否带有合法的下一个对话对象的id
     def does_current_dialog_have_next_dialog(self) -> bool:
-        return (
-            "next_dialog_id" in self._current_dialog_content
-            and self._current_dialog_content["next_dialog_id"] is not None
-            and len(self._current_dialog_content["next_dialog_id"]) > 0
-        )
+        _next: Optional[dict] = self._current_dialog_content.get("next_dialog_id")
+        return _next is not None and len(_next) > 0
 
     # 初始化关键参数
     def _initialize(  # type: ignore[override]
@@ -180,9 +172,9 @@ class AbstractDialogSystem(AbstractGameSystem):
                         self.__background_image_surface = StaticImage(img_path, 0, 0)
                         self.__background_image_surface.disable_croping()
                     # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
-                    elif os.path.exists(os.path.join(Specification.get("FolderPath", "Movie"), self.__background_image_name)):
+                    elif os.path.exists(Specification.get_directory("movie", self.__background_image_name)):
                         self.__background_image_surface = VideoSurface(
-                            os.path.join(Specification.get("FolderPath", "Movie"), self.__background_image_name), with_audio=False
+                            Specification.get_directory("movie", self.__background_image_name), with_audio=False
                         )
                     else:
                         EXCEPTION.fatal(
@@ -209,7 +201,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._get_dialog_box().update(self._current_dialog_content["narrator"], self._current_dialog_content["contents"])
         # 更新背景音乐
         if (current_bgm := self._current_dialog_content["background_music"]) is not None:
-            self.set_bgm(os.path.join(Specification.get("FolderPath", "Music"), current_bgm))
+            self.set_bgm(Specification.get_directory("music", current_bgm))
         else:
             self.unload_bgm()
         # 隐藏选项菜单
@@ -242,8 +234,8 @@ class AbstractDialogSystem(AbstractGameSystem):
             Display.get_height() * 3 // 16 - len(self._current_dialog_content["next_dialog_id"]["target"]) * self._FONT_SIZE
         )
         for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
-            optionButton: Button = Button.load("<!ui>option.png", (0, 0), (0, 0))
-            optionButton.set_hover_img(RawImg.quickly_load("<!ui>option_selected.png"))
+            optionButton: Button = Button.load("<&ui>option.png", (0, 0), (0, 0))
+            optionButton.set_hover_img(RawImg.quickly_load("<&ui>option_selected.png"))
             optionButton.set_auto_resize(True)
             optionButton.set_text(
                 ButtonComponent.text(

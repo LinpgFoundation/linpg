@@ -11,7 +11,7 @@ class WeatherSystem:
     # 初始化
     def init(self, weather: str, entityNum: int = 50) -> None:
         self.__initialized = True
-        _temp: Union[ImageSurface, tuple] = SpriteImage(ASSET.get_internal_environment_image_path(weather)).get(weather)
+        _temp: Union[ImageSurface, tuple] = SpriteImage("<&env>" + weather + ".png").get(weather)
         if isinstance(_temp, tuple):
             self.__img_tuple = _temp
         else:

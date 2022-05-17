@@ -1,13 +1,40 @@
 {
     "ConfigFileType": "json",
-    "ExtraAssets": true,
-    "FolderPath": {
-        "Cache": "Cache",
-        "Movie": "Assets\\movie",
-        "Music": "Assets\\music",
-        "Save": "Save",
-        "Sprite": "Assets\\image\\sprites"
+    "Directory": {
+        "cache": [
+            "Cache"
+        ],
+        "environment": [
+            "Assets",
+            "image",
+            "environment"
+        ],
+        "movie": [
+            "Assets",
+            "movie"
+        ],
+        "music": [
+            "Assets",
+            "music"
+        ],
+        "save": [
+            "Save"
+        ],
+        "sprite": [
+            "Assets",
+            "image",
+            "sprites"
+        ],
+        "user_interface": [
+            "Assets",
+            "image",
+            "ui"
+        ],
+        "setting": [
+            "Save"
+        ]
     },
+    "ExtraAssets": false,
     "PySimpleGUITheme": "SystemDefault",
     "ThirdPartyLibraries": {
         "ffmpeg": "ffmpeg.exe"

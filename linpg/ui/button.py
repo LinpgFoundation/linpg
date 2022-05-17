@@ -122,7 +122,7 @@ class Button(AbstractButton):
             fading_button: Button = Button(
                 RawImg.load(path, alpha=alpha_when_not_hover), position[0], position[1], size[0], size[1]
             )
-            if path != "<!null>":
+            if path != "<NULL>":
                 img2 = fading_button.get_image_copy()
                 img2.set_alpha(255)
                 fading_button.set_hover_img(img2)

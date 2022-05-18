@@ -1,5 +1,4 @@
 from .controller import *
-from datetime import datetime
 
 # 画面更新控制器
 class Display:
@@ -12,7 +11,7 @@ class Display:
     # 窗口比例
     __SCALE: int = keep_int_in_range(int(Setting.get("Resolution", "scale")), 0, 100)
     # 主要的窗口
-    __SCREEN_WINDOW: ImageSurface = Surface.NULL
+    __SCREEN_WINDOW: ImageSurface = Surfaces.NULL
     # 窗口尺寸
     __STANDARD_WIDTH: int = max(int(Setting.get("Resolution", "width")), 0) * __SCALE // 100
     __STANDARD_HEIGHT: int = max(int(Setting.get("Resolution", "height")), 0) * __SCALE // 100
@@ -48,7 +47,8 @@ class Display:
             if not os.path.exists("screenshots"):
                 os.mkdir("screenshots")
             pygame.image.save(
-                cls.__SCREEN_WINDOW, os.path.join("screenshots", "{}.png".format(datetime.now().strftime("%Y%m%d%H%M%S")))
+                cls.__SCREEN_WINDOW,
+                os.path.join("screenshots", "{}.png".format(EXCEPTION.get_current_time().strftime("%Y%m%d%H%M%S"))),
             )
         # 更新控制器
         Controller.update()

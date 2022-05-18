@@ -22,9 +22,9 @@ class AbstractToolSystem:
     # 检测
     def _check_path(self, input_path: str) -> None:
         if not os.path.exists(input_path):
-            raise FileNotExists()
+            raise EXCEPTION.FileNotExists()
         elif not os.path.exists(self.__TOOL_PATH):
-            raise ToolIsMissing()
+            raise EXCEPTION.ToolIsMissing()
 
     # 运行命令
     def _run_cmd(self, command_line: list[str], show_cmd_output: bool = False) -> None:

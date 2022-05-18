@@ -125,7 +125,7 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
                     rect.set_size(
                         min(rect.right, self.__crop_rect.right) - new_x, min(rect.bottom, self.__crop_rect.bottom) - new_y
                     )
-                self._processed_img = Surface.transparent(rect.size)
+                self._processed_img = Surfaces.transparent(rect.size)
                 self.set_local_pos(rect.x, rect.y)
                 self._processed_img.blit(imgTmp, (-self.local_x, -self.local_y))
             else:

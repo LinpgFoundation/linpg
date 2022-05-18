@@ -90,7 +90,7 @@ class SpriteImage:
         # 行数
         rows: int = math.ceil(len(_data) / columns)
         # 最终sprite图
-        sprite_surface: ImageSurface = Surface.transparent((columns * max_block_width, rows * max_block_height))
+        sprite_surface: ImageSurface = Surfaces.transparent((columns * max_block_width, rows * max_block_height))
         # 当前图片index
         index: int = 0
         # 将图片刷到sprite图上

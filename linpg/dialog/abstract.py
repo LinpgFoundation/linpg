@@ -12,7 +12,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._npc_manager: CharacterImageManager = CharacterImageManager()
         # 黑色Void帘幕
         self._black_bg = StaticImage(
-            Surface.colored(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height()
+            Surfaces.colored(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height()
         )
         # 对话文件路径
         self._dialog_folder_path: str = "Data"
@@ -78,12 +78,9 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 生产一个新的推荐id
     def generate_a_new_recommended_key(self, index: int = 1) -> str:
+        newId: str = ""
         while True:
-            newId: str = ""
-            if index <= 9:
-                newId = "id_0" + str(index)
-            else:
-                newId = "id_" + str(index)
+            newId = ("id_0" if index <= 9 else "id_") + str(index)
             if newId in self.dialog_content:
                 index += 1
             else:
@@ -172,16 +169,14 @@ class AbstractDialogSystem(AbstractGameSystem):
                         self.__background_image_surface = StaticImage(img_path, 0, 0)
                         self.__background_image_surface.disable_croping()
                     # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
-                    elif os.path.exists(Specification.get_directory("movie", self.__background_image_name)):
-                        self.__background_image_surface = VideoSurface(
-                            Specification.get_directory("movie", self.__background_image_name), with_audio=False
-                        )
+                    elif os.path.exists(_path := Specification.get_directory("movie", self.__background_image_name)):
+                        self.__background_image_surface = VideoSurface(_path, with_audio=False)
                     else:
                         EXCEPTION.fatal(
                             "Cannot find a background image or video file called '{}'.".format(self.__background_image_name)
                         )
                 elif self._npc_manager.dev_mode is True:
-                    self.__background_image_surface = StaticImage(Surface.texture_is_missing(Display.get_size()), 0, 0)
+                    self.__background_image_surface = StaticImage(Surfaces.texture_is_missing(Display.get_size()), 0, 0)
                     self.__background_image_surface.disable_croping()
                 else:
                     self.__background_image_surface = NULL_STATIC_IMAGE

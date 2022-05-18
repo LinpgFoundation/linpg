@@ -159,7 +159,7 @@ class EntitySpriteImageManager:
                     _data[_action_folder] = {"count": len(imgTempList), "subrect": crop_rect, "size": list(_image.get_size())}
                     # 生成当前动作的webp图
                     for i in range(len(imgTempList)):
-                        imgTempList[i] = PILImage.fromarray(Surface.to_array(imgTempList[i].subsurface(crop_rect)))
+                        imgTempList[i] = PILImage.fromarray(Surfaces.to_array(imgTempList[i].subsurface(crop_rect)))
                     # 保存当前动作的webp图
                     target_file_name: str = _action_folder + ".webp"
                     imgTempList[0].save(

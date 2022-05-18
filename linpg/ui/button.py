@@ -44,7 +44,7 @@ class AbstractButton(AbstractImageSurface):
             height = img.get_height()
         super().__init__(img, x, y, width, height, tag)
         # self.img是未被触碰时的默认图片，img2是被鼠标触碰时展示的图片
-        self.__img2: ImageSurface = Surface.NULL
+        self.__img2: ImageSurface = Surfaces.NULL
 
     def has_been_hovered(self) -> bool:
         return False
@@ -53,9 +53,9 @@ class AbstractButton(AbstractImageSurface):
         self.__img2 = img
 
     def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
-        if self.has_been_hovered() is True and self.__img2 is not Surface.NULL:
+        if self.has_been_hovered() is True and self.__img2 is not Surfaces.NULL:
             surface.blit(RawImg.smoothly_resize(self.__img2, self.size), Coordinates.add(self.pos, offSet))
-        elif self.img is not Surface.NULL:
+        elif self.img is not Surfaces.NULL:
             surface.blit(RawImg.smoothly_resize(self.img, self.size), Coordinates.add(self.pos, offSet))
 
 

@@ -1,4 +1,4 @@
-from ..battle import *
+from .battle import *
 
 
 class Loader:
@@ -83,4 +83,24 @@ class Loader:
         return ResizeWhenHoveredTextSurface(str(txt), pos[0], pos[1], size, size * 3 / 2, _color, _bold, _italic)
 
 
-load: Loader = Loader()
+"""创建小写的模块引用名称，以方便使用"""
+display = Display
+lang = Lang
+setting = Setting
+info = Info
+key = Key
+config = Config
+color = Colors
+global_value = GlobalValue
+sound = Sound
+music = Music
+media = Media
+controller = Controller
+option_menu = OptionMenu
+ui = UI
+font = Font
+position = Positions
+coordinates = Coordinates
+surfaces = Surfaces
+debug = Debug
+load = Loader

@@ -340,7 +340,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
             if self.__MAP_SURFACE is not None:
                 self.__MAP_SURFACE.fill(Colors.TRANSPARENT)
             else:
-                self.__MAP_SURFACE = Surface.transparent(self.get_size())
+                self.__MAP_SURFACE = Surfaces.transparent(self.get_size())
             self.__block_on_surface.fill(0)
             self.__need_to_recheck_block_on_surface = False
         # 画出地图

@@ -3,7 +3,7 @@ import json
 from typing import Any, Optional
 from copy import deepcopy
 from glob import glob
-from ..exception import *
+from ..exception import EXCEPTION, os
 
 # 尝试导入yaml库
 _YAML_INITIALIZED: bool = False

@@ -4,8 +4,8 @@ from .image import *
 class FriendlyCharacterDynamicProgressBarSurface(DynamicProgressBarSurface):
 
     # 指向储存角色被察觉图标的指针
-    __FULLY_EXPOSED_IMG: ImageSurface = Surface.NULL
-    __BEING_NOTICED_IMG: ImageSurface = Surface.NULL
+    __FULLY_EXPOSED_IMG: ImageSurface = Surfaces.NULL
+    __BEING_NOTICED_IMG: ImageSurface = Surfaces.NULL
     __img_initialized: bool = False
 
     def __init__(self) -> None:
@@ -21,8 +21,8 @@ class FriendlyCharacterDynamicProgressBarSurface(DynamicProgressBarSurface):
 class HostileCharacterDynamicProgressBarSurface(DynamicProgressBarSurface):
 
     # 指向储存敌方角色警觉程度图标的指针
-    __ORANGE_VIGILANCE_IMG: ImageSurface = Surface.NULL
-    __RED_VIGILANCE_IMG: ImageSurface = Surface.NULL
+    __ORANGE_VIGILANCE_IMG: ImageSurface = Surfaces.NULL
+    __RED_VIGILANCE_IMG: ImageSurface = Surfaces.NULL
     __img_initialized: bool = False
 
     def __init__(self) -> None:
@@ -39,9 +39,9 @@ class HostileCharacterDynamicProgressBarSurface(DynamicProgressBarSurface):
 class EntityHpBar(DynamicProgressBarSurface):
 
     # 指向储存血条图片的指针（不初始化直到Entity或其子类被调用）
-    __HP_GREEN_IMG: ImageSurface = Surface.NULL
-    __HP_RED_IMG: ImageSurface = Surface.NULL
-    __HP_EMPTY_IMG: ImageSurface = Surface.NULL
+    __HP_GREEN_IMG: ImageSurface = Surfaces.NULL
+    __HP_RED_IMG: ImageSurface = Surfaces.NULL
+    __HP_EMPTY_IMG: ImageSurface = Surfaces.NULL
     __img_initialized: bool = False
 
     def __init__(self) -> None:

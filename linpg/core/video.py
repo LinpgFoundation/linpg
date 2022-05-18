@@ -167,7 +167,7 @@ class VideoSurface(AbstractVideo):
         del video_stream
         if size is not None and (current_frame.shape[0] != size[0] or current_frame.shape[1] != size[1]):
             current_frame = cv2.resize(current_frame, size)
-        return Surface.from_array(current_frame)
+        return Surfaces.from_array(current_frame)
 
     # 返回一个复制
     def copy(self) -> "VideoSurface":

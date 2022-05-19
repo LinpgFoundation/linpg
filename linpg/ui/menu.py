@@ -41,7 +41,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
                 lang_drop_down = self._CONTENT.get("lang_drop_down")
                 for lang_choice in Lang.get_available_languages():
                     lang_drop_down.set(lang_choice, lang_choice)
-                lang_drop_down.set_selected_item(Lang.current_language)
+                lang_drop_down.set_selected_item(Lang.get_current_language())
             else:
                 if self._CONTENT is None:
                     EXCEPTION.fatal("The ui has not been correctly initialized.")
@@ -54,7 +54,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
             # 画出
             super().draw(surface)
             # 如果需要更新语言
-            if lang_drop_down.get_selected_item() != Lang.current_language and lang_drop_down.get_selected_item() != "":
+            if lang_drop_down.get_selected_item() != Lang.get_current_language() and lang_drop_down.get_selected_item() != "":
                 # 更新语言并保存新的参数到本地
                 Setting.set("Language", value=Lang.get_language_id(lang_drop_down.get_selected_item()))
                 Setting.save()
@@ -141,7 +141,7 @@ class PauseMenu(AbstractInternalMenu):
                 EXCEPTION.fatal("The ui has not been correctly initialized.")
             # 展示原先的背景
             if self.__screenshot is None:
-                self.__screenshot = RawImg.add_darkness(surface, 10)
+                self.__screenshot = Images.add_darkness(surface, 10)
             # 画出原先的背景
             surface.blit(self.__screenshot, (0, 0))
             # 画出选项

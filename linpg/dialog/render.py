@@ -152,13 +152,11 @@ class CharacterImageManager:
         self.dev_mode: bool = False
         # 被点击的角色
         self.character_get_click: Optional[str] = None
-        # npc立绘路径
-        self.image_folder_path: str = os.path.join("Assets", "image", "npc")
 
     # 确保角色存在
     def __ensure_the_existence_of(self, name: str) -> None:
         if name not in self.__character_image:
-            self.__load_character(os.path.join(self.image_folder_path, name))
+            self.__load_character(Specification.get_directory("character_image", name))
 
     # 加载角色
     def __load_character(self, path: str) -> None:

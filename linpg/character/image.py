@@ -5,7 +5,6 @@ class EntityGetHurtImage(Square):
 
     # 存储角色受伤立绘的常量
     __CHARACTERS_GET_HURT_IMAGE_DICT: dict = {}
-    __IMAGE_FOLDER_PATH: str = os.path.join("Assets", "image", "npc")
 
     def __init__(self, self_type: str, y: int_f, width: int_f):
         super().__init__(0, y, width)
@@ -14,15 +13,15 @@ class EntityGetHurtImage(Square):
         self.add(self_type)
 
     def draw(self, screen: ImageSurface, characterType: str) -> None:  # type: ignore[override]
-        _image = RawImg.resize(self.__CHARACTERS_GET_HURT_IMAGE_DICT[characterType], self.size)
+        _image = Images.resize(self.__CHARACTERS_GET_HURT_IMAGE_DICT[characterType], self.size)
         if self.alpha != 255:
             _image.set_alpha(self.alpha)
         screen.blit(_image, self.pos)
 
     def add(self, characterType: str) -> None:
         if characterType not in self.__CHARACTERS_GET_HURT_IMAGE_DICT:
-            self.__CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = RawImg.quickly_load(
-                os.path.join(self.__IMAGE_FOLDER_PATH, "{}_hurt.png".format(characterType))
+            self.__CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = Images.quickly_load(
+                Specification.get_directory("character_image", "{}_hurt.png".format(characterType))
             )
 
 
@@ -136,7 +135,7 @@ class EntitySpriteImageManager:
                     # 加载所有图片
                     for _path in img_list:
                         # 加载单个图片
-                        _image: ImageSurface = RawImg.quickly_load(_path)
+                        _image: ImageSurface = Images.quickly_load(_path)
                         # 如果切割rect未被初始化
                         if len(crop_rect) <= 0:
                             crop_rect = [_image.get_width(), _image.get_height(), 0, 0]
@@ -216,7 +215,7 @@ class EntitySpriteImageManager:
             tuple(
                 [
                     StaticImage(surf, 0, 0)
-                    for surf in RawImg.load_animated(os.path.join(cls.SPRITES_PATH, faction, characterType, action + ".webp"))
+                    for surf in Images.load_animated(os.path.join(cls.SPRITES_PATH, faction, characterType, action + ".webp"))
                 ]
             ),
             action_meta_data["subrect"][2:],

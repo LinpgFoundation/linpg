@@ -52,7 +52,7 @@ class FriendlyCharacter(Entity):
         except Exception:
             EXCEPTION.inform("Character {} does not have damaged artwork!".format(self.type))
             self.__getHurtImage = None
-            if not os.path.exists(os.path.join("Assets/image/npc_icon", "{}.png".format(self.type))):
+            if not os.path.exists(Specification.get_directory("character_icon", "{}.png".format(self.type))):
                 print("And also its icon.")
 
     def to_dict(self) -> dict:

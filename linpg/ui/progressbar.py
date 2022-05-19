@@ -47,9 +47,9 @@ class ProgressBarSurface(AbstractProgressBar):
         tag: str = "",
     ) -> None:
         if imgOnTop is not None:
-            imgOnTop = RawImg.quickly_load(imgOnTop)
+            imgOnTop = Images.quickly_load(imgOnTop)
         super().__init__(imgOnTop, x, y, max_width, height, tag)
-        self._img2: Optional[ImageSurface] = RawImg.quickly_load(imgOnBottom) if imgOnBottom is not None else None
+        self._img2: Optional[ImageSurface] = Images.quickly_load(imgOnBottom) if imgOnBottom is not None else None
         self._mode: bool = True
         self.set_mode(mode)
 
@@ -89,9 +89,9 @@ class ProgressBarSurface(AbstractProgressBar):
         if self.is_visible():
             pos = Coordinates.add(self.pos, offSet)
             if self._img2 is not None:
-                surface.blit(RawImg.resize(self._img2, self.size), pos)
+                surface.blit(Images.resize(self._img2, self.size), pos)
             if self.percentage > 0:
-                imgOnTop = RawImg.resize(self.img, self.size)
+                imgOnTop = Images.resize(self.img, self.size)
                 if self._mode:
                     surface.blit(imgOnTop.subsurface((0, 0, int(self.get_width() * self.percentage), self.get_height())), pos)
                 else:
@@ -240,7 +240,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
             _abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出底层图形
             if self._img2 is not None:
-                surface.blit(RawImg.resize(self._img2, self.size), _abs_pos)
+                surface.blit(Images.resize(self._img2, self.size), _abs_pos)
             # 检查并更新百分比
             if (
                 self.__real_current_percentage < self._percentage_to_be
@@ -253,10 +253,10 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                 super().set_percentage(self._percentage_to_be / self.accuracy)
             # 画出图形
             if super().get_percentage() > 0:
-                img_on_top_t = RawImg.resize(self._get_img_on_top(), self.size)
+                img_on_top_t = Images.resize(self._get_img_on_top(), self.size)
                 if self._mode:
                     if self.__real_current_percentage < self._percentage_to_be:
-                        img2 = RawImg.crop(
+                        img2 = Images.crop(
                             img_on_top_t, size=(int(self.get_width() * self._percentage_to_be / self.accuracy), self.get_height())
                         )
                         img2.set_alpha(100)
@@ -267,7 +267,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                         )
                     else:
                         if self.__real_current_percentage > self._percentage_to_be:
-                            img2 = RawImg.crop(
+                            img2 = Images.crop(
                                 img_on_top_t, size=(int(self.get_width() * super().get_percentage()), self.get_height())
                             )
                             img2.set_alpha(100)
@@ -280,7 +280,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                         )
                 else:
                     if self.__real_current_percentage < self._percentage_to_be:
-                        img2 = RawImg.crop(
+                        img2 = Images.crop(
                             img_on_top_t, size=(self.get_width(), int(self.get_height() * self._percentage_to_be / self.accuracy))
                         )
                         img2.set_alpha(100)
@@ -291,7 +291,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                         )
                     else:
                         if self.__real_current_percentage > self._percentage_to_be:
-                            img2 = RawImg.crop(
+                            img2 = Images.crop(
                                 img_on_top_t, size=(self.get_width(), int(self.get_height() * super().get_percentage()))
                             )
                             img2.set_alpha(100)

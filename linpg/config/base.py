@@ -221,8 +221,5 @@ class Specification:
         return get_value_by_keys(cls.__SPECIFICATIONS, key)
 
     @classmethod
-    def get_directory(cls, category: str, fileName: Optional[str] = None) -> str:
-        if fileName is None:
-            return str(os.path.join(*cls.__SPECIFICATIONS["Directory"][category]))
-        else:
-            return str(os.path.join(*cls.__SPECIFICATIONS["Directory"][category], fileName))
+    def get_directory(cls, category: str, *_sub: str) -> str:
+        return str(os.path.join(*cls.__SPECIFICATIONS["Directory"][category], *_sub))

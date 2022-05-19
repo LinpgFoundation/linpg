@@ -78,13 +78,8 @@ class DialogBox(AbstractDialogBox):
         self.__text_index: int = 0
         self.__displayed_lines: int = 0
         self.__textPlayingSound: Optional[PG_Sound] = None
-        try:
-            self.__textPlayingSound = Sound.load(r"Assets/sound/ui/dialog_words_playing.ogg")
-        except FileNotFoundError:
-            self.__textPlayingSound = None
-            EXCEPTION.inform(
-                "Cannot find 'dialog_words_playing.ogg' in 'Assets/sound/ui'!\nAs a result, the text playing sound will be disabled."
-            )
+        if os.path.exists(_path := Specification.get_directory("sound", "ui", "dialog_words_playing.ogg")):
+            self.__textPlayingSound = Sound.load(_path)
         self.__READING_SPEED: int = max(int(Setting.get("ReadingSpeed")), 1)
         # 鼠标图标
         self.__mouse_img = AnimatedImage(

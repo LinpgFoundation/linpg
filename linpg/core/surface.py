@@ -38,7 +38,7 @@ class AbstractImageSurface(Rectangle, HiddenableSurface):
 
     # 更新图片
     def update_image(self, img_path: PoI, ifConvertAlpha: bool = True) -> None:
-        self.img = RawImg.quickly_load(img_path, ifConvertAlpha)
+        self.img = Images.quickly_load(img_path, ifConvertAlpha)
 
     # 在尺寸比例不变的情况下改变尺寸
     def set_width_with_original_image_size_locked(self, width: int_f) -> None:
@@ -54,7 +54,7 @@ class AbstractImageSurface(Rectangle, HiddenableSurface):
 
     # 旋转
     def rotate(self, angle: int) -> None:
-        self.img = RawImg.rotate(self.img, angle)
+        self.img = Images.rotate(self.img, angle)
 
 
 # 有本地坐标的图形接口
@@ -128,12 +128,12 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 加暗度
     def add_darkness(self, value: int) -> None:
-        self.img = RawImg.add_darkness(self.img, value)
+        self.img = Images.add_darkness(self.img, value)
         self._need_update = True
 
     # 减暗度
     def subtract_darkness(self, value: int) -> None:
-        self.img = RawImg.subtract_darkness(self.img, value)
+        self.img = Images.subtract_darkness(self.img, value)
         self._need_update = True
 
     # 旋转
@@ -144,12 +144,12 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 反转原图
     def flip_original_img(self, horizontal: bool = True, vertical: bool = False) -> None:
-        self.img = RawImg.flip(self.img, horizontal, vertical)
+        self.img = Images.flip(self.img, horizontal, vertical)
         self._need_update = True
 
     # 画出轮廓
     def draw_outline(
-        self, surface: ImageSurface, offSet: tuple = ORIGIN, color: color_liked = "red", line_width: int = 2
+        self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN, color: color_liked = "red", line_width: int = 2
     ) -> None:
         if self._need_update is True:
             self._update_img()
@@ -161,7 +161,7 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
             EXCEPTION.fatal("The image has not been correctly processed.")
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
             # 如果图片需要更新，则先更新
             if self._need_update is True:

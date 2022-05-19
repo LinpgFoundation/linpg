@@ -1,4 +1,4 @@
-from .img import *
+from .images import *
 
 # 手柄控制组件
 class JoystickController:
@@ -73,7 +73,7 @@ class MouseController:
 
     @classmethod
     def set_custom_icon(cls, path: str = "<&ui>mouse_icon.png") -> None:
-        cls.__icon_img = RawImg.load(path, (int(Setting.get("MouseIconWidth")), int(Setting.get("MouseIconWidth") * 1.3)))
+        cls.__icon_img = Images.load(path, (int(Setting.get("MouseIconWidth")), int(Setting.get("MouseIconWidth") * 1.3)))
 
     # 灵敏度
     @classmethod

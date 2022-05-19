@@ -100,7 +100,7 @@ class AbstractMapEditor(AbstractBattleSystem):
         if TileMapImagesModule.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET is None:
             EXCEPTION.fatal("Image sprite sheet for tile map is not loaded correctly!")
         for key, value in TileMapImagesModule.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.to_dict().items():
-            self.__envImgContainer.set(key, RawImg.resize(value, (self._MAP.block_width / 3, None)))
+            self.__envImgContainer.set(key, Images.resize(value, (self._MAP.block_width / 3, None)))
         self.__envImgContainer.set_item_per_line(4)
         self.__envImgContainer.set_scroll_bar_pos("right")
         self.__envImgContainer.set_visible(True)
@@ -113,14 +113,14 @@ class AbstractMapEditor(AbstractBattleSystem):
             EXCEPTION.fatal("Image sprite sheet for default decorations is not loaded correctly!")
         for key, value in DecorationImagesModule.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.to_dict().items():
             self.__decorationsImgContainer.set(
-                key, RawImg.resize(value if not isinstance(value, tuple) else value[0], (self._MAP.block_width / 3, None))
+                key, Images.resize(value if not isinstance(value, tuple) else value[0], (self._MAP.block_width / 3, None))
             )
         # 加载自带的装饰物
         if DecorationImagesModule.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET is None:
             EXCEPTION.fatal("Image sprite sheet for custom decorations is not loaded correctly!")
         for key, value in DecorationImagesModule.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.to_dict().items():
             self.__decorationsImgContainer.set(
-                key, RawImg.resize(value if not isinstance(value, tuple) else value[0], (self._MAP.block_width / 3, None))
+                key, Images.resize(value if not isinstance(value, tuple) else value[0], (self._MAP.block_width / 3, None))
             )
         # 设置容器参数
         self.__decorationsImgContainer.set_item_per_line(4)
@@ -158,7 +158,7 @@ class AbstractMapEditor(AbstractBattleSystem):
             for img_name in os.listdir(os.path.join(EntitySpriteImageManager.SPRITES_PATH, faction)):
                 newContainer.set(
                     img_name,
-                    RawImg.smoothly_resize(
+                    Images.smoothly_resize(
                         EntitySpriteImageManager.try_get_images(faction, img_name, "wait").get_image(0).get_image_copy(),
                         (None, container_height // 3),
                     ),
@@ -179,9 +179,9 @@ class AbstractMapEditor(AbstractBattleSystem):
                 self.__entitiesImagesContainerUsingIndex = 0
             self.__bottom_container_buttons.append(newButton)
         # 绿色方块/方块标准
-        self.__range_green = RawImg.load("<&ui>range_green.png", (self._MAP.block_width * 4 // 5, None))
+        self.__range_green = Images.load("<&ui>range_green.png", (self._MAP.block_width * 4 // 5, None))
         self.__range_green.set_alpha(150)
-        self.__range_red = RawImg.load("<&ui>range_red.png", (self._MAP.block_width * 4 // 5, None))
+        self.__range_red = Images.load("<&ui>range_red.png", (self._MAP.block_width * 4 // 5, None))
         self.__range_red.set_alpha(150)
         self.__object_to_put_down.clear()
         # 设置按钮位置

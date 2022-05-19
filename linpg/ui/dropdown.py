@@ -73,7 +73,7 @@ class DropDownList(GameObjectsDictContainer):
         self.__recalculate_width()
 
     # 把物品画到surface上
-    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
             current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出背景
@@ -90,7 +90,7 @@ class DropDownList(GameObjectsDictContainer):
             )
             rect_of_outline = Rectangle(current_pos[0], current_pos[1], self.width, self.__block_height)
             Draw.rect(surface, self.__font_color, rect_of_outline.get_rect(), self.outline_thickness)
-            font_surface = RawImg.flip(self.__FONT.render("^", self.__font_color), False, True)
+            font_surface = Images.flip(self.__FONT.render("^", self.__font_color), False, True)
             surface.blit(
                 font_surface,
                 Coordinates.add(

@@ -3,7 +3,7 @@ from .text import *
 # 动态图形类
 class DynamicImage(AbstractImageSurface):
     def __init__(self, img: PoI, x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = ""):
-        super().__init__(RawImg.quickly_load(img), x, y, width, height, tag)
+        super().__init__(Images.quickly_load(img), x, y, width, height, tag)
         self.__processed_img: Optional[ImageSurface] = None
 
     # 返回一个复制
@@ -18,7 +18,7 @@ class DynamicImage(AbstractImageSurface):
 
     # 反转
     def flip(self, vertical: bool = False, horizontal: bool = False) -> None:
-        self.img = RawImg.flip(self.img, vertical, horizontal)
+        self.img = Images.flip(self.img, vertical, horizontal)
 
     # 设置透明度
     def set_alpha(self, value: int) -> None:
@@ -37,20 +37,20 @@ class DynamicImage(AbstractImageSurface):
         self.__processed_img = None
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
             if not Setting.get_low_memory_mode():
                 if self.__processed_img is None or self.__processed_img.get_size() != self.size:
-                    self.__processed_img = RawImg.smoothly_resize(self.img, self.size)
+                    self.__processed_img = Images.smoothly_resize(self.img, self.size)
                 surface.blit(self.__processed_img, Coordinates.add(self.pos, offSet))
             else:
-                surface.blit(RawImg.resize(self.img, self.size), Coordinates.add(self.pos, offSet))
+                surface.blit(Images.resize(self.img, self.size), Coordinates.add(self.pos, offSet))
 
 
 # 用于静态图片的surface
 class StaticImage(AdvancedAbstractCachingImageSurface):
     def __init__(self, img: PoI, x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = ""):
-        super().__init__(RawImg.quickly_load(img), x, y, width, height, tag)
+        super().__init__(Images.quickly_load(img), x, y, width, height, tag)
         self.__is_flipped_horizontally: bool = False
         self.__is_flipped_vertically: bool = False
         self.__crop_rect: Optional[Rectangle] = None
@@ -110,10 +110,10 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
     # 更新图片
     def _update_img(self) -> None:
         # 改变尺寸
-        imgTmp = RawImg.smoothly_resize(self.img, self.size) if Setting.get_antialias() else RawImg.resize(self.img, self.size)
+        imgTmp = Images.smoothly_resize(self.img, self.size) if Setting.get_antialias() else Images.resize(self.img, self.size)
         # 翻转图片
         if self.__is_flipped_horizontally is True or self.__is_flipped_vertically is True:
-            imgTmp = RawImg.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)
+            imgTmp = Images.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)
         if not self.__no_croping_needed:
             # 获取切割rect
             rect: Rectangle = Rectangles.create(imgTmp.get_bounding_rect())
@@ -232,7 +232,7 @@ class MovableImage(StaticImage):
         )
 
     # 画出
-    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
             super().display(surface, offSet)
             if self.__is_moving_toward_target is True:
@@ -301,7 +301,7 @@ class AnimatedImage(AdvancedAbstractImageSurface):
         return self.img[self.imgId]  # type: ignore
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
+    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
             self.current_image.set_size(self.get_width(), self.get_height())
             self.current_image.set_alpha(self._alpha)

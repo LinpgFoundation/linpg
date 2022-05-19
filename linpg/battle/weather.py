@@ -41,7 +41,7 @@ class WeatherSystem:
         for item in self.__items:
             if 0 <= item.x < surface.get_width() and 0 <= item.y < surface.get_height():
                 surface.blit(
-                    RawImg.resize(self.__img_tuple[item.imgId], (perBlockWidth / item.size, perBlockWidth / item.size)), item.pos
+                    Images.resize(self.__img_tuple[item.imgId], (perBlockWidth / item.size, perBlockWidth / item.size)), item.pos
                 )
             item.move(self.__speed_unit)
             if item.x <= 0 or item.y >= surface.get_height():

@@ -108,7 +108,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         # 背景图片
         if self.__background_image is not None:
             self.__BACKGROUND_SURFACE = StaticImage(
-                RawImg.quickly_load(os.path.join("Assets", "image", "dialog_background", self.__background_image), False),
+                Images.quickly_load(Specification.get_directory("background_image", self.__background_image), False),
                 0,
                 0,
                 0,

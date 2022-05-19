@@ -6,7 +6,7 @@ class Loader:
     # 原始图片
     @staticmethod
     def img(path: str, size: tuple = tuple(), alpha: int = 255, ifConvertAlpha: bool = True) -> ImageSurface:
-        return RawImg.load(path, size, alpha, ifConvertAlpha)
+        return Images.load(path, size, alpha, ifConvertAlpha)
 
     # 静态图片
     @staticmethod
@@ -56,7 +56,7 @@ class Loader:
         imgList: list = []
         # 如果是gif文件
         if isinstance(gif_path_or_img_list, str):
-            imgList = [StaticImage(surf, 0, 0, size[0], size[1]) for surf in RawImg.load_animated(gif_path_or_img_list)]
+            imgList = [StaticImage(surf, 0, 0, size[0], size[1]) for surf in Images.load_animated(gif_path_or_img_list)]
         # 如果是一个列表的文件路径
         elif isinstance(gif_path_or_img_list, Sequence):
             imgList = [StaticImage(surf, 0, 0, size[0], size[1]) for surf in gif_path_or_img_list]
@@ -95,6 +95,7 @@ global_value = GlobalValue
 sound = Sound
 music = Music
 media = Media
+images = Images
 controller = Controller
 option_menu = OptionMenu
 ui = UI

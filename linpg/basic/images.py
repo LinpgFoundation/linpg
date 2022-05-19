@@ -22,7 +22,7 @@ DataBase.update(Config.resolve_path_and_load_file(os.path.join("Data", "database
 _KEY: bytes = bytes("82&939DcaO6002#*", "utf-8")
 
 # 源图形处理
-class RawImg:
+class Images:
 
     # flag查询表
     __FLAG_LOOKUP_TABLE: dict[str, str] = {"env": "environment", "ui": "user_interface"}
@@ -93,7 +93,7 @@ class RawImg:
     @classmethod
     def load(cls, path: PoI, size: tuple = tuple(), alpha: int = 255, convert_alpha: bool = True) -> ImageSurface:
         # 加载图片
-        img: ImageSurface = RawImg.quickly_load(path, convert_alpha)
+        img: ImageSurface = cls.quickly_load(path, convert_alpha)
         # 根据参数编辑图片
         if alpha < 255:
             img.set_alpha(alpha)
@@ -162,7 +162,7 @@ class RawImg:
 
     # 按照给定的位置对图片进行剪裁
     @staticmethod
-    def crop(img: ImageSurface, pos: tuple = ORIGIN, size: tuple = (1, 1)) -> ImageSurface:
+    def crop(img: ImageSurface, pos: tuple[int, int] = ORIGIN, size: tuple[int, int] = (1, 1)) -> ImageSurface:
         cropped: ImageSurface = Surfaces.transparent((round(size[0]), round(size[1])))
         cropped.blit(img, (-pos[0], -pos[1]))
         return cropped

@@ -41,8 +41,7 @@ class FontGenerator:
         if Setting.get_font_type() == "default":
             self.__FONT = pygame.font.SysFont(Setting.get_font(), self.__SIZE, ifBold, ifItalic)
         elif Setting.get_font_type() == "custom":
-            font_path: str = os.path.join("Assets", "font", "{}.ttf".format(Setting.get_font()))
-            if os.path.exists(font_path):
+            if os.path.exists(font_path := Specification.get_directory("font", "{}.ttf".format(Setting.get_font()))):
                 self.__FONT = pygame.font.Font(font_path, self.__SIZE)
             else:
                 EXCEPTION.warn(

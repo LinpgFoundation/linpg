@@ -3,31 +3,28 @@ from .icon import *
 # 角色音效管理系统
 class EntitySoundManager:
 
-    # 音效所在的路径
-    __CHARACTER_SOUNDS_PATH: str = os.path.join("Assets", "sound", "character")
     # 存放音效的字典
     __SOUNDS: dict = {}
 
     # 为角色创建用于储存音效的文件夹
-    @classmethod
-    def mkdir(cls) -> None:
+    @staticmethod
+    def mkdir() -> None:
         for each_character in os.listdir(EntitySpriteImageManager.SPRITES_PATH):
-            path = os.path.join(cls.__CHARACTER_SOUNDS_PATH, each_character)
-            if not os.path.exists(path):
-                os.mkdir(path)
-                os.mkdir(os.path.join(path, "attack"))
-                os.mkdir(os.path.join(path, "get_click"))
-                os.mkdir(os.path.join(path, "injured"))
-                os.mkdir(os.path.join(path, "skill"))
+            if not os.path.exists(_path := Specification.get_directory("character_sound", each_character)):
+                os.mkdir(_path)
+                os.mkdir(os.path.join(_path, "attack"))
+                os.mkdir(os.path.join(_path, "get_click"))
+                os.mkdir(os.path.join(_path, "injured"))
+                os.mkdir(os.path.join(_path, "skill"))
 
     # 加载音效
     @classmethod
     def add(cls, characterType: str) -> None:
-        if characterType not in cls.__SOUNDS and os.path.exists(os.path.join(cls.__CHARACTER_SOUNDS_PATH, characterType)):
+        if characterType not in cls.__SOUNDS and os.path.exists(Specification.get_directory("character_sound", characterType)):
             cls.__SOUNDS[characterType] = {}
-            for soundType in os.listdir(os.path.join(cls.__CHARACTER_SOUNDS_PATH, characterType)):
+            for soundType in os.listdir(Specification.get_directory("character_sound", characterType)):
                 cls.__SOUNDS[characterType][soundType] = []
-                for soundPath in glob(os.path.join(cls.__CHARACTER_SOUNDS_PATH, characterType, soundType, "*")):
+                for soundPath in glob(Specification.get_directory("character_sound", characterType, soundType, "*")):
                     cls.__SOUNDS[characterType][soundType].append(Sound.load(soundPath))
 
     # 播放角色音效

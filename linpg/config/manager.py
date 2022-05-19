@@ -70,9 +70,9 @@ class Info:
     # 引擎主版本号
     __VERSION: int = 3
     # 引擎次更新版本号
-    __REVISION: int = 3
+    __REVISION: int = 4
     # 引擎补丁版本
-    __PATCH: int = 2
+    __PATCH: int = 0
 
     # 确保linpg版本
     @classmethod

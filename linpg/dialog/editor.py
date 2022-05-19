@@ -45,7 +45,7 @@ class DialogEditor(DialogConverter):
         self._npc_manager.dev_mode = True
         # 加载容器
         container_width = Display.get_width() // 5
-        self.__UIContainerRightImage = RawImg.load("<&ui>container.png", (container_width, Display.get_height()))
+        self.__UIContainerRightImage = Images.load("<&ui>container.png", (container_width, Display.get_height()))
         # 右侧容器尺寸
         RightContainerRect: Rectangle = Rectangle(
             container_width * 3 // 40, Display.get_height() // 10, container_width * 17 // 20, Display.get_height() * 17 // 20
@@ -56,16 +56,16 @@ class DialogEditor(DialogConverter):
         )
         self.__UIContainerRight_bg.set_scroll_bar_pos("right")
         # 加载背景图片
-        self.background_deselect = RawImg.load("<&ui>deselect.png")
+        self.background_deselect = Images.load("<&ui>deselect.png")
         self.__UIContainerRight_bg.set("current_select", None)
         # 加载静态背景图片
-        for imgPath in glob(os.path.join(self._background_image_folder_path, "*")):
-            self.__UIContainerRight_bg.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 4 // 5, None)))
+        for imgPath in glob(Specification.get_directory("background_image", "*")):
+            self.__UIContainerRight_bg.set(os.path.basename(imgPath), Images.load(imgPath, (container_width * 4 // 5, None)))
         # 加载动态背景图片
         if os.path.exists(Specification.get_directory("movie")):
             for imgPath in glob(Specification.get_directory("movie", "*")):
                 self.__UIContainerRight_bg.set(
-                    os.path.basename(imgPath), RawImg.resize(VideoSurface.get_preview(imgPath), (container_width * 4 // 5, None))
+                    os.path.basename(imgPath), Images.resize(VideoSurface.get_preview(imgPath), (container_width * 4 // 5, None))
                 )
         # 加载透明图片
         self.__UIContainerRight_bg.set(
@@ -80,8 +80,8 @@ class DialogEditor(DialogConverter):
         )
         self.__UIContainerRight_npc.set_scroll_bar_pos("right")
         # 加载npc立绘
-        for imgPath in glob(os.path.join(self._npc_manager.image_folder_path, "*")):
-            self.__UIContainerRight_npc.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 4 // 5, None)))
+        for imgPath in glob(Specification.get_directory("character_image", "*")):
+            self.__UIContainerRight_npc.set(os.path.basename(imgPath), Images.load(imgPath, (container_width * 4 // 5, None)))
         self.__UIContainerRight_npc.set_visible(False)
         self.__UIContainerRight_npc.distance_between_item = 0
         # 容器按钮
@@ -168,7 +168,7 @@ class DialogEditor(DialogConverter):
             self.__current_select_bg_name = image_name
             current_select_bg = self.__UIContainerRight_bg.get("current_select")
             self.__current_select_bg_copy = current_select_bg.copy()
-            current_select_bg.blit(RawImg.smoothly_resize(self.background_deselect, current_select_bg.get_size()), (0, 0))
+            current_select_bg.blit(Images.smoothly_resize(self.background_deselect, current_select_bg.get_size()), (0, 0))
         else:
             if self.__current_select_bg_name is not None:
                 self.__UIContainerRight_bg.set(self.__current_select_bg_name, self.__current_select_bg_copy)

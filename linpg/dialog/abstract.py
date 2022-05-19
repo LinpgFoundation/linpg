@@ -16,8 +16,6 @@ class AbstractDialogSystem(AbstractGameSystem):
         )
         # 对话文件路径
         self._dialog_folder_path: str = "Data"
-        # 背景图片路径
-        self._background_image_folder_path: str = os.path.join("Assets", "image", "dialog_background")
         # 背景图片
         self.__background_image_name: Optional[str] = None
         self.__background_image_surface: Union[StaticImage, VideoSurface] = self._black_bg.copy()
@@ -164,7 +162,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                 if self.__background_image_name != "<transparent>":
                     # 尝试加载图片式的背景
                     if os.path.exists(
-                        (img_path := os.path.join(self._background_image_folder_path, self.__background_image_name))
+                        (img_path := Specification.get_directory("background_image", self.__background_image_name))
                     ):
                         self.__background_image_surface = StaticImage(img_path, 0, 0)
                         self.__background_image_surface.disable_croping()
@@ -230,7 +228,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         )
         for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
             optionButton: Button = Button.load("<&ui>option.png", (0, 0), (0, 0))
-            optionButton.set_hover_img(RawImg.quickly_load("<&ui>option_selected.png"))
+            optionButton.set_hover_img(Images.quickly_load("<&ui>option_selected.png"))
             optionButton.set_auto_resize(True)
             optionButton.set_text(
                 ButtonComponent.text(

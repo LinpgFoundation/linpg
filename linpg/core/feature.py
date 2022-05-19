@@ -54,7 +54,7 @@ def convert_to_pygame_rect(rect: RectLiked) -> pygame.rect.Rect:
 
 
 # 检测pygame类2d模型是否被点击
-def is_hovering(imgObject: ImageSurface, objectPos: tuple = ORIGIN) -> bool:
+def is_hovering(imgObject: ImageSurface, objectPos: tuple[int, int] = ORIGIN) -> bool:
     # 计算坐标
     mouse_pos: tuple = Positions.subtract(Controller.mouse.pos, objectPos)
     # 返回结果

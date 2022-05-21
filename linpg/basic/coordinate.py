@@ -1,7 +1,7 @@
 import numpy
 from .header import *
 
-ORIGIN: tuple[int, int] = (0, 0)
+ORIGIN: Final[tuple[int, int]] = (0, 0)
 
 # 浮点坐标
 class Positions:

@@ -221,9 +221,10 @@ class GameController:
     # 获取单个事件
     @classmethod
     def get_event(cls, event_type: str) -> bool:
-        try:
-            return cls.__SPECIFIC_EVENTS[event_type]
-        except KeyError:
+        _result: Optional[bool] = cls.__SPECIFIC_EVENTS.get(event_type)
+        if _result is not None:
+            return _result
+        else:
             EXCEPTION.fatal('The event type "{}" is not supported!'.format(event_type))
 
     # 完成这一帧的收尾工作

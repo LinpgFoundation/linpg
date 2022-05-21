@@ -20,8 +20,6 @@ class SaveDataThread(threading.Thread):
         except Exception:
             if Debug.get_developer_mode() is True:
                 EXCEPTION.fatal("Cannot save data to path: {}".format(self.path))
-            else:
-                pass
 
 
 # 系统模块接口

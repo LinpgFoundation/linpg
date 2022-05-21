@@ -1,6 +1,6 @@
 from __future__ import annotations
 import json
-from typing import Any, Optional
+from typing import Any, Optional, Final
 from copy import deepcopy
 from glob import glob
 from ..exception import EXCEPTION, os
@@ -56,7 +56,7 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Optional[object],
 class Config:
 
     # 支持的配置文件后缀
-    __EXTENSIONS_SUPPORTED: tuple[str, ...] = (".yml", ".yaml", ".json")
+    __EXTENSIONS_SUPPORTED: Final[tuple[str, ...]] = (".yml", ".yaml", ".json")
 
     # 获取默认配置文件类型
     @staticmethod
@@ -201,7 +201,7 @@ class Config:
 # 引擎部分生产的配置文件的模板
 class Template:
 
-    __TEMPLATE: dict = Config.load_internal_file("template.json")
+    __TEMPLATE: Final[dict] = Config.load_internal_file("template.json")
 
     @classmethod
     def get(cls, key: str) -> dict:

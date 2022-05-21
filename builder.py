@@ -5,7 +5,13 @@ from linpg import Builder  # type: ignore
 if not PATH.exists("src") or input("Do you want to recompile everything (Y/n):") == "Y":
     # 编译所有文件
     additional_files: tuple[str, ...] = ("README.md", "LICENSE", "CODE_OF_CONDUCT.md", "doc")
-    Builder.compile("linpg", additional_files=additional_files, ignore_key_words=("compiler.py",))
+    Builder.compile(
+        "linpg",
+        additional_files=additional_files,
+        ignore_key_words=("compiler.py",),
+        update_the_one_in_sitepackages=False,
+        options={"compiler_directives": {"emit_code_comments": False}},
+    )
 
 # 提示编译完成
 for i in range(2):

@@ -57,9 +57,9 @@ class BuilderManager(AbstractToolSystem):
         target_folder: str = "src",
         additional_files: tuple = tuple(),
         ignore_key_words: tuple = tuple(),
-        enable_multiprocessing: bool = True,
         remove_building_cache: bool = True,
         update_the_one_in_sitepackages: bool = True,
+        options: dict = {},
     ) -> None:
         self.delete_file_if_exist(target_folder)
         # 复制文件到新建的src文件夹中，准备开始编译
@@ -69,15 +69,18 @@ class BuilderManager(AbstractToolSystem):
         # 移除不必要的py缓存
         self.__remove_cache(source_path_in_target_folder)
         # 把数据写入缓存文件以供编译器读取
+        builder_options: dict = {
+            "source_folder": source_path_in_target_folder,
+            "ignore_key_words": ignore_key_words,
+            "enable_multiprocessing": True,
+            "debug_mode": False,
+            "emit_code_comments": False,
+            "keep_c": False,
+            "compiler_directives": {},
+        }
+        builder_options.update(options)
         with open("builder_data_cache.json", "w", encoding="utf-8") as f:
-            json.dump(
-                {
-                    "enable_multiprocessing": enable_multiprocessing,
-                    "source_folder": source_path_in_target_folder,
-                    "ignore_key_words": ignore_key_words,
-                },
-                f,
-            )
+            json.dump(builder_options, f)
         # 编译源代码
         self._run_cmd(["build_ext", "--build-lib", target_folder], True)
         # 删除缓存

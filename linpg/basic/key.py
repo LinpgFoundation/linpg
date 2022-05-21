@@ -4,7 +4,7 @@ from .coordinate import *
 from tkinter import Tk
 
 
-class KeySystem:
+class Key:
 
     # 按键常量
     DOWN: int = pygame.KEYDOWN
@@ -39,6 +39,3 @@ class KeySystem:
     @classmethod
     def get_clipboard(cls) -> str:
         return cls.__root.clipboard_get()
-
-
-Key: KeySystem = KeySystem()

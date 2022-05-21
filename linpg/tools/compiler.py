@@ -1,13 +1,21 @@
 import os
-import setuptools
+from setuptools import setup
 from Cython.Build import cythonize  # type: ignore
 
 
 # 编译方法
-def compile_file(_path: str) -> None:
-    setuptools.setup(ext_modules=cythonize(_path, language_level="3"))
+def compile_file(_path: str, keep_c: bool, debug_mode: bool, _compiler_directives: bool) -> None:
+    if debug_mode is True:
+        setup(
+            ext_modules=cythonize(
+                _path, show_all_warnings=True, annotate=True, language_level="3", compiler_directives=_compiler_directives
+            )
+        )
+    else:
+        setup(ext_modules=cythonize(_path, language_level="3", compiler_directives=_compiler_directives))
     # 删除c文件
-    os.remove(_path.replace(".py", ".c"))
+    if not keep_c:
+        os.remove(_path.replace(".py", ".c"))
     # 删除原始py文件
     os.remove(_path)
 
@@ -29,6 +37,12 @@ if __name__ == "__main__":
             __source_folder: str = str(Data["source_folder"])
             # 需要忽略的文件的关键词
             __ignore_key_words: tuple = tuple(Data["ignore_key_words"])
+            # 是否启用debug模式
+            __debug_mode: bool = bool(Data["debug_mode"])
+            # 是否保存c文件
+            __keep_c: bool = bool(Data["keep_c"])
+            # 其他次要参数
+            __compiler_directives: bool = bool(Data["compiler_directives"])
         # 移除参数文件
         os.remove("builder_data_cache.json")
         # 储存进程的文件夹
@@ -49,12 +63,12 @@ if __name__ == "__main__":
                 if path.endswith(".py") and not cls.__if_ignore(path):
                     # 如果使用多线程
                     if cls.__enable_multiprocessing is True:
-                        cls.__compile_processes.append(Process(target=compile_file, args=(path,)))
-                    # 如果不使用多线程（用于debug)
+                        cls.__compile_processes.append(
+                            Process(target=compile_file, args=(path, cls.__keep_c, cls.__debug_mode, cls.__compiler_directives))
+                        )
+                    # 如果不使用多线程
                     else:
-                        setuptools.setup(ext_modules=cythonize(path, show_all_warnings=True, annotate=True, language_level="3"))
-                        # 删除py文件
-                        os.remove(path)
+                        compile_file(path, cls.__keep_c, cls.__debug_mode, cls.__compiler_directives)
             elif "pyinstaller" not in path and "pycache" not in path:
                 if not cls.__if_ignore(path):
                     for file_in_dir in glob(os.path.join(path, "*")):

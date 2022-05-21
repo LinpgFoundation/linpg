@@ -55,13 +55,7 @@ def convert_to_pygame_rect(rect: RectLiked) -> pygame.rect.Rect:
 
 # 检测pygame类2d模型是否被点击
 def is_hovering(imgObject: ImageSurface, objectPos: tuple[int, int] = ORIGIN) -> bool:
-    # 计算坐标
-    mouse_pos: tuple = Positions.subtract(Controller.mouse.pos, objectPos)
-    # 返回结果
-    try:
-        return bool(0 < mouse_pos[0] < imgObject.get_width() and 0 < mouse_pos[1] < imgObject.get_height())
-    except Exception:
-        EXCEPTION.fatal("Unable to check current object: {0} (type:{1})".format(imgObject, type(imgObject)))
+    return Controller.mouse.is_in_rect(objectPos[0], objectPos[1], imgObject.get_width(), imgObject.get_height())
 
 
 # 获取图片的subsurface

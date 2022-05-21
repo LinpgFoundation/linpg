@@ -6,7 +6,7 @@ class Setting:
     # 储存设置配置文件的数据
     __SETTING_DATA: dict = {}
     # 当前配置文件保存路径的参数
-    __SETTING_FILE_NAME: str = Specification.get_directory("setting", "setting." + Config.get_file_type())
+    __SETTING_FILE_NAME: Final[str] = Specification.get_directory("setting", "setting." + Config.get_file_type())
 
     # 重新加载设置数据
     @classmethod

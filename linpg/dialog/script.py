@@ -109,8 +109,8 @@ class ScriptConverter:
                 and not self.__try_handle_data(index, "[bgm]", "background_music")
             ):
                 # 角色进场
-                if self.__lines[index].startswith("[display]"):
-                    for _name in self.__extract_string(self.__lines[index], "[display]").split():
+                if self.__lines[index].startswith("[show]"):
+                    for _name in self.__extract_string(self.__lines[index], "[show]").split():
                         self.__current_data["character_images"].append(_name)
                 # 角色退场
                 elif self.__lines[index].startswith("[hide]"):
@@ -122,9 +122,9 @@ class ScriptConverter:
                         # 移除角色
                         self.__current_data["character_images"].remove(_name)
                 # 清空角色列表，然后让角色重新进场
-                elif self.__lines[index].startswith("[show]"):
+                elif self.__lines[index].startswith("[display]"):
                     self.__current_data["character_images"].clear()
-                    for _name in self.__extract_string(self.__lines[index], "[show]").split():
+                    for _name in self.__extract_string(self.__lines[index], "[display]").split():
                         self.__current_data["character_images"].append(_name)
                 # 章节id
                 elif self.__lines[index].startswith("[id]"):

@@ -119,9 +119,10 @@ class Font:
     # 获取全局文字
     @classmethod
     def get_global_font(cls, key: str) -> FontGenerator:
-        try:
-            return cls.__LINPG_GLOBAL_FONTS[key]
-        except:
+        _font: Optional[FontGenerator] = cls.__LINPG_GLOBAL_FONTS.get(key)
+        if _font is not None:
+            return _font
+        else:
             EXCEPTION.fatal('You did not set any font named "{}".'.format(key))
 
     # 获取全局文字

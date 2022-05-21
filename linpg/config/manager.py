@@ -68,11 +68,11 @@ class DataBase:
 class Info:
 
     # 引擎主版本号
-    __VERSION: int = 3
+    __VERSION: Final[int] = 3
     # 引擎次更新版本号
-    __REVISION: int = 4
+    __REVISION: Final[int] = 4
     # 引擎补丁版本
-    __PATCH: int = 0
+    __PATCH: Final[int] = 0
 
     # 确保linpg版本
     @classmethod
@@ -100,9 +100,9 @@ class Info:
 class Cache:
 
     # 缓存文件夹路径
-    __CACHE_FOLDER: str = Specification.get_directory("cache")
+    __CACHE_FOLDER: Final[str] = Specification.get_directory("cache")
     # 缓存文件清单路径
-    __CACHE_FILES_DATA_PATH: str = os.path.join(__CACHE_FOLDER, "files.{}".format(Config.get_file_type()))
+    __CACHE_FILES_DATA_PATH: Final[str] = os.path.join(__CACHE_FOLDER, "files.{}".format(Config.get_file_type()))
     # 如果缓存文件目录存在, 则加载数据， 否则初始化一个新的空字典
     __CACHE_FILES_DATA: dict = Config.load_file(__CACHE_FILES_DATA_PATH) if os.path.exists(__CACHE_FILES_DATA_PATH) else {}
 

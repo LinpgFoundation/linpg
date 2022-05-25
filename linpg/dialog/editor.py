@@ -42,7 +42,7 @@ class DialogEditor(DialogConverter):
         self._initialize(chapterType, chapterId, part, projectName)
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_dialog_file_location())
         # 将npc立绘系统设置为开发者模式
-        self._npc_manager.dev_mode = True
+        CharacterImageManager.dev_mode = True
         # 加载容器
         container_width = Display.get_width() // 5
         self.__UIContainerRightImage = Images.load("<&ui>container.png", (container_width, Display.get_height()))
@@ -483,11 +483,11 @@ class DialogEditor(DialogConverter):
                 else:
                     confirm_event_tag = True
             # 移除角色立绘
-            elif Controller.get_event("delete") and self._npc_manager.character_get_click is not None:
-                self._current_dialog_content["character_images"].remove(self._npc_manager.character_get_click)
+            elif Controller.get_event("delete") and CharacterImageManager.character_get_click is not None:
+                self._current_dialog_content["character_images"].remove(CharacterImageManager.character_get_click)
                 self._update_scene(self._dialog_id)
         # 显示移除角色的提示
-        if self._npc_manager.character_get_click is not None:
+        if CharacterImageManager.character_get_click is not None:
             surface.blit(self.__remove_npc_button, Controller.mouse.pos)
         # 画上右侧菜单的按钮
         self.__UIContainerRightButton.draw(surface)
@@ -528,7 +528,7 @@ class DialogEditor(DialogConverter):
                             self._current_dialog_content["character_images"] = []
                         if len(self._current_dialog_content["character_images"]) < 2:
                             self._current_dialog_content["character_images"].append(imgName)
-                            self._npc_manager.update(self._current_dialog_content["character_images"])
+                            CharacterImageManager.update(self._current_dialog_content["character_images"])
 
         # 展示dialog navigation窗口
         self.__dialog_navigation_window.present_on(surface)

@@ -8,8 +8,6 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._dialog_data: dict[str, dict] = {}
         # 当前对话的id
         self._dialog_id: str = "head"
-        # 加载对话的背景图片模块
-        self._npc_manager: CharacterImageManager = CharacterImageManager()
         # 黑色Void帘幕
         self._black_bg = StaticImage(
             Surfaces.colored(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height()
@@ -173,7 +171,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                         EXCEPTION.fatal(
                             "Cannot find a background image or video file called '{}'.".format(self.__background_image_name)
                         )
-                elif self._npc_manager.dev_mode is True:
+                elif CharacterImageManager.dev_mode is True:
                     self.__background_image_surface = StaticImage(Surfaces.texture_is_missing(Display.get_size()), 0, 0)
                     self.__background_image_surface.disable_croping()
                 else:
@@ -188,7 +186,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 更新当前对话数据的指针
         self._current_dialog_content = self.__get_current_dialog_content(True)
         # 更新立绘和背景
-        self._npc_manager.update(self._current_dialog_content["character_images"])
+        CharacterImageManager.update(self._current_dialog_content["character_images"])
         self._update_background_image(self._current_dialog_content["background_image"])
         # 更新对话框
         self._get_dialog_box().update(self._current_dialog_content["narrator"], self._current_dialog_content["contents"])
@@ -250,7 +248,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._current_dialog_content = self.__get_current_dialog_content()
         # 展示背景图片和npc立绘
         self.display_background_image(surface)
-        self._npc_manager.draw(surface)
+        CharacterImageManager.draw(surface)
         self._get_dialog_box().draw(surface)
         # 如果不处于静音状态
         if not self._is_muted:

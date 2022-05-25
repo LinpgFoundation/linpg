@@ -120,7 +120,12 @@ class ScriptConverter:
                             self.__current_data["character_images"].clear()
                             break
                         # 移除角色
-                        self.__current_data["character_images"].remove(_name)
+                        for i in range(len(self.__current_data["character_images"])):
+                            if CharacterImageNameMetaData(self.__current_data["character_images"][i]).equal(
+                                CharacterImageNameMetaData(_name)
+                            ):
+                                self.__current_data["character_images"].pop(i)
+                                break
                 # 清空角色列表，然后让角色重新进场
                 elif self.__lines[index].startswith("[display]"):
                     self.__current_data["character_images"].clear()
@@ -138,6 +143,8 @@ class ScriptConverter:
                     self.__lang = self.__extract_string(self.__lines[index], "[lang]")
                 # 部分
                 elif self.__lines[index].startswith("[part]"):
+                    if self.__last_dialog_id is not None:
+                        self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"] = None
                     self.__part = self.__extract_string(self.__lines[index], "[part]")
                 # 结束符
                 elif self.__lines[index].startswith("[end]"):

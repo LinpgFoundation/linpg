@@ -1,9 +1,5 @@
 """
 结构:
-base -> setting -> debug -> manager
+base -> setting -> modules
 """
-from .manager import *
-
-
-# 加载设置配置文件
-Setting.reload()
+from .modules import *

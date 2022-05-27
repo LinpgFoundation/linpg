@@ -2,7 +2,7 @@
 结构:
 exception -> config -> lang -> tools -> basic -> core -> ui -> dialog -> map -> character -> battle -> api
 """
-from .api import *
+from .interface import *
 from platform import python_version
 
 """整理linpg内部"""

@@ -5,13 +5,6 @@ AP_IS_NEEDED_TO_ATTACK: int = 5
 AP_IS_NEEDED_TO_MOVE_ONE_BLOCK: int = 2
 # 濒死回合限制
 DYING_ROUND_LIMIT: int = 3
-# 角色数据库
-CHARACTER_DATABASE: dict = {}
-# 尝试加载角色数据
-_path: str = os.path.join("Data", "character_data." + Config.get_file_type())
-if os.path.exists(_path):
-    CHARACTER_DATABASE.update(Config.load_file(_path))
-del _path
 
 # 友方角色类
 class FriendlyCharacter(Entity):
@@ -67,7 +60,7 @@ class FriendlyCharacter(Entity):
             }
         )
         # 除去重复数据
-        o_data: dict = dict(CHARACTER_DATABASE[new_data["type"]])
+        o_data: dict = dict(self.get_enity_data(new_data["type"]))
         _keys: tuple = tuple(new_data.keys())
         for key in _keys:
             if key in o_data and o_data[key] == new_data[key]:
@@ -257,7 +250,7 @@ class HostileCharacter(Entity):
         if len(self.__patrol_path) > 0:
             new_data["patrol_path"] = list(self.__patrol_path)
         # 除去重复数据
-        o_data: dict = dict(CHARACTER_DATABASE[new_data["type"]])
+        o_data: dict = self.get_enity_data(new_data["type"])
         _keys: tuple = tuple(new_data.keys())
         for key in _keys:
             if key in o_data and o_data[key] == new_data[key]:
@@ -405,34 +398,3 @@ class HostileCharacter(Entity):
             pass
         # 放回一个装有指令的列表
         return actions
-
-
-# 初始化角色信息
-class CharacterDataLoader(threading.Thread):
-    def __init__(self, alliances: dict, enemies: dict, mode: str) -> None:
-        super().__init__()
-        self.alliances: dict = deepcopy(alliances)
-        self.enemies: dict = deepcopy(enemies)
-        self.totalNum: int = len(alliances) + len(enemies)
-        self.currentID: int = 0
-        self.mode: str = mode
-
-    def run(self) -> None:
-        data_t: dict
-        for key, value in self.alliances.items():
-            data_t = deepcopy(CHARACTER_DATABASE[value["type"]])
-            data_t.update(value)
-            self.alliances[key] = FriendlyCharacter(data_t, self.mode)
-            self.currentID += 1
-            if Debug.get_developer_mode():
-                print("total: {0}, current: {1}".format(self.totalNum, self.currentID))
-        for key, value in self.enemies.items():
-            data_t = deepcopy(CHARACTER_DATABASE[value["type"]])
-            data_t.update(value)
-            self.enemies[key] = HostileCharacter(data_t, self.mode)
-            self.currentID += 1
-            if Debug.get_developer_mode():
-                print("total: {0}, current: {1}".format(self.totalNum, self.currentID))
-
-    def getResult(self) -> tuple[dict, dict]:
-        return self.alliances, self.enemies

@@ -246,11 +246,6 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
     def count_decorations(self) -> int:
         return len(self.__decorations)
 
-    # 是否夜战
-    @property
-    def night_mode(self) -> bool:
-        return MapImageParameters.get_darkness() > 0
-
     # 控制地图放大缩小
     def set_tile_block_size(self, newPerBlockWidth: int_f, newPerBlockHeight: int_f) -> None:
         # 记录老尺寸
@@ -516,7 +511,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
 
     # 查看坐标是否在光亮范围内
     def is_coordinate_in_light_rea(self, x: int_f, y: int_f) -> bool:
-        return True if not self.night_mode else (int(x), int(y)) in self.__light_area
+        return True if MapImageParameters.get_darkness() <= 0 else (int(x), int(y)) in self.__light_area
 
     # 寻找2点之间的最短路径
     def find_path(

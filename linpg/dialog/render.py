@@ -112,13 +112,15 @@ class _FilterEffect:
 class CharacterImageManager:
 
     # 用于存放立绘的字典
-    __character_image: dict = {}
-    # 如果是开发模式，则在初始化时加载所有图片
+    __character_image: dict[str, tuple[StaticImage, ...]] = {}
+    # 存放前一对话的参与角色名称
     __previous_characters: tuple[CharacterImageNameMetaData, ...] = tuple()
     __last_round_image_alpha: int = 255
+    # 存放当前对话的参与角色名称
     __current_characters: tuple[CharacterImageNameMetaData, ...] = tuple()
     __this_round_image_alpha: int = 00
-    __img_width: int = Display.get_width() // 2
+    # 立绘边长
+    _WIDTH: int = Display.get_width() // 2
     # 加载滤镜
     __filters: dict[str, _FilterEffect] = {}
     # 移动的x
@@ -127,14 +129,16 @@ class CharacterImageManager:
     __x_offset_for_this_round: int = 0
     __x_offset_for_last_round: int = 0
     # y轴坐标
-    __NPC_Y: int = Display.get_height() - __img_width
+    __NPC_Y: int = Display.get_height() - _WIDTH
     # 开发者模式
     dev_mode: bool = False
     # 被点击的角色
     character_get_click: Optional[str] = None
 
+    # 重新加载滤镜
     @classmethod
-    def reload_filters(cls) -> None:
+    def init(cls) -> None:
+        cls.unload()
         for key, value in DataBase.get("Filters").items():
             if value.get("type") == "image":
                 cls.__filters[key] = _FilterEffect(
@@ -156,34 +160,29 @@ class CharacterImageManager:
                         )
                     )
 
-    # 确保角色存在
+    # 卸载占用的内存
     @classmethod
-    def __ensure_the_existence_of(cls, name: str) -> None:
-        if name not in cls.__character_image:
-            cls.__load_character(Specification.get_directory("character_image", name))
-
-    # 加载角色
-    @classmethod
-    def __load_character(cls, path: str) -> None:
-        name = os.path.basename(path)
-        cls.__character_image[name] = {}
-        cls.__character_image[name]["normal"] = StaticImage(path, 0, 0, cls.__img_width, cls.__img_width)
-        # 生成深色图片
-        cls.__character_image[name]["dark"] = cls.__character_image[name]["normal"].copy()
-        cls.__character_image[name]["dark"].add_darkness(_DARKNESS)
+    def unload(cls) -> None:
+        cls.__filters.clear()
+        cls.__character_image.clear()
 
     # 画出角色
     @classmethod
     def __display_character(cls, _name_data: CharacterImageNameMetaData, x: int, alpha: int, surface: ImageSurface) -> None:
         if alpha > 0:
-            cls.__ensure_the_existence_of(_name_data.name)
-            # 加载npc的基础立绘
-            img: StaticImage = (
-                cls.__character_image[_name_data.name]["dark"]
-                if _name_data.has_tag("silent")
-                else cls.__character_image[_name_data.name]["normal"]
-            )
-            img.set_size(cls.__img_width, cls.__img_width)
+            # 确保角色存在
+            if _name_data.name not in cls.__character_image:
+                # 如果不能存在，则加载角色
+                imgTemp: StaticImage = StaticImage(
+                    Specification.get_directory("character_image", _name_data.name), 0, 0, cls._WIDTH, cls._WIDTH
+                )
+                # 以tuple的形式保存立绘，index 0 是正常图片， index 1 是深色图片
+                cls.__character_image[_name_data.name] = (imgTemp, imgTemp.copy())
+                # 生成深色图片
+                cls.__character_image[_name_data.name][1].add_darkness(_DARKNESS)
+            # 获取npc立绘的指针
+            img: StaticImage = cls.__character_image[_name_data.name][1 if _name_data.has_tag("silent") else 0]
+            img.set_size(cls._WIDTH, cls._WIDTH)
             img.set_alpha(alpha)
             img.set_pos(x, cls.__NPC_Y)
             if len(_name_data.tags) > 0:
@@ -262,12 +261,12 @@ class CharacterImageManager:
         # 更新alpha值，并根据alpha值计算offset
         if cls.__last_round_image_alpha > 0:
             cls.__last_round_image_alpha -= 15
-            cls.__x_offset_for_last_round = int(cls.__img_width / 4 - cls.__img_width / 4 * cls.__last_round_image_alpha / 255)
+            cls.__x_offset_for_last_round = int(cls._WIDTH / 4 - cls._WIDTH / 4 * cls.__last_round_image_alpha / 255)
         else:
             cls.__x_offset_for_last_round = 0
         if cls.__this_round_image_alpha < 255:
             cls.__this_round_image_alpha += 25
-            cls.__x_offset_for_this_round = int(cls.__img_width / 4 * cls.__this_round_image_alpha / 255 - cls.__img_width / 4)
+            cls.__x_offset_for_this_round = int(cls._WIDTH / 4 * cls.__this_round_image_alpha / 255 - cls._WIDTH / 4)
         else:
             cls.__x_offset_for_this_round = 0
         # 初始化被选择的角色名字
@@ -379,6 +378,3 @@ class CharacterImageManager:
                 cls.__fade_out_characters_last_round(surface)
             else:
                 cls.__fade_in_characters_this_round(surface)
-
-
-CharacterImageManager.reload_filters()

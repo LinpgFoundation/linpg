@@ -30,6 +30,8 @@ class AbstractDialogSystem(AbstractGameSystem):
         self.set_bgm_volume(Media.volume.background_music / 100)
         # 文字大小
         self._FONT_SIZE: int = Display.get_width() * 3 // 200
+        # 初始化滤镜系统
+        CharacterImageManager.init()
 
     # 获取对话框模块（子类需实现）
     def _get_dialog_box(self) -> AbstractDialogBox:
@@ -209,6 +211,8 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 如果背景是多线程的VideoSurface，则应该退出占用
         if isinstance(self.__background_image_surface, VideoSurface):
             self.__background_image_surface.stop()
+        # 释放立绘渲染系统占用的内存
+        CharacterImageManager.unload()
         # 设置停止播放
         super().stop()
 

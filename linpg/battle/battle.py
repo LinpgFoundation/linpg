@@ -66,28 +66,6 @@ class AbstractBattleSystem(AbstractGameSystem):
     def _display_decoration(self, screen: ImageSurface) -> None:
         self._MAP.display_decoration(screen, self._alliances_data, self._enemies_data)
 
-    # 初始化角色加载器并启动加载器线程
-    def _start_loading_characters(self, alliancesData: dict, enemiesData: dict, mode: str = "default") -> None:
-        self.__characterDataLoaderThread = CharacterDataLoader(alliancesData, enemiesData, mode)
-        self.__characterDataLoaderThread.start()
-
-    # 是否角色加载器还在运行
-    def _is_characters_loader_alive(self) -> bool:
-        if self.__characterDataLoaderThread.is_alive():
-            return True
-        else:
-            self._alliances_data, self._enemies_data = self.__characterDataLoaderThread.getResult()
-            del self.__characterDataLoaderThread
-            return False
-
-    @property
-    def characters_loaded(self) -> int:
-        return self.__characterDataLoaderThread.currentID
-
-    @property
-    def characters_total(self) -> int:
-        return self.__characterDataLoaderThread.totalNum
-
     # 检测按下按键的事件
     def _check_key_down(self, event: PG_Event) -> None:
         if event.key == Key.ARROW_UP:

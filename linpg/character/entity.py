@@ -4,6 +4,13 @@ from .sound import *
 # 人形模块
 class Entity(Position):
 
+    # 角色数据库
+    __DATABASE: dict[str, dict] = {}
+    # 尝试加载角色数据
+    _path: str = os.path.join("Data", "character_data." + Config.get_file_type())
+    if os.path.exists(_path):
+        __DATABASE.update(Config.load_file(_path))
+    del _path
     # idle动作
     __IDLE_ACTION: str = "wait"
 
@@ -139,6 +146,11 @@ class Entity(Position):
         if not self.__moving_complete:
             data["moving_complete"] = self.__moving_complete
         return data
+
+    # 查询特点角色的数据
+    @classmethod
+    def get_enity_data(cls, _type: str) -> dict:
+        return cls.__DATABASE[_type]
 
     # 阵营
     @property

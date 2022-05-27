@@ -33,7 +33,7 @@ class AbstractMapEditor(AbstractBattleSystem):
         return Config.load_file(self.get_map_file_location()) | super()._get_data_need_to_save()
 
     # 加载角色的数据
-    def _load_characters_data(self, mapFileData: dict) -> None:
+    def _load_characters_data(self, alliances: dict, enemies: dict) -> None:
         EXCEPTION.fatal("_load_characters_data()", 1)
 
     # 初始化
@@ -43,7 +43,7 @@ class AbstractMapEditor(AbstractBattleSystem):
         # 载入地图数据
         mapFileData: dict = Config.load(self.get_map_file_location())
         # 初始化角色信息
-        self._load_characters_data(mapFileData)
+        self._load_characters_data(mapFileData["alliances"], mapFileData["enemies"])
         # 初始化地图
         if "map" not in mapFileData or mapFileData["map"] is None or len(mapFileData["map"]) == 0:
             SnowEnvImg = [
@@ -270,7 +270,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                         else:
                             self._alliances_data.pop(character_collided)
                         the_id: int = 0
-                        _new_data: dict = deepcopy(CHARACTER_DATABASE[self.__object_to_put_down["id"]])
+                        _new_data: dict = deepcopy(Entity.get_enity_data(self.__object_to_put_down["id"]))
                         if _new_data["faction"] in DataBase.get("Faction", "alliances"):
                             while self.__object_to_put_down["id"] + "_" + str(the_id) in self._alliances_data:
                                 the_id += 1
@@ -413,7 +413,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                 # 读取地图数据
                 mapFileData = Config.load(self.get_map_file_location())
                 # 初始化角色信息
-                self._load_characters_data(mapFileData)
+                self._load_characters_data(mapFileData["alliances"], mapFileData["enemies"])
                 # 加载地图
                 self._initialize_map(mapFileData)
                 del mapFileData

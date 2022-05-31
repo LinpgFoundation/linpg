@@ -409,17 +409,17 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                 )
 
     # 更新方块
-    def update_block(self, pos: dict, name: str) -> None:
-        self.__MAP[pos["y"]][pos["x"]] = name
+    def update_block(self, pos: tuple[int, int], name: str) -> None:
+        self.__MAP[pos[1]][pos[0]] = name
         self.__need_update_surface = True
         self.__need_to_recheck_block_on_surface = True
 
     # 是否角色能通过该方块
-    def if_block_can_pass_through(self, pos: dict) -> bool:
-        return bool(self.__BLOCKS_DATABASE[self.__MAP[pos["y"]][pos["x"]]]["canPassThrough"])
+    def if_block_can_pass_through(self, pos: tuple[int, int]) -> bool:
+        return bool(self.__BLOCKS_DATABASE[self.__MAP[pos[1]][pos[0]]]["canPassThrough"])
 
     # 计算在地图中的方块
-    def calculate_coordinate(self, pos: tuple[int, int] = None) -> Optional[dict]:
+    def calculate_coordinate(self, pos: tuple[int, int] = None) -> Optional[tuple[int, int]]:
         if pos is None:
             pos = Controller.mouse.pos
         guess_x: int = int(
@@ -440,7 +440,6 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         posTupleTemp: tuple
         lenUnitW: float = MapImageParameters.get_block_width() / 5
         lenUnitH: float = MapImageParameters.get_block_width() * 0.8 / 393 * 214
-        block_get_click: Optional[dict] = None
         for y in range(guess_y - 1, guess_y + 4):
             for x in range(guess_x - 1, guess_x + 4):
                 posTupleTemp = self.calculate_position(x, y)
@@ -449,9 +448,8 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                     and 0 < pos[1] - posTupleTemp[1] < lenUnitH
                 ):
                     if 0 <= x < self.column and 0 <= y < self.row:
-                        block_get_click = {"x": x, "y": y}
-                    break
-        return block_get_click
+                        return x, y
+        return None
 
     # 计算在地图中的位置
     def calculate_position(self, x: int_f, y: int_f, absolute_pos: bool = False) -> tuple[int, int]:

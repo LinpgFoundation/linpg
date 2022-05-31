@@ -5,6 +5,7 @@ class AbstractMapEditor(AbstractBattleSystem):
     def __init__(self) -> None:
         # 初始化父类
         super().__init__()
+        # 初始化ui
         self.__buttons_container: GameObjectsDictContainer = UI.generate_container("map_editor_buttons")
         self.__right_container_buttons: GameObjectsDictContainer = UI.generate_container("map_editor_right_container_buttons")
         self.__UIContainerRight: DynamicImage = DynamicImage("<&ui>container.png", 0, 0)
@@ -16,6 +17,7 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__decorationsImgContainer: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(
             None, 0, 0, 0, 0, "vertical"
         )
+        # 用于储存即将发下的物品的具体参数
         self.__object_to_put_down: dict = {}
         # 未保存离开时的警告
         self.__no_save_warning: GameObjectsDictContainer = UI.generate_container("leave_without_saving_warning")
@@ -46,14 +48,16 @@ class AbstractMapEditor(AbstractBattleSystem):
         self._load_characters_data(mapFileData["alliances"], mapFileData["enemies"])
         # 初始化地图
         if "map" not in mapFileData or mapFileData["map"] is None or len(mapFileData["map"]) == 0:
-            SnowEnvImg = [
-                "TileSnow01",
-                "TileSnow01ToStone01",
-                "TileSnow01ToStone02",
-                "TileSnow02",
-                "TileSnow02ToStone01",
-                "TileSnow02ToStone02",
-            ]
+            SnowEnvImg = tuple(
+                [
+                    "TileSnow01",
+                    "TileSnow01ToStone01",
+                    "TileSnow01ToStone02",
+                    "TileSnow02",
+                    "TileSnow02ToStone01",
+                    "TileSnow02ToStone02",
+                ]
+            )
             block_y = 50
             block_x = 50
             default_map = [[SnowEnvImg[get_random_int(0, 5)] for a in range(block_x)] for i in range(block_y)]
@@ -188,17 +192,17 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__buttons_container.get("back").set_left(self.__buttons_container.get("save").get_right() + panding)
         self.__buttons_container.get("delete").set_left(self.__buttons_container.get("back").get_right() + panding)
         self.__buttons_container.get("reload").set_left(self.__buttons_container.get("delete").get_right() + panding)
-        # 用于储存即将发下的物品的具体参数
-        self.data_to_edit = None
 
     # 将地图制作器的界面画到屏幕上
     def draw(self, screen: ImageSurface) -> None:
         block_get_click = self._MAP.calculate_coordinate()
+        noContainerHovered: bool = not self.__UIContainerRight.is_hovered(
+            (self.__UIContainerButtonRight.right, 0)
+        ) and not self.__UIContainerBottom.is_hovered((0, self.__UIContainerButtonBottom.bottom))
         for event in Controller.events:
             if event.type == Key.DOWN:
                 if event.key == Key.ESCAPE:
                     self.__object_to_put_down.clear()
-                    self.data_to_edit = None
                     self.__delete_mode = False
                 self._check_key_down(event)
             elif event.type == Key.UP:
@@ -215,19 +219,14 @@ class AbstractMapEditor(AbstractBattleSystem):
             elif block_get_click is not None:
                 if self.__delete_mode is True:
                     # 查看当前位置是否有装饰物
-                    decoration: Optional[DecorationObject] = self._MAP.find_decoration_on(
-                        (block_get_click["x"], block_get_click["y"])
-                    )
+                    decoration: Optional[DecorationObject] = self._MAP.find_decoration_on(block_get_click)
                     # 如果发现有冲突的装饰物
                     if decoration is not None:
                         self._MAP.remove_decoration(decoration)
                     else:
                         decoration_collided: Optional[str] = None
-                        for key, value in {
-                            **self._alliances_data,
-                            **self._enemies_data,
-                        }.items():
-                            if value.x == block_get_click["x"] and value.y == block_get_click["y"]:
+                        for key, value in {**self._alliances_data, **self._enemies_data}.items():
+                            if value.x == block_get_click[0] and value.y == block_get_click[1]:
                                 decoration_collided = key
                                 break
                         if decoration_collided is not None:
@@ -235,21 +234,17 @@ class AbstractMapEditor(AbstractBattleSystem):
                                 self._alliances_data.pop(decoration_collided)
                             elif decoration_collided in self._enemies_data:
                                 self._enemies_data.pop(decoration_collided)
-                elif (
-                    len(self.__object_to_put_down) > 0
-                    and not self.__UIContainerRight.is_hovered((self.__UIContainerButtonRight.right, 0))
-                    and not self.__UIContainerBottom.is_hovered((0, self.__UIContainerButtonBottom.bottom))
-                ):
+                elif len(self.__object_to_put_down) > 0 and noContainerHovered:
                     if self.__object_to_put_down["type"] == "block":
                         self._MAP.update_block(block_get_click, self.__object_to_put_down["id"])
                     elif self.__object_to_put_down["type"] == "decoration":
                         # 查看当前位置是否有装饰物
-                        decoration = self._MAP.find_decoration_on((block_get_click["x"], block_get_click["y"]))
+                        decoration = self._MAP.find_decoration_on((block_get_click[0], block_get_click[1]))
                         # 如果发现有冲突的装饰物
                         if decoration is not None:
                             self._MAP.remove_decoration(decoration)
                         self._MAP.add_decoration(
-                            {"image": self.__object_to_put_down["id"], "x": block_get_click["x"], "y": block_get_click["y"]},
+                            {"image": self.__object_to_put_down["id"], "x": block_get_click[0], "y": block_get_click[1]},
                             DataBase.get("Decorations")[self.__object_to_put_down["id"]],
                             "{0}_{1}".format(self.__object_to_put_down["id"], self._MAP.count_decorations()),
                         )
@@ -278,8 +273,8 @@ class AbstractMapEditor(AbstractBattleSystem):
                             self._alliances_data[nameTemp] = FriendlyCharacter(
                                 _new_data
                                 | {
-                                    "x": block_get_click["x"],
-                                    "y": block_get_click["y"],
+                                    "x": block_get_click[0],
+                                    "y": block_get_click[1],
                                     "type": self.__object_to_put_down["id"],
                                     "bullets_carried": 100,
                                 },
@@ -292,8 +287,8 @@ class AbstractMapEditor(AbstractBattleSystem):
                             self._enemies_data[nameTemp] = HostileCharacter(
                                 _new_data
                                 | {
-                                    "x": block_get_click["x"],
-                                    "y": block_get_click["y"],
+                                    "x": block_get_click[0],
+                                    "y": block_get_click[1],
                                     "type": self.__object_to_put_down["id"],
                                     "bullets_carried": 100,
                                 },
@@ -305,16 +300,12 @@ class AbstractMapEditor(AbstractBattleSystem):
 
         # 画出地图
         self._display_map(screen)
-        if (
-            block_get_click is not None
-            and not self.__UIContainerRight.is_hovered((self.__UIContainerButtonRight.right, 0))
-            and not self.__UIContainerBottom.is_hovered((0, self.__UIContainerButtonBottom.bottom))
-        ):
+        if block_get_click is not None and noContainerHovered:
             if self.__delete_mode is True:
-                xTemp, yTemp = self._MAP.calculate_position(block_get_click["x"], block_get_click["y"])
+                xTemp, yTemp = self._MAP.calculate_position(block_get_click[0], block_get_click[1])
                 screen.blit(self.__range_red, (xTemp + self._MAP.block_width // 10, yTemp))
             elif len(self.__object_to_put_down) > 0:
-                xTemp, yTemp = self._MAP.calculate_position(block_get_click["x"], block_get_click["y"])
+                xTemp, yTemp = self._MAP.calculate_position(block_get_click[0], block_get_click[1])
                 screen.blit(self.__range_green, (xTemp + self._MAP.block_width // 10, yTemp))
 
         # 角色动画
@@ -322,14 +313,10 @@ class AbstractMapEditor(AbstractBattleSystem):
             value.draw(screen, self._MAP)
             if len(self.__select_pos) > 0:
                 value.set_selected(value.is_overlapped_with(self.__select_rect))
-            elif len(self.__object_to_put_down) <= 0 and Controller.get_event("confirm") and value.is_hovered() is True:
-                self.data_to_edit = value
         for value in self._enemies_data.values():
             value.draw(screen, self._MAP)
             if len(self.__select_pos) > 0:
                 value.set_selected(value.is_overlapped_with(self.__select_rect))
-            elif len(self.__object_to_put_down) <= 0 and Controller.get_event("confirm") and value.is_hovered() is True:
-                self.data_to_edit = value
 
         # 展示设施
         self._display_decoration(screen)
@@ -378,7 +365,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                     }
 
         # 画出选中框
-        if Controller.mouse.get_pressed(0) and Controller.mouse.get_pressed_previously(0):
+        if noContainerHovered is True and Controller.mouse.get_pressed(0) and Controller.mouse.get_pressed_previously(0):
             if len(self.__select_pos) <= 0:
                 self.__select_pos = Controller.mouse.get_pos()
             # 设置宽度
@@ -406,7 +393,6 @@ class AbstractMapEditor(AbstractBattleSystem):
                     self.__no_save_warning.set_visible(True)
             elif self.__buttons_container.item_being_hovered == "delete":
                 self.__object_to_put_down.clear()
-                self.data_to_edit = None
                 self.__delete_mode = True
             elif self.__buttons_container.item_being_hovered == "reload":
                 tempLocal_x, tempLocal_y = self._MAP.get_local_pos()

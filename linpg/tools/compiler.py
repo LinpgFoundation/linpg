@@ -4,7 +4,7 @@ from Cython.Build import cythonize  # type: ignore
 
 
 # 编译方法
-def compile_file(_path: str, keep_c: bool, debug_mode: bool, _compiler_directives: bool) -> None:
+def compile_file(_path: str, keep_c: bool, debug_mode: bool, _compiler_directives: dict) -> None:
     if debug_mode is True:
         setup(
             ext_modules=cythonize(
@@ -42,7 +42,7 @@ if __name__ == "__main__":
             # 是否保存c文件
             __keep_c: bool = bool(Data["keep_c"])
             # 其他次要参数
-            __compiler_directives: bool = bool(Data["compiler_directives"])
+            __compiler_directives: dict = dict(Data["compiler_directives"])
         # 移除参数文件
         os.remove("builder_data_cache.json")
         # 储存进程的文件夹

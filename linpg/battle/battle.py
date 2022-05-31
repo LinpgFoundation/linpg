@@ -12,8 +12,8 @@ class AbstractBattleSystem(AbstractGameSystem):
         # 用于检测是否有方向键被按到的字典
         self.__moving_screen_in_direction: dict[str, bool] = {"up": False, "down": False, "left": False, "right": False}
         # 角色数据
-        self._alliances_data: dict = {}
-        self._enemies_data: dict = {}
+        self._alliances_data: dict[str, Entity] = {}
+        self._enemies_data: dict[str, Entity] = {}
         # 地图数据
         self._MAP: MapObject = MapObject()
         # 方格标准尺寸

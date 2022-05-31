@@ -1,5 +1,5 @@
 import time
-from .scrollpane import *
+from .scrollbar import *
 
 # 输入框Abstract，请勿实体化
 class AbstractInputBox(GameObject2d):

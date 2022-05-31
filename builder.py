@@ -10,7 +10,7 @@ if not PATH.exists("src") or input("Do you want to recompile everything (Y/n):")
         additional_files=additional_files,
         ignore_key_words=("compiler.py",),
         update_the_one_in_sitepackages=False,
-        options={"compiler_directives": {"emit_code_comments": False}},
+        options={"enable_multiprocessing": True, "compiler_directives": {"emit_code_comments": False}},
     )
 
 # 提示编译完成

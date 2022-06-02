@@ -366,12 +366,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                 break
 
     # 把装饰物画到屏幕上
-    def display_decoration(self, screen: ImageSurface, alliances_data: dict = {}, enemies_data: dict = {}) -> None:
-        # 检测角色所占据的装饰物（即需要透明化，方便玩家看到角色）
-        charactersPos: list = []
-        for dataDic in {**alliances_data, **enemies_data}.values():
-            charactersPos.append((int(dataDic.x), int(dataDic.y)))
-            charactersPos.append((int(dataDic.x) + 1, int(dataDic.y) + 1))
+    def display_decoration(self, screen: ImageSurface, occupied_coordinates: tuple) -> None:
         # 计算offSet
         offSet: tuple[int, int]
         offSet_normal: tuple[int, int] = (
@@ -396,7 +391,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                 # 树
                 if item.get_type() == "tree":
                     offSet = offSet_tree
-                    if item.get_pos() in charactersPos and self.is_coordinate_in_light_rea(item.x, item.y):
+                    if item.get_pos() in occupied_coordinates and self.is_coordinate_in_light_rea(item.x, item.y):
                         decoration_alpha = 100
                 else:
                     offSet = offSet_normal

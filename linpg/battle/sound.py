@@ -1,4 +1,4 @@
-from .icon import *
+from .image import *
 
 # 角色音效管理系统
 class EntitySoundManager:

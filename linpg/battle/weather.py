@@ -1,4 +1,4 @@
-from .character import *
+from .entity import *
 
 # 天气系统
 class WeatherSystem:

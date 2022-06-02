@@ -12,8 +12,7 @@ class AbstractBattleSystem(AbstractGameSystem):
         # 用于检测是否有方向键被按到的字典
         self.__moving_screen_in_direction: dict[str, bool] = {"up": False, "down": False, "left": False, "right": False}
         # 角色数据
-        self._alliances_data: dict[str, Entity] = {}
-        self._enemies_data: dict[str, Entity] = {}
+        self._entities_data: dict[str, dict[str, Entity]] = {}
         # 地图数据
         self._MAP: MapObject = MapObject()
         # 方格标准尺寸
@@ -37,11 +36,11 @@ class AbstractBattleSystem(AbstractGameSystem):
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
-        _data: dict = {"alliances": {}, "enemies": {}}
-        for key in self._alliances_data:
-            _data["alliances"][key] = self._alliances_data[key].to_dict()
-        for key in self._enemies_data:
-            _data["enemies"][key] = self._enemies_data[key].to_dict()
+        _data: dict = {"entities": {}}
+        for faction, entitiesDict in self._entities_data.items():
+            _data["entities"][faction] = {}
+            for key in entitiesDict:
+                _data["entities"][faction][key] = entitiesDict[key].to_dict()
         _data.update(self.get_data_of_parent_game_system())
         _data.update(self._MAP.to_dict())
         return _data
@@ -49,10 +48,6 @@ class AbstractBattleSystem(AbstractGameSystem):
     # 初始化地图
     def _initialize_map(self, map_data: dict) -> None:
         self._MAP.update(map_data, self._standard_block_width, self._standard_block_height)
-
-    # 计算光亮区域 并初始化地图
-    def _calculate_darkness(self) -> None:
-        self._MAP.calculate_darkness(self._alliances_data)
 
     # 展示地图
     def _display_map(self, screen: ImageSurface) -> None:
@@ -64,7 +59,13 @@ class AbstractBattleSystem(AbstractGameSystem):
 
     # 展示场景装饰物
     def _display_decoration(self, screen: ImageSurface) -> None:
-        self._MAP.display_decoration(screen, self._alliances_data, self._enemies_data)
+        # 检测角色所占据的装饰物（即需要透明化，方便玩家看到角色）
+        charactersPos: list = []
+        for value in self._entities_data.values():
+            for dataDict in value.values():
+                charactersPos.append((int(dataDict.x), int(dataDict.y)))
+                charactersPos.append((int(dataDict.x) + 1, int(dataDict.y) + 1))
+        self._MAP.display_decoration(screen, tuple(charactersPos))
 
     # 检测按下按键的事件
     def _check_key_down(self, event: PG_Event) -> None:

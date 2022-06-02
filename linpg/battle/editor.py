@@ -30,13 +30,25 @@ class AbstractMapEditor(AbstractBattleSystem):
         # 是否是delete模式
         self.__delete_mode: bool = False
 
+    # 加载角色的数据 - 子类需实现
+    def _load_characters_data(self, alliances: dict, enemies: dict) -> None:
+        EXCEPTION.fatal("_load_characters_data()", 1)
+
+    # 根据数据更新特定的角色 - 子类需实现
+    def update_entity(self, faction: str, key: str, data: dict) -> None:
+        EXCEPTION.fatal("update_entity()", 1)
+
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
         return Config.load_file(self.get_map_file_location()) | super()._get_data_need_to_save()
 
-    # 加载角色的数据
-    def _load_characters_data(self, alliances: dict, enemies: dict) -> None:
-        EXCEPTION.fatal("_load_characters_data()", 1)
+    # 移除在给定坐标上的角色
+    def remove_entity_on_pos(self, target_pos: tuple[int, int]) -> None:
+        for faction in self._entities_data.keys():
+            for key in self._entities_data[faction].keys():
+                if Coordinates.is_same(self._entities_data[faction][key], target_pos):
+                    self._entities_data[faction].pop(key)
+                    break
 
     # 初始化
     def load(self, screen: ImageSurface, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
@@ -224,16 +236,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                     if decoration is not None:
                         self._MAP.remove_decoration(decoration)
                     else:
-                        decoration_collided: Optional[str] = None
-                        for key, value in {**self._alliances_data, **self._enemies_data}.items():
-                            if value.x == block_get_click[0] and value.y == block_get_click[1]:
-                                decoration_collided = key
-                                break
-                        if decoration_collided is not None:
-                            if decoration_collided in self._alliances_data:
-                                self._alliances_data.pop(decoration_collided)
-                            elif decoration_collided in self._enemies_data:
-                                self._enemies_data.pop(decoration_collided)
+                        self.remove_entity_on_pos(block_get_click)
                 elif len(self.__object_to_put_down) > 0 and noContainerHovered:
                     if self.__object_to_put_down["type"] == "block":
                         self._MAP.update_block(block_get_click, self.__object_to_put_down["id"])
@@ -250,50 +253,17 @@ class AbstractMapEditor(AbstractBattleSystem):
                         )
                     elif self.__object_to_put_down["type"] == "entity":
                         # 移除坐标冲突的角色
-                        character_collided: Optional[str] = None
-                        for key in self._alliances_data:
-                            if Coordinates.is_same(self._alliances_data[key], block_get_click):
-                                character_collided = key
-                                break
-                        if character_collided is None:
-                            for key in self._enemies_data:
-                                if Coordinates.is_same(self._enemies_data[key], block_get_click):
-                                    character_collided = key
-                                    break
-                            if character_collided is not None:
-                                self._enemies_data.pop(character_collided)
-                        else:
-                            self._alliances_data.pop(character_collided)
-                        the_id: int = 0
+                        self.remove_entity_on_pos(block_get_click)
+                        # 生成需要更新的数据
                         _new_data: dict = deepcopy(Entity.get_enity_data(self.__object_to_put_down["id"]))
-                        if _new_data["faction"] in DataBase.get("Faction", "alliances"):
-                            while self.__object_to_put_down["id"] + "_" + str(the_id) in self._alliances_data:
-                                the_id += 1
-                            nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
-                            self._alliances_data[nameTemp] = FriendlyCharacter(
-                                _new_data
-                                | {
-                                    "x": block_get_click[0],
-                                    "y": block_get_click[1],
-                                    "type": self.__object_to_put_down["id"],
-                                    "bullets_carried": 100,
-                                },
-                                "dev",
-                            )
-                        else:
-                            while self.__object_to_put_down["id"] + "_" + str(the_id) in self._enemies_data:
-                                the_id += 1
-                            nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
-                            self._enemies_data[nameTemp] = HostileCharacter(
-                                _new_data
-                                | {
-                                    "x": block_get_click[0],
-                                    "y": block_get_click[1],
-                                    "type": self.__object_to_put_down["id"],
-                                    "bullets_carried": 100,
-                                },
-                                "dev",
-                            )
+                        _new_data.update(
+                            {"x": block_get_click[0], "y": block_get_click[1], "type": self.__object_to_put_down["id"]}
+                        )
+                        the_id: int = 0
+                        while self.__object_to_put_down["id"] + "_" + str(the_id) in self._entities_data[_new_data["faction"]]:
+                            the_id += 1
+                        nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
+                        self.update_entity(_new_data["faction"], nameTemp, _new_data)
         # 其他移动的检查
         self._check_right_click_move()
         self._check_jostick_events()
@@ -309,14 +279,11 @@ class AbstractMapEditor(AbstractBattleSystem):
                 screen.blit(self.__range_green, (xTemp + self._MAP.block_width // 10, yTemp))
 
         # 角色动画
-        for value in self._alliances_data.values():
-            value.draw(screen, self._MAP)
-            if len(self.__select_pos) > 0:
-                value.set_selected(value.is_overlapped_with(self.__select_rect))
-        for value in self._enemies_data.values():
-            value.draw(screen, self._MAP)
-            if len(self.__select_pos) > 0:
-                value.set_selected(value.is_overlapped_with(self.__select_rect))
+        for faction in self._entities_data:
+            for value in self._entities_data[faction].values():
+                value.draw(screen, self._MAP)
+                if len(self.__select_pos) > 0:
+                    value.set_selected(value.is_overlapped_with(self.__select_rect))
 
         # 展示设施
         self._display_decoration(screen)

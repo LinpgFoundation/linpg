@@ -1,28 +1,65 @@
 from ..map import *
 
-# 角色受伤立绘图形模块
-class EntityGetHurtImage(Square):
+# 雪花片
+class Snow(Coordinate):
+    def __init__(self, imgId: int, size: int, speed: int, x: int, y: int):
+        super().__init__(x, y)
+        self.imgId: int = imgId
+        self.size: int = size
+        self.speed: int = speed
 
-    # 存储角色受伤立绘的常量
-    __CHARACTERS_GET_HURT_IMAGE_DICT: dict = {}
+    def move(self, speed_unit: int) -> None:
+        self.x -= self.speed * speed_unit
+        self.y += self.speed * speed_unit
 
-    def __init__(self, self_type: str, y: int_f, width: int_f):
-        super().__init__(0, y, width)
-        self.delay: int = 255
-        self.alpha: int = 0
-        self.add(self_type)
 
-    def draw(self, screen: ImageSurface, characterType: str) -> None:  # type: ignore[override]
-        _image = Images.resize(self.__CHARACTERS_GET_HURT_IMAGE_DICT[characterType], self.size)
-        if self.alpha != 255:
-            _image.set_alpha(self.alpha)
-        screen.blit(_image, self.pos)
+# 天气系统
+class WeatherSystem:
+    def __init__(self) -> None:
+        self.__initialized: bool = False
+        self.__items: tuple = tuple()
+        self.__img_tuple: tuple = tuple()
+        self.__speed_unit: int = 0
 
-    def add(self, characterType: str) -> None:
-        if characterType not in self.__CHARACTERS_GET_HURT_IMAGE_DICT:
-            self.__CHARACTERS_GET_HURT_IMAGE_DICT[characterType] = Images.quickly_load(
-                Specification.get_directory("character_image", "{}_hurt.png".format(characterType))
-            )
+    # 初始化
+    def init(self, weather: str, entityNum: int = 50) -> None:
+        self.__initialized = True
+        _temp: Union[ImageSurface, tuple] = SpriteImage("<&env>" + weather + ".png").get(weather)
+        if isinstance(_temp, tuple):
+            self.__img_tuple = _temp
+        else:
+            EXCEPTION.fatal("The images for weather has to be in collection!")
+        self.__items = tuple(
+            [
+                Snow(
+                    imgId=get_random_int(0, len(self.__img_tuple) - 1),
+                    size=get_random_int(5, 10),
+                    speed=get_random_int(1, 4),
+                    x=get_random_int(1, Display.get_width() * 3 // 2),
+                    y=get_random_int(1, Display.get_height()),
+                )
+                for i in range(entityNum)
+            ]
+        )
+
+    # 查看初始化状态
+    def get_init(self) -> bool:
+        return self.__initialized
+
+    # 画出
+    def draw(self, surface: ImageSurface, perBlockWidth: number) -> None:
+        if not self.__initialized:
+            EXCEPTION.fatal("You need to initialize the weather system before using it.")
+        self.__speed_unit = int(perBlockWidth / 15)
+        for item in self.__items:
+            if 0 <= item.x < surface.get_width() and 0 <= item.y < surface.get_height():
+                surface.blit(
+                    Images.resize(self.__img_tuple[item.imgId], (perBlockWidth / item.size, perBlockWidth / item.size)), item.pos
+                )
+            item.move(self.__speed_unit)
+            if item.x <= 0 or item.y >= surface.get_height():
+                item.y = get_random_int(-50, 0)
+                item.x = get_random_int(0, surface.get_width() * 2)
 
 
 # 管理单个动作所有对应图片的模块
@@ -122,8 +159,7 @@ class EntitySpriteImageManager:
         imgTempList: list = []
         # 历遍目标文件夹中的图片
         for _action_folder in os.listdir(folder_path):
-            _action_folder_path: str = os.path.join(folder_path, _action_folder)
-            if os.path.isdir(_action_folder_path):
+            if os.path.isdir(_action_folder_path := os.path.join(folder_path, _action_folder)):
                 # 单个sprite图切割点
                 crop_rect: list[int] = []
                 # 重置存放图片的列表

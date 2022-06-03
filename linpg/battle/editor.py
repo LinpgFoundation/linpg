@@ -29,14 +29,32 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__select_pos: tuple = tuple()
         # 是否是delete模式
         self.__delete_mode: bool = False
+        # 是否有ui容器被鼠标触碰
+        self.__no_container_is_hovered: bool = False
 
     # 加载角色的数据 - 子类需实现
-    def _load_characters_data(self, alliances: dict, enemies: dict) -> None:
+    def _load_characters_data(self, entities: dict) -> None:
         EXCEPTION.fatal("_load_characters_data()", 1)
 
     # 根据数据更新特定的角色 - 子类需实现
     def update_entity(self, faction: str, key: str, data: dict) -> None:
         EXCEPTION.fatal("update_entity()", 1)
+
+    def _display_entities(self, screen: ImageSurface) -> None:
+        # 展示范围
+        if self._block_is_hovering is not None and self.__no_container_is_hovered is True:
+            if self.__delete_mode is True:
+                xTemp, yTemp = self._MAP.calculate_position(self._block_is_hovering[0], self._block_is_hovering[1])
+                screen.blit(self.__range_red, (xTemp + self._MAP.block_width // 10, yTemp))
+            elif len(self.__object_to_put_down) > 0:
+                xTemp, yTemp = self._MAP.calculate_position(self._block_is_hovering[0], self._block_is_hovering[1])
+                screen.blit(self.__range_green, (xTemp + self._MAP.block_width // 10, yTemp))
+        # 角色动画
+        for faction in self._entities_data:
+            for value in self._entities_data[faction].values():
+                value.draw(screen, self._MAP)
+                if len(self.__select_pos) > 0:
+                    value.set_selected(value.is_overlapped_with(self.__select_rect))
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
@@ -57,7 +75,7 @@ class AbstractMapEditor(AbstractBattleSystem):
         # 载入地图数据
         mapFileData: dict = Config.load(self.get_map_file_location())
         # 初始化角色信息
-        self._load_characters_data(mapFileData["alliances"], mapFileData["enemies"])
+        self._load_characters_data(mapFileData["entities"])
         # 初始化地图
         if "map" not in mapFileData or mapFileData["map"] is None or len(mapFileData["map"]) == 0:
             SnowEnvImg = tuple(
@@ -207,8 +225,7 @@ class AbstractMapEditor(AbstractBattleSystem):
 
     # 将地图制作器的界面画到屏幕上
     def draw(self, screen: ImageSurface) -> None:
-        block_get_click = self._MAP.calculate_coordinate()
-        noContainerHovered: bool = not self.__UIContainerRight.is_hovered(
+        self.__no_container_is_hovered = not self.__UIContainerRight.is_hovered(
             (self.__UIContainerButtonRight.right, 0)
         ) and not self.__UIContainerBottom.is_hovered((0, self.__UIContainerButtonBottom.bottom))
         for event in Controller.events:
@@ -228,36 +245,44 @@ class AbstractMapEditor(AbstractBattleSystem):
             elif self.__UIContainerButtonBottom.is_hovered():
                 self.__UIContainerButtonBottom.switch()
                 self.__UIContainerButtonBottom.flip(False, True)
-            elif block_get_click is not None:
+            elif self._block_is_hovering is not None:
                 if self.__delete_mode is True:
                     # 查看当前位置是否有装饰物
-                    decoration: Optional[DecorationObject] = self._MAP.find_decoration_on(block_get_click)
+                    decoration: Optional[DecorationObject] = self._MAP.find_decoration_on(self._block_is_hovering)
                     # 如果发现有冲突的装饰物
                     if decoration is not None:
                         self._MAP.remove_decoration(decoration)
                     else:
-                        self.remove_entity_on_pos(block_get_click)
-                elif len(self.__object_to_put_down) > 0 and noContainerHovered:
+                        self.remove_entity_on_pos(self._block_is_hovering)
+                elif len(self.__object_to_put_down) > 0 and self.__no_container_is_hovered is True:
                     if self.__object_to_put_down["type"] == "block":
-                        self._MAP.update_block(block_get_click, self.__object_to_put_down["id"])
+                        self._MAP.update_block(self._block_is_hovering, self.__object_to_put_down["id"])
                     elif self.__object_to_put_down["type"] == "decoration":
                         # 查看当前位置是否有装饰物
-                        decoration = self._MAP.find_decoration_on((block_get_click[0], block_get_click[1]))
+                        decoration = self._MAP.find_decoration_on((self._block_is_hovering[0], self._block_is_hovering[1]))
                         # 如果发现有冲突的装饰物
                         if decoration is not None:
                             self._MAP.remove_decoration(decoration)
                         self._MAP.add_decoration(
-                            {"image": self.__object_to_put_down["id"], "x": block_get_click[0], "y": block_get_click[1]},
+                            {
+                                "image": self.__object_to_put_down["id"],
+                                "x": self._block_is_hovering[0],
+                                "y": self._block_is_hovering[1],
+                            },
                             DataBase.get("Decorations")[self.__object_to_put_down["id"]],
                             "{0}_{1}".format(self.__object_to_put_down["id"], self._MAP.count_decorations()),
                         )
                     elif self.__object_to_put_down["type"] == "entity":
                         # 移除坐标冲突的角色
-                        self.remove_entity_on_pos(block_get_click)
+                        self.remove_entity_on_pos(self._block_is_hovering)
                         # 生成需要更新的数据
                         _new_data: dict = deepcopy(Entity.get_enity_data(self.__object_to_put_down["id"]))
                         _new_data.update(
-                            {"x": block_get_click[0], "y": block_get_click[1], "type": self.__object_to_put_down["id"]}
+                            {
+                                "x": self._block_is_hovering[0],
+                                "y": self._block_is_hovering[1],
+                                "type": self.__object_to_put_down["id"],
+                            }
                         )
                         the_id: int = 0
                         while self.__object_to_put_down["id"] + "_" + str(the_id) in self._entities_data[_new_data["faction"]]:
@@ -270,23 +295,6 @@ class AbstractMapEditor(AbstractBattleSystem):
 
         # 画出地图
         self._display_map(screen)
-        if block_get_click is not None and noContainerHovered:
-            if self.__delete_mode is True:
-                xTemp, yTemp = self._MAP.calculate_position(block_get_click[0], block_get_click[1])
-                screen.blit(self.__range_red, (xTemp + self._MAP.block_width // 10, yTemp))
-            elif len(self.__object_to_put_down) > 0:
-                xTemp, yTemp = self._MAP.calculate_position(block_get_click[0], block_get_click[1])
-                screen.blit(self.__range_green, (xTemp + self._MAP.block_width // 10, yTemp))
-
-        # 角色动画
-        for faction in self._entities_data:
-            for value in self._entities_data[faction].values():
-                value.draw(screen, self._MAP)
-                if len(self.__select_pos) > 0:
-                    value.set_selected(value.is_overlapped_with(self.__select_rect))
-
-        # 展示设施
-        self._display_decoration(screen)
 
         # 画出右侧容器的UI
         self.__UIContainerButtonRight.draw(screen)
@@ -332,7 +340,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                     }
 
         # 画出选中框
-        if noContainerHovered is True and Controller.mouse.get_pressed(0) and Controller.mouse.get_pressed_previously(0):
+        if self.__no_container_is_hovered is True and Controller.mouse.get_pressed_since(0):
             if len(self.__select_pos) <= 0:
                 self.__select_pos = Controller.mouse.get_pos()
             # 设置宽度
@@ -366,7 +374,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                 # 读取地图数据
                 mapFileData = Config.load(self.get_map_file_location())
                 # 初始化角色信息
-                self._load_characters_data(mapFileData["alliances"], mapFileData["enemies"])
+                self._load_characters_data(mapFileData["entities"])
                 # 加载地图
                 self._initialize_map(mapFileData)
                 del mapFileData

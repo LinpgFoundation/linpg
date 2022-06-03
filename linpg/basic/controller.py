@@ -1,16 +1,13 @@
 from .images import *
 
+# 如果pygame的手柄组件没有初始化，则初始化
+if not pygame.joystick.get_init():
+    pygame.joystick.init()
+
 # 手柄控制组件
 class JoystickController:
 
     __input: Optional[pygame.joystick.Joystick] = None
-
-    def __init__(self) -> None:
-        # 如果pygame的手柄组件没有初始化，则初始化
-        if not pygame.joystick.get_init():
-            pygame.joystick.init()
-        # 初始化
-        self.update()
 
     # 手柄是否初始化
     @classmethod
@@ -67,9 +64,6 @@ class MouseController:
     __mouse_get_pressed_previously: tuple[bool, ...] = (False, False, False, False, False)
     # 鼠标图标
     __icon_img: Optional[ImageSurface] = None
-
-    def __init__(self) -> None:
-        self.update()
 
     @classmethod
     def set_custom_icon(cls, path: str = "<&ui>mouse_icon.png") -> None:
@@ -145,10 +139,15 @@ class MouseController:
     def get_pressed(button_id: int) -> bool:
         return pygame.mouse.get_pressed()[button_id]
 
-    # 是否鼠标按钮在本次更新被点击
+    # 是否鼠标按钮在上一帧被点击
     @classmethod
     def get_pressed_previously(cls, button_id: int) -> bool:
         return cls.__mouse_get_pressed_previously[button_id]
+
+    # 是否鼠标按钮在上一帧和当前帧被点击
+    @classmethod
+    def get_pressed_since(cls, button_id: int) -> bool:
+        return cls.__mouse_get_pressed_previously[button_id] and pygame.mouse.get_pressed()[button_id]
 
     # 是否鼠标指针在指定的方形范围内
     @classmethod
@@ -287,3 +286,4 @@ class GameController:
 
 # 控制器输入组件初始化
 Controller: GameController = GameController()
+Controller.update()

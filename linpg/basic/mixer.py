@@ -113,24 +113,24 @@ def _split_audio_from_video(input_path: str, audio_type: str = "ogg") -> str:
 class Sound:
     # 加载音效
     @staticmethod
-    def load(path: str, volume: float = 1.0) -> PG_Sound:
+    def load(path: str, volume: Optional[float] = None) -> PG_Sound:
         soundTmp: PG_Sound = pygame.mixer.Sound(path)
-        if volume != 1.0:
+        if volume is not None:
             soundTmp.set_volume(volume)
         return soundTmp
 
     # 从一个视频中加载音效
-    @staticmethod
-    def load_from_video(path: str, volume: float = 1.0, cache_key: Optional[str] = None) -> PG_Sound:
+    @classmethod
+    def load_from_video(cls, path: str, volume: Optional[float] = None, cache_key: Optional[str] = None) -> PG_Sound:
         # 如果给定了cache_key，则先尝试从缓存中读取音乐文件
         if cache_key is not None and len(cache_key) > 0 and Cache.match(cache_key, path) is True:
             try:
-                return Sound.load(Cache.get_cache_path(cache_key), volume)
+                return cls.load(Cache.get_cache_path(cache_key), volume)
             except Exception:
                 pass
         # 如果读取失败或者没有缓存key或者match失败，则应根据给定的路径生成音乐文件并返回
         path_of_sound: str = _split_audio_from_video(path)
-        sound_audio: PG_Sound = Sound.load(path_of_sound, volume)
+        sound_audio: PG_Sound = cls.load(path_of_sound, volume)
         # 如果给了缓存key，则应该生成缓存联系并保留缓存文件
         if cache_key is not None and len(cache_key) > 0:
             Cache.new(cache_key, path, path_of_sound)
@@ -160,12 +160,12 @@ class Sound:
         return pygame.mixer.get_num_channels() - 3
 
     # 获取对应id的频道
-    @staticmethod
-    def get_channel(channel_id: int) -> PG_Channel:
-        if channel_id < Sound.get_num_channels():
+    @classmethod
+    def get_channel(cls, channel_id: int) -> PG_Channel:
+        if channel_id < cls.get_num_channels():
             return pygame.mixer.Channel(channel_id)
         else:
-            EXCEPTION.fatal('The channel_id "{0}" is out of bound of {1}'.format(channel_id, Sound.get_num_channels()))
+            EXCEPTION.fatal('The channel_id "{0}" is out of bound of {1}'.format(channel_id, cls.get_num_channels()))
 
 
 # 音乐管理

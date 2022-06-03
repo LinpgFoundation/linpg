@@ -1,9 +1,11 @@
 from collections import deque
-from .sound import *
+from .component import *
 
 # 人形模块
 class Entity(Position):
 
+    # 存放音效的字典
+    __SOUNDS: dict[str, dict[str, list]] = {}
     # 角色数据库
     __DATABASE: dict[str, dict] = {}
     # 尝试加载角色数据
@@ -79,7 +81,12 @@ class Entity(Position):
         self.__imgId_dict: dict = EntitySpriteImageManager.load(self.__faction, self.__type, mode)
         # 加载角色的音效
         if mode != "dev":
-            EntitySoundManager.add(self.__type)
+            if self.__type not in self.__SOUNDS and os.path.exists(Specification.get_directory("character_sound", self.__type)):
+                self.__SOUNDS[self.__type] = {}
+                for soundType in os.listdir(Specification.get_directory("character_sound", self.__type)):
+                    self.__SOUNDS[self.__type][soundType] = []
+                    for soundPath in glob(Specification.get_directory("character_sound", self.__type, soundType, "*")):
+                        self.__SOUNDS[self.__type][soundType].append(Sound.load(soundPath))
         # 是否需要重新渲染地图
         self.__if_map_need_update: bool = False
         # 攻击范围
@@ -393,7 +400,14 @@ class Entity(Position):
 
     # 播放角色声音
     def play_sound(self, kind_of_sound: str) -> None:
-        EntitySoundManager.play(self.__type, kind_of_sound)
+        if LINPG_RESERVED_SOUND_EFFECTS_CHANNEL is not None:
+            _point: Optional[dict] = self.__SOUNDS.get(self.__type)
+            if _point is not None:
+                sound_list: Optional[list] = _point.get(kind_of_sound)
+                if sound_list is not None and len(sound_list) > 0:
+                    sound = sound_list[get_random_int(0, len(sound_list) - 1) if len(sound_list) > 1 else 0]
+                    sound.set_volume(Media.volume.effects / 100.0)
+                    LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.play(sound)
 
     # 设置需要移动的路径
     def move_follow(self, path: list) -> None:

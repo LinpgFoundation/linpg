@@ -1,5 +1,5 @@
 """
 结构:
-image -> sound -> entity -> weather -> battle -> editor
+component -> entity ->  battle -> editor
 """
 from .editor import *

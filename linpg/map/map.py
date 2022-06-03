@@ -410,8 +410,8 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         self.__need_to_recheck_block_on_surface = True
 
     # 是否角色能通过该方块
-    def if_block_can_pass_through(self, pos: tuple[int, int]) -> bool:
-        return bool(self.__BLOCKS_DATABASE[self.__MAP[pos[1]][pos[0]]]["canPassThrough"])
+    def if_block_can_pass_through(self, x: int, y: int) -> bool:
+        return bool(self.__BLOCKS_DATABASE[self.__MAP[y][x]]["canPassThrough"])
 
     # 计算在地图中的方块
     def calculate_coordinate(self, pos: tuple[int, int] = None) -> Optional[tuple[int, int]]:

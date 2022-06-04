@@ -1,5 +1,5 @@
 """
 结构:
-image -> decoration -> astar -> map
+image -> decoration -> astar -> entity -> map
 """
 from .map import *

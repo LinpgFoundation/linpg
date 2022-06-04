@@ -1,5 +1,4 @@
 from .decoration import *
-from .abstract import AbstractMap
 
 # 点
 class Point(Coordinate):
@@ -14,6 +13,35 @@ class Node:
         self.father: Optional[Node] = None  # 父节点
         self.g = g  # g值，g值在用到的时候会重新算
         self.h = (abs(endPoint.x - point.x) + abs(endPoint.y - point.y)) * 10  # 计算h值
+
+
+# 基础地图框架
+class AbstractMap:
+    def __init__(self) -> None:
+        # 行
+        self.__row: int = 0
+        # 列
+        self.__column: int = 0
+
+    def _update(self, row: int, column: int) -> None:
+        self.__row = row
+        self.__column = column
+
+    @property
+    def row(self) -> int:
+        return self.__row
+
+    @property
+    def column(self) -> int:
+        return self.__column
+
+    # 计算精准位置
+    def calculate_position(self, x: int_f, y: int_f) -> tuple[int, int]:
+        widthTmp: float = MapImageParameters.get_block_width() * 0.43
+        return (
+            round((x - y) * widthTmp + self.row * widthTmp),
+            round((y + x) * MapImageParameters.get_block_width() * 0.22 + MapImageParameters.get_block_width() * 0.4),
+        )
 
 
 # 寻路模块

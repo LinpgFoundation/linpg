@@ -1,4 +1,4 @@
-from .entity import *
+from .weather import *
 
 # 战斗系统接口，请勿实例化
 class AbstractBattleSystem(AbstractGameSystem):

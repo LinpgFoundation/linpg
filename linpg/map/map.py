@@ -1,4 +1,4 @@
-from .astar import *
+from .entity import *
 
 # 地图模块
 class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
@@ -447,28 +447,18 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         return None
 
     # 计算在地图中的位置
-    def calculate_position(self, x: int_f, y: int_f, absolute_pos: bool = False) -> tuple[int, int]:
-        widthTmp: float = MapImageParameters.get_block_width() * 0.43
-        _pos: tuple[int, int] = (
-            round((x - y) * widthTmp + self.row * widthTmp),
-            round((y + x) * MapImageParameters.get_block_width() * 0.22 + MapImageParameters.get_block_width() * 0.4),
-        )
-        return Coordinates.add(_pos, self.local_pos) if not absolute_pos else _pos
+    def calculate_position(self, x: int_f, y: int_f) -> tuple[int, int]:
+        return Coordinates.add(super().calculate_position(x, y), self.local_pos)
 
     # 计算光亮区域
-    def calculate_darkness(self, alliances_data: dict) -> None:
+    def calculate_darkness(self, alliances_data: dict[str, Entity]) -> None:
         lightArea: list = []
         x: int
         y: int
         for key in alliances_data:
-            the_character_effective_range = 2
-            if alliances_data[key].current_hp > 0:
-                if alliances_data[key].effective_range["far"] is not None:
-                    the_character_effective_range = alliances_data[key].effective_range["far"][1] + 1
-                elif alliances_data[key].effective_range["middle"] is not None:
-                    the_character_effective_range = alliances_data[key].effective_range["middle"][1] + 1
-                elif alliances_data[key].effective_range["near"] is not None:
-                    the_character_effective_range = alliances_data[key].effective_range["near"][1] + 1
+            the_character_effective_range: int = (
+                max(sum(alliances_data[key].effective_range), 2) if alliances_data[key].current_hp > 0 else 2
+            )
             for y in range(
                 int(alliances_data[key].y - the_character_effective_range),
                 int(alliances_data[key].y + the_character_effective_range),

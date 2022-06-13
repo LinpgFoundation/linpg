@@ -52,16 +52,22 @@ class DecorationObject(GameObject2d):
 class CampfireObject(DecorationObject):
     def __init__(self, x: int, y: int, _id: str, itemType: str, _range: int, status: dict):
         super().__init__(x, y, _id, itemType, itemType, status)
-        self.range: int = _range
+        self.__range: int = _range
         self.__alpha: int = 255
         self.__img_id: int = get_random_int(0, 90)
         if not self._has_status("lit"):
             self.set_status("lit", True)
 
+    def get_range(self) -> int:
+        return self.__range
+
+    def get_lit_coordinates(self) -> list[tuple[int, int]]:
+        return Coordinates.get_in_diamond_shaped(self.x, self.y, self.__range) if self.get_status("lit") is True else []
+
     def to_dict(self) -> dict:
         data_t: dict = super().to_dict()
         del data_t["image"]
-        data_t["range"] = self.range
+        data_t["range"] = self.__range
         if "status" in data_t and data_t["status"]["lit"] is True:
             del data_t["status"]["lit"]
             if len(data_t["status"]) <= 0:

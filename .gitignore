@@ -8,3 +8,4 @@ test.py
 .mypy_cache/
 .vs*/
 linpgassets/
+__init__.py

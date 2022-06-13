@@ -425,42 +425,16 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
 
     # 计算光亮区域
     def calculate_darkness(self, alliances_data: dict[str, Entity]) -> None:
-        lightArea: list = []
-        x: int
-        y: int
-        for key in alliances_data:
-            the_character_effective_range: int = (
-                max(sum(alliances_data[key].effective_range), 2) if alliances_data[key].current_hp > 0 else 2
-            )
-            for y in range(
-                int(alliances_data[key].y - the_character_effective_range),
-                int(alliances_data[key].y + the_character_effective_range),
-            ):
-                if y < alliances_data[key].y:
-                    for x in range(
-                        int(alliances_data[key].x - the_character_effective_range - (y - alliances_data[key].y) + 1),
-                        int(alliances_data[key].x + the_character_effective_range + (y - alliances_data[key].y)),
-                    ):
-                        if (x, y) not in lightArea:
-                            lightArea.append((x, y))
-                else:
-                    for x in range(
-                        int(alliances_data[key].x - the_character_effective_range + (y - alliances_data[key].y) + 1),
-                        int(alliances_data[key].x + the_character_effective_range - (y - alliances_data[key].y)),
-                    ):
-                        if (x, y) not in lightArea:
-                            lightArea.append((x, y))
-        for item in self.__decorations:
-            if isinstance(item, CampfireObject) and item.get_status("lit") is True:
-                for y in range(int(item.y - item.range), int(item.y + item.range)):
-                    if y < item.y:
-                        for x in range(int(item.x - item.range - (y - item.y) + 1), int(item.x + item.range + (y - item.y))):
-                            if (x, y) not in lightArea:
-                                lightArea.append((x, y))
-                    else:
-                        for x in range(int(item.x - item.range + (y - item.y) + 1), int(item.x + item.range - (y - item.y))):
-                            if (x, y) not in lightArea:
-                                lightArea.append((x, y))
+        lightArea: set[tuple[int, int]] = set()
+        for _alliance in alliances_data.values():
+            for _area in _alliance.get_effective_range_coordinates(self):
+                for _pos in _area:
+                    lightArea.add(_pos)
+            lightArea.add((round(_alliance.x), round(_alliance.y)))
+        for _item in self.__decorations:
+            if isinstance(_item, CampfireObject):
+                for _pos in _item.get_lit_coordinates():
+                    lightArea.add(_pos)
         self.__light_area = tuple(lightArea)
         self.__need_update_surface = True
         self.__need_to_recheck_block_on_surface = True

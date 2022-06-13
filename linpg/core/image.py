@@ -238,43 +238,43 @@ class MovableImage(StaticImage):
             if self.__is_moving_toward_target is True:
                 if self.__default_x < self.__target_x:
                     if self.x < self.__target_x:
-                        self.x += self.__move_speed_x
+                        self.move_right(self.__move_speed_x)
                     if self.x > self.__target_x:
                         self.set_left(self.__target_x)
                 elif self.__default_x > self.__target_x:
                     if self.x > self.__target_x:
-                        self.x -= self.__move_speed_x
+                        self.move_left(self.__move_speed_x)
                     if self.x < self.__target_x:
                         self.set_left(self.__target_x)
                 if self.__default_y < self.__target_y:
                     if self.y < self.__target_y:
-                        self.y += self.__move_speed_y
+                        self.move_downward(self.__move_speed_y)
                     if self.y > self.__target_y:
                         self.set_top(self.__target_y)
                 elif self.__default_y > self.__target_y:
                     if self.y > self.__target_y:
-                        self.y -= self.__move_speed_y
+                        self.move_upward(self.__move_speed_y)
                     if self.y < self.__target_y:
                         self.set_top(self.__target_y)
             else:
                 if self.__default_x < self.__target_x:
                     if self.x > self.__default_x:
-                        self.x -= self.__move_speed_x
+                        self.move_left(self.__move_speed_x)
                     if self.x < self.__default_x:
                         self.set_left(self.__default_x)
                 elif self.__default_x > self.__target_x:
                     if self.x < self.__default_x:
-                        self.x += self.__move_speed_x
+                        self.move_right(self.__move_speed_x)
                     if self.x > self.__default_x:
                         self.set_left(self.__default_x)
                 if self.__default_y < self.__target_y:
                     if self.y > self.__default_y:
-                        self.y -= self.__move_speed_y
+                        self.move_upward(self.__move_speed_y)
                     if self.y < self.__default_y:
                         self.set_top(self.__default_y)
                 elif self.__default_y > self.__target_y:
                     if self.y < self.__default_y:
-                        self.y += self.__move_speed_y
+                        self.move_downward(self.__move_speed_y)
                     if self.y > self.__default_y:
                         self.set_top(self.__default_y)
 

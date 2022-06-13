@@ -9,15 +9,15 @@ class Snow(Coordinate):
         self.speed: int = speed
 
     def move(self, speed_unit: int) -> None:
-        self.x -= self.speed * speed_unit
-        self.y += self.speed * speed_unit
+        self.move_left(self.speed * speed_unit)
+        self.move_downward(self.speed * speed_unit)
 
 
 # 天气系统
 class WeatherSystem:
     def __init__(self) -> None:
         self.__initialized: bool = False
-        self.__items: tuple = tuple()
+        self.__items: tuple[Snow, ...] = tuple()
         self.__img_tuple: tuple = tuple()
         self.__speed_unit: int = 0
 
@@ -58,5 +58,5 @@ class WeatherSystem:
                 )
             item.move(self.__speed_unit)
             if item.x <= 0 or item.y >= surface.get_height():
-                item.y = get_random_int(-50, 0)
-                item.x = get_random_int(0, surface.get_width() * 2)
+                item.set_top(get_random_int(-50, 0))
+                item.set_left(get_random_int(0, surface.get_width() * 2))

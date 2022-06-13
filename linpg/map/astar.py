@@ -79,7 +79,7 @@ class AbstractMap:
         }
 
     # 是否角色能通过该方块
-    def if_block_can_pass_through(self, x: int, y: int) -> bool:
+    def can_pass_through(self, x: int, y: int) -> bool:
         return bool(self.__BLOCKS_DATABASE[self.__MAP[y][x]]["canPassThrough"])
 
 

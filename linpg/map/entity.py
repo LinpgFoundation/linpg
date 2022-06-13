@@ -75,12 +75,16 @@ class Entity(Position):
                     self.__SOUNDS[self.__type][soundType] = []
                     for soundPath in glob(Specification.get_directory("character_sound", self.__type, soundType, "*")):
                         self.__SOUNDS[self.__type][soundType].append(Sound.load(soundPath))
+        # 角色的攻击范围
+        self.__effective_range_coordinates: Optional[list[list[tuple[int, int]]]] = None
         # 是否需要重新渲染地图
         self.__if_map_need_update: bool = False
         # 当前图片的rect
         self.__current_image_rect: Optional[Rectangle] = None
         # 是否被选中
         self.__is_selected: bool = False
+
+    """修改父类的方法"""
 
     def to_dict(self) -> dict:
         data: dict = {
@@ -121,6 +125,20 @@ class Entity(Position):
         if not self.__moving_complete:
             data["moving_complete"] = self.__moving_complete
         return data
+
+    def set_x(self, value: number) -> None:
+        if round(value) != round(self.x):
+            self.__effective_range_coordinates = None
+            self.__if_map_need_update = True
+        super().set_x(value)
+
+    def set_y(self, value: number) -> None:
+        if round(value) != round(self.y):
+            self.__effective_range_coordinates = None
+            self.__if_map_need_update = True
+        super().set_y(value)
+
+    """重要方法与参数"""
 
     # 查询特点角色的数据
     @classmethod
@@ -455,7 +473,11 @@ class Entity(Position):
 
     # 获取角色的攻击范围
     def get_effective_range_coordinates(self, MAP_P: AbstractMap, ifHalfMode: bool = False) -> list[list[tuple[int, int]]]:
-        return self.generate_range_coordinates(int(self.x), int(self.y), self.__effective_range, MAP_P, self._if_flip, ifHalfMode)
+        if self.__effective_range_coordinates is None:
+            self.__effective_range_coordinates = self.generate_range_coordinates(
+                round(self.x), round(self.y), self.__effective_range, MAP_P, self._if_flip, ifHalfMode
+            )
+        return self.__effective_range_coordinates
 
     # 获取对象所在区域
     def range_target_in(self, otherEntity: "Entity") -> int:
@@ -466,12 +488,9 @@ class Entity(Position):
     # 根据给定的坐标和半径生成覆盖范围坐标列表
     @staticmethod
     def generate_coverage_coordinates(_x: int, _y: int, _radius: int, MAP_P: AbstractMap) -> list[tuple[int, int]]:
-        the_attacking_range_area: list[tuple[int, int]] = []
-        for y in range(_y - _radius + 1, _y + _radius):
-            for x in range(_x - _radius + abs(y - _y) + 1, _x + _radius - abs(y - _y)):
-                if MAP_P.if_block_can_pass_through(x, y):
-                    the_attacking_range_area.append((x, y))
-        return the_attacking_range_area
+        return list(
+            filter(lambda pos: MAP_P.can_pass_through(pos[0], pos[1]), Coordinates.get_in_diamond_shaped(_x, _y, _radius))
+        )
 
     # 获取角色的攻击覆盖范围
     def get_attack_coverage_coordinates(self, _x: int, _y: int, MAP_P: AbstractMap) -> list[tuple[int, int]]:
@@ -542,33 +561,29 @@ class Entity(Position):
         if self.__current_action == "move" and not self.__moving_complete:
             if len(self.__moving_path) > 0:
                 if self.x < self.__moving_path[0][0]:
-                    self.x += 0.05
+                    self.set_x(self.x + 0.05)
                     self.set_flip(False)
                     if self.x >= self.__moving_path[0][0]:
-                        self.x = self.__moving_path[0][0]
+                        self.set_x(self.__moving_path[0][0])
                         self.__moving_path.popleft()
-                        self.__if_map_need_update = True
                 elif self.x > self.__moving_path[0][0]:
-                    self.x -= 0.05
+                    self.set_x(self.x - 0.05)
                     self.set_flip(True)
                     if self.x <= self.__moving_path[0][0]:
-                        self.x = self.__moving_path[0][0]
+                        self.set_x(self.__moving_path[0][0])
                         self.__moving_path.popleft()
-                        self.__if_map_need_update = True
                 elif self.y < self.__moving_path[0][1]:
-                    self.y += 0.05
+                    self.set_y(self.y + 0.05)
                     self.set_flip(True)
                     if self.y >= self.__moving_path[0][1]:
-                        self.y = self.__moving_path[0][1]
+                        self.set_y(self.__moving_path[0][1])
                         self.__moving_path.popleft()
-                        self.__if_map_need_update = True
                 elif self.y > self.__moving_path[0][1]:
-                    self.y -= 0.05
+                    self.set_y(self.y - 0.05)
                     self.set_flip(False)
                     if self.y <= self.__moving_path[0][1]:
-                        self.y = self.__moving_path[0][1]
+                        self.set_y(self.__moving_path[0][1])
                         self.__moving_path.popleft()
-                        self.__if_map_need_update = True
             elif not self.__moving_complete:
                 self.__moving_complete = True
                 if EntitySpriteImageManager.does_action_exist(self.type, "set") is True:

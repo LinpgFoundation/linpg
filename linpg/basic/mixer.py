@@ -48,18 +48,22 @@ class AbstractSoundManager:
 class SoundManagement(AbstractSoundManager):
     def __init__(self, channel_id: int):
         super().__init__(channel_id)
-        self.sound_id: int = 0
+        self.__sound_id: int = 0
         self.__sounds_list: list = []
 
     # 添加音乐
     def add(self, path: str) -> None:
         self.__sounds_list.append(Sound.load(path))
 
+    # 清空列表释放内存
+    def clear(self) -> None:
+        self.__sounds_list.clear()
+
     # 播放音乐
     def play(self, sound_id: int = -1) -> None:
         if len(self.__sounds_list) > 0 and not pygame.mixer.Channel(self._channel_id).get_busy():
-            self.sound_id = get_random_int(0, len(self.__sounds_list) - 1) if sound_id < 0 else sound_id
-            pygame.mixer.Channel(self._channel_id).play(self.__sounds_list[self.sound_id])
+            self.__sound_id = get_random_int(0, len(self.__sounds_list) - 1) if sound_id < 0 else sound_id
+            pygame.mixer.Channel(self._channel_id).play(self.__sounds_list[self.__sound_id])
 
     # 停止播放
     def stop(self) -> None:

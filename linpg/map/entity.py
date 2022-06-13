@@ -51,7 +51,7 @@ class Entity(Position):
         # 角色武器名称
         self.__type: str = str(DATA["type"])
         # 是否图片镜像
-        self.__if_flip: bool = bool(DATA.get("if_flip", False))
+        self._if_flip: bool = bool(DATA.get("if_flip", False))
         # 当前动作
         self.__current_action: str = str(DATA.get("current_action", self.__IDLE_ACTION))
         # 动作是否重复
@@ -97,8 +97,8 @@ class Entity(Position):
             "min_damage": self.__min_damage,
         }
         """以下是可选数据"""
-        if self.__if_flip is True:
-            data["if_flip"] = self.__if_flip
+        if self._if_flip is True:
+            data["if_flip"] = self._if_flip
         if self.__current_action_point != self.__max_action_point:
             data["current_action_point"] = self.__current_action_point
         if self.__current_action != self.__IDLE_ACTION:
@@ -367,7 +367,7 @@ class Entity(Position):
 
     # 设置反转
     def set_flip(self, theBool: bool) -> None:
-        self.__if_flip = theBool
+        self._if_flip = theBool
 
     # 播放角色声音
     def play_sound(self, kind_of_sound: str) -> None:
@@ -406,15 +406,86 @@ class Entity(Position):
         else:
             return False
 
+    # 根据给定的坐标和范围列表生成范围坐标列表
+    @classmethod
+    def generate_range_coordinates(
+        cls, _x: int, _y: int, _ranges: tuple[int, ...], MAP_P: AbstractMap, ifFlip: bool, ifHalfMode: bool = False
+    ) -> list[list[tuple[int, int]]]:
+        # 初始化数据
+        start_point: int = 0
+        end_point: int = 0
+        max_effective_range: int = sum(_ranges)
+        # 确定范围
+        if not ifHalfMode:
+            start_point = _y - max_effective_range
+            end_point = _y + max_effective_range + 1
+        elif not ifFlip:
+            start_point = _y - max_effective_range
+            end_point = _y + 1
+        else:
+            start_point = _y
+            end_point = _y + max_effective_range + 1
+        # 所在的区域
+        attack_range: list[list[tuple[int, int]]] = [[] for i in range(len(_ranges))]
+        the_range_in: int = -1
+        row_start: int = _x - max_effective_range
+        row_end: int = _x + max_effective_range + 1
+        # append坐标
+        for y in range(start_point, end_point):
+            y_offset: int = abs(y - _y)
+            for x in range(row_start + y_offset, row_end - y_offset):
+                if (
+                    MAP_P.row > y >= 0
+                    and MAP_P.column > x >= 0
+                    and (the_range_in := cls.__identify_range(_ranges, abs(x - _x) + abs(y - _y))) >= 0
+                ):
+                    attack_range[the_range_in].append((x, y))
+        return attack_range
+
     # 根据距离确定对象所在区域
-    def range_target_in(self, otherEntity: "Entity") -> int:
-        distanceBetween: int = abs(int(otherEntity.x - self.x)) + abs(int(otherEntity.y - self.y))
-        _total: int = 0
-        for i in range(len(self.__effective_range)):
-            _total += self.__effective_range[i]
-            if distanceBetween <= _total:
-                return i
+    @staticmethod
+    def __identify_range(_ranges: tuple[int, ...], distanceBetween: int) -> int:
+        if distanceBetween > 0:
+            _total: int = 0
+            for i in range(len(_ranges)):
+                _total += _ranges[i]
+                if distanceBetween <= _total:
+                    return i
         return -1
+
+    # 获取角色的攻击范围
+    def get_effective_range_coordinates(self, MAP_P: AbstractMap, ifHalfMode: bool = False) -> list[list[tuple[int, int]]]:
+        return self.generate_range_coordinates(int(self.x), int(self.y), self.__effective_range, MAP_P, self._if_flip, ifHalfMode)
+
+    # 获取对象所在区域
+    def range_target_in(self, otherEntity: "Entity") -> int:
+        return self.__identify_range(
+            self.__effective_range, abs(round(otherEntity.x) - round(self.x)) + abs(round(otherEntity.y) - round(self.y))
+        )
+
+    # 根据给定的坐标和半径生成覆盖范围坐标列表
+    @staticmethod
+    def generate_coverage_coordinates(_x: int, _y: int, _radius: int, MAP_P: AbstractMap) -> list[tuple[int, int]]:
+        the_attacking_range_area: list[tuple[int, int]] = []
+        for y in range(_y - _radius + 1, _y + _radius):
+            for x in range(_x - _radius + abs(y - _y) + 1, _x + _radius - abs(y - _y)):
+                if MAP_P.if_block_can_pass_through(x, y):
+                    the_attacking_range_area.append((x, y))
+        return the_attacking_range_area
+
+    # 获取角色的攻击覆盖范围
+    def get_attack_coverage_coordinates(self, _x: int, _y: int, MAP_P: AbstractMap) -> list[tuple[int, int]]:
+        if self.__identify_range(self.__effective_range, abs(_x - round(self.x)) + abs(_y - round(self.y))) >= 0:
+            return list(
+                filter(
+                    lambda pos: self.__identify_range(
+                        self.__effective_range, abs(pos[0] - round(self.x)) + abs(pos[1] - round(self.y))
+                    )
+                    >= 0,
+                    self.generate_coverage_coordinates(_x, _y, self.__attack_coverage, MAP_P),
+                )
+            )
+        return []
 
     # 根据坐标反转角色
     def set_flip_based_on_pos(self, pos: object) -> None:
@@ -431,7 +502,12 @@ class Entity(Position):
     """画出角色"""
     # 角色画到surface上
     def __blit_entity_img(
-        self, surface: ImageSurface, MAP_POINTER: AbstractMap, alpha: int, action: Optional[str] = None, pos: tuple = tuple()
+        self,
+        surface: ImageSurface,
+        MAP_P: AbstractMap,
+        alpha: int,
+        action: Optional[str] = None,
+        pos: Optional[tuple[int, int]] = None,
     ) -> None:
         # 如果没有指定action,则默认使用当前的动作
         if action is None:
@@ -443,13 +519,13 @@ class Entity(Position):
         img_width: float = round(MapImageParameters.get_block_width() * 8 / 5, 2)
         _image.set_size(img_width, img_width)
         # 如果没有指定pos,则默认使用当前的动作
-        if len(pos) < 1:
-            pos = MAP_POINTER.calculate_position(self.x, self.y)
+        if pos is None:
+            pos = MAP_P.calculate_position(self.x, self.y)
         # 把角色图片画到屏幕上
         _image.draw_onto(
             surface,
             alpha,
-            self.__if_flip,
+            self._if_flip,
             (pos[0] - MapImageParameters.get_block_width() * 0.3, pos[1] - MapImageParameters.get_block_width() * 0.85),
             self.__is_selected,
         )
@@ -457,10 +533,10 @@ class Entity(Position):
         self.__current_image_rect = _image.get_rectangle()
 
     # 把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
-    def draw(self, surface: ImageSurface, MAP_POINTER: AbstractMap, update_id_only: bool = False) -> None:
+    def draw(self, surface: ImageSurface, MAP_P: AbstractMap, update_id_only: bool = False) -> None:
         # 画出角色
         if not update_id_only:
-            self.__blit_entity_img(surface, MAP_POINTER, self.get_imgAlpaha(self.__current_action))
+            self.__blit_entity_img(surface, MAP_P, self.get_imgAlpaha(self.__current_action))
         """计算imgId"""
         # 如果正在播放移动动作，则需要根据现有路径更新坐标
         if self.__current_action == "move" and not self.__moving_complete:
@@ -524,9 +600,15 @@ class Entity(Position):
             self.set_action()
 
     def draw_custom(
-        self, action: str, pos: tuple, surface: ImageSurface, MAP_POINTER: AbstractMap, isContinue: bool = True, alpha: int = 155
+        self,
+        action: str,
+        pos: tuple[int, int],
+        surface: ImageSurface,
+        MAP_P: AbstractMap,
+        isContinue: bool = True,
+        alpha: int = 155,
     ) -> bool:
-        self.__blit_entity_img(surface, MAP_POINTER, alpha, action, pos)
+        self.__blit_entity_img(surface, MAP_P, alpha, action, pos)
         # 调整id，并返回对应的bool状态
         if self.__imgId_dict[action]["imgId"] < self.get_imgNum(action) - 1:
             self.__imgId_dict[action]["imgId"] += 1

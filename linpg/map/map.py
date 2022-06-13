@@ -3,8 +3,6 @@ from .entity import *
 # 地图模块
 class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
 
-    # 获取方块数据库
-    __BLOCKS_DATABASE: dict = DataBase.get("Blocks")
     # 开发者使用的窗口
     __debug_win: Optional[RenderedWindow] = None
     __debug_win_unit: int = 10
@@ -16,8 +14,6 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         Rectangle.__init__(self, 0, 0, 0, 0)
         # 本地坐标模块
         SurfaceWithLocalPos.__init__(self)
-        # 地图数据
-        self.__MAP: numpy.ndarray = numpy.asarray([])
         # 地图渲染用的图层
         self.__MAP_SURFACE: Optional[ImageSurface] = None
         # 背景图片路径
@@ -66,10 +62,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                         )
                         MAP_t[i][j] = "TileTemplate01"
         # 初始化地图数据
-        self.__MAP = numpy.asarray(MAP_t, dtype=numpy.dtype("<U32"))
-        # 使用numpy的shape决定self.row和self.column
-        row, column = self.__MAP.shape
-        super()._update(row, column)
+        super()._update(MAP_t)
         # 背景图片路径
         self.__background_image = (
             str(mapDataDic["background_image"])
@@ -152,24 +145,8 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
             if theDecoration.get_type() not in decoration_dict:
                 decoration_dict[theDecoration.get_type()] = {}
             decoration_dict[theDecoration.get_type()][theDecoration.get_id()] = theDecorationInDict
-        # 转换地图数据
-        MAP_t: tuple = tuple(self.__MAP.tolist())
-        lookup_table: dict = {}
-        for row in MAP_t:
-            for item in row:
-                if item not in lookup_table:
-                    lookup_table[item] = 0
-                else:
-                    lookup_table[item] += 1
-        sorted_lookup_table: list = sorted(lookup_table, key=lookup_table.get, reverse=True)  # type: ignore
         # 返回数据
-        return {
-            "map": {
-                "array2d": [[sorted_lookup_table.index(item) for item in row] for row in MAP_t],
-                "lookup_table": sorted_lookup_table,
-            },
-            "decoration": decoration_dict,
-        }
+        return {"decoration": decoration_dict} | super().to_dict()
 
     # 以百分比的形式获取本地坐标（一般用于存档数据）
     def get_local_pos_in_percentage(self) -> dict:
@@ -349,7 +326,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
                     and -MapImageParameters.get_block_width() <= posTupleTemp[1] < window_size[1]
                 ):
                     if self.__block_on_surface[y][x] == 0:
-                        evn_img = TileMapImagesModule.get_image(str(self.__MAP[y][x]), not self.is_coordinate_in_light_rea(x, y))
+                        evn_img = TileMapImagesModule.get_image(self._get_block(x, y), not self.is_coordinate_in_light_rea(x, y))
                         evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
                         if self.__MAP_SURFACE is not None:
                             evn_img.draw(self.__MAP_SURFACE)
@@ -405,13 +382,9 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
 
     # 更新方块
     def update_block(self, pos: tuple[int, int], name: str) -> None:
-        self.__MAP[pos[1]][pos[0]] = name
+        self._set_block(pos[0], pos[1], name)
         self.__need_update_surface = True
         self.__need_to_recheck_block_on_surface = True
-
-    # 是否角色能通过该方块
-    def if_block_can_pass_through(self, x: int, y: int) -> bool:
-        return bool(self.__BLOCKS_DATABASE[self.__MAP[y][x]]["canPassThrough"])
 
     # 计算在地图中的方块
     def calculate_coordinate(self, pos: tuple[int, int] = None) -> Optional[tuple[int, int]]:

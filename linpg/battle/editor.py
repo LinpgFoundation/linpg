@@ -40,6 +40,7 @@ class AbstractMapEditor(AbstractBattleSystem):
     def update_entity(self, faction: str, key: str, data: dict) -> None:
         EXCEPTION.fatal("update_entity()", 1)
 
+    # 实现父类需要实现的方法 - 画出所有角色
     def _display_entities(self, screen: ImageSurface) -> None:
         # 展示范围
         if self._block_is_hovering is not None and self.__no_container_is_hovered is True:
@@ -56,6 +57,13 @@ class AbstractMapEditor(AbstractBattleSystem):
                 if len(self.__select_pos) > 0:
                     value.set_selected(value.is_overlapped_with(self.__select_rect))
 
+    # 修改父类的 _check_key_down 方法
+    def _check_key_down(self, event: PG_Event) -> None:
+        super()._check_key_down(event)
+        if event.key == Key.ESCAPE:
+            self.__object_to_put_down.clear()
+            self.__delete_mode = False
+
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
         return Config.load_file(self.get_map_file_location()) | super()._get_data_need_to_save()
@@ -68,16 +76,15 @@ class AbstractMapEditor(AbstractBattleSystem):
                     self._entities_data[faction].pop(key)
                     break
 
-    # 初始化
-    def load(self, screen: ImageSurface, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
-        self._initialize(chapterType, chapterId, projectName)
-        self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_map_file_location())
+    # 加载关键数据
+    def __load(self) -> None:
         # 载入地图数据
-        mapFileData: dict = Config.load(self.get_map_file_location())
+        _data: dict = Config.load(self.get_map_file_location())
         # 初始化角色信息
-        self._load_characters_data(mapFileData["entities"])
+        self._load_characters_data(_data["entities"])
         # 初始化地图
-        if "map" not in mapFileData or mapFileData["map"] is None or len(mapFileData["map"]) == 0:
+        _map_p: Optional[list] = _data.get("map")
+        if _map_p is None or len(_map_p) == 0:
             SnowEnvImg = tuple(
                 [
                     "TileSnow01",
@@ -88,14 +95,17 @@ class AbstractMapEditor(AbstractBattleSystem):
                     "TileSnow02ToStone02",
                 ]
             )
-            block_y = 50
-            block_x = 50
-            default_map = [[SnowEnvImg[get_random_int(0, 5)] for a in range(block_x)] for i in range(block_y)]
-            mapFileData["map"] = default_map
-            Config.save(self.get_map_file_location(), mapFileData)
+            block_y: int = 50
+            block_x: int = 50
+            _data["map"] = [[SnowEnvImg[get_random_int(0, 5)] for a in range(block_x)] for i in range(block_y)]
         # 加载地图
-        self._initialize_map(mapFileData)
-        del mapFileData
+        self._initialize_map(_data)
+
+    # 初始化
+    def load(self, screen: ImageSurface, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
+        self._initialize(chapterType, chapterId, projectName)
+        self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_map_file_location())
+        self.__load()
         """加载右侧的界面"""
         # 加载容器图片
         container_width: int = screen.get_width() // 5
@@ -225,17 +235,12 @@ class AbstractMapEditor(AbstractBattleSystem):
 
     # 将地图制作器的界面画到屏幕上
     def draw(self, screen: ImageSurface) -> None:
+        UIContainerRight_offset_pos: tuple[int, int] = (self.__UIContainerButtonRight.right, 0)
+        UIContainerBottom_offset_pos: tuple[int, int] = (0, self.__UIContainerButtonBottom.bottom)
         self.__no_container_is_hovered = not self.__UIContainerRight.is_hovered(
-            (self.__UIContainerButtonRight.right, 0)
-        ) and not self.__UIContainerBottom.is_hovered((0, self.__UIContainerButtonBottom.bottom))
-        for event in Controller.events:
-            if event.type == Key.DOWN:
-                if event.key == Key.ESCAPE:
-                    self.__object_to_put_down.clear()
-                    self.__delete_mode = False
-                self._check_key_down(event)
-            elif event.type == Key.UP:
-                self._check_key_up(event)
+            UIContainerRight_offset_pos
+        ) and not self.__UIContainerBottom.is_hovered(UIContainerBottom_offset_pos)
+        # 如果鼠标与任何Container进行了互动
         if Controller.get_event("confirm") and len(self.__select_pos) <= 0:
             # 显示或隐藏右侧的容器
             if self.__UIContainerButtonRight.is_hovered():
@@ -285,13 +290,11 @@ class AbstractMapEditor(AbstractBattleSystem):
                             }
                         )
                         the_id: int = 0
-                        while self.__object_to_put_down["id"] + "_" + str(the_id) in self._entities_data[_new_data["faction"]]:
+                        nameTemp: str = self.__object_to_put_down["id"] + "_" + str(the_id)
+                        while nameTemp in self._entities_data[_new_data["faction"]]:
                             the_id += 1
-                        nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
+                            nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
                         self.update_entity(_new_data["faction"], nameTemp, _new_data)
-        # 其他移动的检查
-        self._check_right_click_move()
-        self._check_jostick_events()
 
         # 画出地图
         self._display_map(screen)
@@ -299,10 +302,10 @@ class AbstractMapEditor(AbstractBattleSystem):
         # 画出右侧容器的UI
         self.__UIContainerButtonRight.draw(screen)
         if self.__UIContainerButtonRight.right < screen.get_width():
-            self.__UIContainerRight.display(screen, (self.__UIContainerButtonRight.right, 0))
-            self.__envImgContainer.display(screen, (self.__UIContainerButtonRight.right, 0))
-            self.__decorationsImgContainer.display(screen, (self.__UIContainerButtonRight.right, 0))
-            self.__right_container_buttons.display(screen, (self.__UIContainerButtonRight.right, 0))
+            self.__UIContainerRight.display(screen, UIContainerRight_offset_pos)
+            self.__envImgContainer.display(screen, UIContainerRight_offset_pos)
+            self.__decorationsImgContainer.display(screen, UIContainerRight_offset_pos)
+            self.__right_container_buttons.display(screen, UIContainerRight_offset_pos)
             if Controller.get_event("confirm") is True:
                 if self.__right_container_buttons.item_being_hovered == "select_block":
                     self.__envImgContainer.set_visible(True)
@@ -317,15 +320,16 @@ class AbstractMapEditor(AbstractBattleSystem):
                     self.__decorationsImgContainer.is_visible() and self.__decorationsImgContainer.item_being_hovered is not None
                 ):
                     self.__object_to_put_down = {"type": "decoration", "id": self.__decorationsImgContainer.item_being_hovered}
+
         # 画出下方容器的UI
         self.__UIContainerButtonBottom.draw(screen)
         if self.__UIContainerButtonBottom.bottom < screen.get_height():
-            self.__UIContainerBottom.display(screen, (0, self.__UIContainerButtonBottom.bottom))
+            self.__UIContainerBottom.display(screen, UIContainerBottom_offset_pos)
             if self.__entitiesImagesContainerUsingIndex >= 0:
                 self.__entitiesImagesContainers[self.__entitiesImagesContainerUsingIndex].display(
-                    screen, (0, self.__UIContainerButtonBottom.bottom)
+                    screen, UIContainerBottom_offset_pos
                 )
-            self.__bottom_container_buttons.display(screen, (0, self.__UIContainerButtonBottom.bottom))
+            self.__bottom_container_buttons.display(screen, UIContainerBottom_offset_pos)
             if Controller.get_event("confirm"):
                 if self.__bottom_container_buttons.item_being_hovered >= 0:
                     self.__entitiesImagesContainerUsingIndex = self.__bottom_container_buttons.item_being_hovered
@@ -359,7 +363,9 @@ class AbstractMapEditor(AbstractBattleSystem):
         # 画出上方按钮
         self.__buttons_container.draw(screen)
         if Controller.get_event("confirm") and len(self.__object_to_put_down) <= 0 and not self.__delete_mode:
-            if self.__buttons_container.item_being_hovered == "save":
+            if self.__buttons_container.item_being_hovered is None:
+                pass
+            elif self.__buttons_container.item_being_hovered == "save":
                 self.save_progress()
             elif self.__buttons_container.item_being_hovered == "back":
                 if Config.load(self.get_map_file_location()) == self._get_data_need_to_save():
@@ -371,13 +377,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                 self.__delete_mode = True
             elif self.__buttons_container.item_being_hovered == "reload":
                 tempLocal_x, tempLocal_y = self._MAP.get_local_pos()
-                # 读取地图数据
-                mapFileData = Config.load(self.get_map_file_location())
-                # 初始化角色信息
-                self._load_characters_data(mapFileData["entities"])
-                # 加载地图
-                self._initialize_map(mapFileData)
-                del mapFileData
+                self.__load()
                 self._MAP.set_local_pos(tempLocal_x, tempLocal_y)
 
         # 跟随鼠标显示即将被放下的物品
@@ -396,7 +396,7 @@ class AbstractMapEditor(AbstractBattleSystem):
 
         # 未保存离开时的警告
         self.__no_save_warning.draw(screen)
-        if Controller.get_event("confirm") and self.__no_save_warning.item_being_hovered != "":
+        if Controller.get_event("confirm") and self.__no_save_warning.item_being_hovered is not None:
             # 保存并离开
             if self.__no_save_warning.item_being_hovered == "save":
                 self.save_progress()

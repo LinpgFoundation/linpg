@@ -17,15 +17,22 @@ class Node:
 
 # 基础地图框架
 class AbstractMap:
+
+    # 获取方块数据库
+    __BLOCKS_DATABASE: dict = DataBase.get("Blocks")
+
     def __init__(self) -> None:
+        # 地图数据
+        self.__MAP: numpy.ndarray = numpy.asarray([])
         # 行
         self.__row: int = 0
         # 列
         self.__column: int = 0
 
-    def _update(self, row: int, column: int) -> None:
-        self.__row = row
-        self.__column = column
+    # 更新地图数据
+    def _update(self, _data: list) -> None:
+        self.__MAP = numpy.asarray(_data, dtype=numpy.dtype("<U32"))
+        self.__row, self.__column = self.__MAP.shape
 
     @property
     def row(self) -> int:
@@ -42,6 +49,38 @@ class AbstractMap:
             round((x - y) * widthTmp + self.row * widthTmp),
             round((y + x) * MapImageParameters.get_block_width() * 0.22 + MapImageParameters.get_block_width() * 0.4),
         )
+
+    # 根据坐标获取地图块
+    def _get_block(self, x: int, y: int) -> str:
+        return str(self.__MAP[y][x])
+
+    # 根据坐标更新地图块
+    def _set_block(self, x: int, y: int, name: str) -> None:
+        self.__MAP[y][x] = name
+
+    # 以字典的形式获取地图的数据
+    def to_dict(self) -> dict:
+        # 转换地图数据
+        MAP_t: tuple = tuple(self.__MAP.tolist())
+        lookup_table: dict = {}
+        for row in MAP_t:
+            for item in row:
+                if item not in lookup_table:
+                    lookup_table[item] = 0
+                else:
+                    lookup_table[item] += 1
+        sorted_lookup_table: list = sorted(lookup_table, key=lookup_table.get, reverse=True)  # type: ignore
+        # 返回数据
+        return {
+            "map": {
+                "array2d": [[sorted_lookup_table.index(item) for item in row] for row in MAP_t],
+                "lookup_table": sorted_lookup_table,
+            }
+        }
+
+    # 是否角色能通过该方块
+    def if_block_can_pass_through(self, x: int, y: int) -> bool:
+        return bool(self.__BLOCKS_DATABASE[self.__MAP[y][x]]["canPassThrough"])
 
 
 # 寻路模块
@@ -60,8 +99,8 @@ class AStar(AbstractMap):
         # 关闭表
         self.__close_list: list[Node] = []
 
-    def _update(self, row: int, column: int) -> None:
-        super()._update(row, column)
+    def _update(self, _data: list) -> None:
+        super()._update(_data)
         self._map2d = numpy.zeros((self.row, self.column), dtype=numpy.byte)
 
     def __getMinNode(self) -> Node:

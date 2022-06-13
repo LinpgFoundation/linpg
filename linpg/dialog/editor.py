@@ -443,28 +443,29 @@ class DialogEditor(DialogConverter):
                         self.__no_save_warning.set_visible(True)
                 elif self.__buttons_ui_container.item_being_hovered == "previous":
                     lastId = self.__get_last_id()
-                    if lastId != "<NULL>":
-                        self._update_scene(str(lastId))
-                    else:
+                    if lastId == "<NULL>":
                         EXCEPTION.inform("There is no last dialog id.")
+                    self._update_scene(lastId)
                 elif self.__buttons_ui_container.item_being_hovered == "delete":
-                    lastId = self.__get_last_id()
-                    nextId: str = self.__try_get_next_id(surface)
-                    needDeleteId: str = ""
-                    if lastId != "<NULL>":
-                        if nextId != "<NULL>":
-                            self.__make_connection(lastId, nextId)
-                        needDeleteId = self._dialog_id
-                        self._update_scene(str(lastId))
-                        del self.dialog_content[needDeleteId]
-                    elif nextId != "<NULL>":
-                        needDeleteId = self._dialog_id
-                        self._update_scene(str(nextId))
-                        del self.dialog_content[needDeleteId]
+                    if self._dialog_id != "head":
+                        lastId = self.__get_last_id()
+                        nextId: str = self.__try_get_next_id(surface)
+                        del self.dialog_content[self._dialog_id]
+                        if lastId != "<NULL>":
+                            if nextId != "<NULL>":
+                                self.__make_connection(lastId, nextId)
+                            else:
+                                self.dialog_content[lastId]["next_dialog_id"] = None
+                            self._update_scene(lastId)
+                        elif nextId != "<NULL>":
+                            self.dialog_content[nextId]["last_dialog_id"] = None
+                            self._update_scene(nextId)
+                        else:
+                            EXCEPTION.inform(
+                                "Cannot delete this dialog because there is no valid last and next id; you need to delete it manually."
+                            )
                     else:
-                        EXCEPTION.inform(
-                            "Cannot delete this dialog because there is no valid last and next id. You need to delete it manually"
-                        )
+                        EXCEPTION.inform("Cannot delete head; you need to delete it manually.")
                 elif self.__buttons_ui_container.item_being_hovered == "next":
                     if (nextId := self.__try_get_next_id(surface)) != "<NULL>":
                         self._update_scene(str(nextId))

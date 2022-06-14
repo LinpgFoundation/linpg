@@ -1,20 +1,5 @@
 from .decoration import *
 
-# 点
-class Point(Coordinate):
-    def __eq__(self, other: "Point") -> bool:  # type: ignore[override]
-        return self.x == other.x and self.y == other.y
-
-
-# 描述AStar算法中的节点数据
-class Node:
-    def __init__(self, point: Point, endPoint: Point, g: number = 0):
-        self.point: Point = point  # 自己的坐标
-        self.father: Optional[Node] = None  # 父节点
-        self.g = g  # g值，g值在用到的时候会重新算
-        self.h = (abs(endPoint.x - point.x) + abs(endPoint.y - point.y)) * 10  # 计算h值
-
-
 # 基础地图框架
 class AbstractMap:
 
@@ -81,6 +66,21 @@ class AbstractMap:
     # 是否角色能通过该方块
     def can_pass_through(self, x: int, y: int) -> bool:
         return bool(self.__BLOCKS_DATABASE[self.__MAP[y][x]]["canPassThrough"])
+
+
+# 点
+class Point(Coordinate):
+    def __eq__(self, other: "Point") -> bool:  # type: ignore[override]
+        return self.x == other.x and self.y == other.y
+
+
+# 描述AStar算法中的节点数据
+class Node:
+    def __init__(self, point: Point, endPoint: Point, g: number = 0):
+        self.point: Point = point  # 自己的坐标
+        self.father: Optional[Node] = None  # 父节点
+        self.g = g  # g值，g值在用到的时候会重新算
+        self.h = (abs(endPoint.x - point.x) + abs(endPoint.y - point.y)) * 10  # 计算h值
 
 
 # 寻路模块

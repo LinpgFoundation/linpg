@@ -1,5 +1,5 @@
 """
 结构:
-weather -> entity ->  battle -> editor
+image -> decoration -> astar -> entity -> map -> battle -> editor
 """
 from .editor import *

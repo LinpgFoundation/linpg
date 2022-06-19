@@ -32,10 +32,6 @@ class AbstractMapEditor(AbstractBattleSystem):
         # 是否有ui容器被鼠标触碰
         self.__no_container_is_hovered: bool = False
 
-    # 加载角色的数据 - 子类需实现
-    def _load_characters_data(self, entities: dict) -> None:
-        EXCEPTION.fatal("_load_characters_data()", 1)
-
     # 根据数据更新特定的角色 - 子类需实现
     def update_entity(self, faction: str, key: str, data: dict) -> None:
         EXCEPTION.fatal("update_entity()", 1)
@@ -76,13 +72,9 @@ class AbstractMapEditor(AbstractBattleSystem):
                     self._entities_data[faction].pop(key)
                     break
 
-    # 加载关键数据
-    def __load(self) -> None:
-        # 载入地图数据
-        _data: dict = Config.load(self.get_map_file_location())
-        # 初始化角色信息
-        self._load_characters_data(_data["entities"])
-        # 初始化地图
+    # 处理关键数据
+    def _process_data(self, _data: dict) -> None:
+        # 确保地图初始化
         _map_p: Optional[list] = _data.get("map")
         if _map_p is None or len(_map_p) == 0:
             SnowEnvImg = tuple(
@@ -98,14 +90,14 @@ class AbstractMapEditor(AbstractBattleSystem):
             block_y: int = 50
             block_x: int = 50
             _data["map"] = [[SnowEnvImg[get_random_int(0, 5)] for a in range(block_x)] for i in range(block_y)]
-        # 加载地图
-        self._initialize_map(_data)
+        # 开始处理数据
+        super()._process_data(_data)
 
     # 初始化
     def load(self, screen: ImageSurface, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
         self._initialize(chapterType, chapterId, projectName)
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_map_file_location())
-        self.__load()
+        self._process_data(Config.load(self.get_map_file_location()))
         """加载右侧的界面"""
         # 加载容器图片
         container_width: int = screen.get_width() // 5
@@ -264,7 +256,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                         self._MAP.update_block(self._block_is_hovering, self.__object_to_put_down["id"])
                     elif self.__object_to_put_down["type"] == "decoration":
                         # 查看当前位置是否有装饰物
-                        decoration = self._MAP.find_decoration_on((self._block_is_hovering[0], self._block_is_hovering[1]))
+                        decoration = self._MAP.find_decoration_on(self._block_is_hovering)
                         # 如果发现有冲突的装饰物
                         if decoration is not None:
                             self._MAP.remove_decoration(decoration)
@@ -274,7 +266,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                                 "x": self._block_is_hovering[0],
                                 "y": self._block_is_hovering[1],
                             },
-                            DataBase.get("Decorations")[self.__object_to_put_down["id"]],
+                            DataBase.get("Decorations", self.__object_to_put_down["id"]),
                             "{0}_{1}".format(self.__object_to_put_down["id"], self._MAP.count_decorations()),
                         )
                     elif self.__object_to_put_down["type"] == "entity":
@@ -313,7 +305,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                 elif self.__right_container_buttons.item_being_hovered == "select_decoration":
                     self.__envImgContainer.set_visible(False)
                     self.__decorationsImgContainer.set_visible(True)
-            if Controller.get_event("confirm"):
+            if Controller.get_event("confirm") is True:
                 if self.__envImgContainer.is_visible() and self.__envImgContainer.item_being_hovered is not None:
                     self.__object_to_put_down = {"type": "block", "id": self.__envImgContainer.item_being_hovered}
                 elif (
@@ -377,7 +369,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                 self.__delete_mode = True
             elif self.__buttons_container.item_being_hovered == "reload":
                 tempLocal_x, tempLocal_y = self._MAP.get_local_pos()
-                self.__load()
+                self._process_data(Config.load(self.get_map_file_location()))
                 self._MAP.set_local_pos(tempLocal_x, tempLocal_y)
 
         # 跟随鼠标显示即将被放下的物品

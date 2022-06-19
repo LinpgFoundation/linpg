@@ -301,8 +301,7 @@ class Entity(Position):
             self.__current_action_point -= value
             return True
         # 没有足够的行动值来减去
-        else:
-            return False
+        return False
 
     """
     角色血量护甲参数管理
@@ -331,9 +330,7 @@ class Entity(Position):
     def heal(self, hpHealed: int) -> None:
         if hpHealed > 0:
             self.__current_hp += hpHealed
-        elif hpHealed == 0:
-            pass
-        else:
+        elif hpHealed < 0:
             EXCEPTION.fatal("You cannot heal a negative value")
 
     # 降低血量
@@ -408,25 +405,27 @@ class Entity(Position):
             EXCEPTION.fatal("Character cannot move to a invalid path!")
 
     # 查看是否需要重新渲染地图
-    def needUpdateMap(self) -> bool:
+    def need_update_map(self) -> bool:
         if self.__if_map_need_update:
             self.__if_map_need_update = False
             return True
-        else:
-            return False
+        return False
 
     # 查看是否一个Entity在该角色的附近
     def near(self, otherEntity: "Entity") -> bool:
-        if self.x == otherEntity.x:
-            return abs(self.y - otherEntity.y) <= 1
-        elif self.y == otherEntity.y:
-            return abs(self.x - otherEntity.x) <= 1
-        else:
-            return False
+        self_x: int = round(self.x)
+        o_x: int = round(otherEntity.x)
+        self_y: int = round(self.y)
+        o_y: int = round(otherEntity.y)
+        if self_x == o_x:
+            return abs(self_y - o_y) <= 1
+        elif self_y == o_y:
+            return abs(self_x - o_x) <= 1
+        return False
 
     # 根据给定的坐标和范围列表生成范围坐标列表
     @classmethod
-    def generate_range_coordinates(
+    def _generate_range_coordinates(
         cls, _x: int, _y: int, _ranges: tuple[int, ...], MAP_P: AbstractMap, ifFlip: bool, ifHalfMode: bool = False
     ) -> list[list[tuple[int, int]]]:
         # 初始化数据
@@ -474,7 +473,7 @@ class Entity(Position):
     # 获取角色的攻击范围
     def get_effective_range_coordinates(self, MAP_P: AbstractMap, ifHalfMode: bool = False) -> list[list[tuple[int, int]]]:
         if self.__effective_range_coordinates is None:
-            self.__effective_range_coordinates = self.generate_range_coordinates(
+            self.__effective_range_coordinates = self._generate_range_coordinates(
                 round(self.x), round(self.y), self.__effective_range, MAP_P, self._if_flip, ifHalfMode
             )
         return self.__effective_range_coordinates
@@ -487,7 +486,7 @@ class Entity(Position):
 
     # 根据给定的坐标和半径生成覆盖范围坐标列表
     @staticmethod
-    def generate_coverage_coordinates(_x: int, _y: int, _radius: int, MAP_P: AbstractMap) -> list[tuple[int, int]]:
+    def _generate_coverage_coordinates(_x: int, _y: int, _radius: int, MAP_P: AbstractMap) -> list[tuple[int, int]]:
         return list(
             filter(lambda pos: MAP_P.can_pass_through(pos[0], pos[1]), Coordinates.get_in_diamond_shaped(_x, _y, _radius))
         )
@@ -501,7 +500,7 @@ class Entity(Position):
                         self.__effective_range, abs(pos[0] - round(self.x)) + abs(pos[1] - round(self.y))
                     )
                     >= 0,
-                    self.generate_coverage_coordinates(_x, _y, self.__attack_coverage, MAP_P),
+                    self._generate_coverage_coordinates(_x, _y, self.__attack_coverage, MAP_P),
                 )
             )
         return []

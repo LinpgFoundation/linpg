@@ -23,7 +23,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         # 装饰物
         self.__decorations: list[DecorationObject] = []
         # 处于光处的区域
-        self.__light_area: tuple = tuple()
+        self.__light_area: tuple[tuple[int, int], ...] = tuple()
         # 追踪是否需要更新的参数
         self.__need_update_surface: bool = True
         # 追踪目前已经画出的方块
@@ -64,11 +64,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         # 初始化地图数据
         super()._update(MAP_t)
         # 背景图片路径
-        self.__background_image = (
-            str(mapDataDic["background_image"])
-            if "background_image" in mapDataDic and mapDataDic["background_image"] is not None
-            else None
-        )
+        self.__background_image = mapDataDic.get("background_image")
         # 暗度（仅黑夜场景有效）
         MapImageParameters.set_darkness(155 if "at_night" in mapDataDic and bool(mapDataDic["at_night"]) is True else 0)
         # 更新地图渲染图层的尺寸
@@ -193,13 +189,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
         elif _type == "chest":
             self.__decorations.append(
                 ChestObject(
-                    _data["x"],
-                    _data["y"],
-                    _id,
-                    _type,
-                    _data["items"] if "items" in _data else [],
-                    _data["whitelist"] if "whitelist" in _data else [],
-                    _data["status"],
+                    _data["x"], _data["y"], _id, _type, _data.get("items", []), _data.get("whitelist", []), _data["status"]
                 )
             )
         else:
@@ -261,27 +251,64 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
     # 把地图画到屏幕上
     def display_map(self, screen: ImageSurface, screen_to_move_x: int = 0, screen_to_move_y: int = 0) -> tuple:
         # 检测屏幕是不是移到了不移到的地方
-        if self.local_x < screen.get_width() - self.get_width():
-            self.set_local_x(screen.get_width() - self.get_width())
+        _min_local_x: int = screen.get_width() - self.get_width()
+        if self.local_x < _min_local_x:
+            self.set_local_x(_min_local_x)
             screen_to_move_x = 0
         elif self.local_x > 0:
             self.set_local_x(0)
             screen_to_move_x = 0
-        if self.local_y < screen.get_height() - self.get_height():
-            self.set_local_y(screen.get_height() - self.get_height())
+        _min_local_y: int = screen.get_height() - self.get_height()
+        if self.local_y < _min_local_y:
+            self.set_local_y(_min_local_y)
             screen_to_move_y = 0
         elif self.local_y > 0:
             self.set_local_y(0)
             screen_to_move_y = 0
+        # 如果需要重新绘制地图
         if self.__need_update_surface is True:
             self.__need_update_surface = False
-            self.__update_map_surface(screen.get_size())
+            if self.__need_to_recheck_block_on_surface is True:
+                if self.__BACKGROUND_SURFACE is not None:
+                    self.__BACKGROUND_SURFACE.set_size(screen.get_width(), screen.get_height())
+                if self.__MAP_SURFACE is not None:
+                    self.__MAP_SURFACE.fill(Colors.TRANSPARENT)
+                else:
+                    self.__MAP_SURFACE = Surfaces.transparent(self.get_size())
+                self.__block_on_surface.fill(0)
+                self.__need_to_recheck_block_on_surface = False
+            # 画出地图
+            posTupleTemp: tuple
+            evn_img: StaticImage
+            for y in range(self.row):
+                for x in range(self.column):
+                    posTupleTemp = self.calculate_position(x, y)
+                    if (
+                        -MapImageParameters.get_block_width() <= posTupleTemp[0] < screen.get_width()
+                        and -MapImageParameters.get_block_width() <= posTupleTemp[1] < screen.get_height()
+                    ):
+                        if self.__block_on_surface[y][x] == 0:
+                            evn_img = TileMapImagesModule.get_image(
+                                self._get_block(x, y), not self.is_coordinate_in_light_rea(x, y)
+                            )
+                            evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
+                            if self.__MAP_SURFACE is not None:
+                                evn_img.draw(self.__MAP_SURFACE)
+                            self.__block_on_surface[y][x] = 1
+                            if y < self.row - 1:
+                                self.__block_on_surface[y + 1][x] = 0
+                            if x < self.column - 1:
+                                self.__block_on_surface[y][x + 1] = 0
+                        else:
+                            pass
+                    elif posTupleTemp[0] >= screen.get_width() or posTupleTemp[1] >= screen.get_height():
+                        break
+                if self.calculate_position(0, y + 1)[1] >= screen.get_height():
+                    break
         # 显示调试窗口
         if self.__debug_win is not None and not self.__need_to_recheck_block_on_surface:
             self.__debug_win.clear()
             self.__debug_win.fill("black")
-            x: int
-            y: int
             start_x: int
             start_y: int
             for y in range(len(self.__block_on_surface)):
@@ -303,44 +330,6 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
             screen.blit(self.__MAP_SURFACE.subsurface((-self.local_x, -self.local_y), screen.get_size()), (0, 0))
         # 返回offset
         return screen_to_move_x, screen_to_move_y
-
-    # 重新绘制地图
-    def __update_map_surface(self, window_size: tuple) -> None:
-        if self.__need_to_recheck_block_on_surface is True:
-            if self.__BACKGROUND_SURFACE is not None:
-                self.__BACKGROUND_SURFACE.set_size(window_size[0], window_size[1])
-            if self.__MAP_SURFACE is not None:
-                self.__MAP_SURFACE.fill(Colors.TRANSPARENT)
-            else:
-                self.__MAP_SURFACE = Surfaces.transparent(self.get_size())
-            self.__block_on_surface.fill(0)
-            self.__need_to_recheck_block_on_surface = False
-        # 画出地图
-        posTupleTemp: tuple
-        evn_img: StaticImage
-        for y in range(self.row):
-            for x in range(self.column):
-                posTupleTemp = self.calculate_position(x, y)
-                if (
-                    -MapImageParameters.get_block_width() <= posTupleTemp[0] < window_size[0]
-                    and -MapImageParameters.get_block_width() <= posTupleTemp[1] < window_size[1]
-                ):
-                    if self.__block_on_surface[y][x] == 0:
-                        evn_img = TileMapImagesModule.get_image(self._get_block(x, y), not self.is_coordinate_in_light_rea(x, y))
-                        evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
-                        if self.__MAP_SURFACE is not None:
-                            evn_img.draw(self.__MAP_SURFACE)
-                        self.__block_on_surface[y][x] = 1
-                        if y < self.row - 1:
-                            self.__block_on_surface[y + 1][x] = 0
-                        if x < self.column - 1:
-                            self.__block_on_surface[y][x + 1] = 0
-                    else:
-                        pass
-                elif posTupleTemp[0] >= window_size[0] or posTupleTemp[1] >= window_size[1]:
-                    break
-            if self.calculate_position(0, y + 1)[1] >= window_size[1]:
-                break
 
     # 把装饰物画到屏幕上
     def display_decoration(self, screen: ImageSurface, occupied_coordinates: tuple) -> None:
@@ -441,7 +430,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
 
     # 查看坐标是否在光亮范围内
     def is_coordinate_in_light_rea(self, x: int_f, y: int_f) -> bool:
-        return True if MapImageParameters.get_darkness() <= 0 else (int(x), int(y)) in self.__light_area
+        return True if MapImageParameters.get_darkness() <= 0 else (round(x), round(y)) in self.__light_area
 
     # 寻找2点之间的最短路径
     def find_path(
@@ -463,7 +452,7 @@ class MapObject(AStar, Rectangle, SurfaceWithLocalPos):
             if item.get_type() == "obstacle" or item.get_type() == "campfire":
                 self._map2d[item.x][item.y] = 1
         # 如果终点有我方角色，则不允许
-        for key, value in alliances.items():
+        for value in alliances.values():
             if value.x == end_pos[0] and value.y == end_pos[1]:
                 return []
         # 历遍所有角色，将角色的坐标点设置为障碍方块

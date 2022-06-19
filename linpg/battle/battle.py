@@ -10,7 +10,10 @@ class AbstractBattleSystem(AbstractGameSystem):
         self._screen_to_move_x: Optional[int] = None
         self._screen_to_move_y: Optional[int] = None
         # 用于检测是否有方向键被按到的字典
-        self.__moving_screen_in_direction: dict[str, bool] = {"up": False, "down": False, "left": False, "right": False}
+        self.__moving_screen_in_direction_up: bool = False
+        self.__moving_screen_in_direction_down: bool = False
+        self.__moving_screen_in_direction_left: bool = False
+        self.__moving_screen_in_direction_right: bool = False
         # 角色数据
         self._entities_data: dict[str, dict[str, Entity]] = {}
         # 地图数据
@@ -26,6 +29,21 @@ class AbstractBattleSystem(AbstractGameSystem):
     # 渲染出所有的entity - 子类需实现
     def _display_entities(self, screen: ImageSurface) -> None:
         EXCEPTION.fatal("_display_entities()", 1)
+
+    # 加载角色的数据 - 子类需实现
+    def _load_entities(self, _entities: dict) -> None:
+        EXCEPTION.fatal("_load_entities()", 1)
+
+    # 加载地图数据
+    def _load_map(self, _data: dict) -> None:
+        self._MAP.update(_data, self._standard_block_width, self._standard_block_height)
+
+    # 处理数据
+    def _process_data(self, _data: dict) -> None:
+        # 初始化角色信息
+        self._load_entities(_data.get("entities", {}))
+        # 初始化地图
+        self._load_map(_data)
 
     # 获取对话文件所在的具体路径
     def get_map_file_location(self) -> str:
@@ -54,37 +72,33 @@ class AbstractBattleSystem(AbstractGameSystem):
     # 检测按下按键的事件
     def _check_key_down(self, event: PG_Event) -> None:
         if event.key == Key.ARROW_UP:
-            self.__moving_screen_in_direction["up"] = True
+            self.__moving_screen_in_direction_up = True
         elif event.key == Key.ARROW_DOWN:
-            self.__moving_screen_in_direction["down"] = True
+            self.__moving_screen_in_direction_down = True
         elif event.key == Key.ARROW_LEFT:
-            self.__moving_screen_in_direction["left"] = True
+            self.__moving_screen_in_direction_left = True
         elif event.key == Key.ARROW_RIGHT:
-            self.__moving_screen_in_direction["right"] = True
+            self.__moving_screen_in_direction_right = True
         elif event.unicode == "p":
             self._MAP.dev_mode()
 
     # 检测按键回弹的事件
     def _check_key_up(self, event: PG_Event) -> None:
         if event.key == Key.ARROW_UP:
-            self.__moving_screen_in_direction["up"] = False
+            self.__moving_screen_in_direction_up = False
         elif event.key == Key.ARROW_DOWN:
-            self.__moving_screen_in_direction["down"] = False
+            self.__moving_screen_in_direction_down = False
         elif event.key == Key.ARROW_LEFT:
-            self.__moving_screen_in_direction["left"] = False
+            self.__moving_screen_in_direction_left = False
         elif event.key == Key.ARROW_RIGHT:
-            self.__moving_screen_in_direction["right"] = False
+            self.__moving_screen_in_direction_right = False
 
     # 检测手柄事件
     def _check_jostick_events(self) -> None:
-        self.__moving_screen_in_direction["up"] = bool(round(Controller.joystick.get_axis(4)) == -1)
-        self.__moving_screen_in_direction["down"] = bool(round(Controller.joystick.get_axis(4)) == 1)
-        self.__moving_screen_in_direction["right"] = bool(round(Controller.joystick.get_axis(3)) == 1)
-        self.__moving_screen_in_direction["left"] = bool(round(Controller.joystick.get_axis(3)) == -1)
-
-    # 初始化地图
-    def _initialize_map(self, map_data: dict) -> None:
-        self._MAP.update(map_data, self._standard_block_width, self._standard_block_height)
+        self.__moving_screen_in_direction_up = round(Controller.joystick.get_axis(4)) == -1
+        self.__moving_screen_in_direction_down = round(Controller.joystick.get_axis(4)) == 1
+        self.__moving_screen_in_direction_right = round(Controller.joystick.get_axis(3)) == 1
+        self.__moving_screen_in_direction_left = round(Controller.joystick.get_axis(3)) == -1
 
     # 展示地图
     def _display_map(self, screen: ImageSurface) -> None:
@@ -114,22 +128,22 @@ class AbstractBattleSystem(AbstractGameSystem):
             self.__mouse_move_temp_x = -1
             self.__mouse_move_temp_y = -1
         # 根据按键情况设定要移动的数值
-        if self.__moving_screen_in_direction["up"] is True:
+        if self.__moving_screen_in_direction_up is True:
             if self._screen_to_move_y is None:
                 self._screen_to_move_y = self._MAP.block_height // 4
             else:
                 self._screen_to_move_y += self._MAP.block_height // 4
-        if self.__moving_screen_in_direction["down"] is True:
+        if self.__moving_screen_in_direction_down is True:
             if self._screen_to_move_y is None:
                 self._screen_to_move_y = -self._MAP.block_height // 4
             else:
                 self._screen_to_move_y -= self._MAP.block_height // 4
-        if self.__moving_screen_in_direction["left"] is True:
+        if self.__moving_screen_in_direction_left is True:
             if self._screen_to_move_x is None:
                 self._screen_to_move_x = self._MAP.block_width // 4
             else:
                 self._screen_to_move_x += self._MAP.block_width // 4
-        if self.__moving_screen_in_direction["right"] is True:
+        if self.__moving_screen_in_direction_right is True:
             if self._screen_to_move_x is None:
                 self._screen_to_move_x = -self._MAP.block_width // 4
             else:
@@ -168,7 +182,7 @@ class AbstractBattleSystem(AbstractGameSystem):
         charactersPos: list = []
         for value in self._entities_data.values():
             for dataDict in value.values():
-                charactersPos.append((int(dataDict.x), int(dataDict.y)))
-                charactersPos.append((int(dataDict.x) + 1, int(dataDict.y) + 1))
+                charactersPos.append((round(dataDict.x), round(dataDict.y)))
+                charactersPos.append((round(dataDict.x) + 1, round(dataDict.y) + 1))
         # 展示场景装饰物
         self._MAP.display_decoration(screen, tuple(charactersPos))

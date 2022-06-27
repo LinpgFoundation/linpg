@@ -73,7 +73,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                     break
 
     # 处理关键数据
-    def _process_data(self, _data: dict) -> None:
+    def _process_data(self, _data: dict, _mode: str = "dev") -> None:
         # 确保地图初始化
         _map_p: Optional[list] = _data.get("map")
         if _map_p is None or len(_map_p) == 0:
@@ -91,7 +91,7 @@ class AbstractMapEditor(AbstractBattleSystem):
             block_x: int = 50
             _data["map"] = [[SnowEnvImg[get_random_int(0, 5)] for a in range(block_x)] for i in range(block_y)]
         # 开始处理数据
-        super()._process_data(_data)
+        super()._process_data(_data, _mode)
 
     # 初始化
     def load(self, screen: ImageSurface, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:

@@ -31,7 +31,7 @@ class AbstractBattleSystem(AbstractGameSystem):
         EXCEPTION.fatal("_display_entities()", 1)
 
     # 加载角色的数据 - 子类需实现
-    def _load_entities(self, _entities: dict) -> None:
+    def _load_entities(self, _entities: dict, _mode: str) -> None:
         EXCEPTION.fatal("_load_entities()", 1)
 
     # 加载地图数据
@@ -39,9 +39,9 @@ class AbstractBattleSystem(AbstractGameSystem):
         self._MAP.update(_data, self._standard_block_width, self._standard_block_height)
 
     # 处理数据
-    def _process_data(self, _data: dict) -> None:
+    def _process_data(self, _data: dict, _mode: str = "default") -> None:
         # 初始化角色信息
-        self._load_entities(_data.get("entities", {}))
+        self._load_entities(_data.get("entities", {}), _mode)
         # 初始化地图
         self._load_map(_data)
 

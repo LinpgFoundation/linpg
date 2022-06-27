@@ -49,7 +49,7 @@ class SoundManagement(AbstractSoundManager):
     def __init__(self, channel_id: int):
         super().__init__(channel_id)
         self.__sound_id: int = 0
-        self.__sounds_list: list = []
+        self.__sounds_list: list[PG_Sound] = []
 
     # 添加音乐
     def add(self, path: str) -> None:
@@ -75,7 +75,7 @@ class SoundManagement(AbstractSoundManager):
         return self.get_volume()
 
     def get_volume(self) -> float:
-        return float(self.__sounds_list[0].get_volume())
+        return self.__sounds_list[0].get_volume()
 
     # 设置音量
     def set_volume(self, volume: number) -> None:
@@ -115,6 +115,7 @@ def _split_audio_from_video(input_path: str, audio_type: str = "ogg") -> str:
 
 # 音效管理
 class Sound:
+
     # 加载音效
     @staticmethod
     def load(path: str, volume: Optional[float] = None) -> PG_Sound:
@@ -142,6 +143,13 @@ class Sound:
         else:
             os.remove(path_of_sound)
         return sound_audio
+
+    # 从一个文件夹中加载音效
+    @classmethod
+    def load_from_directory(cls, folder_path: str) -> tuple[PG_Sound, ...]:
+        if not os.path.isdir(folder_path):
+            EXCEPTION.fatal("The path is not a valid directory!")
+        return tuple([cls.load(_path) for _path in glob(os.path.join(folder_path, "*"))])
 
     # 播放音效
     @staticmethod
@@ -174,6 +182,7 @@ class Sound:
 
 # 音乐管理
 class Music:
+
     # 加载背景音乐（但不播放）
     @staticmethod
     def load(path: str) -> None:

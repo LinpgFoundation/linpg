@@ -5,7 +5,7 @@ from .astar import *
 class Entity(Position):
 
     # 存放音效的字典
-    __SOUNDS: dict[str, dict[str, list]] = {}
+    __SOUNDS: dict[str, dict[str, tuple]] = {}
     # 角色数据库
     __DATABASE: dict[str, dict] = {}
     # 尝试加载角色数据
@@ -18,14 +18,8 @@ class Entity(Position):
 
     def __init__(self, DATA: dict, mode: str):
         super().__init__(DATA["x"], DATA["y"])
-        # 最大行动值
-        self.__max_action_point: int = int(DATA["max_action_point"])
-        # 当前行动值
-        self.__current_action_point: int = int(DATA.get("current_action_point", self.__max_action_point))
         # 攻击范围
         self.__attack_coverage: int = int(DATA["attack_coverage"])
-        # 弹夹容量
-        self.__magazine_capacity: int = int(DATA["magazine_capacity"])
         # 最大血量
         self.__max_hp: int = max(int(DATA["max_hp"]), 1)
         # 当前血量
@@ -48,7 +42,7 @@ class Entity(Position):
         self.__faction: str = str(DATA["faction"])
         # 态度： 友方 - 1；敌对 - -1；中立 - 0
         self.__attitude: int = 0
-        # 角色武器名称
+        # 角色名称
         self.__type: str = str(DATA["type"])
         # 是否图片镜像
         self._if_flip: bool = bool(DATA.get("if_flip", False))
@@ -68,13 +62,15 @@ class Entity(Position):
         # gif图片管理
         self.__imgId_dict: dict = EntitySpriteImageManager.load(self.__faction, self.__type, mode)
         # 加载角色的音效
-        if mode != "dev":
-            if self.__type not in self.__SOUNDS and os.path.exists(Specification.get_directory("character_sound", self.__type)):
-                self.__SOUNDS[self.__type] = {}
-                for soundType in os.listdir(Specification.get_directory("character_sound", self.__type)):
-                    self.__SOUNDS[self.__type][soundType] = []
-                    for soundPath in glob(Specification.get_directory("character_sound", self.__type, soundType, "*")):
-                        self.__SOUNDS[self.__type][soundType].append(Sound.load(soundPath))
+        if (
+            mode != "dev"
+            and self.__type not in self.__SOUNDS
+            and os.path.exists(_sound_directory := Specification.get_directory("character_sound", self.__type))
+        ):
+            self.__SOUNDS[self.__type] = {
+                soundType: Sound.load_from_directory(os.path.join(_sound_directory, soundType))
+                for soundType in os.listdir(_sound_directory)
+            }
         # 角色的攻击范围
         self.__effective_range_coordinates: Optional[list[list[tuple[int, int]]]] = None
         # 是否需要重新渲染地图
@@ -90,9 +86,7 @@ class Entity(Position):
         data: dict = {
             "x": self.x,
             "y": self.y,
-            "max_action_point": self.__max_action_point,
             "attack_coverage": self.__attack_coverage,
-            "magazine_capacity": self.__magazine_capacity,
             "max_hp": self.__max_hp,
             "effective_range": list(self.__effective_range),
             "kind": self.__kind,
@@ -103,8 +97,6 @@ class Entity(Position):
         """以下是可选数据"""
         if self._if_flip is True:
             data["if_flip"] = self._if_flip
-        if self.__current_action_point != self.__max_action_point:
-            data["current_action_point"] = self.__current_action_point
         if self.__current_action != self.__IDLE_ACTION:
             data["current_action"] = self.__current_action
             data["if_action_loop"] = self.__if_action_loop
@@ -126,16 +118,18 @@ class Entity(Position):
             data["moving_complete"] = self.__moving_complete
         return data
 
+    def _need_update(self) -> None:
+        self.__effective_range_coordinates = None
+        self.__if_map_need_update = True
+
     def set_x(self, value: number) -> None:
         if round(value) != round(self.x):
-            self.__effective_range_coordinates = None
-            self.__if_map_need_update = True
+            self._need_update()
         super().set_x(value)
 
     def set_y(self, value: number) -> None:
         if round(value) != round(self.y):
-            self.__effective_range_coordinates = None
-            self.__if_map_need_update = True
+            self._need_update()
         super().set_y(value)
 
     """重要方法与参数"""
@@ -171,11 +165,6 @@ class Entity(Position):
     """
     攻击
     """
-
-    # 弹夹容量
-    @property
-    def magazine_capacity(self) -> int:
-        return self.__magazine_capacity
 
     # 攻击覆盖范围
     @property
@@ -225,11 +214,11 @@ class Entity(Position):
         return self.__current_action
 
     # 设置动作
-    def set_action(self, action: str = "wait", ifLoop: bool = True, ifSwitchToIdleAfterwards: bool = True) -> None:
+    def set_action(self, action: str = "wait", ifLoop: bool = True, switchToIdleAfterwards: bool = True) -> None:
         self.reset_imgId(self.__current_action)
         self.__current_action = action
         self.__if_action_loop = ifLoop
-        self.__if_switch_to_idle_afterwards = ifSwitchToIdleAfterwards
+        self.__if_switch_to_idle_afterwards = switchToIdleAfterwards
 
     # 是否闲置
     def is_idle(self) -> bool:
@@ -265,45 +254,6 @@ class Entity(Position):
         self.__imgId_dict[action]["alpha"] = alpha
 
     """
-    角色行动值参数管理
-    """
-
-    # 当前行动值
-    @property
-    def max_action_point(self) -> int:
-        return self.__max_action_point
-
-    # 设置当前行动值，不建议非开发者使用
-    def set_max_action_point(self, point: int) -> None:
-        self.__max_action_point = point
-
-    # 当前行动值
-    @property
-    def current_action_point(self) -> int:
-        return self.__current_action_point
-
-    # 设置当前行动值，不建议非开发者使用
-    def set_current_action_point(self, point: int) -> None:
-        self.__current_action_point = point
-
-    # 重置行动点数
-    def reset_action_point(self) -> None:
-        self.set_current_action_point(self.__max_action_point)
-
-    # 是否有足够的开发点数
-    def have_enough_action_point(self, value: int) -> bool:
-        return self.__current_action_point >= value
-
-    # 尝试减少行动值，如果成功，返回true,失败则返回false
-    def try_reduce_action_point(self, value: int) -> bool:
-        # 有足够的行动值来减去
-        if self.__current_action_point >= value:
-            self.__current_action_point -= value
-            return True
-        # 没有足够的行动值来减去
-        return False
-
-    """
     角色血量护甲参数管理
     """
 
@@ -324,7 +274,7 @@ class Entity(Position):
     # 当前血量百分比
     @property
     def hp_precentage(self) -> float:
-        return float(round(self.__current_hp / self.__max_hp, 5))
+        return round(self.__current_hp / self.__max_hp, 5)
 
     # 治愈
     def heal(self, hpHealed: int) -> None:
@@ -389,7 +339,7 @@ class Entity(Position):
         if LINPG_RESERVED_SOUND_EFFECTS_CHANNEL is not None:
             _point: Optional[dict] = self.__SOUNDS.get(self.__type)
             if _point is not None:
-                sound_list: Optional[list] = _point.get(kind_of_sound)
+                sound_list: Optional[tuple] = _point.get(kind_of_sound)
                 if sound_list is not None and len(sound_list) > 0:
                     sound = sound_list[get_random_int(0, len(sound_list) - 1) if len(sound_list) > 1 else 0]
                     sound.set_volume(Media.volume.effects / 100.0)
@@ -454,14 +404,14 @@ class Entity(Position):
                 if (
                     MAP_P.row > y >= 0
                     and MAP_P.column > x >= 0
-                    and (the_range_in := cls.__identify_range(_ranges, abs(x - _x) + abs(y - _y))) >= 0
+                    and (the_range_in := cls._identify_range(_ranges, abs(x - _x) + abs(y - _y))) >= 0
                 ):
                     attack_range[the_range_in].append((x, y))
         return attack_range
 
     # 根据距离确定对象所在区域
     @staticmethod
-    def __identify_range(_ranges: tuple[int, ...], distanceBetween: int) -> int:
+    def _identify_range(_ranges: tuple[int, ...], distanceBetween: int) -> int:
         if distanceBetween > 0:
             _total: int = 0
             for i in range(len(_ranges)):
@@ -480,7 +430,7 @@ class Entity(Position):
 
     # 获取对象所在区域
     def range_target_in(self, otherEntity: "Entity") -> int:
-        return self.__identify_range(
+        return self._identify_range(
             self.__effective_range, abs(round(otherEntity.x) - round(self.x)) + abs(round(otherEntity.y) - round(self.y))
         )
 
@@ -493,10 +443,10 @@ class Entity(Position):
 
     # 获取角色的攻击覆盖范围
     def get_attack_coverage_coordinates(self, _x: int, _y: int, MAP_P: AbstractMap) -> list[tuple[int, int]]:
-        if self.__identify_range(self.__effective_range, abs(_x - round(self.x)) + abs(_y - round(self.y))) >= 0:
+        if self._identify_range(self.__effective_range, abs(_x - round(self.x)) + abs(_y - round(self.y))) >= 0:
             return list(
                 filter(
-                    lambda pos: self.__identify_range(
+                    lambda pos: self._identify_range(
                         self.__effective_range, abs(pos[0] - round(self.x)) + abs(pos[1] - round(self.y))
                     )
                     >= 0,

@@ -35,10 +35,10 @@ class DecorationObject(GameObject2d):
         self.__status[key] = value
 
     def remove_status(self, key: str) -> None:
-        try:
+        if key in self.__status:
             del self.__status[key]
-        except KeyError:
-            EXCEPTION.warn('Cannot remove status "{}" because it does not exist'.format(key))
+        else:
+            EXCEPTION.fatal('Cannot remove status "{}" because it does not exist'.format(key))
 
     def blit(self, surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:  # type: ignore[override]
         imgToBlit = DecorationImagesModule.get_image(self.__type, self.image, is_dark)

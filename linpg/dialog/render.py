@@ -118,7 +118,7 @@ class CharacterImageManager:
     __last_round_image_alpha: int = 255
     # 存放当前对话的参与角色名称
     __current_characters: tuple[CharacterImageNameMetaData, ...] = tuple()
-    __this_round_image_alpha: int = 00
+    __this_round_image_alpha: int = 0
     # 立绘边长
     _WIDTH: int = Display.get_width() // 2
     # 加载滤镜
@@ -163,6 +163,10 @@ class CharacterImageManager:
     # 卸载占用的内存
     @classmethod
     def unload(cls) -> None:
+        cls.__previous_characters = tuple()
+        cls.__last_round_image_alpha = 255
+        cls.__current_characters = tuple()
+        cls.__this_round_image_alpha = 0
         cls.__filters.clear()
         cls.__character_image.clear()
 

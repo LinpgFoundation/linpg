@@ -39,6 +39,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         self._update_sound_volume()
         # 玩家做出的选项
         self.__dialog_options: dict = {}
+        # 是否正在淡出的flag
+        self.__is_fading_out: bool = True
 
     # 初始化关键参数
     def _initialize(  # type: ignore[override]
@@ -66,6 +68,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
     # 载入数据
     def _load_content(self) -> None:
         super()._load_content()
+        # 将npc立绘系统设置为普通模式
+        CharacterImageManager.dev_mode = False
         # 重置对话框
         self.__dialog_txt_system.reset()
 
@@ -124,8 +128,9 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
 
     # 前往下一个对话
     def __go_to_next(self, surface: ImageSurface) -> None:
+        self.__is_fading_out = True
         if self._current_dialog_content["next_dialog_id"] is None:
-            self.fade(surface)
+            self._fade(surface)
             self.stop()
         elif (next_dialog_type := self.get_next_dialog_type()) is not None:
             # 默认转到下一个对话
@@ -136,14 +141,15 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 pass
             # 如果是切换场景
             elif next_dialog_type == "changeScene":
-                self.fade(surface)
+                self._fade(surface)
                 # 更新场景
                 self._update_scene(self._current_dialog_content["next_dialog_id"]["target"])
                 self.__dialog_txt_system.reset()
-                self.fade(surface, "$in")
+                self.__is_fading_out = False
+                self._fade(surface)
             # 如果是需要播放过程动画
             elif next_dialog_type == "cutscene":
-                self.fade(surface)
+                self._fade(surface)
                 self.stop()
                 self.play_cutscene(surface)
             # break被视为立刻退出，没有淡出动画
@@ -163,7 +169,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 self.__dialog_txt_system.set_visible(False)
             # 如果接来下没有文档了或者玩家按到了跳过按钮, 则准备淡出并停止播放
             elif self.__buttons_container.item_being_hovered == "skip":
-                self.fade(surface)
+                self.__is_fading_out = True
+                self._fade(surface)
                 self.stop()
             elif self.__buttons_container.item_being_hovered == "is_auto":
                 self.__dialog_txt_system.set_playing_automatically(False)
@@ -227,14 +234,14 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             Display.flip()
 
     # 淡入或淡出
-    def fade(self, surface: ImageSurface, stage: str = "$out") -> None:
-        if stage == "$out":
+    def _fade(self, surface: ImageSurface) -> None:
+        if self.__is_fading_out is True:
             Media.fade_out(1000)
             for i in range(0, 255, 5):
                 self._black_bg.set_alpha(i)
                 self._black_bg.draw(surface)
                 Display.flip()
-        elif stage == "$in":
+        else:
             for i in range(255, 0, -5):
                 self.display_background_image(surface)
                 self._black_bg.set_alpha(i)
@@ -242,8 +249,6 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 Display.flip()
             # 重设black_bg的alpha值以便下一次使用
             self._black_bg.set_alpha(255)
-        else:
-            EXCEPTION.fatal('Stage input has to be either "in" or "out", not "{}"'.format(stage))
 
     def draw(self, surface: ImageSurface) -> None:
         super().draw(surface)

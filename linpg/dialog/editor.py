@@ -41,8 +41,6 @@ class DialogEditor(DialogConverter):
     def load(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str] = None) -> None:
         self._initialize(chapterType, chapterId, part, projectName)
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_dialog_file_location())
-        # 将npc立绘系统设置为开发者模式
-        CharacterImageManager.dev_mode = True
         # 加载容器
         container_width = Display.get_width() // 5
         self.__UIContainerRightImage = Images.load("<&ui>container.png", (container_width, Display.get_height()))
@@ -178,14 +176,16 @@ class DialogEditor(DialogConverter):
 
     # 读取章节信息
     def _load_content(self) -> None:
+        # 将npc立绘系统设置为开发者模式
+        CharacterImageManager.dev_mode = True
+        # 加载内容数据
+        self._dialog_data.clear()
         if os.path.exists(path := self.get_dialog_file_location()) and "dialogs" in (data_t := Config.load_file(path)):
-            try:
-                self._dialog_data = dict(data_t["dialogs"])
-            except Exception:
+            _dialogs: Optional[dict] = data_t.get("dialogs")
+            if _dialogs is not None:
+                self._dialog_data.update(_dialogs)
+            else:
                 EXCEPTION.warn("Cannot load dialogs due to invalid data type.")
-                self._dialog_data.clear()
-        else:
-            self._dialog_data.clear()
         # 如果不是默认主语言
         if (default_lang_of_dialog := self.get_default_lang()) != Setting.get_language():
             self._is_default_dialog = False

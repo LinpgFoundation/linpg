@@ -22,7 +22,7 @@ def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) ->
             pointer = pointer[key]
         except KeyError:
             if warning is True:
-                EXCEPTION.warn(
+                EXCEPTION.fatal(
                     'Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'.format(
                         key
                     )
@@ -45,7 +45,7 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Optional[object],
                 pointer[keys[index]] = value
         except KeyError:
             if warning is True:
-                EXCEPTION.warn(
+                EXCEPTION.fatal(
                     'Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'.format(
                         keys[index]
                     )

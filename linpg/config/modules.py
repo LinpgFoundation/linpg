@@ -95,10 +95,7 @@ class DataBase:
 
     @classmethod
     def get(cls, *key: str) -> Any:
-        try:
-            return get_value_by_keys(cls.__DATA_BASE_DICT, key)
-        except KeyError:
-            EXCEPTION.fatal('Cannot find key "{}" in the database'.format(key))
+        return get_value_by_keys(cls.__DATA_BASE_DICT, key)
 
     @classmethod
     def update(cls, _value: dict) -> None:

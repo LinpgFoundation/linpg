@@ -266,10 +266,10 @@ class UiGenerator:
     @classmethod
     def __get_data_in_dict(cls, data: Union[str, dict]) -> dict:
         if isinstance(data, str):
-            try:
-                return deepcopy(dict(cls.__UI_TEMPLATES[data]))
-            except KeyError:
+            result: Optional[dict] = cls.__UI_TEMPLATES.get(data)
+            if result is None:
                 EXCEPTION.fatal('The ui called "{}" does not exist!'.format(data))
+            return deepcopy(result)
         else:
             return deepcopy(data)
 

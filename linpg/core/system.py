@@ -14,12 +14,8 @@ class SaveDataThread(threading.Thread):
         return SaveDataThread(self.path, self.data)
 
     def run(self) -> None:
-        try:
-            Config.save(self.path, self.data)
-            self.result = True
-        except Exception:
-            if Debug.get_developer_mode() is True:
-                EXCEPTION.fatal("Cannot save data to path: {}".format(self.path))
+        Config.save(self.path, self.data)
+        self.result = True
 
 
 # 系统模块接口

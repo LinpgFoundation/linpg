@@ -188,9 +188,9 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
     def save_progress(self) -> None:
         EXCEPTION.fatal("_get_data_need_to_save()", 1)
 
-    # 淡入或淡出（子类需实现）
-    def fade(self, surface: ImageSurface) -> None:
-        EXCEPTION.fatal("fade()", 1)
+    # 淡入或淡出（建议子类重写）
+    def _fade(self, surface: ImageSurface) -> None:
+        Media.unload()
 
     # 停止播放（子类需实现）
     def stop(self) -> None:
@@ -238,10 +238,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
                     elif self.__pause_menu.get_button_clicked() == "option_menu":
                         OptionMenu.set_visible(True)
                     elif self.__pause_menu.get_button_clicked() == "back_to_mainMenu":
-                        try:
-                            self.fade(surface)
-                        except Exception:
-                            Media.unload()
+                        self._fade(surface)
                         OptionMenu.set_visible(False)
                         progress_saved_text.set_alpha(0)
                         self.__pause_menu.set_visible(False)

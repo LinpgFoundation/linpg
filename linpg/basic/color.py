@@ -129,14 +129,7 @@ class ColorManager:
                 else:
                     EXCEPTION.fatal('The color "{}" is currently not available!'.format(color))
         else:
-            try:
-                return cls.__to_rgba_color(tuple(color))
-            except Exception:
-                EXCEPTION.fatal(
-                    "The color has to be a string, tuple or list, and {0} (type:{1}) is not acceptable!".format(
-                        color, type(color)
-                    )
-                )
+            return cls.__to_rgba_color(tuple(color))
 
 
 Colors: ColorManager = ColorManager()

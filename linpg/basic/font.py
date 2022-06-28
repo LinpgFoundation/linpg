@@ -137,13 +137,9 @@ class Font:
 
     # 删除全局文字
     @classmethod
-    def remove_global_font(cls, key: str) -> bool:
-        try:
+    def remove_global_font(cls, key: str) -> None:
+        if key in cls.__LINPG_GLOBAL_FONTS:
             del cls.__LINPG_GLOBAL_FONTS[key]
-            return True
-        except KeyError:
-            EXCEPTION.warn('Cannot find font named "{}" when trying to remove the font.'.format(key))
-            return False
 
     # 创建字体
     @staticmethod

@@ -174,9 +174,10 @@ class TileMapImagesModule:
     # 获取图片
     @classmethod
     def get_image(cls, key: str, darkMode: bool) -> StaticImage:
-        try:
-            return cls.__ENV_IMAGE_DICT_DARK[key] if darkMode is True else cls.__ENV_IMAGE_DICT[key]
-        except Exception:
+        _result: Optional[StaticImage] = cls.__ENV_IMAGE_DICT_DARK.get(key) if darkMode is True else cls.__ENV_IMAGE_DICT.get(key)
+        if _result is not None:
+            return _result
+        else:
             EXCEPTION.inform(
                 "Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(key)
             )

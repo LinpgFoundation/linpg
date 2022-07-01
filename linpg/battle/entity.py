@@ -1,5 +1,5 @@
 from collections import deque
-from .astar import *
+from .map import *
 
 # 人形模块
 class Entity(Position):
@@ -376,7 +376,7 @@ class Entity(Position):
     # 根据给定的坐标和范围列表生成范围坐标列表
     @classmethod
     def _generate_range_coordinates(
-        cls, _x: int, _y: int, _ranges: tuple[int, ...], MAP_P: AbstractMap, ifFlip: bool, ifHalfMode: bool = False
+        cls, _x: int, _y: int, _ranges: tuple[int, ...], MAP_P: TileMap, ifFlip: bool, ifHalfMode: bool = False
     ) -> list[list[tuple[int, int]]]:
         # 初始化数据
         start_point: int = 0
@@ -421,7 +421,7 @@ class Entity(Position):
         return -1
 
     # 获取角色的攻击范围
-    def get_effective_range_coordinates(self, MAP_P: AbstractMap, ifHalfMode: bool = False) -> list[list[tuple[int, int]]]:
+    def get_effective_range_coordinates(self, MAP_P: TileMap, ifHalfMode: bool = False) -> list[list[tuple[int, int]]]:
         if self.__effective_range_coordinates is None:
             self.__effective_range_coordinates = self._generate_range_coordinates(
                 round(self.x), round(self.y), self.__effective_range, MAP_P, self._if_flip, ifHalfMode
@@ -436,13 +436,13 @@ class Entity(Position):
 
     # 根据给定的坐标和半径生成覆盖范围坐标列表
     @staticmethod
-    def _generate_coverage_coordinates(_x: int, _y: int, _radius: int, MAP_P: AbstractMap) -> list[tuple[int, int]]:
+    def _generate_coverage_coordinates(_x: int, _y: int, _radius: int, MAP_P: TileMap) -> list[tuple[int, int]]:
         return list(
             filter(lambda pos: MAP_P.can_pass_through(pos[0], pos[1]), Coordinates.get_in_diamond_shaped(_x, _y, _radius))
         )
 
     # 获取角色的攻击覆盖范围
-    def get_attack_coverage_coordinates(self, _x: int, _y: int, MAP_P: AbstractMap) -> list[tuple[int, int]]:
+    def get_attack_coverage_coordinates(self, _x: int, _y: int, MAP_P: TileMap) -> list[tuple[int, int]]:
         if self._identify_range(self.__effective_range, abs(_x - round(self.x)) + abs(_y - round(self.y))) >= 0:
             return list(
                 filter(
@@ -472,7 +472,7 @@ class Entity(Position):
     def __blit_entity_img(
         self,
         surface: ImageSurface,
-        MAP_P: AbstractMap,
+        MAP_P: TileMap,
         alpha: int,
         action: Optional[str] = None,
         pos: Optional[tuple[int, int]] = None,
@@ -501,7 +501,7 @@ class Entity(Position):
         self.__current_image_rect = _image.get_rectangle()
 
     # 把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
-    def draw(self, surface: ImageSurface, MAP_P: AbstractMap, update_id_only: bool = False) -> None:
+    def draw(self, surface: ImageSurface, MAP_P: TileMap, update_id_only: bool = False) -> None:
         # 画出角色
         if not update_id_only:
             self.__blit_entity_img(surface, MAP_P, self.get_imgAlpaha(self.__current_action))
@@ -563,21 +563,11 @@ class Entity(Position):
             self._if_play_action_in_reversing = False
             self.set_action()
 
-    def draw_custom(
-        self,
-        action: str,
-        pos: tuple[int, int],
-        surface: ImageSurface,
-        MAP_P: AbstractMap,
-        isContinue: bool = True,
-        alpha: int = 155,
-    ) -> bool:
+    def draw_custom(self, action: str, pos: tuple[int, int], surface: ImageSurface, MAP_P: TileMap, alpha: int = 155) -> None:
         self.__blit_entity_img(surface, MAP_P, alpha, action, pos)
         # 调整id，并返回对应的bool状态
         if self.__imgId_dict[action]["imgId"] < self.get_imgNum(action) - 1:
             self.__imgId_dict[action]["imgId"] += 1
-            return True
         # 如果需要循环，则重设播放的index
-        elif isContinue is True:
+        else:
             self.__imgId_dict[action]["imgId"] = 0
-        return isContinue

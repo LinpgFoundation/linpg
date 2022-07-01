@@ -1,4 +1,4 @@
-from .map import *
+from .entity import *
 
 # 战斗系统接口，请勿实例化
 class AbstractBattleSystem(AbstractGameSystem):
@@ -17,7 +17,7 @@ class AbstractBattleSystem(AbstractGameSystem):
         # 角色数据
         self._entities_data: dict[str, dict[str, Entity]] = {}
         # 地图数据
-        self._MAP: MapObject = MapObject()
+        self._MAP: TileMap = TileMap()
         # 方格标准尺寸
         self._standard_block_width: int = Display.get_width() // 10
         self._standard_block_height: int = Display.get_height() // 10

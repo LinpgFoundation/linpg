@@ -52,7 +52,7 @@ class Debug:
 class GlobalValue:
 
     # 用于存放全局数据的字典
-    __GLOBAL_VALUES_DICT: dict = {}
+    __GLOBAL_VALUES_DICT: Final[dict] = {}
     # 读取本地的全局数据
     if os.path.exists(_path := os.path.join("save", "global.yaml")):
         __GLOBAL_VALUES_DICT.update(Config.load_file(_path))
@@ -91,7 +91,7 @@ class GlobalValue:
 class DataBase:
 
     # 用于存放数据库数据的字典
-    __DATA_BASE_DICT: dict = {"Blocks": {}, "Decorations": {}, "Npc": {}, "Filters": {}}
+    __DATA_BASE_DICT: Final[dict] = {"Blocks": {}, "Decorations": {}, "Npc": {}, "Filters": {}}
 
     @classmethod
     def get(cls, *key: str) -> Any:
@@ -146,7 +146,7 @@ class Cache:
     # 缓存文件清单路径
     __CACHE_FILES_DATA_PATH: Final[str] = os.path.join(__CACHE_FOLDER, "files.{}".format(Config.get_file_type()))
     # 如果缓存文件目录存在, 则加载数据， 否则初始化一个新的空字典
-    __CACHE_FILES_DATA: dict = Config.load_file(__CACHE_FILES_DATA_PATH) if os.path.exists(__CACHE_FILES_DATA_PATH) else {}
+    __CACHE_FILES_DATA: Final[dict] = Config.load_file(__CACHE_FILES_DATA_PATH) if os.path.exists(__CACHE_FILES_DATA_PATH) else {}
 
     # 获取缓存文件夹路径
     @classmethod

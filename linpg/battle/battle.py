@@ -71,26 +71,26 @@ class AbstractBattleSystem(AbstractGameSystem):
 
     # 检测按下按键的事件
     def _check_key_down(self, event: PG_Event) -> None:
-        if event.key == Key.ARROW_UP:
+        if event.key == Keys.ARROW_UP:
             self.__moving_screen_in_direction_up = True
-        elif event.key == Key.ARROW_DOWN:
+        elif event.key == Keys.ARROW_DOWN:
             self.__moving_screen_in_direction_down = True
-        elif event.key == Key.ARROW_LEFT:
+        elif event.key == Keys.ARROW_LEFT:
             self.__moving_screen_in_direction_left = True
-        elif event.key == Key.ARROW_RIGHT:
+        elif event.key == Keys.ARROW_RIGHT:
             self.__moving_screen_in_direction_right = True
         elif event.unicode == "p":
             self._MAP.dev_mode()
 
     # 检测按键回弹的事件
     def _check_key_up(self, event: PG_Event) -> None:
-        if event.key == Key.ARROW_UP:
+        if event.key == Keys.ARROW_UP:
             self.__moving_screen_in_direction_up = False
-        elif event.key == Key.ARROW_DOWN:
+        elif event.key == Keys.ARROW_DOWN:
             self.__moving_screen_in_direction_down = False
-        elif event.key == Key.ARROW_LEFT:
+        elif event.key == Keys.ARROW_LEFT:
             self.__moving_screen_in_direction_left = False
-        elif event.key == Key.ARROW_RIGHT:
+        elif event.key == Keys.ARROW_RIGHT:
             self.__moving_screen_in_direction_right = False
 
     # 检测手柄事件
@@ -104,9 +104,9 @@ class AbstractBattleSystem(AbstractGameSystem):
     def _display_map(self, screen: ImageSurface) -> None:
         # 处理鼠标事件
         for event in Controller.events:
-            if event.type == Key.DOWN:
+            if event.type == Keys.DOWN:
                 self._check_key_down(event)
-            elif event.type == Key.UP:
+            elif event.type == Keys.UP:
                 self._check_key_up(event)
         # 处理手柄事件
         if Controller.joystick.get_init():

@@ -106,8 +106,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
 
     # 更新音量
     def _update_sound_volume(self) -> None:
-        self.set_bgm_volume(Media.volume.background_music / 100)
-        self.__dialog_txt_system.set_sound_volume(Media.volume.effects / 100)
+        self.set_bgm_volume(Volume.get_background_music() / 100)
+        self.__dialog_txt_system.set_sound_volume(Volume.get_effects() / 100)
 
     # 更新语言
     def update_language(self) -> None:

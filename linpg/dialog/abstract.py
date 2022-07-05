@@ -27,7 +27,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer("<NULL>", 0, 0, 0, 0)
         self._dialog_options_container.set_visible(False)
         # 更新背景音乐音量
-        self.set_bgm_volume(Media.volume.background_music / 100)
+        self.set_bgm_volume(Volume.get_background_music() / 100)
         # 文字大小
         self._FONT_SIZE: int = Display.get_width() * 3 // 200
         # 初始化滤镜系统

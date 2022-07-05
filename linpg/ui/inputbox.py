@@ -100,27 +100,27 @@ class SingleLineInputBox(AbstractInputBox):
             self._input_box.set_width(self._default_width)
 
     def _check_key_down(self, event: PG_Event) -> bool:
-        if event.key == Key.BACKSPACE:
+        if event.key == Keys.BACKSPACE:
             self._remove_char("ahead")
             return True
-        elif event.key == Key.DELETE:
+        elif event.key == Keys.DELETE:
             self._remove_char("behind")
             return True
-        elif event.key == Key.ARROW_LEFT and self._holder_index > 0:
+        elif event.key == Keys.ARROW_LEFT and self._holder_index > 0:
             self._holder_index -= 1
             return True
-        elif event.key == Key.ARROW_RIGHT and self._holder_index < len(self._text):
+        elif event.key == Keys.ARROW_RIGHT and self._holder_index < len(self._text):
             self._holder_index += 1
             return True
         elif (
             event.unicode == "v"
-            and Key.get_pressed("v")
-            and Key.get_pressed(Key.LEFT_CTRL)
-            or event.key == Key.LEFT_CTRL
-            and Key.get_pressed("v")
-            and Key.get_pressed(Key.LEFT_CTRL)
+            and Keys.get_pressed("v")
+            and Keys.get_pressed(Keys.LEFT_CTRL)
+            or event.key == Keys.LEFT_CTRL
+            and Keys.get_pressed("v")
+            and Keys.get_pressed(Keys.LEFT_CTRL)
         ):
-            self._add_char(Key.get_clipboard())
+            self._add_char(Keys.get_clipboard())
             return True
         return False
 
@@ -142,10 +142,10 @@ class SingleLineInputBox(AbstractInputBox):
     # 画出内容
     def draw(self, screen: ImageSurface) -> None:
         for event in Controller.events:
-            if event.type == Key.DOWN and self._active is True:
+            if event.type == Keys.DOWN and self._active is True:
                 if self._check_key_down(event):
                     pass
-                elif event.key == Key.ESCAPE:
+                elif event.key == Keys.ESCAPE:
                     self._active = False
                     self.need_save = True
                 else:
@@ -308,37 +308,37 @@ class MultipleLinesInputBox(AbstractInputBox):
     def draw(self, screen: ImageSurface) -> None:
         for event in Controller.events:
             if self._active:
-                if event.type == Key.DOWN:
-                    if event.key == Key.BACKSPACE:
+                if event.type == Keys.DOWN:
+                    if event.key == Keys.BACKSPACE:
                         self._remove_char("ahead")
-                    elif event.key == Key.DELETE:
+                    elif event.key == Keys.DELETE:
                         self._remove_char("behind")
-                    elif event.key == Key.ARROW_LEFT and self._holder_index > 0:
+                    elif event.key == Keys.ARROW_LEFT and self._holder_index > 0:
                         self._holder_index -= 1
-                    elif event.key == Key.ARROW_RIGHT and self._holder_index < len(self._text[self.lineId]):
+                    elif event.key == Keys.ARROW_RIGHT and self._holder_index < len(self._text[self.lineId]):
                         self._holder_index += 1
-                    elif event.key == Key.ARROW_UP and self.lineId > 0:
+                    elif event.key == Keys.ARROW_UP and self.lineId > 0:
                         self.lineId -= 1
                         if self._holder_index > len(self._text[self.lineId]) - 1:
                             self._holder_index = len(self._text[self.lineId]) - 1
-                    elif event.key == Key.ARROW_DOWN and self.lineId < len(self._text) - 1:
+                    elif event.key == Keys.ARROW_DOWN and self.lineId < len(self._text) - 1:
                         self.lineId += 1
                         if self._holder_index > len(self._text[self.lineId]) - 1:
                             self._holder_index = len(self._text[self.lineId]) - 1
                     elif (
                         event.unicode == "v"
-                        and Key.get_pressed("v")
-                        and Key.get_pressed(Key.LEFT_CTRL)
-                        or event.key == Key.LEFT_CTRL
-                        and Key.get_pressed("v")
-                        and Key.get_pressed(Key.LEFT_CTRL)
+                        and Keys.get_pressed("v")
+                        and Keys.get_pressed(Keys.LEFT_CTRL)
+                        or event.key == Keys.LEFT_CTRL
+                        and Keys.get_pressed("v")
+                        and Keys.get_pressed(Keys.LEFT_CTRL)
                     ):
-                        self._add_char(Key.get_clipboard())
+                        self._add_char(Keys.get_clipboard())
                     # ESC，关闭
-                    elif event.key == Key.ESCAPE:
+                    elif event.key == Keys.ESCAPE:
                         self._active = False
                         self.need_save = True
-                    elif event.key == Key.RETURN:
+                    elif event.key == Keys.RETURN:
                         # 如果“|”位于最后
                         if self._holder_index == len(self._text[self.lineId]):
                             self._text.insert(self.lineId + 1, "")

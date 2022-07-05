@@ -20,17 +20,17 @@ class Console(SingleLineInputBox, HiddenableSurface):
         if super()._check_key_down(event):
             return True
         # 向上-过去历史
-        elif event.key == Key.ARROW_UP and self.__backward_id < len(self._text_history):
+        elif event.key == Keys.ARROW_UP and self.__backward_id < len(self._text_history):
             self.__backward_id += 1
             self.set_text(self._text_history[-self.__backward_id])
             return True
         # 向下-过去历史，最近的一个
-        elif event.key == Key.ARROW_DOWN and self.__backward_id > 1:
+        elif event.key == Keys.ARROW_DOWN and self.__backward_id > 1:
             self.__backward_id -= 1
             self.set_text(self._text_history[-self.__backward_id])
             return True
         # 回车
-        elif event.key == Key.RETURN:
+        elif event.key == Keys.RETURN:
             if len(self._text) > 0:
                 if self._text.startswith(self._COMMAND_INDICATOR):
                     self._check_command(self._text.removeprefix(self._COMMAND_INDICATOR).split())
@@ -43,7 +43,7 @@ class Console(SingleLineInputBox, HiddenableSurface):
                 EXCEPTION.inform("The input box is empty!")
             return True
         # ESC，关闭
-        elif event.key == Key.ESCAPE:
+        elif event.key == Keys.ESCAPE:
             self._active = False
             # Change the current color of the input box.
             self._color = self.color_active if self._active else self.color_inactive
@@ -110,7 +110,7 @@ class Console(SingleLineInputBox, HiddenableSurface):
     def draw(self, screen: ImageSurface) -> None:
         if self.is_hidden():
             for event in Controller.events:
-                if event.type == Key.DOWN and event.key == Key.BACKQUOTE:
+                if event.type == Keys.DOWN and event.key == Keys.BACKQUOTE:
                     self.set_visible(True)
                     break
         else:
@@ -126,14 +126,14 @@ class Console(SingleLineInputBox, HiddenableSurface):
                     else:
                         self._active = False
                         self._color = self.color_inactive
-                elif event.type == Key.DOWN:
+                elif event.type == Keys.DOWN:
                     if self._active is True:
                         if self._check_key_down(event):
                             pass
                         else:
                             self._add_char(event.unicode)
                     else:
-                        if event.key == Key.BACKQUOTE or event.key == Key.ESCAPE:
+                        if event.key == Keys.BACKQUOTE or event.key == Keys.ESCAPE:
                             self.set_visible(False)
                             self.set_text()
             # 画出输出信息

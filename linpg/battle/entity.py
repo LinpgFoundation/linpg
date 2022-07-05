@@ -342,7 +342,7 @@ class Entity(Position):
                 sound_list: Optional[tuple] = _point.get(kind_of_sound)
                 if sound_list is not None and len(sound_list) > 0:
                     sound = sound_list[get_random_int(0, len(sound_list) - 1) if len(sound_list) > 1 else 0]
-                    sound.set_volume(Media.volume.effects / 100.0)
+                    sound.set_volume(Volume.get_effects() / 100.0)
                     LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.play(sound)
 
     # 设置需要移动的路径

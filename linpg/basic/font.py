@@ -102,9 +102,9 @@ class FontGenerator:
 class Font:
 
     # 引擎标准文件渲染器
-    __LINPG_GLOBAL_FONTS: dict[str, FontGenerator] = {}
+    __LINPG_GLOBAL_FONTS: Final[dict[str, FontGenerator]] = {}
     # 上一次render的字体
-    __LINPG_LAST_FONT: FontGenerator = FontGenerator()
+    __LINPG_LAST_FONT: Final[FontGenerator] = FontGenerator()
 
     # 设置全局文字
     @classmethod

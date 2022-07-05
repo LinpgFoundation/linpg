@@ -8,19 +8,20 @@ strint = Union[str, int]
 class Lang:
 
     # 语言配置文件
-    __LANG_DATA: dict = {}
+    __LANG_DATA: Final[dict] = {}
     # 可选的语言
-    __LANG_AVAILABLE: list = []
+    __LANG_AVAILABLE: Final[list] = []
     # 语言储存路径
-    __LANG_PATH_PATTERN: str = os.path.join(os.path.dirname(__file__), "*.json")
+    __LANG_PATH_PATTERN: Final[str] = os.path.join(os.path.dirname(__file__), "*.json")
     # 储存额外语言数据的文件夹
-    __EX_LANG_FOLDER: str = "Lang"
+    __EX_LANG_FOLDER: Final[str] = "Lang"
 
     # 重新加载语言文件
     @classmethod
     def reload(cls) -> None:
         # 加载引擎内部的默认语言文件
-        cls.__LANG_DATA = Config.load_file(os.path.join(os.path.dirname(__file__), "{}.json".format(Setting.get_language())))
+        cls.__LANG_DATA.clear()
+        cls.__LANG_DATA.update(Config.load_file(os.path.join(os.path.dirname(__file__), "{}.json".format(Setting.get_language()))))
         # 加载游戏自定义的外部语言文件
         path_t: str
         if os.path.exists(

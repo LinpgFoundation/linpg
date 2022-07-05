@@ -4,7 +4,7 @@ from .controller import *
 class Display:
 
     # 帧率控制器
-    __CLOCK: pygame.time.Clock = pygame.time.Clock()
+    __CLOCK: Final[pygame.time.Clock] = pygame.time.Clock()
     # 帧率
     __FPS: int = max(int(Setting.get("FPS")), 1)
     __STANDARD_FPS: int = 60
@@ -16,7 +16,7 @@ class Display:
     __STANDARD_WIDTH: int = max(int(Setting.get("Resolution", "width")), 0) * __SCALE // 100
     __STANDARD_HEIGHT: int = max(int(Setting.get("Resolution", "height")), 0) * __SCALE // 100
     # 信息渲染使用的文字模块
-    __FONT: pygame.font.Font = pygame.font.SysFont("arial", __STANDARD_HEIGHT // 40)
+    __FONT: Final[pygame.font.Font] = pygame.font.SysFont("arial", __STANDARD_HEIGHT // 40)
 
     # 帧数
     @classmethod
@@ -114,7 +114,7 @@ class Display:
         # 退出游戏
         sys.exit()
 
-
-# 直接画到屏幕上
-def draw_on_screen(surface_to_draw: ImageSurface, pos: Sequence) -> None:
-    Display.get_window().blit(surface_to_draw, Coordinates.convert(pos))
+    # 直接画到屏幕上
+    @classmethod
+    def blit(cls, surface_to_draw: ImageSurface, pos: Sequence) -> None:
+        cls.__SCREEN_WINDOW.blit(surface_to_draw, Coordinates.convert(pos))

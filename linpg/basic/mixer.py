@@ -6,18 +6,18 @@ PG_Sound = pygame.mixer.Sound
 PG_Channel = pygame.mixer.Channel
 
 # 根据设置参数改变声道数量
-__MIXER_CHANNEL_NUM: int = max(int(Setting.get("NumberOfChannels")), 8) + 3
+__MIXER_CHANNEL_NUM: Final[int] = max(int(Setting.get("NumberOfChannels")), 8) + 3
 """
 linpg引擎保留的频道
 """
 # 背景音乐
-__RESERVED_BACKGROUND_MUSIC_CHANNEL_ID: int = __MIXER_CHANNEL_NUM - 3
+__RESERVED_BACKGROUND_MUSIC_CHANNEL_ID: Final[int] = __MIXER_CHANNEL_NUM - 3
 LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL: Optional[PG_Channel] = None
 # 音效
-__RESERVED_SOUND_EFFECTS_CHANNEL_ID: int = __MIXER_CHANNEL_NUM - 2
+__RESERVED_SOUND_EFFECTS_CHANNEL_ID: Final[int] = __MIXER_CHANNEL_NUM - 2
 LINPG_RESERVED_SOUND_EFFECTS_CHANNEL: Optional[PG_Channel] = None
 # 环境
-__RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID: int = __MIXER_CHANNEL_NUM - 1
+__RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID: Final[int] = __MIXER_CHANNEL_NUM - 1
 LINPG_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL: Optional[PG_Channel] = None
 """
 初始化对应频道
@@ -248,47 +248,41 @@ class Music:
 
 
 # 音量管理
-class SoundVolumeManger:
+class Volume:
 
-    __sound_unit: int = 100
+    __sound_unit: Final[int] = 100
 
-    @property
-    def global_value(self) -> int:
-        return keep_int_in_range(round(Setting.get("Sound", "global_value")), 0, self.__sound_unit)
+    @classmethod
+    def get_global_value(cls) -> int:
+        return keep_int_in_range(round(Setting.get("Sound", "global_value")), 0, cls.__sound_unit)
 
-    @property
-    def background_music(self) -> int:
+    @classmethod
+    def get_background_music(cls) -> int:
         return round(
-            keep_number_in_range(round(Setting.get("Sound", "background_music"), 2), 0, self.__sound_unit)
-            * self.global_value
-            / self.__sound_unit
+            keep_number_in_range(round(Setting.get("Sound", "background_music"), 2), 0, cls.__sound_unit)
+            * cls.get_global_value()
+            / cls.__sound_unit
         )
 
-    @property
-    def effects(self) -> int:
+    @classmethod
+    def get_effects(cls) -> int:
         return round(
-            keep_number_in_range(round(Setting.get("Sound", "effects"), 2), 0, self.__sound_unit)
-            * self.global_value
-            / self.__sound_unit
+            keep_number_in_range(round(Setting.get("Sound", "effects"), 2), 0, cls.__sound_unit)
+            * cls.get_global_value()
+            / cls.__sound_unit
         )
 
-    @property
-    def environment(self) -> int:
+    @classmethod
+    def get_environment(cls) -> int:
         return round(
-            keep_number_in_range(round(Setting.get("Sound", "environment"), 2), 0, self.__sound_unit)
-            * self.global_value
-            / self.__sound_unit
+            keep_number_in_range(round(Setting.get("Sound", "environment"), 2), 0, cls.__sound_unit)
+            * cls.get_global_value()
+            / cls.__sound_unit
         )
 
 
 # 多媒体全局管理
-class MediaController:
-
-    __volume: SoundVolumeManger = SoundVolumeManger()
-
-    @property
-    def volume(self) -> SoundVolumeManger:
-        return self.__volume
+class Media:
 
     # 是否有任何音乐在播放
     @staticmethod
@@ -316,6 +310,3 @@ class MediaController:
     def fade_out(time: int) -> None:
         Sound.fade_out(time)
         Music.fade_out(time)
-
-
-Media: MediaController = MediaController()

@@ -56,7 +56,7 @@ class AbstractMapEditor(AbstractBattleSystem):
     # 修改父类的 _check_key_down 方法
     def _check_key_down(self, event: PG_Event) -> None:
         super()._check_key_down(event)
-        if event.key == Key.ESCAPE:
+        if event.key == Keys.ESCAPE:
             self.__object_to_put_down.clear()
             self.__delete_mode = False
 

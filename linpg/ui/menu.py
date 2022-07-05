@@ -74,7 +74,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
                     item_percentage_t = int(self._CONTENT.get("background_music_sound_volume").percentage * 100)
                     if item_percentage_t != int(Setting.get("Sound", "background_music")):
                         Setting.set("Sound", "background_music", value=item_percentage_t)
-                        Music.set_volume(Media.volume.background_music / 100.0)
+                        Music.set_volume(Volume.get_background_music() / 100.0)
                         self.need_update["volume"] = True
                 # 如果碰到音效的音量条
                 elif self._CONTENT.item_being_hovered == "effects_sound_volume":

@@ -212,7 +212,7 @@ class Template:
 # 使用引擎的开发者可以自定义的参数
 class Specification:
 
-    __SPECIFICATIONS: dict = Config.load_internal_file("specifications.json")
+    __SPECIFICATIONS: Final[dict] = Config.load_internal_file("specifications.json")
     # 尝试加载项目自定义的参数
     __SPECIFICATIONS.update(Config.resolve_path_and_load_file(os.path.join("Data", "specifications")))
 

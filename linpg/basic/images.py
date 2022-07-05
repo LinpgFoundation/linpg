@@ -2,7 +2,7 @@ import io
 import zipfile
 from PIL import Image as PILImage  # type: ignore
 from PIL import ImageSequence as PILImageSequence  # type: ignore
-from .surfaces import *
+from .wrapper import *
 
 # 尝试导入linpgassets
 _LINPGASSETS_INITIALIZED: bool = False
@@ -19,13 +19,13 @@ if bool(Specification.get("ExtraAssets")) is True:
 # 初始化项目自带的数据库
 DataBase.update(Config.resolve_path_and_load_file(os.path.join("Data", "database")))
 
-_KEY: bytes = bytes("82&939DcaO6002#*", "utf-8")
+_KEY: Final[bytes] = bytes("82&939DcaO6002#*", "utf-8")
 
 # 源图形处理
 class Images:
 
     # flag查询表
-    __FLAG_LOOKUP_TABLE: dict[str, str] = {"env": "environment", "ui": "user_interface"}
+    __FLAG_LOOKUP_TABLE: Final[dict[str, str]] = {"env": "environment", "ui": "user_interface"}
 
     # 根据flag
     @classmethod

@@ -184,7 +184,7 @@ class GameController:
     # 输入事件
     __INPUT_EVENTS: tuple = tuple()
     # 检测特定事件
-    __SPECIFIC_EVENTS: dict[str, bool] = {
+    __SPECIFIC_EVENTS: Final[dict[str, bool]] = {
         # 是否有确认事件
         "confirm": False,
         # 是否有返回事件
@@ -275,12 +275,12 @@ class GameController:
                     cls.__SPECIFIC_EVENTS["confirm"] = True
                 elif cls.__joystick.get_button(1) is True:
                     cls.__SPECIFIC_EVENTS["previous"] = True
-            elif event.type == Key.DOWN:
-                if event.key == Key.ESCAPE:
+            elif event.type == Keys.DOWN:
+                if event.key == Keys.ESCAPE:
                     cls.__SPECIFIC_EVENTS["back"] = True
-                elif event.key == Key.F3:
+                elif event.key == Keys.F3:
                     cls.NEED_TO_TAKE_SCREENSHOT = True
-                elif event.key == Key.DELETE:
+                elif event.key == Keys.DELETE:
                     cls.__SPECIFIC_EVENTS["delete"] = True
 
 

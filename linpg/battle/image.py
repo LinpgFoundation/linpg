@@ -42,8 +42,8 @@ class DecorationImagesModule:
     # 项目自带的场景装饰物
     CUSTOM_DECORATION_IMAGE_SPRITE_SHEET: Optional[SpriteImage] = None
     # 经过处理的场景装饰物
-    __DECORATION_IMAGE_DICT: dict = {}
-    __DECORATION_IMAGE_DICT_DARK: dict = {}
+    __DECORATION_IMAGE_DICT: Final[dict] = {}
+    __DECORATION_IMAGE_DICT_DARK: Final[dict] = {}
 
     # 获取当前装饰物种类的数量
     @classmethod
@@ -135,8 +135,8 @@ class TileMapImagesModule:
     # 引擎自带的地图贴图
     DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET: Optional[SpriteImage] = None
     # 环境
-    __ENV_IMAGE_DICT: dict[str, StaticImage] = {}
-    __ENV_IMAGE_DICT_DARK: dict[str, StaticImage] = {}
+    __ENV_IMAGE_DICT: Final[dict[str, StaticImage]] = {}
+    __ENV_IMAGE_DICT_DARK: Final[dict[str, StaticImage]] = {}
 
     # 调整尺寸
     @classmethod
@@ -250,9 +250,9 @@ class _EntityImagesCollection:
 class EntitySpriteImageManager:
 
     # 用于存放角色图片的字典
-    __CHARACTERS_IMAGES: dict[str, dict[str, _EntityImagesCollection]] = {}
+    __CHARACTERS_IMAGES: Final[dict[str, dict[str, _EntityImagesCollection]]] = {}
     # 角色图片文件夹路径
-    SPRITES_PATH: str = Specification.get_directory("sprite")
+    SPRITES_PATH: Final[str] = Specification.get_directory("sprite")
 
     # 获取图片
     @classmethod

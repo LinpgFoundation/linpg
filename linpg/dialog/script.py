@@ -4,7 +4,7 @@ from .render import *
 class ScriptConverter:
 
     # 立绘配置信息数据库
-    __CHARACTER_IMAGE_DATABASE: dict = DataBase.get("Npc")
+    __CHARACTER_IMAGE_DATABASE: Final[dict] = DataBase.get("Npc")
 
     def __init__(self) -> None:
         self.__output: dict = {}

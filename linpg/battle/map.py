@@ -6,9 +6,9 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
 
     # 开发者使用的窗口
     __debug_win: Optional[RenderedWindow] = None
-    __debug_win_unit: int = 10
+    __debug_win_unit: Final[int] = 10
     # 获取方块数据库
-    __BLOCKS_DATABASE: dict = DataBase.get("Blocks")
+    __BLOCKS_DATABASE: Final[dict] = DataBase.get("Blocks")
 
     def __init__(self) -> None:
         # Rectangle模块

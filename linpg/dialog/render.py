@@ -6,7 +6,7 @@ _DARKNESS: int = 50
 class CharacterImageNameMetaData:
 
     # 立绘配置信息数据库
-    __CHARACTER_IMAGE_DATABASE: dict = DataBase.get("Npc")
+    __CHARACTER_IMAGE_DATABASE: Final[dict] = DataBase.get("Npc")
     # 是否立绘配置信息数据库
     __IS_CHARACTER_IMAGE_DATABASE_ENABLED: bool = len(__CHARACTER_IMAGE_DATABASE) > 0
 
@@ -112,7 +112,7 @@ class _FilterEffect:
 class CharacterImageManager:
 
     # 用于存放立绘的字典
-    __character_image: dict[str, tuple[StaticImage, ...]] = {}
+    __character_image: Final[dict[str, tuple[StaticImage, ...]]] = {}
     # 存放前一对话的参与角色名称
     __previous_characters: tuple[CharacterImageNameMetaData, ...] = tuple()
     __last_round_image_alpha: int = 255
@@ -122,7 +122,7 @@ class CharacterImageManager:
     # 立绘边长
     _WIDTH: int = Display.get_width() // 2
     # 加载滤镜
-    __filters: dict[str, _FilterEffect] = {}
+    __filters: Final[dict[str, _FilterEffect]] = {}
     # 移动的x
     __x_correction_offset_index: int = 0
     # x轴offset

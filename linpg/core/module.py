@@ -1,4 +1,4 @@
-from .interface import *
+from .system import *
 
 # 坐标类
 class Coordinate:

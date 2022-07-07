@@ -22,7 +22,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 是否静音
         self._is_muted: bool = False
         # 指向当前对话的数据的指针
-        self._current_dialog_content: dict = {}
+        self._current_dialog_content: Final[dict] = {}
         # 选项菜单
         self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer("<NULL>", 0, 0, 0, 0)
         self._dialog_options_container.set_visible(False)
@@ -186,7 +186,8 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 更新dialogId
         self._dialog_id = dialog_id
         # 更新当前对话数据的指针
-        self._current_dialog_content = self.__get_current_dialog_content(True)
+        self._current_dialog_content.clear()
+        self._current_dialog_content.update(self.__get_current_dialog_content(True))
         # 更新立绘和背景
         CharacterImageManager.update(self._current_dialog_content["character_images"])
         self._update_background_image(self._current_dialog_content["background_image"])
@@ -249,7 +250,8 @@ class AbstractDialogSystem(AbstractGameSystem):
         if self._chapter_id is None:
             raise EXCEPTION.fatal("The dialog has not been initialized!")
         # 更新当前对话数据的指针
-        self._current_dialog_content = self.__get_current_dialog_content()
+        self._current_dialog_content.clear()
+        self._current_dialog_content.update(self.__get_current_dialog_content())
         # 展示背景图片和npc立绘
         self.display_background_image(surface)
         CharacterImageManager.draw(surface)

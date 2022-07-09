@@ -36,7 +36,7 @@ Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游
 | opencv      |
 | numpy       |
 | PySimpleGUI |
-| pyastar2d   |
+| tcod   |
 
 ***Special shout out to the developers of these libraries. They make game development using python no longer unthinkable.***
 

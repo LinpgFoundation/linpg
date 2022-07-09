@@ -1,4 +1,4 @@
-import pyastar2d  # type: ignore
+import tcod  # type: ignore
 from .decoration import *
 
 # 地图模块
@@ -482,16 +482,29 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
 
     # 寻找2点之间的最短路径
     def find_path(
-        self, start: object, destination: object, alliances: dict, enemies: dict, lenMax: Optional[int] = None, ignored: list = []
-    ) -> list:
+        self,
+        start: object,
+        destination: object,
+        alliances: dict,
+        enemies: dict,
+        can_move_through_darkness: bool = False,
+        lenMax: Optional[int] = None,
+        ignored: list = [],
+    ) -> list[tuple[int, int]]:
         # 获取终点坐标
-        end_pos: tuple[int, int] = Coordinates.convert(destination)
+        goal_x: int = 0
+        goal_y: int = 0
+        goal_x, goal_y = Coordinates.convert(destination)
         # 确保终点没有我方角色
         for value in alliances.values():
-            if value.x == end_pos[0] and value.y == end_pos[1]:
+            if value.x == goal_x and value.y == goal_y:
                 return []
         # 初始化寻路地图
-        map2d: numpy.ndarray = numpy.ones((self.__column, self.__row), dtype=numpy.float32)
+        map2d: numpy.ndarray = numpy.ones((self.__column, self.__row), dtype=numpy.byte)
+        if not can_move_through_darkness:
+            map2d.fill(0)
+            for _pos in self.__light_area:
+                map2d[_pos[0]][_pos[1]] = 1
         # 历遍地图，设置障碍方块
         """
         for y in range(theMap.row):
@@ -502,18 +515,17 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         # 历遍设施，设置障碍方块
         for item in self.__decorations:
             if item.get_type() == "obstacle" or item.get_type() == "campfire":
-                map2d[item.x][item.y] = numpy.inf
+                map2d[item.x][item.y] = 0
         # 将所有敌方角色的坐标点设置为障碍方块
         for key, value in enemies.items():
             if key not in ignored:
-                map2d[value.x][value.y] = numpy.Infinity
+                map2d[value.x][value.y] = 0
         # 如果目标坐标合法
-        if 0 <= end_pos[1] < self.__row and 0 <= end_pos[0] < self.__column and numpy.isfinite(map2d[end_pos[0]][end_pos[1]]):
+        if 0 <= goal_y < self.__row and 0 <= goal_x < self.__column and map2d[goal_x][goal_y] == 1:
             # 开始寻路
-            _path: Optional[numpy.ndarray] = pyastar2d.astar_path(map2d, Coordinates.convert(start), end_pos)
-            # 如果找到了
-            if _path is not None:
-                # 预处理路径并返回
-                return list((_path[1 : lenMax + 1] if lenMax is not None and len(_path) > lenMax + 1 else _path[1:]).tolist())
+            start_pos: tuple[int, int] = Coordinates.convert(start)
+            _path: list[tuple[int, int]] = tcod.path.AStar(map2d, 1.0).get_path(start_pos[0], start_pos[1], goal_x, goal_y)
+            # 预处理路径并返回
+            return _path[:lenMax] if lenMax is not None and len(_path) > lenMax else _path
         # 返回空列表
         return []

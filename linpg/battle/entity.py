@@ -73,8 +73,8 @@ class Entity(Position):
             }
         # 角色的攻击范围
         self.__effective_range_coordinates: Optional[list[list[tuple[int, int]]]] = None
-        # 是否需要重新渲染地图
-        self.__if_map_need_update: bool = False
+        # 是否刚进入一个新的tile
+        self.__just_entered_a_new_tile: bool = False
         # 当前图片的rect
         self.__current_image_rect: Optional[Rectangle] = None
         # 是否被选中
@@ -120,7 +120,9 @@ class Entity(Position):
 
     def _need_update(self) -> None:
         self.__effective_range_coordinates = None
-        self.__if_map_need_update = True
+
+    def just_entered_a_new_tile(self) -> bool:
+        return self.__just_entered_a_new_tile
 
     def set_x(self, value: number) -> None:
         if round(value) != round(self.x):
@@ -354,13 +356,6 @@ class Entity(Position):
         else:
             EXCEPTION.fatal("Character cannot move to a invalid path!")
 
-    # 查看是否需要重新渲染地图
-    def need_update_map(self) -> bool:
-        if self.__if_map_need_update:
-            self.__if_map_need_update = False
-            return True
-        return False
-
     # 查看是否一个Entity在该角色的附近
     def near(self, otherEntity: "Entity") -> bool:
         self_x: int = round(self.x)
@@ -508,31 +503,36 @@ class Entity(Position):
         """计算imgId"""
         # 如果正在播放移动动作，则需要根据现有路径更新坐标
         if self.__current_action == "move" and not self.__moving_complete:
+            self.__just_entered_a_new_tile = False
             if len(self.__moving_path) > 0:
+                need_pop: bool = False
                 if self.x < self.__moving_path[0][0]:
                     self.set_x(self.x + 0.05)
                     self.set_flip(False)
                     if self.x >= self.__moving_path[0][0]:
                         self.set_x(self.__moving_path[0][0])
-                        self.__moving_path.popleft()
+                        need_pop = True
                 elif self.x > self.__moving_path[0][0]:
                     self.set_x(self.x - 0.05)
                     self.set_flip(True)
                     if self.x <= self.__moving_path[0][0]:
                         self.set_x(self.__moving_path[0][0])
-                        self.__moving_path.popleft()
-                elif self.y < self.__moving_path[0][1]:
+                        need_pop = True
+                if self.y < self.__moving_path[0][1]:
                     self.set_y(self.y + 0.05)
                     self.set_flip(True)
                     if self.y >= self.__moving_path[0][1]:
                         self.set_y(self.__moving_path[0][1])
-                        self.__moving_path.popleft()
+                        need_pop = True
                 elif self.y > self.__moving_path[0][1]:
                     self.set_y(self.y - 0.05)
                     self.set_flip(False)
                     if self.y <= self.__moving_path[0][1]:
                         self.set_y(self.__moving_path[0][1])
-                        self.__moving_path.popleft()
+                        need_pop = True
+                if need_pop is True:
+                    self.__moving_path.popleft()
+                    self.__just_entered_a_new_tile = True
             elif not self.__moving_complete:
                 self.__moving_complete = True
                 if EntitySpriteImageManager.does_action_exist(self.type, "set") is True:

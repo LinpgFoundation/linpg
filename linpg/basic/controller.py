@@ -7,7 +7,7 @@ if not pygame.joystick.get_init():
 # 手柄控制组件
 class JoystickController:
 
-    __input: Optional[pygame.joystick.Joystick] = None
+    __input: Optional[pygame.joystick.JoystickType] = None
 
     # 手柄是否初始化
     @classmethod

@@ -160,18 +160,10 @@ class Images:
     def rotate(img: ImageSurface, angle: int) -> ImageSurface:
         return pygame.transform.rotate(img, angle)
 
-    # 按照给定的位置对图片进行剪裁
-    @staticmethod
-    def crop(img: ImageSurface, pos: tuple[int, int] = ORIGIN, size: tuple[int, int] = (1, 1)) -> ImageSurface:
-        cropped: ImageSurface = Surfaces.transparent((round(size[0]), round(size[1])))
-        cropped.blit(img, (-pos[0], -pos[1]))
-        return cropped
-
     # 移除掉图片周围的透明像素
     @classmethod
     def crop_bounding(cls, img: ImageSurface) -> ImageSurface:
-        rect_t = img.get_bounding_rect()
-        return cls.crop(img, rect_t.topleft, rect_t.size)
+        return img.subsurface(img.get_bounding_rect())
 
     # 使用ImageFixer组件修复或优化png
     @staticmethod

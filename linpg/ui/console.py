@@ -83,6 +83,8 @@ class Console(SingleLineInputBox, HiddenableSurface):
                 self._txt_output.append("Unknown status for show command.")
         elif conditions[0] == "say":
             self._txt_output.append(self._text[len(self._COMMAND_INDICATOR) + 4 :])
+        elif conditions[0] == "set":
+            Setting.set(*conditions[1 : len(conditions) - 1], value=conditions[len(conditions) - 1])
         elif conditions[0] == "dev":
             if len(conditions) < 2:
                 self._txt_output.append("Unknown status for dev command.")
@@ -104,13 +106,15 @@ class Console(SingleLineInputBox, HiddenableSurface):
             self._txt_output.append("Linpg Version: {}".format(Info.get_current_version()))
         elif conditions[0] == "quit":
             Display.quit()
+        elif conditions[0] == "clear":
+            self._txt_output.clear()
         else:
             self._txt_output.append("The command is unknown!")
 
     def draw(self, screen: ImageSurface) -> None:
         if self.is_hidden():
             for event in Controller.events:
-                if event.type == Keys.DOWN and event.key == Keys.BACKQUOTE:
+                if event.type == Keys.DOWN and event.unicode == self._COMMAND_INDICATOR:
                     self.set_visible(True)
                     break
         else:

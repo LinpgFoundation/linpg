@@ -1,3 +1,4 @@
+from operator import ge
 import tcod  # type: ignore
 from .decoration import *
 
@@ -74,7 +75,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         # 背景图片路径
         self.__background_image = mapDataDic.get("background_image")
         # 暗度（仅黑夜场景有效）
-        MapImageParameters.set_darkness(155 if "at_night" in mapDataDic and bool(mapDataDic["at_night"]) is True else 0)
+        MapImageParameters.set_darkness(155 if bool(mapDataDic.get("at_night", False)) is True else 0)
         # 更新地图渲染图层的尺寸
         self.set_tile_block_size(perBlockWidth, perBlockHeight)
         # 设置本地坐标
@@ -483,21 +484,17 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
     # 寻找2点之间的最短路径
     def find_path(
         self,
-        start: object,
-        destination: object,
+        start: tuple[int, int],
+        goal: tuple[int, int],
         alliances: dict,
         enemies: dict,
         can_move_through_darkness: bool = False,
         lenMax: Optional[int] = None,
         ignored: list = [],
     ) -> list[tuple[int, int]]:
-        # 获取终点坐标
-        goal_x: int = 0
-        goal_y: int = 0
-        goal_x, goal_y = Coordinates.convert(destination)
         # 确保终点没有我方角色
         for value in alliances.values():
-            if value.x == goal_x and value.y == goal_y:
+            if round(value.x) == goal[0] and round(value.y) == goal[1]:
                 return []
         # 初始化寻路地图
         map2d: numpy.ndarray = numpy.ones((self.__column, self.__row), dtype=numpy.byte)
@@ -519,12 +516,11 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         # 将所有敌方角色的坐标点设置为障碍方块
         for key, value in enemies.items():
             if key not in ignored:
-                map2d[value.x][value.y] = 0
+                map2d[round(value.x)][round(value.y)] = 0
         # 如果目标坐标合法
-        if 0 <= goal_y < self.__row and 0 <= goal_x < self.__column and map2d[goal_x][goal_y] == 1:
+        if 0 <= goal[1] < self.__row and 0 <= goal[0] < self.__column and map2d[goal[0]][goal[1]] == 1:
             # 开始寻路
-            start_pos: tuple[int, int] = Coordinates.convert(start)
-            _path: list[tuple[int, int]] = tcod.path.AStar(map2d, 1.0).get_path(start_pos[0], start_pos[1], goal_x, goal_y)
+            _path: list[tuple[int, int]] = tcod.path.AStar(map2d, 1.0).get_path(start[0], start[1], goal[0], goal[1])
             # 预处理路径并返回
             return _path[:lenMax] if lenMax is not None and len(_path) > lenMax else _path
         # 返回空列表

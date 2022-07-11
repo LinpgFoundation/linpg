@@ -256,8 +256,8 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                 img_on_top_t = Images.resize(self._get_img_on_top(), self.size)
                 if self._mode:
                     if self.__real_current_percentage < self._percentage_to_be:
-                        img2 = Images.crop(
-                            img_on_top_t, size=(int(self.get_width() * self._percentage_to_be / self.accuracy), self.get_height())
+                        img2 = img_on_top_t.subsurface(
+                            (0, 0, int(self.get_width() * self._percentage_to_be / self.accuracy), self.get_height())
                         )
                         img2.set_alpha(100)
                         surface.blit(img2, _abs_pos)
@@ -267,8 +267,8 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                         )
                     else:
                         if self.__real_current_percentage > self._percentage_to_be:
-                            img2 = Images.crop(
-                                img_on_top_t, size=(int(self.get_width() * super().get_percentage()), self.get_height())
+                            img2 = img_on_top_t.subsurface(
+                                (0, 0, int(self.get_width() * super().get_percentage()), self.get_height())
                             )
                             img2.set_alpha(100)
                             surface.blit(img2, _abs_pos)
@@ -280,8 +280,8 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                         )
                 else:
                     if self.__real_current_percentage < self._percentage_to_be:
-                        img2 = Images.crop(
-                            img_on_top_t, size=(self.get_width(), int(self.get_height() * self._percentage_to_be / self.accuracy))
+                        img2 = img_on_top_t.subsurface(
+                            (0, 0, self.get_width(), int(self.get_height() * self._percentage_to_be / self.accuracy))
                         )
                         img2.set_alpha(100)
                         surface.blit(img2, _abs_pos)
@@ -291,8 +291,8 @@ class DynamicProgressBarSurface(ProgressBarSurface):
                         )
                     else:
                         if self.__real_current_percentage > self._percentage_to_be:
-                            img2 = Images.crop(
-                                img_on_top_t, size=(self.get_width(), int(self.get_height() * super().get_percentage()))
+                            img2 = img_on_top_t.subsurface(
+                                (0, 0, self.get_width(), int(self.get_height() * super().get_percentage()))
                             )
                             img2.set_alpha(100)
                             surface.blit(img2, _abs_pos)

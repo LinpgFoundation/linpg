@@ -134,6 +134,9 @@ class Entity(Position):
             self._need_update()
         super().set_y(value)
 
+    def get_coordinate(self) -> tuple[int, int]:
+        return round(self.x), round(self.y)
+
     """重要方法与参数"""
 
     # 查询特点角色的数据

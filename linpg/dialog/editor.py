@@ -250,9 +250,8 @@ class DialogEditor(DialogConverter):
     # 检查是否有任何改动
     def __no_changes_were_made(self) -> bool:
         return (
-            bool(Config.load(dialog_file_location_t, "dialogs") == self.__slipt_the_stuff_need_save())
-            if os.path.exists((dialog_file_location_t := self.get_dialog_file_location()))
-            else False
+            os.path.exists((dialog_file_location_t := self.get_dialog_file_location()))
+            and Config.load(dialog_file_location_t, "dialogs") == self.__slipt_the_stuff_need_save()
         )
 
     # 更新UI

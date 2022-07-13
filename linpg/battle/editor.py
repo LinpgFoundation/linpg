@@ -77,19 +77,20 @@ class AbstractMapEditor(AbstractBattleSystem):
         # 确保地图初始化
         _map_p: Optional[list] = _data.get("map")
         if _map_p is None or len(_map_p) == 0:
-            SnowEnvImg = tuple(
-                [
-                    "TileSnow01",
-                    "TileSnow01ToStone01",
-                    "TileSnow01ToStone02",
-                    "TileSnow02",
-                    "TileSnow02ToStone01",
-                    "TileSnow02ToStone02",
-                ]
-            )
+            lookup_table: list[str] = [
+                "TileSnow01",
+                "TileSnow01ToStone01",
+                "TileSnow01ToStone02",
+                "TileSnow02",
+                "TileSnow02ToStone01",
+                "TileSnow02ToStone02",
+            ]
             block_y: int = 50
             block_x: int = 50
-            _data["map"] = [[SnowEnvImg[get_random_int(0, 5)] for a in range(block_x)] for i in range(block_y)]
+            _data["map"] = {
+                "array2d": [[get_random_int(0, len(lookup_table) - 1) for _ in range(block_x)] for _ in range(block_y)],
+                "lookup_table": lookup_table,
+            }
         # 开始处理数据
         super()._process_data(_data, _mode)
 
@@ -253,7 +254,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                         self.remove_entity_on_pos(self._block_is_hovering)
                 elif len(self.__object_to_put_down) > 0 and self.__no_container_is_hovered is True:
                     if self.__object_to_put_down["type"] == "block":
-                        self._MAP.update_block(self._block_is_hovering, self.__object_to_put_down["id"])
+                        self._MAP.set_block(*self._block_is_hovering, self.__object_to_put_down["id"])
                     elif self.__object_to_put_down["type"] == "decoration":
                         # 查看当前位置是否有装饰物
                         decoration = self._MAP.find_decoration_on(self._block_is_hovering)

@@ -1,4 +1,3 @@
-from operator import ge
 import tcod  # type: ignore
 from .decoration import *
 
@@ -18,6 +17,8 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         SurfaceWithLocalPos.__init__(self)
         # 地图数据
         self.__MAP: numpy.ndarray = numpy.asarray([])
+        # 地图 tile lookup table
+        self.__tile_lookup_table: list[str] = []
         # 行
         self.__row: int = 0
         # 列
@@ -40,37 +41,9 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         self.__need_to_recheck_block_on_surface: bool = True
 
     def update(self, mapDataDic: dict, perBlockWidth: int_f, perBlockHeight: int_f) -> None:
-        # 转换原始的地图数据
-        lookup_table: tuple
-        MAP_t: list
-        if isinstance(mapDataDic["map"], Sequence):
-            MAP_t = list(mapDataDic["map"])
-            # 确认场景需要用到素材
-            all_images_needed: list = []
-            for theRow in MAP_t:
-                for theItem in theRow:
-                    if theItem not in all_images_needed:
-                        all_images_needed.append(theItem)
-            lookup_table = tuple(all_images_needed)
-            del all_images_needed
-        else:
-            lookup_table = tuple(mapDataDic["map"]["lookup_table"])
-            MAP_t = list(mapDataDic["map"]["array2d"])
-            index: int = 0
-            for i in range(len(MAP_t)):
-                for j in range(len(MAP_t[i])):
-                    index = int(MAP_t[i][j])
-                    if 0 <= index < len(lookup_table):
-                        MAP_t[i][j] = lookup_table[index]
-                    else:
-                        EXCEPTION.warn(
-                            "A element with value {0} on x {1} and y {2} is not found in the lookup table, please fix it!".format(
-                                index, j, i
-                            )
-                        )
-                        MAP_t[i][j] = "TileTemplate01"
         # 初始化地图数据
-        self.__MAP = numpy.asarray(MAP_t, dtype=numpy.dtype("<U32"))
+        self.__tile_lookup_table = list(mapDataDic["map"]["lookup_table"])
+        self.__MAP = numpy.asarray(mapDataDic["map"]["array2d"], dtype=numpy.byte)
         self.__row, self.__column = self.__MAP.shape
         # 背景图片路径
         self.__background_image = mapDataDic.get("background_image")
@@ -115,7 +88,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         else:
             self.__BACKGROUND_SURFACE = None
         # 加载图片
-        for fileName in lookup_table:
+        for fileName in self.__tile_lookup_table:
             TileMapImagesModule.add_image(fileName)
         for decoration in self.__decorations:
             DecorationImagesModule.add_image(
@@ -161,28 +134,26 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             if theDecoration.get_type() not in decoration_dict:
                 decoration_dict[theDecoration.get_type()] = {}
             decoration_dict[theDecoration.get_type()][theDecoration.get_id()] = theDecorationInDict
-        # 转换地图数据
-        MAP_t: tuple = tuple(self.__MAP.tolist())
-        lookup_table: dict = {}
-        for row in MAP_t:
-            for item in row:
-                if item not in lookup_table:
-                    lookup_table[item] = 0
-                else:
-                    lookup_table[item] += 1
-        sorted_lookup_table: list = sorted(lookup_table, key=lookup_table.get, reverse=True)  # type: ignore
+        # 重新生成最优 lookup table
+        unique_elem_table: tuple = numpy.unique(self.__MAP, return_counts=True)
+        lookup_table: dict[str, int] = {
+            self.__tile_lookup_table[unique_elem_table[0][i]]: unique_elem_table[1][i] for i in range(len(unique_elem_table[0]))
+        }
+        sorted_lookup_table: list[str] = sorted(lookup_table, key=lookup_table.get, reverse=True)  # type: ignore
         # 返回数据
         return {
             "decoration": decoration_dict,
             "map": {
-                "array2d": [[sorted_lookup_table.index(item) for item in row] for row in MAP_t],
+                "array2d": numpy.vectorize(lambda _num: sorted_lookup_table.index(self.__tile_lookup_table[_num]))(
+                    self.__MAP
+                ).tolist(),
                 "lookup_table": sorted_lookup_table,
             },
         }
 
     # 是否角色能通过该方块
-    def can_pass_through(self, x: int, y: int) -> bool:
-        return bool(self.__BLOCKS_DATABASE[self.__MAP[y][x]]["canPassThrough"])
+    def can_pass_through(self, _x: int, _y: int) -> bool:
+        return bool(self.__BLOCKS_DATABASE[self.get_block(_x, _y)]["canPassThrough"])
 
     # 以百分比的形式获取本地坐标（一般用于存档数据）
     def get_local_pos_in_percentage(self) -> dict:
@@ -329,7 +300,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                     ):
                         if self.__block_on_surface[y][x] == 0:
                             evn_img = TileMapImagesModule.get_image(
-                                str(self.__MAP[y][x]), not self.is_coordinate_in_light_rea(x, y)
+                                self.get_block(x, y), not self.is_coordinate_in_light_rea(x, y)
                             )
                             evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
                             if self.__MAP_SURFACE is not None:
@@ -409,10 +380,20 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                     decoration_alpha,
                 )
 
+    # 获取方块
+    def get_block(self, _x: int, _y: int) -> str:
+        return self.__tile_lookup_table[int(self.__MAP[_y, _x])]
+
     # 更新方块
-    def update_block(self, pos: tuple[int, int], name: str) -> None:
+    def set_block(self, _x: int, _y: int, name: str) -> None:
+        block_id: int = 0
+        try:
+            block_id = self.__tile_lookup_table.index(name)
+        except ValueError:
+            self.__tile_lookup_table.append(name)
+            block_id = len(self.__tile_lookup_table) - 1
         # 根据坐标更新地图块
-        self.__MAP[pos[1]][pos[0]] = name
+        self.__MAP[_y, _x] = block_id
         # 需更新
         self.__need_update_surface = True
         self.__need_to_recheck_block_on_surface = True
@@ -501,22 +482,20 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         if not can_move_through_darkness:
             map2d.fill(0)
             for _pos in self.__light_area:
-                map2d[_pos[0]][_pos[1]] = 1
+                map2d[_pos[0], _pos[1]] = 1
         # 历遍地图，设置障碍方块
-        """
-        for y in range(theMap.row):
-            for x in range(theMap.column):
-                if not theMap.mapData[y][x].canPassThrough:
-                    map2d[x][y]=1
-        """
+        for _x in range(self.__column):
+            for _y in range(self.__row):
+                if not self.can_pass_through(_x, _y):
+                    map2d[_x, _y] = 1
         # 历遍设施，设置障碍方块
         for item in self.__decorations:
             if item.get_type() == "obstacle" or item.get_type() == "campfire":
-                map2d[item.x][item.y] = 0
+                map2d[item.x, item.y] = 0
         # 将所有敌方角色的坐标点设置为障碍方块
         for key, value in enemies.items():
             if key not in ignored:
-                map2d[round(value.x)][round(value.y)] = 0
+                map2d[round(value.x), round(value.y)] = 0
         # 如果目标坐标合法
         if 0 <= goal[1] < self.__row and 0 <= goal[0] < self.__column and map2d[goal[0]][goal[1]] == 1:
             # 开始寻路

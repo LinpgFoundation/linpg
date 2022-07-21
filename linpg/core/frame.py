@@ -1,7 +1,7 @@
 from .image import *
 
 # 基于ImageSurface的内部窗口
-class AbstractFrame(AdvancedAbstractImageSurface):
+class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
 
     # 窗口上方bar的高度
     _bar_height: int = Display.get_height() // 50

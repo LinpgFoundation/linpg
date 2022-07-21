@@ -1,46 +1,55 @@
 from .dropdown import *
 
 # 同一时刻会展示2个scrollbar的Surface
-class AbstractScrollbarsSurface(SurfaceWithLocalPos):
+class AbstractScrollbarsSurface(SurfaceWithLocalPos, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
-        self._button_tickness: int = 20
+        self._button_thickness: int = 20
         self._move_speed: int = 20
         self._bar_color: tuple[int, int, int, int] = Colors.WHITE
 
     # 获取surface宽度（子类需要实现）
+    @abstractmethod
     def get_surface_width(self) -> int:
         EXCEPTION.fatal("get_surface_width()", 1)
 
     # 获取surface高度（子类需要实现）
+    @abstractmethod
     def get_surface_height(self) -> int:
         EXCEPTION.fatal("get_surface_height()", 1)
 
     # 获取x坐标（子类需实现）
+    @abstractmethod
     def get_left(self) -> int:
         EXCEPTION.fatal("get_left()", 1)
 
     # 获取y坐标（子类需实现）
+    @abstractmethod
     def get_top(self) -> int:
         EXCEPTION.fatal("get_top()", 1)
 
     # 获取x+width坐标（子类需实现）
+    @abstractmethod
     def get_right(self) -> int:
         EXCEPTION.fatal("get_right()", 1)
 
     # 获取y+height坐标（子类需实现）
+    @abstractmethod
     def get_bottom(self) -> int:
         EXCEPTION.fatal("get_bottom()", 1)
 
     # 获取宽度（子类需实现）
+    @abstractmethod
     def get_width(self) -> int:
         EXCEPTION.fatal("get_width()", 1)
 
     # 获取高度（子类需实现）
+    @abstractmethod
     def get_height(self) -> int:
         EXCEPTION.fatal("get_height()", 1)
 
     # 是否被鼠标触碰（子类需实现）
+    @abstractmethod
     def is_hovered(self, off_set: Optional[tuple[int, int]] = None) -> bool:
         EXCEPTION.fatal("is_hovered()", 1)
 
@@ -56,9 +65,9 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos):
     def _get_right_scroll_bar_rect(self, off_set_x: number, off_set_y: number) -> Optional[Rectangle]:
         return (
             Rectangle(
-                self.get_right() - self._button_tickness + int(off_set_x),
+                self.get_right() - self._button_thickness + int(off_set_x),
                 self.get_top() + int(off_set_y),
-                self._button_tickness,
+                self._button_thickness,
                 self.get_height(),
             )
             if self.get_surface_height() > self.get_height()
@@ -69,9 +78,9 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos):
         return (
             Rectangle(
                 self.get_left() + int(off_set_x),
-                self.get_bottom() - self._button_tickness + int(off_set_y),
+                self.get_bottom() - self._button_thickness + int(off_set_y),
                 self.get_width(),
-                self._button_tickness,
+                self._button_thickness,
             )
             if self.get_surface_width() > self.get_width()
             else None
@@ -81,9 +90,9 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos):
     def _get_right_scroll_button_rect(self, off_set_x: number, off_set_y: number) -> Optional[Rectangle]:
         return (
             Rectangle(
-                self.get_right() - self._button_tickness + int(off_set_x),
+                self.get_right() - self._button_thickness + int(off_set_x),
                 int(self.get_top() - self.get_height() * self.local_y / self.get_surface_height() + off_set_y),
-                self._button_tickness,
+                self._button_thickness,
                 self.get_height() * self.get_height() // self.get_surface_height(),
             )
             if self.get_surface_height() > self.get_height()
@@ -94,9 +103,9 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos):
         return (
             Rectangle(
                 int(self.get_left() - self.get_width() * self.local_x / self.get_surface_width() + off_set_x),
-                self.get_bottom() - self._button_tickness + int(off_set_y),
+                self.get_bottom() - self._button_thickness + int(off_set_y),
                 self.get_width() * self.get_width() // self.get_surface_width(),
-                self._button_tickness,
+                self._button_thickness,
             )
             if self.get_surface_width() > self.get_width()
             else None
@@ -170,7 +179,7 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos):
 
 
 # 同一时刻只会拥有一个scrollbar的Surface
-class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface):
+class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         self._mode: bool = False
@@ -241,7 +250,7 @@ class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface):
                 return Rectangle(
                     self.abs_x + int(off_set_x),
                     int(self.get_top() - self.get_height() * self.local_y / self.get_surface_height() + off_set_y),
-                    self._button_tickness,
+                    self._button_thickness,
                     self.get_height() * self.get_height() // self.get_surface_height(),
                 )
         else:
@@ -252,7 +261,7 @@ class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface):
                     int(self.get_left() - self.get_width() * self.local_x / self.get_surface_width() + off_set_x),
                     self.abs_y + int(off_set_y),
                     self.get_width() * self.get_width() // self.get_surface_width(),
-                    self._button_tickness,
+                    self._button_thickness,
                 )
         return None
 
@@ -263,14 +272,14 @@ class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface):
                 return self._get_right_scroll_bar_rect(off_set_x, off_set_y)
             elif self.get_surface_height() > self.get_height():
                 return Rectangle(
-                    self.abs_x + int(off_set_x), self.get_top() + int(off_set_y), self._button_tickness, self.get_height()
+                    self.abs_x + int(off_set_x), self.get_top() + int(off_set_y), self._button_thickness, self.get_height()
                 )
         else:
             if not self.__scroll_bar_pos:
                 return self._get_bottom_scroll_bar_rect(off_set_x, off_set_y)
             elif self.get_surface_width() > self.get_width():
                 return Rectangle(
-                    self.get_left() + int(off_set_x), self.abs_y + int(off_set_y), self.get_width(), self._button_tickness
+                    self.get_left() + int(off_set_x), self.abs_y + int(off_set_y), self.get_width(), self._button_thickness
                 )
         return None
 
@@ -350,7 +359,7 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
         AbstractSurfaceWithScrollbar.__init__(self)
         self.__surface_width: int = 0
         self.__surface_height: int = 0
-        self.panding: int = 0
+        self.padding: int = 0
         self.distance_between_item: int = 20
         self.set_mode(mode)
         self.__item_per_line: int = 1
@@ -387,9 +396,9 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
             current_x: int = self.abs_x + off_set[0]
             current_y: int = self.abs_y + off_set[1]
             if not self._mode:
-                current_x += self.panding
+                current_x += self.padding
             else:
-                current_y += self.panding
+                current_y += self.padding
             # 定义部分用到的变量
             abs_local_y: int
             crop_height: int
@@ -429,7 +438,7 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                         # 换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line - 1:
                             current_y += self.distance_between_item + item.get_height()
-                            current_x = self.abs_x + off_set[0] + self.panding
+                            current_x = self.abs_x + off_set[0] + self.padding
                             item_has_been_dawn_on_this_line = 0
                         else:
                             current_x += self.distance_between_item + item.get_width()
@@ -465,7 +474,7 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                         # 换行
                         if item_has_been_dawn_on_this_line >= self.__item_per_line - 1:
                             current_x += self.distance_between_item + item.get_width()
-                            current_y = self.abs_y + off_set[1] + self.panding
+                            current_y = self.abs_y + off_set[1] + self.padding
                             item_has_been_dawn_on_this_line = 0
                         else:
                             current_y += self.distance_between_item + item.get_height()

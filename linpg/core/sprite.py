@@ -75,7 +75,7 @@ class SpriteImage:
                     max_block_height = _img.get_height()
             else:
                 # 获取图片的透明bounding
-                _bounding: Rect = _img.get_bounding_rect()
+                _bounding: PG_Rect = _img.get_bounding_rect()
                 # 确认最大尺寸
                 if max_block_width < _bounding.width:
                     max_block_width = _bounding.width

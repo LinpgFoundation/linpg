@@ -32,7 +32,7 @@ else:
     print("One possible cause could be no output device, anyway, please double check your output device(s)!")
 
 # 音效管理模块接口
-class AbstractSoundManager:
+class AbstractSoundManager(ABC):
     def __init__(self, channel_id: int):
         self._channel_id: int = channel_id
 

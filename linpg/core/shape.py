@@ -166,7 +166,8 @@ class Rectangle(Square):
         return Rectangle(self.x, self.y, self.get_width(), self.__height)
 
 
-RectLiked = Union[Rectangle, pygame.rect.Rect, tuple]
+PG_Rect = pygame.Rect
+RectLiked = Union[Rectangle, pygame.Rect, tuple]
 
 # Rectangle方法管理
 class Rectangles:
@@ -201,7 +202,7 @@ class Rectangles:
 
 
 # 转换linpg.Rect至pygame.Rect
-def convert_to_pygame_rect(rect: RectLiked) -> pygame.rect.Rect:
+def convert_to_pygame_rect(rect: RectLiked) -> pygame.Rect:
     # 如果是pygame.Rect类，则没必要转换
     if isinstance(rect, pygame.Rect):
         return rect

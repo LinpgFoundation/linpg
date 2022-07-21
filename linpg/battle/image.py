@@ -161,7 +161,7 @@ class TileMapImagesModule:
             if fileName not in cls.__ENV_IMAGE_DICT:
                 _img: Union[ImageSurface, tuple] = cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.get(fileName)
                 if isinstance(_img, tuple):
-                    EXCEPTION.fatal("Images for tile map cannot be groupped as a collection")
+                    EXCEPTION.fatal("Images for tile map cannot be grouped as a collection")
                 cls.__ENV_IMAGE_DICT[fileName] = StaticImage(_img, 0, 0)
                 cls.__ENV_IMAGE_DICT[fileName].set_width_with_original_image_size_locked(MapImageParameters.get_block_width())
             # 如果是夜战模式
@@ -299,7 +299,7 @@ class EntitySpriteImageManager:
                         if len(crop_rect) <= 0:
                             crop_rect = [_image.get_width(), _image.get_height(), 0, 0]
                         # 获取图片的bounding，并和现有的bounding进行比较
-                        _bounding: Rect = _image.get_bounding_rect()
+                        _bounding: PG_Rect = _image.get_bounding_rect()
                         if _bounding.x < crop_rect[0]:
                             crop_rect[0] = _bounding.x
                         if _bounding.y < crop_rect[1]:
@@ -426,7 +426,7 @@ class WeatherSystem:
                     x=Numbers.get_random_int(1, Display.get_width() * 3 // 2),
                     y=Numbers.get_random_int(1, Display.get_height()),
                 )
-                for i in range(entityNum)
+                for _ in range(entityNum)
             ]
         )
 

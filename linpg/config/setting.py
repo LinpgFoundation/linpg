@@ -74,7 +74,7 @@ class Setting:
     # 抗锯齿参数
     @classmethod
     def get_antialias(cls) -> bool:
-        return bool(cls.__SETTING_DATA["Antialias"])
+        return bool(cls.__SETTING_DATA["AntiAlias"])
 
     # 语言
     @classmethod

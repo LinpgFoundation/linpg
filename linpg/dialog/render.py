@@ -14,9 +14,9 @@ class CharacterImageNameMetaData:
         _name_data: list[str] = _name.split("&")
         self.__name: str = _name_data[0]
         self.__tags: set[str] = set(_name_data[1:])
-        self.__slient: bool = False
+        self.__silent: bool = False
         if "silent" in self.__tags:
-            self.__slient = True
+            self.__silent = True
             self.__tags.remove("silent")
 
     @property
@@ -42,14 +42,14 @@ class CharacterImageNameMetaData:
     # 是否有tag
     def has_tag(self, _tag: str) -> bool:
         if _tag == "silent":
-            return self.__slient
+            return self.__silent
         else:
             return _tag in self.__tags
 
     # 移除tag
     def remove_tag(self, _tag: str) -> None:
         if _tag == "silent":
-            self.__slient = False
+            self.__silent = False
         else:
             new_tags: list[str] = []
             for original_tag in self.__tags:
@@ -60,7 +60,7 @@ class CharacterImageNameMetaData:
     # 增加tag
     def add_tag(self, _tag: str) -> None:
         if _tag == "silent":
-            self.__slient = True
+            self.__silent = True
         else:
             new_tags: list[str] = []
             for original_tag in self.__tags:
@@ -72,7 +72,7 @@ class CharacterImageNameMetaData:
     # 获取tag和名称结合后的数据名称
     def get_raw_name(self) -> str:
         raw_name: str = self.__name
-        if self.__slient is True:
+        if self.__silent is True:
             raw_name += "&silent"
         for tag in self.__tags:
             raw_name += "&" + tag
@@ -291,7 +291,7 @@ class CharacterImageManager:
             cls.__fade_in_characters_this_round(_surface)
         else:
             # 初始化previous_x坐标
-            previous_x: int = 0
+            previous_x: int
             if len(cls.__previous_characters) == 1 and len(cls.__current_characters) == 2:
                 previous_x = cls.__estimate_x(_surface.get_width(), len(cls.__previous_characters), 0)
                 # 如果之前的中间变成了现在的左边，则立绘应该先向左移动

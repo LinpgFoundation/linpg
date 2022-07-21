@@ -1,7 +1,7 @@
 from .shape import *
 
 # 可隐藏的Surface
-class HiddenableSurface:
+class HiddenableSurface(ABC):
     def __init__(self, visible: bool = True) -> None:
         self.__hidden: bool = not visible
 
@@ -16,7 +16,7 @@ class HiddenableSurface:
 
 
 # 图形接口
-class AbstractImageSurface(Rectangle, HiddenableSurface):
+class AbstractImageSurface(Rectangle, HiddenableSurface, metaclass=ABCMeta):
     def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str) -> None:
         Rectangle.__init__(self, x, y, width, height)
         HiddenableSurface.__init__(self)
@@ -24,10 +24,11 @@ class AbstractImageSurface(Rectangle, HiddenableSurface):
         # 确保长宽均已输入且为正整数
         if self.get_width() < 0 and self.get_height() < 0:
             self.set_size(self.img.get_width(), self.img.get_height())
-        elif self.get_width() < 0 and self.get_height() >= 0:
+        elif self.get_width() < 0 <= self.get_height():
             self.set_width(self.get_height() / self.img.get_height() * self.img.get_width())
-        elif self.get_width() >= 0 and self.get_height() < 0:
+        elif self.get_width() >= 0 > self.get_height():
             self.set_height(self.get_width() / self.img.get_width() * self.img.get_height())
+        self.tag = tag
 
     """透明度"""
 

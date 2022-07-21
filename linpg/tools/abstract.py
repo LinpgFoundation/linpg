@@ -1,8 +1,9 @@
 from subprocess import DEVNULL, STDOUT, check_call
+from abc import ABC
 from ..lang import *
 
 
-class AbstractToolSystem:
+class AbstractToolSystem(ABC):
 
     _TOOL_FOLDER: Final[str] = "ThirdPartyLibraries"
     _TOOL_LIBRARIES: Final[dict] = dict(Specification.get("ThirdPartyLibraries"))
@@ -37,9 +38,11 @@ class AbstractToolSystem:
             self._run_raw_cmd(command_line)
 
     # 运行python命令
-    def _run_py_cmd(self, command_line: list[str]) -> None:
+    @staticmethod
+    def _run_py_cmd(command_line: list[str]) -> None:
         check_call([*["python" if Debug.is_running_on_windows() else "python3", "-m"], *command_line])
 
     # 直接运行命令
-    def _run_raw_cmd(self, command_line: list[str]) -> None:
+    @staticmethod
+    def _run_raw_cmd(command_line: list[str]) -> None:
         check_call(command_line)

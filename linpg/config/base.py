@@ -36,7 +36,7 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Optional[object],
     pointer = dict_to_check
     key_range: int = len(keys)
     last_key_index: int = key_range - 1
-    index: int = 0
+    index: int
     for index in range(key_range):
         try:
             if index < last_key_index:

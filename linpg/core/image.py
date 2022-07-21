@@ -54,7 +54,7 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         self.__is_flipped_horizontally: bool = False
         self.__is_flipped_vertically: bool = False
         self.__crop_rect: Optional[Rectangle] = None
-        self.__no_croping_needed: bool = False
+        self.__no_cropping_needed: bool = False
 
     # 截图的范围
     @property
@@ -64,8 +64,8 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
     def get_crop_rect(self) -> Optional[Rectangle]:
         return self.__crop_rect
 
-    def disable_croping(self) -> None:
-        self.__no_croping_needed = True
+    def disable_cropping(self) -> None:
+        self.__no_cropping_needed = True
 
     def set_crop_rect(self, rect: Optional[Rectangle]) -> None:
         if not Rectangles.equal(self.__crop_rect, rect):
@@ -114,7 +114,7 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         # 翻转图片
         if self.__is_flipped_horizontally is True or self.__is_flipped_vertically is True:
             imgTmp = Images.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)
-        if not self.__no_croping_needed:
+        if not self.__no_cropping_needed:
             # 获取切割rect
             rect: Rectangle = Rectangles.create(imgTmp.get_bounding_rect())
             if self.width != rect.width or self.height != rect.height or self.__crop_rect is not None:

@@ -1,11 +1,12 @@
 from .button import *
 
 # Container抽象
-class AbstractGameObjectsContainer(AbstractImageSurface):
+class AbstractGameObjectsContainer(AbstractImageSurface, metaclass=ABCMeta):
     def __init__(self, bg_img: Optional[PoI], x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
         super().__init__(StaticImage(bg_img, 0, 0, width, height) if bg_img is not None else bg_img, x, y, width, height, tag)
 
     # 获取物品container容器（子类需实现）
+    @abstractmethod
     def _get_container(self) -> Union[dict, list]:
         EXCEPTION.fatal("_get_container()", 1)
 

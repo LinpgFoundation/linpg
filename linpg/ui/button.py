@@ -36,7 +36,7 @@ class ButtonText(StaticTextSurface):
 
 
 # 多态按钮（请勿在引擎外实体化）
-class AbstractButton(AbstractImageSurface):
+class AbstractButton(AbstractImageSurface, metaclass=ABCMeta):
     def __init__(self, img: ImageSurface, x: int, y: int, width: int = -1, height: int = -1, tag: str = ""):
         if width < 0:
             width = img.get_width()

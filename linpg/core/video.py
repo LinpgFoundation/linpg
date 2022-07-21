@@ -13,14 +13,14 @@ except ImportError:
 def _video_validator(path: str) -> None:
     # 如果opencv没有成功地导入
     if not _OPENCV_INITIALIZED:
-        EXCEPTION.fatal("You cannot use any video module unless you intall opencv!")
+        EXCEPTION.fatal("You cannot use any video module unless you install opencv!")
     # 确保路径存在
     elif not os.path.exists(path):
         EXCEPTION.fatal('Cannot find file on path: "{}"'.format(path))
 
 
 # 视频抽象类
-class AbstractVideo:
+class AbstractVideo(ABC):
     def __init__(self, path: str, buffer_num: int, play_range: tuple[int, int] = (0, -1)):
         _video_validator(path)
         self._path: str = path
@@ -208,7 +208,7 @@ class VideoSurface(AbstractVideo):
             # 检测循环
             if self.get_frame_index() < self.get_frame_num():
                 # 如果有设置末端且当前已经超出末端
-                if self._ending_point >= 0 and self.get_frame_index() >= self._ending_point:
+                if 0 <= self._ending_point <= self.get_frame_index():
                     self.__looped_times += 1
                     if not self.__loop:
                         self.stop()

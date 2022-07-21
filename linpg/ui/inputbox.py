@@ -2,7 +2,7 @@ import time
 from .scrollbar import *
 
 # 输入框Abstract，请勿实体化
-class AbstractInputBox(GameObject2d):
+class AbstractInputBox(GameObject2d, metaclass=ABCMeta):
     def __init__(self, x: int_f, y: int_f, font_size: int, txt_color: color_liked, default_width: int) -> None:
         super().__init__(x, y)
         self._FONT: FontGenerator = Font.create(font_size)

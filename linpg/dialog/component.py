@@ -38,7 +38,7 @@ class DialogNavigationWindow(AbstractFrame):
         self._if_update_needed = True
 
     # 重新添加全部的key
-    def readd_all(self, dialogs_data: dict) -> None:
+    def read_all(self, dialogs_data: dict) -> None:
         self.__nodes_map.clear()
         for key in dialogs_data:
             next_keys: list[str] = []
@@ -65,12 +65,12 @@ class DialogNavigationWindow(AbstractFrame):
             # 设置坐标并展示
             key_node.set_pos(offset_x, offset_y)
             key_node.has_been_displayed = True
-            panding: int = 4 * self.__font_size
+            padding: int = 4 * self.__font_size
             if len(key_node.next_keys) > 1:
-                offset_y = key_node.y - len(key_node.next_keys) * self.__font_size - panding
+                offset_y = key_node.y - len(key_node.next_keys) * self.__font_size - padding
             for child_key in key_node.next_keys:
                 offset_y = self.__update_node_pos(child_key, key_node.x + self.__font_size * 10, offset_y)
-                offset_y += panding
+                offset_y += padding
             if self.__most_right < key_node.right:
                 self.__most_right = key_node.right
             if self.__most_bottom < key_node.bottom:
@@ -123,7 +123,7 @@ class DialogNavigationWindow(AbstractFrame):
 
 
 # 对话框模块基础框架
-class AbstractDialogBox(HiddenableSurface):
+class AbstractDialogBox(HiddenableSurface, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         # 对胡框数据
@@ -309,7 +309,8 @@ class DialogBox(AbstractDialogBox):
         return self.__auto_mode is True and self.__read_time >= self.__total_letters
 
     # 如果音效还在播放则停止播放文字音效
-    def stop_playing_text_sound(self) -> None:
+    @staticmethod
+    def stop_playing_text_sound() -> None:
         if LINPG_RESERVED_SOUND_EFFECTS_CHANNEL is not None and LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy():
             LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.stop()
 

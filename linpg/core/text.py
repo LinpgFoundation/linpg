@@ -1,7 +1,7 @@
 from .surface import *
 
 
-class AbstractTextSurface(GameObject2d, HiddenableSurface):
+class AbstractTextSurface(GameObject2d, HiddenableSurface, metaclass=ABCMeta):
     def __init__(
         self,
         text: str,

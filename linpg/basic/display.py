@@ -82,6 +82,7 @@ class Display:
     # 初始化屏幕
     @classmethod
     def init(cls, flags: int = -1) -> ImageSurface:
+        monitorId: int = int(Setting.get("MonitorToDisplay"))
         # 如果是全屏模式
         if cls.__SCALE >= 100:
             if flags < 0:
@@ -89,18 +90,19 @@ class Display:
             if Setting.get("EnableOpenGL") is True:
                 flags |= pygame.OPENGL
             # 如果分辨率与设置中的参数不符，则更新设置中的分辨率参数
-            _info = pygame.display.Info()
-            if cls.__STANDARD_WIDTH != _info.current_w or cls.__STANDARD_HEIGHT != _info.current_h:
-                cls.__STANDARD_WIDTH = _info.current_w
-                cls.__STANDARD_HEIGHT = _info.current_h
+            theSelectedScreenSize: tuple[int, int] = pygame.display.get_desktop_sizes()[monitorId]
+            if cls.__STANDARD_WIDTH != theSelectedScreenSize[0] or cls.__STANDARD_HEIGHT != theSelectedScreenSize[1]:
+                cls.__STANDARD_WIDTH = theSelectedScreenSize[0]
+                cls.__STANDARD_HEIGHT = theSelectedScreenSize[1]
                 Setting.set("Resolution", "width", value=cls.__STANDARD_WIDTH)
                 Setting.set("Resolution", "height", value=cls.__STANDARD_HEIGHT)
                 Setting.save()
         # 生成screen
         cls.__SCREEN_WINDOW = pygame.display.set_mode(
-            cls.get_size(), flags, vsync=1 if Setting.get("EnableVerticalSync") is True else 0
+            cls.get_size(), flags, display=monitorId, vsync=1 if Setting.get("EnableVerticalSync") is True else 0
         )
         cls.__SCREEN_WINDOW.set_alpha(None)
+        cls.__SCREEN_WINDOW.fill(Colors.BLACK)
         return cls.__SCREEN_WINDOW
 
     # 获取屏幕
@@ -118,3 +120,6 @@ class Display:
     @classmethod
     def blit(cls, surface_to_draw: ImageSurface, pos: Sequence) -> None:
         cls.__SCREEN_WINDOW.blit(surface_to_draw, Coordinates.convert(pos))
+
+
+pygame.display.set_mode((1, 1))

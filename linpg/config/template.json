@@ -23,7 +23,7 @@
         }
     },
     "setting": {
-        "Antialias": true,
+        "AntiAlias": true,
         "DeveloperMode": false,
         "EnableOpenGL": false,
         "EnableVerticalSync": false,
@@ -32,6 +32,7 @@
         "FontType": "custom",
         "Language": "English",
         "LowMemoryMode": false,
+        "MonitorToDisplay": 0,
         "MouseIconWidth": 18,
         "MouseMoveSpeed": 30,
         "NumberOfChannels": 8,

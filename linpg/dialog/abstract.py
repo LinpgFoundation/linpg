@@ -1,11 +1,13 @@
 from .script import *
 
 # 视觉小说系统接口
-class AbstractDialogSystem(AbstractGameSystem):
+class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         # 存储视觉小说数据的参数
         self._dialog_data: dict[str, dict] = {}
+        # 当前部分
+        self._part = ""
         # 当前对话的id
         self._dialog_id: str = "head"
         # 黑色Void帘幕
@@ -76,9 +78,8 @@ class AbstractDialogSystem(AbstractGameSystem):
 
     # 生产一个新的推荐id
     def generate_a_new_recommended_key(self, index: int = 1) -> str:
-        newId: str = ""
         while True:
-            newId = ("id_0" if index <= 9 else "id_") + str(index)
+            newId: str = ("id_0" if index <= 9 else "id_") + str(index)
             if newId in self.dialog_content:
                 index += 1
             else:
@@ -165,7 +166,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                         (img_path := Specification.get_directory("background_image", self.__background_image_name))
                     ):
                         self.__background_image_surface = StaticImage(img_path, 0, 0)
-                        self.__background_image_surface.disable_croping()
+                        self.__background_image_surface.disable_cropping()
                     # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
                     elif os.path.exists(_path := Specification.get_directory("movie", self.__background_image_name)):
                         self.__background_image_surface = VideoSurface(_path, with_audio=False)
@@ -175,7 +176,7 @@ class AbstractDialogSystem(AbstractGameSystem):
                         )
                 elif CharacterImageManager.dev_mode is True:
                     self.__background_image_surface = StaticImage(Surfaces.texture_is_missing(Display.get_size()), 0, 0)
-                    self.__background_image_surface.disable_croping()
+                    self.__background_image_surface.disable_cropping()
                 else:
                     self.__background_image_surface = NULL_STATIC_IMAGE
             else:

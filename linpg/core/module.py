@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from .system import *
 
 # 坐标类
@@ -129,6 +130,7 @@ class GameObject2d(Coordinate):
     def width(self) -> int:
         return self.get_width()
 
+    @abstractmethod
     def get_width(self) -> int:
         EXCEPTION.fatal("get_width()", 1)
 
@@ -137,6 +139,7 @@ class GameObject2d(Coordinate):
     def height(self) -> int:
         return self.get_height()
 
+    @abstractmethod
     def get_height(self) -> int:
         EXCEPTION.fatal("get_height()", 1)
 

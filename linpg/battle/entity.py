@@ -141,7 +141,7 @@ class Entity(Position):
 
     # 查询特点角色的数据
     @classmethod
-    def get_enity_data(cls, _type: str) -> dict:
+    def get_entity_data(cls, _type: str) -> dict:
         return cls.__DATABASE[_type]
 
     # 阵营
@@ -251,11 +251,11 @@ class Entity(Position):
         self.__imgId_dict[action]["imgId"] += amount
 
     # 获取角色特定动作的图片透明度
-    def get_imgAlpaha(self, action: str) -> int:
+    def get_imgAlpha(self, action: str) -> int:
         return int(self.__imgId_dict[action]["alpha"])
 
     # 设定角色特定动作的图片透明度
-    def set_imgAlpaha(self, action: str, alpha: int) -> None:
+    def set_imgAlpha(self, action: str, alpha: int) -> None:
         self.__imgId_dict[action]["alpha"] = alpha
 
     """
@@ -278,7 +278,7 @@ class Entity(Position):
 
     # 当前血量百分比
     @property
-    def hp_precentage(self) -> float:
+    def hp_percentage(self) -> float:
         return round(self.__current_hp / self.__max_hp, 5)
 
     # 治愈
@@ -377,8 +377,8 @@ class Entity(Position):
         cls, _x: int, _y: int, _ranges: tuple[int, ...], MAP_P: TileMap, ifFlip: bool, ifHalfMode: bool = False
     ) -> list[list[tuple[int, int]]]:
         # 初始化数据
-        start_point: int = 0
-        end_point: int = 0
+        start_point: int
+        end_point: int
         max_effective_range: int = sum(_ranges)
         # 确定范围
         if not ifHalfMode:
@@ -391,8 +391,8 @@ class Entity(Position):
             start_point = _y
             end_point = _y + max_effective_range + 1
         # 所在的区域
-        attack_range: list[list[tuple[int, int]]] = [[] for i in range(len(_ranges))]
-        the_range_in: int = -1
+        attack_range: list[list[tuple[int, int]]] = [[] for _ in range(len(_ranges))]
+        the_range_in: int
         row_start: int = _x - max_effective_range
         row_end: int = _x + max_effective_range + 1
         # append坐标
@@ -502,7 +502,7 @@ class Entity(Position):
     def draw(self, _surface: ImageSurface, MAP_P: TileMap, update_id_only: bool = False) -> None:
         # 画出角色
         if not update_id_only:
-            self.__blit_entity_img(_surface, MAP_P, self.get_imgAlpaha(self.__current_action))
+            self.__blit_entity_img(_surface, MAP_P, self.get_imgAlpha(self.__current_action))
         """计算imgId"""
         # 如果正在播放移动动作，则需要根据现有路径更新坐标
         if self.__current_action == "move" and not self.__moving_complete:

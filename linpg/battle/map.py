@@ -386,7 +386,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
 
     # 更新方块
     def set_block(self, _x: int, _y: int, name: str) -> None:
-        block_id: int = 0
+        block_id: int
         try:
             block_id = self.__tile_lookup_table.index(name)
         except ValueError:

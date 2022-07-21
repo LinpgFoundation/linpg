@@ -1,3 +1,4 @@
+from abc import ABCMeta
 import threading
 from ..basic import *
 
@@ -19,7 +20,7 @@ class SaveDataThread(threading.Thread):
 
 
 # 系统模块接口
-class AbstractSystem:
+class AbstractSystem(ABC):
     def __init__(self) -> None:
         # 判定用于判定是否还在播放的参数
         self.__is_playing: bool = True
@@ -99,7 +100,8 @@ class SystemWithBackgroundMusic(AbstractSystem):
             LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.play(self.__audio)
 
     # 停止播放
-    def stop_bgm(self) -> None:
+    @staticmethod
+    def stop_bgm() -> None:
         if LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL is not None:
             LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.stop()
 
@@ -113,7 +115,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
 
 
 # 游戏模块接口
-class AbstractGameSystem(SystemWithBackgroundMusic):
+class AbstractGameSystem(SystemWithBackgroundMusic, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         # 参数

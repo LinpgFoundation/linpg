@@ -1,7 +1,7 @@
 from .battle import *
 
 # 地图编辑器系统
-class AbstractMapEditor(AbstractBattleSystem):
+class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
     def __init__(self) -> None:
         # 初始化父类
         super().__init__()
@@ -33,6 +33,7 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__no_container_is_hovered: bool = False
 
     # 根据数据更新特定的角色 - 子类需实现
+    @abstractmethod
     def update_entity(self, faction: str, key: str, data: dict) -> None:
         EXCEPTION.fatal("update_entity()", 1)
 
@@ -105,18 +106,18 @@ class AbstractMapEditor(AbstractBattleSystem):
         container_height: int = _surface.get_height()
         button_width: int = _surface.get_width() // 25
         button_height: int = _surface.get_height() // 5
-        panding: int = _surface.get_height() // 100
+        padding: int = _surface.get_height() // 100
         self.__right_container_buttons.get("select_block").set_left(
             (
                 container_width
                 - self.__right_container_buttons.get("select_block").get_width()
                 - self.__right_container_buttons.get("select_decoration").get_width()
-                - panding
+                - padding
             )
             // 2
         )
         self.__right_container_buttons.get("select_decoration").set_left(
-            self.__right_container_buttons.get("select_block").right + panding
+            self.__right_container_buttons.get("select_block").right + padding
         )
         self.__UIContainerRight.set_size(container_width, container_height)
         self.__UIContainerButtonRight = MovableImage(
@@ -141,7 +142,7 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__envImgContainer.set_item_per_line(4)
         self.__envImgContainer.set_scroll_bar_pos("right")
         self.__envImgContainer.set_visible(True)
-        self.__envImgContainer.distance_between_item = panding
+        self.__envImgContainer.distance_between_item = padding
         # 加载所有的装饰品
         self.__decorationsImgContainer.set_pos(container_width * 3 // 40, _surface.get_height() // 10)
         self.__decorationsImgContainer.set_size(container_width * 17 // 20, _surface.get_height() * 17 // 20)
@@ -163,7 +164,7 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__decorationsImgContainer.set_item_per_line(4)
         self.__decorationsImgContainer.set_scroll_bar_pos("right")
         self.__decorationsImgContainer.set_visible(False)
-        self.__decorationsImgContainer.distance_between_item = panding
+        self.__decorationsImgContainer.distance_between_item = padding
         """加载下方的界面"""
         container_width = _surface.get_width() * 4 // 5
         container_height = _surface.get_height() * 3 // 10
@@ -201,7 +202,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                     ),
                 )
             newContainer.set_scroll_bar_pos("bottom")
-            newContainer.distance_between_item = panding
+            newContainer.distance_between_item = padding
             self.__entitiesImagesContainers.append(newContainer)
             newButton: Button = Button.load("<&ui>button.png", (0, 0), (0, 0), 100)
             newButton.set_text(
@@ -211,7 +212,7 @@ class AbstractMapEditor(AbstractBattleSystem):
             )
             newButton.set_auto_resize(True)
             if len(self.__bottom_container_buttons) > 0:
-                newButton.set_left(self.__bottom_container_buttons[len(self.__bottom_container_buttons) - 1].right + panding)
+                newButton.set_left(self.__bottom_container_buttons[len(self.__bottom_container_buttons) - 1].right + padding)
             else:
                 self.__entitiesImagesContainerUsingIndex = 0
             self.__bottom_container_buttons.append(newButton)
@@ -222,9 +223,9 @@ class AbstractMapEditor(AbstractBattleSystem):
         self.__range_red.set_alpha(150)
         self.__object_to_put_down.clear()
         # 设置按钮位置
-        self.__buttons_container.get("back").set_left(self.__buttons_container.get("save").get_right() + panding)
-        self.__buttons_container.get("delete").set_left(self.__buttons_container.get("back").get_right() + panding)
-        self.__buttons_container.get("reload").set_left(self.__buttons_container.get("delete").get_right() + panding)
+        self.__buttons_container.get("back").set_left(self.__buttons_container.get("save").get_right() + padding)
+        self.__buttons_container.get("delete").set_left(self.__buttons_container.get("back").get_right() + padding)
+        self.__buttons_container.get("reload").set_left(self.__buttons_container.get("delete").get_right() + padding)
 
     # 将地图制作器的界面画到屏幕上
     def draw(self, _surface: ImageSurface) -> None:
@@ -274,7 +275,7 @@ class AbstractMapEditor(AbstractBattleSystem):
                         # 移除坐标冲突的角色
                         self.remove_entity_on_pos(self._block_is_hovering)
                         # 生成需要更新的数据
-                        _new_data: dict = deepcopy(Entity.get_enity_data(self.__object_to_put_down["id"]))
+                        _new_data: dict = deepcopy(Entity.get_entity_data(self.__object_to_put_down["id"]))
                         _new_data.update(
                             {
                                 "x": self._block_is_hovering[0],

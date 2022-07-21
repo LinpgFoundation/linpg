@@ -47,6 +47,12 @@ class DecorationObject(GameObject2d):
         imgToBlit.move_to(pos)
         imgToBlit.draw(_surface)
 
+    def get_width(self) -> int:
+        return 0
+
+    def get_height(self) -> int:
+        return 0
+
 
 # 篝火
 class CampfireObject(DecorationObject):

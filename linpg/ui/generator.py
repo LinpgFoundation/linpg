@@ -56,9 +56,9 @@ class UiGenerator:
                     return int(item[key])
                 except Exception:
                     EXCEPTION.fatal(
-                        'The "{0}" for "{1}" needs to an interger instead of "{2}".'.format(key, item["name"], item[key])
+                        'The "{0}" for "{1}" needs to an integer instead of "{2}".'.format(key, item["name"], item[key])
                         if "name" in item
-                        else 'The "{0}" needs to an interger instead of "{1}".'.format(key, item[key])
+                        else 'The "{0}" needs to an integer instead of "{1}".'.format(key, item[key])
                     )
         else:
             return int(item[key])
@@ -92,6 +92,7 @@ class UiGenerator:
         while text_index < len(text):
             if text[text_index] == "{":
                 # 寻找 "}"
+                a: int
                 for a in range(text_index + 1, len(text)):
                     if text[a] == "}":
                         find_close_bracket = True

@@ -114,7 +114,7 @@ class Font:
                 cls.__LINPG_GLOBAL_FONTS[key] = FontGenerator()
             cls.__LINPG_GLOBAL_FONTS[key].update(size, ifBold, ifItalic)
         else:
-            EXCEPTION.fatal("Font size must be positive interger not {}!".format(size))
+            EXCEPTION.fatal("Font size must be positive integer not {}!".format(size))
 
     # 获取全局文字
     @classmethod
@@ -169,7 +169,7 @@ class Font:
         txt: strint,
         color: color_liked,
         size: int,
-        panding: int,
+        padding: int,
         background_color: color_liked,
         ifBold: bool = False,
         ifItalic: bool = False,
@@ -178,7 +178,7 @@ class Font:
     ) -> ImageSurface:
         font_surface = cls.render(txt, color, size, ifBold, ifItalic, with_bounding=True)
         des_surface = Surfaces.colored(
-            (font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2), background_color
+            (font_surface.get_width() + padding * 2, font_surface.get_height() + padding * 2), background_color
         )
         Draw.rect(
             des_surface,
@@ -186,5 +186,5 @@ class Font:
             ((0, 0), des_surface.get_size()),
             thickness,
         )
-        des_surface.blit(font_surface, (panding, panding))
+        des_surface.blit(font_surface, (padding, padding))
         return des_surface

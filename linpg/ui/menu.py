@@ -1,7 +1,7 @@
 from .generator import *
 
 # 内部菜单模块的抽象
-class AbstractInternalMenu(HiddenableSurface):
+class AbstractInternalMenu(HiddenableSurface, metaclass=ABCMeta):
     def __init__(self, menu_name: str) -> None:
         super().__init__(False)
         self._CONTENT: Optional[GameObjectsDictContainer] = None
@@ -63,7 +63,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
                 self.need_update["language"] = True
             # 按键的判定按钮
             if self._CONTENT.item_being_hovered is not None and not lang_drop_down.is_hovered():
-                item_percentage_t: int = 0
+                item_percentage_t: int
                 # 如果碰到全局音量条
                 if self._CONTENT.item_being_hovered == "global_sound_volume":
                     item_percentage_t = int(self._CONTENT.get("global_sound_volume").percentage * 100)
@@ -181,10 +181,12 @@ class PauseMenu(AbstractInternalMenu):
 # 暂停菜单处理模块
 class PauseMenuModuleForGameSystem(AbstractInternalMenu):
     def __init__(self) -> None:
+        super().__init__("")
         # 暂停菜单
         self.__pause_menu: Optional[PauseMenu] = None
 
     # 保存进度（子类需实现）
+    @abstractmethod
     def save_progress(self) -> None:
         EXCEPTION.fatal("_get_data_need_to_save()", 1)
 
@@ -193,6 +195,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
         Media.unload()
 
     # 停止播放（子类需实现）
+    @abstractmethod
     def stop(self) -> None:
         EXCEPTION.fatal("stop()", 1)
 

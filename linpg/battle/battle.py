@@ -1,7 +1,7 @@
 from .entity import *
 
 # 战斗系统接口，请勿实例化
-class AbstractBattleSystem(AbstractGameSystem):
+class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         # 用于判断是否移动屏幕的参数
@@ -31,6 +31,7 @@ class AbstractBattleSystem(AbstractGameSystem):
         EXCEPTION.fatal("_display_entities()", 1)
 
     # 加载角色的数据 - 子类需实现
+    @abstractmethod
     def _load_entities(self, _entities: dict, _mode: str) -> None:
         EXCEPTION.fatal("_load_entities()", 1)
 
@@ -94,7 +95,7 @@ class AbstractBattleSystem(AbstractGameSystem):
             self.__moving_screen_in_direction_right = False
 
     # 检测手柄事件
-    def _check_jostick_events(self) -> None:
+    def _check_joystick_events(self) -> None:
         self.__moving_screen_in_direction_up = round(Controller.joystick.get_axis(4)) == -1
         self.__moving_screen_in_direction_down = round(Controller.joystick.get_axis(4)) == 1
         self.__moving_screen_in_direction_right = round(Controller.joystick.get_axis(3)) == 1
@@ -110,7 +111,7 @@ class AbstractBattleSystem(AbstractGameSystem):
                 self._check_key_up(event)
         # 处理手柄事件
         if Controller.joystick.get_init():
-            self._check_jostick_events()
+            self._check_joystick_events()
         # 检测是否使用了鼠标移动了地图的本地坐标
         if Controller.mouse.get_pressed(2):
             if self.__mouse_move_temp_x == -1 and self.__mouse_move_temp_y == -1:
@@ -149,7 +150,7 @@ class AbstractBattleSystem(AbstractGameSystem):
             else:
                 self._screen_to_move_x -= self._MAP.block_width // 4
         # 如果需要移动屏幕
-        temp_value: int = 0
+        temp_value: int
         if self._screen_to_move_x is not None and self._screen_to_move_x != 0:
             temp_value = self._MAP.get_local_x() + self._screen_to_move_x // 5
             if Display.get_width() - self._MAP.get_width() <= temp_value <= 0:

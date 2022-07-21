@@ -5,7 +5,6 @@ from tkinter import Tk
 
 # 导入pygame组件
 import pygame
-from pygame.locals import *
 
 # 加载颜色模块
 from pygame.colordict import THECOLORS
@@ -25,8 +24,8 @@ number = Union[int, float]
 # 颜色类
 color_liked = Union[Sequence[int], str]
 # 图形类
-ImageSurface = pygame.surface.Surface
-PoI = Union[str, pygame.surface.Surface]
+ImageSurface = pygame.Surface
+PoI = Union[str, pygame.Surface]
 # 事件 type alias
 PG_Event = pygame.event.Event
 
@@ -47,13 +46,13 @@ class Numbers:
 
     # 检测int数值是否越界
     @staticmethod
-    def keep_int_in_range(number: int, min_value: int, max_value: int) -> int:
-        return max(min(max_value, number), min_value)
+    def keep_int_in_range(_number: int, min_value: int, max_value: int) -> int:
+        return max(min(max_value, _number), min_value)
 
     # 检测int或float数值是否越界
     @staticmethod
-    def keep_number_in_range(number: number, min_value: number, max_value: number) -> number:
-        return max(min(max_value, number), min_value)
+    def keep_number_in_range(_number: number, min_value: number, max_value: number) -> number:
+        return max(min(max_value, _number), min_value)
 
     # 转换string形式的百分比
     @staticmethod

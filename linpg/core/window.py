@@ -8,11 +8,6 @@ PySimpleGUI.theme(Specification.get("PySimpleGUITheme"))
 # 确认窗口
 class ConfirmMessageWindow:
     def __init__(self, title: str, message: str, keep_on_top: bool = True) -> None:
-        """Display a message box.
-        :param str title: A title string or None.
-        :param str message: A message string.
-        :param bool _force_toplevel: If ``True``, display an message on toplevel.
-        """
         self.__title: str = title
         self.__message: str = message
         self.__keep_on_top: bool = keep_on_top

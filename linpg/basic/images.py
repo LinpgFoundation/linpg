@@ -49,7 +49,7 @@ class Images:
                 )
             elif path[1] == "@":
                 return Specification.get_directory(flag_key, file_name)
-        EXCEPTION.fatal('Invaid tag: "{}"'.format(path))
+        EXCEPTION.fatal('Invalid tag: "{}"'.format(path))
 
     # 识快速加载图片
     @classmethod
@@ -113,28 +113,24 @@ class Images:
     def resize(img: ImageSurface, size: tuple) -> ImageSurface:
         # 编辑图片
         if size[1] is not None and size[1] >= 0 and size[0] is None:
-            img2 = pygame.transform.scale(img, (round(size[1] / img.get_height() * img.get_width()), round(size[1])))
+            return pygame.transform.scale(img, (round(size[1] / img.get_height() * img.get_width()), round(size[1])))
         elif size[1] is None and size[0] is not None and size[0] >= 0:
-            img2 = pygame.transform.scale(img, (round(size[0]), round(size[0] / img.get_width() * img.get_height())))
+            return pygame.transform.scale(img, (round(size[0]), round(size[0] / img.get_width() * img.get_height())))
         elif size[0] >= 0 and size[1] >= 0:
-            img2 = pygame.transform.scale(img, (round(size[0]), round(size[1])))
-        elif size[0] < 0 or size[1] < 0:
-            EXCEPTION.fatal("Both width and height must be positive interger!")
-        return img2
+            return pygame.transform.scale(img, (round(size[0]), round(size[1])))
+        EXCEPTION.fatal("Both width and height must be positive integer!")
 
     # 精准地缩放尺寸
     @staticmethod
     def smoothly_resize(img: ImageSurface, size: tuple) -> ImageSurface:
         # 编辑图片
         if size[1] is not None and size[1] >= 0 and size[0] is None:
-            img = pygame.transform.smoothscale(img, (round(size[1] / img.get_height() * img.get_width()), round(size[1])))
+            return pygame.transform.smoothscale(img, (round(size[1] / img.get_height() * img.get_width()), round(size[1])))
         elif size[1] is None and size[0] is not None and size[0] >= 0:
-            img = pygame.transform.smoothscale(img, (round(size[0]), round(size[0] / img.get_width() * img.get_height())))
+            return pygame.transform.smoothscale(img, (round(size[0]), round(size[0] / img.get_width() * img.get_height())))
         elif size[0] >= 0 and size[1] >= 0:
-            img = pygame.transform.smoothscale(img, (round(size[0]), round(size[1])))
-        elif size[0] < 0 or size[1] < 0:
-            EXCEPTION.fatal("Both width and height must be positive interger!")
-        return img
+            return pygame.transform.smoothscale(img, (round(size[0]), round(size[1])))
+        EXCEPTION.fatal("Both width and height must be positive integer!")
 
     # 增加图片暗度
     @staticmethod

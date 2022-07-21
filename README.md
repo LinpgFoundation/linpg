@@ -70,7 +70,7 @@ This branch holds the latest version that is available to the public. While this
 
 ### * in-process:
 
-**DON'T USE THIS BRANCH!** This brach contains a version that is currently unfinished.
+**DON'T USE THIS BRANCH!** This branch contains a version that is currently unfinished.
 
 还未完成，无法运行的版本，请勿使用
 

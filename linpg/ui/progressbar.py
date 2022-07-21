@@ -1,7 +1,7 @@
 from .console import *
 
 # 进度条抽象，请勿直接初始化
-class AbstractProgressBar(AbstractImageSurface):
+class AbstractProgressBar(AbstractImageSurface, metaclass=ABCMeta):
     def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str):
         super().__init__(img, x, y, width, height, tag)
         self.__current_percentage: float = 0.0
@@ -188,7 +188,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
     ):
         super().__init__(imgOnTop, imgOnBottom, x, y, max_width, height, mode)
         self._percentage_to_be: float = 0.0
-        self.__perecent_update_each_time: float = 0.0
+        self.__percent_update_each_time: float = 0.0
         self.__total_update_intervals = 10
 
     # 数据准确度
@@ -210,7 +210,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
 
     def set_percentage(self, value: float) -> None:
         self._percentage_to_be = round(Numbers.keep_number_in_range(value, 0, 1) * self.accuracy, 5)
-        self.__perecent_update_each_time = round(
+        self.__percent_update_each_time = round(
             (self._percentage_to_be - self.__real_current_percentage) / self.__total_update_intervals, 5
         )
 
@@ -244,11 +244,11 @@ class DynamicProgressBarSurface(ProgressBarSurface):
             # 检查并更新百分比
             if (
                 self.__real_current_percentage < self._percentage_to_be
-                and self.__perecent_update_each_time > 0
+                and self.__percent_update_each_time > 0
                 or self.__real_current_percentage > self._percentage_to_be
-                and self.__perecent_update_each_time < 0
+                and self.__percent_update_each_time < 0
             ):
-                super().set_percentage(super().get_percentage() + self.__perecent_update_each_time / self.accuracy)
+                super().set_percentage(super().get_percentage() + self.__percent_update_each_time / self.accuracy)
             elif self.__real_current_percentage != self._percentage_to_be:
                 super().set_percentage(self._percentage_to_be / self.accuracy)
             # 画出图形

@@ -140,9 +140,9 @@ class StaticTextSurface(AbstractTextSurface):
         return self.__text_surface.get_height() if self.__text_surface is not None else 0
 
     # 画出
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible() and self.__text_surface is not None:
-            surface.blit(self.__text_surface, Coordinates.add(self.pos, offSet))
+            _surface.blit(self.__text_surface, Coordinates.add(self.pos, offSet))
 
 
 class DynamicTextSurface(AbstractTextSurface):
@@ -170,14 +170,14 @@ class DynamicTextSurface(AbstractTextSurface):
     def get_height(self) -> int:
         return self.__FONT_GENERATOR.estimate_text_height(self.get_text())
 
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
             _text_surface: ImageSurface = self.__FONT_GENERATOR.render(
                 self.get_text(), self.get_color(), with_bounding=self.get_with_bounding()
             )
             if self.get_alpha() != 255:
                 _text_surface.set_alpha(255)
-            surface.blit(_text_surface, Coordinates.add(self.pos, offSet))
+            _surface.blit(_text_surface, Coordinates.add(self.pos, offSet))
 
 
 # 动态文字类
@@ -236,12 +236,12 @@ class ResizeWhenHoveredTextSurface(StaticTextSurface):
         return self.__is_hovered
 
     # 画出
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
             self.__is_hovered = self.is_hovered(offSet)
             if not self.__is_hovered:
-                super().display(surface, offSet)
+                super().display(_surface, offSet)
             else:
-                self.__text_when_hovered.display(surface, offSet)
+                self.__text_when_hovered.display(_surface, offSet)
         else:
             self.__is_hovered = False

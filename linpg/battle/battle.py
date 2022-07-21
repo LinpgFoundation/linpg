@@ -27,7 +27,7 @@ class AbstractBattleSystem(AbstractGameSystem):
         self._block_is_hovering: Optional[tuple[int, int]] = None
 
     # 渲染出所有的entity - 子类需实现
-    def _display_entities(self, screen: ImageSurface) -> None:
+    def _display_entities(self, _surface: ImageSurface) -> None:
         EXCEPTION.fatal("_display_entities()", 1)
 
     # 加载角色的数据 - 子类需实现
@@ -101,7 +101,7 @@ class AbstractBattleSystem(AbstractGameSystem):
         self.__moving_screen_in_direction_left = round(Controller.joystick.get_axis(3)) == -1
 
     # 展示地图
-    def _display_map(self, screen: ImageSurface) -> None:
+    def _display_map(self, _surface: ImageSurface) -> None:
         # 处理鼠标事件
         for event in Controller.events:
             if event.type == Keys.DOWN:
@@ -170,14 +170,14 @@ class AbstractBattleSystem(AbstractGameSystem):
                 self._screen_to_move_y = 0
         # 展示地图
         self._screen_to_move_x, self._screen_to_move_y = self._MAP.display_map(
-            screen,
+            _surface,
             self._screen_to_move_x if self._screen_to_move_x is not None else 0,
             self._screen_to_move_y if self._screen_to_move_y is not None else 0,
         )
         # 获取位于鼠标位置的tile块
         self._block_is_hovering = self._MAP.calculate_coordinate()
         # 展示角色动画
-        self._display_entities(screen)
+        self._display_entities(_surface)
         # 检测角色所占据的装饰物（即需要透明化，方便玩家看到角色）
         charactersPos: list = []
         for value in self._entities_data.values():
@@ -185,4 +185,4 @@ class AbstractBattleSystem(AbstractGameSystem):
                 charactersPos.append((round(dataDict.x), round(dataDict.y)))
                 charactersPos.append((round(dataDict.x) + 1, round(dataDict.y) + 1))
         # 展示场景装饰物
-        self._MAP.display_decoration(screen, tuple(charactersPos))
+        self._MAP.display_decoration(_surface, tuple(charactersPos))

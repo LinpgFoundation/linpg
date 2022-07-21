@@ -39,7 +39,7 @@ class AbstractImageSurface(Rectangle, HiddenableSurface):
         return int(self.img.get_alpha())
 
     def set_alpha(self, value: int) -> None:
-        self.img.set_alpha(keep_int_in_range(value, 0, 255))
+        self.img.set_alpha(Numbers.keep_int_in_range(value, 0, 255))
 
     def add_alpha(self, value: int) -> None:
         self.set_alpha(self.get_alpha() + value)
@@ -177,7 +177,7 @@ class AdvancedAbstractImageSurface(AbstractImageSurface, SurfaceWithLocalPos):
         self._set_alpha(value)
 
     def _set_alpha(self, value: int, update_original: bool = True) -> None:
-        self._alpha = keep_int_in_range(value, 0, 255)
+        self._alpha = Numbers.keep_int_in_range(value, 0, 255)
         if update_original is True and isinstance(self.img, ImageSurface):
             super().set_alpha(self._alpha)
 
@@ -253,25 +253,25 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 画出轮廓
     def draw_outline(
-        self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN, color: color_liked = "red", line_width: int = 2
+        self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN, color: color_liked = "red", line_width: int = 2
     ) -> None:
         if self._need_update is True:
             self._update_img()
         if self._processed_img is not None:
             Draw.rect(
-                surface, Colors.get(color), (Coordinates.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width
+                _surface, Colors.get(color), (Coordinates.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width
             )
         else:
             EXCEPTION.fatal("The image has not been correctly processed.")
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
             # 如果图片需要更新，则先更新
             if self._need_update is True:
                 self._update_img()
             # 将已经处理好的图片画在给定的图层上
             if self._processed_img is not None:
-                surface.blit(self._processed_img, Coordinates.add(self.abs_pos, offSet))
+                _surface.blit(self._processed_img, Coordinates.add(self.abs_pos, offSet))
             else:
                 EXCEPTION.fatal("The image has not been correctly processed.")

@@ -4,7 +4,7 @@ from .progressbar import *
 class UiGenerator:
 
     # 获取默认ui模板
-    __UI_TEMPLATES: dict = Config.load_internal_file("ui.json")
+    __UI_TEMPLATES: Final[dict] = Config.load_internal_file("ui.json")
     # 加载自定义的ui数据（如果存在）
     for key, value in Config.resolve_path_and_load_file(os.path.join("Data", "ui")).items():
         if key not in __UI_TEMPLATES:
@@ -17,7 +17,7 @@ class UiGenerator:
         # 如果是百分比
         if value.endswith("%"):
             try:
-                return int(convert_percentage(value) * value_in_case_percentage)
+                return int(Numbers.convert_percentage(value) * value_in_case_percentage)
             except Exception:
                 EXCEPTION.fatal('Cannot convert "{}" because it is not a valid percentage.'.format(value))
         # 如果是需要从lookup表里寻找的参数

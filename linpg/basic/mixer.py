@@ -62,7 +62,7 @@ class SoundManagement(AbstractSoundManager):
     # 播放音乐
     def play(self, sound_id: int = -1) -> None:
         if len(self.__sounds_list) > 0 and not pygame.mixer.Channel(self._channel_id).get_busy():
-            self.__sound_id = get_random_int(0, len(self.__sounds_list) - 1) if sound_id < 0 else sound_id
+            self.__sound_id = Numbers.get_random_int(0, len(self.__sounds_list) - 1) if sound_id < 0 else sound_id
             pygame.mixer.Channel(self._channel_id).play(self.__sounds_list[self.__sound_id])
 
     # 停止播放
@@ -254,12 +254,12 @@ class Volume:
 
     @classmethod
     def get_global_value(cls) -> int:
-        return keep_int_in_range(round(Setting.get("Sound", "global_value")), 0, cls.__sound_unit)
+        return Numbers.keep_int_in_range(round(Setting.get("Sound", "global_value")), 0, cls.__sound_unit)
 
     @classmethod
     def get_background_music(cls) -> int:
         return round(
-            keep_number_in_range(round(Setting.get("Sound", "background_music"), 2), 0, cls.__sound_unit)
+            Numbers.keep_number_in_range(round(Setting.get("Sound", "background_music"), 2), 0, cls.__sound_unit)
             * cls.get_global_value()
             / cls.__sound_unit
         )
@@ -267,7 +267,7 @@ class Volume:
     @classmethod
     def get_effects(cls) -> int:
         return round(
-            keep_number_in_range(round(Setting.get("Sound", "effects"), 2), 0, cls.__sound_unit)
+            Numbers.keep_number_in_range(round(Setting.get("Sound", "effects"), 2), 0, cls.__sound_unit)
             * cls.get_global_value()
             / cls.__sound_unit
         )
@@ -275,7 +275,7 @@ class Volume:
     @classmethod
     def get_environment(cls) -> int:
         return round(
-            keep_number_in_range(round(Setting.get("Sound", "environment"), 2), 0, cls.__sound_unit)
+            Numbers.keep_number_in_range(round(Setting.get("Sound", "environment"), 2), 0, cls.__sound_unit)
             * cls.get_global_value()
             / cls.__sound_unit
         )

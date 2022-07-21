@@ -232,15 +232,15 @@ class GameObject2d(Coordinate):
         )
 
     # 将图片直接画到surface上
-    def draw(self, surface: ImageSurface) -> None:
-        self.display(surface)
+    def draw(self, _surface: ImageSurface) -> None:
+        self.display(_surface)
 
     # 将图片直接画到屏幕上
     def draw_on_screen(self) -> None:
         self.display(Display.get_window())
 
     # 根据offSet将图片展示到surface的对应位置上 - 子类必须实现
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         EXCEPTION.fatal("display()", 1)
 
     # 根据offSet将图片展示到屏幕的对应位置上
@@ -248,10 +248,10 @@ class GameObject2d(Coordinate):
         self.display(Display.get_window(), offSet)
 
     # 忽略现有坐标，将图片画到surface的指定位置上
-    def blit(self, surface: ImageSurface, pos: tuple[int, int]) -> None:
+    def blit(self, _surface: ImageSurface, pos: tuple[int, int]) -> None:
         old_pos = self.get_pos()
         self.move_to(pos)
-        self.draw(surface)
+        self.draw(_surface)
         self.move_to(old_pos)
 
     # 忽略现有坐标，将图片画到surface的指定位置上

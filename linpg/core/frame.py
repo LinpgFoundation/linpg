@@ -78,7 +78,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
         return False
 
     # 展示
-    def present_on(self, surface: ImageSurface) -> None:
+    def present_on(self, _surface: ImageSurface) -> None:
         # 如果未被隐藏
         if self.is_visible():
             # 如果鼠标之前没有被按下
@@ -150,7 +150,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
             # 更新窗口
             self.__update_window_frame()
             # 画出窗口
-            surface.blit(self.img, self.pos)
+            _surface.blit(self.img, self.pos)
             # 如果需要，则先更新内容surface
             if self._if_update_needed is True:
                 self._update()
@@ -170,12 +170,12 @@ class AbstractFrame(AdvancedAbstractImageSurface):
                 else:
                     real_local_y = self.local_y
                 # 计算尺寸
-                width_of_sub: int = keep_int_in_range(
+                width_of_sub: int = Numbers.keep_int_in_range(
                     self.get_width() - self.__outline_thickness + self.local_x,
                     0,
                     min(self._content_surface.get_width() - real_local_x, self.get_width() - self.__outline_thickness),
                 )
-                height_of_sub: int = keep_int_in_range(
+                height_of_sub: int = Numbers.keep_int_in_range(
                     self.get_height() - self._bar_height - self.__outline_thickness + self.local_y,
                     0,
                     min(
@@ -185,7 +185,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
                 )
                 # 展示内容
                 if width_of_sub > 0 and height_of_sub > 0:
-                    surface.blit(
+                    _surface.blit(
                         get_img_subsurface(self._content_surface, (real_local_x, real_local_y, width_of_sub, height_of_sub)),
                         (abs_pos_x, abs_pos_y),
                     )
@@ -201,4 +201,4 @@ class AbstractFrame(AdvancedAbstractImageSurface):
                 else:
                     rescale_icon = self.__rescale_icon_0
                 rescale_icon.set_center(Controller.mouse.x, Controller.mouse.y)
-                rescale_icon.draw(surface)
+                rescale_icon.draw(_surface)

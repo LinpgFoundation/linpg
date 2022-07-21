@@ -37,14 +37,14 @@ class DynamicImage(AbstractImageSurface):
         self.__processed_img = None
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
             if not Setting.get_low_memory_mode():
                 if self.__processed_img is None or self.__processed_img.get_size() != self.size:
                     self.__processed_img = Images.smoothly_resize(self.img, self.size)
-                surface.blit(self.__processed_img, Coordinates.add(self.pos, offSet))
+                _surface.blit(self.__processed_img, Coordinates.add(self.pos, offSet))
             else:
-                surface.blit(Images.resize(self.img, self.size), Coordinates.add(self.pos, offSet))
+                _surface.blit(Images.resize(self.img, self.size), Coordinates.add(self.pos, offSet))
 
 
 # 用于静态图片的surface
@@ -231,9 +231,9 @@ class MovableImage(StaticImage):
         )
 
     # 画出
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
-            super().display(surface, offSet)
+            super().display(_surface, offSet)
             if self.__is_moving_toward_target is True:
                 if self.__default_x < self.__target_x:
                     if self.x < self.__target_x:
@@ -300,11 +300,11 @@ class AnimatedImage(AdvancedAbstractImageSurface):
         return self.img[self.imgId]  # type: ignore
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
             self.current_image.set_size(self.get_width(), self.get_height())
             self.current_image.set_alpha(self._alpha)
-            self.current_image.display(surface, Coordinates.add(self.pos, offSet))
+            self.current_image.display(_surface, Coordinates.add(self.pos, offSet))
             if self.countDown >= self.updateGap:
                 self.countDown = 0
                 self.imgId += 1

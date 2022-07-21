@@ -172,5 +172,5 @@ class Images:
 
     # 保存图片
     @staticmethod
-    def save(surface: ImageSurface, path: str) -> None:
-        pygame.image.save(surface, path)
+    def save(_surface: ImageSurface, path: str) -> None:
+        pygame.image.save(_surface, path)

@@ -1,5 +1,6 @@
+from typing import Sequence
 import numpy
-from .header import *
+from ..tools import *
 
 ORIGIN: Final[tuple[int, int]] = (0, 0)
 

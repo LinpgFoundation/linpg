@@ -90,16 +90,16 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
         self.__items_container_dict.update(new_content)
 
     # 把物品画到surface上
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         self._item_being_hovered = None
         if self.is_visible():
             current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出背景
             if self.img is not None and self.img is not Surfaces.NULL:
-                self.img.display(surface, current_abs_pos)
+                self.img.display(_surface, current_abs_pos)
             # 画出物品
             for key_of_game_object, game_object_t in self.__items_container_dict.items():
-                game_object_t.display(surface, current_abs_pos)
+                game_object_t.display(_surface, current_abs_pos)
                 if isinstance(game_object_t, Button):
                     if game_object_t.has_been_hovered() is True:
                         self._item_being_hovered = str(key_of_game_object)
@@ -147,16 +147,16 @@ class GameObjectsListContainer(AbstractGameObjectsContainer):
         self.__items_container_list.pop(index)
 
     # 把物品画到surface上
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         self._item_being_hovered = -1
         if self.is_visible():
             current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出背景
             if self.img is not None and self.img is not Surfaces.NULL:
-                self.img.display(surface, current_abs_pos)
+                self.img.display(_surface, current_abs_pos)
             # 画出物品
             for i in range(len(self.__items_container_list)):
-                self.__items_container_list[i].display(surface, current_abs_pos)
+                self.__items_container_list[i].display(_surface, current_abs_pos)
                 if isinstance(self.__items_container_list[i], Button):
                     if self.__items_container_list[i].has_been_hovered() is True:
                         self._item_being_hovered = i

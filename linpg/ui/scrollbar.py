@@ -102,7 +102,7 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos):
             else None
         )
 
-    def display_scrollbar(self, surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
+    def display_scrollbar(self, _surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
         # 获取滚轮条
         right_scroll_bar_rect: Optional[Rectangle] = self._get_right_scroll_bar_rect(off_set[0], off_set[1])
         right_scroll_button_rect: Optional[Rectangle] = self._get_right_scroll_button_rect(off_set[0], off_set[1])
@@ -160,13 +160,13 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos):
                 self.set_local_x(local_x_max)
         # 画出滚动条
         if right_scroll_button_rect is not None:
-            Draw.rect(surface, self._bar_color, right_scroll_button_rect.get_rect())
+            Draw.rect(_surface, self._bar_color, right_scroll_button_rect.get_rect())
         if right_scroll_bar_rect is not None:
-            Draw.rect(surface, self._bar_color, right_scroll_bar_rect.get_rect(), 2)
+            Draw.rect(_surface, self._bar_color, right_scroll_bar_rect.get_rect(), 2)
         if bottom_scroll_button_rect is not None:
-            Draw.rect(surface, self._bar_color, bottom_scroll_button_rect.get_rect())
+            Draw.rect(_surface, self._bar_color, bottom_scroll_button_rect.get_rect())
         if bottom_scroll_bar_rect is not None:
-            Draw.rect(surface, self._bar_color, bottom_scroll_bar_rect.get_rect(), 2)
+            Draw.rect(_surface, self._bar_color, bottom_scroll_bar_rect.get_rect(), 2)
 
 
 # 同一时刻只会拥有一个scrollbar的Surface
@@ -274,7 +274,7 @@ class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface):
                 )
         return None
 
-    def display_scrollbar(self, surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
+    def display_scrollbar(self, _surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
         # 获取滚轮条
         scroll_bar_rect: Optional[Rectangle] = self._get_scroll_bar_rect(off_set[0], off_set[1])
         scroll_button_rect: Optional[Rectangle] = self._get_scroll_button_rect(off_set[0], off_set[1])
@@ -336,9 +336,9 @@ class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface):
             self.set_local_x(local_x_max)
         # 画出滚动条
         if scroll_button_rect is not None:
-            Draw.rect(surface, self._bar_color, scroll_button_rect.get_rect())
+            Draw.rect(_surface, self._bar_color, scroll_button_rect.get_rect())
         if scroll_bar_rect is not None:
-            Draw.rect(surface, self._bar_color, scroll_bar_rect.get_rect(), 2)
+            Draw.rect(_surface, self._bar_color, scroll_bar_rect.get_rect(), 2)
 
 
 # 带有滚动条的Surface容器
@@ -377,12 +377,12 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
         self.clear()
 
     # 把素材画到屏幕上
-    def display(self, surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
         self._item_being_hovered = None
         if self.is_visible():
             # 如果有背景图片，则画出
             if self.img is not None:
-                surface.blit(self.img, Coordinates.add(self.pos, off_set))
+                _surface.blit(self.img, Coordinates.add(self.pos, off_set))
             # 计算出基础坐标
             current_x: int = self.abs_x + off_set[0]
             current_y: int = self.abs_y + off_set[1]
@@ -411,7 +411,7 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                             if new_width > self.get_width():
                                 new_width = self.get_width()
                             subsurface_rect = Rectangle(0, 0, new_width, new_height)
-                            surface.blit(get_img_subsurface(item, subsurface_rect), (current_x, current_y))
+                            _surface.blit(get_img_subsurface(item, subsurface_rect), (current_x, current_y))
                             if subsurface_rect.is_hovered((current_x, current_y)):
                                 self._item_being_hovered = str(key)
                         elif -(item.get_height()) <= abs_local_y < 0:
@@ -423,7 +423,7 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                             if new_width > self.get_width():
                                 new_width = self.get_width()
                             subsurface_rect = Rectangle(0, crop_height, new_width, new_height)
-                            surface.blit(get_img_subsurface(item, subsurface_rect), (current_x, current_y + crop_height))
+                            _surface.blit(get_img_subsurface(item, subsurface_rect), (current_x, current_y + crop_height))
                             if subsurface_rect.is_hovered((current_x, current_y)):
                                 self._item_being_hovered = str(key)
                         # 换行
@@ -444,7 +444,7 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                             if new_height > self.get_height():
                                 new_height = self.get_height()
                             subsurface_rect = Rectangle(0, 0, new_width, new_height)
-                            surface.blit(
+                            _surface.blit(
                                 get_img_subsurface(item, subsurface_rect),
                                 (current_x, current_y),
                             )
@@ -459,7 +459,7 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                             if new_height > self.get_height():
                                 new_height = self.get_height()
                             subsurface_rect = Rectangle(crop_width, 0, new_width, new_height)
-                            surface.blit(get_img_subsurface(item, subsurface_rect), (current_x + crop_width, current_y))
+                            _surface.blit(get_img_subsurface(item, subsurface_rect), (current_x + crop_width, current_y))
                             if subsurface_rect.is_hovered((current_x, current_y)):
                                 self._item_being_hovered = str(key)
                         # 换行
@@ -481,4 +481,4 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                 if item_has_been_dawn_on_this_line > 0:
                     self.__surface_width += item.get_width()
                 self.__surface_height = self.get_height()
-            self.display_scrollbar(surface, off_set)
+            self.display_scrollbar(_surface, off_set)

@@ -9,3 +9,4 @@ test.py
 .vs*/
 linpgassets/
 __init__.py
+.idea/

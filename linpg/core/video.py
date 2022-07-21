@@ -124,7 +124,7 @@ class AbstractVideo:
         return self.__started is True and self.__stopped is not True
 
     # 把画面画到surface上
-    def draw(self, surface: ImageSurface) -> None:
+    def draw(self, _surface: ImageSurface) -> None:
         if self.__started is False:
             self._init()
         if not self.__stopped:
@@ -134,9 +134,9 @@ class AbstractVideo:
             # 处理当前Frame
             if (current_frame := self.__video_stream.read()[1]) is not None:
                 current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2RGB)
-                if current_frame.shape[0] != surface.get_width() or current_frame.shape[1] != surface.get_height():
-                    current_frame = cv2.resize(current_frame, surface.get_size())
-                pygame.surfarray.blit_array(surface, current_frame.swapaxes(0, 1))
+                if current_frame.shape[0] != _surface.get_width() or current_frame.shape[1] != _surface.get_height():
+                    current_frame = cv2.resize(current_frame, _surface.get_size())
+                pygame.surfarray.blit_array(_surface, current_frame.swapaxes(0, 1))
 
 
 # 类似Wallpaper Engine的视频背景，但音乐不与画面同步
@@ -199,8 +199,8 @@ class VideoSurface(AbstractVideo):
         self.__audio_channel = Sound.find_channel()
 
     # 把画面画到surface上
-    def draw(self, surface: ImageSurface) -> None:
-        super().draw(surface)
+    def draw(self, _surface: ImageSurface) -> None:
+        super().draw(_surface)
         if self.is_playing():
             # 播放背景音乐
             if self.__audio_channel is not None and not self.__audio_channel.get_busy() and self.__audio is not None:
@@ -255,8 +255,8 @@ class VideoPlayer(AbstractVideo):
         self._init()
 
     # 把画面画到surface上
-    def draw(self, surface: ImageSurface) -> None:
-        super().draw(surface)
+    def draw(self, _surface: ImageSurface) -> None:
+        super().draw(_surface)
         if self.is_playing():
             if (
                 self.get_frame_index() <= self.get_frame_num()

@@ -365,7 +365,7 @@ class DialogEditor(DialogConverter):
             return "<NULL>"
 
     # 获取下一个对话的ID
-    def __try_get_next_id(self, surface: ImageSurface) -> str:
+    def __try_get_next_id(self, _surface: ImageSurface) -> str:
         if self.does_current_dialog_have_next_dialog() is True:
             theNext = self._current_dialog_content["next_dialog_id"]
             if theNext["type"] == "default" or theNext["type"] == "changeScene":
@@ -373,11 +373,11 @@ class DialogEditor(DialogConverter):
             elif theNext["type"] == "option":
                 if len(theNext["target"]) > 1:
                     self._get_dialog_options_container_ready()
-                    screenshot = surface.copy()
+                    screenshot = _surface.copy()
                     while True:
-                        surface.blit(screenshot, (0, 0))
+                        _surface.blit(screenshot, (0, 0))
                         # 显示对话选项
-                        self._dialog_options_container.display(surface)
+                        self._dialog_options_container.display(_surface)
                         # 等待玩家选择一个选项
                         if Controller.get_event("confirm") and self._dialog_options_container.item_being_hovered >= 0:
                             # 获取下一个对话的id
@@ -395,8 +395,8 @@ class DialogEditor(DialogConverter):
                     return str(self._current_dialog_content["next_dialog_id"]["target"][0]["id"])
         return "<NULL>"
 
-    def draw(self, surface: ImageSurface) -> None:
-        super().draw(surface)
+    def draw(self, _surface: ImageSurface) -> None:
+        super().draw(_surface)
         # 更新对话框数据
         if self.__dialog_txt_system.any_changed_was_made():
             self._current_dialog_content["narrator"] = self.__dialog_txt_system.get_narrator()
@@ -405,9 +405,9 @@ class DialogEditor(DialogConverter):
         if self.__buttons_ui_container is None:
             EXCEPTION.fatal("The ui has not been correctly initialized.")
         # 展示按钮
-        self.__buttons_ui_container.draw(surface)
+        self.__buttons_ui_container.draw(_surface)
         # 展示出当前可供使用的背景音乐
-        self.dialog_bgm_select.draw(surface)
+        self.dialog_bgm_select.draw(_surface)
         if self._current_dialog_content["background_music"] != self.dialog_bgm_select.get_selected_item() and not (
             self._current_dialog_content["background_music"] is None and self.dialog_bgm_select.get_selected_item() == "null"
         ):
@@ -418,7 +418,7 @@ class DialogEditor(DialogConverter):
             )
             self._update_scene(self._dialog_id)
         # 展示出当前可供编辑的dialog部分
-        self.__dialog_part_selection.draw(surface)
+        self.__dialog_part_selection.draw(_surface)
         # 切换当前正在浏览编辑的dialog部分
         if self.__dialog_part_selection.get_selected_item() != self._part:
             self._part = self.__dialog_part_selection.get_selected_item()
@@ -448,7 +448,7 @@ class DialogEditor(DialogConverter):
                 elif self.__buttons_ui_container.item_being_hovered == "delete":
                     if self._dialog_id != "head":
                         lastId = self.__get_last_id()
-                        nextId: str = self.__try_get_next_id(surface)
+                        nextId: str = self.__try_get_next_id(_surface)
                         del self.dialog_content[self._dialog_id]
                         if lastId != "<NULL>":
                             if nextId != "<NULL>":
@@ -466,7 +466,7 @@ class DialogEditor(DialogConverter):
                     else:
                         EXCEPTION.inform("Cannot delete head; you need to delete it manually.")
                 elif self.__buttons_ui_container.item_being_hovered == "next":
-                    if (nextId := self.__try_get_next_id(surface)) != "<NULL>":
+                    if (nextId := self.__try_get_next_id(_surface)) != "<NULL>":
                         self._update_scene(str(nextId))
                     else:
                         EXCEPTION.inform("There is no next dialog id.")
@@ -488,16 +488,16 @@ class DialogEditor(DialogConverter):
                 self._update_scene(self._dialog_id)
         # 显示移除角色的提示
         if CharacterImageManager.character_get_click is not None:
-            surface.blit(self.__remove_npc_button, Controller.mouse.pos)
+            _surface.blit(self.__remove_npc_button, Controller.mouse.pos)
         # 画上右侧菜单的按钮
-        self.__UIContainerRightButton.draw(surface)
+        self.__UIContainerRightButton.draw(_surface)
         # 画上右侧菜单
         if self.__UIContainerRightButton.right < Display.get_width():
-            surface.blit(self.__UIContainerRightImage, (self.__UIContainerRightButton.right, 0))
-            self.__UIContainerRight_bg.display(surface, (self.__UIContainerRightButton.right, 0))
-            self.__UIContainerRight_npc.display(surface, (self.__UIContainerRightButton.right, 0))
-            # self.__UIContainerRight_bg.draw_outline(surface,(self.__UIContainerRightButton.right,0))
-            # self.__UIContainerRight_npc.draw_outline(surface,(self.__UIContainerRightButton.right,0))
+            _surface.blit(self.__UIContainerRightImage, (self.__UIContainerRightButton.right, 0))
+            self.__UIContainerRight_bg.display(_surface, (self.__UIContainerRightButton.right, 0))
+            self.__UIContainerRight_npc.display(_surface, (self.__UIContainerRightButton.right, 0))
+            # self.__UIContainerRight_bg.draw_outline(_surface,(self.__UIContainerRightButton.right,0))
+            # self.__UIContainerRight_npc.draw_outline(_surface,(self.__UIContainerRightButton.right,0))
             # 检测按钮
             if self.__button_select_background.is_hovered((self.__UIContainerRightButton.right, 0)) and confirm_event_tag is True:
                 self.__UIContainerRight_bg.set_visible(True)
@@ -508,8 +508,8 @@ class DialogEditor(DialogConverter):
                 self.__UIContainerRight_npc.set_visible(True)
                 confirm_event_tag = False
             # 画出按钮
-            self.__button_select_background.display(surface, (self.__UIContainerRightButton.right, 0))
-            self.__button_select_npc.display(surface, (self.__UIContainerRightButton.right, 0))
+            self.__button_select_background.display(_surface, (self.__UIContainerRightButton.right, 0))
+            self.__button_select_npc.display(_surface, (self.__UIContainerRightButton.right, 0))
             # 检测是否有物品被选中需要更新
             if confirm_event_tag is True:
                 if self.__UIContainerRight_bg.is_visible():
@@ -531,13 +531,13 @@ class DialogEditor(DialogConverter):
                             CharacterImageManager.update(self._current_dialog_content["character_images"])
 
         # 展示dialog navigation窗口
-        self.__dialog_navigation_window.present_on(surface)
+        self.__dialog_navigation_window.present_on(_surface)
         # 如果dialog navigation窗口和当前选中的key不一致，则以dialog navigation窗口为基准进行更新
         if self.__dialog_navigation_window.get_selected_key() != self._dialog_id:
             self._update_scene(self.__dialog_navigation_window.get_selected_key())
 
         # 未保存离开时的警告
-        self.__no_save_warning.draw(surface)
+        self.__no_save_warning.draw(_surface)
         if Controller.get_event("confirm") and self.__no_save_warning.item_being_hovered != "":
             # 保存并离开
             if self.__no_save_warning.item_being_hovered == "save":

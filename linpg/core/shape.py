@@ -77,9 +77,9 @@ class Square(GameObject2d):
 
     # 画出轮廓
     def draw_outline(
-        self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN, color: str = "red", thickness: int = 2
+        self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN, color: str = "red", thickness: int = 2
     ) -> None:
-        Draw.rect(surface, Colors.get(color), (Coordinates.add(self.pos, offSet), self.size), thickness)
+        Draw.rect(_surface, Colors.get(color), (Coordinates.add(self.pos, offSet), self.size), thickness)
 
 
 # 用于兼容的长方类

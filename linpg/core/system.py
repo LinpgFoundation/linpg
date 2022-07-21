@@ -104,7 +104,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
             LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.stop()
 
     # 把内容画到surface上（子类必须实现）
-    def draw(self, surface: ImageSurface) -> None:
+    def draw(self, _surface: ImageSurface) -> None:
         EXCEPTION.fatal("draw()", 1)
 
     # 直接画到屏幕上

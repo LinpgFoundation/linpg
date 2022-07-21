@@ -94,18 +94,18 @@ class _FilterEffect:
         self.__crop_rect = rect
 
     # 将滤镜应用到立绘上并渲染到屏幕上
-    def render(self, characterImage: StaticImage, surface: ImageSurface, is_silent: bool) -> None:
+    def render(self, characterImage: StaticImage, _surface: ImageSurface, is_silent: bool) -> None:
         # 如果自定义的crop_rect为None，则以self.__N_IMAGE的rect为中心
         characterImage.set_crop_rect(self.__crop_rect if self.__crop_rect is not None else self.get_rect())
         # 画出立绘
-        characterImage.draw(surface)
+        characterImage.draw(_surface)
         # 画出滤镜
         if not is_silent:
             self.__N_IMAGE.set_alpha(characterImage.get_alpha())
-            self.__N_IMAGE.display(surface, characterImage.get_pos())
+            self.__N_IMAGE.display(_surface, characterImage.get_pos())
         else:
             self.__D_IMAGE.set_alpha(characterImage.get_alpha())
-            self.__D_IMAGE.display(surface, characterImage.get_pos())
+            self.__D_IMAGE.display(_surface, characterImage.get_pos())
 
 
 # 角色立绘系统
@@ -143,20 +143,20 @@ class CharacterImageManager:
             if value.get("type") == "image":
                 cls.__filters[key] = _FilterEffect(
                     value["path"],
-                    round(Display.get_width() * convert_percentage(value["rect"][0])),
-                    round(Display.get_width() * convert_percentage(value["rect"][1])),
-                    round(Display.get_width() * convert_percentage(value["rect"][2])),
-                    round(Display.get_width() * convert_percentage(value["rect"][3])),
+                    round(Display.get_width() * Numbers.convert_percentage(value["rect"][0])),
+                    round(Display.get_width() * Numbers.convert_percentage(value["rect"][1])),
+                    round(Display.get_width() * Numbers.convert_percentage(value["rect"][2])),
+                    round(Display.get_width() * Numbers.convert_percentage(value["rect"][3])),
                 )
                 _crop: Optional[list] = value.get("crop")
                 if _crop is not None:
                     _rect: Rectangle = cls.__filters[key].get_rect()
                     cls.__filters[key].set_crop_rect(
                         Rectangle(
-                            _rect.x + round(_rect.width * convert_percentage(_crop[0])),
-                            _rect.y + round(_rect.height * convert_percentage(_crop[1])),
-                            round(_rect.width * convert_percentage(_crop[2])),
-                            round(_rect.height * convert_percentage(_crop[3])),
+                            _rect.x + round(_rect.width * Numbers.convert_percentage(_crop[0])),
+                            _rect.y + round(_rect.height * Numbers.convert_percentage(_crop[1])),
+                            round(_rect.width * Numbers.convert_percentage(_crop[2])),
+                            round(_rect.height * Numbers.convert_percentage(_crop[3])),
                         )
                     )
 
@@ -172,7 +172,7 @@ class CharacterImageManager:
 
     # 画出角色
     @classmethod
-    def __display_character(cls, _name_data: CharacterImageNameMetaData, x: int, alpha: int, surface: ImageSurface) -> None:
+    def __display_character(cls, _name_data: CharacterImageNameMetaData, x: int, alpha: int, _surface: ImageSurface) -> None:
         if alpha > 0:
             # 确保角色存在
             if _name_data.name not in cls.__character_image:
@@ -191,13 +191,13 @@ class CharacterImageManager:
             img.set_pos(x, cls.__NPC_Y)
             if len(_name_data.tags) > 0:
                 for _tag in _name_data.tags:
-                    cls.__filters[_tag].render(img, surface, _name_data.has_tag("silent"))
+                    cls.__filters[_tag].render(img, _surface, _name_data.has_tag("silent"))
             else:
                 img.set_crop_rect(None)
-                img.draw(surface)
+                img.draw(_surface)
             # 如果是开发模式
             if cls.dev_mode is True and img.is_hovered():
-                img.draw_outline(surface)
+                img.draw_outline(_surface)
                 cls.character_get_click = _name_data.get_raw_name()
 
     # 根据参数计算立绘的x坐标
@@ -219,31 +219,31 @@ class CharacterImageManager:
     # 渐入name1角色的同时淡出name2角色
     @classmethod
     def __fade_in_and_out_characters(
-        cls, name1: CharacterImageNameMetaData, name2: CharacterImageNameMetaData, x: int, surface: ImageSurface
+        cls, name1: CharacterImageNameMetaData, name2: CharacterImageNameMetaData, x: int, _surface: ImageSurface
     ) -> None:
-        cls.__display_character(name1, x, cls.__last_round_image_alpha, surface)
-        cls.__display_character(name2, x, cls.__this_round_image_alpha, surface)
+        cls.__display_character(name1, x, cls.__last_round_image_alpha, _surface)
+        cls.__display_character(name2, x, cls.__this_round_image_alpha, _surface)
 
     # 渐入所有当前的角色
     @classmethod
-    def __fade_in_characters_this_round(cls, surface: ImageSurface, _start: int = 0) -> None:
+    def __fade_in_characters_this_round(cls, _surface: ImageSurface, _start: int = 0) -> None:
         for i in range(_start, len(cls.__current_characters)):
             cls.__display_character(
                 cls.__current_characters[i],
-                cls.__estimate_x(surface.get_width(), len(cls.__current_characters), i) + cls.__x_offset_for_this_round,
+                cls.__estimate_x(_surface.get_width(), len(cls.__current_characters), i) + cls.__x_offset_for_this_round,
                 cls.__this_round_image_alpha,
-                surface,
+                _surface,
             )
 
     # 淡出所有之前的角色
     @classmethod
-    def __fade_out_characters_last_round(cls, surface: ImageSurface, _start: int = 0) -> None:
+    def __fade_out_characters_last_round(cls, _surface: ImageSurface, _start: int = 0) -> None:
         for i in range(_start, len(cls.__previous_characters)):
             cls.__display_character(
                 cls.__previous_characters[i],
-                cls.__estimate_x(surface.get_width(), len(cls.__previous_characters), i) + cls.__x_offset_for_last_round,
+                cls.__estimate_x(_surface.get_width(), len(cls.__previous_characters), i) + cls.__x_offset_for_last_round,
                 cls.__last_round_image_alpha,
-                surface,
+                _surface,
             )
 
     # 更新立绘
@@ -261,7 +261,7 @@ class CharacterImageManager:
 
     # 将立绘画到屏幕上
     @classmethod
-    def draw(cls, surface: ImageSurface) -> None:
+    def draw(cls, _surface: ImageSurface) -> None:
         # 更新alpha值，并根据alpha值计算offset
         if cls.__last_round_image_alpha > 0:
             cls.__last_round_image_alpha -= 15
@@ -278,22 +278,22 @@ class CharacterImageManager:
         # 画上上一幕的立绘
         if len(cls.__previous_characters) == len(cls.__current_characters):
             for i in range(len(cls.__previous_characters)):
-                npcImg_x: int = cls.__estimate_x(surface.get_width(), len(cls.__previous_characters), i)
+                npcImg_x: int = cls.__estimate_x(_surface.get_width(), len(cls.__previous_characters), i)
                 # 渲染立绘
                 if cls.__previous_characters[i].equal(cls.__current_characters[i], True):
-                    cls.__display_character(cls.__current_characters[i], npcImg_x, 255, surface)
+                    cls.__display_character(cls.__current_characters[i], npcImg_x, 255, _surface)
                 else:
-                    cls.__display_character(cls.__previous_characters[i], npcImg_x, cls.__last_round_image_alpha, surface)
-                    cls.__display_character(cls.__current_characters[i], npcImg_x, cls.__this_round_image_alpha, surface)
+                    cls.__display_character(cls.__previous_characters[i], npcImg_x, cls.__last_round_image_alpha, _surface)
+                    cls.__display_character(cls.__current_characters[i], npcImg_x, cls.__this_round_image_alpha, _surface)
         elif len(cls.__current_characters) == 0:
-            cls.__fade_out_characters_last_round(surface)
+            cls.__fade_out_characters_last_round(_surface)
         elif len(cls.__previous_characters) == 0:
-            cls.__fade_in_characters_this_round(surface)
+            cls.__fade_in_characters_this_round(_surface)
         else:
             # 初始化previous_x坐标
             previous_x: int = 0
             if len(cls.__previous_characters) == 1 and len(cls.__current_characters) == 2:
-                previous_x = cls.__estimate_x(surface.get_width(), len(cls.__previous_characters), 0)
+                previous_x = cls.__estimate_x(_surface.get_width(), len(cls.__previous_characters), 0)
                 # 如果之前的中间变成了现在的左边，则立绘应该先向左移动
                 if cls.__previous_characters[0].equal(cls.__current_characters[0]):
                     if cls.__x_correction_offset_index < 100:
@@ -303,82 +303,82 @@ class CharacterImageManager:
                         cls.__previous_characters[0],
                         cls.__current_characters[0],
                         cls.__x_correction_offset_index
-                        * (cls.__estimate_x(surface.get_width(), len(cls.__current_characters), 0) - previous_x)
+                        * (cls.__estimate_x(_surface.get_width(), len(cls.__current_characters), 0) - previous_x)
                         // 100
                         + previous_x,
-                        surface,
+                        _surface,
                     )
                     # 显示右边立绘
                     cls.__display_character(
-                        cls.__current_characters[1], surface.get_width() // 2, cls.__this_round_image_alpha, surface
+                        cls.__current_characters[1], _surface.get_width() // 2, cls.__this_round_image_alpha, _surface
                     )
                 # 如果之前的中间变成了现在的右边，则立绘应该先向右移动
                 elif cls.__previous_characters[0].equal(cls.__current_characters[1]):
                     if cls.__x_correction_offset_index < 100:
                         cls.__x_correction_offset_index += 10
                     # 显示左边立绘
-                    cls.__display_character(cls.__current_characters[0], 0, cls.__this_round_image_alpha, surface)
+                    cls.__display_character(cls.__current_characters[0], 0, cls.__this_round_image_alpha, _surface)
                     # 渐入右边立绘
                     cls.__fade_in_and_out_characters(
                         cls.__previous_characters[0],
                         cls.__current_characters[1],
                         cls.__x_correction_offset_index
-                        * (cls.__estimate_x(surface.get_width(), len(cls.__current_characters), 1) - previous_x)
+                        * (cls.__estimate_x(_surface.get_width(), len(cls.__current_characters), 1) - previous_x)
                         // 100
                         + previous_x,
-                        surface,
+                        _surface,
                     )
                 # 之前的中间和现在两边无任何关系，先隐藏之前的立绘，然后显示现在的立绘
                 elif cls.__last_round_image_alpha > 0:
                     cls.__this_round_image_alpha -= 25
-                    cls.__fade_out_characters_last_round(surface)
+                    cls.__fade_out_characters_last_round(_surface)
                 else:
-                    cls.__fade_in_characters_this_round(surface)
+                    cls.__fade_in_characters_this_round(_surface)
             elif len(cls.__previous_characters) == 2 and len(cls.__current_characters) == 1:
-                current_x: int = cls.__estimate_x(surface.get_width(), len(cls.__current_characters), 0)
+                current_x: int = cls.__estimate_x(_surface.get_width(), len(cls.__current_characters), 0)
                 # 如果之前的左边变成了现在的中间，则立绘应该先向右边移动
                 if cls.__previous_characters[0].equal(cls.__current_characters[0]):
                     if cls.__x_correction_offset_index < 100:
                         cls.__x_correction_offset_index += 10
-                        previous_x = cls.__estimate_x(surface.get_width(), len(cls.__previous_characters), 0)
+                        previous_x = cls.__estimate_x(_surface.get_width(), len(cls.__previous_characters), 0)
                         # 左边立绘向右移动
                         cls.__fade_in_and_out_characters(
                             cls.__previous_characters[0],
                             cls.__current_characters[0],
                             cls.__x_correction_offset_index * (current_x - previous_x) // 100 + previous_x,
-                            surface,
+                            _surface,
                         )
                     else:
                         # 显示左方立绘
-                        cls.__display_character(cls.__current_characters[0], current_x, cls.__this_round_image_alpha, surface)
+                        cls.__display_character(cls.__current_characters[0], current_x, cls.__this_round_image_alpha, _surface)
                     # 右边立绘消失
                     cls.__display_character(
-                        cls.__previous_characters[1], surface.get_width() // 2, cls.__last_round_image_alpha, surface
+                        cls.__previous_characters[1], _surface.get_width() // 2, cls.__last_round_image_alpha, _surface
                     )
                 # 如果之前的右边变成了现在的中间，则立绘应该先向左边移动
                 elif cls.__previous_characters[1].equal(cls.__current_characters[0]):
                     if cls.__x_correction_offset_index < 100:
                         cls.__x_correction_offset_index += 10
-                        previous_x = cls.__estimate_x(surface.get_width(), len(cls.__previous_characters), 1)
+                        previous_x = cls.__estimate_x(_surface.get_width(), len(cls.__previous_characters), 1)
                         # 右边立绘向左移动
                         cls.__fade_in_and_out_characters(
                             cls.__previous_characters[1],
                             cls.__current_characters[0],
                             cls.__x_correction_offset_index * (current_x - previous_x) // 100 + previous_x,
-                            surface,
+                            _surface,
                         )
                     else:
                         # 显示右方立绘
-                        cls.__display_character(cls.__current_characters[0], current_x, cls.__this_round_image_alpha, surface)
+                        cls.__display_character(cls.__current_characters[0], current_x, cls.__this_round_image_alpha, _surface)
                     # 左边立绘消失
-                    cls.__display_character(cls.__previous_characters[0], 0, cls.__last_round_image_alpha, surface)
+                    cls.__display_character(cls.__previous_characters[0], 0, cls.__last_round_image_alpha, _surface)
                 elif cls.__last_round_image_alpha > 0:
                     cls.__this_round_image_alpha -= 25
-                    cls.__fade_out_characters_last_round(surface)
+                    cls.__fade_out_characters_last_round(_surface)
                 else:
-                    cls.__fade_in_characters_this_round(surface)
+                    cls.__fade_in_characters_this_round(_surface)
             elif cls.__last_round_image_alpha > 0:
                 cls.__this_round_image_alpha -= 25
-                cls.__fade_out_characters_last_round(surface)
+                cls.__fade_out_characters_last_round(_surface)
             else:
-                cls.__fade_in_characters_this_round(surface)
+                cls.__fade_in_characters_this_round(_surface)

@@ -15,10 +15,10 @@ class DialogNode(Button):
         return self.__next_keys
 
     # 展示（注意，你无法在此输入off_set，你必须提前设置）
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if offSet != ORIGIN:
             EXCEPTION.fatal("You cannot set off set for DialogNode object!")
-        super().display(surface, offSet)
+        super().display(_surface, offSet)
 
 
 # 对话key向导窗口
@@ -79,19 +79,19 @@ class DialogNavigationWindow(AbstractFrame):
                 self.__most_top = key_node.top
         return offset_y
 
-    def __draw_node(self, surface: ImageSurface, key: str = "head") -> None:
+    def __draw_node(self, _surface: ImageSurface, key: str = "head") -> None:
         key_node: DialogNode = self.__nodes_map[key]
         if not key_node.has_been_displayed:
             # 设置坐标并展示
-            key_node.display(surface)
+            key_node.display(_surface)
             key_node.has_been_displayed = True
 
             if self.__current_selected_key == key:
-                Draw.rect(surface, Colors.RED, key_node.get_rect(), 4)
+                Draw.rect(_surface, Colors.RED, key_node.get_rect(), 4)
 
             for child_key in key_node.next_keys:
-                self.__draw_node(surface, child_key)
-                Draw.aaline(surface, Colors.BLACK, key_node.right_center, self.__nodes_map[child_key].left_center, 3)
+                self.__draw_node(_surface, child_key)
+                Draw.aaline(_surface, Colors.BLACK, key_node.right_center, self.__nodes_map[child_key].left_center, 3)
 
     def _update(self) -> None:
         if "head" in self.__nodes_map:
@@ -135,7 +135,7 @@ class AbstractDialogBox(HiddenableSurface):
         )
 
     # 画出（子类需实现）
-    def draw(self, surface: ImageSurface) -> None:
+    def draw(self, _surface: ImageSurface) -> None:
         EXCEPTION.fatal("draw()", 1)
 
     # 更新内容（子类需实现）
@@ -181,17 +181,49 @@ class EditableDialogBox(AbstractDialogBox):
             self.__contents.set_text(contents)
 
     # 画出
-    def draw(self, surface: ImageSurface) -> None:
+    def draw(self, _surface: ImageSurface) -> None:
         if self.is_visible():
             # 画上对话框图片
-            self._dialoguebox.draw(surface)
+            self._dialoguebox.draw(_surface)
             # 将文字画到屏幕上
-            self.__narrator.draw(surface)
-            self.__contents.draw(surface)
+            self.__narrator.draw(_surface)
+            self.__contents.draw(_surface)
 
 
 # 对话框和对话框内容
 class DialogBox(AbstractDialogBox):
+
+    # 翻页指示动态图标数据管理模块
+    class __NextPageIndicatorIcon:
+        def __init__(self) -> None:
+            self.__status: bool = False
+            self.__x_offset: int = 0
+            self.__y_offset: int = 0
+
+        def draw_to(self, _surface: ImageSurface, _x: int, _y: int, _width: int) -> None:
+            # 更新坐标数值
+            if not self.__status:
+                self.__x_offset += 1
+                self.__y_offset += 1
+                if self.__x_offset >= _width:
+                    self.__status = True
+            else:
+                self.__x_offset -= 1
+                self.__y_offset -= 1
+                if self.__x_offset <= 0:
+                    self.__status = False
+            final_y: int = _y + self.__y_offset // 4
+            # 渲染
+            Draw.polygon(
+                _surface,
+                Colors.WHITE,
+                (
+                    (_x + self.__x_offset // 4, final_y),
+                    (_x + _width - self.__x_offset // 4, final_y),
+                    (_x + _width // 2, final_y + _width),
+                ),
+            )
+
     def __init__(self, fontSize: int):
         super().__init__()
         self.FONT: FontGenerator = Font.create(fontSize)
@@ -203,19 +235,11 @@ class DialogBox(AbstractDialogBox):
         if os.path.exists(_path := Specification.get_directory("sound", "ui", "dialog_words_playing.ogg")):
             self.__textPlayingSound = Sound.load(_path)
         self.__READING_SPEED: int = max(int(Setting.get("ReadingSpeed")), 1)
-        # 鼠标图标
-        self.__mouse_img = AnimatedImage(
-            (
-                StaticImage("<&ui>mouse_none.png", 0, 0, self.FONT.size, self.FONT.size),
-                StaticImage("<&ui>mouse.png", 0, 0, self.FONT.size, self.FONT.size),
-            ),
-            Display.get_width() * 82 // 100,
-            Display.get_height() * 82 // 100,
-            self.FONT.size,
-            self.FONT.size,
-            50,
-        )
+        # 翻页指示动态图标
+        self.__next_page_indicator_icon = self.__NextPageIndicatorIcon()
+        # 自动播放时参考的总阅读时间
         self.__read_time: int = 0
+        # 总共的字数
         self.__total_letters: int = 0
         # 是否处于自动播放模式
         self.__auto_mode: bool = False
@@ -296,7 +320,7 @@ class DialogBox(AbstractDialogBox):
             self.stop_playing_text_sound()
 
     # 展示
-    def draw(self, surface: ImageSurface) -> None:
+    def draw(self, _surface: ImageSurface) -> None:
         if self.is_visible():
             # 渐入
             if not self.__fade_out_stage:
@@ -304,7 +328,7 @@ class DialogBox(AbstractDialogBox):
                 if self._dialoguebox.y < 0:
                     self._dialoguebox.set_top(self._dialoguebox_max_y + self._dialoguebox_max_height / 2)
                 # 画出对话框
-                self._dialoguebox.draw(surface)
+                self._dialoguebox.draw(_surface)
                 # 如果对话框图片还在放大阶段
                 if self._dialoguebox.height < self._dialoguebox_max_height:
                     self._dialoguebox.set_height(
@@ -316,19 +340,19 @@ class DialogBox(AbstractDialogBox):
                     self._dialoguebox.move_upward(self._dialoguebox_max_height / Display.get_delta_time() // 20)
                 # 如果已经放大好了，则将文字画到屏幕上
                 else:
-                    x: int = surface.get_width() * 2 // 10
-                    y: int = surface.get_height() * 73 // 100
+                    x: int = _surface.get_width() * 2 // 10
+                    y: int = _surface.get_height() * 73 // 100
                     # 写上当前讲话人的名字
                     if len(self.__narrator) > 0:
-                        surface.blit(self.FONT.render(self.__narrator, Colors.WHITE), (x, self._dialoguebox.y + self.FONT.size))
+                        _surface.blit(self.FONT.render(self.__narrator, Colors.WHITE), (x, self._dialoguebox.y + self.FONT.size))
                     # 对话框已播放的内容
                     for i in range(self.__displayed_lines):
-                        surface.blit(
+                        _surface.blit(
                             self.FONT.render(self.__contents[i], Colors.WHITE, with_bounding=True),
                             (x, y + self.FONT.size * 3 * i // 2),
                         )
                     # 对话框正在播放的内容
-                    surface.blit(
+                    _surface.blit(
                         self.FONT.render(
                             self.__contents[self.__displayed_lines][: self.__text_index], Colors.WHITE, with_bounding=True
                         ),
@@ -353,12 +377,15 @@ class DialogBox(AbstractDialogBox):
                         self.stop_playing_text_sound()
                         if self.__auto_mode is True and self.__read_time < self.__total_letters:
                             self.__read_time += self.__READING_SPEED
-                    # 画出鼠标gif
-                    self.__mouse_img.draw(surface)
+                    # 画出翻页指示动态图标
+                    _width: int = self.FONT.size * 2 // 3
+                    self.__next_page_indicator_icon.draw_to(
+                        _surface, self._dialoguebox.right - _width * 4, self._dialoguebox.bottom - _width * 3, _width
+                    )
             # 淡出
             else:
                 # 画出对话框图片
-                self._dialoguebox.draw(surface)
+                self._dialoguebox.draw(_surface)
                 height_t: int = self._dialoguebox.height - int(self._dialoguebox_max_height / Display.get_delta_time() / 10)
                 if height_t > 0:
                     self._dialoguebox.set_height(height_t)

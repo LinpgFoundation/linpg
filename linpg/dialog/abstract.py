@@ -218,11 +218,11 @@ class AbstractDialogSystem(AbstractGameSystem):
         super().stop()
 
     # 将背景图片画到surface上
-    def display_background_image(self, surface: ImageSurface) -> None:
+    def display_background_image(self, _surface: ImageSurface) -> None:
         if self.__background_image_surface is not NULL_STATIC_IMAGE:
             if isinstance(self.__background_image_surface, StaticImage):
-                self.__background_image_surface.set_size(surface.get_width(), surface.get_height())
-            self.__background_image_surface.draw(surface)
+                self.__background_image_surface.set_size(_surface.get_width(), _surface.get_height())
+            self.__background_image_surface.draw(_surface)
 
     def _get_dialog_options_container_ready(self) -> None:
         self._dialog_options_container.clear()
@@ -245,7 +245,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._dialog_options_container.set_visible(True)
 
     # 把基础内容画到surface上
-    def draw(self, surface: ImageSurface) -> None:
+    def draw(self, _surface: ImageSurface) -> None:
         # 检测章节是否初始化
         if self._chapter_id is None:
             raise EXCEPTION.fatal("The dialog has not been initialized!")
@@ -253,9 +253,9 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._current_dialog_content.clear()
         self._current_dialog_content.update(self.__get_current_dialog_content())
         # 展示背景图片和npc立绘
-        self.display_background_image(surface)
-        CharacterImageManager.draw(surface)
-        self._get_dialog_box().draw(surface)
+        self.display_background_image(_surface)
+        CharacterImageManager.draw(_surface)
+        self._get_dialog_box().draw(_surface)
         # 如果不处于静音状态
         if not self._is_muted:
             # 播放背景音乐

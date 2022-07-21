@@ -4,8 +4,8 @@ from ..lang import *
 
 class AbstractToolSystem:
 
-    _TOOL_FOLDER: str = "ThirdPartyLibraries"
-    _TOOL_LIBRARIES: dict = dict(Specification.get("ThirdPartyLibraries"))
+    _TOOL_FOLDER: Final[str] = "ThirdPartyLibraries"
+    _TOOL_LIBRARIES: Final[dict] = dict(Specification.get("ThirdPartyLibraries"))
 
     def __init__(self, recommend_version: str, tool_path: str) -> None:
         self.__RECOMMENDED_VERSION: str = recommend_version

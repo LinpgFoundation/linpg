@@ -56,14 +56,14 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         if _local_x is None:
             self.set_local_x(0)
         elif isinstance(_local_x, str):
-            self.set_local_x(convert_percentage(_local_x) * self.get_width())
+            self.set_local_x(Numbers.convert_percentage(_local_x) * self.get_width())
         else:
             self.set_local_x(_local_x)
         _local_y = mapDataDic.get("local_y")
         if _local_y is None:
             self.set_local_y(0)
         elif isinstance(_local_y, str):
-            self.set_local_y(convert_percentage(_local_y) * self.get_height())
+            self.set_local_y(Numbers.convert_percentage(_local_y) * self.get_height())
         else:
             self.set_local_y(_local_y)
         # 重置装饰物列表
@@ -260,16 +260,16 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             self.__need_update_surface = True
 
     # 把地图画到屏幕上
-    def display_map(self, screen: ImageSurface, screen_to_move_x: int = 0, screen_to_move_y: int = 0) -> tuple:
+    def display_map(self, _surface: ImageSurface, screen_to_move_x: int = 0, screen_to_move_y: int = 0) -> tuple:
         # 检测屏幕是不是移到了不移到的地方
-        _min_local_x: int = screen.get_width() - self.get_width()
+        _min_local_x: int = _surface.get_width() - self.get_width()
         if self.local_x < _min_local_x:
             self.set_local_x(_min_local_x)
             screen_to_move_x = 0
         elif self.local_x > 0:
             self.set_local_x(0)
             screen_to_move_x = 0
-        _min_local_y: int = screen.get_height() - self.get_height()
+        _min_local_y: int = _surface.get_height() - self.get_height()
         if self.local_y < _min_local_y:
             self.set_local_y(_min_local_y)
             screen_to_move_y = 0
@@ -281,7 +281,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             self.__need_update_surface = False
             if self.__need_to_recheck_block_on_surface is True:
                 if self.__BACKGROUND_SURFACE is not None:
-                    self.__BACKGROUND_SURFACE.set_size(screen.get_width(), screen.get_height())
+                    self.__BACKGROUND_SURFACE.set_size(_surface.get_width(), _surface.get_height())
                 if self.__MAP_SURFACE is not None:
                     self.__MAP_SURFACE.fill(Colors.TRANSPARENT)
                 else:
@@ -295,8 +295,8 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                 for x in range(self.__column):
                     posTupleTemp = self.calculate_position(x, y)
                     if (
-                        -MapImageParameters.get_block_width() <= posTupleTemp[0] < screen.get_width()
-                        and -MapImageParameters.get_block_width() <= posTupleTemp[1] < screen.get_height()
+                        -MapImageParameters.get_block_width() <= posTupleTemp[0] < _surface.get_width()
+                        and -MapImageParameters.get_block_width() <= posTupleTemp[1] < _surface.get_height()
                     ):
                         if self.__block_on_surface[y][x] == 0:
                             evn_img = TileMapImagesModule.get_image(
@@ -312,9 +312,9 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                                 self.__block_on_surface[y][x + 1] = 0
                         else:
                             pass
-                    elif posTupleTemp[0] >= screen.get_width() or posTupleTemp[1] >= screen.get_height():
+                    elif posTupleTemp[0] >= _surface.get_width() or posTupleTemp[1] >= _surface.get_height():
                         break
-                if self.calculate_position(0, y + 1)[1] >= screen.get_height():
+                if self.calculate_position(0, y + 1)[1] >= _surface.get_height():
                     break
         # 显示调试窗口
         if self.__debug_win is not None and not self.__need_to_recheck_block_on_surface:
@@ -334,16 +334,16 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             self.__debug_win.present()
         # 画出背景
         if self.__BACKGROUND_SURFACE is not None:
-            self.__BACKGROUND_SURFACE.draw(screen)
+            self.__BACKGROUND_SURFACE.draw(_surface)
         else:
-            screen.fill(Colors.BLACK)
+            _surface.fill(Colors.BLACK)
         if self.__MAP_SURFACE is not None:
-            screen.blit(self.__MAP_SURFACE.subsurface((-self.local_x, -self.local_y), screen.get_size()), (0, 0))
+            _surface.blit(self.__MAP_SURFACE.subsurface((-self.local_x, -self.local_y), _surface.get_size()), (0, 0))
         # 返回offset
         return screen_to_move_x, screen_to_move_y
 
     # 把装饰物画到屏幕上
-    def display_decoration(self, screen: ImageSurface, occupied_coordinates: tuple) -> None:
+    def display_decoration(self, _surface: ImageSurface, occupied_coordinates: tuple) -> None:
         # 计算offSet
         offSet: tuple[int, int]
         offSet_normal: tuple[int, int] = (
@@ -363,7 +363,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         # 历遍装饰物列表里的物品
         for item in self.__decorations:
             thePosInMap = self.calculate_position(item.x, item.y)
-            if screen_min <= thePosInMap[0] < screen.get_width() and screen_min <= thePosInMap[1] < screen.get_height():
+            if screen_min <= thePosInMap[0] < _surface.get_width() and screen_min <= thePosInMap[1] < _surface.get_height():
                 decoration_alpha = 255
                 # 树
                 if item.get_type() == "tree":
@@ -374,7 +374,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                     offSet = offSet_normal
                 # 画出
                 item.blit(
-                    screen,
+                    _surface,
                     Coordinates.add(thePosInMap, offSet),
                     not self.is_coordinate_in_light_rea(item.x, item.y),
                     decoration_alpha,

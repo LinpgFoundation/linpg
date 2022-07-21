@@ -9,7 +9,7 @@ class Display:
     __FPS: int = max(int(Setting.get("FPS")), 1)
     __STANDARD_FPS: int = 60
     # 窗口比例
-    __SCALE: int = keep_int_in_range(int(Setting.get("Resolution", "scale")), 0, 100)
+    __SCALE: int = Numbers.keep_int_in_range(int(Setting.get("Resolution", "scale")), 0, 100)
     # 主要的窗口
     __SCREEN_WINDOW: ImageSurface = Surfaces.NULL
     # 窗口尺寸

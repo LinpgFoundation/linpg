@@ -170,9 +170,9 @@ class MouseController:
 
     # 画出自定义的鼠标图标
     @classmethod
-    def draw_custom_icon(cls, surface: ImageSurface) -> None:
+    def draw_custom_icon(cls, _surface: ImageSurface) -> None:
         if cls.__icon_img is not None:
-            surface.blit(cls.__icon_img, (cls.__x, cls.__y))
+            _surface.blit(cls.__icon_img, (cls.__x, cls.__y))
 
 
 # 输入管理组件

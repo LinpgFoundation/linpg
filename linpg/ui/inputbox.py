@@ -125,13 +125,13 @@ class SingleLineInputBox(AbstractInputBox):
         return False
 
     # 画出文字内容
-    def _draw_content(self, surface: ImageSurface, with_holder: bool = True) -> None:
+    def _draw_content(self, _surface: ImageSurface, with_holder: bool = True) -> None:
         if self._text is not None and len(self._text) > 0:
             font_t = self._FONT.render(self._text, self._text_color, with_bounding=True)
-            surface.blit(font_t, (self.x + self._padding, self.y + (self._input_box.height - font_t.get_height()) // 2))
+            _surface.blit(font_t, (self.x + self._padding, self.y + (self._input_box.height - font_t.get_height()) // 2))
         if with_holder is True:
             if int(time.time() % 2) == 0 or len(Controller.events) > 0:
-                surface.blit(
+                _surface.blit(
                     self._holder,
                     (
                         self.x + self._padding + self._FONT.estimate_text_width(self._text[: self._holder_index]),
@@ -140,7 +140,7 @@ class SingleLineInputBox(AbstractInputBox):
                 )
 
     # 画出内容
-    def draw(self, screen: ImageSurface) -> None:
+    def draw(self, _surface: ImageSurface) -> None:
         for event in Controller.events:
             if event.type == Keys.DOWN and self._active is True:
                 if self._check_key_down(event):
@@ -169,8 +169,8 @@ class SingleLineInputBox(AbstractInputBox):
                 self._reset_holder_index(Controller.mouse.x)
         # 画出输入框
         if self._active:
-            Draw.rect(screen, self._color, self._input_box.get_rect(), 2)
-        self._draw_content(screen, self._active)
+            Draw.rect(_surface, self._color, self._input_box.get_rect(), 2)
+        self._draw_content(_surface, self._active)
 
 
 # 多行输入框
@@ -305,7 +305,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         else:
             self._holder_index = i - 1
 
-    def draw(self, screen: ImageSurface) -> None:
+    def draw(self, _surface: ImageSurface) -> None:
         for event in Controller.events:
             if self._active:
                 if event.type == Keys.DOWN:
@@ -370,16 +370,16 @@ class MultipleLinesInputBox(AbstractInputBox):
         if self._text is not None:
             for i in range(len(self._text)):
                 # 画出文字
-                screen.blit(
+                _surface.blit(
                     self._FONT.render(self._text[i], self._text_color, with_bounding=True),
                     (self.x + self._FONT.size // 4, self.y + i * self._default_height),
                 )
         if self._active:
             # 画出输入框
-            Draw.rect(screen, self._color, self._input_box.get_rect(), 2)
+            Draw.rect(_surface, self._color, self._input_box.get_rect(), 2)
             # 画出 “|” 符号
             if int(time.time() % 2) == 0 or len(Controller.events) > 0:
-                screen.blit(
+                _surface.blit(
                     self._holder,
                     (
                         self.x
@@ -391,7 +391,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             # 展示基于PySimpleGUI的外部输入框
             self.__show_PySimpleGUI_input_box.set_right(self._input_box.right)
             self.__show_PySimpleGUI_input_box.set_bottom(self._input_box.bottom)
-            self.__show_PySimpleGUI_input_box.draw(screen)
+            self.__show_PySimpleGUI_input_box.draw(_surface)
             if self.__show_PySimpleGUI_input_box.is_hovered() and Controller.get_event("confirm"):
                 external_input_event, external_input_values = PySimpleGUI.Window(
                     "external input",

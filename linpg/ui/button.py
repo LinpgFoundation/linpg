@@ -28,11 +28,11 @@ class ButtonText(StaticTextSurface):
     def set_is_hovered(self, value: bool) -> None:
         self.__is_hovered = value
 
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.__text_surface_2 is None or self.__is_hovered is True:
-            super().display(surface, offSet)
+            super().display(_surface, offSet)
         else:
-            surface.blit(self.__text_surface_2, Coordinates.add(self.pos, offSet))
+            _surface.blit(self.__text_surface_2, Coordinates.add(self.pos, offSet))
 
 
 # 多态按钮（请勿在引擎外实体化）
@@ -52,11 +52,11 @@ class AbstractButton(AbstractImageSurface):
     def set_hover_img(self, img: ImageSurface) -> None:
         self.__img2 = img
 
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.has_been_hovered() is True and self.__img2 is not Surfaces.NULL:
-            surface.blit(Images.smoothly_resize(self.__img2, self.size), Coordinates.add(self.pos, offSet))
+            _surface.blit(Images.smoothly_resize(self.__img2, self.size), Coordinates.add(self.pos, offSet))
         elif self.img is not Surfaces.NULL:
-            surface.blit(Images.smoothly_resize(self.img, self.size), Coordinates.add(self.pos, offSet))
+            _surface.blit(Images.smoothly_resize(self.img, self.size), Coordinates.add(self.pos, offSet))
 
 
 # 按钮的简单实现
@@ -203,10 +203,10 @@ class Button(AbstractButton):
     def has_been_hovered(self) -> bool:
         return self.__is_hovered
 
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
             self.__is_hovered = self.is_hovered(offSet)
-            super().display(surface, offSet)
+            super().display(_surface, offSet)
             # 计算x坐标轴
             if self.__icon is not None and self.__text is not None:
                 # 计算真实尺寸
@@ -222,14 +222,14 @@ class Button(AbstractButton):
             if self.__icon is not None:
                 self.__icon.set_is_hovered(self.__is_hovered)
                 self.__icon.set_centery(self.centery + offSet[1])
-                self.__icon.draw(surface)
+                self.__icon.draw(_surface)
             # 画出文字
             if self.__text is not None:
                 self.__text.set_is_hovered(self.__is_hovered)
                 self.__text.set_centery(self.centery + offSet[1])
-                self.__text.draw(surface)
+                self.__text.draw(_surface)
             # 画出描述（如果有的话）
             if self.__is_hovered and self.__description_surface is not None:
-                surface.blit(self.__description_surface, Controller.mouse.pos)
+                _surface.blit(self.__description_surface, Controller.mouse.pos)
         else:
             self.__is_hovered = False

@@ -111,7 +111,7 @@ class Console(SingleLineInputBox, HiddenableSurface):
         else:
             self._txt_output.append("The command is unknown!")
 
-    def draw(self, screen: ImageSurface) -> None:
+    def draw(self, _surface: ImageSurface) -> None:
         if self.is_hidden():
             for event in Controller.events:
                 if event.type == Keys.DOWN and event.unicode == self._COMMAND_INDICATOR:
@@ -142,11 +142,11 @@ class Console(SingleLineInputBox, HiddenableSurface):
                             self.set_text()
             # 画出输出信息
             for i in range(len(self._txt_output)):
-                screen.blit(
+                _surface.blit(
                     self._FONT.render(self._txt_output[i], self._color, with_bounding=True),
                     (self.x + self._FONT.size // 4, self.y - (len(self._txt_output) - i) * self._FONT.size * 3 / 2),
                 )
             # 画出输入框
-            Draw.rect(screen, self._color, self._input_box.get_rect(), 2)
+            Draw.rect(_surface, self._color, self._input_box.get_rect(), 2)
             # 画出文字
-            self._draw_content(screen)
+            self._draw_content(_surface)

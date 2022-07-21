@@ -231,7 +231,7 @@ class _EntityImagesCollection:
         return self.__current_image_pointer.get_rectangle()
 
     # 展示
-    def draw_onto(self, surface: ImageSurface, alpha: int, ifFlip: bool, pos: tuple, draw_outline: bool) -> None:
+    def draw_onto(self, _surface: ImageSurface, alpha: int, ifFlip: bool, pos: tuple, draw_outline: bool) -> None:
         self.__current_image_pointer.set_size(self.__width, self.__height)
         self.__current_image_pointer.set_alpha(alpha)  # 翻转图片
         self.__current_image_pointer.set_top(self.__offset_y * self.__height / self.__cropped_image_height + pos[1])
@@ -241,9 +241,9 @@ class _EntityImagesCollection:
         else:
             self.__current_image_pointer.flip_back_to_normal()
             self.__current_image_pointer.set_left(self.__left_offset_x * self.__width / self.__cropped_image_width + pos[0])
-        self.__current_image_pointer.draw(surface)
+        self.__current_image_pointer.draw(_surface)
         if draw_outline is True:
-            self.__current_image_pointer.draw_outline(surface)
+            self.__current_image_pointer.draw_outline(_surface)
 
 
 # 角色图片管理模块
@@ -420,11 +420,11 @@ class WeatherSystem:
         self.__items = tuple(
             [
                 Snow(
-                    imgId=get_random_int(0, len(self.__img_tuple) - 1),
-                    size=get_random_int(5, 10),
-                    speed=get_random_int(1, 4),
-                    x=get_random_int(1, Display.get_width() * 3 // 2),
-                    y=get_random_int(1, Display.get_height()),
+                    imgId=Numbers.get_random_int(0, len(self.__img_tuple) - 1),
+                    size=Numbers.get_random_int(5, 10),
+                    speed=Numbers.get_random_int(1, 4),
+                    x=Numbers.get_random_int(1, Display.get_width() * 3 // 2),
+                    y=Numbers.get_random_int(1, Display.get_height()),
                 )
                 for i in range(entityNum)
             ]
@@ -435,16 +435,16 @@ class WeatherSystem:
         return self.__initialized
 
     # 画出
-    def draw(self, surface: ImageSurface, perBlockWidth: number) -> None:
+    def draw(self, _surface: ImageSurface, perBlockWidth: number) -> None:
         if not self.__initialized:
             EXCEPTION.fatal("You need to initialize the weather system before using it.")
         self.__speed_unit = int(perBlockWidth / 15)
         for item in self.__items:
-            if 0 <= item.x < surface.get_width() and 0 <= item.y < surface.get_height():
-                surface.blit(
+            if 0 <= item.x < _surface.get_width() and 0 <= item.y < _surface.get_height():
+                _surface.blit(
                     Images.resize(self.__img_tuple[item.imgId], (perBlockWidth / item.size, perBlockWidth / item.size)), item.pos
                 )
             item.move(self.__speed_unit)
-            if item.x <= 0 or item.y >= surface.get_height():
-                item.set_top(get_random_int(-50, 0))
-                item.set_left(get_random_int(0, surface.get_width() * 2))
+            if item.x <= 0 or item.y >= _surface.get_height():
+                item.set_top(Numbers.get_random_int(-50, 0))
+                item.set_left(Numbers.get_random_int(0, _surface.get_width() * 2))

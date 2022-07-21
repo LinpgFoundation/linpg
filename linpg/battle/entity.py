@@ -155,7 +155,7 @@ class Entity(Position):
         return self.__attitude
 
     def set_attitude(self, value: int) -> None:
-        self.__attitude = keep_int_in_range(value, -1, 1)
+        self.__attitude = Numbers.keep_int_in_range(value, -1, 1)
 
     # 武器类型
     @property
@@ -193,7 +193,7 @@ class Entity(Position):
 
     # 攻击另一个Entity
     def attack(self, another_entity: "Entity") -> int:
-        damage = get_random_int(self.__min_damage, self.__max_damage)
+        damage = Numbers.get_random_int(self.__min_damage, self.__max_damage)
         another_entity.injury(damage)
         return damage
 
@@ -295,19 +295,19 @@ class Entity(Position):
             if self.__current_recoverable_armor > 0:
                 # 如果伤害大于护甲值,则以护甲值为最大护甲将承受的伤害
                 if damage > self.__current_recoverable_armor:
-                    damage_take_by_armor = get_random_int(0, self.__current_recoverable_armor)
+                    damage_take_by_armor = Numbers.get_random_int(0, self.__current_recoverable_armor)
                 # 如果伤害小于护甲值,则以伤害为最大护甲将承受的伤害
                 else:
-                    damage_take_by_armor = get_random_int(0, damage)
+                    damage_take_by_armor = Numbers.get_random_int(0, damage)
                 self.__current_recoverable_armor -= damage_take_by_armor
                 damage -= damage_take_by_armor
             # 如果有不可再生的护甲
             if self.__irrecoverable_armor > 0 and damage > 0:
                 if damage > self.__irrecoverable_armor:
-                    damage_take_by_armor = get_random_int(0, self.__irrecoverable_armor)
+                    damage_take_by_armor = Numbers.get_random_int(0, self.__irrecoverable_armor)
                 # 如果伤害小于护甲值,则以伤害为最大护甲将承受的伤害
                 else:
-                    damage_take_by_armor = get_random_int(0, damage)
+                    damage_take_by_armor = Numbers.get_random_int(0, damage)
                 self.__irrecoverable_armor -= damage_take_by_armor
                 damage -= damage_take_by_armor
             # 如果还有伤害,则扣除血量
@@ -346,7 +346,7 @@ class Entity(Position):
             if _point is not None:
                 sound_list: Optional[tuple] = _point.get(kind_of_sound)
                 if sound_list is not None and len(sound_list) > 0:
-                    sound = sound_list[get_random_int(0, len(sound_list) - 1) if len(sound_list) > 1 else 0]
+                    sound = sound_list[Numbers.get_random_int(0, len(sound_list) - 1) if len(sound_list) > 1 else 0]
                     sound.set_volume(Volume.get_effects() / 100.0)
                     LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.play(sound)
 
@@ -469,7 +469,7 @@ class Entity(Position):
     # 角色画到surface上
     def __blit_entity_img(
         self,
-        surface: ImageSurface,
+        _surface: ImageSurface,
         MAP_P: TileMap,
         alpha: int,
         action: Optional[str] = None,
@@ -489,7 +489,7 @@ class Entity(Position):
             pos = MAP_P.calculate_position(self.x, self.y)
         # 把角色图片画到屏幕上
         _image.draw_onto(
-            surface,
+            _surface,
             alpha,
             self._if_flip,
             (pos[0] - MapImageParameters.get_block_width() * 0.3, pos[1] - MapImageParameters.get_block_width() * 0.85),
@@ -499,10 +499,10 @@ class Entity(Position):
         self.__current_image_rect = _image.get_rectangle()
 
     # 把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
-    def draw(self, surface: ImageSurface, MAP_P: TileMap, update_id_only: bool = False) -> None:
+    def draw(self, _surface: ImageSurface, MAP_P: TileMap, update_id_only: bool = False) -> None:
         # 画出角色
         if not update_id_only:
-            self.__blit_entity_img(surface, MAP_P, self.get_imgAlpaha(self.__current_action))
+            self.__blit_entity_img(_surface, MAP_P, self.get_imgAlpaha(self.__current_action))
         """计算imgId"""
         # 如果正在播放移动动作，则需要根据现有路径更新坐标
         if self.__current_action == "move" and not self.__moving_complete:
@@ -566,8 +566,8 @@ class Entity(Position):
             self._if_play_action_in_reversing = False
             self.set_action()
 
-    def draw_custom(self, action: str, pos: tuple[int, int], surface: ImageSurface, MAP_P: TileMap, alpha: int = 155) -> None:
-        self.__blit_entity_img(surface, MAP_P, alpha, action, pos)
+    def draw_custom(self, action: str, pos: tuple[int, int], _surface: ImageSurface, MAP_P: TileMap, alpha: int = 155) -> None:
+        self.__blit_entity_img(_surface, MAP_P, alpha, action, pos)
         # 调整id，并返回对应的bool状态
         if self.__imgId_dict[action]["imgId"] < self.get_imgNum(action) - 1:
             self.__imgId_dict[action]["imgId"] += 1

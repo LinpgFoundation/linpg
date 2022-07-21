@@ -40,12 +40,12 @@ class DecorationObject(GameObject2d):
         else:
             EXCEPTION.fatal('Cannot remove status "{}" because it does not exist'.format(key))
 
-    def blit(self, surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:  # type: ignore[override]
+    def blit(self, _surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:  # type: ignore[override]
         imgToBlit = DecorationImagesModule.get_image(self.__type, self.image, is_dark)
         imgToBlit.set_size(MapImageParameters.get_block_width() * self.scale, MapImageParameters.get_block_width() * self.scale)
         imgToBlit.set_alpha(alpha)
         imgToBlit.move_to(pos)
-        imgToBlit.draw(surface)
+        imgToBlit.draw(_surface)
 
 
 # 篝火
@@ -54,7 +54,7 @@ class CampfireObject(DecorationObject):
         super().__init__(x, y, _id, itemType, itemType, status)
         self.__range: int = _range
         self.__alpha: int = 255
-        self.__img_id: int = get_random_int(0, 90)
+        self.__img_id: int = Numbers.get_random_int(0, 90)
         if not self._has_status("lit"):
             self.set_status("lit", True)
 
@@ -75,7 +75,7 @@ class CampfireObject(DecorationObject):
         return data_t
 
     # 画出篝火（注意，alpha不会被使用，它只因为兼容性和一致性而存在）
-    def blit(self, surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:  # type: ignore[override]
+    def blit(self, _surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:  # type: ignore[override]
         # 查看篝火的状态是否正在变化，并调整对应的alpha值
         if self.get_status("lit") is True:
             if self.__alpha < 255:
@@ -85,11 +85,11 @@ class CampfireObject(DecorationObject):
         # 底层 - 未燃烧的图片
         if self.__alpha < 255:
             self.image = 0
-            super().blit(surface, pos, is_dark, 255)
+            super().blit(_surface, pos, is_dark, 255)
         # 顶层 - 燃烧的图片
         if self.__alpha > 0:
             self.image = self.__img_id // 10
-            super().blit(surface, pos, is_dark, self.__alpha)
+            super().blit(_surface, pos, is_dark, self.__alpha)
             if self.image < DecorationImagesModule.get_image_num(self.get_type()) - 1:
                 self.__img_id += 1
             else:

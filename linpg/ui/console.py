@@ -113,12 +113,12 @@ class Console(SingleLineInputBox, HiddenableSurface):
 
     def draw(self, _surface: ImageSurface) -> None:
         if self.is_hidden():
-            for event in Controller.events:
+            for event in Controller.get_events():
                 if event.type == Keys.DOWN and event.unicode == self._COMMAND_INDICATOR:
                     self.set_visible(True)
                     break
         else:
-            for event in Controller.events:
+            for event in Controller.get_events():
                 if event.type == MOUSE_BUTTON_DOWN:
                     if (
                         self.x <= Controller.mouse.x <= self.x + self._input_box.width

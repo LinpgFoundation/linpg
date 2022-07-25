@@ -130,7 +130,7 @@ class SingleLineInputBox(AbstractInputBox):
             font_t = self._FONT.render(self._text, self._text_color, with_bounding=True)
             _surface.blit(font_t, (self.x + self._padding, self.y + (self._input_box.height - font_t.get_height()) // 2))
         if with_holder is True:
-            if int(time.time() % 2) == 0 or len(Controller.events) > 0:
+            if int(time.time() % 2) == 0 or len(Controller.get_events()) > 0:
                 _surface.blit(
                     self._holder,
                     (
@@ -141,7 +141,7 @@ class SingleLineInputBox(AbstractInputBox):
 
     # 画出内容
     def draw(self, _surface: ImageSurface) -> None:
-        for event in Controller.events:
+        for event in Controller.get_events():
             if event.type == Keys.DOWN and self._active is True:
                 if self._check_key_down(event):
                     pass
@@ -306,7 +306,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             self._holder_index = i - 1
 
     def draw(self, _surface: ImageSurface) -> None:
-        for event in Controller.events:
+        for event in Controller.get_events():
             if self._active:
                 if event.type == Keys.DOWN:
                     if event.key == Keys.BACKSPACE:
@@ -378,7 +378,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             # 画出输入框
             Draw.rect(_surface, self._color, self._input_box.get_rect(), 2)
             # 画出 “|” 符号
-            if int(time.time() % 2) == 0 or len(Controller.events) > 0:
+            if int(time.time() % 2) == 0 or len(Controller.get_events()) > 0:
                 _surface.blit(
                     self._holder,
                     (

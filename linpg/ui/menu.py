@@ -210,6 +210,9 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
     def _enable_pause_menu(self) -> None:
         self.__pause_menu = PauseMenu()
 
+    def _disable_pause_menu(self) -> None:
+        self.__pause_menu = None
+
     def is_pause_menu_enabled(self) -> bool:
         return self.__pause_menu is not None
 

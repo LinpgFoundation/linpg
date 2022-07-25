@@ -104,7 +104,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
     # 展示地图
     def _display_map(self, _surface: ImageSurface) -> None:
         # 处理鼠标事件
-        for event in Controller.events:
+        for event in Controller.get_events():
             if event.type == Keys.DOWN:
                 self._check_key_down(event)
             elif event.type == Keys.UP:

@@ -5,19 +5,13 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
 
     __CHOICE_TEXT: str = str(Lang.get_texts("Dialog", "choice"))
 
-    def __init__(self, basic_features_only: bool = False) -> None:
+    def __init__(self) -> None:
         AbstractDialogSystem.__init__(self)
         PauseMenuModuleForGameSystem.__init__(self)
         # 加载对话框系统
         self.__dialog_txt_system: DialogBox = DialogBox(self._FONT_SIZE)
         # UI按钮
         self.__buttons_container: Optional[GameObjectsDictContainer] = None
-        # 加载ui
-        if not basic_features_only:
-            # UI按钮
-            self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self._FONT_SIZE * 2})
-            # 暂停菜单
-            self._enable_pause_menu()
         # 是否要显示历史对白页面
         self.__is_showing_history: bool = False
         self.__history_bg_surface: ImageSurface = Surfaces.colored(Display.get_size(), Colors.BLACK)
@@ -25,22 +19,35 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         self.__history_text_surface: Optional[ImageSurface] = None
         self.__history_surface_local_y: int = 0
         # 展示历史界面-返回按钮
-        self.history_back = (
-            Button.load(
-                "<&ui>back.png",
-                Coordinates.convert((Display.get_width() * 0.04, Display.get_height() * 0.04)),
-                Coordinates.convert((Display.get_width() * 0.03, Display.get_height() * 0.04)),
-                150,
-            )
-            if not basic_features_only
-            else None
-        )
+        self.__history_back: Optional[Button] = None
+        # 是否取消背景渲染
+        self.__disable_background_image_rendering: bool = False
         # 初始化音量
         self._update_sound_volume()
         # 玩家做出的选项
         self.__dialog_options: dict = {}
         # 是否正在淡出的flag
         self.__is_fading_out: bool = True
+
+    def disable_basic_features(self) -> None:
+        self.__disable_background_image_rendering = True
+        self.__history_back = None
+        self.__buttons_container = None
+        self._disable_pause_menu()
+
+    def enable_basic_features(self) -> None:
+        self.__disable_background_image_rendering = False
+        """加载ui"""
+        self.__history_back = Button.load(
+            "<&ui>back.png",
+            Coordinates.convert((Display.get_width() * 0.04, Display.get_height() * 0.04)),
+            Coordinates.convert((Display.get_width() * 0.03, Display.get_height() * 0.04)),
+            150,
+        )
+        # UI按钮
+        self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self._FONT_SIZE * 2})
+        # 暂停菜单
+        self._enable_pause_menu()
 
     # 初始化关键参数
     def _initialize(  # type: ignore[override]
@@ -53,6 +60,9 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         dialog_options: dict = {},
     ) -> None:
         super()._initialize(chapterType, chapterId, part, projectName, dialogId)
+        # 初始化重要ui组件
+        if not self.__disable_background_image_rendering:
+            self.enable_basic_features()
         # 玩家做出的选项
         self.__dialog_options.clear()
         self.__dialog_options.update(dialog_options)
@@ -250,6 +260,11 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             # 重设black_bg的alpha值以便下一次使用
             self._black_bg.set_alpha(255)
 
+    # 重写父类的display_background_image方法使其在背景被disable后不会继续渲染背景图片
+    def display_background_image(self, _surface: ImageSurface) -> None:
+        if not self.__disable_background_image_rendering:
+            super().display_background_image(_surface)
+
     def draw(self, _surface: ImageSurface) -> None:
         super().draw(_surface)
         # 按钮
@@ -257,7 +272,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             self.__buttons_container.draw(_surface)
         # 按键判定
         if Controller.get_event("confirm"):
-            if self.history_back is not None and self.history_back.is_hovered() and self.__is_showing_history is True:
+            if self.__history_back is not None and self.__history_back.is_hovered() and self.__is_showing_history is True:
                 self.__is_showing_history = False
                 self.__history_text_surface = None
             elif self.__is_showing_history is True or self.__check_button_event(_surface) is True:
@@ -367,9 +382,9 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                         break
             _surface.blit(self.__history_bg_surface, (0, 0))
             _surface.blit(self.__history_text_surface, (0, 0))
-            if self.history_back is not None:
-                self.history_back.draw(_surface)
-                self.history_back.is_hovered()
+            if self.__history_back is not None:
+                self.__history_back.draw(_surface)
+                self.__history_back.is_hovered()
         else:
             # 显示对话选项
             if self.__buttons_container is None or self.__buttons_container.is_visible():

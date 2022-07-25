@@ -18,7 +18,7 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
         self._dialog_folder_path: str = "Data"
         # 背景图片
         self.__background_image_name: Optional[str] = None
-        self.__background_image_surface: Optional[Union[StaticImage, VideoSurface]] = self._black_bg.copy()
+        self.__background_image_surface: Union[StaticImage, VideoSurface] = self._black_bg.copy()
         # 是否开启自动保存
         self.auto_save: bool = False
         # 是否静音
@@ -160,25 +160,17 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
                 self.__background_image_surface.stop()
             # 更新背景的图片数据
             if self.__background_image_name is not None:
-                if self.__background_image_name != "<transparent>":
-                    # 尝试加载图片式的背景
-                    if os.path.exists(
-                        (img_path := Specification.get_directory("background_image", self.__background_image_name))
-                    ):
-                        self.__background_image_surface = StaticImage(img_path, 0, 0)
-                        self.__background_image_surface.disable_cropping()
-                    # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
-                    elif os.path.exists(_path := Specification.get_directory("movie", self.__background_image_name)):
-                        self.__background_image_surface = VideoSurface(_path, with_audio=False)
-                    else:
-                        EXCEPTION.fatal(
-                            "Cannot find a background image or video file called '{}'.".format(self.__background_image_name)
-                        )
-                elif CharacterImageManager.dev_mode is True:
-                    self.__background_image_surface = StaticImage(Surfaces.texture_is_missing(Display.get_size()), 0, 0)
+                # 尝试加载图片式的背景
+                if os.path.exists((img_path := Specification.get_directory("background_image", self.__background_image_name))):
+                    self.__background_image_surface = StaticImage(img_path, 0, 0)
                     self.__background_image_surface.disable_cropping()
+                # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
+                elif os.path.exists(_path := Specification.get_directory("movie", self.__background_image_name)):
+                    self.__background_image_surface = VideoSurface(_path, with_audio=False)
                 else:
-                    self.__background_image_surface = None
+                    EXCEPTION.fatal(
+                        "Cannot find a background image or video file called '{}'.".format(self.__background_image_name)
+                    )
             else:
                 self.__background_image_surface = self._black_bg.copy()
 

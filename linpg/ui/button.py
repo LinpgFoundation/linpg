@@ -230,6 +230,6 @@ class Button(AbstractButton):
                 self.__text.draw(_surface)
             # 画出描述（如果有的话）
             if self.__is_hovered and self.__description_surface is not None:
-                _surface.blit(self.__description_surface, Controller.mouse.pos)
+                _surface.blit(self.__description_surface, Controller.mouse.get_pos())
         else:
             self.__is_hovered = False

@@ -126,7 +126,7 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos, metaclass=ABCMeta):
                     and right_scroll_bar_rect.is_hovered()
                 ):
                     if right_scroll_button_rect.is_hovered():
-                        self.add_local_y(Controller.mouse.y_moved * (self.get_surface_height() / self.get_height()))
+                        self.add_local_y(Controller.mouse.get_y_moved() * (self.get_surface_height() / self.get_height()))
                     else:
                         self.set_local_y(
                             (self.get_top() - Controller.mouse.y + right_scroll_button_rect.height / 2)
@@ -139,7 +139,7 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos, metaclass=ABCMeta):
                     and bottom_scroll_bar_rect.is_hovered()
                 ):
                     if bottom_scroll_button_rect.is_hovered():
-                        self.add_local_x(Controller.mouse.x_moved * (self.get_surface_width() / self.get_width()))
+                        self.add_local_x(Controller.mouse.get_x_moved() * (self.get_surface_width() / self.get_width()))
                     else:
                         self.set_local_x(
                             (self.get_left() - Controller.mouse.x + bottom_scroll_button_rect.width / 2)
@@ -324,9 +324,9 @@ class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface, metaclass=ABCMeta)
         # 需要调整本地坐标
         if self.__is_holding_scroll_button is True:
             if not self._mode:
-                self.add_local_y(Controller.mouse.y_moved * (self.get_surface_height() / self.get_height()))
+                self.add_local_y(Controller.mouse.get_y_moved() * (self.get_surface_height() / self.get_height()))
             else:
-                self.add_local_x(Controller.mouse.x_moved * (self.get_surface_width() / self.get_width()))
+                self.add_local_x(Controller.mouse.get_x_moved() * (self.get_surface_width() / self.get_width()))
         # 防止local坐标越界
         if not self._mode:
             if self.local_y > 0:

@@ -401,7 +401,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
     # 计算在地图中的方块
     def calculate_coordinate(self, pos: tuple[int, int] = None) -> Optional[tuple[int, int]]:
         if pos is None:
-            pos = Controller.mouse.pos
+            pos = Controller.mouse.get_pos()
         guess_x: int = int(
             (
                 (pos[0] - self.local_x - self.__row * MapImageParameters.get_block_width() * 0.43) / 0.43

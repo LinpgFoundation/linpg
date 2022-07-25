@@ -83,10 +83,6 @@ class DialogEditor(DialogConverter):
                 self.__UIContainerRight_bg.set(
                     os.path.basename(imgPath), Images.resize(VideoSurface.get_preview(imgPath), (container_width * 4 // 5, None))
                 )
-        # 加载透明图片
-        self.__UIContainerRight_bg.set(
-            "<transparent>", Surfaces.texture_is_missing((container_width * 4 // 5, container_width * 9 // 20))
-        )
         self.__UIContainerRight_bg.distance_between_item = Display.get_height() // 50
         self.__current_select_bg_name = None
         self.__current_select_bg_copy = None
@@ -502,7 +498,7 @@ class DialogEditor(DialogConverter):
                 self._update_scene(self._dialog_id)
         # 显示移除角色的提示
         if CharacterImageManager.character_get_click is not None:
-            _surface.blit(self.__remove_npc_button, Controller.mouse.pos)
+            _surface.blit(self.__remove_npc_button, Controller.mouse.get_pos())
         # 画上右侧菜单的按钮
         self.__UIContainerRightButton.draw(_surface)
         # 画上右侧菜单

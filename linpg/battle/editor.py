@@ -10,6 +10,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self.__right_container_buttons: GameObjectsDictContainer = UI.generate_container("map_editor_right_container_buttons")
         self.__UIContainerRight: DynamicImage = DynamicImage("<&ui>container.png", 0, 0)
         self.__UIContainerRight.rotate(90)
+        self.__UIContainerBottom: DynamicImage = DynamicImage("<&ui>container.png", 0, 0)
         self.__bottom_container_buttons: GameObjectsListContainer = GameObjectsListContainer(None, 0, 0, 0, 0)
         self.__entitiesImagesContainers: list = []
         self.__entitiesImagesContainerUsingIndex: int = -1
@@ -170,7 +171,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         container_height = _surface.get_height() * 3 // 10
         button_width = _surface.get_width() * 7 // 50
         button_height = _surface.get_height() // 20
-        self.__UIContainerBottom = DynamicImage("<&ui>container.png", 0, 0, container_width, container_height)
+        self.__UIContainerBottom.set_size(container_width, container_height)
         self.__UIContainerButtonBottom = MovableImage(
             "<&ui>container_button.png",
             (container_width - button_width) // 2,
@@ -377,15 +378,15 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         # 跟随鼠标显示即将被放下的物品
         if len(self.__object_to_put_down) > 0:
             if self.__object_to_put_down["type"] == "block":
-                _surface.blit(self.__envImgContainer.get(self.__object_to_put_down["id"]), Controller.mouse.pos)
+                _surface.blit(self.__envImgContainer.get(self.__object_to_put_down["id"]), Controller.mouse.get_pos())
             elif self.__object_to_put_down["type"] == "decoration":
-                _surface.blit(self.__decorationsImgContainer.get(self.__object_to_put_down["id"]), Controller.mouse.pos)
+                _surface.blit(self.__decorationsImgContainer.get(self.__object_to_put_down["id"]), Controller.mouse.get_pos())
             elif self.__object_to_put_down["type"] == "entity":
                 _surface.blit(
                     self.__entitiesImagesContainers[self.__object_to_put_down["container_id"]].get(
                         self.__object_to_put_down["id"]
                     ),
-                    Controller.mouse.pos,
+                    Controller.mouse.get_pos(),
                 )
 
         # 未保存离开时的警告

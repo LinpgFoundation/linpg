@@ -3,7 +3,9 @@ from .converter import *
 # 对话制作器
 class DialogEditor(DialogConverter):
 
-    BACKGROUND_DESELECT_IMAGE: Final[StaticImage] = StaticImage("<&ui>deselect.png", 0, 0)
+    # deselect选中的背景
+    __BACKGROUND_DESELECT_IMAGE: Final[StaticImage] = StaticImage.new_place_holder()
+    __IS_BACKGROUND_DESELECT_IMAGE_INIT: bool = False
 
     def __init__(self) -> None:
         super().__init__()
@@ -28,7 +30,7 @@ class DialogEditor(DialogConverter):
         # 存放并管理编辑器上方所有按钮的容器
         self.__buttons_ui_container: Optional[GameObjectsDictContainer] = None
         # 背景音乐选择 DropDown ui
-        self.__dialog_bgm_select = DropDownList(None, 0, 0, 1)
+        self.__dialog_bgm_select: DropDownList = DropDownList(None, 0, 0, 1)
         # 背景图片编辑模块
         self.__UIContainerRight_bg: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(None, 0, 0, 0, 0, "vertical")
         # npc立绘编辑模块
@@ -44,6 +46,9 @@ class DialogEditor(DialogConverter):
         self.__current_select_bg_copy: Optional[ImageSurface] = None
         # 用于选择小说脚本的key的下拉菜单
         self.__dialog_part_selection: DropDownList = DropDownList(None, 0, 0, 1)
+        # 检测并初始化deselect选中的背景
+        if not self.__IS_BACKGROUND_DESELECT_IMAGE_INIT:
+            self.__BACKGROUND_DESELECT_IMAGE.update_image("<&ui>deselect.png")
         # 默认不播放音乐
         # self._is_muted = True
 
@@ -88,7 +93,7 @@ class DialogEditor(DialogConverter):
         # 重置npc立绘编辑模块
         self.__UIContainerRight_npc.clear()
         self.__UIContainerRight_npc.move_to(RightContainerRect.get_pos())
-        self.__UIContainerRight_npc.set_pos(RightContainerRect.width, RightContainerRect.height)
+        self.__UIContainerRight_npc.set_size(RightContainerRect.width, RightContainerRect.height)
         self.__UIContainerRight_npc.set_scroll_bar_pos("right")
         # 加载npc立绘
         for imgPath in glob(Specification.get_directory("character_image", "*")):
@@ -181,8 +186,8 @@ class DialogEditor(DialogConverter):
             self.__current_select_bg_name = image_name
             current_select_bg: ImageSurface = self.__UIContainerRight_bg.get("current_select")
             self.__current_select_bg_copy = current_select_bg.copy()
-            self.BACKGROUND_DESELECT_IMAGE.set_size(current_select_bg.get_width(), current_select_bg.get_height())
-            self.BACKGROUND_DESELECT_IMAGE.draw(current_select_bg)
+            self.__BACKGROUND_DESELECT_IMAGE.set_size(current_select_bg.get_width(), current_select_bg.get_height())
+            self.__BACKGROUND_DESELECT_IMAGE.draw(current_select_bg)
         else:
             if self.__current_select_bg_name is not None:
                 self.__UIContainerRight_bg.set(self.__current_select_bg_name, self.__current_select_bg_copy)
@@ -273,10 +278,8 @@ class DialogEditor(DialogConverter):
     # 更新UI
     def __update_ui(self) -> None:
         # 更新背景音乐选项菜单
-        if (file_name := self._current_dialog_content["background_music"]) is not None:
-            self.__dialog_bgm_select.set_selected_item(file_name)
-        else:
-            self.__dialog_bgm_select.set_selected_item("null")
+        file_name: Optional[str] = self._current_dialog_content.get("background_music")
+        self.__dialog_bgm_select.set_selected_item(file_name if file_name is not None else "null")
         # 更新按钮
         if self.__buttons_ui_container is not None:
             if self.does_current_dialog_have_next_dialog() is True:
@@ -424,13 +427,11 @@ class DialogEditor(DialogConverter):
         self.__buttons_ui_container.draw(_surface)
         # 展示出当前可供使用的背景音乐
         self.__dialog_bgm_select.draw(_surface)
-        if self._current_dialog_content["background_music"] != self.__dialog_bgm_select.get_selected_item() and not (
-            self._current_dialog_content["background_music"] is None and self.__dialog_bgm_select.get_selected_item() == "null"
-        ):
+        theBgm: Optional[str] = self._current_dialog_content.get("background_music")
+        isCurrentBgmSelectedNull: bool = self.__dialog_bgm_select.get_selected_item() == "null"
+        if theBgm != self.__dialog_bgm_select.get_selected_item() and not (theBgm is None and isCurrentBgmSelectedNull):
             self._current_dialog_content["background_music"] = (
-                None
-                if self.__dialog_bgm_select.get_selected_item() == "null"
-                else self.__dialog_bgm_select.get(self.__dialog_bgm_select.get_selected_item())
+                None if isCurrentBgmSelectedNull else self.__dialog_bgm_select.get(self.__dialog_bgm_select.get_selected_item())
             )
             self._update_scene(self._dialog_id)
         # 展示出当前可供编辑的dialog部分
@@ -438,10 +439,7 @@ class DialogEditor(DialogConverter):
         # 切换当前正在浏览编辑的dialog部分
         if self.__dialog_part_selection.get_selected_item() != self._part:
             self._part = self.__dialog_part_selection.get_selected_item()
-            if self._dialog_id in self.dialog_content:
-                self._update_scene(self._dialog_id)
-            else:
-                self._update_scene("head")
+            self._update_scene(self._dialog_id if self._dialog_id in self.dialog_content else "head")
         # 处理输入事件
         confirm_event_tag: bool = False
         lastId: str

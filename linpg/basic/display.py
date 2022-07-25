@@ -120,6 +120,3 @@ class Display:
     @classmethod
     def blit(cls, surface_to_draw: ImageSurface, pos: Sequence) -> None:
         cls.__SCREEN_WINDOW.blit(surface_to_draw, Coordinates.convert(pos))
-
-
-pygame.display.set_mode((1, 1))

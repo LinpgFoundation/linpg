@@ -8,7 +8,7 @@ class DynamicImage(AbstractImageSurface):
 
     # 返回一个复制
     def copy(self) -> "DynamicImage":
-        replica = DynamicImage(self.get_image_copy(), self.x, self.y, self.get_width(), self.get_height(), self.tag)
+        replica: DynamicImage = DynamicImage(self.get_image_copy(), self.x, self.y, self.get_width(), self.get_height(), self.tag)
         replica.set_alpha(255)
         return replica
 
@@ -107,6 +107,10 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
     def light_copy(self) -> "StaticImage":
         return StaticImage(self.img, self.x, self.y, self.get_width(), self.get_height())
 
+    @staticmethod
+    def new_place_holder() -> "StaticImage":
+        return StaticImage("<NULL>", 0, 0)
+
     # 更新图片
     def _update_img(self) -> None:
         # 改变尺寸
@@ -135,9 +139,6 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
             self._processed_img.set_alpha(self._alpha)
         self._need_update = False
 
-
-# 空的静态图片占位符
-NULL_STATIC_IMAGE: StaticImage = StaticImage("<NULL>", 0, 0, 0, 0)
 
 # 需要移动的动态图片
 class MovableImage(StaticImage):

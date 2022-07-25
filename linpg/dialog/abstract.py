@@ -18,13 +18,13 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
         self._dialog_folder_path: str = "Data"
         # 背景图片
         self.__background_image_name: Optional[str] = None
-        self.__background_image_surface: Union[StaticImage, VideoSurface] = self._black_bg.copy()
+        self.__background_image_surface: Optional[Union[StaticImage, VideoSurface]] = self._black_bg.copy()
         # 是否开启自动保存
         self.auto_save: bool = False
         # 是否静音
         self._is_muted: bool = False
         # 指向当前对话的数据的指针
-        self._current_dialog_content: Final[dict] = {}
+        self._current_dialog_content: dict = {}
         # 选项菜单
         self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer("<NULL>", 0, 0, 0, 0)
         self._dialog_options_container.set_visible(False)
@@ -178,7 +178,7 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
                     self.__background_image_surface = StaticImage(Surfaces.texture_is_missing(Display.get_size()), 0, 0)
                     self.__background_image_surface.disable_cropping()
                 else:
-                    self.__background_image_surface = NULL_STATIC_IMAGE
+                    self.__background_image_surface = None
             else:
                 self.__background_image_surface = self._black_bg.copy()
 
@@ -186,9 +186,8 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
     def _update_scene(self, dialog_id: str) -> None:
         # 更新dialogId
         self._dialog_id = dialog_id
-        # 更新当前对话数据的指针
-        self._current_dialog_content.clear()
-        self._current_dialog_content.update(self.__get_current_dialog_content(True))
+        # 更新当前对话数据的指针 (请勿重用该字典，其应该作为指针一般的存在)
+        self._current_dialog_content = self.__get_current_dialog_content(True)
         # 更新立绘和背景
         CharacterImageManager.update(self._current_dialog_content["character_images"])
         self._update_background_image(self._current_dialog_content["background_image"])
@@ -220,7 +219,7 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
 
     # 将背景图片画到surface上
     def display_background_image(self, _surface: ImageSurface) -> None:
-        if self.__background_image_surface is not NULL_STATIC_IMAGE:
+        if self.__background_image_surface is not None:
             if isinstance(self.__background_image_surface, StaticImage):
                 self.__background_image_surface.set_size(_surface.get_width(), _surface.get_height())
             self.__background_image_surface.draw(_surface)
@@ -250,9 +249,8 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 检测章节是否初始化
         if self._chapter_id is None:
             raise EXCEPTION.fatal("The dialog has not been initialized!")
-        # 更新当前对话数据的指针
-        self._current_dialog_content.clear()
-        self._current_dialog_content.update(self.__get_current_dialog_content())
+        # 更新当前对话数据的指针 (请勿重用该字典，其应该作为指针一般的存在)
+        self._current_dialog_content = self.__get_current_dialog_content()
         # 展示背景图片和npc立绘
         self.display_background_image(_surface)
         CharacterImageManager.draw(_surface)

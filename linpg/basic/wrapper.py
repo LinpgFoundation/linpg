@@ -264,3 +264,8 @@ class Surfaces:
             pygame.Rect(0, half_height, half_width, texture_missing_surface.get_height() - half_height),
         )
         return texture_missing_surface
+
+    # 检测图层是否是任何形式的null
+    @classmethod
+    def is_not_null(cls, _surface: Optional[ImageSurface]) -> bool:
+        return _surface is not None and _surface is not cls.NULL

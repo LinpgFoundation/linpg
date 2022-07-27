@@ -55,8 +55,8 @@ class AbstractButton(AbstractImageSurface, metaclass=ABCMeta):
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.has_been_hovered() is True and Surfaces.is_not_null(self.__img2):
             _surface.blit(Images.smoothly_resize(self.__img2, self.size), Coordinates.add(self.pos, offSet))
-        elif Surfaces.is_not_null(self.img):
-            _surface.blit(Images.smoothly_resize(self.img, self.size), Coordinates.add(self.pos, offSet))
+        elif Surfaces.is_not_null(self._get_image()):
+            _surface.blit(Images.smoothly_resize(self._get_image(), self.size), Coordinates.add(self.pos, offSet))
 
 
 # 按钮的简单实现

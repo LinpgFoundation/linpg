@@ -32,9 +32,9 @@ class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
     # 更新窗口
     def __update_window_frame(self) -> None:
         if self.__if_regenerate_window is True:
-            self.img: ImageSurface = Surfaces.colored(self.size, Colors.WHITE)
-            Draw.rect(self.img, Colors.LIGHT_GRAY, (ORIGIN, (self.get_width(), self._bar_height)))
-            Draw.rect(self.img, Colors.GRAY, (ORIGIN, self.size), self.__outline_thickness)
+            self._set_image(Surfaces.colored(self.size, Colors.WHITE))
+            Draw.rect(self._get_image(), Colors.LIGHT_GRAY, (ORIGIN, (self.get_width(), self._bar_height)))
+            Draw.rect(self._get_image(), Colors.GRAY, (ORIGIN, self.size), self.__outline_thickness)
             # 初始化图标
             if not self.__rescale_icon_initialized:
                 # 更新尺寸
@@ -161,7 +161,7 @@ class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
             # 更新窗口
             self.__update_window_frame()
             # 画出窗口
-            _surface.blit(self.img, self.pos)
+            _surface.blit(self._get_image(), self.pos)
             # 如果需要，则先更新内容surface
             if self._if_update_needed is True:
                 self._update()
@@ -197,7 +197,7 @@ class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
                 # 展示内容
                 if width_of_sub > 0 and height_of_sub > 0:
                     _surface.blit(
-                        get_img_subsurface(self._content_surface, (real_local_x, real_local_y, width_of_sub, height_of_sub)),
+                        self._content_surface.subsurface(real_local_x, real_local_y, width_of_sub, height_of_sub),
                         (abs_pos_x, abs_pos_y),
                     )
             # 画出放大icon

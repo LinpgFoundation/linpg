@@ -77,8 +77,8 @@ class DropDownList(GameObjectsDictContainer):
         if self.is_visible():
             current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出背景
-            if Surfaces.is_not_null(self.img):
-                self.img.display(_surface, current_abs_pos)
+            if Surfaces.is_not_null(self._get_image()):
+                self._get_image().display(_surface, current_abs_pos)
             else:
                 Draw.rect(_surface, Colors.WHITE, (current_abs_pos, self.size))
             # 列出当前选中的选项

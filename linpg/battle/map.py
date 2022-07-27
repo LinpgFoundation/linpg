@@ -24,11 +24,9 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         # 列
         self.__column: int = 0
         # 地图渲染用的图层
-        self.__MAP_SURFACE: Optional[ImageSurface] = None
-        # 背景图片路径
-        self.__background_image: Optional[str] = None
+        self.__map_surface: Optional[ImageSurface] = None
         # 背景图片
-        self.__BACKGROUND_SURFACE: Optional[StaticImage] = None
+        self.__background_image: Optional[StaticImage] = None
         # 装饰物
         self.__decorations: list[DecorationObject] = []
         # 处于光处的区域
@@ -45,8 +43,6 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         self.__tile_lookup_table = list(mapDataDic["map"]["lookup_table"])
         self.__MAP = numpy.asarray(mapDataDic["map"]["array2d"], dtype=numpy.byte)
         self.__row, self.__column = self.__MAP.shape
-        # 背景图片路径
-        self.__background_image = mapDataDic.get("background_image")
         # 暗度（仅黑夜场景有效）
         MapImageParameters.set_darkness(155 if bool(mapDataDic.get("at_night", False)) is True else 0)
         # 更新地图渲染图层的尺寸
@@ -74,19 +70,16 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                 self.add_decoration(itemsThatType[key], decorationType, key)
         # 对装饰物进行排序
         self.__decorations.sort()
-        # 初始化环境图片管理模块
-        self.__MAP_SURFACE = None
+        # 初始化地图渲染用的图层
+        self.__map_surface = None
+        # 背景图片路径
+        theBgiPath: Optional[str] = mapDataDic.get("background_image")
         # 背景图片
-        if self.__background_image is not None:
-            self.__BACKGROUND_SURFACE = StaticImage(
-                Images.quickly_load(Specification.get_directory("background_image", self.__background_image), False),
-                0,
-                0,
-                0,
-                0,
-            )
-        else:
-            self.__BACKGROUND_SURFACE = None
+        self.__background_image = (
+            StaticImage(Images.quickly_load(Specification.get_directory("background_image", theBgiPath), False), 0, 0)
+            if theBgiPath is not None
+            else None
+        )
         # 加载图片
         for fileName in self.__tile_lookup_table:
             TileMapImagesModule.add_image(fileName)
@@ -280,12 +273,12 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         if self.__need_update_surface is True:
             self.__need_update_surface = False
             if self.__need_to_recheck_block_on_surface is True:
-                if self.__BACKGROUND_SURFACE is not None:
-                    self.__BACKGROUND_SURFACE.set_size(_surface.get_width(), _surface.get_height())
-                if self.__MAP_SURFACE is not None:
-                    self.__MAP_SURFACE.fill(Colors.TRANSPARENT)
+                if self.__background_image is not None:
+                    self.__background_image.set_size(_surface.get_width(), _surface.get_height())
+                if self.__map_surface is not None:
+                    self.__map_surface.fill(Colors.TRANSPARENT)
                 else:
-                    self.__MAP_SURFACE = Surfaces.transparent(self.get_size())
+                    self.__map_surface = Surfaces.transparent(self.get_size())
                 self.__block_on_surface.fill(0)
                 self.__need_to_recheck_block_on_surface = False
             # 画出地图
@@ -303,8 +296,8 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                                 self.get_block(x, y), not self.is_coordinate_in_light_rea(x, y)
                             )
                             evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
-                            if self.__MAP_SURFACE is not None:
-                                evn_img.draw(self.__MAP_SURFACE)
+                            if self.__map_surface is not None:
+                                evn_img.draw(self.__map_surface)
                             self.__block_on_surface[y][x] = 1
                             if y < self.__row - 1:
                                 self.__block_on_surface[y + 1][x] = 0
@@ -333,12 +326,14 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             # 显示开发面板
             self.__debug_win.present()
         # 画出背景
-        if self.__BACKGROUND_SURFACE is not None:
-            self.__BACKGROUND_SURFACE.draw(_surface)
+        if self.__background_image is not None:
+            self.__background_image.draw(_surface)
         else:
             _surface.fill(Colors.BLACK)
-        if self.__MAP_SURFACE is not None:
-            _surface.blit(self.__MAP_SURFACE.subsurface((-self.local_x, -self.local_y), _surface.get_size()), (0, 0))
+        if self.__map_surface is not None:
+            _surface.blit(
+                self.__map_surface.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), (0, 0)
+            )
         # 返回offset
         return screen_to_move_x, screen_to_move_y
 

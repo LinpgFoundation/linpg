@@ -1,30 +1,28 @@
-import os
-from setuptools import setup
-from Cython.Build import cythonize  # type: ignore
-
-
 # 编译方法
-def compile_file(_path: str, keep_c: bool, debug_mode: bool, _compiler_directives: dict) -> None:
+def compile_file(_path: str, keep_c: bool, debug_mode: bool, _compiler_directives: dict, _functions: tuple) -> None:
     if debug_mode is True:
-        setup(
-            ext_modules=cythonize(
+        _functions[0](
+            ext_modules=_functions[1](
                 _path, show_all_warnings=True, annotate=True, language_level="3", compiler_directives=_compiler_directives
             )
         )
     else:
-        setup(ext_modules=cythonize(_path, language_level="3", compiler_directives=_compiler_directives))
+        _functions[0](ext_modules=_functions[1](_path, language_level="3", compiler_directives=_compiler_directives))
     # 删除c文件
     if not keep_c:
-        os.remove(_path.replace(".py", ".c"))
+        _functions[2](_path.replace(".py", ".c"))
     # 删除原始py文件
-    os.remove(_path)
+    _functions[2](_path)
 
 
 if __name__ == "__main__":
 
     import json
+    import os
     from glob import glob
     from multiprocessing import Process
+    from Cython.Build import cythonize  # type: ignore
+    from setuptools import setup
 
     # 编译进程管理模组
     class CompileProcessManager:
@@ -47,6 +45,8 @@ if __name__ == "__main__":
         os.remove("builder_data_cache.json")
         # 储存进程的文件夹
         __compile_processes: list[Process] = []
+        # 编译用到的方法
+        __FUNCTIONS: tuple = (setup, cythonize, os.remove)
 
         # 是否忽略文件
         @classmethod
@@ -64,11 +64,14 @@ if __name__ == "__main__":
                     # 如果使用多线程
                     if cls.__enable_multiprocessing is True:
                         cls.__compile_processes.append(
-                            Process(target=compile_file, args=(path, cls.__keep_c, cls.__debug_mode, cls.__compiler_directives))
+                            Process(
+                                target=compile_file,
+                                args=(path, cls.__keep_c, cls.__debug_mode, cls.__compiler_directives, cls.__FUNCTIONS),
+                            )
                         )
                     # 如果不使用多线程
                     else:
-                        compile_file(path, cls.__keep_c, cls.__debug_mode, cls.__compiler_directives)
+                        compile_file(path, cls.__keep_c, cls.__debug_mode, cls.__compiler_directives, cls.__FUNCTIONS)
             elif "pyinstaller" not in path and "pycache" not in path:
                 if not cls.__if_ignore(path):
                     for file_in_dir in glob(os.path.join(path, "*")):

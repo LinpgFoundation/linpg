@@ -9,6 +9,7 @@ if not PATH.exists("src") or input("Do you want to recompile everything (Y/n):")
         "linpg",
         additional_files=additional_files,
         ignore_key_words=("compiler.py",),
+        smart_auto_moudle_combine=True,
         update_the_one_in_sitepackages=False,
         options={"enable_multiprocessing": True, "compiler_directives": {"emit_code_comments": False}},
     )

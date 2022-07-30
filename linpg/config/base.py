@@ -1,8 +1,7 @@
-from __future__ import annotations
 import json
-from typing import Any, Optional, Final
 from copy import deepcopy
 from glob import glob
+from typing import Any, Final, Optional
 from ..exception import EXCEPTION, os
 
 # 尝试导入yaml库

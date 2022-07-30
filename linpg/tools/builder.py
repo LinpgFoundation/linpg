@@ -50,6 +50,38 @@ class BuilderManager(AbstractToolSystem):
         for _path in folders_need_remove:
             Cache.delete_file_if_exist(_path)
 
+    # 合并模块
+    @staticmethod
+    def __combine(_dir_path: str) -> None:
+        if os.path.isdir(_dir_path) and os.path.exists(init_file_path := os.path.join(_dir_path, "__init__.py")):
+            keyWord: Final[str] = "from ."
+            keyEndWord: Final[str] = " import *"
+            with open(init_file_path, "r", encoding="utf-8") as f:
+                _lines: list[str] = f.readlines()
+            _index: int = 0
+            while _index < len(_lines):
+                currentLine: str = _lines[_index].strip("\n")
+                if currentLine.startswith(keyWord) and not currentLine.startswith("from ..") and currentLine.endswith(keyEndWord):
+                    pyFilePath = os.path.join(_dir_path, currentLine[len(keyWord) : len(currentLine) - len(keyEndWord)] + ".py")
+                    with open(pyFilePath, "r", encoding="utf-8") as f:
+                        content: list[str] = f.readlines()
+                    Cache.delete_file_if_exist(pyFilePath)
+                    _lines = _lines[:_index] + content + _lines[_index + 1 :]
+                else:
+                    _index += 1
+            # 如果模块文件夹中只剩__init__.py，则将文件夹转换成一个python文件
+            if len(glob(os.path.join(_dir_path, "*"))) <= 1:
+                for _index in range(len(_lines)):
+                    if _lines[_index].startswith("from .."):
+                        _lines[_index] = _lines[_index].replace("from ..", "from .")
+                with open(os.path.join(_dir_path + ".py"), "w", encoding="utf-8") as f:
+                    f.writelines(_lines)
+                shutil.rmtree(_dir_path)
+            # 否则则直接将内容写入原__init__.py文件
+            else:
+                with open(init_file_path, "w", encoding="utf-8") as f:
+                    f.writelines(_lines)
+
     # 编译
     def compile(
         self,
@@ -57,6 +89,7 @@ class BuilderManager(AbstractToolSystem):
         target_folder: str = "src",
         additional_files: tuple = tuple(),
         ignore_key_words: tuple = tuple(),
+        smart_auto_moudle_combine: bool = False,
         remove_building_cache: bool = True,
         update_the_one_in_sitepackages: bool = True,
         options: dict = {},
@@ -68,6 +101,10 @@ class BuilderManager(AbstractToolSystem):
         shutil.copytree(source_folder, source_path_in_target_folder)
         # 移除不必要的py缓存
         self.__remove_cache(source_path_in_target_folder)
+        # 如果开启了智能模块合并模式
+        if smart_auto_moudle_combine is True:
+            for _path in glob(os.path.join(source_path_in_target_folder, "*")):
+                self.__combine(_path)
         # 把数据写入缓存文件以供编译器读取
         builder_options: dict = {
             "source_folder": source_path_in_target_folder,

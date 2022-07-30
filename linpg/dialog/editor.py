@@ -2,6 +2,11 @@ from .converter import *
 
 # 对话制作器
 class DialogEditor(DialogConverter):
+
+    # deselect选中的背景
+    __BACKGROUND_DESELECT_IMAGE: Final[StaticImage] = StaticImage.new_place_holder()
+    __IS_BACKGROUND_DESELECT_IMAGE_INIT: bool = False
+
     def __init__(self) -> None:
         super().__init__()
         # 导航窗口
@@ -24,12 +29,26 @@ class DialogEditor(DialogConverter):
         self.__compress_when_saving: bool = True
         # 存放并管理编辑器上方所有按钮的容器
         self.__buttons_ui_container: Optional[GameObjectsDictContainer] = None
+        # 背景音乐选择 DropDown ui
+        self.__dialog_bgm_select: DropDownList = DropDownList(None, 0, 0, 1)
+        # 背景图片编辑模块
+        self.__UIContainerRight_bg: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(None, 0, 0, 0, 0, "vertical")
+        # npc立绘编辑模块
+        self.__UIContainerRight_npc: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(None, 0, 0, 0, 0, "vertical")
+        # 控制容器转换的按钮
+        self.__button_select_background: Button = Button.load("<&ui>button.png", (0, 0), (0, 0), 150)
+        self.__button_select_npc: Button = Button.load("<&ui>button.png", (0, 0), (0, 0), 150)
         # 未保存数据时警告的窗口
         self.__no_save_warning: GameObjectsDictContainer = UI.generate_container("leave_without_saving_warning")
         # 当前选择的背景的名称
         self.__current_select_bg_name: Optional[str] = None
+        # 当前选择的背景的复制品
+        self.__current_select_bg_copy: Optional[ImageSurface] = None
         # 用于选择小说脚本的key的下拉菜单
         self.__dialog_part_selection: DropDownList = DropDownList(None, 0, 0, 1)
+        # 检测并初始化deselect选中的背景
+        if not self.__IS_BACKGROUND_DESELECT_IMAGE_INIT:
+            self.__BACKGROUND_DESELECT_IMAGE.update_image("<&ui>deselect.png")
         # 默认不播放音乐
         # self._is_muted = True
 
@@ -41,47 +60,40 @@ class DialogEditor(DialogConverter):
     def load(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str] = None) -> None:
         self._initialize(chapterType, chapterId, part, projectName)
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_dialog_file_location())
-        # 将npc立绘系统设置为开发者模式
-        self._npc_manager.dev_mode = True
         # 加载容器
-        container_width = Display.get_width() // 5
-        self.__UIContainerRightImage = RawImg.load("<&ui>container.png", (container_width, Display.get_height()))
+        container_width: int = Display.get_width() // 5
+        self.__UIContainerRightImage = Images.load("<&ui>container.png", (container_width, Display.get_height()))
         # 右侧容器尺寸
         RightContainerRect: Rectangle = Rectangle(
             container_width * 3 // 40, Display.get_height() // 10, container_width * 17 // 20, Display.get_height() * 17 // 20
         )
-        # 背景图片编辑模块
-        self.__UIContainerRight_bg = SurfaceContainerWithScrollbar(
-            None, RightContainerRect.x, RightContainerRect.y, RightContainerRect.width, RightContainerRect.height, "vertical"
-        )
+        # 重置背景图片编辑模块
+        self.__UIContainerRight_bg.clear()
+        self.__UIContainerRight_bg.move_to(RightContainerRect.get_pos())
+        self.__UIContainerRight_bg.set_size(RightContainerRect.width, RightContainerRect.height)
         self.__UIContainerRight_bg.set_scroll_bar_pos("right")
         # 加载背景图片
-        self.background_deselect = RawImg.load("<&ui>deselect.png")
         self.__UIContainerRight_bg.set("current_select", None)
         # 加载静态背景图片
-        for imgPath in glob(os.path.join(self._background_image_folder_path, "*")):
-            self.__UIContainerRight_bg.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 4 // 5, None)))
+        for imgPath in glob(Specification.get_directory("background_image", "*")):
+            self.__UIContainerRight_bg.set(os.path.basename(imgPath), Images.load(imgPath, (container_width * 4 // 5, None)))
         # 加载动态背景图片
         if os.path.exists(Specification.get_directory("movie")):
             for imgPath in glob(Specification.get_directory("movie", "*")):
                 self.__UIContainerRight_bg.set(
-                    os.path.basename(imgPath), RawImg.resize(VideoSurface.get_preview(imgPath), (container_width * 4 // 5, None))
+                    os.path.basename(imgPath), Images.resize(VideoSurface.get_preview(imgPath), (container_width * 4 // 5, None))
                 )
-        # 加载透明图片
-        self.__UIContainerRight_bg.set(
-            "<transparent>", Surface.texture_is_missing((container_width * 4 // 5, container_width * 9 // 20))
-        )
         self.__UIContainerRight_bg.distance_between_item = Display.get_height() // 50
         self.__current_select_bg_name = None
         self.__current_select_bg_copy = None
-        # npc立绘编辑模块
-        self.__UIContainerRight_npc = SurfaceContainerWithScrollbar(
-            None, RightContainerRect.x, RightContainerRect.y, RightContainerRect.width, RightContainerRect.height, "vertical"
-        )
+        # 重置npc立绘编辑模块
+        self.__UIContainerRight_npc.clear()
+        self.__UIContainerRight_npc.move_to(RightContainerRect.get_pos())
+        self.__UIContainerRight_npc.set_size(RightContainerRect.width, RightContainerRect.height)
         self.__UIContainerRight_npc.set_scroll_bar_pos("right")
         # 加载npc立绘
-        for imgPath in glob(os.path.join(self._npc_manager.image_folder_path, "*")):
-            self.__UIContainerRight_npc.set(os.path.basename(imgPath), RawImg.load(imgPath, (container_width * 4 // 5, None)))
+        for imgPath in glob(Specification.get_directory("character_image", "*")):
+            self.__UIContainerRight_npc.set(os.path.basename(imgPath), Images.load(imgPath, (container_width * 4 // 5, None)))
         self.__UIContainerRight_npc.set_visible(False)
         self.__UIContainerRight_npc.distance_between_item = 0
         # 容器按钮
@@ -102,18 +114,18 @@ class DialogEditor(DialogConverter):
         CONFIG = Lang.get_texts("Editor")
         button_y: int = Display.get_height() * 3 // 100
         font_size: int = button_width // 3
-        # 控制容器转换的按钮
-        self.__button_select_background = Button.load("<&ui>button.png", (0, button_y * 3 // 2), (0, 0), 150)
+        # 重置控制容器转换的按钮
+        self.__button_select_background.set_pos(0, button_y * 3 // 2)
         self.__button_select_background.set_text(
             ButtonComponent.text(str(CONFIG["background"]), font_size * 2 / 3, alpha_when_not_hover=150)
         )
         self.__button_select_background.set_auto_resize(True)
-        self.__button_select_npc = Button.load("<&ui>button.png", (0, button_y * 3 // 2), (0, 0), 150)
+        self.__button_select_npc.set_pos(0, button_y * 3 // 2)
         self.__button_select_npc.set_text(ButtonComponent.text(str(CONFIG["npc"]), font_size * 2 // 3, alpha_when_not_hover=150))
         self.__button_select_npc.set_auto_resize(True)
-        panding: int = (container_width - self.__button_select_background.get_width() - self.__button_select_npc.get_width()) // 3
-        self.__button_select_background.set_left(panding)
-        self.__button_select_npc.set_left(self.__button_select_background.get_right() + panding)
+        padding: int = (container_width - self.__button_select_background.get_width() - self.__button_select_npc.get_width()) // 3
+        self.__button_select_background.set_left(padding)
+        self.__button_select_npc.set_left(self.__button_select_background.get_right() + padding)
         # 页面右上方的一排按钮
         custom_values: dict = {
             "button_size": button_width,
@@ -129,11 +141,13 @@ class DialogEditor(DialogConverter):
         self.__buttons_ui_container = UI.generate_container("dialog_editor_buttons", custom_values)
         self.__please_enter_content = str(CONFIG["please_enter_content"])
         self.__please_enter_name = str(CONFIG["please_enter_name"])
-        # 背景音乐
-        self.dialog_bgm_select = DropDownList(None, button_width * 11, button_y + font_size * 3, font_size)
-        self.dialog_bgm_select.set("null", Lang.get_text("Editor", "no_bgm"))
+        # 更新可选择的背景音乐
+        self.__dialog_bgm_select.clear()
+        self.__dialog_bgm_select.set_pos(button_width * 11, button_y + font_size * 3)
+        self.__dialog_bgm_select.update_font_size(font_size)
+        self.__dialog_bgm_select.set("null", Lang.get_text("Editor", "no_bgm"))
         for file_name in os.listdir(Specification.get_directory("music")):
-            self.dialog_bgm_select.set(file_name, file_name)
+            self.__dialog_bgm_select.set(file_name, file_name)
         # 从配置文件中加载数据
         self._load_content()
         # 移除按钮
@@ -154,7 +168,7 @@ class DialogEditor(DialogConverter):
         original_data: dict = (
             Config.load_file(self.get_dialog_file_location()) if os.path.exists(self.get_dialog_file_location()) else {}
         )
-        original_data["dialogs"] = self.__slipt_the_stuff_need_save()
+        original_data["dialogs"] = self.__split_the_stuff_need_save()
         return original_data
 
     # 更新背景选项栏
@@ -166,9 +180,10 @@ class DialogEditor(DialogConverter):
                 self.__UIContainerRight_bg.swap("current_select", self.__current_select_bg_name)
             self.__UIContainerRight_bg.swap("current_select", image_name)
             self.__current_select_bg_name = image_name
-            current_select_bg = self.__UIContainerRight_bg.get("current_select")
+            current_select_bg: ImageSurface = self.__UIContainerRight_bg.get("current_select")
             self.__current_select_bg_copy = current_select_bg.copy()
-            current_select_bg.blit(RawImg.smoothly_resize(self.background_deselect, current_select_bg.get_size()), (0, 0))
+            self.__BACKGROUND_DESELECT_IMAGE.set_size(current_select_bg.get_width(), current_select_bg.get_height())
+            self.__BACKGROUND_DESELECT_IMAGE.draw(current_select_bg)
         else:
             if self.__current_select_bg_name is not None:
                 self.__UIContainerRight_bg.set(self.__current_select_bg_name, self.__current_select_bg_copy)
@@ -178,14 +193,16 @@ class DialogEditor(DialogConverter):
 
     # 读取章节信息
     def _load_content(self) -> None:
+        # 将npc立绘系统设置为开发者模式
+        CharacterImageManager.dev_mode = True
+        # 加载内容数据
+        self._dialog_data.clear()
         if os.path.exists(path := self.get_dialog_file_location()) and "dialogs" in (data_t := Config.load_file(path)):
-            try:
-                self._dialog_data = dict(data_t["dialogs"])
-            except Exception:
+            _dialogs: Optional[dict] = data_t.get("dialogs")
+            if _dialogs is not None:
+                self._dialog_data.update(_dialogs)
+            else:
                 EXCEPTION.warn("Cannot load dialogs due to invalid data type.")
-                self._dialog_data.clear()
-        else:
-            self._dialog_data.clear()
         # 如果不是默认主语言
         if (default_lang_of_dialog := self.get_default_lang()) != Setting.get_language():
             self._is_default_dialog = False
@@ -231,7 +248,7 @@ class DialogEditor(DialogConverter):
             self.save_progress()
 
     # 分离需要保存的数据
-    def __slipt_the_stuff_need_save(self) -> dict:
+    def __split_the_stuff_need_save(self) -> dict:
         self._current_dialog_content["narrator"] = self.__dialog_txt_system.get_narrator()
         self._current_dialog_content["contents"] = self.__dialog_txt_system.get_content()
         data_need_save: dict = deepcopy(self._dialog_data)
@@ -250,18 +267,15 @@ class DialogEditor(DialogConverter):
     # 检查是否有任何改动
     def __no_changes_were_made(self) -> bool:
         return (
-            bool(Config.load(dialog_file_location_t, "dialogs") == self.__slipt_the_stuff_need_save())
-            if os.path.exists((dialog_file_location_t := self.get_dialog_file_location()))
-            else False
+            os.path.exists((dialog_file_location_t := self.get_dialog_file_location()))
+            and Config.load(dialog_file_location_t, "dialogs") == self.__split_the_stuff_need_save()
         )
 
     # 更新UI
     def __update_ui(self) -> None:
         # 更新背景音乐选项菜单
-        if (file_name := self._current_dialog_content["background_music"]) is not None:
-            self.dialog_bgm_select.set_selected_item(file_name)
-        else:
-            self.dialog_bgm_select.set_selected_item("null")
+        file_name: Optional[str] = self._current_dialog_content.get("background_music")
+        self.__dialog_bgm_select.set_selected_item(file_name if file_name is not None else "null")
         # 更新按钮
         if self.__buttons_ui_container is not None:
             if self.does_current_dialog_have_next_dialog() is True:
@@ -273,7 +287,7 @@ class DialogEditor(DialogConverter):
         else:
             EXCEPTION.fatal("The ui has not been correctly initialized.")
         # 更新dialog navigation窗口
-        self.__dialog_navigation_window.readd_all(self.dialog_content)
+        self.__dialog_navigation_window.read_all(self.dialog_content)
         self.__dialog_navigation_window.update_selected(self._dialog_id)
 
     # 更新场景
@@ -366,7 +380,7 @@ class DialogEditor(DialogConverter):
             return "<NULL>"
 
     # 获取下一个对话的ID
-    def __try_get_next_id(self, surface: ImageSurface) -> str:
+    def __try_get_next_id(self, _surface: ImageSurface) -> str:
         if self.does_current_dialog_have_next_dialog() is True:
             theNext = self._current_dialog_content["next_dialog_id"]
             if theNext["type"] == "default" or theNext["type"] == "changeScene":
@@ -374,11 +388,11 @@ class DialogEditor(DialogConverter):
             elif theNext["type"] == "option":
                 if len(theNext["target"]) > 1:
                     self._get_dialog_options_container_ready()
-                    screenshot = surface.copy()
+                    screenshot = _surface.copy()
                     while True:
-                        surface.blit(screenshot, (0, 0))
+                        _surface.blit(screenshot, (0, 0))
                         # 显示对话选项
-                        self._dialog_options_container.display(surface)
+                        self._dialog_options_container.display(_surface)
                         # 等待玩家选择一个选项
                         if Controller.get_event("confirm") and self._dialog_options_container.item_being_hovered >= 0:
                             # 获取下一个对话的id
@@ -396,8 +410,8 @@ class DialogEditor(DialogConverter):
                     return str(self._current_dialog_content["next_dialog_id"]["target"][0]["id"])
         return "<NULL>"
 
-    def draw(self, surface: ImageSurface) -> None:
-        super().draw(surface)
+    def draw(self, _surface: ImageSurface) -> None:
+        super().draw(_surface)
         # 更新对话框数据
         if self.__dialog_txt_system.any_changed_was_made():
             self._current_dialog_content["narrator"] = self.__dialog_txt_system.get_narrator()
@@ -406,27 +420,22 @@ class DialogEditor(DialogConverter):
         if self.__buttons_ui_container is None:
             EXCEPTION.fatal("The ui has not been correctly initialized.")
         # 展示按钮
-        self.__buttons_ui_container.draw(surface)
+        self.__buttons_ui_container.draw(_surface)
         # 展示出当前可供使用的背景音乐
-        self.dialog_bgm_select.draw(surface)
-        if self._current_dialog_content["background_music"] != self.dialog_bgm_select.get_selected_item() and not (
-            self._current_dialog_content["background_music"] is None and self.dialog_bgm_select.get_selected_item() == "null"
-        ):
+        self.__dialog_bgm_select.draw(_surface)
+        theBgm: Optional[str] = self._current_dialog_content.get("background_music")
+        isCurrentBgmSelectedNull: bool = self.__dialog_bgm_select.get_selected_item() == "null"
+        if theBgm != self.__dialog_bgm_select.get_selected_item() and not (theBgm is None and isCurrentBgmSelectedNull):
             self._current_dialog_content["background_music"] = (
-                None
-                if self.dialog_bgm_select.get_selected_item() == "null"
-                else self.dialog_bgm_select.get(self.dialog_bgm_select.get_selected_item())
+                None if isCurrentBgmSelectedNull else self.__dialog_bgm_select.get(self.__dialog_bgm_select.get_selected_item())
             )
             self._update_scene(self._dialog_id)
         # 展示出当前可供编辑的dialog部分
-        self.__dialog_part_selection.draw(surface)
+        self.__dialog_part_selection.draw(_surface)
         # 切换当前正在浏览编辑的dialog部分
         if self.__dialog_part_selection.get_selected_item() != self._part:
             self._part = self.__dialog_part_selection.get_selected_item()
-            if self._dialog_id in self.dialog_content:
-                self._update_scene(self._dialog_id)
-            else:
-                self._update_scene("head")
+            self._update_scene(self._dialog_id if self._dialog_id in self.dialog_content else "head")
         # 处理输入事件
         confirm_event_tag: bool = False
         lastId: str
@@ -443,30 +452,31 @@ class DialogEditor(DialogConverter):
                         self.__no_save_warning.set_visible(True)
                 elif self.__buttons_ui_container.item_being_hovered == "previous":
                     lastId = self.__get_last_id()
-                    if lastId != "<NULL>":
-                        self._update_scene(str(lastId))
-                    else:
+                    if lastId == "<NULL>":
                         EXCEPTION.inform("There is no last dialog id.")
+                    self._update_scene(lastId)
                 elif self.__buttons_ui_container.item_being_hovered == "delete":
-                    lastId = self.__get_last_id()
-                    nextId: str = self.__try_get_next_id(surface)
-                    needDeleteId: str = ""
-                    if lastId != "<NULL>":
-                        if nextId != "<NULL>":
-                            self.__make_connection(lastId, nextId)
-                        needDeleteId = self._dialog_id
-                        self._update_scene(str(lastId))
-                        del self.dialog_content[needDeleteId]
-                    elif nextId != "<NULL>":
-                        needDeleteId = self._dialog_id
-                        self._update_scene(str(nextId))
-                        del self.dialog_content[needDeleteId]
+                    if self._dialog_id != "head":
+                        lastId = self.__get_last_id()
+                        nextId: str = self.__try_get_next_id(_surface)
+                        del self.dialog_content[self._dialog_id]
+                        if lastId != "<NULL>":
+                            if nextId != "<NULL>":
+                                self.__make_connection(lastId, nextId)
+                            else:
+                                self.dialog_content[lastId]["next_dialog_id"] = None
+                            self._update_scene(lastId)
+                        elif nextId != "<NULL>":
+                            self.dialog_content[nextId]["last_dialog_id"] = None
+                            self._update_scene(nextId)
+                        else:
+                            EXCEPTION.inform(
+                                "Cannot delete this dialog because there is no valid last and next id; you need to delete it manually."
+                            )
                     else:
-                        EXCEPTION.inform(
-                            "Cannot delete this dialog because there is no valid last and next id. You need to delete it manually"
-                        )
+                        EXCEPTION.inform("Cannot delete head; you need to delete it manually.")
                 elif self.__buttons_ui_container.item_being_hovered == "next":
-                    if (nextId := self.__try_get_next_id(surface)) != "<NULL>":
+                    if (nextId := self.__try_get_next_id(_surface)) != "<NULL>":
                         self._update_scene(str(nextId))
                     else:
                         EXCEPTION.inform("There is no next dialog id.")
@@ -483,21 +493,21 @@ class DialogEditor(DialogConverter):
                 else:
                     confirm_event_tag = True
             # 移除角色立绘
-            elif Controller.get_event("delete") and self._npc_manager.character_get_click is not None:
-                self._current_dialog_content["character_images"].remove(self._npc_manager.character_get_click)
+            elif Controller.get_event("delete") and CharacterImageManager.character_get_click is not None:
+                self._current_dialog_content["character_images"].remove(CharacterImageManager.character_get_click)
                 self._update_scene(self._dialog_id)
         # 显示移除角色的提示
-        if self._npc_manager.character_get_click is not None:
-            surface.blit(self.__remove_npc_button, Controller.mouse.pos)
+        if CharacterImageManager.character_get_click is not None:
+            _surface.blit(self.__remove_npc_button, Controller.mouse.get_pos())
         # 画上右侧菜单的按钮
-        self.__UIContainerRightButton.draw(surface)
+        self.__UIContainerRightButton.draw(_surface)
         # 画上右侧菜单
         if self.__UIContainerRightButton.right < Display.get_width():
-            surface.blit(self.__UIContainerRightImage, (self.__UIContainerRightButton.right, 0))
-            self.__UIContainerRight_bg.display(surface, (self.__UIContainerRightButton.right, 0))
-            self.__UIContainerRight_npc.display(surface, (self.__UIContainerRightButton.right, 0))
-            # self.__UIContainerRight_bg.draw_outline(surface,(self.__UIContainerRightButton.right,0))
-            # self.__UIContainerRight_npc.draw_outline(surface,(self.__UIContainerRightButton.right,0))
+            _surface.blit(self.__UIContainerRightImage, (self.__UIContainerRightButton.right, 0))
+            self.__UIContainerRight_bg.display(_surface, (self.__UIContainerRightButton.right, 0))
+            self.__UIContainerRight_npc.display(_surface, (self.__UIContainerRightButton.right, 0))
+            # self.__UIContainerRight_bg.draw_outline(_surface,(self.__UIContainerRightButton.right,0))
+            # self.__UIContainerRight_npc.draw_outline(_surface,(self.__UIContainerRightButton.right,0))
             # 检测按钮
             if self.__button_select_background.is_hovered((self.__UIContainerRightButton.right, 0)) and confirm_event_tag is True:
                 self.__UIContainerRight_bg.set_visible(True)
@@ -508,8 +518,8 @@ class DialogEditor(DialogConverter):
                 self.__UIContainerRight_npc.set_visible(True)
                 confirm_event_tag = False
             # 画出按钮
-            self.__button_select_background.display(surface, (self.__UIContainerRightButton.right, 0))
-            self.__button_select_npc.display(surface, (self.__UIContainerRightButton.right, 0))
+            self.__button_select_background.display(_surface, (self.__UIContainerRightButton.right, 0))
+            self.__button_select_npc.display(_surface, (self.__UIContainerRightButton.right, 0))
             # 检测是否有物品被选中需要更新
             if confirm_event_tag is True:
                 if self.__UIContainerRight_bg.is_visible():
@@ -528,16 +538,16 @@ class DialogEditor(DialogConverter):
                             self._current_dialog_content["character_images"] = []
                         if len(self._current_dialog_content["character_images"]) < 2:
                             self._current_dialog_content["character_images"].append(imgName)
-                            self._npc_manager.update(self._current_dialog_content["character_images"])
+                            CharacterImageManager.update(self._current_dialog_content["character_images"])
 
         # 展示dialog navigation窗口
-        self.__dialog_navigation_window.present_on(surface)
+        self.__dialog_navigation_window.present_on(_surface)
         # 如果dialog navigation窗口和当前选中的key不一致，则以dialog navigation窗口为基准进行更新
         if self.__dialog_navigation_window.get_selected_key() != self._dialog_id:
             self._update_scene(self.__dialog_navigation_window.get_selected_key())
 
         # 未保存离开时的警告
-        self.__no_save_warning.draw(surface)
+        self.__no_save_warning.draw(_surface)
         if Controller.get_event("confirm") and self.__no_save_warning.item_being_hovered != "":
             # 保存并离开
             if self.__no_save_warning.item_being_hovered == "save":

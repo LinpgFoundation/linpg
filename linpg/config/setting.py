@@ -4,15 +4,16 @@ from .base import *
 class Setting:
 
     # 储存设置配置文件的数据
-    __SETTING_DATA: dict = {}
+    __SETTING_DATA: Final[dict] = {}
     # 当前配置文件保存路径的参数
-    __SETTING_FILE_NAME: str = Specification.get_directory("setting", "setting." + Config.get_file_type())
+    __SETTING_FILE_NAME: Final[str] = Specification.get_directory("setting", "setting." + Config.get_file_type())
 
     # 重新加载设置数据
     @classmethod
     def reload(cls) -> None:
         # 加载内部默认的设置配置文件
-        cls.__SETTING_DATA = Template.get("setting")
+        cls.__SETTING_DATA.clear()
+        cls.__SETTING_DATA.update(Template.get("setting"))
         # 如果自定义的设置配置文件存在，则加载
         if os.path.exists(cls.__SETTING_FILE_NAME):
             cls.__SETTING_DATA.update(Config.load_file(cls.__SETTING_FILE_NAME))
@@ -73,7 +74,7 @@ class Setting:
     # 抗锯齿参数
     @classmethod
     def get_antialias(cls) -> bool:
-        return bool(cls.__SETTING_DATA["Antialias"])
+        return bool(cls.__SETTING_DATA["AntiAlias"])
 
     # 语言
     @classmethod

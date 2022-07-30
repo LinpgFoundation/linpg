@@ -1,22 +1,28 @@
-import os
-import setuptools
-from Cython.Build import cythonize  # type: ignore
-
-
 # 编译方法
-def compile_file(_path: str) -> None:
-    setuptools.setup(ext_modules=cythonize(_path, language_level="3"))
+def compile_file(_path: str, keep_c: bool, debug_mode: bool, _compiler_directives: dict, _functions: tuple) -> None:
+    if debug_mode is True:
+        _functions[0](
+            ext_modules=_functions[1](
+                _path, show_all_warnings=True, annotate=True, language_level="3", compiler_directives=_compiler_directives
+            )
+        )
+    else:
+        _functions[0](ext_modules=_functions[1](_path, language_level="3", compiler_directives=_compiler_directives))
     # 删除c文件
-    os.remove(_path.replace(".py", ".c"))
+    if not keep_c:
+        _functions[2](_path.replace(".py", ".c"))
     # 删除原始py文件
-    os.remove(_path)
+    _functions[2](_path)
 
 
 if __name__ == "__main__":
 
     import json
+    import os
     from glob import glob
     from multiprocessing import Process
+    from Cython.Build import cythonize  # type: ignore
+    from setuptools import setup
 
     # 编译进程管理模组
     class CompileProcessManager:
@@ -29,10 +35,18 @@ if __name__ == "__main__":
             __source_folder: str = str(Data["source_folder"])
             # 需要忽略的文件的关键词
             __ignore_key_words: tuple = tuple(Data["ignore_key_words"])
+            # 是否启用debug模式
+            __debug_mode: bool = bool(Data["debug_mode"])
+            # 是否保存c文件
+            __keep_c: bool = bool(Data["keep_c"])
+            # 其他次要参数
+            __compiler_directives: dict = dict(Data["compiler_directives"])
         # 移除参数文件
         os.remove("builder_data_cache.json")
         # 储存进程的文件夹
         __compile_processes: list[Process] = []
+        # 编译用到的方法
+        __FUNCTIONS: tuple = (setup, cythonize, os.remove)
 
         # 是否忽略文件
         @classmethod
@@ -49,12 +63,15 @@ if __name__ == "__main__":
                 if path.endswith(".py") and not cls.__if_ignore(path):
                     # 如果使用多线程
                     if cls.__enable_multiprocessing is True:
-                        cls.__compile_processes.append(Process(target=compile_file, args=(path,)))
-                    # 如果不使用多线程（用于debug)
+                        cls.__compile_processes.append(
+                            Process(
+                                target=compile_file,
+                                args=(path, cls.__keep_c, cls.__debug_mode, cls.__compiler_directives, cls.__FUNCTIONS),
+                            )
+                        )
+                    # 如果不使用多线程
                     else:
-                        setuptools.setup(ext_modules=cythonize(path, show_all_warnings=True, annotate=True, language_level="3"))
-                        # 删除py文件
-                        os.remove(path)
+                        compile_file(path, cls.__keep_c, cls.__debug_mode, cls.__compiler_directives, cls.__FUNCTIONS)
             elif "pyinstaller" not in path and "pycache" not in path:
                 if not cls.__if_ignore(path):
                     for file_in_dir in glob(os.path.join(path, "*")):

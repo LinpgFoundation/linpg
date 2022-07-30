@@ -13,14 +13,14 @@ except ImportError:
 def _video_validator(path: str) -> None:
     # 如果opencv没有成功地导入
     if not _OPENCV_INITIALIZED:
-        EXCEPTION.fatal("You cannot use any video module unless you intall opencv!")
+        EXCEPTION.fatal("You cannot use any video module unless you install opencv!")
     # 确保路径存在
     elif not os.path.exists(path):
         EXCEPTION.fatal('Cannot find file on path: "{}"'.format(path))
 
 
 # 视频抽象类
-class AbstractVideo:
+class AbstractVideo(ABC):
     def __init__(self, path: str, buffer_num: int, play_range: tuple[int, int] = (0, -1)):
         _video_validator(path)
         self._path: str = path
@@ -124,7 +124,7 @@ class AbstractVideo:
         return self.__started is True and self.__stopped is not True
 
     # 把画面画到surface上
-    def draw(self, surface: ImageSurface) -> None:
+    def draw(self, _surface: ImageSurface) -> None:
         if self.__started is False:
             self._init()
         if not self.__stopped:
@@ -134,9 +134,9 @@ class AbstractVideo:
             # 处理当前Frame
             if (current_frame := self.__video_stream.read()[1]) is not None:
                 current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2RGB)
-                if current_frame.shape[0] != surface.get_width() or current_frame.shape[1] != surface.get_height():
-                    current_frame = cv2.resize(current_frame, surface.get_size())
-                pygame.surfarray.blit_array(surface, current_frame.swapaxes(0, 1))
+                if current_frame.shape[0] != _surface.get_width() or current_frame.shape[1] != _surface.get_height():
+                    current_frame = cv2.resize(current_frame, _surface.get_size())
+                pygame.surfarray.blit_array(_surface, current_frame.swapaxes(0, 1))
 
 
 # 类似Wallpaper Engine的视频背景，但音乐不与画面同步
@@ -167,7 +167,7 @@ class VideoSurface(AbstractVideo):
         del video_stream
         if size is not None and (current_frame.shape[0] != size[0] or current_frame.shape[1] != size[1]):
             current_frame = cv2.resize(current_frame, size)
-        return Surface.from_array(current_frame)
+        return Surfaces.from_array(current_frame)
 
     # 返回一个复制
     def copy(self) -> "VideoSurface":
@@ -199,8 +199,8 @@ class VideoSurface(AbstractVideo):
         self.__audio_channel = Sound.find_channel()
 
     # 把画面画到surface上
-    def draw(self, surface: ImageSurface) -> None:
-        super().draw(surface)
+    def draw(self, _surface: ImageSurface) -> None:
+        super().draw(_surface)
         if self.is_playing():
             # 播放背景音乐
             if self.__audio_channel is not None and not self.__audio_channel.get_busy() and self.__audio is not None:
@@ -208,7 +208,7 @@ class VideoSurface(AbstractVideo):
             # 检测循环
             if self.get_frame_index() < self.get_frame_num():
                 # 如果有设置末端且当前已经超出末端
-                if self._ending_point >= 0 and self.get_frame_index() >= self._ending_point:
+                if 0 <= self._ending_point <= self.get_frame_index():
                     self.__looped_times += 1
                     if not self.__loop:
                         self.stop()
@@ -255,8 +255,8 @@ class VideoPlayer(AbstractVideo):
         self._init()
 
     # 把画面画到surface上
-    def draw(self, surface: ImageSurface) -> None:
-        super().draw(surface)
+    def draw(self, _surface: ImageSurface) -> None:
+        super().draw(_surface)
         if self.is_playing():
             if (
                 self.get_frame_index() <= self.get_frame_num()

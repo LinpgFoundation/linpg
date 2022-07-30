@@ -1,9 +1,8 @@
-from __future__ import annotations
 import json
-from typing import Any, Optional
 from copy import deepcopy
 from glob import glob
-from ..exception import *
+from typing import Any, Final, Optional
+from ..exception import EXCEPTION, os
 
 # 尝试导入yaml库
 _YAML_INITIALIZED: bool = False
@@ -22,7 +21,7 @@ def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) ->
             pointer = pointer[key]
         except KeyError:
             if warning is True:
-                EXCEPTION.warn(
+                EXCEPTION.fatal(
                     'Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'.format(
                         key
                     )
@@ -36,7 +35,7 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Optional[object],
     pointer = dict_to_check
     key_range: int = len(keys)
     last_key_index: int = key_range - 1
-    index: int = 0
+    index: int
     for index in range(key_range):
         try:
             if index < last_key_index:
@@ -45,7 +44,7 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Optional[object],
                 pointer[keys[index]] = value
         except KeyError:
             if warning is True:
-                EXCEPTION.warn(
+                EXCEPTION.fatal(
                     'Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'.format(
                         keys[index]
                     )
@@ -56,7 +55,7 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Optional[object],
 class Config:
 
     # 支持的配置文件后缀
-    __EXTENSIONS_SUPPORTED: tuple[str, ...] = (".yml", ".yaml", ".json")
+    __EXTENSIONS_SUPPORTED: Final[tuple[str, ...]] = (".yml", ".yaml", ".json")
 
     # 获取默认配置文件类型
     @staticmethod
@@ -201,7 +200,7 @@ class Config:
 # 引擎部分生产的配置文件的模板
 class Template:
 
-    __TEMPLATE: dict = Config.load_internal_file("template.json")
+    __TEMPLATE: Final[dict] = Config.load_internal_file("template.json")
 
     @classmethod
     def get(cls, key: str) -> dict:
@@ -212,7 +211,7 @@ class Template:
 # 使用引擎的开发者可以自定义的参数
 class Specification:
 
-    __SPECIFICATIONS: dict = Config.load_internal_file("specifications.json")
+    __SPECIFICATIONS: Final[dict] = Config.load_internal_file("specifications.json")
     # 尝试加载项目自定义的参数
     __SPECIFICATIONS.update(Config.resolve_path_and_load_file(os.path.join("Data", "specifications")))
 
@@ -221,8 +220,5 @@ class Specification:
         return get_value_by_keys(cls.__SPECIFICATIONS, key)
 
     @classmethod
-    def get_directory(cls, category: str, fileName: Optional[str] = None) -> str:
-        if fileName is None:
-            return str(os.path.join(*cls.__SPECIFICATIONS["Directory"][category]))
-        else:
-            return str(os.path.join(*cls.__SPECIFICATIONS["Directory"][category], fileName))
+    def get_directory(cls, category: str, *_sub: str) -> str:
+        return str(os.path.join(*cls.__SPECIFICATIONS["Directory"][category], *_sub))

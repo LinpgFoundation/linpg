@@ -1,3 +1,4 @@
+from abc import ABCMeta
 import threading
 from ..basic import *
 
@@ -14,22 +15,16 @@ class SaveDataThread(threading.Thread):
         return SaveDataThread(self.path, self.data)
 
     def run(self) -> None:
-        try:
-            Config.save(self.path, self.data)
-            self.result = True
-        except Exception:
-            if Debug.get_developer_mode() is True:
-                EXCEPTION.fatal("Cannot save data to path: {}".format(self.path))
-            else:
-                pass
+        Config.save(self.path, self.data)
+        self.result = True
 
 
 # 系统模块接口
-class AbstractSystem:
+class AbstractSystem(ABC):
     def __init__(self) -> None:
         # 判定用于判定是否还在播放的参数
         self.__is_playing: bool = True
-        self.__current_language: str = Lang.current_language
+        self.__current_language: str = Lang.get_current_language()
 
     # 是否正在播放
     def is_playing(self) -> bool:
@@ -44,11 +39,11 @@ class AbstractSystem:
 
     # 是否本体语言和当前一致
     def language_need_update(self) -> bool:
-        return self.__current_language != Lang.current_language
+        return self.__current_language != Lang.get_current_language()
 
     # 更新语言
     def update_language(self) -> None:
-        self.__current_language = Lang.current_language
+        self.__current_language = Lang.get_current_language()
 
 
 # 拥有背景音乐的系统模块接口
@@ -105,12 +100,13 @@ class SystemWithBackgroundMusic(AbstractSystem):
             LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.play(self.__audio)
 
     # 停止播放
-    def stop_bgm(self) -> None:
+    @staticmethod
+    def stop_bgm() -> None:
         if LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL is not None:
             LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.stop()
 
     # 把内容画到surface上（子类必须实现）
-    def draw(self, surface: ImageSurface) -> None:
+    def draw(self, _surface: ImageSurface) -> None:
         EXCEPTION.fatal("draw()", 1)
 
     # 直接画到屏幕上
@@ -119,7 +115,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
 
 
 # 游戏模块接口
-class AbstractGameSystem(SystemWithBackgroundMusic):
+class AbstractGameSystem(SystemWithBackgroundMusic, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         # 参数

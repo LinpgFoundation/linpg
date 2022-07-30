@@ -1,17 +1,17 @@
 from .image import *
 
 # 基于ImageSurface的内部窗口
-class AbstractFrame(AdvancedAbstractImageSurface):
+class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
 
     # 窗口上方bar的高度
     _bar_height: int = Display.get_height() // 50
     # 窗口线条的粗细
     __outline_thickness: int = Display.get_height() // 500
     # 放大指示图标
-    __rescale_icon_0: StaticImage = NULL_STATIC_IMAGE
-    __rescale_icon_45: StaticImage = NULL_STATIC_IMAGE
-    __rescale_icon_90: StaticImage = NULL_STATIC_IMAGE
-    __rescale_icon_135: StaticImage = NULL_STATIC_IMAGE
+    __rescale_icon_0: StaticImage = StaticImage.new_place_holder()
+    __rescale_icon_45: StaticImage = StaticImage.new_place_holder()
+    __rescale_icon_90: StaticImage = StaticImage.new_place_holder()
+    __rescale_icon_135: StaticImage = StaticImage.new_place_holder()
     __rescale_icon_initialized: bool = False
 
     def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
@@ -23,7 +23,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
         # 是否重新放大窗口
         self.__if_regenerate_window: bool = True
         # 用于修改并展示内容的surface
-        self._content_surface: ImageSurface = Surface.NULL
+        self._content_surface: ImageSurface = Surfaces.NULL
         # 是否需要更新用于展示内容的surface
         self._if_update_needed: bool = True
         # 是否正在移动本地坐标
@@ -32,20 +32,31 @@ class AbstractFrame(AdvancedAbstractImageSurface):
     # 更新窗口
     def __update_window_frame(self) -> None:
         if self.__if_regenerate_window is True:
-            self.img: ImageSurface = Surface.colored(self.size, Colors.WHITE)
-            Draw.rect(self.img, Colors.LIGHT_GRAY, (ORIGIN, (self.get_width(), self._bar_height)))
-            Draw.rect(self.img, Colors.GRAY, (ORIGIN, self.size), self.__outline_thickness)
+            self._set_image(Surfaces.colored(self.size, Colors.WHITE))
+            Draw.rect(self._get_image(), Colors.LIGHT_GRAY, (ORIGIN, (self.get_width(), self._bar_height)))
+            Draw.rect(self._get_image(), Colors.GRAY, (ORIGIN, self.size), self.__outline_thickness)
             # 初始化图标
             if not self.__rescale_icon_initialized:
-                self.__rescale_icon_0 = StaticImage("<&ui>rescale.png", 0, 0, self._bar_height * 3 / 2, self._bar_height * 3 / 2)
-                self.__rescale_icon_45 = self.__rescale_icon_0.copy()
+                # 更新尺寸
+                theWidth: int = self._bar_height * 3 // 2
+                theHeight: int = self._bar_height * 3 // 2
+                self.__rescale_icon_0.set_size(theWidth, theHeight)
+                self.__rescale_icon_45.set_size(theWidth, theHeight)
+                self.__rescale_icon_90.set_size(theWidth, theHeight)
+                self.__rescale_icon_135.set_size(theWidth, theHeight)
+                # 更新图片
+                theImg: ImageSurface = Images.quickly_load("<&ui>rescale.png")
+                self.__rescale_icon_0.update_image(theImg)
+                self.__rescale_icon_45.update_image(theImg)
+                self.__rescale_icon_90.update_image(theImg)
+                self.__rescale_icon_135.update_image(theImg)
+                # 旋转
                 self.__rescale_icon_45.rotate(45)
                 self.__rescale_icon_45.scale_n_times(1.5)
-                self.__rescale_icon_90 = self.__rescale_icon_0.copy()
                 self.__rescale_icon_90.rotate(90)
-                self.__rescale_icon_135 = self.__rescale_icon_0.copy()
                 self.__rescale_icon_135.rotate(135)
                 self.__rescale_icon_135.scale_n_times(1.5)
+                # 完成
                 self.__rescale_icon_initialized = True
             # 更新flag
             self.__if_regenerate_window = False
@@ -78,7 +89,7 @@ class AbstractFrame(AdvancedAbstractImageSurface):
         return False
 
     # 展示
-    def present_on(self, surface: ImageSurface) -> None:
+    def present_on(self, _surface: ImageSurface) -> None:
         # 如果未被隐藏
         if self.is_visible():
             # 如果鼠标之前没有被按下
@@ -150,12 +161,12 @@ class AbstractFrame(AdvancedAbstractImageSurface):
             # 更新窗口
             self.__update_window_frame()
             # 画出窗口
-            surface.blit(self.img, self.pos)
+            _surface.blit(self._get_image(), self.pos)
             # 如果需要，则先更新内容surface
             if self._if_update_needed is True:
                 self._update()
             # 画出内容
-            if self._content_surface is not Surface.NULL:
+            if Surfaces.is_not_null(self._content_surface):
                 # 计算坐标
                 abs_pos_x: int = self.x + self.__outline_thickness
                 abs_pos_y: int = self.y + self._bar_height + self.__outline_thickness
@@ -170,12 +181,12 @@ class AbstractFrame(AdvancedAbstractImageSurface):
                 else:
                     real_local_y = self.local_y
                 # 计算尺寸
-                width_of_sub: int = keep_int_in_range(
+                width_of_sub: int = Numbers.keep_int_in_range(
                     self.get_width() - self.__outline_thickness + self.local_x,
                     0,
                     min(self._content_surface.get_width() - real_local_x, self.get_width() - self.__outline_thickness),
                 )
-                height_of_sub: int = keep_int_in_range(
+                height_of_sub: int = Numbers.keep_int_in_range(
                     self.get_height() - self._bar_height - self.__outline_thickness + self.local_y,
                     0,
                     min(
@@ -185,8 +196,8 @@ class AbstractFrame(AdvancedAbstractImageSurface):
                 )
                 # 展示内容
                 if width_of_sub > 0 and height_of_sub > 0:
-                    surface.blit(
-                        get_img_subsurface(self._content_surface, (real_local_x, real_local_y, width_of_sub, height_of_sub)),
+                    _surface.blit(
+                        self._content_surface.subsurface(real_local_x, real_local_y, width_of_sub, height_of_sub),
                         (abs_pos_x, abs_pos_y),
                     )
             # 画出放大icon
@@ -201,4 +212,4 @@ class AbstractFrame(AdvancedAbstractImageSurface):
                 else:
                     rescale_icon = self.__rescale_icon_0
                 rescale_icon.set_center(Controller.mouse.x, Controller.mouse.y)
-                rescale_icon.draw(surface)
+                rescale_icon.draw(_surface)

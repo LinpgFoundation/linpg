@@ -1,18 +1,34 @@
-from .feature import *
+from .shape import *
+
+# 可隐藏的Surface
+class HiddenableSurface(ABC):
+    def __init__(self, visible: bool = True) -> None:
+        self.__hidden: bool = not visible
+
+    def set_visible(self, visible: bool) -> None:
+        self.__hidden = not visible
+
+    def is_visible(self) -> bool:
+        return not self.__hidden
+
+    def is_hidden(self) -> bool:
+        return self.__hidden
+
 
 # 图形接口
-class AbstractImageSurface(Rectangle, HiddenableSurface):
+class AbstractImageSurface(Rectangle, HiddenableSurface, metaclass=ABCMeta):
     def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str) -> None:
         Rectangle.__init__(self, x, y, width, height)
         HiddenableSurface.__init__(self)
-        self.img: Any = img
+        self.__img: Any = img
         # 确保长宽均已输入且为正整数
         if self.get_width() < 0 and self.get_height() < 0:
-            self.set_size(self.img.get_width(), self.img.get_height())
-        elif self.get_width() < 0 and self.get_height() >= 0:
-            self.set_width(self.get_height() / self.img.get_height() * self.img.get_width())
-        elif self.get_width() >= 0 and self.get_height() < 0:
-            self.set_height(self.get_width() / self.img.get_width() * self.img.get_height())
+            self.set_size(self.__img.get_width(), self.__img.get_height())
+        elif self.get_width() < 0 <= self.get_height():
+            self.set_width(self.get_height() / self.__img.get_height() * self.__img.get_width())
+        elif self.get_width() >= 0 > self.get_height():
+            self.set_height(self.get_width() / self.__img.get_width() * self.__img.get_height())
+        self.tag = tag
 
     """透明度"""
 
@@ -21,10 +37,10 @@ class AbstractImageSurface(Rectangle, HiddenableSurface):
         return self.get_alpha()
 
     def get_alpha(self) -> int:
-        return int(self.img.get_alpha())
+        return int(self.__img.get_alpha())
 
     def set_alpha(self, value: int) -> None:
-        self.img.set_alpha(keep_int_in_range(value, 0, 255))
+        self.__img.set_alpha(Numbers.keep_int_in_range(value, 0, 255))
 
     def add_alpha(self, value: int) -> None:
         self.set_alpha(self.get_alpha() + value)
@@ -33,19 +49,25 @@ class AbstractImageSurface(Rectangle, HiddenableSurface):
         self.set_alpha(self.get_alpha() - value)
 
     # 获取图片复制品
+    def _get_image(self) -> Any:
+        return self.__img
+
     def get_image_copy(self) -> Any:
-        return self.img.copy()
+        return self.__img.copy() if Surfaces.is_not_null(self.__img) else self.__img
 
     # 更新图片
+    def _set_image(self, newImage: ImageSurface) -> None:
+        self.__img = newImage
+
     def update_image(self, img_path: PoI, ifConvertAlpha: bool = True) -> None:
-        self.img = RawImg.quickly_load(img_path, ifConvertAlpha)
+        self._set_image(Images.quickly_load(img_path, ifConvertAlpha))
 
     # 在尺寸比例不变的情况下改变尺寸
     def set_width_with_original_image_size_locked(self, width: int_f) -> None:
-        self.set_size(width, width / self.img.get_width() * self.img.get_height())
+        self.set_size(width, width / self.__img.get_width() * self.__img.get_height())
 
     def set_height_with_original_image_size_locked(self, height: int_f) -> None:
-        self.set_size(height / self.img.get_height() * self.img.get_width(), height)
+        self.set_size(height / self.__img.get_height() * self.__img.get_width(), height)
 
     # 自动放大2倍
     def scale_n_times(self, times: float) -> None:
@@ -54,7 +76,96 @@ class AbstractImageSurface(Rectangle, HiddenableSurface):
 
     # 旋转
     def rotate(self, angle: int) -> None:
-        self.img = RawImg.rotate(self.img, angle)
+        self.__img = Images.rotate(self.__img, angle)
+
+
+# 有本地坐标的Surface (警告，子类必须实现get_left()和get_top()方法)
+class SurfaceWithLocalPos:
+    def __init__(self) -> None:
+        self.__local_x: int = 0
+        self.__local_y: int = 0
+
+    # 获取x坐标（子类需实现）
+    def get_left(self) -> int:
+        EXCEPTION.fatal("get_left()", 1)
+
+    # 获取y坐标（子类需实现）
+    def get_top(self) -> int:
+        EXCEPTION.fatal("get_top()", 1)
+
+    # 获取本地坐标
+    @property
+    def local_x(self) -> int:
+        return self.__local_x
+
+    def get_local_x(self) -> int:
+        return self.__local_x
+
+    @property
+    def local_y(self) -> int:
+        return self.__local_y
+
+    def get_local_y(self) -> int:
+        return self.__local_y
+
+    @property
+    def local_pos(self) -> tuple[int, int]:
+        return self.__local_x, self.__local_y
+
+    def get_local_pos(self) -> tuple[int, int]:
+        return self.__local_x, self.__local_y
+
+    # 设置本地坐标
+    def set_local_x(self, value: int_f) -> None:
+        self.__local_x = int(value)
+
+    def set_local_y(self, value: int_f) -> None:
+        self.__local_y = int(value)
+
+    def set_local_pos(self, local_x: int_f, local_y: int_f) -> None:
+        self.set_local_x(local_x)
+        self.set_local_y(local_y)
+
+    def locally_move_to(self, local_pos: tuple) -> None:
+        self.set_local_pos(local_pos[0], local_pos[1])
+
+    # 增加本地坐标
+    def add_local_x(self, value: int_f) -> None:
+        self.set_local_x(self.__local_x + value)
+
+    def add_local_y(self, value: int_f) -> None:
+        self.set_local_y(self.__local_y + value)
+
+    def add_local_pos(self, local_x: int_f, local_y: int_f) -> None:
+        self.add_local_x(local_x)
+        self.add_local_y(local_y)
+
+    # 减少本地坐标
+    def subtract_local_x(self, value: int_f) -> None:
+        self.set_local_x(self.__local_x - value)
+
+    def subtract_local_y(self, value: int_f) -> None:
+        self.set_local_y(self.__local_y - value)
+
+    def subtract_local_pos(self, local_x: int_f, local_y: int_f) -> None:
+        self.subtract_local_x(local_x)
+        self.subtract_local_y(local_y)
+
+    # 绝对的本地坐标
+    @property
+    def abs_x(self) -> int:
+        return self.get_left() + self.__local_x
+
+    @property
+    def abs_y(self) -> int:
+        return self.get_top() + self.__local_y
+
+    @property
+    def abs_pos(self) -> tuple[int, int]:
+        return self.abs_x, self.abs_y
+
+    def get_abs_pos(self) -> tuple[int, int]:
+        return self.abs_x, self.abs_y
 
 
 # 有本地坐标的图形接口
@@ -73,8 +184,8 @@ class AdvancedAbstractImageSurface(AbstractImageSurface, SurfaceWithLocalPos):
         self._set_alpha(value)
 
     def _set_alpha(self, value: int, update_original: bool = True) -> None:
-        self._alpha = keep_int_in_range(value, 0, 255)
-        if update_original is True and isinstance(self.img, ImageSurface):
+        self._alpha = Numbers.keep_int_in_range(value, 0, 255)
+        if update_original is True and isinstance(self._get_image(), ImageSurface):
             super().set_alpha(self._alpha)
 
 
@@ -128,12 +239,12 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 加暗度
     def add_darkness(self, value: int) -> None:
-        self.img = RawImg.add_darkness(self.img, value)
+        self._set_image(Images.add_darkness(self._get_image(), value))
         self._need_update = True
 
     # 减暗度
     def subtract_darkness(self, value: int) -> None:
-        self.img = RawImg.subtract_darkness(self.img, value)
+        self._set_image(Images.subtract_darkness(self._get_image(), value))
         self._need_update = True
 
     # 旋转
@@ -144,30 +255,30 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 反转原图
     def flip_original_img(self, horizontal: bool = True, vertical: bool = False) -> None:
-        self.img = RawImg.flip(self.img, horizontal, vertical)
+        self._set_image(Images.flip(self._get_image(), horizontal, vertical))
         self._need_update = True
 
     # 画出轮廓
     def draw_outline(
-        self, surface: ImageSurface, offSet: tuple = ORIGIN, color: color_liked = "red", line_width: int = 2
+        self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN, color: color_liked = "red", line_width: int = 2
     ) -> None:
         if self._need_update is True:
             self._update_img()
         if self._processed_img is not None:
             Draw.rect(
-                surface, Colors.get(color), (Coordinates.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width
+                _surface, Colors.get(color), (Coordinates.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width
             )
         else:
             EXCEPTION.fatal("The image has not been correctly processed.")
 
     # 展示
-    def display(self, surface: ImageSurface, offSet: tuple = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
             # 如果图片需要更新，则先更新
             if self._need_update is True:
                 self._update_img()
             # 将已经处理好的图片画在给定的图层上
             if self._processed_img is not None:
-                surface.blit(self._processed_img, Coordinates.add(self.abs_pos, offSet))
+                _surface.blit(self._processed_img, Coordinates.add(self.abs_pos, offSet))
             else:
                 EXCEPTION.fatal("The image has not been correctly processed.")

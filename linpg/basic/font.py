@@ -41,8 +41,7 @@ class FontGenerator:
         if Setting.get_font_type() == "default":
             self.__FONT = pygame.font.SysFont(Setting.get_font(), self.__SIZE, ifBold, ifItalic)
         elif Setting.get_font_type() == "custom":
-            font_path: str = os.path.join("Assets", "font", "{}.ttf".format(Setting.get_font()))
-            if os.path.exists(font_path):
+            if os.path.exists(font_path := Specification.get_directory("font", "{}.ttf".format(Setting.get_font()))):
                 self.__FONT = pygame.font.Font(font_path, self.__SIZE)
             else:
                 EXCEPTION.warn(
@@ -103,9 +102,9 @@ class FontGenerator:
 class Font:
 
     # 引擎标准文件渲染器
-    __LINPG_GLOBAL_FONTS: dict[str, FontGenerator] = {}
+    __LINPG_GLOBAL_FONTS: Final[dict[str, FontGenerator]] = {}
     # 上一次render的字体
-    __LINPG_LAST_FONT: FontGenerator = FontGenerator()
+    __LINPG_LAST_FONT: Final[FontGenerator] = FontGenerator()
 
     # 设置全局文字
     @classmethod
@@ -115,14 +114,15 @@ class Font:
                 cls.__LINPG_GLOBAL_FONTS[key] = FontGenerator()
             cls.__LINPG_GLOBAL_FONTS[key].update(size, ifBold, ifItalic)
         else:
-            EXCEPTION.fatal("Font size must be positive interger not {}!".format(size))
+            EXCEPTION.fatal("Font size must be positive integer not {}!".format(size))
 
     # 获取全局文字
     @classmethod
     def get_global_font(cls, key: str) -> FontGenerator:
-        try:
-            return cls.__LINPG_GLOBAL_FONTS[key]
-        except:
+        _font: Optional[FontGenerator] = cls.__LINPG_GLOBAL_FONTS.get(key)
+        if _font is not None:
+            return _font
+        else:
             EXCEPTION.fatal('You did not set any font named "{}".'.format(key))
 
     # 获取全局文字
@@ -137,13 +137,9 @@ class Font:
 
     # 删除全局文字
     @classmethod
-    def remove_global_font(cls, key: str) -> bool:
-        try:
+    def remove_global_font(cls, key: str) -> None:
+        if key in cls.__LINPG_GLOBAL_FONTS:
             del cls.__LINPG_GLOBAL_FONTS[key]
-            return True
-        except KeyError:
-            EXCEPTION.warn('Cannot find font named "{}" when trying to remove the font.'.format(key))
-            return False
 
     # 创建字体
     @staticmethod
@@ -173,7 +169,7 @@ class Font:
         txt: strint,
         color: color_liked,
         size: int,
-        panding: int,
+        padding: int,
         background_color: color_liked,
         ifBold: bool = False,
         ifItalic: bool = False,
@@ -181,8 +177,8 @@ class Font:
         thickness: int = 2,
     ) -> ImageSurface:
         font_surface = cls.render(txt, color, size, ifBold, ifItalic, with_bounding=True)
-        des_surface = Surface.colored(
-            (font_surface.get_width() + panding * 2, font_surface.get_height() + panding * 2), background_color
+        des_surface = Surfaces.colored(
+            (font_surface.get_width() + padding * 2, font_surface.get_height() + padding * 2), background_color
         )
         Draw.rect(
             des_surface,
@@ -190,5 +186,5 @@ class Font:
             ((0, 0), des_surface.get_size()),
             thickness,
         )
-        des_surface.blit(font_surface, (panding, panding))
+        des_surface.blit(font_surface, (padding, padding))
         return des_surface

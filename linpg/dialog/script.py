@@ -4,7 +4,7 @@ from .render import *
 class ScriptConverter:
 
     # 立绘配置信息数据库
-    __CHARACTER_IMAGE_DATABASE: dict = DataBase.get("Npc")
+    __CHARACTER_IMAGE_DATABASE: Final[dict] = DataBase.get("Npc")
 
     def __init__(self) -> None:
         self.__output: dict = {}
@@ -14,7 +14,7 @@ class ScriptConverter:
         self.__part: Optional[str] = None
         self.__last_dialog_id: Optional[str] = None
         self.__lines: list[str] = []
-        self.__branch_flags: dict[str, str] = {}
+        self.__branch_labels: dict[str, str] = {}
         self.__dialog_associate_key: dict[str, str] = {}
 
     # 生成一个标准id
@@ -52,24 +52,24 @@ class ScriptConverter:
         if len(self.__lines) <= 0:
             EXCEPTION.fatal("Cannot convert an empty script file!")
         else:
-            last_flag: Optional[str] = None
+            last_label: Optional[str] = None
             # 预处理文件
             for index in range(len(self.__lines)):
                 self.__lines[index] = self.__lines[index].removesuffix("\n")
-                if self.__lines[index].startswith("[flag]"):
-                    if last_flag is not None:
-                        EXCEPTION.fatal("The flag on line {} is overwriting the previous".format(index))
-                    last_flag = self.__extract_parameter(self.__lines[index], "[flag]")
+                if self.__lines[index].startswith("[label]"):
+                    if last_label is not None:
+                        EXCEPTION.fatal("The label on line {} is overwriting the previous".format(index))
+                    last_label = self.__extract_parameter(self.__lines[index], "[label]")
                 elif not self.__lines[index].startswith("[") and ":" in self.__lines[index]:
                     self.__dialog_associate_key[str(index)] = (
                         self.__generate_id(len(self.__dialog_associate_key)) if len(self.__dialog_associate_key) > 0 else "head"
                     )
-                    # 将id与flag关联
-                    if last_flag is not None:
-                        self.__branch_flags[last_flag] = self.__dialog_associate_key[str(index)]
-                        last_flag = None
-            if last_flag is not None:
-                EXCEPTION.warn("The last flag call {} is not necessary!".format(last_flag))
+                    # 将id与label关联
+                    if last_label is not None:
+                        self.__branch_labels[last_label] = self.__dialog_associate_key[str(index)]
+                        last_label = None
+            if last_label is not None:
+                EXCEPTION.warn("The last label call {} is not necessary!".format(last_label))
         self.__convert(0)
         self.__lines.clear()
         # 确保重要参数已被初始化
@@ -109,20 +109,27 @@ class ScriptConverter:
                 and not self.__try_handle_data(index, "[bgm]", "background_music")
             ):
                 # 角色进场
-                if self.__lines[index].startswith("[cin]"):
-                    for _name in self.__extract_string(self.__lines[index], "[cin]").split("&"):
+                if self.__lines[index].startswith("[show]"):
+                    for _name in self.__extract_string(self.__lines[index], "[show]").split():
                         self.__current_data["character_images"].append(_name)
                 # 角色退场
-                elif self.__lines[index].startswith("[cout]"):
-                    for _name in self.__extract_string(self.__lines[index], "[cout]").split("&"):
-                        self.__current_data["character_images"].remove(_name)
-                # 清空角色列表
-                elif self.__lines[index].startswith("[cempty]"):
+                elif self.__lines[index].startswith("[hide]"):
+                    for _name in self.__extract_string(self.__lines[index], "[hide]").split():
+                        # 清空角色列表
+                        if _name == "*":
+                            self.__current_data["character_images"].clear()
+                            break
+                        # 移除角色
+                        for i in range(len(self.__current_data["character_images"])):
+                            if CharacterImageNameMetaData(self.__current_data["character_images"][i]).equal(
+                                CharacterImageNameMetaData(_name)
+                            ):
+                                self.__current_data["character_images"].pop(i)
+                                break
+                # 清空角色列表，然后让角色重新进场
+                elif self.__lines[index].startswith("[display]"):
                     self.__current_data["character_images"].clear()
-                # 清空角色列表
-                elif self.__lines[index].startswith("[crein]"):
-                    self.__current_data["character_images"].clear()
-                    for _name in self.__extract_string(self.__lines[index], "[crein]").split("&"):
+                    for _name in self.__extract_string(self.__lines[index], "[display]").split():
                         self.__current_data["character_images"].append(_name)
                 # 章节id
                 elif self.__lines[index].startswith("[id]"):
@@ -136,21 +143,23 @@ class ScriptConverter:
                     self.__lang = self.__extract_string(self.__lines[index], "[lang]")
                 # 部分
                 elif self.__lines[index].startswith("[part]"):
+                    if self.__last_dialog_id is not None:
+                        self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"] = None
                     self.__part = self.__extract_string(self.__lines[index], "[part]")
                 # 结束符
                 elif self.__lines[index].startswith("[end]"):
                     self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"] = None
                     break
                 # 转换场景
-                elif self.__lines[index].startswith("[ns]"):
+                elif self.__lines[index].startswith("[scene]"):
                     self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"]["type"] = "changeScene"
-                    self.__current_data["background_image"] = self.__extract_parameter(self.__lines[index], "[ns]")
+                    self.__current_data["background_image"] = self.__extract_parameter(self.__lines[index], "[scene]")
                 # 选项
                 elif self.__lines[index].startswith("[opt]"):
-                    # 确认在接下来的一行有branch的flag
+                    # 确认在接下来的一行有branch的label
                     if not self.__lines[index + 1].startswith("[br]"):
                         EXCEPTION.fatal(
-                            "For option on line {}, a branch flag is not found on the following line".format(index + 1)
+                            "For option on line {}, a branch label is not found on the following line".format(index + 1)
                         )
                     # 如果next_dialog_id没被初始化，则初始化
                     if self.__output[self.__part][self.__last_dialog_id].get("next_dialog_id") is None:
@@ -163,7 +172,7 @@ class ScriptConverter:
                     dialog_next["target"].append(
                         {
                             "text": self.__extract_string(self.__lines[index], "[opt]"),
-                            "id": self.__branch_flags[self.__extract_string(self.__lines[index + 1], "[br]")],
+                            "id": self.__branch_labels[self.__extract_string(self.__lines[index + 1], "[br]")],
                         }
                     )
                     index += 1

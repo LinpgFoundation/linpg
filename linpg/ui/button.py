@@ -28,15 +28,15 @@ class ButtonText(StaticTextSurface):
     def set_is_hovered(self, value: bool) -> None:
         self.__is_hovered = value
 
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.__text_surface_2 is None or self.__is_hovered is True:
-            super().display(surface, offSet)
+            super().display(_surface, offSet)
         else:
-            surface.blit(self.__text_surface_2, Coordinates.add(self.pos, offSet))
+            _surface.blit(self.__text_surface_2, Coordinates.add(self.pos, offSet))
 
 
 # 多态按钮（请勿在引擎外实体化）
-class AbstractButton(AbstractImageSurface):
+class AbstractButton(AbstractImageSurface, metaclass=ABCMeta):
     def __init__(self, img: ImageSurface, x: int, y: int, width: int = -1, height: int = -1, tag: str = ""):
         if width < 0:
             width = img.get_width()
@@ -44,7 +44,7 @@ class AbstractButton(AbstractImageSurface):
             height = img.get_height()
         super().__init__(img, x, y, width, height, tag)
         # self.img是未被触碰时的默认图片，img2是被鼠标触碰时展示的图片
-        self.__img2: ImageSurface = Surface.NULL
+        self.__img2: ImageSurface = Surfaces.NULL
 
     def has_been_hovered(self) -> bool:
         return False
@@ -52,11 +52,11 @@ class AbstractButton(AbstractImageSurface):
     def set_hover_img(self, img: ImageSurface) -> None:
         self.__img2 = img
 
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
-        if self.has_been_hovered() is True and self.__img2 is not Surface.NULL:
-            surface.blit(RawImg.smoothly_resize(self.__img2, self.size), Coordinates.add(self.pos, offSet))
-        elif self.img is not Surface.NULL:
-            surface.blit(RawImg.smoothly_resize(self.img, self.size), Coordinates.add(self.pos, offSet))
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+        if self.has_been_hovered() is True and Surfaces.is_not_null(self.__img2):
+            _surface.blit(Images.smoothly_resize(self.__img2, self.size), Coordinates.add(self.pos, offSet))
+        elif Surfaces.is_not_null(self._get_image()):
+            _surface.blit(Images.smoothly_resize(self._get_image(), self.size), Coordinates.add(self.pos, offSet))
 
 
 # 按钮的简单实现
@@ -76,13 +76,13 @@ class ButtonComponent(AbstractButton):
     @staticmethod
     def icon(path: PoI, size: tuple[int, int], alpha_when_not_hover: int = 255) -> "ButtonComponent":
         if alpha_when_not_hover < 255:
-            fading_button = ButtonComponent(RawImg.load(path, alpha=alpha_when_not_hover), size[0], size[1])
+            fading_button = ButtonComponent(Images.load(path, alpha=alpha_when_not_hover), size[0], size[1])
             img2 = fading_button.get_image_copy()
             img2.set_alpha(255)
             fading_button.set_hover_img(img2)
             return fading_button
         else:
-            return ButtonComponent(RawImg.quickly_load(path), size[0], size[1])
+            return ButtonComponent(Images.quickly_load(path), size[0], size[1])
 
     @staticmethod
     def text(
@@ -120,7 +120,7 @@ class Button(AbstractButton):
     def load(path: PoI, position: tuple[int, int], size: tuple[int, int], alpha_when_not_hover: int = 255) -> "Button":
         if alpha_when_not_hover < 255:
             fading_button: Button = Button(
-                RawImg.load(path, alpha=alpha_when_not_hover), position[0], position[1], size[0], size[1]
+                Images.load(path, alpha=alpha_when_not_hover), position[0], position[1], size[0], size[1]
             )
             if path != "<NULL>":
                 img2 = fading_button.get_image_copy()
@@ -128,7 +128,7 @@ class Button(AbstractButton):
                 fading_button.set_hover_img(img2)
             return fading_button
         else:
-            return Button(RawImg.quickly_load(path), position[0], position[1], size[0], size[1])
+            return Button(Images.quickly_load(path), position[0], position[1], size[0], size[1])
 
     # 自动缩放
     def set_auto_resize(self, value: bool) -> None:
@@ -203,10 +203,10 @@ class Button(AbstractButton):
     def has_been_hovered(self) -> bool:
         return self.__is_hovered
 
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
             self.__is_hovered = self.is_hovered(offSet)
-            super().display(surface, offSet)
+            super().display(_surface, offSet)
             # 计算x坐标轴
             if self.__icon is not None and self.__text is not None:
                 # 计算真实尺寸
@@ -222,14 +222,14 @@ class Button(AbstractButton):
             if self.__icon is not None:
                 self.__icon.set_is_hovered(self.__is_hovered)
                 self.__icon.set_centery(self.centery + offSet[1])
-                self.__icon.draw(surface)
+                self.__icon.draw(_surface)
             # 画出文字
             if self.__text is not None:
                 self.__text.set_is_hovered(self.__is_hovered)
                 self.__text.set_centery(self.centery + offSet[1])
-                self.__text.draw(surface)
+                self.__text.draw(_surface)
             # 画出描述（如果有的话）
             if self.__is_hovered and self.__description_surface is not None:
-                surface.blit(self.__description_surface, Controller.mouse.pos)
+                _surface.blit(self.__description_surface, Controller.mouse.get_pos())
         else:
             self.__is_hovered = False

@@ -1,13 +1,58 @@
 import hashlib
 import shutil
-from .debug import *
+import sys
+from .setting import *
+
+# debug模块
+class Debug:
+
+    # 是否开启开发者模式
+    __ENABLE_DEVELOPER_MODE: bool = bool(Setting.get("DeveloperMode"))
+    # 是否开启作弊
+    __ENABLE_CHEATING: bool = False
+    # 是否展示Fps
+    __SHOW_FPS: bool = False
+    # 是否在windows上运行
+    __RUNNING_WINDOWS: bool = sys.platform.startswith("win")
+
+    # 开发者模式
+    @classmethod
+    def get_developer_mode(cls) -> bool:
+        return cls.__ENABLE_DEVELOPER_MODE
+
+    @classmethod
+    def set_developer_mode(cls, value: bool) -> None:
+        cls.__ENABLE_DEVELOPER_MODE = value
+
+    # 作弊模式
+    @classmethod
+    def get_cheat_mode(cls) -> bool:
+        return cls.__ENABLE_CHEATING
+
+    @classmethod
+    def set_cheat_mode(cls, value: bool) -> None:
+        cls.__ENABLE_CHEATING = value
+
+    # 展示Fps
+    @classmethod
+    def get_show_fps(cls) -> bool:
+        return cls.__SHOW_FPS
+
+    @classmethod
+    def set_show_fps(cls, value: bool) -> None:
+        cls.__SHOW_FPS = value
+
+    # 是否在windows上运行
+    @classmethod
+    def is_running_on_windows(cls) -> bool:
+        return cls.__RUNNING_WINDOWS
 
 
 # 全局数据
 class GlobalValue:
 
     # 用于存放全局数据的字典
-    __GLOBAL_VALUES_DICT: dict = {}
+    __GLOBAL_VALUES_DICT: Final[dict] = {}
     # 读取本地的全局数据
     if os.path.exists(_path := os.path.join("save", "global.yaml")):
         __GLOBAL_VALUES_DICT.update(Config.load_file(_path))
@@ -46,14 +91,11 @@ class GlobalValue:
 class DataBase:
 
     # 用于存放数据库数据的字典
-    __DATA_BASE_DICT: dict = {"Blocks": {}, "Decorations": {}, "Npc": {}, "Filters": {}}
+    __DATA_BASE_DICT: Final[dict] = {"Blocks": {}, "Decorations": {}, "Npc": {}, "Filters": {}}
 
     @classmethod
     def get(cls, *key: str) -> Any:
-        try:
-            return get_value_by_keys(cls.__DATA_BASE_DICT, key)
-        except KeyError:
-            EXCEPTION.fatal('Cannot find key "{}" in the database'.format(key))
+        return get_value_by_keys(cls.__DATA_BASE_DICT, key)
 
     @classmethod
     def update(cls, _value: dict) -> None:
@@ -68,11 +110,11 @@ class DataBase:
 class Info:
 
     # 引擎主版本号
-    __VERSION: int = 3
+    __VERSION: Final[int] = 3
     # 引擎次更新版本号
-    __REVISION: int = 3
+    __REVISION: Final[int] = 4
     # 引擎补丁版本
-    __PATCH: int = 2
+    __PATCH: Final[int] = 0
 
     # 确保linpg版本
     @classmethod
@@ -100,11 +142,11 @@ class Info:
 class Cache:
 
     # 缓存文件夹路径
-    __CACHE_FOLDER: str = Specification.get_directory("cache")
+    __CACHE_FOLDER: Final[str] = Specification.get_directory("cache")
     # 缓存文件清单路径
-    __CACHE_FILES_DATA_PATH: str = os.path.join(__CACHE_FOLDER, "files.{}".format(Config.get_file_type()))
+    __CACHE_FILES_DATA_PATH: Final[str] = os.path.join(__CACHE_FOLDER, "files.{}".format(Config.get_file_type()))
     # 如果缓存文件目录存在, 则加载数据， 否则初始化一个新的空字典
-    __CACHE_FILES_DATA: dict = Config.load_file(__CACHE_FILES_DATA_PATH) if os.path.exists(__CACHE_FILES_DATA_PATH) else {}
+    __CACHE_FILES_DATA: Final[dict] = Config.load_file(__CACHE_FILES_DATA_PATH) if os.path.exists(__CACHE_FILES_DATA_PATH) else {}
 
     # 获取缓存文件夹路径
     @classmethod

@@ -5,40 +5,49 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
 
     __CHOICE_TEXT: str = str(Lang.get_texts("Dialog", "choice"))
 
-    def __init__(self, basic_features_only: bool = False) -> None:
+    def __init__(self) -> None:
         AbstractDialogSystem.__init__(self)
         PauseMenuModuleForGameSystem.__init__(self)
         # 加载对话框系统
         self.__dialog_txt_system: DialogBox = DialogBox(self._FONT_SIZE)
         # UI按钮
         self.__buttons_container: Optional[GameObjectsDictContainer] = None
-        # 加载ui
-        if not basic_features_only:
-            # UI按钮
-            self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self._FONT_SIZE * 2})
-            # 暂停菜单
-            self._enable_pause_menu()
         # 是否要显示历史对白页面
         self.__is_showing_history: bool = False
-        self.__history_bg_surface: ImageSurface = Surface.colored(Display.get_size(), Colors.BLACK)
+        self.__history_bg_surface: ImageSurface = Surfaces.colored(Display.get_size(), Colors.BLACK)
         self.__history_bg_surface.set_alpha(150)
         self.__history_text_surface: Optional[ImageSurface] = None
         self.__history_surface_local_y: int = 0
         # 展示历史界面-返回按钮
-        self.history_back = (
-            Button.load(
-                "<&ui>back.png",
-                Coordinates.convert((Display.get_width() * 0.04, Display.get_height() * 0.04)),
-                Coordinates.convert((Display.get_width() * 0.03, Display.get_height() * 0.04)),
-                150,
-            )
-            if not basic_features_only
-            else None
-        )
+        self.__history_back: Optional[Button] = None
+        # 是否取消背景渲染
+        self.__disable_background_image_rendering: bool = False
         # 初始化音量
         self._update_sound_volume()
         # 玩家做出的选项
         self.__dialog_options: dict = {}
+        # 是否正在淡出的flag
+        self.__is_fading_out: bool = True
+
+    def disable_basic_features(self) -> None:
+        self.__disable_background_image_rendering = True
+        self.__history_back = None
+        self.__buttons_container = None
+        self._disable_pause_menu()
+
+    def enable_basic_features(self) -> None:
+        self.__disable_background_image_rendering = False
+        """加载ui"""
+        self.__history_back = Button.load(
+            "<&ui>back.png",
+            Coordinates.convert((Display.get_width() * 0.04, Display.get_height() * 0.04)),
+            Coordinates.convert((Display.get_width() * 0.03, Display.get_height() * 0.04)),
+            150,
+        )
+        # UI按钮
+        self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self._FONT_SIZE * 2})
+        # 暂停菜单
+        self._enable_pause_menu()
 
     # 初始化关键参数
     def _initialize(  # type: ignore[override]
@@ -51,6 +60,9 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         dialog_options: dict = {},
     ) -> None:
         super()._initialize(chapterType, chapterId, part, projectName, dialogId)
+        # 初始化重要ui组件
+        if not self.__disable_background_image_rendering:
+            self.enable_basic_features()
         # 玩家做出的选项
         self.__dialog_options.clear()
         self.__dialog_options.update(dialog_options)
@@ -66,6 +78,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
     # 载入数据
     def _load_content(self) -> None:
         super()._load_content()
+        # 将npc立绘系统设置为普通模式
+        CharacterImageManager.dev_mode = False
         # 重置对话框
         self.__dialog_txt_system.reset()
 
@@ -102,8 +116,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
 
     # 更新音量
     def _update_sound_volume(self) -> None:
-        self.set_bgm_volume(Media.volume.background_music / 100)
-        self.__dialog_txt_system.set_sound_volume(Media.volume.effects / 100)
+        self.set_bgm_volume(Volume.get_background_music() / 100)
+        self.__dialog_txt_system.set_sound_volume(Volume.get_effects() / 100)
 
     # 更新语言
     def update_language(self) -> None:
@@ -123,9 +137,10 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         self._load_content()
 
     # 前往下一个对话
-    def __go_to_next(self, surface: ImageSurface) -> None:
+    def __go_to_next(self, _surface: ImageSurface) -> None:
+        self.__is_fading_out = True
         if self._current_dialog_content["next_dialog_id"] is None:
-            self.fade(surface)
+            self._fade(_surface)
             self.stop()
         elif (next_dialog_type := self.get_next_dialog_type()) is not None:
             # 默认转到下一个对话
@@ -136,16 +151,17 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 pass
             # 如果是切换场景
             elif next_dialog_type == "changeScene":
-                self.fade(surface)
+                self._fade(_surface)
                 # 更新场景
                 self._update_scene(self._current_dialog_content["next_dialog_id"]["target"])
                 self.__dialog_txt_system.reset()
-                self.fade(surface, "$in")
+                self.__is_fading_out = False
+                self._fade(_surface)
             # 如果是需要播放过程动画
             elif next_dialog_type == "cutscene":
-                self.fade(surface)
+                self._fade(_surface)
                 self.stop()
-                self.play_cutscene(surface)
+                self.play_cutscene(_surface)
             # break被视为立刻退出，没有淡出动画
             elif next_dialog_type == "break":
                 self.stop()
@@ -153,7 +169,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             else:
                 EXCEPTION.fatal('Type "{}" is not a valid type.'.format(next_dialog_type))
 
-    def __check_button_event(self, surface: ImageSurface) -> bool:
+    def __check_button_event(self, _surface: ImageSurface) -> bool:
         if self.__buttons_container is not None:
             if self.__buttons_container.is_hidden():
                 self.__buttons_container.set_visible(True)
@@ -163,7 +179,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 self.__dialog_txt_system.set_visible(False)
             # 如果接来下没有文档了或者玩家按到了跳过按钮, 则准备淡出并停止播放
             elif self.__buttons_container.item_being_hovered == "skip":
-                self.fade(surface)
+                self.__is_fading_out = True
+                self._fade(_surface)
                 self.stop()
             elif self.__buttons_container.item_being_hovered == "is_auto":
                 self.__dialog_txt_system.set_playing_automatically(False)
@@ -182,25 +199,25 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             return False
 
     # 过场动画
-    def play_cutscene(self, surface: ImageSurface, fade_out_in_ms: int = 3000) -> None:
+    def play_cutscene(self, _surface: ImageSurface, fade_out_in_ms: int = 3000) -> None:
         # 初始化部分参数
         is_skip: bool = False
         is_playing: bool = True
         # 初始化跳过按钮的参数
         skip_button: StaticImage = StaticImage(
             "<&ui>next.png",
-            surface.get_width() * 23 // 25,
-            surface.get_height() // 20,
-            surface.get_width() * 11 // 200,
-            surface.get_height() * 3 // 50,
+            _surface.get_width() * 23 // 25,
+            _surface.get_height() // 20,
+            _surface.get_width() * 11 // 200,
+            _surface.get_height() * 3 // 50,
         )
         # 进度条
-        bar_height: int = surface.get_height() // 100
+        bar_height: int = _surface.get_height() // 100
         white_progress_bar: ProgressBar = ProgressBar(
-            bar_height, surface.get_height() - bar_height * 2, surface.get_width() - bar_height * 2, bar_height, "white"
+            bar_height, _surface.get_height() - bar_height * 2, _surface.get_width() - bar_height * 2, bar_height, "white"
         )
         # 生成黑色帘幕
-        BLACK_CURTAIN: ImageSurface = Surface.colored(surface.get_size(), Colors.BLACK)
+        BLACK_CURTAIN: ImageSurface = Surfaces.colored(_surface.get_size(), Colors.BLACK)
         BLACK_CURTAIN.set_alpha(0)
         # 创建视频文件
         VIDEO: VideoPlayer = VideoPlayer(
@@ -209,10 +226,10 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         VIDEO.pre_init()
         # 播放主循环
         while is_playing is True and VIDEO.is_playing() is True:
-            VIDEO.draw(surface)
-            skip_button.draw(surface)
+            VIDEO.draw(_surface)
+            skip_button.draw(_surface)
             white_progress_bar.set_percentage(VIDEO.get_percentage_played())
-            white_progress_bar.draw(surface)
+            white_progress_bar.draw(_surface)
             if skip_button.is_hovered() and Controller.mouse.get_pressed(0) and not is_skip:
                 is_skip = True
                 Music.fade_out(fade_out_in_ms)
@@ -223,39 +240,42 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 else:
                     is_playing = False
                     VIDEO.stop()
-                surface.blit(BLACK_CURTAIN, (0, 0))
+                _surface.blit(BLACK_CURTAIN, (0, 0))
             Display.flip()
 
     # 淡入或淡出
-    def fade(self, surface: ImageSurface, stage: str = "$out") -> None:
-        if stage == "$out":
+    def _fade(self, _surface: ImageSurface) -> None:
+        if self.__is_fading_out is True:
             Media.fade_out(1000)
             for i in range(0, 255, 5):
                 self._black_bg.set_alpha(i)
-                self._black_bg.draw(surface)
+                self._black_bg.draw(_surface)
                 Display.flip()
-        elif stage == "$in":
+        else:
             for i in range(255, 0, -5):
-                self.display_background_image(surface)
+                self.display_background_image(_surface)
                 self._black_bg.set_alpha(i)
-                self._black_bg.draw(surface)
+                self._black_bg.draw(_surface)
                 Display.flip()
             # 重设black_bg的alpha值以便下一次使用
             self._black_bg.set_alpha(255)
-        else:
-            EXCEPTION.fatal('Stage input has to be either "in" or "out", not "{}"'.format(stage))
 
-    def draw(self, surface: ImageSurface) -> None:
-        super().draw(surface)
+    # 重写父类的display_background_image方法使其在背景被disable后不会继续渲染背景图片
+    def display_background_image(self, _surface: ImageSurface) -> None:
+        if not self.__disable_background_image_rendering:
+            super().display_background_image(_surface)
+
+    def draw(self, _surface: ImageSurface) -> None:
+        super().draw(_surface)
         # 按钮
         if self.__buttons_container is not None and not self.__is_showing_history:
-            self.__buttons_container.draw(surface)
+            self.__buttons_container.draw(_surface)
         # 按键判定
         if Controller.get_event("confirm"):
-            if self.history_back is not None and self.history_back.is_hovered() and self.__is_showing_history is True:
+            if self.__history_back is not None and self.__history_back.is_hovered() and self.__is_showing_history is True:
                 self.__is_showing_history = False
                 self.__history_text_surface = None
-            elif self.__is_showing_history is True or self.__check_button_event(surface) is True:
+            elif self.__is_showing_history is True or self.__check_button_event(_surface) is True:
                 pass
             # 如果所有行都没有播出，则播出所有行
             elif not self.__dialog_txt_system.is_all_played():
@@ -274,7 +294,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 # 更新场景
                 self._update_scene(_option["id"])
             else:
-                self.__go_to_next(surface)
+                self.__go_to_next(_surface)
         if Controller.get_event("previous") and self._current_dialog_content["last_dialog_id"] is not None:
             self._update_scene(self._current_dialog_content["last_dialog_id"])
         # 暂停菜单
@@ -282,7 +302,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             if self.__is_showing_history is True:
                 self.__is_showing_history = False
             else:
-                self._show_pause_menu(surface)
+                self._show_pause_menu(_surface)
 
         if (
             self.__dialog_txt_system.is_all_played()
@@ -300,7 +320,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 self.__history_text_surface = None
                 self.__history_surface_local_y -= Display.get_height() // 10
             if self.__history_text_surface is None:
-                self.__history_text_surface = Surface.transparent(Display.get_size())
+                self.__history_text_surface = Surfaces.transparent(Display.get_size())
                 dialogIdTemp: str = "head"
                 local_y: int = self.__history_surface_local_y
                 while True:
@@ -360,19 +380,19 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                             break
                     else:
                         break
-            surface.blit(self.__history_bg_surface, (0, 0))
-            surface.blit(self.__history_text_surface, (0, 0))
-            if self.history_back is not None:
-                self.history_back.draw(surface)
-                self.history_back.is_hovered()
+            _surface.blit(self.__history_bg_surface, (0, 0))
+            _surface.blit(self.__history_text_surface, (0, 0))
+            if self.__history_back is not None:
+                self.__history_back.draw(_surface)
+                self.__history_back.is_hovered()
         else:
             # 显示对话选项
             if self.__buttons_container is None or self.__buttons_container.is_visible():
-                self._dialog_options_container.display(surface)
+                self._dialog_options_container.display(_surface)
             # 当自动播放系统告知需要更新，如果对话被隐藏，则无视进入下一个对白的操作，反之则进入
             if (
                 self.__buttons_container is not None
                 and self.__buttons_container.is_visible()
                 and self.__dialog_txt_system.is_update_needed()
             ):
-                self.__go_to_next(surface)
+                self.__go_to_next(_surface)

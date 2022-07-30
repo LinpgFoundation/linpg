@@ -36,6 +36,7 @@ Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游
 | opencv      |
 | numpy       |
 | PySimpleGUI |
+| tcod   |
 
 ***Special shout out to the developers of these libraries. They make game development using python no longer unthinkable.***
 
@@ -69,7 +70,7 @@ This branch holds the latest version that is available to the public. While this
 
 ### * in-process:
 
-**DON'T USE THIS BRANCH!** This brach contains a version that is currently unfinished.
+**DON'T USE THIS BRANCH!** This branch contains a version that is currently unfinished.
 
 还未完成，无法运行的版本，请勿使用
 

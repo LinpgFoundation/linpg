@@ -1,11 +1,12 @@
 from subprocess import DEVNULL, STDOUT, check_call
+from abc import ABC
 from ..lang import *
 
 
-class AbstractToolSystem:
+class AbstractToolSystem(ABC):
 
-    _TOOL_FOLDER: str = "ThirdPartyLibraries"
-    _TOOL_LIBRARIES: dict = dict(Specification.get("ThirdPartyLibraries"))
+    _TOOL_FOLDER: Final[str] = "ThirdPartyLibraries"
+    _TOOL_LIBRARIES: Final[dict] = dict(Specification.get("ThirdPartyLibraries"))
 
     def __init__(self, recommend_version: str, tool_path: str) -> None:
         self.__RECOMMENDED_VERSION: str = recommend_version
@@ -22,9 +23,9 @@ class AbstractToolSystem:
     # 检测
     def _check_path(self, input_path: str) -> None:
         if not os.path.exists(input_path):
-            raise FileNotExists()
+            raise EXCEPTION.FileNotExists()
         elif not os.path.exists(self.__TOOL_PATH):
-            raise ToolIsMissing()
+            raise EXCEPTION.ToolIsMissing()
 
     # 运行命令
     def _run_cmd(self, command_line: list[str], show_cmd_output: bool = False) -> None:
@@ -37,9 +38,11 @@ class AbstractToolSystem:
             self._run_raw_cmd(command_line)
 
     # 运行python命令
-    def _run_py_cmd(self, command_line: list[str]) -> None:
+    @staticmethod
+    def _run_py_cmd(command_line: list[str]) -> None:
         check_call([*["python" if Debug.is_running_on_windows() else "python3", "-m"], *command_line])
 
     # 直接运行命令
-    def _run_raw_cmd(self, command_line: list[str]) -> None:
+    @staticmethod
+    def _run_raw_cmd(command_line: list[str]) -> None:
         check_call(command_line)

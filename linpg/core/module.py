@@ -1,59 +1,68 @@
-from .interface import *
+from abc import abstractmethod
+from .system import *
 
 # 坐标类
 class Coordinate:
     def __init__(self, x: int_f, y: int_f):
-        self.x: int = int(x)
-        self.y: int = int(y)
+        self.__x: int = int(x)
+        self.__y: int = int(y)
 
     def __lt__(self, other: "Coordinate") -> bool:
-        return self.y + self.x < other.y + other.x
+        return self.__y + self.__x < other.y + other.x
 
     # x轴坐标
     @property
+    def x(self) -> int:
+        return self.__x
+
+    @property
     def left(self) -> int:
-        return self.x
+        return self.__x
 
     def get_left(self) -> int:
-        return self.x
+        return self.__x
 
     def set_left(self, value: int_f) -> None:
-        self.x = int(value)
+        self.__x = int(value)
 
     # 向左移动
     def move_left(self, value: int_f) -> None:
-        self.set_left(int(self.x - value))
+        self.set_left(int(self.__x - value))
 
     # 向右移动
     def move_right(self, value: int_f) -> None:
-        self.set_left(self.x + int(value))
+        self.set_left(self.__x + int(value))
 
     # y轴坐标
     @property
+    def y(self) -> int:
+        return self.__y
+
+    @property
     def top(self) -> int:
-        return self.y
+        return self.__y
 
     def get_top(self) -> int:
-        return self.y
+        return self.__y
 
     def set_top(self, value: int_f) -> None:
-        self.y = int(value)
+        self.__y = int(value)
 
     # 向上移动
     def move_upward(self, value: int_f) -> None:
-        self.set_top(int(self.y - value))
+        self.set_top(int(self.__y - value))
 
     # 向下移动
     def move_downward(self, value: int_f) -> None:
-        self.set_top(self.y + int(value))
+        self.set_top(self.__y + int(value))
 
     # 坐标信息
     @property
     def pos(self) -> tuple[int, int]:
-        return self.x, self.y
+        return self.__x, self.__y
 
     def get_pos(self) -> tuple[int, int]:
-        return self.x, self.y
+        return self.__x, self.__y
 
     # 设置坐标
     def set_pos(self, _x: int_f, _y: int_f) -> None:
@@ -72,27 +81,42 @@ class Coordinate:
 class Position:
     def __init__(self, x: number, y: number):
         # 坐标（注意，与Coordinate不同，Position坐标使用浮点数）
-        self.x: number = x
-        self.y: number = y
+        self.__x: number = x
+        self.__y: number = y
 
     def __lt__(self, other: "Position") -> bool:
-        return self.y + self.x < other.y + other.x
+        return self.__y + self.__x < other.y + other.x
 
     # 坐标信息
     @property
-    def pos(self) -> tuple:
-        return self.x, self.y
+    def x(self) -> number:
+        return self.__x
 
-    def get_pos(self) -> tuple:
-        return self.x, self.y
+    @property
+    def y(self) -> number:
+        return self.__y
+
+    @property
+    def pos(self) -> tuple[number, number]:
+        return self.__x, self.__y
+
+    def get_pos(self) -> tuple[number, number]:
+        return self.__x, self.__y
 
     # 设置坐标
-    def set_pos(self, x: number, y: number) -> None:
-        self.x = x if isinstance(x, int) else round(x, 5)
-        self.y = y if isinstance(y, int) else round(y, 5)
+    def set_x(self, value: number) -> None:
+        self.__x = value if isinstance(value, int) else round(value, 5)
 
-    def move_to(self, pos: tuple) -> None:
-        self.set_pos(pos[0], pos[1])
+    def set_y(self, value: number) -> None:
+        self.__y = value if isinstance(value, int) else round(value, 5)
+
+    def set_pos(self, x: number, y: number) -> None:
+        self.set_x(x)
+        self.set_y(y)
+
+    def move_to(self, pos: tuple[number, number]) -> None:
+        self.set_x(pos[0])
+        self.set_y(pos[1])
 
 
 # 2d游戏对象接口
@@ -106,6 +130,7 @@ class GameObject2d(Coordinate):
     def width(self) -> int:
         return self.get_width()
 
+    @abstractmethod
     def get_width(self) -> int:
         EXCEPTION.fatal("get_width()", 1)
 
@@ -114,6 +139,7 @@ class GameObject2d(Coordinate):
     def height(self) -> int:
         return self.get_height()
 
+    @abstractmethod
     def get_height(self) -> int:
         EXCEPTION.fatal("get_height()", 1)
 
@@ -156,7 +182,7 @@ class GameObject2d(Coordinate):
         return self.x + self.get_width() // 2
 
     def set_centerx(self, centerx: int_f) -> None:
-        self.x = int(centerx - self.get_width() / 2)
+        self.set_left(centerx - self.get_width() / 2)
 
     @property
     def centery(self) -> int:
@@ -166,7 +192,7 @@ class GameObject2d(Coordinate):
         return self.y + self.get_height() // 2
 
     def set_centery(self, centery: int_f) -> None:
-        self.y = int(centery - self.get_height() / 2)
+        self.set_top(centery - self.get_height() / 2)
 
     @property
     def center(self) -> tuple[int, int]:
@@ -209,15 +235,15 @@ class GameObject2d(Coordinate):
         )
 
     # 将图片直接画到surface上
-    def draw(self, surface: ImageSurface) -> None:
-        self.display(surface)
+    def draw(self, _surface: ImageSurface) -> None:
+        self.display(_surface)
 
     # 将图片直接画到屏幕上
     def draw_on_screen(self) -> None:
         self.display(Display.get_window())
 
     # 根据offSet将图片展示到surface的对应位置上 - 子类必须实现
-    def display(self, surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         EXCEPTION.fatal("display()", 1)
 
     # 根据offSet将图片展示到屏幕的对应位置上
@@ -225,10 +251,10 @@ class GameObject2d(Coordinate):
         self.display(Display.get_window(), offSet)
 
     # 忽略现有坐标，将图片画到surface的指定位置上
-    def blit(self, surface: ImageSurface, pos: tuple[int, int]) -> None:
+    def blit(self, _surface: ImageSurface, pos: tuple[int, int]) -> None:
         old_pos = self.get_pos()
         self.move_to(pos)
-        self.draw(surface)
+        self.draw(_surface)
         self.move_to(old_pos)
 
     # 忽略现有坐标，将图片画到surface的指定位置上

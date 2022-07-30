@@ -1,13 +1,37 @@
 {
     "ConfigFileType": "json",
     "Directory": {
+        "background_image": [
+            "Assets",
+            "image",
+            "dialog_background"
+        ],
         "cache": [
             "Cache"
+        ],
+        "character_icon": [
+            "Assets",
+            "image",
+            "npc_icon"
+        ],
+        "character_image": [
+            "Assets",
+            "image",
+            "npc"
+        ],
+        "character_sound": [
+            "Assets",
+            "sound",
+            "character"
         ],
         "environment": [
             "Assets",
             "image",
             "environment"
+        ],
+        "font": [
+            "Assets",
+            "font"
         ],
         "movie": [
             "Assets",
@@ -20,6 +44,13 @@
         "save": [
             "Save"
         ],
+        "setting": [
+            "Save"
+        ],
+        "sound": [
+            "Assets",
+            "sound"
+        ],
         "sprite": [
             "Assets",
             "image",
@@ -29,9 +60,6 @@
             "Assets",
             "image",
             "ui"
-        ],
-        "setting": [
-            "Save"
         ]
     },
     "ExtraAssets": false,

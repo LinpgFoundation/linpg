@@ -1,7 +1,7 @@
-from .weather import *
+from .entity import *
 
 # 战斗系统接口，请勿实例化
-class AbstractBattleSystem(AbstractGameSystem):
+class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         # 用于判断是否移动屏幕的参数
@@ -10,17 +10,41 @@ class AbstractBattleSystem(AbstractGameSystem):
         self._screen_to_move_x: Optional[int] = None
         self._screen_to_move_y: Optional[int] = None
         # 用于检测是否有方向键被按到的字典
-        self.__moving_screen_in_direction: dict[str, bool] = {"up": False, "down": False, "left": False, "right": False}
+        self.__moving_screen_in_direction_up: bool = False
+        self.__moving_screen_in_direction_down: bool = False
+        self.__moving_screen_in_direction_left: bool = False
+        self.__moving_screen_in_direction_right: bool = False
         # 角色数据
-        self._alliances_data: dict = {}
-        self._enemies_data: dict = {}
+        self._entities_data: dict[str, dict[str, Entity]] = {}
         # 地图数据
-        self._MAP: MapObject = MapObject()
+        self._MAP: TileMap = TileMap()
         # 方格标准尺寸
         self._standard_block_width: int = Display.get_width() // 10
         self._standard_block_height: int = Display.get_height() // 10
         # 天气系统
         self._weather_system: WeatherSystem = WeatherSystem()
+        # 当前鼠标位置上的tile块
+        self._block_is_hovering: Optional[tuple[int, int]] = None
+
+    # 渲染出所有的entity - 子类需实现
+    def _display_entities(self, _surface: ImageSurface) -> None:
+        EXCEPTION.fatal("_display_entities()", 1)
+
+    # 加载角色的数据 - 子类需实现
+    @abstractmethod
+    def _load_entities(self, _entities: dict, _mode: str) -> None:
+        EXCEPTION.fatal("_load_entities()", 1)
+
+    # 加载地图数据
+    def _load_map(self, _data: dict) -> None:
+        self._MAP.update(_data, self._standard_block_width, self._standard_block_height)
+
+    # 处理数据
+    def _process_data(self, _data: dict, _mode: str = "default") -> None:
+        # 初始化角色信息
+        self._load_entities(_data.get("entities", {}), _mode)
+        # 初始化地图
+        self._load_map(_data)
 
     # 获取对话文件所在的具体路径
     def get_map_file_location(self) -> str:
@@ -37,83 +61,58 @@ class AbstractBattleSystem(AbstractGameSystem):
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
-        _data: dict = {"alliances": {}, "enemies": {}}
-        for key in self._alliances_data:
-            _data["alliances"][key] = self._alliances_data[key].to_dict()
-        for key in self._enemies_data:
-            _data["enemies"][key] = self._enemies_data[key].to_dict()
+        _data: dict = {"entities": {}}
+        for faction, entitiesDict in self._entities_data.items():
+            _data["entities"][faction] = {}
+            for key in entitiesDict:
+                _data["entities"][faction][key] = entitiesDict[key].to_dict()
         _data.update(self.get_data_of_parent_game_system())
         _data.update(self._MAP.to_dict())
         return _data
 
-    # 初始化地图
-    def _initialize_map(self, map_data: dict) -> None:
-        self._MAP.update(map_data, self._standard_block_width, self._standard_block_height)
-
-    # 计算光亮区域 并初始化地图
-    def _calculate_darkness(self) -> None:
-        self._MAP.calculate_darkness(self._alliances_data)
-
-    # 展示地图
-    def _display_map(self, screen: ImageSurface) -> None:
-        self._check_if_move_screen()
-        self._move_screen()
-        _x: int = self._screen_to_move_x if self._screen_to_move_x is not None else 0
-        _y: int = self._screen_to_move_y if self._screen_to_move_y is not None else 0
-        self._screen_to_move_x, self._screen_to_move_y = self._MAP.display_map(screen, _x, _y)
-
-    # 展示场景装饰物
-    def _display_decoration(self, screen: ImageSurface) -> None:
-        self._MAP.display_decoration(screen, self._alliances_data, self._enemies_data)
-
-    # 初始化角色加载器并启动加载器线程
-    def _start_loading_characters(self, alliancesData: dict, enemiesData: dict, mode: str = "default") -> None:
-        self.__characterDataLoaderThread = CharacterDataLoader(alliancesData, enemiesData, mode)
-        self.__characterDataLoaderThread.start()
-
-    # 是否角色加载器还在运行
-    def _is_characters_loader_alive(self) -> bool:
-        if self.__characterDataLoaderThread.is_alive():
-            return True
-        else:
-            self._alliances_data, self._enemies_data = self.__characterDataLoaderThread.getResult()
-            del self.__characterDataLoaderThread
-            return False
-
-    @property
-    def characters_loaded(self) -> int:
-        return self.__characterDataLoaderThread.currentID
-
-    @property
-    def characters_total(self) -> int:
-        return self.__characterDataLoaderThread.totalNum
-
     # 检测按下按键的事件
     def _check_key_down(self, event: PG_Event) -> None:
-        if event.key == Key.ARROW_UP:
-            self.__moving_screen_in_direction["up"] = True
-        elif event.key == Key.ARROW_DOWN:
-            self.__moving_screen_in_direction["down"] = True
-        elif event.key == Key.ARROW_LEFT:
-            self.__moving_screen_in_direction["left"] = True
-        elif event.key == Key.ARROW_RIGHT:
-            self.__moving_screen_in_direction["right"] = True
+        if event.key == Keys.ARROW_UP:
+            self.__moving_screen_in_direction_up = True
+        elif event.key == Keys.ARROW_DOWN:
+            self.__moving_screen_in_direction_down = True
+        elif event.key == Keys.ARROW_LEFT:
+            self.__moving_screen_in_direction_left = True
+        elif event.key == Keys.ARROW_RIGHT:
+            self.__moving_screen_in_direction_right = True
         elif event.unicode == "p":
             self._MAP.dev_mode()
 
     # 检测按键回弹的事件
     def _check_key_up(self, event: PG_Event) -> None:
-        if event.key == Key.ARROW_UP:
-            self.__moving_screen_in_direction["up"] = False
-        elif event.key == Key.ARROW_DOWN:
-            self.__moving_screen_in_direction["down"] = False
-        elif event.key == Key.ARROW_LEFT:
-            self.__moving_screen_in_direction["left"] = False
-        elif event.key == Key.ARROW_RIGHT:
-            self.__moving_screen_in_direction["right"] = False
+        if event.key == Keys.ARROW_UP:
+            self.__moving_screen_in_direction_up = False
+        elif event.key == Keys.ARROW_DOWN:
+            self.__moving_screen_in_direction_down = False
+        elif event.key == Keys.ARROW_LEFT:
+            self.__moving_screen_in_direction_left = False
+        elif event.key == Keys.ARROW_RIGHT:
+            self.__moving_screen_in_direction_right = False
 
-    # 根据鼠标移动屏幕
-    def _check_right_click_move(self) -> None:
+    # 检测手柄事件
+    def _check_joystick_events(self) -> None:
+        self.__moving_screen_in_direction_up = round(Controller.joystick.get_axis(4)) == -1
+        self.__moving_screen_in_direction_down = round(Controller.joystick.get_axis(4)) == 1
+        self.__moving_screen_in_direction_right = round(Controller.joystick.get_axis(3)) == 1
+        self.__moving_screen_in_direction_left = round(Controller.joystick.get_axis(3)) == -1
+
+    # 展示地图
+    def _display_map(self, _surface: ImageSurface) -> None:
+        # 处理鼠标事件
+        for event in Controller.get_events():
+            if event.type == Keys.DOWN:
+                self._check_key_down(event)
+            elif event.type == Keys.UP:
+                self._check_key_up(event)
+        # 处理手柄事件
+        if Controller.joystick.get_init():
+            self._check_joystick_events()
+        # 检测是否使用了鼠标移动了地图的本地坐标
         if Controller.mouse.get_pressed(2):
             if self.__mouse_move_temp_x == -1 and self.__mouse_move_temp_y == -1:
                 self.__mouse_move_temp_x = Controller.mouse.x
@@ -129,42 +128,29 @@ class AbstractBattleSystem(AbstractGameSystem):
         else:
             self.__mouse_move_temp_x = -1
             self.__mouse_move_temp_y = -1
-
-    # 检测手柄事件
-    def _check_jostick_events(self) -> None:
-        if Controller.joystick.get_init():
-            self.__moving_screen_in_direction["up"] = bool(round(Controller.joystick.get_axis(4)) == -1)
-            self.__moving_screen_in_direction["down"] = bool(round(Controller.joystick.get_axis(4)) == 1)
-            self.__moving_screen_in_direction["right"] = bool(round(Controller.joystick.get_axis(3)) == 1)
-            self.__moving_screen_in_direction["left"] = bool(round(Controller.joystick.get_axis(3)) == -1)
-
-    # 检测并处理屏幕移动事件
-    def _check_if_move_screen(self) -> None:
         # 根据按键情况设定要移动的数值
-        if self.__moving_screen_in_direction["up"] is True:
+        if self.__moving_screen_in_direction_up is True:
             if self._screen_to_move_y is None:
                 self._screen_to_move_y = self._MAP.block_height // 4
             else:
                 self._screen_to_move_y += self._MAP.block_height // 4
-        if self.__moving_screen_in_direction["down"] is True:
+        if self.__moving_screen_in_direction_down is True:
             if self._screen_to_move_y is None:
                 self._screen_to_move_y = -self._MAP.block_height // 4
             else:
                 self._screen_to_move_y -= self._MAP.block_height // 4
-        if self.__moving_screen_in_direction["left"] is True:
+        if self.__moving_screen_in_direction_left is True:
             if self._screen_to_move_x is None:
                 self._screen_to_move_x = self._MAP.block_width // 4
             else:
                 self._screen_to_move_x += self._MAP.block_width // 4
-        if self.__moving_screen_in_direction["right"] is True:
+        if self.__moving_screen_in_direction_right is True:
             if self._screen_to_move_x is None:
                 self._screen_to_move_x = -self._MAP.block_width // 4
             else:
                 self._screen_to_move_x -= self._MAP.block_width // 4
-
-    def _move_screen(self) -> None:
         # 如果需要移动屏幕
-        temp_value: int = 0
+        temp_value: int
         if self._screen_to_move_x is not None and self._screen_to_move_x != 0:
             temp_value = self._MAP.get_local_x() + self._screen_to_move_x // 5
             if Display.get_width() - self._MAP.get_width() <= temp_value <= 0:
@@ -183,3 +169,21 @@ class AbstractBattleSystem(AbstractGameSystem):
                     self._screen_to_move_y = 0
             else:
                 self._screen_to_move_y = 0
+        # 展示地图
+        self._screen_to_move_x, self._screen_to_move_y = self._MAP.display_map(
+            _surface,
+            self._screen_to_move_x if self._screen_to_move_x is not None else 0,
+            self._screen_to_move_y if self._screen_to_move_y is not None else 0,
+        )
+        # 获取位于鼠标位置的tile块
+        self._block_is_hovering = self._MAP.calculate_coordinate()
+        # 展示角色动画
+        self._display_entities(_surface)
+        # 检测角色所占据的装饰物（即需要透明化，方便玩家看到角色）
+        charactersPos: list = []
+        for value in self._entities_data.values():
+            for dataDict in value.values():
+                charactersPos.append((round(dataDict.x), round(dataDict.y)))
+                charactersPos.append((round(dataDict.x) + 1, round(dataDict.y) + 1))
+        # 展示场景装饰物
+        self._MAP.display_decoration(_surface, tuple(charactersPos))

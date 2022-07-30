@@ -7,14 +7,14 @@ class SpriteImage:
         # 路径
         self.__PATH: str = img_path
         # 加载Sprite图
-        self.__SHEET: ImageSurface = RawImg.quickly_load(self.__PATH)
+        self.__SHEET: ImageSurface = Images.quickly_load(self.__PATH)
         # 加载Sprite图的数据
         self.__DICTIONARY: dict = {}
         if not self.__PATH.startswith("<"):
             self.__DICTIONARY.update(Config.load_file(self.__PATH + ".linpg.meta"))
         elif self.__PATH != "<NULL>":
             self.__DICTIONARY.update(
-                Config.load_file(RawImg.generate_path_according_to_prefix(self.__PATH).removesuffix(".zip") + ".linpg.meta")
+                Config.load_file(Images.generate_path_according_to_prefix(self.__PATH).removesuffix(".zip") + ".linpg.meta")
             )
 
     # 获取一个图片
@@ -64,7 +64,7 @@ class SpriteImage:
         max_block_height: int = 0
         # 历遍目标文件夹中的图片
         for _path in glob(os.path.join(img_folder_path, "*.png")):
-            _img: ImageSurface = RawImg.quickly_load(_path)
+            _img: ImageSurface = Images.quickly_load(_path)
             _name: str = os.path.basename(_path).removesuffix(".png")
             _data[_name] = {}
             if not minimize_pixels:
@@ -75,7 +75,7 @@ class SpriteImage:
                     max_block_height = _img.get_height()
             else:
                 # 获取图片的透明bounding
-                _bounding: Rect = _img.get_bounding_rect()
+                _bounding: PG_Rect = _img.get_bounding_rect()
                 # 确认最大尺寸
                 if max_block_width < _bounding.width:
                     max_block_width = _bounding.width
@@ -90,7 +90,7 @@ class SpriteImage:
         # 行数
         rows: int = math.ceil(len(_data) / columns)
         # 最终sprite图
-        sprite_surface: ImageSurface = Surface.transparent((columns * max_block_width, rows * max_block_height))
+        sprite_surface: ImageSurface = Surfaces.transparent((columns * max_block_width, rows * max_block_height))
         # 当前图片index
         index: int = 0
         # 将图片刷到sprite图上
@@ -108,6 +108,6 @@ class SpriteImage:
             index += 1
         # 保存sprite图
         target_file_name: str = "{0}.{1}".format(img_folder_path, resultFileType)
-        RawImg.save(sprite_surface, target_file_name)
+        Images.save(sprite_surface, target_file_name)
         # 保存sprite图数据
         Config.save(target_file_name + ".linpg.meta", _data)

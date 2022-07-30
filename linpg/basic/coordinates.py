@@ -1,7 +1,8 @@
+from typing import Sequence
 import numpy
-from .header import *
+from ..tools import *
 
-ORIGIN: tuple[int, int] = (0, 0)
+ORIGIN: Final[tuple[int, int]] = (0, 0)
 
 # 浮点坐标
 class Positions:
@@ -87,3 +88,15 @@ class Coordinates:
             x -= pos[0]
             y -= pos[1]
         return int(x), int(y)
+
+    @staticmethod
+    def get_in_diamond_shaped(_x: int, _y: int, _radius: int) -> list[tuple[int, int]]:
+        if _radius == 1:
+            return [(_x, _y)]
+        elif _radius > 1:
+            return [
+                (x, y)
+                for y in range(_y - _radius + 1, _y + _radius)
+                for x in range(_x - _radius + abs(y - _y) + 1, _x + _radius - abs(y - _y))
+            ]
+        return []

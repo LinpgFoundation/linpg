@@ -1,8 +1,8 @@
 import time
-from .scrollpane import *
+from .scrollbar import *
 
 # 输入框Abstract，请勿实体化
-class AbstractInputBox(GameObject2d):
+class AbstractInputBox(GameObject2d, metaclass=ABCMeta):
     def __init__(self, x: int_f, y: int_f, font_size: int, txt_color: color_liked, default_width: int) -> None:
         super().__init__(x, y)
         self._FONT: FontGenerator = Font.create(font_size)
@@ -100,38 +100,38 @@ class SingleLineInputBox(AbstractInputBox):
             self._input_box.set_width(self._default_width)
 
     def _check_key_down(self, event: PG_Event) -> bool:
-        if event.key == Key.BACKSPACE:
+        if event.key == Keys.BACKSPACE:
             self._remove_char("ahead")
             return True
-        elif event.key == Key.DELETE:
+        elif event.key == Keys.DELETE:
             self._remove_char("behind")
             return True
-        elif event.key == Key.ARROW_LEFT and self._holder_index > 0:
+        elif event.key == Keys.ARROW_LEFT and self._holder_index > 0:
             self._holder_index -= 1
             return True
-        elif event.key == Key.ARROW_RIGHT and self._holder_index < len(self._text):
+        elif event.key == Keys.ARROW_RIGHT and self._holder_index < len(self._text):
             self._holder_index += 1
             return True
         elif (
             event.unicode == "v"
-            and Key.get_pressed("v")
-            and Key.get_pressed(Key.LEFT_CTRL)
-            or event.key == Key.LEFT_CTRL
-            and Key.get_pressed("v")
-            and Key.get_pressed(Key.LEFT_CTRL)
+            and Keys.get_pressed("v")
+            and Keys.get_pressed(Keys.LEFT_CTRL)
+            or event.key == Keys.LEFT_CTRL
+            and Keys.get_pressed("v")
+            and Keys.get_pressed(Keys.LEFT_CTRL)
         ):
-            self._add_char(Key.get_clipboard())
+            self._add_char(Keys.get_clipboard())
             return True
         return False
 
     # 画出文字内容
-    def _draw_content(self, surface: ImageSurface, with_holder: bool = True) -> None:
+    def _draw_content(self, _surface: ImageSurface, with_holder: bool = True) -> None:
         if self._text is not None and len(self._text) > 0:
             font_t = self._FONT.render(self._text, self._text_color, with_bounding=True)
-            surface.blit(font_t, (self.x + self._padding, self.y + (self._input_box.height - font_t.get_height()) // 2))
+            _surface.blit(font_t, (self.x + self._padding, self.y + (self._input_box.height - font_t.get_height()) // 2))
         if with_holder is True:
-            if int(time.time() % 2) == 0 or len(Controller.events) > 0:
-                surface.blit(
+            if int(time.time() % 2) == 0 or len(Controller.get_events()) > 0:
+                _surface.blit(
                     self._holder,
                     (
                         self.x + self._padding + self._FONT.estimate_text_width(self._text[: self._holder_index]),
@@ -140,12 +140,12 @@ class SingleLineInputBox(AbstractInputBox):
                 )
 
     # 画出内容
-    def draw(self, screen: ImageSurface) -> None:
-        for event in Controller.events:
-            if event.type == Key.DOWN and self._active is True:
+    def draw(self, _surface: ImageSurface) -> None:
+        for event in Controller.get_events():
+            if event.type == Keys.DOWN and self._active is True:
                 if self._check_key_down(event):
                     pass
-                elif event.key == Key.ESCAPE:
+                elif event.key == Keys.ESCAPE:
                     self._active = False
                     self.need_save = True
                 else:
@@ -169,8 +169,8 @@ class SingleLineInputBox(AbstractInputBox):
                 self._reset_holder_index(Controller.mouse.x)
         # 画出输入框
         if self._active:
-            Draw.rect(screen, self._color, self._input_box.get_rect(), 2)
-        self._draw_content(screen, self._active)
+            Draw.rect(_surface, self._color, self._input_box.get_rect(), 2)
+        self._draw_content(_surface, self._active)
 
 
 # 多行输入框
@@ -305,40 +305,40 @@ class MultipleLinesInputBox(AbstractInputBox):
         else:
             self._holder_index = i - 1
 
-    def draw(self, screen: ImageSurface) -> None:
-        for event in Controller.events:
+    def draw(self, _surface: ImageSurface) -> None:
+        for event in Controller.get_events():
             if self._active:
-                if event.type == Key.DOWN:
-                    if event.key == Key.BACKSPACE:
+                if event.type == Keys.DOWN:
+                    if event.key == Keys.BACKSPACE:
                         self._remove_char("ahead")
-                    elif event.key == Key.DELETE:
+                    elif event.key == Keys.DELETE:
                         self._remove_char("behind")
-                    elif event.key == Key.ARROW_LEFT and self._holder_index > 0:
+                    elif event.key == Keys.ARROW_LEFT and self._holder_index > 0:
                         self._holder_index -= 1
-                    elif event.key == Key.ARROW_RIGHT and self._holder_index < len(self._text[self.lineId]):
+                    elif event.key == Keys.ARROW_RIGHT and self._holder_index < len(self._text[self.lineId]):
                         self._holder_index += 1
-                    elif event.key == Key.ARROW_UP and self.lineId > 0:
+                    elif event.key == Keys.ARROW_UP and self.lineId > 0:
                         self.lineId -= 1
                         if self._holder_index > len(self._text[self.lineId]) - 1:
                             self._holder_index = len(self._text[self.lineId]) - 1
-                    elif event.key == Key.ARROW_DOWN and self.lineId < len(self._text) - 1:
+                    elif event.key == Keys.ARROW_DOWN and self.lineId < len(self._text) - 1:
                         self.lineId += 1
                         if self._holder_index > len(self._text[self.lineId]) - 1:
                             self._holder_index = len(self._text[self.lineId]) - 1
                     elif (
                         event.unicode == "v"
-                        and Key.get_pressed("v")
-                        and Key.get_pressed(Key.LEFT_CTRL)
-                        or event.key == Key.LEFT_CTRL
-                        and Key.get_pressed("v")
-                        and Key.get_pressed(Key.LEFT_CTRL)
+                        and Keys.get_pressed("v")
+                        and Keys.get_pressed(Keys.LEFT_CTRL)
+                        or event.key == Keys.LEFT_CTRL
+                        and Keys.get_pressed("v")
+                        and Keys.get_pressed(Keys.LEFT_CTRL)
                     ):
-                        self._add_char(Key.get_clipboard())
+                        self._add_char(Keys.get_clipboard())
                     # ESC，关闭
-                    elif event.key == Key.ESCAPE:
+                    elif event.key == Keys.ESCAPE:
                         self._active = False
                         self.need_save = True
-                    elif event.key == Key.RETURN:
+                    elif event.key == Keys.RETURN:
                         # 如果“|”位于最后
                         if self._holder_index == len(self._text[self.lineId]):
                             self._text.insert(self.lineId + 1, "")
@@ -370,16 +370,16 @@ class MultipleLinesInputBox(AbstractInputBox):
         if self._text is not None:
             for i in range(len(self._text)):
                 # 画出文字
-                screen.blit(
+                _surface.blit(
                     self._FONT.render(self._text[i], self._text_color, with_bounding=True),
                     (self.x + self._FONT.size // 4, self.y + i * self._default_height),
                 )
         if self._active:
             # 画出输入框
-            Draw.rect(screen, self._color, self._input_box.get_rect(), 2)
+            Draw.rect(_surface, self._color, self._input_box.get_rect(), 2)
             # 画出 “|” 符号
-            if int(time.time() % 2) == 0 or len(Controller.events) > 0:
-                screen.blit(
+            if int(time.time() % 2) == 0 or len(Controller.get_events()) > 0:
+                _surface.blit(
                     self._holder,
                     (
                         self.x
@@ -391,7 +391,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             # 展示基于PySimpleGUI的外部输入框
             self.__show_PySimpleGUI_input_box.set_right(self._input_box.right)
             self.__show_PySimpleGUI_input_box.set_bottom(self._input_box.bottom)
-            self.__show_PySimpleGUI_input_box.draw(screen)
+            self.__show_PySimpleGUI_input_box.draw(_surface)
             if self.__show_PySimpleGUI_input_box.is_hovered() and Controller.get_event("confirm"):
                 external_input_event, external_input_values = PySimpleGUI.Window(
                     "external input",

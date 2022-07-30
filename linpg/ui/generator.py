@@ -4,7 +4,7 @@ from .progressbar import *
 class UiGenerator:
 
     # 获取默认ui模板
-    __UI_TEMPLATES: dict = Config.load_internal_file("ui.json")
+    __UI_TEMPLATES: Final[dict] = Config.load_internal_file("ui.json")
     # 加载自定义的ui数据（如果存在）
     for key, value in Config.resolve_path_and_load_file(os.path.join("Data", "ui")).items():
         if key not in __UI_TEMPLATES:
@@ -17,7 +17,7 @@ class UiGenerator:
         # 如果是百分比
         if value.endswith("%"):
             try:
-                return int(convert_percentage(value) * value_in_case_percentage)
+                return int(Numbers.convert_percentage(value) * value_in_case_percentage)
             except Exception:
                 EXCEPTION.fatal('Cannot convert "{}" because it is not a valid percentage.'.format(value))
         # 如果是需要从lookup表里寻找的参数
@@ -56,9 +56,9 @@ class UiGenerator:
                     return int(item[key])
                 except Exception:
                     EXCEPTION.fatal(
-                        'The "{0}" for "{1}" needs to an interger instead of "{2}".'.format(key, item["name"], item[key])
+                        'The "{0}" for "{1}" needs to an integer instead of "{2}".'.format(key, item["name"], item[key])
                         if "name" in item
-                        else 'The "{0}" needs to an interger instead of "{1}".'.format(key, item[key])
+                        else 'The "{0}" needs to an integer instead of "{1}".'.format(key, item[key])
                     )
         else:
             return int(item[key])
@@ -92,6 +92,7 @@ class UiGenerator:
         while text_index < len(text):
             if text[text_index] == "{":
                 # 寻找 "}"
+                a: int
                 for a in range(text_index + 1, len(text)):
                     if text[a] == "}":
                         find_close_bracket = True
@@ -266,10 +267,10 @@ class UiGenerator:
     @classmethod
     def __get_data_in_dict(cls, data: Union[str, dict]) -> dict:
         if isinstance(data, str):
-            try:
-                return deepcopy(dict(cls.__UI_TEMPLATES[data]))
-            except KeyError:
+            result: Optional[dict] = cls.__UI_TEMPLATES.get(data)
+            if result is None:
                 EXCEPTION.fatal('The ui called "{}" does not exist!'.format(data))
+            return deepcopy(result)
         else:
             return deepcopy(data)
 

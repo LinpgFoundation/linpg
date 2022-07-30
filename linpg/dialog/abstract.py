@@ -1,23 +1,21 @@
 from .script import *
 
 # 视觉小说系统接口
-class AbstractDialogSystem(AbstractGameSystem):
+class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         # 存储视觉小说数据的参数
         self._dialog_data: dict[str, dict] = {}
+        # 当前部分
+        self._part = ""
         # 当前对话的id
         self._dialog_id: str = "head"
-        # 加载对话的背景图片模块
-        self._npc_manager: CharacterImageManager = CharacterImageManager()
         # 黑色Void帘幕
         self._black_bg = StaticImage(
-            Surface.colored(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height()
+            Surfaces.colored(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height()
         )
         # 对话文件路径
         self._dialog_folder_path: str = "Data"
-        # 背景图片路径
-        self._background_image_folder_path: str = os.path.join("Assets", "image", "dialog_background")
         # 背景图片
         self.__background_image_name: Optional[str] = None
         self.__background_image_surface: Union[StaticImage, VideoSurface] = self._black_bg.copy()
@@ -31,9 +29,11 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer("<NULL>", 0, 0, 0, 0)
         self._dialog_options_container.set_visible(False)
         # 更新背景音乐音量
-        self.set_bgm_volume(Media.volume.background_music / 100)
+        self.set_bgm_volume(Volume.get_background_music() / 100)
         # 文字大小
         self._FONT_SIZE: int = Display.get_width() * 3 // 200
+        # 初始化滤镜系统
+        CharacterImageManager.init()
 
     # 获取对话框模块（子类需实现）
     def _get_dialog_box(self) -> AbstractDialogBox:
@@ -79,11 +79,7 @@ class AbstractDialogSystem(AbstractGameSystem):
     # 生产一个新的推荐id
     def generate_a_new_recommended_key(self, index: int = 1) -> str:
         while True:
-            newId: str = ""
-            if index <= 9:
-                newId = "id_0" + str(index)
-            else:
-                newId = "id_" + str(index)
+            newId: str = ("id_0" if index <= 9 else "id_") + str(index)
             if newId in self.dialog_content:
                 index += 1
             else:
@@ -164,27 +160,17 @@ class AbstractDialogSystem(AbstractGameSystem):
                 self.__background_image_surface.stop()
             # 更新背景的图片数据
             if self.__background_image_name is not None:
-                if self.__background_image_name != "<transparent>":
-                    # 尝试加载图片式的背景
-                    if os.path.exists(
-                        (img_path := os.path.join(self._background_image_folder_path, self.__background_image_name))
-                    ):
-                        self.__background_image_surface = StaticImage(img_path, 0, 0)
-                        self.__background_image_surface.disable_croping()
-                    # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
-                    elif os.path.exists(Specification.get_directory("movie", self.__background_image_name)):
-                        self.__background_image_surface = VideoSurface(
-                            Specification.get_directory("movie", self.__background_image_name), with_audio=False
-                        )
-                    else:
-                        EXCEPTION.fatal(
-                            "Cannot find a background image or video file called '{}'.".format(self.__background_image_name)
-                        )
-                elif self._npc_manager.dev_mode is True:
-                    self.__background_image_surface = StaticImage(Surface.texture_is_missing(Display.get_size()), 0, 0)
-                    self.__background_image_surface.disable_croping()
+                # 尝试加载图片式的背景
+                if os.path.exists((img_path := Specification.get_directory("background_image", self.__background_image_name))):
+                    self.__background_image_surface = StaticImage(img_path, 0, 0)
+                    self.__background_image_surface.disable_cropping()
+                # 如果在背景图片的文件夹里找不到对应的图片，则查看是否是视频文件
+                elif os.path.exists(_path := Specification.get_directory("movie", self.__background_image_name)):
+                    self.__background_image_surface = VideoSurface(_path, with_audio=False)
                 else:
-                    self.__background_image_surface = NULL_STATIC_IMAGE
+                    EXCEPTION.fatal(
+                        "Cannot find a background image or video file called '{}'.".format(self.__background_image_name)
+                    )
             else:
                 self.__background_image_surface = self._black_bg.copy()
 
@@ -192,10 +178,10 @@ class AbstractDialogSystem(AbstractGameSystem):
     def _update_scene(self, dialog_id: str) -> None:
         # 更新dialogId
         self._dialog_id = dialog_id
-        # 更新当前对话数据的指针
+        # 更新当前对话数据的指针 (请勿重用该字典，其应该作为指针一般的存在)
         self._current_dialog_content = self.__get_current_dialog_content(True)
         # 更新立绘和背景
-        self._npc_manager.update(self._current_dialog_content["character_images"])
+        CharacterImageManager.update(self._current_dialog_content["character_images"])
         self._update_background_image(self._current_dialog_content["background_image"])
         # 更新对话框
         self._get_dialog_box().update(self._current_dialog_content["narrator"], self._current_dialog_content["contents"])
@@ -218,15 +204,17 @@ class AbstractDialogSystem(AbstractGameSystem):
         # 如果背景是多线程的VideoSurface，则应该退出占用
         if isinstance(self.__background_image_surface, VideoSurface):
             self.__background_image_surface.stop()
+        # 释放立绘渲染系统占用的内存
+        CharacterImageManager.unload()
         # 设置停止播放
         super().stop()
 
     # 将背景图片画到surface上
-    def display_background_image(self, surface: ImageSurface) -> None:
-        if self.__background_image_surface is not NULL_STATIC_IMAGE:
+    def display_background_image(self, _surface: ImageSurface) -> None:
+        if self.__background_image_surface is not None:
             if isinstance(self.__background_image_surface, StaticImage):
-                self.__background_image_surface.set_size(surface.get_width(), surface.get_height())
-            self.__background_image_surface.draw(surface)
+                self.__background_image_surface.set_size(_surface.get_width(), _surface.get_height())
+            self.__background_image_surface.draw(_surface)
 
     def _get_dialog_options_container_ready(self) -> None:
         self._dialog_options_container.clear()
@@ -235,7 +223,7 @@ class AbstractDialogSystem(AbstractGameSystem):
         )
         for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
             optionButton: Button = Button.load("<&ui>option.png", (0, 0), (0, 0))
-            optionButton.set_hover_img(RawImg.quickly_load("<&ui>option_selected.png"))
+            optionButton.set_hover_img(Images.quickly_load("<&ui>option_selected.png"))
             optionButton.set_auto_resize(True)
             optionButton.set_text(
                 ButtonComponent.text(
@@ -249,16 +237,16 @@ class AbstractDialogSystem(AbstractGameSystem):
         self._dialog_options_container.set_visible(True)
 
     # 把基础内容画到surface上
-    def draw(self, surface: ImageSurface) -> None:
+    def draw(self, _surface: ImageSurface) -> None:
         # 检测章节是否初始化
         if self._chapter_id is None:
             raise EXCEPTION.fatal("The dialog has not been initialized!")
-        # 更新当前对话数据的指针
+        # 更新当前对话数据的指针 (请勿重用该字典，其应该作为指针一般的存在)
         self._current_dialog_content = self.__get_current_dialog_content()
         # 展示背景图片和npc立绘
-        self.display_background_image(surface)
-        self._npc_manager.draw(surface)
-        self._get_dialog_box().draw(surface)
+        self.display_background_image(_surface)
+        CharacterImageManager.draw(_surface)
+        self._get_dialog_box().draw(_surface)
         # 如果不处于静音状态
         if not self._is_muted:
             # 播放背景音乐

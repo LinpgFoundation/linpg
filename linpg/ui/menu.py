@@ -1,7 +1,7 @@
 from .generator import *
 
 # 内部菜单模块的抽象
-class AbstractInternalMenu(HiddenableSurface):
+class AbstractInternalMenu(HiddenableSurface, metaclass=ABCMeta):
     def __init__(self, menu_name: str) -> None:
         super().__init__(False)
         self._CONTENT: Optional[GameObjectsDictContainer] = None
@@ -18,9 +18,9 @@ class AbstractInternalMenu(HiddenableSurface):
         return self._CONTENT.is_hovered() if self.is_visible() and self._CONTENT is not None else False
 
     # 画出内容
-    def draw(self, surface: ImageSurface) -> None:
+    def draw(self, _surface: ImageSurface) -> None:
         if self._CONTENT is not None:
-            self._CONTENT.draw(surface)
+            self._CONTENT.draw(_surface)
 
 
 # 设置UI
@@ -30,7 +30,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
         self.need_update: dict = {}
 
     # 展示
-    def draw(self, surface: ImageSurface) -> None:
+    def draw(self, _surface: ImageSurface) -> None:
         self.need_update = {"volume": False, "language": False}
         if self.is_visible():
             # 检查是否初始化
@@ -41,7 +41,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
                 lang_drop_down = self._CONTENT.get("lang_drop_down")
                 for lang_choice in Lang.get_available_languages():
                     lang_drop_down.set(lang_choice, lang_choice)
-                lang_drop_down.set_selected_item(Lang.current_language)
+                lang_drop_down.set_selected_item(Lang.get_current_language())
             else:
                 if self._CONTENT is None:
                     EXCEPTION.fatal("The ui has not been correctly initialized.")
@@ -52,9 +52,9 @@ class DefaultOptionMenu(AbstractInternalMenu):
             self._CONTENT.get("effects_sound_volume").set_percentage(Setting.get("Sound", "effects") / 100)
             self._CONTENT.get("environment_sound_volume").set_percentage(Setting.get("Sound", "environment") / 100)
             # 画出
-            super().draw(surface)
+            super().draw(_surface)
             # 如果需要更新语言
-            if lang_drop_down.get_selected_item() != Lang.current_language and lang_drop_down.get_selected_item() != "":
+            if lang_drop_down.get_selected_item() != Lang.get_current_language() and lang_drop_down.get_selected_item() != "":
                 # 更新语言并保存新的参数到本地
                 Setting.set("Language", value=Lang.get_language_id(lang_drop_down.get_selected_item()))
                 Setting.save()
@@ -63,7 +63,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
                 self.need_update["language"] = True
             # 按键的判定按钮
             if self._CONTENT.item_being_hovered is not None and not lang_drop_down.is_hovered():
-                item_percentage_t: int = 0
+                item_percentage_t: int
                 # 如果碰到全局音量条
                 if self._CONTENT.item_being_hovered == "global_sound_volume":
                     item_percentage_t = int(self._CONTENT.get("global_sound_volume").percentage * 100)
@@ -74,7 +74,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
                     item_percentage_t = int(self._CONTENT.get("background_music_sound_volume").percentage * 100)
                     if item_percentage_t != int(Setting.get("Sound", "background_music")):
                         Setting.set("Sound", "background_music", value=item_percentage_t)
-                        Music.set_volume(Media.volume.background_music / 100.0)
+                        Music.set_volume(Volume.get_background_music() / 100.0)
                         self.need_update["volume"] = True
                 # 如果碰到音效的音量条
                 elif self._CONTENT.item_being_hovered == "effects_sound_volume":
@@ -131,7 +131,7 @@ class PauseMenu(AbstractInternalMenu):
             self.__leave_warning.set_visible(False)
         self.__screenshot = None
 
-    def draw(self, surface: ImageSurface) -> None:
+    def draw(self, _surface: ImageSurface) -> None:
         self.__button_hovered = ""
         if self.is_visible():
             if not self._initialized:
@@ -141,15 +141,15 @@ class PauseMenu(AbstractInternalMenu):
                 EXCEPTION.fatal("The ui has not been correctly initialized.")
             # 展示原先的背景
             if self.__screenshot is None:
-                self.__screenshot = RawImg.add_darkness(surface, 10)
+                self.__screenshot = Images.add_darkness(_surface, 10)
             # 画出原先的背景
-            surface.blit(self.__screenshot, (0, 0))
+            _surface.blit(self.__screenshot, (0, 0))
             # 画出选项
             if self.__leave_warning.is_hidden() and self.__exit_warning.is_hidden():
-                super().draw(surface)
+                super().draw(_surface)
             # 画出退出确认
-            self.__leave_warning.draw(surface)
-            self.__exit_warning.draw(surface)
+            self.__leave_warning.draw(_surface)
+            self.__exit_warning.draw(_surface)
             # 处理事件
             if Controller.get_event("back"):
                 if self.__leave_warning.is_visible():
@@ -181,18 +181,21 @@ class PauseMenu(AbstractInternalMenu):
 # 暂停菜单处理模块
 class PauseMenuModuleForGameSystem(AbstractInternalMenu):
     def __init__(self) -> None:
+        super().__init__("")
         # 暂停菜单
         self.__pause_menu: Optional[PauseMenu] = None
 
     # 保存进度（子类需实现）
+    @abstractmethod
     def save_progress(self) -> None:
         EXCEPTION.fatal("_get_data_need_to_save()", 1)
 
-    # 淡入或淡出（子类需实现）
-    def fade(self, surface: ImageSurface) -> None:
-        EXCEPTION.fatal("fade()", 1)
+    # 淡入或淡出（建议子类重写）
+    def _fade(self, _surface: ImageSurface) -> None:
+        Media.unload()
 
     # 停止播放（子类需实现）
+    @abstractmethod
     def stop(self) -> None:
         EXCEPTION.fatal("stop()", 1)
 
@@ -207,6 +210,9 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
     def _enable_pause_menu(self) -> None:
         self.__pause_menu = PauseMenu()
 
+    def _disable_pause_menu(self) -> None:
+        self.__pause_menu = None
+
     def is_pause_menu_enabled(self) -> bool:
         return self.__pause_menu is not None
 
@@ -214,7 +220,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
         if self.__pause_menu is not None:
             self.__pause_menu.initialize()
 
-    def _show_pause_menu(self, surface: ImageSurface) -> None:
+    def _show_pause_menu(self, _surface: ImageSurface) -> None:
         if self.__pause_menu is not None:
             Media.pause()
             progress_saved_text = StaticImage(
@@ -223,12 +229,12 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
                 0,
             )
             progress_saved_text.set_alpha(0)
-            progress_saved_text.set_center(surface.get_width() / 2, surface.get_height() / 2)
+            progress_saved_text.set_center(_surface.get_width() / 2, _surface.get_height() / 2)
             self.__pause_menu.set_visible(True)
             while self.__pause_menu.is_visible():
                 Display.flip()
                 if OptionMenu.is_hidden():
-                    self.__pause_menu.draw(surface)
+                    self.__pause_menu.draw(_surface)
                     if self.__pause_menu.get_button_clicked() == "resume":
                         OptionMenu.set_visible(False)
                         self.__pause_menu.set_visible(False)
@@ -238,10 +244,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
                     elif self.__pause_menu.get_button_clicked() == "option_menu":
                         OptionMenu.set_visible(True)
                     elif self.__pause_menu.get_button_clicked() == "back_to_mainMenu":
-                        try:
-                            self.fade(surface)
-                        except Exception:
-                            Media.unload()
+                        self._fade(_surface)
                         OptionMenu.set_visible(False)
                         progress_saved_text.set_alpha(0)
                         self.__pause_menu.set_visible(False)
@@ -249,7 +252,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
                         self.stop()
                 else:
                     # 展示设置UI
-                    OptionMenu.draw(surface)
+                    OptionMenu.draw(_surface)
                     # 更新音量
                     if OptionMenu.need_update["volume"] is True:
                         self._update_sound_volume()
@@ -257,7 +260,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
                     if OptionMenu.need_update["language"] is True:
                         self.update_language()
                 # 显示进度已保存的文字
-                progress_saved_text.draw(surface)
+                progress_saved_text.draw(_surface)
                 progress_saved_text.subtract_alpha(5)
             del progress_saved_text
             self.__pause_menu.hide()

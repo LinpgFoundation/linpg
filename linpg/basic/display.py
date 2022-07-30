@@ -1,23 +1,22 @@
 from .controller import *
-from datetime import datetime
 
 # 画面更新控制器
 class Display:
 
     # 帧率控制器
-    __CLOCK: pygame.time.Clock = pygame.time.Clock()
+    __CLOCK: Final[pygame.time.Clock] = pygame.time.Clock()
     # 帧率
     __FPS: int = max(int(Setting.get("FPS")), 1)
     __STANDARD_FPS: int = 60
     # 窗口比例
-    __SCALE: int = keep_int_in_range(int(Setting.get("Resolution", "scale")), 0, 100)
+    __SCALE: int = Numbers.keep_int_in_range(int(Setting.get("Resolution", "scale")), 0, 100)
     # 主要的窗口
-    __SCREEN_WINDOW: ImageSurface = Surface.NULL
+    __SCREEN_WINDOW: ImageSurface = Surfaces.NULL
     # 窗口尺寸
     __STANDARD_WIDTH: int = max(int(Setting.get("Resolution", "width")), 0) * __SCALE // 100
     __STANDARD_HEIGHT: int = max(int(Setting.get("Resolution", "height")), 0) * __SCALE // 100
     # 信息渲染使用的文字模块
-    __FONT: pygame.font.Font = pygame.font.SysFont("arial", __STANDARD_HEIGHT // 40)
+    __FONT: Final[pygame.font.Font] = pygame.font.SysFont("arial", __STANDARD_HEIGHT // 40)
 
     # 帧数
     @classmethod
@@ -48,7 +47,8 @@ class Display:
             if not os.path.exists("screenshots"):
                 os.mkdir("screenshots")
             pygame.image.save(
-                cls.__SCREEN_WINDOW, os.path.join("screenshots", "{}.png".format(datetime.now().strftime("%Y%m%d%H%M%S")))
+                cls.__SCREEN_WINDOW,
+                os.path.join("screenshots", "{}.png".format(EXCEPTION.get_current_time().strftime("%Y%m%d%H%M%S"))),
             )
         # 更新控制器
         Controller.update()
@@ -62,7 +62,7 @@ class Display:
     # 设置窗口图标
     @staticmethod
     def set_icon(path: str) -> None:
-        pygame.display.set_icon(RawImg.quickly_load(path, False))
+        pygame.display.set_icon(Images.quickly_load(path, False))
 
     # 窗口宽度
     @classmethod
@@ -82,6 +82,7 @@ class Display:
     # 初始化屏幕
     @classmethod
     def init(cls, flags: int = -1) -> ImageSurface:
+        monitorId: int = int(Setting.get("MonitorToDisplay"))
         # 如果是全屏模式
         if cls.__SCALE >= 100:
             if flags < 0:
@@ -89,18 +90,19 @@ class Display:
             if Setting.get("EnableOpenGL") is True:
                 flags |= pygame.OPENGL
             # 如果分辨率与设置中的参数不符，则更新设置中的分辨率参数
-            _info = pygame.display.Info()
-            if cls.__STANDARD_WIDTH != _info.current_w or cls.__STANDARD_HEIGHT != _info.current_h:
-                cls.__STANDARD_WIDTH = _info.current_w
-                cls.__STANDARD_HEIGHT = _info.current_h
+            theSelectedScreenSize: tuple[int, int] = pygame.display.get_desktop_sizes()[monitorId]
+            if cls.__STANDARD_WIDTH != theSelectedScreenSize[0] or cls.__STANDARD_HEIGHT != theSelectedScreenSize[1]:
+                cls.__STANDARD_WIDTH = theSelectedScreenSize[0]
+                cls.__STANDARD_HEIGHT = theSelectedScreenSize[1]
                 Setting.set("Resolution", "width", value=cls.__STANDARD_WIDTH)
                 Setting.set("Resolution", "height", value=cls.__STANDARD_HEIGHT)
                 Setting.save()
         # 生成screen
         cls.__SCREEN_WINDOW = pygame.display.set_mode(
-            cls.get_size(), flags, vsync=1 if Setting.get("EnableVerticalSync") is True else 0
+            cls.get_size(), flags, display=monitorId, vsync=1 if Setting.get("EnableVerticalSync") is True else 0
         )
         cls.__SCREEN_WINDOW.set_alpha(None)
+        cls.__SCREEN_WINDOW.fill(Colors.BLACK)
         return cls.__SCREEN_WINDOW
 
     # 获取屏幕
@@ -114,7 +116,7 @@ class Display:
         # 退出游戏
         sys.exit()
 
-
-# 直接画到屏幕上
-def draw_on_screen(surface_to_draw: ImageSurface, pos: Sequence) -> None:
-    Display.get_window().blit(surface_to_draw, Coordinates.convert(pos))
+    # 直接画到屏幕上
+    @classmethod
+    def blit(cls, surface_to_draw: ImageSurface, pos: Sequence) -> None:
+        cls.__SCREEN_WINDOW.blit(surface_to_draw, Coordinates.convert(pos))

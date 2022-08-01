@@ -88,10 +88,7 @@ class ScriptConverter:
     # 转换
     def compile(self, path: str, out_folder: str) -> None:
         self.__process(path)
-        Config.save(
-            os.path.join(out_folder, "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type())),
-            {"dialogs": self.__output},
-        )
+        Config.save(os.path.join(out_folder, "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type())), {"dialogs": self.__output})
 
     def __try_handle_data(self, index: int, parameter_short: str, parameter_full: str) -> bool:
         if self.__lines[index].startswith(parameter_short):
@@ -121,9 +118,7 @@ class ScriptConverter:
                             break
                         # 移除角色
                         for i in range(len(self.__current_data["character_images"])):
-                            if CharacterImageNameMetaData(self.__current_data["character_images"][i]).equal(
-                                CharacterImageNameMetaData(_name)
-                            ):
+                            if CharacterImageNameMetaData(self.__current_data["character_images"][i]).equal(CharacterImageNameMetaData(_name)):
                                 self.__current_data["character_images"].pop(i)
                                 break
                 # 清空角色列表，然后让角色重新进场
@@ -158,9 +153,7 @@ class ScriptConverter:
                 elif self.__lines[index].startswith("[opt]"):
                     # 确认在接下来的一行有branch的label
                     if not self.__lines[index + 1].startswith("[br]"):
-                        EXCEPTION.fatal(
-                            "For option on line {}, a branch label is not found on the following line".format(index + 1)
-                        )
+                        EXCEPTION.fatal("For option on line {}, a branch label is not found on the following line".format(index + 1))
                     # 如果next_dialog_id没被初始化，则初始化
                     if self.__output[self.__part][self.__last_dialog_id].get("next_dialog_id") is None:
                         self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"] = {}
@@ -183,16 +176,12 @@ class ScriptConverter:
                     narrator_possible_images: tuple = tuple()
                     if self.__current_data["narrator"] is not None:
                         if self.__current_data["narrator"].lower() in self.__CHARACTER_IMAGE_DATABASE:
-                            narrator_possible_images = tuple(
-                                self.__CHARACTER_IMAGE_DATABASE[self.__current_data["narrator"].lower()]
-                            )
+                            narrator_possible_images = tuple(self.__CHARACTER_IMAGE_DATABASE[self.__current_data["narrator"].lower()])
                     else:
                         self.__current_data["narrator"] = ""
                     # 检查名称列表，更新character_images以确保不在说话的人处于黑暗状态
                     for i in range(len(self.__current_data["character_images"])):
-                        _name_data: CharacterImageNameMetaData = CharacterImageNameMetaData(
-                            self.__current_data["character_images"][i]
-                        )
+                        _name_data: CharacterImageNameMetaData = CharacterImageNameMetaData(self.__current_data["character_images"][i])
                         if _name_data.name in narrator_possible_images:
                             _name_data.remove_tag("silent")
                         else:
@@ -216,9 +205,7 @@ class ScriptConverter:
                         self.__current_data["last_dialog_id"] = self.__last_dialog_id
                         # 生成数据
                         if self.__output[self.__part][self.__last_dialog_id].get("next_dialog_id") is not None:
-                            self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"][
-                                "target"
-                            ] = self.__dialog_associate_key[str(index)]
+                            self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"]["target"] = self.__dialog_associate_key[str(index)]
                         else:
                             self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"] = {
                                 "target": self.__dialog_associate_key[str(index)],

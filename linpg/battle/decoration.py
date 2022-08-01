@@ -1,5 +1,6 @@
 from .image import *
 
+
 # 管理场景装饰物的类
 class DecorationObject(GameObject2d):
     def __init__(self, x: int, y: int, _id: str, itemType: str, image: str, status: dict):

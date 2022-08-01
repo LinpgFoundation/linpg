@@ -1,5 +1,6 @@
-from subprocess import DEVNULL, STDOUT, check_call
 from abc import ABC
+from subprocess import DEVNULL, STDOUT, check_call
+
 from ..lang import *
 
 

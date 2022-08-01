@@ -9,6 +9,7 @@ try:
 except ImportError:
     pass
 
+
 # 视频模块专属的错误检测器
 def _video_validator(path: str) -> None:
     # 如果opencv没有成功地导入
@@ -260,8 +261,7 @@ class VideoPlayer(AbstractVideo):
         if self.is_playing():
             if (
                 self.get_frame_index() <= self.get_frame_num()
-                and (current_frame_index_based_on_music := round(Music.get_pos() * self._frame_rate / 1000))
-                <= self.get_frame_num()
+                and (current_frame_index_based_on_music := round(Music.get_pos() * self._frame_rate / 1000)) <= self.get_frame_num()
             ):
                 frame_difference: int = current_frame_index_based_on_music - self.get_frame_index()
                 # 如果播放速度太慢

@@ -1,5 +1,6 @@
 from .inputbox import *
 
+
 # 控制台
 class Console(SingleLineInputBox, HiddenableSurface):
 
@@ -120,10 +121,7 @@ class Console(SingleLineInputBox, HiddenableSurface):
         else:
             for event in Controller.get_events():
                 if event.type == MOUSE_BUTTON_DOWN:
-                    if (
-                        self.x <= Controller.mouse.x <= self.x + self._input_box.width
-                        and self.y <= Controller.mouse.y <= self.y + self._input_box.height
-                    ):
+                    if self.x <= Controller.mouse.x <= self.x + self._input_box.width and self.y <= Controller.mouse.y <= self.y + self._input_box.height:
                         self._active = not self._active
                         # Change the current color of the input box.
                         self._color = self.color_active if self._active else self.color_inactive

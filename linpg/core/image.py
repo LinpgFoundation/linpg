@@ -1,5 +1,6 @@
 from .text import *
 
+
 # 动态图形类
 class DynamicImage(AbstractImageSurface):
     def __init__(self, img: PoI, x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = ""):
@@ -114,11 +115,7 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
     # 更新图片
     def _update_img(self) -> None:
         # 改变尺寸
-        imgTmp = (
-            Images.smoothly_resize(self._get_image(), self.size)
-            if Setting.get_antialias()
-            else Images.resize(self._get_image(), self.size)
-        )
+        imgTmp = Images.smoothly_resize(self._get_image(), self.size) if Setting.get_antialias() else Images.resize(self._get_image(), self.size)
         # 翻转图片
         if self.__is_flipped_horizontally is True or self.__is_flipped_vertically is True:
             imgTmp = Images.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)
@@ -130,9 +127,7 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
                     new_x: int = max(rect.x, self.__crop_rect.x)
                     new_y: int = max(rect.y, self.__crop_rect.y)
                     rect.move_to((new_x, new_y))
-                    rect.set_size(
-                        min(rect.right, self.__crop_rect.right) - new_x, min(rect.bottom, self.__crop_rect.bottom) - new_y
-                    )
+                    rect.set_size(min(rect.right, self.__crop_rect.right) - new_x, min(rect.bottom, self.__crop_rect.bottom) - new_y)
                 self.set_local_pos(rect.x, rect.y)
                 self._processed_img = imgTmp.subsurface(rect.get_rect())
             else:

@@ -1,5 +1,6 @@
 from .shape import *
 
+
 # 可隐藏的Surface
 class HiddenableSurface(ABC):
     def __init__(self, visible: bool = True) -> None:
@@ -259,15 +260,11 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
         self._need_update = True
 
     # 画出轮廓
-    def draw_outline(
-        self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN, color: color_liked = "red", line_width: int = 2
-    ) -> None:
+    def draw_outline(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN, color: color_liked = "red", line_width: int = 2) -> None:
         if self._need_update is True:
             self._update_img()
         if self._processed_img is not None:
-            Draw.rect(
-                _surface, Colors.get(color), (Coordinates.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width
-            )
+            Draw.rect(_surface, Colors.get(color), (Coordinates.add(self.abs_pos, offSet), self._processed_img.get_size()), line_width)
         else:
             EXCEPTION.fatal("The image has not been correctly processed.")
 

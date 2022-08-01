@@ -1,5 +1,6 @@
 from .abstract import *
 
+
 # 视觉小说系统模块
 class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
 
@@ -51,13 +52,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
 
     # 初始化关键参数
     def _initialize(  # type: ignore[override]
-        self,
-        chapterType: str,
-        chapterId: int,
-        part: str,
-        projectName: Optional[str],
-        dialogId: str = "head",
-        dialog_options: dict = {},
+        self, chapterType: str, chapterId: int, part: str, projectName: Optional[str], dialogId: str = "head", dialog_options: dict = {}
     ) -> None:
         super()._initialize(chapterType, chapterId, part, projectName, dialogId)
         # 初始化重要ui组件
@@ -87,12 +82,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
     def load(self, save_path: str) -> None:
         saveData = Config.load_file(save_path)
         self._initialize(
-            saveData["chapter_type"],
-            saveData["chapter_id"],
-            saveData["type"],
-            saveData["project_name"],
-            saveData["dialog_id"],
-            saveData["dialog_options"],
+            saveData["chapter_type"], saveData["chapter_id"], saveData["type"], saveData["project_name"], saveData["dialog_id"], saveData["dialog_options"]
         )
         # 根据已有参数载入数据
         self._load_content()
@@ -205,11 +195,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         is_playing: bool = True
         # 初始化跳过按钮的参数
         skip_button: StaticImage = StaticImage(
-            "<&ui>next.png",
-            _surface.get_width() * 23 // 25,
-            _surface.get_height() // 20,
-            _surface.get_width() * 11 // 200,
-            _surface.get_height() * 3 // 50,
+            "<&ui>next.png", _surface.get_width() * 23 // 25, _surface.get_height() // 20, _surface.get_width() * 11 // 200, _surface.get_height() * 3 // 50
         )
         # 进度条
         bar_height: int = _surface.get_height() // 100
@@ -220,9 +206,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         BLACK_CURTAIN: ImageSurface = Surfaces.colored(_surface.get_size(), Colors.BLACK)
         BLACK_CURTAIN.set_alpha(0)
         # 创建视频文件
-        VIDEO: VideoPlayer = VideoPlayer(
-            Specification.get_directory("movie", self._current_dialog_content["next_dialog_id"]["target"])
-        )
+        VIDEO: VideoPlayer = VideoPlayer(Specification.get_directory("movie", self._current_dialog_content["next_dialog_id"]["target"]))
         VIDEO.pre_init()
         # 播放主循环
         while is_playing is True and VIDEO.is_playing() is True:
@@ -283,14 +267,9 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             # 如果玩家需要并做出了选择
             elif self._dialog_options_container.item_being_hovered >= 0:
                 # 获取下一个对话的id
-                _option: dict = self._current_dialog_content["next_dialog_id"]["target"][
-                    self._dialog_options_container.item_being_hovered
-                ]
+                _option: dict = self._current_dialog_content["next_dialog_id"]["target"][self._dialog_options_container.item_being_hovered]
                 # 记录玩家选项
-                self.__dialog_options[self._dialog_id] = {
-                    "id": self._dialog_options_container.item_being_hovered,
-                    "target": _option["id"],
-                }
+                self.__dialog_options[self._dialog_id] = {"id": self._dialog_options_container.item_being_hovered, "target": _option["id"]}
                 # 更新场景
                 self._update_scene(_option["id"])
             else:
@@ -329,8 +308,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                     if has_narrator:
                         narratorTemp = self.__dialog_txt_system.FONT.render(narratorTxt + ":", Colors.WHITE)  # type: ignore
                         self.__history_text_surface.blit(
-                            narratorTemp,
-                            (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() // 10 + local_y),
+                            narratorTemp, (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() // 10 + local_y)
                         )
                     for i in range(len(self.dialog_content[dialogIdTemp]["contents"])):
                         txt: str = str(self.dialog_content[dialogIdTemp]["contents"][i])
@@ -341,8 +319,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                             if i == len(self.dialog_content[dialogIdTemp]["contents"]) - 1:
                                 txt += '" ]'
                         self.__history_text_surface.blit(
-                            self.__dialog_txt_system.FONT.render(txt, Colors.WHITE),
-                            (Display.get_width() * 0.15, Display.get_height() // 10 + local_y),
+                            self.__dialog_txt_system.FONT.render(txt, Colors.WHITE), (Display.get_width() * 0.15, Display.get_height() // 10 + local_y)
                         )
                         local_y += self.__dialog_txt_system.FONT.size * 3 // 2
                     if dialogIdTemp != self._dialog_id:
@@ -355,24 +332,17 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                         elif _next_dialog_type == "option":
                             narratorTemp = self.__dialog_txt_system.FONT.render(self.__CHOICE_TEXT + ":", (0, 191, 255))
                             self.__history_text_surface.blit(
-                                narratorTemp,
-                                (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() // 10 + local_y),
+                                narratorTemp, (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() // 10 + local_y)
                             )
                             self.__history_text_surface.blit(
                                 self.__dialog_txt_system.FONT.render(
-                                    str(
-                                        self.dialog_content[dialogIdTemp]["next_dialog_id"]["target"][
-                                            int(self.__dialog_options[dialogIdTemp]["id"])
-                                        ]["text"]
-                                    ),
+                                    str(self.dialog_content[dialogIdTemp]["next_dialog_id"]["target"][int(self.__dialog_options[dialogIdTemp]["id"])]["text"]),
                                     (0, 191, 255),
                                 ),
                                 (Display.get_width() * 0.15, Display.get_height() // 10 + local_y),
                             )
                             local_y += self.__dialog_txt_system.FONT.size * 3 // 2
-                            if (
-                                target_temp := self.__dialog_options[dialogIdTemp]["target"]
-                            ) is not None and local_y < Display.get_height():
+                            if (target_temp := self.__dialog_options[dialogIdTemp]["target"]) is not None and local_y < Display.get_height():
                                 dialogIdTemp = str(target_temp)
                             else:
                                 break
@@ -390,9 +360,5 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             if self.__buttons_container is None or self.__buttons_container.is_visible():
                 self._dialog_options_container.display(_surface)
             # 当自动播放系统告知需要更新，如果对话被隐藏，则无视进入下一个对白的操作，反之则进入
-            if (
-                self.__buttons_container is not None
-                and self.__buttons_container.is_visible()
-                and self.__dialog_txt_system.is_update_needed()
-            ):
+            if self.__buttons_container is not None and self.__buttons_container.is_visible() and self.__dialog_txt_system.is_update_needed():
                 self.__go_to_next(_surface)

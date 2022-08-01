@@ -1,5 +1,7 @@
 import tcod  # type: ignore
+
 from .decoration import *
+
 
 # 地图模块
 class TileMap(Rectangle, SurfaceWithLocalPos):
@@ -76,17 +78,13 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         theBgiPath: Optional[str] = mapDataDic.get("background_image")
         # 背景图片
         self.__background_image = (
-            StaticImage(Images.quickly_load(Specification.get_directory("background_image", theBgiPath), False), 0, 0)
-            if theBgiPath is not None
-            else None
+            StaticImage(Images.quickly_load(Specification.get_directory("background_image", theBgiPath), False), 0, 0) if theBgiPath is not None else None
         )
         # 加载图片
         for fileName in self.__tile_lookup_table:
             TileMapImagesModule.add_image(fileName)
         for decoration in self.__decorations:
-            DecorationImagesModule.add_image(
-                decoration.get_type(), decoration.image if isinstance(decoration.image, str) else decoration.get_type()
-            )
+            DecorationImagesModule.add_image(decoration.get_type(), decoration.image if isinstance(decoration.image, str) else decoration.get_type())
         # 处于光处的区域
         self.__light_area = tuple()
         # 追踪目前已经画出的方块
@@ -129,17 +127,13 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             decoration_dict[theDecoration.get_type()][theDecoration.get_id()] = theDecorationInDict
         # 重新生成最优 lookup table
         unique_elem_table: tuple = numpy.unique(self.__MAP, return_counts=True)
-        lookup_table: dict[str, int] = {
-            self.__tile_lookup_table[unique_elem_table[0][i]]: unique_elem_table[1][i] for i in range(len(unique_elem_table[0]))
-        }
+        lookup_table: dict[str, int] = {self.__tile_lookup_table[unique_elem_table[0][i]]: unique_elem_table[1][i] for i in range(len(unique_elem_table[0]))}
         sorted_lookup_table: list[str] = sorted(lookup_table, key=lookup_table.get, reverse=True)  # type: ignore
         # 返回数据
         return {
             "decoration": decoration_dict,
             "map": {
-                "array2d": numpy.vectorize(lambda _num: sorted_lookup_table.index(self.__tile_lookup_table[_num]))(
-                    self.__MAP
-                ).tolist(),
+                "array2d": numpy.vectorize(lambda _num: sorted_lookup_table.index(self.__tile_lookup_table[_num]))(self.__MAP).tolist(),
                 "lookup_table": sorted_lookup_table,
             },
         }
@@ -150,10 +144,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
 
     # 以百分比的形式获取本地坐标（一般用于存档数据）
     def get_local_pos_in_percentage(self) -> dict:
-        return {
-            "local_x": str(round(self.local_x * 100 / self.get_width(), 5)) + "%",
-            "local_y": str(round(self.local_y * 100 / self.get_height(), 5)) + "%",
-        }
+        return {"local_x": str(round(self.local_x * 100 / self.get_width(), 5)) + "%", "local_y": str(round(self.local_y * 100 / self.get_height(), 5)) + "%"}
 
     # 开发者模式
     def dev_mode(self) -> None:
@@ -191,15 +182,9 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         if _type == "campfire":
             self.__decorations.append(CampfireObject(_data["x"], _data["y"], _id, _type, _data["range"], _data["status"]))
         elif _type == "chest":
-            self.__decorations.append(
-                ChestObject(
-                    _data["x"], _data["y"], _id, _type, _data.get("items", []), _data.get("whitelist", []), _data["status"]
-                )
-            )
+            self.__decorations.append(ChestObject(_data["x"], _data["y"], _id, _type, _data.get("items", []), _data.get("whitelist", []), _data["status"]))
         else:
-            new_decoration: DecorationObject = DecorationObject(
-                _data["x"], _data["y"], _id, _type, _data["image"], _data["status"]
-            )
+            new_decoration: DecorationObject = DecorationObject(_data["x"], _data["y"], _id, _type, _data["image"], _data["status"])
             if _type == "tree":
                 new_decoration.scale = 0.75
             self.__decorations.append(new_decoration)
@@ -224,8 +209,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         old_height: int = self.get_height()
         # 更新尺寸
         self.set_size(
-            newPerBlockWidth * 0.9 * ((self.__row + self.__column + 1) / 2),
-            newPerBlockWidth * 0.45 * ((self.__row + self.__column + 1) / 2) + newPerBlockWidth,
+            newPerBlockWidth * 0.9 * ((self.__row + self.__column + 1) / 2), newPerBlockWidth * 0.45 * ((self.__row + self.__column + 1) / 2) + newPerBlockWidth
         )
         TileMapImagesModule.update_size(round(newPerBlockWidth), round(newPerBlockHeight))
         if self.get_width() < Display.get_width():
@@ -292,9 +276,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                         and -MapImageParameters.get_block_width() <= posTupleTemp[1] < _surface.get_height()
                     ):
                         if self.__block_on_surface[y][x] == 0:
-                            evn_img = TileMapImagesModule.get_image(
-                                self.get_block(x, y), not self.is_coordinate_in_light_rea(x, y)
-                            )
+                            evn_img = TileMapImagesModule.get_image(self.get_block(x, y), not self.is_coordinate_in_light_rea(x, y))
                             evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
                             if self.__map_surface is not None:
                                 evn_img.draw(self.__map_surface)
@@ -331,9 +313,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         else:
             _surface.fill(Colors.BLACK)
         if self.__map_surface is not None:
-            _surface.blit(
-                self.__map_surface.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), (0, 0)
-            )
+            _surface.blit(self.__map_surface.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), (0, 0))
         # 返回offset
         return screen_to_move_x, screen_to_move_y
 
@@ -341,14 +321,8 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
     def display_decoration(self, _surface: ImageSurface, occupied_coordinates: tuple) -> None:
         # 计算offSet
         offSet: tuple[int, int]
-        offSet_normal: tuple[int, int] = (
-            round(MapImageParameters.get_block_width() / 4),
-            -round(MapImageParameters.get_block_width() / 8),
-        )
-        offSet_tree: tuple[int, int] = (
-            round(MapImageParameters.get_block_width() * 0.125),
-            -round(MapImageParameters.get_block_width() * 0.375),
-        )
+        offSet_normal: tuple[int, int] = (round(MapImageParameters.get_block_width() / 4), -round(MapImageParameters.get_block_width() / 8))
+        offSet_tree: tuple[int, int] = (round(MapImageParameters.get_block_width() * 0.125), -round(MapImageParameters.get_block_width() * 0.375))
         # 计算需要画出的范围
         screen_min: int = -MapImageParameters.get_block_width()
         # 透明度
@@ -368,12 +342,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                 else:
                     offSet = offSet_normal
                 # 画出
-                item.blit(
-                    _surface,
-                    Coordinates.add(thePosInMap, offSet),
-                    not self.is_coordinate_in_light_rea(item.x, item.y),
-                    decoration_alpha,
-                )
+                item.blit(_surface, Coordinates.add(thePosInMap, offSet), not self.is_coordinate_in_light_rea(item.x, item.y), decoration_alpha)
 
     # 获取方块
     def get_block(self, _x: int, _y: int) -> str:
@@ -404,12 +373,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             )
             // (MapImageParameters.get_block_width() * 2)
         )
-        guess_y: int = (
-            int(
-                (pos[1] - self.local_y - MapImageParameters.get_block_width() * 0.4) / MapImageParameters.get_block_width() / 0.22
-            )
-            - guess_x
-        )
+        guess_y: int = int((pos[1] - self.local_y - MapImageParameters.get_block_width() * 0.4) / MapImageParameters.get_block_width() / 0.22) - guess_x
         x: int
         y: int
         posTupleTemp: tuple
@@ -418,10 +382,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         for y in range(guess_y - 1, guess_y + 4):
             for x in range(guess_x - 1, guess_x + 4):
                 posTupleTemp = self.calculate_position(x, y)
-                if (
-                    lenUnitW < pos[0] - posTupleTemp[0] - MapImageParameters.get_block_width() * 0.05 < lenUnitW * 3
-                    and 0 < pos[1] - posTupleTemp[1] < lenUnitH
-                ):
+                if lenUnitW < pos[0] - posTupleTemp[0] - MapImageParameters.get_block_width() * 0.05 < lenUnitW * 3 and 0 < pos[1] - posTupleTemp[1] < lenUnitH:
                     if 0 <= x < self.__column and 0 <= y < self.__row:
                         return x, y
         return None
@@ -466,7 +427,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         enemies: dict,
         can_move_through_darkness: bool = False,
         lenMax: Optional[int] = None,
-        ignored: list = [],
+        ignored: tuple = (),
     ) -> list[tuple[int, int]]:
         # 确保终点没有我方角色
         for value in alliances.values():

@@ -119,9 +119,7 @@ class Button(AbstractButton):
     @staticmethod
     def load(path: PoI, position: tuple[int, int], size: tuple[int, int], alpha_when_not_hover: int = 255) -> "Button":
         if alpha_when_not_hover < 255:
-            fading_button: Button = Button(
-                Images.load(path, alpha=alpha_when_not_hover), position[0], position[1], size[0], size[1]
-            )
+            fading_button: Button = Button(Images.load(path, alpha=alpha_when_not_hover), position[0], position[1], size[0], size[1])
             if path != "<NULL>":
                 img2 = fading_button.get_image_copy()
                 img2.set_alpha(255)
@@ -155,15 +153,9 @@ class Button(AbstractButton):
                     max(self.__icon.get_height(), self.__text.get_height()) * self.__scale_for_resizing_height,
                 )
             elif self.__icon is not None:
-                self.set_size(
-                    self.__icon.get_width() * self.__scale_for_resizing_width,
-                    self.__icon.get_height() * self.__scale_for_resizing_height,
-                )
+                self.set_size(self.__icon.get_width() * self.__scale_for_resizing_width, self.__icon.get_height() * self.__scale_for_resizing_height)
             elif self.__text is not None:
-                self.set_size(
-                    self.__text.get_width() * self.__scale_for_resizing_width,
-                    self.__text.get_height() * self.__scale_for_resizing_height,
-                )
+                self.set_size(self.__text.get_width() * self.__scale_for_resizing_width, self.__text.get_height() * self.__scale_for_resizing_height)
             else:
                 self.set_size(0, 0)
 
@@ -184,9 +176,7 @@ class Button(AbstractButton):
     def set_description(self, value: str = "") -> None:
         self.__description = value
         self.__description_surface = (
-            Font.render_description_box(
-                self.__description, Colors.BLACK, self.get_height() * 2 // 5, self.get_height() // 5, Colors.WHITE
-            )
+            Font.render_description_box(self.__description, Colors.BLACK, self.get_height() * 2 // 5, self.get_height() // 5, Colors.WHITE)
             if len(self.__description) > 0
             else None
         )
@@ -210,9 +200,7 @@ class Button(AbstractButton):
             # 计算x坐标轴
             if self.__icon is not None and self.__text is not None:
                 # 计算真实尺寸
-                self.__icon.set_left(
-                    self.x + (self.get_width() - self.__icon.get_width() - self.__text.get_width()) // 2 + offSet[0]
-                )
+                self.__icon.set_left(self.x + (self.get_width() - self.__icon.get_width() - self.__text.get_width()) // 2 + offSet[0])
                 self.__text.set_left(self.__icon.right)
             elif self.__icon is not None:
                 self.__icon.set_centerx(self.centerx + offSet[0])

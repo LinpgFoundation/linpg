@@ -1,5 +1,6 @@
 from .dropdown import *
 
+
 # 同一时刻会展示2个scrollbar的Surface
 class AbstractScrollbarsSurface(SurfaceWithLocalPos, metaclass=ABCMeta):
     def __init__(self) -> None:
@@ -64,24 +65,14 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos, metaclass=ABCMeta):
     # 获取滚动条的Rect
     def _get_right_scroll_bar_rect(self, off_set_x: number, off_set_y: number) -> Optional[Rectangle]:
         return (
-            Rectangle(
-                self.get_right() - self._button_thickness + int(off_set_x),
-                self.get_top() + int(off_set_y),
-                self._button_thickness,
-                self.get_height(),
-            )
+            Rectangle(self.get_right() - self._button_thickness + int(off_set_x), self.get_top() + int(off_set_y), self._button_thickness, self.get_height())
             if self.get_surface_height() > self.get_height()
             else None
         )
 
     def _get_bottom_scroll_bar_rect(self, off_set_x: number, off_set_y: number) -> Optional[Rectangle]:
         return (
-            Rectangle(
-                self.get_left() + int(off_set_x),
-                self.get_bottom() - self._button_thickness + int(off_set_y),
-                self.get_width(),
-                self._button_thickness,
-            )
+            Rectangle(self.get_left() + int(off_set_x), self.get_bottom() - self._button_thickness + int(off_set_y), self.get_width(), self._button_thickness)
             if self.get_surface_width() > self.get_width()
             else None
         )
@@ -120,11 +111,7 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos, metaclass=ABCMeta):
         # 获取鼠标坐标
         if self.is_hovered(off_set):
             if Controller.mouse.get_pressed(0):
-                if (
-                    right_scroll_bar_rect is not None
-                    and right_scroll_button_rect is not None
-                    and right_scroll_bar_rect.is_hovered()
-                ):
+                if right_scroll_bar_rect is not None and right_scroll_button_rect is not None and right_scroll_bar_rect.is_hovered():
                     if right_scroll_button_rect.is_hovered():
                         self.add_local_y(Controller.mouse.get_y_moved() * (self.get_surface_height() / self.get_height()))
                     else:
@@ -133,11 +120,7 @@ class AbstractScrollbarsSurface(SurfaceWithLocalPos, metaclass=ABCMeta):
                             / right_scroll_bar_rect.height
                             * self.get_surface_height()
                         )
-                if (
-                    bottom_scroll_bar_rect is not None
-                    and bottom_scroll_button_rect is not None
-                    and bottom_scroll_bar_rect.is_hovered()
-                ):
+                if bottom_scroll_bar_rect is not None and bottom_scroll_button_rect is not None and bottom_scroll_bar_rect.is_hovered():
                     if bottom_scroll_button_rect.is_hovered():
                         self.add_local_x(Controller.mouse.get_x_moved() * (self.get_surface_width() / self.get_width()))
                     else:
@@ -271,16 +254,12 @@ class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface, metaclass=ABCMeta)
             if not self.__scroll_bar_pos:
                 return self._get_right_scroll_bar_rect(off_set_x, off_set_y)
             elif self.get_surface_height() > self.get_height():
-                return Rectangle(
-                    self.abs_x + int(off_set_x), self.get_top() + int(off_set_y), self._button_thickness, self.get_height()
-                )
+                return Rectangle(self.abs_x + int(off_set_x), self.get_top() + int(off_set_y), self._button_thickness, self.get_height())
         else:
             if not self.__scroll_bar_pos:
                 return self._get_bottom_scroll_bar_rect(off_set_x, off_set_y)
             elif self.get_surface_width() > self.get_width():
-                return Rectangle(
-                    self.get_left() + int(off_set_x), self.abs_y + int(off_set_y), self.get_width(), self._button_thickness
-                )
+                return Rectangle(self.get_left() + int(off_set_x), self.abs_y + int(off_set_y), self.get_width(), self._button_thickness)
         return None
 
     def display_scrollbar(self, _surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
@@ -297,15 +276,11 @@ class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface, metaclass=ABCMeta)
                         self.__is_holding_scroll_button = True
                     elif not self._mode:
                         self.set_local_y(
-                            (self.get_top() - Controller.mouse.y + scroll_button_rect.height / 2)
-                            / scroll_bar_rect.height
-                            * self.get_surface_height()
+                            (self.get_top() - Controller.mouse.y + scroll_button_rect.height / 2) / scroll_bar_rect.height * self.get_surface_height()
                         )
                     else:
                         self.set_local_x(
-                            (self.get_left() - Controller.mouse.x + scroll_button_rect.width / 2)
-                            / scroll_bar_rect.width
-                            * self.get_surface_width()
+                            (self.get_left() - Controller.mouse.x + scroll_button_rect.width / 2) / scroll_bar_rect.width * self.get_surface_width()
                         )
             else:
                 self.__is_holding_scroll_button = False
@@ -331,17 +306,11 @@ class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface, metaclass=ABCMeta)
         if not self._mode:
             if self.local_y > 0:
                 self.set_local_y(0)
-            elif (
-                self.get_surface_height() > self.get_height()
-                and (local_y_max := self.get_height() - self.get_surface_height()) > self.local_y
-            ):
+            elif self.get_surface_height() > self.get_height() and (local_y_max := self.get_height() - self.get_surface_height()) > self.local_y:
                 self.set_local_y(local_y_max)
         elif self.local_x > 0:
             self.set_local_x(0)
-        elif (
-            self.get_surface_width() > self.get_width()
-            and (local_x_max := self.get_width() - self.get_surface_width()) > self.local_x
-        ):
+        elif self.get_surface_width() > self.get_width() and (local_x_max := self.get_width() - self.get_surface_width()) > self.local_x:
             self.set_local_x(local_x_max)
         # 画出滚动条
         if scroll_button_rect is not None:
@@ -352,9 +321,7 @@ class AbstractSurfaceWithScrollbar(AbstractScrollbarsSurface, metaclass=ABCMeta)
 
 # 带有滚动条的Surface容器
 class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWithScrollbar):
-    def __init__(
-        self, img: Optional[PoI], x: int_f, y: int_f, width: int, height: int, mode: str = "horizontal", tag: str = ""
-    ) -> None:
+    def __init__(self, img: Optional[PoI], x: int_f, y: int_f, width: int, height: int, mode: str = "horizontal", tag: str = "") -> None:
         GameObjectsDictContainer.__init__(self, img, x, y, width, height, tag)
         AbstractSurfaceWithScrollbar.__init__(self)
         self.__surface_width: int = 0
@@ -453,10 +420,7 @@ class SurfaceContainerWithScrollbar(GameObjectsDictContainer, AbstractSurfaceWit
                             if new_height > self.get_height():
                                 new_height = self.get_height()
                             subsurface_rect = Rectangle(0, 0, new_width, new_height)
-                            _surface.blit(
-                                get_img_subsurface(item, subsurface_rect),
-                                (current_x, current_y),
-                            )
+                            _surface.blit(get_img_subsurface(item, subsurface_rect), (current_x, current_y))
                             if subsurface_rect.is_hovered((current_x, current_y)):
                                 self._item_being_hovered = str(key)
                         elif -(item.get_width()) <= abs_local_x < 0:

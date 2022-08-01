@@ -1,5 +1,6 @@
 from .generator import *
 
+
 # 内部菜单模块的抽象
 class AbstractInternalMenu(HiddenableSurface, metaclass=ABCMeta):
     def __init__(self, menu_name: str) -> None:
@@ -97,6 +98,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
 
 # 引擎本体的选项菜单
 OptionMenu: DefaultOptionMenu = DefaultOptionMenu()
+
 
 # 暂停菜单
 class PauseMenu(AbstractInternalMenu):
@@ -224,9 +226,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
         if self.__pause_menu is not None:
             Media.pause()
             progress_saved_text = StaticImage(
-                Font.render(Lang.get_text("Global", "progress_has_been_saved"), Colors.WHITE, Display.get_width() * 3 // 200),
-                0,
-                0,
+                Font.render(Lang.get_text("Global", "progress_has_been_saved"), Colors.WHITE, Display.get_width() * 3 // 200), 0, 0
             )
             progress_saved_text.set_alpha(0)
             progress_saved_text.set_center(_surface.get_width() / 2, _surface.get_height() / 2)

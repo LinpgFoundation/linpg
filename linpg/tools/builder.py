@@ -1,5 +1,6 @@
 from .abstract import *
 
+
 # 搭建和打包文件的系统
 class BuilderManager(AbstractToolSystem):
     def __init__(self) -> None:
@@ -89,7 +90,7 @@ class BuilderManager(AbstractToolSystem):
         target_folder: str = "src",
         additional_files: tuple = tuple(),
         ignore_key_words: tuple = tuple(),
-        smart_auto_moudle_combine: bool = False,
+        smart_auto_module_combine: bool = False,
         remove_building_cache: bool = True,
         update_the_one_in_sitepackages: bool = True,
         options: dict = {},
@@ -102,7 +103,7 @@ class BuilderManager(AbstractToolSystem):
         # 移除不必要的py缓存
         self.__remove_cache(source_path_in_target_folder)
         # 如果开启了智能模块合并模式
-        if smart_auto_moudle_combine is True:
+        if smart_auto_module_combine is True:
             for _path in glob(os.path.join(source_path_in_target_folder, "*")):
                 self.__combine(_path)
         # 把数据写入缓存文件以供编译器读取

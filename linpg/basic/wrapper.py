@@ -7,14 +7,13 @@ from tkinter import Tk
 import pygame
 
 # 加载颜色模块
-from pygame.colordict import THECOLORS
 from PIL import ImageColor  # type: ignore
+from pygame.colordict import THECOLORS
 
 from .coordinates import *
 
 # 初始化pygame
 pygame.init()
-
 
 """linpg自带属性"""
 # int_f指参数推荐输入int, 但一开始接受时可以为float，但最后会转换为int
@@ -28,6 +27,7 @@ ImageSurface = pygame.Surface
 PoI = Union[str, pygame.Surface]
 # 事件 type alias
 PG_Event = pygame.event.Event
+PG_TUPLE = Union[tuple[int, int, int, int], tuple[tuple[int, int], tuple[int, int]]]
 
 """指向pygame事件的指针"""
 # 鼠标
@@ -35,6 +35,7 @@ MOUSE_BUTTON_DOWN = pygame.MOUSEBUTTONDOWN
 MOUSE_BUTTON_UP = pygame.MOUSEBUTTONUP
 # 手柄
 JOYSTICK_BUTTON_DOWN = pygame.JOYBUTTONDOWN
+
 
 # 与数字有关的常用方法
 class Numbers:
@@ -107,6 +108,7 @@ class Colors:
         return _r, _g, _b, _a
 
     """获取颜色"""
+
     # 给定一个颜色的名字或序号，返回对应的RGB列表
     @classmethod
     def get(cls, color: color_liked) -> tuple[int, int, int, int]:
@@ -164,37 +166,22 @@ class Draw:
 
     # 根据给与的rect画出轮廓
     @staticmethod
-    def rect(
-        _surface: ImageSurface,
-        color: tuple[int, int, int, int],
-        rect: Union[tuple[int, int, int, int], tuple[tuple[int, int], tuple[int, int]]],
-        thickness: int = 0,
-    ) -> None:
+    def rect(_surface: ImageSurface, color: tuple[int, int, int, int], rect: PG_TUPLE, thickness: int = 0) -> None:
         pygame.draw.rect(_surface, color, rect, thickness)
 
     # 根据给与的中心点画出一个圆
     @staticmethod
-    def circle(
-        _surface: ImageSurface, color: tuple[int, int, int, int], center_pos: tuple[int, int], radius: int, thickness: int = 0
-    ) -> None:
+    def circle(_surface: ImageSurface, color: tuple[int, int, int, int], center_pos: tuple[int, int], radius: int, thickness: int = 0) -> None:
         pygame.draw.circle(_surface, color, center_pos, radius, thickness)
 
     # 画抗锯齿线条
     @staticmethod
-    def aaline(
-        _surface: ImageSurface,
-        color: tuple[int, int, int, int],
-        start_pos: tuple[int, int],
-        end_pos: tuple[int, int],
-        blend: int = 1,
-    ) -> None:
+    def aaline(_surface: ImageSurface, color: tuple[int, int, int, int], start_pos: tuple[int, int], end_pos: tuple[int, int], blend: int = 1) -> None:
         pygame.draw.aaline(_surface, color, start_pos, end_pos, blend)
 
     # 画多边形
     @staticmethod
-    def polygon(
-        _surface: ImageSurface, _color: tuple[int, int, int, int], _points: tuple[tuple[int, int], ...], _width: int = 0
-    ) -> None:
+    def polygon(_surface: ImageSurface, _color: tuple[int, int, int, int], _points: tuple[tuple[int, int], ...], _width: int = 0) -> None:
         pygame.draw.polygon(_surface, _color, _points, _width)
 
 
@@ -253,16 +240,8 @@ class Surfaces:
         texture_missing_surface: ImageSurface = cls.colored(size, Colors.BLACK)
         half_width: int = size[0] // 2
         half_height: int = size[1] // 2
-        pygame.draw.rect(
-            texture_missing_surface,
-            Colors.VIOLET,
-            pygame.Rect(half_width, 0, texture_missing_surface.get_width() - half_width, half_height),
-        )
-        pygame.draw.rect(
-            texture_missing_surface,
-            Colors.VIOLET,
-            pygame.Rect(0, half_height, half_width, texture_missing_surface.get_height() - half_height),
-        )
+        pygame.draw.rect(texture_missing_surface, Colors.VIOLET, pygame.Rect(half_width, 0, texture_missing_surface.get_width() - half_width, half_height))
+        pygame.draw.rect(texture_missing_surface, Colors.VIOLET, pygame.Rect(0, half_height, half_width, texture_missing_surface.get_height() - half_height))
         return texture_missing_surface
 
     # 检测图层是否是任何形式的null

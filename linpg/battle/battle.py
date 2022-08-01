@@ -1,5 +1,6 @@
 from .entity import *
 
+
 # 战斗系统接口，请勿实例化
 class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
     def __init__(self) -> None:
@@ -51,12 +52,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         return (
             os.path.join("Data", self._chapter_type, "chapter{0}_map.{1}".format(self._chapter_id, Config.get_file_type()))
             if self._project_name is None
-            else os.path.join(
-                "Data",
-                self._chapter_type,
-                self._project_name,
-                "chapter{0}_map.{1}".format(self._chapter_id, Config.get_file_type()),
-            )
+            else os.path.join("Data", self._chapter_type, self._project_name, "chapter{0}_map.{1}".format(self._chapter_id, Config.get_file_type()))
         )
 
     # 返回需要保存数据
@@ -171,9 +167,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
                 self._screen_to_move_y = 0
         # 展示地图
         self._screen_to_move_x, self._screen_to_move_y = self._MAP.display_map(
-            _surface,
-            self._screen_to_move_x if self._screen_to_move_x is not None else 0,
-            self._screen_to_move_y if self._screen_to_move_y is not None else 0,
+            _surface, self._screen_to_move_x if self._screen_to_move_x is not None else 0, self._screen_to_move_y if self._screen_to_move_y is not None else 0
         )
         # 获取位于鼠标位置的tile块
         self._block_is_hovering = self._MAP.calculate_coordinate()

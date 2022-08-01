@@ -1,5 +1,7 @@
 from collections import deque
+
 from .map import *
+
 
 # 人形模块
 class Entity(Position):
@@ -68,8 +70,7 @@ class Entity(Position):
             and os.path.exists(_sound_directory := Specification.get_directory("character_sound", self.__type))
         ):
             self.__SOUNDS[self.__type] = {
-                soundType: Sound.load_from_directory(os.path.join(_sound_directory, soundType))
-                for soundType in os.listdir(_sound_directory)
+                soundType: Sound.load_from_directory(os.path.join(_sound_directory, soundType)) for soundType in os.listdir(_sound_directory)
             }
         # 角色的攻击范围
         self.__effective_range_coordinates: Optional[list[list[tuple[int, int]]]] = None
@@ -399,11 +400,7 @@ class Entity(Position):
         for y in range(start_point, end_point):
             y_offset: int = abs(y - _y)
             for x in range(row_start + y_offset, row_end - y_offset):
-                if (
-                    MAP_P.row > y >= 0
-                    and MAP_P.column > x >= 0
-                    and (the_range_in := cls._identify_range(_ranges, abs(x - _x) + abs(y - _y))) >= 0
-                ):
+                if MAP_P.row > y >= 0 and MAP_P.column > x >= 0 and (the_range_in := cls._identify_range(_ranges, abs(x - _x) + abs(y - _y))) >= 0:
                     attack_range[the_range_in].append((x, y))
         return attack_range
 
@@ -428,26 +425,19 @@ class Entity(Position):
 
     # 获取对象所在区域
     def range_target_in(self, otherEntity: "Entity") -> int:
-        return self._identify_range(
-            self.__effective_range, abs(round(otherEntity.x) - round(self.x)) + abs(round(otherEntity.y) - round(self.y))
-        )
+        return self._identify_range(self.__effective_range, abs(round(otherEntity.x) - round(self.x)) + abs(round(otherEntity.y) - round(self.y)))
 
     # 根据给定的坐标和半径生成覆盖范围坐标列表
     @staticmethod
     def _generate_coverage_coordinates(_x: int, _y: int, _radius: int, MAP_P: TileMap) -> list[tuple[int, int]]:
-        return list(
-            filter(lambda pos: MAP_P.can_pass_through(pos[0], pos[1]), Coordinates.get_in_diamond_shaped(_x, _y, _radius))
-        )
+        return list(filter(lambda pos: MAP_P.can_pass_through(pos[0], pos[1]), Coordinates.get_in_diamond_shaped(_x, _y, _radius)))
 
     # 获取角色的攻击覆盖范围
     def get_attack_coverage_coordinates(self, _x: int, _y: int, MAP_P: TileMap) -> list[tuple[int, int]]:
         if self._identify_range(self.__effective_range, abs(_x - round(self.x)) + abs(_y - round(self.y))) >= 0:
             return list(
                 filter(
-                    lambda pos: self._identify_range(
-                        self.__effective_range, abs(pos[0] - round(self.x)) + abs(pos[1] - round(self.y))
-                    )
-                    >= 0,
+                    lambda pos: self._identify_range(self.__effective_range, abs(pos[0] - round(self.x)) + abs(pos[1] - round(self.y))) >= 0,
                     self._generate_coverage_coordinates(_x, _y, self.__attack_coverage, MAP_P),
                 )
             )
@@ -466,14 +456,10 @@ class Entity(Position):
             self.set_flip(False)
 
     """画出角色"""
+
     # 角色画到surface上
     def __blit_entity_img(
-        self,
-        _surface: ImageSurface,
-        MAP_P: TileMap,
-        alpha: int,
-        action: Optional[str] = None,
-        pos: Optional[tuple[int, int]] = None,
+        self, _surface: ImageSurface, MAP_P: TileMap, alpha: int, action: Optional[str] = None, pos: Optional[tuple[int, int]] = None
     ) -> None:
         # 如果没有指定action,则默认使用当前的动作
         if action is None:

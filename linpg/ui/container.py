@@ -1,5 +1,6 @@
 from .button import *
 
+
 # Container抽象
 class AbstractGameObjectsContainer(AbstractImageSurface, metaclass=ABCMeta):
     def __init__(self, bg_img: Optional[PoI], x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:

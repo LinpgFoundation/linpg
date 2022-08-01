@@ -1,5 +1,6 @@
 from ..ui import *
 
+
 # 对话模块Node
 class DialogNode(Button):
     def __init__(self, key_name: str, font_size: int, next_keys: list[str], tag: str = ""):
@@ -112,10 +113,7 @@ class DialogNavigationWindow(AbstractFrame):
     def _any_content_container_event(self) -> bool:
         for key, value in self.__nodes_map.items():
             if Controller.mouse.is_in_rect(
-                value.x + self.x - self.get_local_x(),
-                value.y + self.y + self._bar_height - self.get_local_y(),
-                value.get_width(),
-                value.get_height(),
+                value.x + self.x - self.get_local_x(), value.y + self.y + self._bar_height - self.get_local_y(), value.get_width(), value.get_height()
             ):
                 self.update_selected(key)
                 return True
@@ -130,9 +128,7 @@ class AbstractDialogBox(HiddenableSurface, metaclass=ABCMeta):
         self._dialoguebox_max_height: int = Display.get_height() // 4
         self._dialoguebox_max_y: int = Display.get_height() * 65 // 100
         # 对胡框图片
-        self._dialoguebox: StaticImage = StaticImage(
-            "<&ui>dialoguebox.png", Display.get_width() * 13 // 100, 0, Display.get_width() * 74 // 100
-        )
+        self._dialoguebox: StaticImage = StaticImage("<&ui>dialoguebox.png", Display.get_width() * 13 // 100, 0, Display.get_width() * 74 // 100)
 
     # 画出（子类需实现）
     def draw(self, _surface: ImageSurface) -> None:
@@ -147,12 +143,8 @@ class AbstractDialogBox(HiddenableSurface, metaclass=ABCMeta):
 class EditableDialogBox(AbstractDialogBox):
     def __init__(self, fontSize: int):
         super().__init__()
-        self.__contents: MultipleLinesInputBox = MultipleLinesInputBox(
-            Display.get_width() * 2 / 10, Display.get_height() * 73 // 100, fontSize, "white"
-        )
-        self.__narrator: SingleLineInputBox = SingleLineInputBox(
-            Display.get_width() * 2 / 10, self._dialoguebox_max_y + fontSize, fontSize, "white"
-        )
+        self.__contents: MultipleLinesInputBox = MultipleLinesInputBox(Display.get_width() * 2 / 10, Display.get_height() * 73 // 100, fontSize, "white")
+        self.__narrator: SingleLineInputBox = SingleLineInputBox(Display.get_width() * 2 / 10, self._dialoguebox_max_y + fontSize, fontSize, "white")
         # 设置对话框高度和坐标
         self._dialoguebox.set_top(self._dialoguebox_max_y)
         self._dialoguebox.set_height(self._dialoguebox_max_height)
@@ -217,11 +209,7 @@ class DialogBox(AbstractDialogBox):
             Draw.polygon(
                 _surface,
                 Colors.WHITE,
-                (
-                    (_x + self.__x_offset // 4, final_y),
-                    (_x + _width - self.__x_offset // 4, final_y),
-                    (_x + _width // 2, final_y + _width),
-                ),
+                ((_x + self.__x_offset // 4, final_y), (_x + _width - self.__x_offset // 4, final_y), (_x + _width // 2, final_y + _width)),
             )
 
     def __init__(self, fontSize: int):
@@ -259,8 +247,7 @@ class DialogBox(AbstractDialogBox):
     def is_all_played(self) -> bool:
         # 如果self.__contents是空的，也就是说没有任何内容，那么应当视为所有内容都被播放了
         return len(self.__contents) == 0 or (
-            self.__displayed_lines >= len(self.__contents) - 1
-            and self.__text_index >= len(self.__contents[self.__displayed_lines]) - 1
+            self.__displayed_lines >= len(self.__contents) - 1 and self.__text_index >= len(self.__contents[self.__displayed_lines]) - 1
         )
 
     # 立刻播出所有内容
@@ -333,10 +320,7 @@ class DialogBox(AbstractDialogBox):
                 # 如果对话框图片还在放大阶段
                 if self._dialoguebox.height < self._dialoguebox_max_height:
                     self._dialoguebox.set_height(
-                        min(
-                            self._dialoguebox.height + self._dialoguebox_max_height / Display.get_delta_time() // 10,
-                            self._dialoguebox_max_height,
-                        )
+                        min(self._dialoguebox.height + self._dialoguebox_max_height / Display.get_delta_time() // 10, self._dialoguebox_max_height)
                     )
                     self._dialoguebox.move_upward(self._dialoguebox_max_height / Display.get_delta_time() // 20)
                 # 如果已经放大好了，则将文字画到屏幕上
@@ -348,15 +332,10 @@ class DialogBox(AbstractDialogBox):
                         _surface.blit(self.FONT.render(self.__narrator, Colors.WHITE), (x, self._dialoguebox.y + self.FONT.size))
                     # 对话框已播放的内容
                     for i in range(self.__displayed_lines):
-                        _surface.blit(
-                            self.FONT.render(self.__contents[i], Colors.WHITE, with_bounding=True),
-                            (x, y + self.FONT.size * 3 * i // 2),
-                        )
+                        _surface.blit(self.FONT.render(self.__contents[i], Colors.WHITE, with_bounding=True), (x, y + self.FONT.size * 3 * i // 2))
                     # 对话框正在播放的内容
                     _surface.blit(
-                        self.FONT.render(
-                            self.__contents[self.__displayed_lines][: self.__text_index], Colors.WHITE, with_bounding=True
-                        ),
+                        self.FONT.render(self.__contents[self.__displayed_lines][: self.__text_index], Colors.WHITE, with_bounding=True),
                         (x, y + self.FONT.size * 3 * self.__displayed_lines // 2),
                     )
                     # 如果当前行的字符还没有完全播出
@@ -380,9 +359,7 @@ class DialogBox(AbstractDialogBox):
                             self.__read_time += self.__READING_SPEED
                     # 画出翻页指示动态图标
                     _width: int = self.FONT.size * 2 // 3
-                    self.__next_page_indicator_icon.draw_to(
-                        _surface, self._dialoguebox.right - _width * 4, self._dialoguebox.bottom - _width * 3, _width
-                    )
+                    self.__next_page_indicator_icon.draw_to(_surface, self._dialoguebox.right - _width * 4, self._dialoguebox.bottom - _width * 3, _width)
             # 淡出
             else:
                 # 画出对话框图片

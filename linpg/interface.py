@@ -20,39 +20,19 @@ class Loader:
 
     # 可自行移动的图片
     @staticmethod
-    def movable_image(
-        path: str, _position: tuple, target_position: tuple, move_speed: tuple, size: tuple, tag: str = ""
-    ) -> MovableImage:
-        return MovableImage(
-            path,
-            _position[0],
-            _position[1],
-            target_position[0],
-            target_position[1],
-            move_speed[0],
-            move_speed[1],
-            size[0],
-            size[1],
-            tag,
-        )
+    def movable_image(path: str, _position: tuple, target_position: tuple, move_speed: tuple, size: tuple, tag: str = "") -> MovableImage:
+        return MovableImage(path, _position[0], _position[1], target_position[0], target_position[1], move_speed[0], move_speed[1], size[0], size[1], tag)
 
     # 进度条Surface
     @staticmethod
     def progress_bar_surface(
-        img_on_top_path: str,
-        img_on_bottom_path: str,
-        _position: tuple[int, int],
-        size: tuple[int, int],
-        mode: str = "horizontal",
-        tag: str = "",
+        img_on_top_path: str, img_on_bottom_path: str, _position: tuple[int, int], size: tuple[int, int], mode: str = "horizontal", tag: str = ""
     ) -> ProgressBarSurface:
         return ProgressBarSurface(img_on_top_path, img_on_bottom_path, _position[0], _position[1], size[0], size[1], mode, tag)
 
     # gif图片
     @staticmethod
-    def gif(
-        gif_path_or_img_list: Union[str, Sequence], _position: tuple[int, int], size: tuple[int, int], updateGap: int = 1
-    ) -> AnimatedImage:
+    def gif(gif_path_or_img_list: Union[str, Sequence], _position: tuple[int, int], size: tuple[int, int], updateGap: int = 1) -> AnimatedImage:
         imgList: list = []
         # 如果是gif文件
         if isinstance(gif_path_or_img_list, str):
@@ -70,9 +50,7 @@ class Loader:
 
     # 普通文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class
     @staticmethod
-    def static_text(
-        txt: strint, _color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False
-    ) -> StaticTextSurface:
+    def static_text(txt: strint, _color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False) -> StaticTextSurface:
         return StaticTextSurface(str(txt), pos[0], pos[1], size, _color, ifBold, ifItalic)
 
     # 高级文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号

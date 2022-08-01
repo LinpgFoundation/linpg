@@ -1,5 +1,6 @@
 from .base import *
 
+
 # 设置参数管理系统
 class Setting:
 
@@ -51,6 +52,7 @@ class Setting:
         set_value_by_keys(cls.__SETTING_DATA, key, value)
 
     """其他常用的重要参数"""
+
     # 文字名称
     @classmethod
     def get_font(cls) -> str:

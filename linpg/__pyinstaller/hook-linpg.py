@@ -1,4 +1,5 @@
 import os
+
 import linpg
 
 __LINPG_PATH: str = linpg.__path__[0]

@@ -1,5 +1,7 @@
 import time
+
 from .scrollbar import *
+
 
 # 输入框Abstract，请勿实体化
 class AbstractInputBox(GameObject2d, metaclass=ABCMeta):
@@ -93,9 +95,7 @@ class SingleLineInputBox(AbstractInputBox):
 
     def _reset_inputbox_width(self) -> None:
         if self._text is not None and len(self._text) > 0:
-            self._input_box.set_width(
-                max(self._default_width, self._FONT.estimate_text_width(self._text) + self._FONT.size * 3 // 5)
-            )
+            self._input_box.set_width(max(self._default_width, self._FONT.estimate_text_width(self._text) + self._FONT.size * 3 // 5))
         else:
             self._input_box.set_width(self._default_width)
 
@@ -131,13 +131,7 @@ class SingleLineInputBox(AbstractInputBox):
             _surface.blit(font_t, (self.x + self._padding, self.y + (self._input_box.height - font_t.get_height()) // 2))
         if with_holder is True:
             if int(time.time() % 2) == 0 or len(Controller.get_events()) > 0:
-                _surface.blit(
-                    self._holder,
-                    (
-                        self.x + self._padding + self._FONT.estimate_text_width(self._text[: self._holder_index]),
-                        self.y + self._padding,
-                    ),
-                )
+                _surface.blit(self._holder, (self.x + self._padding + self._FONT.estimate_text_width(self._text[: self._holder_index]), self.y + self._padding))
 
     # 画出内容
     def draw(self, _surface: ImageSurface) -> None:
@@ -151,10 +145,7 @@ class SingleLineInputBox(AbstractInputBox):
                 else:
                     self._add_char(event.unicode)
             elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and self._active is True:
-                if (
-                    self.x <= Controller.mouse.x <= self.x + self._input_box.width
-                    and self.y <= Controller.mouse.y <= self.y + self._input_box.height
-                ):
+                if self.x <= Controller.mouse.x <= self.x + self._input_box.width and self.y <= Controller.mouse.y <= self.y + self._input_box.height:
                     self._reset_holder_index(Controller.mouse.x)
                 else:
                     self._active = False
@@ -228,9 +219,7 @@ class MultipleLinesInputBox(AbstractInputBox):
     def _add_char(self, char: str) -> None:
         if len(char) > 0:
             if "\n" not in char:
-                self._text[self.lineId] = (
-                    self._text[self.lineId][: self._holder_index] + char + self._text[self.lineId][self._holder_index :]
-                )
+                self._text[self.lineId] = self._text[self.lineId][: self._holder_index] + char + self._text[self.lineId][self._holder_index :]
                 self._holder_index += len(char)
                 self._reset_inputbox_width()
             else:
@@ -253,9 +242,7 @@ class MultipleLinesInputBox(AbstractInputBox):
     def _remove_char(self, action: str) -> None:
         if action == "ahead":
             if self._holder_index > 0:
-                self._text[self.lineId] = (
-                    self._text[self.lineId][: self._holder_index - 1] + self._text[self.lineId][self._holder_index :]
-                )
+                self._text[self.lineId] = self._text[self.lineId][: self._holder_index - 1] + self._text[self.lineId][self._holder_index :]
                 self._holder_index -= 1
             elif self.lineId > 0:
                 # 如果当前行有内容
@@ -270,9 +257,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                     self._holder_index = len(self._text[self.lineId])
         elif action == "behind":
             if self._holder_index < len(self._text[self.lineId]):
-                self._text[self.lineId] = (
-                    self._text[self.lineId][: self._holder_index] + self._text[self.lineId][self._holder_index + 1 :]
-                )
+                self._text[self.lineId] = self._text[self.lineId][: self._holder_index] + self._text[self.lineId][self._holder_index + 1 :]
             elif self.lineId < len(self._text) - 1:
                 # 如果下一行有内容
                 if len(self._text[self.lineId + 1]) > 0:
@@ -351,10 +336,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                     else:
                         self._add_char(event.unicode)
                 elif event.type == MOUSE_BUTTON_DOWN and event.button == 1:
-                    if (
-                        self.x <= Controller.mouse.x <= self.x + self._input_box.width
-                        and self.y <= Controller.mouse.y <= self.y + self._input_box.height
-                    ):
+                    if self.x <= Controller.mouse.x <= self.x + self._input_box.width and self.y <= Controller.mouse.y <= self.y + self._input_box.height:
                         self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
                     else:
                         self._active = False
@@ -371,8 +353,7 @@ class MultipleLinesInputBox(AbstractInputBox):
             for i in range(len(self._text)):
                 # 画出文字
                 _surface.blit(
-                    self._FONT.render(self._text[i], self._text_color, with_bounding=True),
-                    (self.x + self._FONT.size // 4, self.y + i * self._default_height),
+                    self._FONT.render(self._text[i], self._text_color, with_bounding=True), (self.x + self._FONT.size // 4, self.y + i * self._default_height)
                 )
         if self._active:
             # 画出输入框
@@ -382,9 +363,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                 _surface.blit(
                     self._holder,
                     (
-                        self.x
-                        + self._FONT.size // 10
-                        + self._FONT.estimate_text_width(self._text[self.lineId][: self._holder_index]),
+                        self.x + self._FONT.size // 10 + self._FONT.estimate_text_width(self._text[self.lineId][: self._holder_index]),
                         self.y + self.lineId * self._default_height,
                     ),
                 )
@@ -397,10 +376,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                     "external input",
                     [
                         [PySimpleGUI.Multiline(default_text=self.get_raw_text(), key="-CONTENT-")],
-                        [
-                            PySimpleGUI.Submit(Lang.get_text("Global", "save")),
-                            PySimpleGUI.Cancel(Lang.get_text("Global", "cancel")),
-                        ],
+                        [PySimpleGUI.Submit(Lang.get_text("Global", "save")), PySimpleGUI.Cancel(Lang.get_text("Global", "cancel"))],
                     ],
                     keep_on_top=True,
                 ).read(close=True)

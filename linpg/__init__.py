@@ -2,8 +2,9 @@
 结构:
 exception -> config -> lang -> tools -> basic -> core -> ui -> dialog -> battle -> api
 """
-from .interface import *
 from platform import python_version
+
+from .interface import *
 
 """整理linpg内部"""
 clean_up: bool = False

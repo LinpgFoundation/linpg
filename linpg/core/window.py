@@ -1,9 +1,11 @@
 import PySimpleGUI  # type: ignore
 from pygame._sdl2 import Renderer, Window
+
 from .frame import *
 
 # 设置PySimpleGUI主题
 PySimpleGUI.theme(Specification.get("PySimpleGUITheme"))
+
 
 # 确认窗口
 class ConfirmMessageWindow:

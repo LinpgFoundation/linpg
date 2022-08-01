@@ -1,5 +1,6 @@
 from .converter import *
 
+
 # 对话制作器
 class DialogEditor(DialogConverter):
 
@@ -80,9 +81,7 @@ class DialogEditor(DialogConverter):
         # 加载动态背景图片
         if os.path.exists(Specification.get_directory("movie")):
             for imgPath in glob(Specification.get_directory("movie", "*")):
-                self.__UIContainerRight_bg.set(
-                    os.path.basename(imgPath), Images.resize(VideoSurface.get_preview(imgPath), (container_width * 4 // 5, None))
-                )
+                self.__UIContainerRight_bg.set(os.path.basename(imgPath), Images.resize(VideoSurface.get_preview(imgPath), (container_width * 4 // 5, None)))
         self.__UIContainerRight_bg.distance_between_item = Display.get_height() // 50
         self.__current_select_bg_name = None
         self.__current_select_bg_copy = None
@@ -116,9 +115,7 @@ class DialogEditor(DialogConverter):
         font_size: int = button_width // 3
         # 重置控制容器转换的按钮
         self.__button_select_background.set_pos(0, button_y * 3 // 2)
-        self.__button_select_background.set_text(
-            ButtonComponent.text(str(CONFIG["background"]), font_size * 2 / 3, alpha_when_not_hover=150)
-        )
+        self.__button_select_background.set_text(ButtonComponent.text(str(CONFIG["background"]), font_size * 2 / 3, alpha_when_not_hover=150))
         self.__button_select_background.set_auto_resize(True)
         self.__button_select_npc.set_pos(0, button_y * 3 // 2)
         self.__button_select_npc.set_text(ButtonComponent.text(str(CONFIG["npc"]), font_size * 2 // 3, alpha_when_not_hover=150))
@@ -151,9 +148,7 @@ class DialogEditor(DialogConverter):
         # 从配置文件中加载数据
         self._load_content()
         # 移除按钮
-        self.__remove_npc_button = Font.render_description_box(
-            CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE, self._FONT_SIZE // 5, Colors.WHITE
-        )
+        self.__remove_npc_button = Font.render_description_box(CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE, self._FONT_SIZE // 5, Colors.WHITE)
         # 初始化用于选择小说脚本的key的下拉菜单
         self.__dialog_part_selection.clear()
         self.__dialog_part_selection.set_pos(button_width * 11, button_y + font_size)
@@ -165,9 +160,7 @@ class DialogEditor(DialogConverter):
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
-        original_data: dict = (
-            Config.load_file(self.get_dialog_file_location()) if os.path.exists(self.get_dialog_file_location()) else {}
-        )
+        original_data: dict = Config.load_file(self.get_dialog_file_location()) if os.path.exists(self.get_dialog_file_location()) else {}
         original_data["dialogs"] = self.__split_the_stuff_need_save()
         return original_data
 
@@ -368,10 +361,9 @@ class DialogEditor(DialogConverter):
         else:
             for key, dialog_data in self.dialog_content.items():
                 if dialog_data["next_dialog_id"] is not None:
-                    if (
-                        dialog_data["next_dialog_id"]["type"] == "default"
-                        or dialog_data["next_dialog_id"]["type"] == "changeScene"
-                    ) and dialog_data["next_dialog_id"]["target"] == child_node:
+                    if (dialog_data["next_dialog_id"]["type"] == "default" or dialog_data["next_dialog_id"]["type"] == "changeScene") and dialog_data[
+                        "next_dialog_id"
+                    ]["target"] == child_node:
                         return str(key)
                     elif dialog_data["next_dialog_id"]["type"] == "option":
                         for optionChoice in dialog_data["next_dialog_id"]["target"]:
@@ -396,11 +388,7 @@ class DialogEditor(DialogConverter):
                         # 等待玩家选择一个选项
                         if Controller.get_event("confirm") and self._dialog_options_container.item_being_hovered >= 0:
                             # 获取下一个对话的id
-                            return str(
-                                self._current_dialog_content["next_dialog_id"]["target"][
-                                    self._dialog_options_container.item_being_hovered
-                                ]["id"]
-                            )
+                            return str(self._current_dialog_content["next_dialog_id"]["target"][self._dialog_options_container.item_being_hovered]["id"])
                         elif Controller.get_event("back"):
                             self._dialog_options_container.clear()
                             self._dialog_options_container.set_visible(False)
@@ -470,9 +458,7 @@ class DialogEditor(DialogConverter):
                             self.dialog_content[nextId]["last_dialog_id"] = None
                             self._update_scene(nextId)
                         else:
-                            EXCEPTION.inform(
-                                "Cannot delete this dialog because there is no valid last and next id; you need to delete it manually."
-                            )
+                            EXCEPTION.inform("Cannot delete this dialog because there is no valid last and next id; you need to delete it manually.")
                     else:
                         EXCEPTION.inform("Cannot delete head; you need to delete it manually.")
                 elif self.__buttons_ui_container.item_being_hovered == "next":

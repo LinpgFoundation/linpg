@@ -2,6 +2,7 @@ import json
 from copy import deepcopy
 from glob import glob
 from typing import Any, Final, Optional
+
 from ..exception import EXCEPTION, os
 
 # 尝试导入yaml库
@@ -13,6 +14,7 @@ try:
 except Exception:
     pass
 
+
 # 根据keys查找值，最后返回一个复制的对象
 def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) -> object:
     pointer = dict_to_check
@@ -21,11 +23,7 @@ def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) ->
             pointer = pointer[key]
         except KeyError:
             if warning is True:
-                EXCEPTION.fatal(
-                    'Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'.format(
-                        key
-                    )
-                )
+                EXCEPTION.fatal('Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'.format(key))
             return key
     return deepcopy(pointer)
 
@@ -44,11 +42,7 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Optional[object],
                 pointer[keys[index]] = value
         except KeyError:
             if warning is True:
-                EXCEPTION.fatal(
-                    'Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'.format(
-                        keys[index]
-                    )
-                )
+                EXCEPTION.fatal('Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'.format(keys[index]))
 
 
 # 配置文件管理模块
@@ -85,19 +79,19 @@ class Config:
                     EXCEPTION.fatal("Linpg can only load json and yaml (when pyyaml is installed).")
 
     # 加载配置文件
-    @staticmethod
-    def load_file(path: str) -> dict:
-        return Config.__load_file(path)
+    @classmethod
+    def load_file(cls, path: str) -> dict:
+        return cls.__load_file(path)
 
     # 加载配置文件，并根据key（s）返回对应的数据
-    @staticmethod
-    def load(path: str, *key: str) -> Any:
-        return get_value_by_keys(Config.__load_file(path), key)
+    @classmethod
+    def load(cls, path: str, *key: str) -> Any:
+        return get_value_by_keys(cls.__load_file(path), key)
 
     # 加载内部配置文件
-    @staticmethod
-    def load_internal_file(path: str) -> dict:
-        return Config.__load_file(os.path.join(os.path.dirname(__file__), path))
+    @classmethod
+    def load_internal_file(cls, path: str) -> dict:
+        return cls.__load_file(os.path.join(os.path.dirname(__file__), path))
 
     # 配置文件保存
     @staticmethod
@@ -112,74 +106,22 @@ class Config:
                 if _YAML_INITIALIZED is True:
                     yaml.dump(data, f, allow_unicode=True)
                 else:
-                    EXCEPTION.fatal(
-                        "You cannot save .yaml file because yaml is not imported successfully. Maybe try to reinstall PyYaml and try again."
-                    )
+                    EXCEPTION.fatal("You cannot save .yaml file because yaml is not imported successfully. Maybe try to reinstall PyYaml and try again.")
             elif path.endswith(".json") or path.endswith(".linpg.meta"):
                 json.dump(data, f, indent=4, ensure_ascii=False, sort_keys=True)
             else:
-                EXCEPTION.fatal(
-                    "Linpg cannot save this kind of config, and can only save json and yaml (if pyyaml is installed)."
-                )
+                EXCEPTION.fatal("Linpg cannot save this kind of config, and can only save json and yaml (if pyyaml is installed).")
 
     # 整理配置文件（读取了再存）
-    @staticmethod
-    def organize(pathname: str) -> None:
+    @classmethod
+    def organize(cls, pathname: str) -> None:
         for configFilePath in glob(pathname):
-            Config.save(configFilePath, Config.load_file(configFilePath))
+            cls.save(configFilePath, cls.load_file(configFilePath))
 
     # 整理内部配置文件
-    @staticmethod
-    def organize_internal() -> None:
-        Config.organize(os.path.join(os.path.dirname(__file__), "*.json"))
-
-    # 优化中文文档
-    @staticmethod
-    def optimize_cn_content(filePath: str) -> None:
-        # 读取原文件的数据
-        with open(filePath, "r", encoding="utf-8") as f:
-            file_lines = f.readlines()
-        # 优化字符串
-        for i in range(len(file_lines)):
-            # 如果字符串不为空
-            if len(file_lines[i]) > 1:
-                # 替换字符
-                file_lines[i] = (
-                    file_lines[i]
-                    .replace("。。。", "... ")
-                    .replace("。", ". ")
-                    .replace("？？：", "??: ")
-                    .replace("？？", "?? ")
-                    .replace("？", "? ")
-                    .replace("！！", "!! ")
-                    .replace("！", "! ")
-                    .replace("：", ": ")
-                    .replace("，", ", ")
-                    .replace("“", '"')
-                    .replace("”", '"')
-                    .replace("‘", "'")
-                    .replace("’", "'")
-                    .replace("（", " (")
-                    .replace("）", ") ")
-                    .replace("  ", " ")
-                )
-                # 移除末尾的空格
-                try:
-                    while file_lines[i][-2] == " ":
-                        file_lines[i] = file_lines[i][:-2] + "\n"
-                except Exception:
-                    pass
-        # 删除原始文件
-        os.remove(filePath)
-        # 创建并写入新数据
-        with open(filePath, "w", encoding="utf-8") as f:
-            f.writelines(file_lines)
-
-    # 优化文件夹中特定文件的中文字符串
-    @staticmethod
-    def optimize_cn_content_in_folder(pathname: str) -> None:
-        for configFilePath in glob(pathname):
-            Config.optimize_cn_content(configFilePath)
+    @classmethod
+    def organize_internal(cls) -> None:
+        cls.organize(os.path.join(os.path.dirname(__file__), "*.json"))
 
     # 解决路径冲突
     @classmethod

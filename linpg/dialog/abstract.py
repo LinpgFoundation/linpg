@@ -1,5 +1,6 @@
 from .script import *
 
+
 # 视觉小说系统接口
 class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
     def __init__(self) -> None:
@@ -11,9 +12,7 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 当前对话的id
         self._dialog_id: str = "head"
         # 黑色Void帘幕
-        self._black_bg = StaticImage(
-            Surfaces.colored(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height()
-        )
+        self._black_bg = StaticImage(Surfaces.colored(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height())
         # 对话文件路径
         self._dialog_folder_path: str = "Data"
         # 背景图片
@@ -51,23 +50,15 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
     def get_dialog_file_location(self, lang: str = "") -> str:
         if len(lang) == 0:
             lang = Setting.get_language()
-        return os.path.join(
-            self.get_dialog_folder_location(), "chapter{0}_dialogs_{1}.{2}".format(self._chapter_id, lang, Config.get_file_type())
-        )
+        return os.path.join(self.get_dialog_folder_location(), "chapter{0}_dialogs_{1}.{2}".format(self._chapter_id, lang, Config.get_file_type()))
 
     # 获取对话文件的主语言
     def get_default_lang(self) -> str:
         return str(
-            Config.load(
-                os.path.join(self._dialog_folder_path, self._chapter_type, "info.{}".format(Config.get_file_type())),
-                "default_lang",
-            )
+            Config.load(os.path.join(self._dialog_folder_path, self._chapter_type, "info.{}".format(Config.get_file_type())), "default_lang")
             if self._project_name is None
             else Config.load(
-                os.path.join(
-                    self._dialog_folder_path, self._chapter_type, self._project_name, "info.{}".format(Config.get_file_type())
-                ),
-                "default_lang",
+                os.path.join(self._dialog_folder_path, self._chapter_type, self._project_name, "info.{}".format(Config.get_file_type())), "default_lang"
             )
         )
 
@@ -100,9 +91,7 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
         if safe_mode is True:
             for key in ("character_images", "background_image", "narrator", "contents"):
                 if key not in currentDialogContent:
-                    EXCEPTION.fatal(
-                        'Cannot find critical key "{0}" in part "{1}" with id "{2}".'.format(key, self._part, self._dialog_id)
-                    )
+                    EXCEPTION.fatal('Cannot find critical key "{0}" in part "{1}" with id "{2}".'.format(key, self._part, self._dialog_id))
         return currentDialogContent
 
     # 检测当前对话是否带有合法的下一个对话对象的id
@@ -111,9 +100,7 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
         return _next is not None and len(_next) > 0
 
     # 初始化关键参数
-    def _initialize(  # type: ignore[override]
-        self, chapterType: str, chapterId: int, part: str, projectName: Optional[str], dialogId: str = "head"
-    ) -> None:
+    def _initialize(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str], dialogId: str = "head") -> None:  # type: ignore[override]
         super()._initialize(chapterType, chapterId, projectName)
         # 对白id
         self._dialog_id = dialogId
@@ -131,17 +118,13 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
             dialogData_t: dict = dict(Config.load(self.get_dialog_file_location(), "dialogs", self._part))
             # 如果该dialog文件是另一个语言dialog文件的子类
             if (default_lang_of_dialog := self.get_default_lang()) != Setting.get_language():
-                self._dialog_data[self._part] = dict(
-                    Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._part)
-                )
+                self._dialog_data[self._part] = dict(Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._part))
                 for key, values in dialogData_t.items():
                     self._dialog_data[self._part][key].update(values)
             else:
                 self._dialog_data[self._part] = dialogData_t
         else:
-            self._dialog_data[self._part] = dict(
-                Config.load(self.get_dialog_file_location(self.get_default_lang()), "dialogs", self._part)
-            )
+            self._dialog_data[self._part] = dict(Config.load(self.get_dialog_file_location(self.get_default_lang()), "dialogs", self._part))
         # 确认dialog数据合法
         if len(self.dialog_content) == 0:
             EXCEPTION.fatal('The selected dialog dict "{}" has no content inside.'.format(self._part))
@@ -168,9 +151,7 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
                 elif os.path.exists(_path := Specification.get_directory("movie", self.__background_image_name)):
                     self.__background_image_surface = VideoSurface(_path, with_audio=False)
                 else:
-                    EXCEPTION.fatal(
-                        "Cannot find a background image or video file called '{}'.".format(self.__background_image_name)
-                    )
+                    EXCEPTION.fatal("Cannot find a background image or video file called '{}'.".format(self.__background_image_name))
             else:
                 self.__background_image_surface = self._black_bg.copy()
 
@@ -218,21 +199,13 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
 
     def _get_dialog_options_container_ready(self) -> None:
         self._dialog_options_container.clear()
-        optionBox_y_base: int = (
-            Display.get_height() * 3 // 16 - len(self._current_dialog_content["next_dialog_id"]["target"]) * self._FONT_SIZE
-        )
+        optionBox_y_base: int = Display.get_height() * 3 // 16 - len(self._current_dialog_content["next_dialog_id"]["target"]) * self._FONT_SIZE
         for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
             optionButton: Button = Button.load("<&ui>option.png", (0, 0), (0, 0))
             optionButton.set_hover_img(Images.quickly_load("<&ui>option_selected.png"))
             optionButton.set_auto_resize(True)
-            optionButton.set_text(
-                ButtonComponent.text(
-                    str(self._current_dialog_content["next_dialog_id"]["target"][i]["text"]), self._FONT_SIZE, Colors.WHITE
-                )
-            )
-            optionButton.set_pos(
-                (Display.get_width() - optionButton.get_width()) / 2, (i + 1) * 4 * self._FONT_SIZE + optionBox_y_base
-            )
+            optionButton.set_text(ButtonComponent.text(str(self._current_dialog_content["next_dialog_id"]["target"][i]["text"]), self._FONT_SIZE, Colors.WHITE))
+            optionButton.set_pos((Display.get_width() - optionButton.get_width()) / 2, (i + 1) * 4 * self._FONT_SIZE + optionBox_y_base)
             self._dialog_options_container.append(optionButton)
         self._dialog_options_container.set_visible(True)
 

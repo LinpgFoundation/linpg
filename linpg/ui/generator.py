@@ -1,5 +1,6 @@
 from .progressbar import *
 
+
 # ui编译器
 class UiGenerator:
 
@@ -41,11 +42,7 @@ class UiGenerator:
     @classmethod
     def __convert_number(cls, item: dict, key: str, value_in_case_percentage: int, custom_values: dict) -> int:
         if key not in item:
-            EXCEPTION.fatal(
-                'You have to set "{0}" for "{1}".'.format(key, item["name"])
-                if "name" in item
-                else 'You have to set "{}".'.format(key)
-            )
+            EXCEPTION.fatal('You have to set "{0}" for "{1}".'.format(key, item["name"]) if "name" in item else 'You have to set "{}".'.format(key))
         elif isinstance(item[key], float):
             return int(item[key])
         elif not isinstance(item[key], int):
@@ -65,9 +62,7 @@ class UiGenerator:
 
     # 检测坐标是否合法
     @classmethod
-    def __convert_coordinate(
-        cls, item: dict, key: str, value_in_case_center: int, value_in_case_percentage: int, custom_values: dict
-    ) -> int:
+    def __convert_coordinate(cls, item: dict, key: str, value_in_case_center: int, value_in_case_percentage: int, custom_values: dict) -> int:
         if key not in item:
             return 0
         elif not isinstance(item[key], int):
@@ -99,7 +94,7 @@ class UiGenerator:
                         break
                 if find_close_bracket is True:
                     find_close_bracket = False
-                    final_text_list.append(Lang.get_text_by_keys(tuple([b.strip() for b in text[text_index + 1 : a].split(",")])))
+                    final_text_list.append(Lang.get_text_by_keys(tuple(b.strip() for b in text[text_index + 1 : a].split(","))))
                     text_index = a
                 else:
                     EXCEPTION.fatal("Cannot find close bracket for text: {}".format(text))
@@ -110,13 +105,10 @@ class UiGenerator:
 
     # 生成容器类
     @classmethod
-    def __generate_container(
-        cls, data: dict, custom_values: dict, max_width: int = -1, max_height: int = -1
-    ) -> GameObjectsDictContainer:
+    def __generate_container(cls, data: dict, custom_values: dict, max_width: int = -1, max_height: int = -1) -> GameObjectsDictContainer:
         # 如果没有提供最大高度，则默认使用屏幕高度
         if max_height < 0:
-            max_height = Display.get_height()
-            # 如果没有提供最大宽度，则默认使用屏幕宽度
+            max_height = Display.get_height()  # 如果没有提供最大宽度，则默认使用屏幕宽度
         if max_width < 0:
             max_width = Display.get_width()
         # 转换尺寸
@@ -158,11 +150,7 @@ class UiGenerator:
                 max_height = Display.get_height()
             item_t: GameObject2d
             # 如果对象是文字
-            if (
-                data["type"] == "text"
-                or data["type"] == "resize_when_hovered_text"
-                or data["type"] == "drop_down_single_choice_list"
-            ):
+            if data["type"] == "text" or data["type"] == "resize_when_hovered_text" or data["type"] == "drop_down_single_choice_list":
                 # 转换字体大小
                 font_size: int = cls.__convert_number(data, "font_size", max_height, custom_values)
                 # 补充可选参数
@@ -180,9 +168,7 @@ class UiGenerator:
                 if data["type"] == "text" or data["type"] == "static_text":
                     item_t = StaticTextSurface(data["src"], 0, 0, font_size, data["color"], data["bold"], data["italic"])
                 elif data["type"] == "resize_when_hovered_text":
-                    item_t = ResizeWhenHoveredTextSurface(
-                        str(data["src"]), 0, 0, font_size, font_size * 3 / 2, data["color"], data["bold"], data["italic"]
-                    )
+                    item_t = ResizeWhenHoveredTextSurface(str(data["src"]), 0, 0, font_size, font_size * 3 / 2, data["color"], data["bold"], data["italic"])
                 else:
                     item_t = DropDownList(data["src"], 0, 0, font_size, data["color"])
             else:
@@ -209,9 +195,7 @@ class UiGenerator:
                         # 转换尺寸
                         _icon_width: int = cls.__convert_number(data["icon"], "width", max_width, custom_values)
                         _icon_height: int = cls.__convert_number(data["icon"], "height", max_height, custom_values)
-                        item_t.set_icon(
-                            ButtonComponent.icon(data["icon"]["src"], (_icon_width, _icon_height), data["alpha_when_not_hover"])
-                        )
+                        item_t.set_icon(ButtonComponent.icon(data["icon"]["src"], (_icon_width, _icon_height), data["alpha_when_not_hover"]))
                     if "scale_for_resizing_width" in data:
                         item_t.set_scale_for_resizing_width(data["scale_for_resizing_width"])
                     if "scale_for_resizing_height" in data:
@@ -220,7 +204,7 @@ class UiGenerator:
                         item_t.set_auto_resize(data["auto_resize"])
                     if "description" in data:
                         item_t.set_description(cls.__load_text(data["description"]))
-                    if not "name" in data:
+                    if "name" not in data:
                         EXCEPTION.fatal("You have to set a name for button type.")
                 elif data["type"] == "progress_bar_adjuster":
                     # 确认按钮存在
@@ -242,7 +226,7 @@ class UiGenerator:
                         cls.__convert_number(data["indicator"], "height", object_height, custom_values),
                         data["mode"],
                     )
-                    if not "name" in data:
+                    if "name" not in data:
                         EXCEPTION.fatal("You have to set a name for button type.")
                 elif data["type"] == "image":
                     item_t = DynamicImage(data["src"], 0, 0, object_width, object_height)

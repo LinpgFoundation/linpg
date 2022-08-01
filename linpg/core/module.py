@@ -1,5 +1,7 @@
 from abc import abstractmethod
+
 from .system import *
+
 
 # 坐标类
 class Coordinate:
@@ -230,9 +232,7 @@ class GameObject2d(Coordinate):
 
     # 检测自身是否覆盖了另一个2d游戏对象
     def is_overlapped_with(self, _rect: "GameObject2d") -> bool:
-        return max(self.left, _rect.left) < min(self.right, _rect.right) and max(self.top, _rect.top) < min(
-            self.bottom, _rect.bottom
-        )
+        return max(self.left, _rect.left) < min(self.right, _rect.right) and max(self.top, _rect.top) < min(self.bottom, _rect.bottom)
 
     # 将图片直接画到surface上
     def draw(self, _surface: ImageSurface) -> None:

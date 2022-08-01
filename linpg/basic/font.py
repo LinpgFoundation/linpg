@@ -2,6 +2,7 @@ from .mixer import *
 
 _FONT_IS_NOT_INITIALIZED_MSG: str = "Font is not initialized!"
 
+
 # 文字渲染模块
 class FontGenerator:
     def __init__(self) -> None:
@@ -44,9 +45,7 @@ class FontGenerator:
             if os.path.exists(font_path := Specification.get_directory("font", "{}.ttf".format(Setting.get_font()))):
                 self.__FONT = pygame.font.Font(font_path, self.__SIZE)
             else:
-                EXCEPTION.warn(
-                    "Cannot find the {}.ttf file, the engine's font has been changed to default.".format(Setting.get_font())
-                )
+                EXCEPTION.warn("Cannot find the {}.ttf file, the engine's font has been changed to default.".format(Setting.get_font()))
                 Setting.set_font("arial")
                 Setting.set_font_type("default")
                 self.__FONT = pygame.font.SysFont(Setting.get_font(), self.__SIZE, ifBold, ifItalic)
@@ -79,9 +78,7 @@ class FontGenerator:
             self.update(size, ifBold, ifItalic)
 
     # 渲染文字
-    def render(
-        self, txt: strint, color: color_liked, background_color: Optional[color_liked] = None, with_bounding: bool = False
-    ) -> ImageSurface:
+    def render(self, txt: strint, color: color_liked, background_color: Optional[color_liked] = None, with_bounding: bool = False) -> ImageSurface:
         if self.__SIZE > 0:
             if not isinstance(txt, (str, int)):
                 EXCEPTION.fatal("The text must be a unicode or bytes, not {}".format(txt))
@@ -177,14 +174,7 @@ class Font:
         thickness: int = 2,
     ) -> ImageSurface:
         font_surface = cls.render(txt, color, size, ifBold, ifItalic, with_bounding=True)
-        des_surface = Surfaces.colored(
-            (font_surface.get_width() + padding * 2, font_surface.get_height() + padding * 2), background_color
-        )
-        Draw.rect(
-            des_surface,
-            Colors.get(color if outline_color is None else outline_color),
-            ((0, 0), des_surface.get_size()),
-            thickness,
-        )
+        des_surface = Surfaces.colored((font_surface.get_width() + padding * 2, font_surface.get_height() + padding * 2), background_color)
+        Draw.rect(des_surface, Colors.get(color if outline_color is None else outline_color), ((0, 0), des_surface.get_size()), thickness)
         des_surface.blit(font_surface, (padding, padding))
         return des_surface

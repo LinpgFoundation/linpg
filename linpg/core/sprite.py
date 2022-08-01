@@ -1,4 +1,5 @@
 import math
+
 from .video import *
 
 
@@ -13,16 +14,14 @@ class SpriteImage:
         if not self.__PATH.startswith("<"):
             self.__DICTIONARY.update(Config.load_file(self.__PATH + ".linpg.meta"))
         elif self.__PATH != "<NULL>":
-            self.__DICTIONARY.update(
-                Config.load_file(Images.generate_path_according_to_prefix(self.__PATH).removesuffix(".zip") + ".linpg.meta")
-            )
+            self.__DICTIONARY.update(Config.load_file(Images.generate_path_according_to_prefix(self.__PATH).removesuffix(".zip") + ".linpg.meta"))
 
     # 获取一个图片
     def get(self, key: str) -> Union[ImageSurface, tuple]:
         return (
             self.__SHEET.subsurface(self.__DICTIONARY[key])
             if not isinstance(self.__DICTIONARY[key][0], list)
-            else tuple([self.__SHEET.subsurface(_data) for _data in self.__DICTIONARY[key]])
+            else tuple(self.__SHEET.subsurface(_data) for _data in self.__DICTIONARY[key])
         )
 
     # 是否存在key

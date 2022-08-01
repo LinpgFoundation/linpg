@@ -1,11 +1,7 @@
 # 编译方法
 def compile_file(_path: str, keep_c: bool, debug_mode: bool, _compiler_directives: dict, _functions: tuple) -> None:
     if debug_mode is True:
-        _functions[0](
-            ext_modules=_functions[1](
-                _path, show_all_warnings=True, annotate=True, language_level="3", compiler_directives=_compiler_directives
-            )
-        )
+        _functions[0](ext_modules=_functions[1](_path, show_all_warnings=True, annotate=True, language_level="3", compiler_directives=_compiler_directives))
     else:
         _functions[0](ext_modules=_functions[1](_path, language_level="3", compiler_directives=_compiler_directives))
     # 删除c文件
@@ -64,10 +60,7 @@ if __name__ == "__main__":
                     # 如果使用多线程
                     if cls.__enable_multiprocessing is True:
                         cls.__compile_processes.append(
-                            Process(
-                                target=compile_file,
-                                args=(path, cls.__keep_c, cls.__debug_mode, cls.__compiler_directives, cls.__FUNCTIONS),
-                            )
+                            Process(target=compile_file, args=(path, cls.__keep_c, cls.__debug_mode, cls.__compiler_directives, cls.__FUNCTIONS))
                         )
                     # 如果不使用多线程
                     else:

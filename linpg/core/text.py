@@ -95,14 +95,7 @@ class StaticTextSurface(AbstractTextSurface):
 
     def _update_text_surface(self) -> None:
         self.__text_surface = (
-            Font.render(
-                self.get_text(),
-                self.get_color(),
-                self.get_font_size(),
-                self.get_bold(),
-                self.get_italic(),
-                with_bounding=self.get_with_bounding(),
-            )
+            Font.render(self.get_text(), self.get_color(), self.get_font_size(), self.get_bold(), self.get_italic(), with_bounding=self.get_with_bounding())
             if self.get_text() != ""
             else None
         )
@@ -172,9 +165,7 @@ class DynamicTextSurface(AbstractTextSurface):
 
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
-            _text_surface: ImageSurface = self.__FONT_GENERATOR.render(
-                self.get_text(), self.get_color(), with_bounding=self.get_with_bounding()
-            )
+            _text_surface: ImageSurface = self.__FONT_GENERATOR.render(self.get_text(), self.get_color(), with_bounding=self.get_with_bounding())
             if self.get_alpha() != 255:
                 _text_surface.set_alpha(255)
             _surface.blit(_text_surface, Coordinates.add(self.pos, offSet))

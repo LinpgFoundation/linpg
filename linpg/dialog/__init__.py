@@ -4,6 +4,7 @@ component -> character -> script -> abstract -> dialog -> converter -> editor
 """
 from .editor import *
 
+
 # 在指定目录创建项目
 def create_new_project(dir_path: str, config_type: str = "json") -> None:
     # 如果项目文件夹不存在，则创建一个

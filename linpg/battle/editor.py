@@ -1,5 +1,6 @@
 from .battle import *
 
+
 # 地图编辑器系统
 class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
     def __init__(self) -> None:
@@ -15,9 +16,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self.__entitiesImagesContainers: list = []
         self.__entitiesImagesContainerUsingIndex: int = -1
         self.__envImgContainer: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(None, 0, 0, 0, 0, "vertical")
-        self.__decorationsImgContainer: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(
-            None, 0, 0, 0, 0, "vertical"
-        )
+        self.__decorationsImgContainer: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(None, 0, 0, 0, 0, "vertical")
         # 用于储存即将发下的物品的具体参数
         self.__object_to_put_down: dict = {}
         # 未保存离开时的警告
@@ -79,14 +78,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         # 确保地图初始化
         _map_p: Optional[list] = _data.get("map")
         if _map_p is None or len(_map_p) == 0:
-            lookup_table: list[str] = [
-                "TileSnow01",
-                "TileSnow01ToStone01",
-                "TileSnow01ToStone02",
-                "TileSnow02",
-                "TileSnow02ToStone01",
-                "TileSnow02ToStone02",
-            ]
+            lookup_table: list[str] = ["TileSnow01", "TileSnow01ToStone01", "TileSnow01ToStone02", "TileSnow02", "TileSnow02ToStone01", "TileSnow02ToStone02"]
             block_y: int = 50
             block_x: int = 50
             _data["map"] = {
@@ -117,9 +109,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             )
             // 2
         )
-        self.__right_container_buttons.get("select_decoration").set_left(
-            self.__right_container_buttons.get("select_block").right + padding
-        )
+        self.__right_container_buttons.get("select_decoration").set_left(self.__right_container_buttons.get("select_block").right + padding)
         self.__UIContainerRight.set_size(container_width, container_height)
         self.__UIContainerButtonRight = MovableImage(
             "<&ui>container_button.png",
@@ -151,16 +141,12 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         if DecorationImagesModule.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET is None:
             EXCEPTION.fatal("Image sprite sheet for default decorations is not loaded correctly!")
         for key, value in DecorationImagesModule.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.to_dict().items():
-            self.__decorationsImgContainer.set(
-                key, Images.resize(value if not isinstance(value, tuple) else value[0], (self._MAP.block_width / 3, None))
-            )
+            self.__decorationsImgContainer.set(key, Images.resize(value if not isinstance(value, tuple) else value[0], (self._MAP.block_width / 3, None)))
         # 加载自带的装饰物
         if DecorationImagesModule.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET is None:
             EXCEPTION.fatal("Image sprite sheet for custom decorations is not loaded correctly!")
         for key, value in DecorationImagesModule.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.to_dict().items():
-            self.__decorationsImgContainer.set(
-                key, Images.resize(value if not isinstance(value, tuple) else value[0], (self._MAP.block_width / 3, None))
-            )
+            self.__decorationsImgContainer.set(key, Images.resize(value if not isinstance(value, tuple) else value[0], (self._MAP.block_width / 3, None)))
         # 设置容器参数
         self.__decorationsImgContainer.set_item_per_line(4)
         self.__decorationsImgContainer.set_scroll_bar_pos("right")
@@ -186,31 +172,20 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         # 加载所有角色的图片文件
         for faction in os.listdir(EntitySpriteImageManager.SPRITES_PATH):
             newContainer: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(
-                None,
-                container_width // 40,
-                container_height * 3 // 10,
-                container_width * 19 // 20,
-                container_height * 3 // 5,
-                "horizontal",
-                faction,
+                None, container_width // 40, container_height * 3 // 10, container_width * 19 // 20, container_height * 3 // 5, "horizontal", faction
             )
             for img_name in os.listdir(os.path.join(EntitySpriteImageManager.SPRITES_PATH, faction)):
                 newContainer.set(
                     img_name,
                     Images.smoothly_resize(
-                        EntitySpriteImageManager.try_get_images(faction, img_name, "wait").get_image(0).get_image_copy(),
-                        (None, container_height // 3),
+                        EntitySpriteImageManager.try_get_images(faction, img_name, "wait").get_image(0).get_image_copy(), (None, container_height // 3)
                     ),
                 )
             newContainer.set_scroll_bar_pos("bottom")
             newContainer.distance_between_item = padding
             self.__entitiesImagesContainers.append(newContainer)
             newButton: Button = Button.load("<&ui>button.png", (0, 0), (0, 0), 100)
-            newButton.set_text(
-                ButtonComponent.text(
-                    Lang.get_text("General", faction), button_height // 2, Colors.BLACK, alpha_when_not_hover=100
-                )
-            )
+            newButton.set_text(ButtonComponent.text(Lang.get_text("General", faction), button_height // 2, Colors.BLACK, alpha_when_not_hover=100))
             newButton.set_auto_resize(True)
             if len(self.__bottom_container_buttons) > 0:
                 newButton.set_left(self.__bottom_container_buttons[len(self.__bottom_container_buttons) - 1].right + padding)
@@ -232,9 +207,9 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
     def draw(self, _surface: ImageSurface) -> None:
         UIContainerRight_offset_pos: tuple[int, int] = (self.__UIContainerButtonRight.right, 0)
         UIContainerBottom_offset_pos: tuple[int, int] = (0, self.__UIContainerButtonBottom.bottom)
-        self.__no_container_is_hovered = not self.__UIContainerRight.is_hovered(
-            UIContainerRight_offset_pos
-        ) and not self.__UIContainerBottom.is_hovered(UIContainerBottom_offset_pos)
+        self.__no_container_is_hovered = not self.__UIContainerRight.is_hovered(UIContainerRight_offset_pos) and not self.__UIContainerBottom.is_hovered(
+            UIContainerBottom_offset_pos
+        )
         # 如果鼠标与任何Container进行了互动
         if Controller.get_event("confirm") and len(self.__select_pos) <= 0:
             # 显示或隐藏右侧的容器
@@ -264,11 +239,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                         if decoration is not None:
                             self._MAP.remove_decoration(decoration)
                         self._MAP.add_decoration(
-                            {
-                                "image": self.__object_to_put_down["id"],
-                                "x": self._block_is_hovering[0],
-                                "y": self._block_is_hovering[1],
-                            },
+                            {"image": self.__object_to_put_down["id"], "x": self._block_is_hovering[0], "y": self._block_is_hovering[1]},
                             DataBase.get("Decorations", self.__object_to_put_down["id"]),
                             "{0}_{1}".format(self.__object_to_put_down["id"], self._MAP.count_decorations()),
                         )
@@ -277,13 +248,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                         self.remove_entity_on_pos(self._block_is_hovering)
                         # 生成需要更新的数据
                         _new_data: dict = deepcopy(Entity.get_entity_data(self.__object_to_put_down["id"]))
-                        _new_data.update(
-                            {
-                                "x": self._block_is_hovering[0],
-                                "y": self._block_is_hovering[1],
-                                "type": self.__object_to_put_down["id"],
-                            }
-                        )
+                        _new_data.update({"x": self._block_is_hovering[0], "y": self._block_is_hovering[1], "type": self.__object_to_put_down["id"]})
                         the_id: int = 0
                         nameTemp: str = self.__object_to_put_down["id"] + "_" + str(the_id)
                         while nameTemp in self._entities_data[_new_data["faction"]]:
@@ -311,9 +276,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             if Controller.get_event("confirm") is True:
                 if self.__envImgContainer.is_visible() and self.__envImgContainer.item_being_hovered is not None:
                     self.__object_to_put_down = {"type": "block", "id": self.__envImgContainer.item_being_hovered}
-                elif (
-                    self.__decorationsImgContainer.is_visible() and self.__decorationsImgContainer.item_being_hovered is not None
-                ):
+                elif self.__decorationsImgContainer.is_visible() and self.__decorationsImgContainer.item_being_hovered is not None:
                     self.__object_to_put_down = {"type": "decoration", "id": self.__decorationsImgContainer.item_being_hovered}
 
         # 画出下方容器的UI
@@ -321,9 +284,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         if self.__UIContainerButtonBottom.bottom < _surface.get_height():
             self.__UIContainerBottom.display(_surface, UIContainerBottom_offset_pos)
             if self.__entitiesImagesContainerUsingIndex >= 0:
-                self.__entitiesImagesContainers[self.__entitiesImagesContainerUsingIndex].display(
-                    _surface, UIContainerBottom_offset_pos
-                )
+                self.__entitiesImagesContainers[self.__entitiesImagesContainerUsingIndex].display(_surface, UIContainerBottom_offset_pos)
             self.__bottom_container_buttons.display(_surface, UIContainerBottom_offset_pos)
             if Controller.get_event("confirm"):
                 if self.__bottom_container_buttons.item_being_hovered >= 0:
@@ -383,10 +344,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 _surface.blit(self.__decorationsImgContainer.get(self.__object_to_put_down["id"]), Controller.mouse.get_pos())
             elif self.__object_to_put_down["type"] == "entity":
                 _surface.blit(
-                    self.__entitiesImagesContainers[self.__object_to_put_down["container_id"]].get(
-                        self.__object_to_put_down["id"]
-                    ),
-                    Controller.mouse.get_pos(),
+                    self.__entitiesImagesContainers[self.__object_to_put_down["container_id"]].get(self.__object_to_put_down["id"]), Controller.mouse.get_pos()
                 )
 
         # 未保存离开时的警告

@@ -1,5 +1,6 @@
 from ..dialog import *
 
+
 # 地图图片参数管理模块
 class MapImageParameters:
 
@@ -59,16 +60,12 @@ class DecorationImagesModule:
         # 如果SPRITE SHEET未被初始化，则初始化
         if cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET is None:
             cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET = SpriteImage(
-                "<!env>decoration.png"
-                if os.path.exists(Images.generate_path_according_to_prefix("<!env>decoration.png"))
-                else "<NULL>"
+                "<!env>decoration.png" if os.path.exists(Images.generate_path_according_to_prefix("<!env>decoration.png")) else "<NULL>"
             )
         if cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET is None:
             # 确认自带的sheet存在; 如果不存在，则加载一个空的sheet
             cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET = SpriteImage(
-                "<@env>decoration.png"
-                if os.path.exists(Images.generate_path_according_to_prefix("<@env>decoration.png"))
-                else "<NULL>"
+                "<@env>decoration.png" if os.path.exists(Images.generate_path_according_to_prefix("<@env>decoration.png")) else "<NULL>"
             )
         # 从sheet中读取装饰物图片
         _img: Union[ImageSurface, tuple]
@@ -89,9 +86,7 @@ class DecorationImagesModule:
                 if decorationType not in cls.__DECORATION_IMAGE_DICT_DARK:
                     cls.__DECORATION_IMAGE_DICT_DARK[decorationType] = {}
                 if fileName not in cls.__DECORATION_IMAGE_DICT_DARK[decorationType]:
-                    cls.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName] = cls.__DECORATION_IMAGE_DICT[decorationType][
-                        fileName
-                    ].copy()
+                    cls.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName] = cls.__DECORATION_IMAGE_DICT[decorationType][fileName].copy()
                     cls.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName].add_darkness(MapImageParameters.get_darkness())
         # 类Gif形式，decorationType应该与fileName一致
         else:
@@ -107,26 +102,16 @@ class DecorationImagesModule:
     @classmethod
     def get_image(cls, decorationType: str, key: strint, darkMode: bool) -> Any:
         try:
-            return (
-                cls.__DECORATION_IMAGE_DICT_DARK[decorationType][key]
-                if darkMode is True
-                else cls.__DECORATION_IMAGE_DICT[decorationType][key]
-            )
+            return cls.__DECORATION_IMAGE_DICT_DARK[decorationType][key] if darkMode is True else cls.__DECORATION_IMAGE_DICT[decorationType][key]
         # 如果图片没找到
         except Exception:
             EXCEPTION.inform(
-                "Cannot find decoration image '{0}' in type '{1}', we will try to load it for you right now, but please by aware.".format(
-                    key, decorationType
-                )
+                "Cannot find decoration image '{0}' in type '{1}', we will try to load it for you right now, but please by aware.".format(key, decorationType)
             )
             if isinstance(key, int):
                 key = decorationType
             cls.add_image(decorationType, key)
-            return (
-                cls.__DECORATION_IMAGE_DICT_DARK[decorationType][key]
-                if darkMode is True
-                else cls.__DECORATION_IMAGE_DICT[decorationType][key]
-            )
+            return cls.__DECORATION_IMAGE_DICT_DARK[decorationType][key] if darkMode is True else cls.__DECORATION_IMAGE_DICT[decorationType][key]
 
 
 # 地图贴图的管理模块
@@ -178,18 +163,14 @@ class TileMapImagesModule:
         if _result is not None:
             return _result
         else:
-            EXCEPTION.inform(
-                "Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(key)
-            )
+            EXCEPTION.inform("Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(key))
             cls.add_image(key)
             return cls.__ENV_IMAGE_DICT_DARK[key] if darkMode is True else cls.__ENV_IMAGE_DICT[key]
 
 
 # 管理单个动作所有对应图片的模块
 class _EntityImagesCollection:
-    def __init__(
-        self, imagesList: tuple[StaticImage, ...], crop_size: list[int], offset: list[int], original_img_size: list[int]
-    ) -> None:
+    def __init__(self, imagesList: tuple[StaticImage, ...], crop_size: list[int], offset: list[int], original_img_size: list[int]) -> None:
         self.__images: tuple[StaticImage, ...] = imagesList
         self.__current_image_pointer: StaticImage = self.__images[0]
         self.__width: number = 0
@@ -320,13 +301,7 @@ class EntitySpriteImageManager:
                         imgTempList[i] = PILImage.fromarray(Surfaces.to_array(imgTempList[i].subsurface(crop_rect)))
                     # 保存当前动作的webp图
                     target_file_name: str = _action_folder + ".webp"
-                    imgTempList[0].save(
-                        os.path.join(folder_path, target_file_name),
-                        save_all=True,
-                        append_images=imgTempList[1:],
-                        duration=0,
-                        lossless=True,
-                    )
+                    imgTempList[0].save(os.path.join(folder_path, target_file_name), save_all=True, append_images=imgTempList[1:], duration=0, lossless=True)
                     # 删除原先的文件夹
                     shutil.rmtree(os.path.join(folder_path, _action_folder))
         # 保存sprite图数据
@@ -344,9 +319,7 @@ class EntitySpriteImageManager:
     # 加载sprite图片模块：接受一个友方角色名，返回对应的动图字典
     @classmethod
     def load(cls, faction: str, characterType: str, mode: str) -> dict:
-        sprite_image_meta_data: dict = Config.load_file(
-            os.path.join(cls.SPRITES_PATH, faction, characterType, characterType + ".linpg.meta")
-        )
+        sprite_image_meta_data: dict = Config.load_file(os.path.join(cls.SPRITES_PATH, faction, characterType, characterType + ".linpg.meta"))
         imgId_dict: dict = {}
         # 默认模式下，加载所有动作
         if mode == "default":
@@ -371,12 +344,7 @@ class EntitySpriteImageManager:
             return {"imgId": 0, "alpha": 255}
         # 加载图片
         cls.__CHARACTERS_IMAGES[characterType][action] = _EntityImagesCollection(
-            tuple(
-                [
-                    StaticImage(surf, 0, 0)
-                    for surf in Images.load_animated(os.path.join(cls.SPRITES_PATH, faction, characterType, action + ".webp"))
-                ]
-            ),
+            tuple(StaticImage(surf, 0, 0) for surf in Images.load_animated(os.path.join(cls.SPRITES_PATH, faction, characterType, action + ".webp"))),
             action_meta_data["subrect"][2:],
             action_meta_data["subrect"][:2],
             action_meta_data["size"],
@@ -441,9 +409,7 @@ class WeatherSystem:
         self.__speed_unit = int(perBlockWidth / 15)
         for item in self.__items:
             if 0 <= item.x < _surface.get_width() and 0 <= item.y < _surface.get_height():
-                _surface.blit(
-                    Images.resize(self.__img_tuple[item.imgId], (perBlockWidth / item.size, perBlockWidth / item.size)), item.pos
-                )
+                _surface.blit(Images.resize(self.__img_tuple[item.imgId], (perBlockWidth / item.size, perBlockWidth / item.size)), item.pos)
             item.move(self.__speed_unit)
             if item.x <= 0 or item.y >= _surface.get_height():
                 item.set_top(Numbers.get_random_int(-50, 0))

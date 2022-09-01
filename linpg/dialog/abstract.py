@@ -17,7 +17,7 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
         self._dialog_folder_path: str = "Data"
         # 背景图片
         self.__background_image_name: Optional[str] = None
-        self.__background_image_surface: Union[StaticImage, VideoSurface] = self._black_bg.copy()
+        self.__background_image_surface: StaticImage | VideoSurface = self._black_bg.copy()
         # 是否开启自动保存
         self.auto_save: bool = False
         # 是否静音

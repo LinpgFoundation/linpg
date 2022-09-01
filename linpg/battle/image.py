@@ -68,7 +68,7 @@ class DecorationImagesModule:
                 "<@env>decoration.png" if os.path.exists(Images.generate_path_according_to_prefix("<@env>decoration.png")) else "<NULL>"
             )
         # 从sheet中读取装饰物图片
-        _img: Union[ImageSurface, tuple]
+        _img: ImageSurface | tuple
         if cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.contain(fileName):
             _img = cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.get(fileName)
         elif cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.contain(fileName):
@@ -144,7 +144,7 @@ class TileMapImagesModule:
             )
         if cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.contain(fileName):
             if fileName not in cls.__ENV_IMAGE_DICT:
-                _img: Union[ImageSurface, tuple] = cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.get(fileName)
+                _img: ImageSurface | tuple = cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.get(fileName)
                 if isinstance(_img, tuple):
                     EXCEPTION.fatal("Images for tile map cannot be grouped as a collection")
                 cls.__ENV_IMAGE_DICT[fileName] = StaticImage(_img, 0, 0)
@@ -380,7 +380,7 @@ class WeatherSystem:
     # 初始化
     def init(self, weather: str, entityNum: int = 50) -> None:
         self.__initialized = True
-        _temp: Union[ImageSurface, tuple] = SpriteImage("<&env>" + weather + ".png").get(weather)
+        _temp: ImageSurface | tuple = SpriteImage("<&env>" + weather + ".png").get(weather)
         if isinstance(_temp, tuple):
             self.__img_tuple = _temp
         else:

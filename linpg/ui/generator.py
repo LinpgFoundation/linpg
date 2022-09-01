@@ -249,7 +249,7 @@ class UiGenerator:
 
     # 将数据以dict的形式返回
     @classmethod
-    def __get_data_in_dict(cls, data: Union[str, dict]) -> dict:
+    def __get_data_in_dict(cls, data: str | dict) -> dict:
         if isinstance(data, str):
             result: Optional[dict] = cls.__UI_TEMPLATES.get(data)
             if result is None:
@@ -260,12 +260,12 @@ class UiGenerator:
 
     # 生成GameObject2d - 如果目标是str则视为是名称，尝试从ui数据库中加载对应的模板，否则则视为模板
     @classmethod
-    def generate(cls, data: Union[str, dict], custom_values: dict = {}) -> GameObject2d:
+    def generate(cls, data: str | dict, custom_values: dict = {}) -> GameObject2d:
         return cls.__generate(cls.__get_data_in_dict(data), custom_values)
 
     # 生成container - 如果目标是str则视为是名称，尝试从ui数据库中加载对应的模板，否则则视为模板
     @classmethod
-    def generate_container(cls, data: Union[str, dict], custom_values: dict = {}) -> GameObjectsDictContainer:
+    def generate_container(cls, data: str | dict, custom_values: dict = {}) -> GameObjectsDictContainer:
         data_dict: dict = cls.__get_data_in_dict(data)
         if data_dict["type"] != "container":
             EXCEPTION.fatal('The target has to be a container, not "{}".'.format(data_dict["type"]))

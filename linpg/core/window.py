@@ -58,6 +58,7 @@ class LinpgVersionChecker:
                             PySimpleGUI.Cancel(_quit_text),
                         ],
                     ],
+                    keep_on_top=True,
                 ).read(close=True)[0]
                 == _quit_text
             ):

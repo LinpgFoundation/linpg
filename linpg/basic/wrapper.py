@@ -17,17 +17,17 @@ pygame.init()
 
 """linpg自带属性"""
 # int_f指参数推荐输入int, 但一开始接受时可以为float，但最后会转换为int
-int_f = Union[int, float]
+int_f = int | float
 # number，即数字，建议int但接受float
-number = Union[int, float]
+number = int | float
 # 颜色类
-color_liked = Union[Sequence[int], str]
+color_liked = Sequence[int] | str
 # 图形类
 ImageSurface = pygame.Surface
-PoI = Union[str, pygame.Surface]
+PoI = str | pygame.Surface
 # 事件 type alias
 PG_Event = pygame.event.Event
-PG_TUPLE = Union[tuple[int, int, int, int], tuple[tuple[int, int], tuple[int, int]]]
+PG_TUPLE = tuple[int, int, int, int] | tuple[tuple[int, int], tuple[int, int]]  # type: ignore
 
 """指向pygame事件的指针"""
 # 鼠标
@@ -57,7 +57,7 @@ class Numbers:
 
     # 转换string形式的百分比
     @staticmethod
-    def convert_percentage(percentage: Union[str, float, int]) -> float:
+    def convert_percentage(percentage: str | float | int) -> float:
         if isinstance(percentage, str) and percentage.endswith("%"):
             return float(percentage.strip("%")) / 100
         elif isinstance(percentage, int):

@@ -150,7 +150,7 @@ class Rectangle(Square):
 
 
 PG_Rect = pygame.Rect
-RectLiked = Union[Rectangle, pygame.Rect, tuple]
+RectLiked = Rectangle | pygame.Rect | tuple
 
 
 # Rectangle方法管理

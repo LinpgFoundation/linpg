@@ -32,7 +32,7 @@ class Loader:
 
     # gif图片
     @staticmethod
-    def gif(gif_path_or_img_list: Union[str, Sequence], _position: tuple[int, int], size: tuple[int, int], updateGap: int = 1) -> AnimatedImage:
+    def gif(gif_path_or_img_list: str | Sequence, _position: tuple[int, int], size: tuple[int, int], updateGap: int = 1) -> AnimatedImage:
         imgList: list = []
         # 如果是gif文件
         if isinstance(gif_path_or_img_list, str):

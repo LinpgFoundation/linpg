@@ -57,8 +57,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
             # 如果需要更新语言
             if lang_drop_down.get_selected_item() != Lang.get_current_language() and lang_drop_down.get_selected_item() != "":
                 # 更新语言并保存新的参数到本地
-                Setting.set("Language", value=Lang.get_language_id(lang_drop_down.get_selected_item()))
-                Setting.save()
+                Setting.set("Language", value=Lang.get_language_id(lang_drop_down.get_selected_item()), save_to_local=True)
                 Lang.reload()
                 self._initialized = False
                 self.need_update["language"] = True

@@ -17,7 +17,7 @@ class SpriteImage:
             self.__DICTIONARY.update(Config.load_file(Images.generate_path_according_to_prefix(self.__PATH).removesuffix(".zip") + ".linpg.meta"))
 
     # 获取一个图片
-    def get(self, key: str) -> Union[ImageSurface, tuple]:
+    def get(self, key: str) -> ImageSurface | tuple:
         return (
             self.__SHEET.subsurface(self.__DICTIONARY[key])
             if not isinstance(self.__DICTIONARY[key][0], list)

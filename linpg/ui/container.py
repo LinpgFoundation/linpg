@@ -8,7 +8,7 @@ class AbstractGameObjectsContainer(AbstractImageSurface, metaclass=ABCMeta):
 
     # 获取物品container容器（子类需实现）
     @abstractmethod
-    def _get_container(self) -> Union[dict, list]:
+    def _get_container(self) -> dict | list:
         EXCEPTION.fatal("_get_container()", 1)
 
     # 物品数量

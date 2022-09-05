@@ -96,7 +96,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
     # 更新场景
     def _update_scene(self, dialog_id: str) -> None:
         # 如果dialog Id存在
-        if dialog_id in self.dialog_content:
+        if dialog_id in self._content.get_section():
             super()._update_scene(dialog_id)
             # 自动保存
             if self.auto_save:
@@ -123,7 +123,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         self._update_scene(dialog_id)
 
     def switch_part(self, part: str) -> None:
-        self._part = part
+        self._content.set_part(part)
         self._load_content()
 
     # 前往下一个对话
@@ -269,7 +269,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 # 获取下一个对话的id
                 _option: dict = self._current_dialog_content["next_dialog_id"]["target"][self._dialog_options_container.item_being_hovered]
                 # 记录玩家选项
-                self.__dialog_options[self._dialog_id] = {"id": self._dialog_options_container.item_being_hovered, "target": _option["id"]}
+                self.__dialog_options[self._content.get_id()] = {"id": self._dialog_options_container.item_being_hovered, "target": _option["id"]}
                 # 更新场景
                 self._update_scene(_option["id"])
             else:
@@ -303,29 +303,29 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                 dialogIdTemp: str = "head"
                 local_y: int = self.__history_surface_local_y
                 while True:
-                    narratorTxt: Optional[str] = self.dialog_content[dialogIdTemp].get("narrator")
+                    narratorTxt: Optional[str] = self._content.get_dialog(_id=dialogIdTemp).get("narrator")
                     has_narrator: bool = narratorTxt is not None and len(narratorTxt) > 0
                     if has_narrator:
                         narratorTemp = self.__dialog_txt_system.FONT.render(narratorTxt + ":", Colors.WHITE)  # type: ignore
                         self.__history_text_surface.blit(
                             narratorTemp, (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() // 10 + local_y)
                         )
-                    for i in range(len(self.dialog_content[dialogIdTemp]["contents"])):
-                        txt: str = str(self.dialog_content[dialogIdTemp]["contents"][i])
+                    for i in range(len(self._content.get_dialog(_id=dialogIdTemp)["contents"])):
+                        txt: str = str(self._content.get_dialog(_id=dialogIdTemp)["contents"][i])
                         if has_narrator:
                             if i == 0:
                                 txt = '[ "' + txt
                             # 这里不用elif，以免当对话行数为一的情况
-                            if i == len(self.dialog_content[dialogIdTemp]["contents"]) - 1:
+                            if i == len(self._content.get_dialog(_id=dialogIdTemp)["contents"]) - 1:
                                 txt += '" ]'
                         self.__history_text_surface.blit(
                             self.__dialog_txt_system.FONT.render(txt, Colors.WHITE), (Display.get_width() * 0.15, Display.get_height() // 10 + local_y)
                         )
                         local_y += self.__dialog_txt_system.FONT.size * 3 // 2
-                    if dialogIdTemp != self._dialog_id:
-                        _next_dialog_type: str = str(self.dialog_content[dialogIdTemp]["next_dialog_id"]["type"])
+                    if dialogIdTemp != self._content.get_id():
+                        _next_dialog_type: str = str(self._content.get_dialog(_id=dialogIdTemp)["next_dialog_id"]["type"])
                         if _next_dialog_type == "default" or _next_dialog_type == "changeScene":
-                            if (target_temp := self.dialog_content[dialogIdTemp]["next_dialog_id"]["target"]) is not None:
+                            if (target_temp := self._content.get_dialog(_id=dialogIdTemp)["next_dialog_id"]["target"]) is not None:
                                 dialogIdTemp = str(target_temp)
                             else:
                                 break
@@ -336,7 +336,11 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                             )
                             self.__history_text_surface.blit(
                                 self.__dialog_txt_system.FONT.render(
-                                    str(self.dialog_content[dialogIdTemp]["next_dialog_id"]["target"][int(self.__dialog_options[dialogIdTemp]["id"])]["text"]),
+                                    str(
+                                        self._content.get_dialog(_id=dialogIdTemp)["next_dialog_id"]["target"][int(self.__dialog_options[dialogIdTemp]["id"])][
+                                            "text"
+                                        ]
+                                    ),
                                     (0, 191, 255),
                                 ),
                                 (Display.get_width() * 0.15, Display.get_height() // 10 + local_y),

@@ -7,10 +7,10 @@ class Organizer:
 
     # 一个简单的 natural sort 实现
     @staticmethod
-    def natural_sort(l: list[str]) -> list[str]:
+    def natural_sort(_files: list[str]) -> list[str]:
         convert = lambda text: int(text) if text.isdigit() else text.lower()
         alphanum_key = lambda key: [convert(c) for c in re.split("([0-9]+)", key)]  # type: ignore
-        return sorted(sorted(l), key=alphanum_key)
+        return sorted(sorted(_files), key=alphanum_key)
 
     # 整理gitignore
     @staticmethod

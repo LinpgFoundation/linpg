@@ -88,7 +88,7 @@ class Lang:
     @classmethod
     def get_num_in_local_text(cls, num: strint) -> str:
         try:
-            return str(deepcopy(cls.__LANG_DATA["Numbers"][int(num)]))
+            return str(cls.__LANG_DATA["Numbers"][int(num)])
         except Exception:
             return str(num)
 

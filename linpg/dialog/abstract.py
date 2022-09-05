@@ -5,12 +5,7 @@ from .script import *
 class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
-        # 存储视觉小说数据的参数
-        self._dialog_data: dict[str, dict] = {}
-        # 当前部分
-        self._part = ""
-        # 当前对话的id
-        self._dialog_id: str = "head"
+        self._content: DialogContentManager = DialogContentManager()
         # 黑色Void帘幕
         self._black_bg = StaticImage(Surfaces.colored(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height())
         # 对话文件路径
@@ -71,28 +66,14 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
     def generate_a_new_recommended_key(self, index: int = 1) -> str:
         while True:
             newId: str = ("id_0" if index <= 9 else "id_") + str(index)
-            if newId in self.dialog_content:
+            if newId in self._content.get_section():
                 index += 1
             else:
                 return newId
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
-        return self.get_data_of_parent_game_system() | {"dialog_id": self._dialog_id, "type": self._part}
-
-    @property
-    def dialog_content(self) -> dict:
-        return self._dialog_data[self._part]
-
-    # 获取当前对话的信息
-    def __get_current_dialog_content(self, safe_mode: bool = False) -> dict:
-        currentDialogContent: dict = self.dialog_content[self._dialog_id]
-        # 检测是否缺少关键key
-        if safe_mode is True:
-            for key in ("character_images", "background_image", "narrator", "contents"):
-                if key not in currentDialogContent:
-                    EXCEPTION.fatal('Cannot find critical key "{0}" in part "{1}" with id "{2}".'.format(key, self._part, self._dialog_id))
-        return currentDialogContent
+        return self.get_data_of_parent_game_system() | {"dialog_id": self._content.get_id(), "type": self._content.get_part()}
 
     # 检测当前对话是否带有合法的下一个对话对象的id
     def does_current_dialog_have_next_dialog(self) -> bool:
@@ -103,9 +84,9 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
     def _initialize(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str], dialogId: str = "head") -> None:  # type: ignore[override]
         super()._initialize(chapterType, chapterId, projectName)
         # 对白id
-        self._dialog_id = dialogId
+        self._content.set_id(dialogId)
         # 播放的部分
-        self._part = part
+        self._content.set_part(part)
         # 转换所有文件夹内的linpg自定义的raw脚本
         for script_file in glob(os.path.join(self.get_dialog_folder_location(), "*.linpg.script")):
             ScriptConverter().compile(script_file, self.get_dialog_folder_location())
@@ -115,23 +96,23 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 读取目标对话文件的数据
         if os.path.exists(self.get_dialog_file_location()):
             # 获取目标对话数据
-            dialogData_t: dict = dict(Config.load(self.get_dialog_file_location(), "dialogs", self._part))
+            dialogData_t: dict = dict(Config.load(self.get_dialog_file_location(), "dialogs", self._content.get_part()))
             # 如果该dialog文件是另一个语言dialog文件的子类
             if (default_lang_of_dialog := self.get_default_lang()) != Setting.get_language():
-                self._dialog_data[self._part] = dict(Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._part))
+                self._content.set_section(dict(Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._content.get_part())))
                 for key, values in dialogData_t.items():
-                    self._dialog_data[self._part][key].update(values)
+                    self._content.get_dialog(_id=key).update(values)
             else:
-                self._dialog_data[self._part] = dialogData_t
+                self._content.set_section(dialogData_t)
         else:
-            self._dialog_data[self._part] = dict(Config.load(self.get_dialog_file_location(self.get_default_lang()), "dialogs", self._part))
+            self._content.set_section(dict(Config.load(self.get_dialog_file_location(self.get_default_lang()), "dialogs", self._content.get_part())))
         # 确认dialog数据合法
-        if len(self.dialog_content) == 0:
-            EXCEPTION.fatal('The selected dialog dict "{}" has no content inside.'.format(self._part))
-        elif "head" not in self.dialog_content:
-            EXCEPTION.fatal('You need to set up a "head" for the selected dialog "{}".'.format(self._part))
+        if len(self._content.get_section()) == 0:
+            EXCEPTION.fatal('The selected dialog dict "{}" has no content inside.'.format(self._content.get_part()))
+        elif "head" not in self._content.get_section():
+            EXCEPTION.fatal('You need to set up a "head" for the selected dialog "{}".'.format(self._content.get_part()))
         # 将数据载入刚初始化的模块中
-        self._update_scene(self._dialog_id)
+        self._update_scene(self._content.get_id())
 
     # 更新背景图片
     def _update_background_image(self, image_name: Optional[str]) -> None:
@@ -158,16 +139,16 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
     # 更新场景
     def _update_scene(self, dialog_id: str) -> None:
         # 更新dialogId
-        self._dialog_id = dialog_id
+        self._content.set_id(dialog_id)
         # 更新当前对话数据的指针 (请勿重用该字典，其应该作为指针一般的存在)
-        self._current_dialog_content = self.__get_current_dialog_content(True)
+        self._current_dialog_content = self._content.get_dialog()
         # 更新立绘和背景
-        CharacterImageManager.update(self._current_dialog_content["character_images"])
-        self._update_background_image(self._current_dialog_content["background_image"])
+        CharacterImageManager.update(self._current_dialog_content.get("character_images"))
+        self._update_background_image(self._current_dialog_content.get("background_image"))
         # 更新对话框
-        self._get_dialog_box().update(self._current_dialog_content["narrator"], self._current_dialog_content["contents"])
+        self._get_dialog_box().update(self._current_dialog_content.get("narrator", ""), self._current_dialog_content.get("contents", []))
         # 更新背景音乐
-        if (current_bgm := self._current_dialog_content["background_music"]) is not None:
+        if (current_bgm := self._current_dialog_content.get("background_music")) is not None:
             self.set_bgm(Specification.get_directory("music", current_bgm))
         else:
             self.unload_bgm()
@@ -215,7 +196,7 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
         if self._chapter_id is None:
             raise EXCEPTION.fatal("The dialog has not been initialized!")
         # 更新当前对话数据的指针 (请勿重用该字典，其应该作为指针一般的存在)
-        self._current_dialog_content = self.__get_current_dialog_content()
+        self._current_dialog_content = self._content.get_dialog()
         # 展示背景图片和npc立绘
         self.display_background_image(_surface)
         CharacterImageManager.draw(_surface)

@@ -7,7 +7,7 @@ from .organizer import *
 class Zipper:
     # 根据脚本打包所有文件
     @classmethod
-    def excute(cls) -> None:
+    def execute(cls) -> None:
         for _path in glob("*.linpg.zipscript"):
             # 获取路径pattern
             with open(_path, "r", encoding="utf-8") as f:

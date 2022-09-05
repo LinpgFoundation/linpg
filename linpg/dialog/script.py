@@ -1,4 +1,4 @@
-from .render import *
+from .content import *
 
 
 class ScriptConverter:
@@ -80,22 +80,14 @@ class ScriptConverter:
         elif self.__part is None:
             EXCEPTION.fatal("You have to set part!")
 
-    # 直接加载
-    def load(self, path: str) -> dict:
-        self.__process(path)
-        return self.__output
-
-    # 转换
-    def compile(self, path: str, out_folder: str) -> None:
-        self.__process(path)
-        Config.save(os.path.join(out_folder, "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type())), {"dialogs": self.__output})
-
+    # 尝试分离数据
     def __try_handle_data(self, index: int, parameter_short: str, parameter_full: str) -> bool:
         if self.__lines[index].startswith(parameter_short):
             self.__current_data[parameter_full] = self.__extract_parameter(self.__lines[index], parameter_short)
             return True
         return False
 
+    # 转换
     def __convert(self, staring_index: int) -> None:
         index: int = staring_index
         while index < len(self.__lines):
@@ -217,7 +209,42 @@ class ScriptConverter:
                     self.__last_dialog_id = self.__dialog_associate_key[str(index)]
                     # 更新缓存参数
                     index += len(self.__current_data["contents"])
-                    self.__output[self.__part][self.__last_dialog_id] = deepcopy(self.__current_data)
+                    self.__output[self.__part][self.__last_dialog_id] = copy.deepcopy(self.__current_data)
                 else:
                     EXCEPTION.fatal("Cannot process script on line {}!".format(index))
             index += 1
+
+    # 直接加载
+    def load(self, path: str) -> dict:
+        self.__process(path)
+        return self.__output
+
+    # 转换
+    def compile(self, path: str, out_folder: str) -> None:
+        self.__process(path)
+        Config.save(os.path.join(out_folder, "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type())), {"dialogs": self.__output})
+
+    """
+    # 反编译
+    def decompile(self, path: str, out_folder: str) -> None:
+        data = Config.load_file(path)
+        resultLines: list[str] = []
+
+        resultLines.extend(
+            [
+                "# Fundamental parameters\n",
+                "[id]1\n",
+                "[lang]English\n"
+                ]
+        )
+
+        key:str = "head"
+        part:str = "dialog_example"
+
+        current_content = {}
+        new_content = data["dialogs"][part][key]
+
+        while True:
+            for key in new_content:
+                pass
+    """

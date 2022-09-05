@@ -10,7 +10,7 @@ class UiGenerator:
     for key, value in Config.resolve_path_and_load_file(os.path.join("Data", "ui")).items():
         if key not in __UI_TEMPLATES:
             __UI_TEMPLATES[key] = {}
-        __UI_TEMPLATES[key].update(deepcopy(value))
+        __UI_TEMPLATES[key].update(copy.deepcopy(value))
 
     # 尝试转换特殊的string
     @classmethod
@@ -87,7 +87,7 @@ class UiGenerator:
         while text_index < len(text):
             if text[text_index] == "{":
                 # 寻找 "}"
-                a: int
+                a: int = 0
                 for a in range(text_index + 1, len(text)):
                     if text[a] == "}":
                         find_close_bracket = True
@@ -254,9 +254,9 @@ class UiGenerator:
             result: Optional[dict] = cls.__UI_TEMPLATES.get(data)
             if result is None:
                 EXCEPTION.fatal('The ui called "{}" does not exist!'.format(data))
-            return deepcopy(result)
+            return copy.deepcopy(result)
         else:
-            return deepcopy(data)
+            return copy.deepcopy(data)
 
     # 生成GameObject2d - 如果目标是str则视为是名称，尝试从ui数据库中加载对应的模板，否则则视为模板
     @classmethod

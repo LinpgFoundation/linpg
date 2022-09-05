@@ -247,7 +247,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                         # 移除坐标冲突的角色
                         self.remove_entity_on_pos(self._block_is_hovering)
                         # 生成需要更新的数据
-                        _new_data: dict = deepcopy(Entity.get_entity_data(self.__object_to_put_down["id"]))
+                        _new_data: dict = copy.deepcopy(Entity.get_entity_data(self.__object_to_put_down["id"]))
                         _new_data.update({"x": self._block_is_hovering[0], "y": self._block_is_hovering[1], "type": self.__object_to_put_down["id"]})
                         the_id: int = 0
                         nameTemp: str = self.__object_to_put_down["id"] + "_" + str(the_id)

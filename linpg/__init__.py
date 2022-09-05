@@ -9,8 +9,10 @@ from .interface import *
 """整理linpg内部"""
 clean_up: bool = False
 if clean_up is True:
-    # 移除__pycache__文件（debug用途）
+    # 移除 __pycache__ 文件（debug用途）
     Builder.search_and_remove_folder(os.path.dirname(__file__), "__pycache__")
+    # 整理 gitignore 文件
+    Organizer.organize_gitignore()
     # 整理语言
     Lang.organize()
     # 整理内部设置配置文件

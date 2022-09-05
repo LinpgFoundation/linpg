@@ -20,7 +20,7 @@ class DecorationObject(GameObject2d):
     def to_dict(self) -> dict:
         data_t: dict = {"x": self.x, "y": self.y, "image": self.image}
         if len(self.__status) > 0:
-            data_t["status"] = deepcopy(self.__status)
+            data_t["status"] = copy.deepcopy(self.__status)
         return data_t
 
     def is_on_pos(self, pos: object) -> bool:
@@ -116,7 +116,7 @@ class ChestObject(DecorationObject):
         data_t: dict = super().to_dict()
         del data_t["image"]
         if len(self.items) > 0:
-            data_t["items"] = deepcopy(self.items)
+            data_t["items"] = copy.deepcopy(self.items)
         if len(self.whitelist) > 0:
-            data_t["whitelist"] = deepcopy(self.whitelist)
+            data_t["whitelist"] = copy.deepcopy(self.whitelist)
         return data_t

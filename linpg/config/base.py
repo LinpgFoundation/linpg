@@ -1,5 +1,5 @@
 import json
-from copy import deepcopy
+import copy
 from glob import glob
 from typing import Any, Final, Optional
 
@@ -25,7 +25,7 @@ def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) ->
             if warning is True:
                 EXCEPTION.fatal('Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'.format(key))
             return key
-    return deepcopy(pointer)
+    return copy.deepcopy(pointer)
 
 
 # 根据keys查找被设置对应对应对象为指定值
@@ -147,7 +147,7 @@ class Template:
     @classmethod
     def get(cls, key: str) -> dict:
         # 返回一个复制，以防止原数据被篡改
-        return deepcopy(cls.__TEMPLATE[key])
+        return copy.deepcopy(cls.__TEMPLATE[key])
 
 
 # 使用引擎的开发者可以自定义的参数

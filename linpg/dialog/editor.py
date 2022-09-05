@@ -213,7 +213,8 @@ class DialogEditor(DialogConverter):
                             dialog_data_t[part][node_id] = Node
                         else:
                             dialog_data_t[part][node_id].update(Node)
-                self._content.set(dialog_data_t)
+                self._content.clear()
+                self._content.update(dialog_data_t)
         # 如果是默认主语言，则不进行任何额外操作
         else:
             self._is_default_dialog = True
@@ -242,8 +243,9 @@ class DialogEditor(DialogConverter):
 
     # 分离需要保存的数据
     def __split_the_stuff_need_save(self) -> dict[str, dict[str, dict]]:
-        self._current_dialog_content["narrator"] = self.__dialog_txt_system.get_narrator()
-        self._current_dialog_content["contents"] = self.__dialog_txt_system.get_content()
+        self._content.current.narrator = self.__dialog_txt_system.get_narrator()
+        self._content.current.contents = self.__dialog_txt_system.get_content()
+        self._content.save_current_changes()
         data_need_save: dict[str, dict[str, dict]] = copy.deepcopy(self._content.get())
         if not self._is_default_dialog and self.__compress_when_saving is True:
             # 移除掉相似的内容
@@ -267,11 +269,10 @@ class DialogEditor(DialogConverter):
     # 更新UI
     def __update_ui(self) -> None:
         # 更新背景音乐选项菜单
-        file_name: Optional[str] = self._current_dialog_content.get("background_music")
-        self.__dialog_bgm_select.set_selected_item(file_name if file_name is not None else "null")
+        self.__dialog_bgm_select.set_selected_item(self._content.current.background_music if self._content.current.background_music is not None else "null")
         # 更新按钮
         if self.__buttons_ui_container is not None:
-            if self.does_current_dialog_have_next_dialog() is True:
+            if self._content.current.has_next() is True:
                 self.__buttons_ui_container.get("add").set_visible(False)
                 self.__buttons_ui_container.get("next").set_visible(True)
             else:
@@ -306,15 +307,17 @@ class DialogEditor(DialogConverter):
     # 添加新的对话
     def __add_dialog(self, dialogId: str) -> None:
         self._content.get_section()[dialogId] = {
-            "background_image": self._current_dialog_content["background_image"],
-            "background_music": self._current_dialog_content["background_music"],
+            "background_image": self._content.current.background_image,
+            "background_music": self._content.current.background_music,
             "character_images": [],
             "contents": [self.__please_enter_content],
             "last_dialog_id": self._content.get_id(),
             "narrator": self.__please_enter_name,
             "next_dialog_id": None,
         }
-        self._current_dialog_content["next_dialog_id"] = {"target": dialogId, "type": "default"}
+        self._content.current.next["target"] = dialogId
+        self._content.current.next["type"] = "default"
+        self._content.save_current_changes()
         lastId = self.__get_last_id()
         if lastId != "<NULL>":
             self._content.get_dialog(_id=dialogId)["narrator"] = self._content.get_dialog(_id=lastId)["narrator"]
@@ -354,8 +357,8 @@ class DialogEditor(DialogConverter):
     def __get_last_id(self, child_node: Optional[str] = None) -> str:
         if child_node is None:
             child_node = self._content.get_id()
-        if "last_dialog_id" in self._current_dialog_content and self._current_dialog_content["last_dialog_id"] is not None:
-            return str(self._current_dialog_content["last_dialog_id"])
+        if self._content.current.last is not None:
+            return self._content.current.last
         elif child_node == "head":
             return "<NULL>"
         else:
@@ -373,12 +376,11 @@ class DialogEditor(DialogConverter):
 
     # 获取下一个对话的ID
     def __try_get_next_id(self, _surface: ImageSurface) -> str:
-        if self.does_current_dialog_have_next_dialog() is True:
-            theNext = self._current_dialog_content["next_dialog_id"]
-            if theNext["type"] == "default" or theNext["type"] == "changeScene":
-                return str(theNext["target"])
-            elif theNext["type"] == "option":
-                if len(theNext["target"]) > 1:
+        if self._content.current.has_next() is True:
+            if self._content.current.next.get("type") == "default" or self._content.current.next.get("type") == "changeScene":
+                return str(self._content.current.next["target"])
+            elif self._content.current.next.get("type") == "option":
+                if len(self._content.current.next["target"]) > 1:
                     self._get_dialog_options_container_ready()
                     screenshot = _surface.copy()
                     while True:
@@ -388,22 +390,23 @@ class DialogEditor(DialogConverter):
                         # 等待玩家选择一个选项
                         if Controller.get_event("confirm") and self._dialog_options_container.item_being_hovered >= 0:
                             # 获取下一个对话的id
-                            return str(self._current_dialog_content["next_dialog_id"]["target"][self._dialog_options_container.item_being_hovered]["id"])
+                            return str(self._content.current.next["target"][self._dialog_options_container.item_being_hovered]["id"])
                         elif Controller.get_event("back"):
                             self._dialog_options_container.clear()
                             self._dialog_options_container.set_visible(False)
                             break
                         Display.flip()
-                elif len(theNext["target"]) == 1:
-                    return str(self._current_dialog_content["next_dialog_id"]["target"][0]["id"])
+                elif len(self._content.current.next["target"]) == 1:
+                    return str(self._content.current.next["target"][0]["id"])
         return "<NULL>"
 
     def draw(self, _surface: ImageSurface) -> None:
         super().draw(_surface)
         # 更新对话框数据
         if self.__dialog_txt_system.any_changed_was_made():
-            self._current_dialog_content["narrator"] = self.__dialog_txt_system.get_narrator()
-            self._current_dialog_content["contents"] = self.__dialog_txt_system.get_content()
+            self._content.current.narrator = self.__dialog_txt_system.get_narrator()
+            self._content.current.contents = self.__dialog_txt_system.get_content()
+            self._content.save_current_changes()
         # 确保按钮初始化
         if self.__buttons_ui_container is None:
             EXCEPTION.fatal("The ui has not been correctly initialized.")
@@ -411,12 +414,14 @@ class DialogEditor(DialogConverter):
         self.__buttons_ui_container.draw(_surface)
         # 展示出当前可供使用的背景音乐
         self.__dialog_bgm_select.draw(_surface)
-        theBgm: Optional[str] = self._current_dialog_content.get("background_music")
         isCurrentBgmSelectedNull: bool = self.__dialog_bgm_select.get_selected_item() == "null"
-        if theBgm != self.__dialog_bgm_select.get_selected_item() and not (theBgm is None and isCurrentBgmSelectedNull):
-            self._current_dialog_content["background_music"] = (
-                None if isCurrentBgmSelectedNull else self.__dialog_bgm_select.get(self.__dialog_bgm_select.get_selected_item())
+        if self._content.current.background_music != self.__dialog_bgm_select.get_selected_item() and not (
+            self._content.current.background_music is None and isCurrentBgmSelectedNull is True
+        ):
+            self._content.current.background_music = (
+                None if isCurrentBgmSelectedNull else str(self.__dialog_bgm_select.get(self.__dialog_bgm_select.get_selected_item()))
             )
+            self._content.save_current_changes()
             self._update_scene(self._content.get_id())
         # 展示出当前可供编辑的dialog部分
         self.__dialog_part_selection.draw(_surface)
@@ -447,7 +452,7 @@ class DialogEditor(DialogConverter):
                     if self._content.get_id() != "head":
                         lastId = self.__get_last_id()
                         nextId: str = self.__try_get_next_id(_surface)
-                        self._content.remove()
+                        self._content.remove_section()
                         if lastId != "<NULL>":
                             if nextId != "<NULL>":
                                 self.__make_connection(lastId, nextId)
@@ -480,7 +485,8 @@ class DialogEditor(DialogConverter):
                     confirm_event_tag = True
             # 移除角色立绘
             elif Controller.get_event("delete") and CharacterImageManager.character_get_click is not None:
-                self._current_dialog_content["character_images"].remove(CharacterImageManager.character_get_click)
+                self._content.current.character_images.remove(CharacterImageManager.character_get_click)
+                self._content.save_current_changes()
                 self._update_scene(self._content.get_id())
         # 显示移除角色的提示
         if CharacterImageManager.character_get_click is not None:
@@ -509,22 +515,14 @@ class DialogEditor(DialogConverter):
             # 检测是否有物品被选中需要更新
             if confirm_event_tag is True:
                 if self.__UIContainerRight_bg.is_visible():
-                    imgName = self.__UIContainerRight_bg.item_being_hovered
-                    if imgName is not None:
-                        if imgName != "current_select":
-                            self._current_dialog_content["background_image"] = imgName
-                            self._update_background_image(imgName)
-                        else:
-                            self._current_dialog_content["background_image"] = None
-                            self._update_background_image(None)
-                elif self.__UIContainerRight_npc.is_visible():
-                    imgName = self.__UIContainerRight_npc.item_being_hovered
-                    if imgName is not None:
-                        if self._current_dialog_content.get("character_images") is None:
-                            self._current_dialog_content["character_images"] = []
-                        if len(self._current_dialog_content["character_images"]) < 2:
-                            self._current_dialog_content["character_images"].append(imgName)
-                            CharacterImageManager.update(self._current_dialog_content["character_images"])
+                    if (imgName := self.__UIContainerRight_bg.item_being_hovered) is not None:
+                        self._content.current.background_image = imgName if imgName != "current_select" else None
+                        self._content.save_current_changes()
+                        self._update_background_image(self._content.current.background_image)
+                elif self.__UIContainerRight_npc.is_visible() and self.__UIContainerRight_npc.item_being_hovered is not None:
+                    self._content.current.character_images.append(self.__UIContainerRight_npc.item_being_hovered)
+                    self._content.save_current_changes()
+                    CharacterImageManager.update(self._content.current.character_images)
 
         # 展示dialog navigation窗口
         self.__dialog_navigation_window.present_on(_surface)

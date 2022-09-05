@@ -17,8 +17,6 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
         self.auto_save: bool = False
         # 是否静音
         self._is_muted: bool = False
-        # 指向当前对话的数据的指针
-        self._current_dialog_content: dict = {}
         # 选项菜单
         self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer("<NULL>", 0, 0, 0, 0)
         self._dialog_options_container.set_visible(False)
@@ -57,11 +55,6 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
             )
         )
 
-    # 获取下一个dialog node的类型
-    def get_next_dialog_type(self) -> Optional[str]:
-        _next: Optional[dict] = self._current_dialog_content.get("next_dialog_id")
-        return _next.get("type") if _next is not None else None
-
     # 生产一个新的推荐id
     def generate_a_new_recommended_key(self, index: int = 1) -> str:
         while True:
@@ -74,11 +67,6 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
         return self.get_data_of_parent_game_system() | {"dialog_id": self._content.get_id(), "type": self._content.get_part()}
-
-    # 检测当前对话是否带有合法的下一个对话对象的id
-    def does_current_dialog_have_next_dialog(self) -> bool:
-        _next: Optional[dict] = self._current_dialog_content.get("next_dialog_id")
-        return _next is not None and len(_next) > 0
 
     # 初始化关键参数
     def _initialize(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str], dialogId: str = "head") -> None:  # type: ignore[override]
@@ -140,16 +128,14 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
     def _update_scene(self, dialog_id: str) -> None:
         # 更新dialogId
         self._content.set_id(dialog_id)
-        # 更新当前对话数据的指针 (请勿重用该字典，其应该作为指针一般的存在)
-        self._current_dialog_content = self._content.get_dialog()
         # 更新立绘和背景
-        CharacterImageManager.update(self._current_dialog_content.get("character_images"))
-        self._update_background_image(self._current_dialog_content.get("background_image"))
+        CharacterImageManager.update(self._content.current.character_images)
+        self._update_background_image(self._content.current.background_image)
         # 更新对话框
-        self._get_dialog_box().update(self._current_dialog_content.get("narrator", ""), self._current_dialog_content.get("contents", []))
+        self._get_dialog_box().update(self._content.current.narrator, self._content.current.contents)
         # 更新背景音乐
-        if (current_bgm := self._current_dialog_content.get("background_music")) is not None:
-            self.set_bgm(Specification.get_directory("music", current_bgm))
+        if self._content.current.background_music is not None:
+            self.set_bgm(Specification.get_directory("music", self._content.current.background_music))
         else:
             self.unload_bgm()
         # 隐藏选项菜单
@@ -180,23 +166,23 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
 
     def _get_dialog_options_container_ready(self) -> None:
         self._dialog_options_container.clear()
-        optionBox_y_base: int = Display.get_height() * 3 // 16 - len(self._current_dialog_content["next_dialog_id"]["target"]) * self._FONT_SIZE
-        for i in range(len(self._current_dialog_content["next_dialog_id"]["target"])):
-            optionButton: Button = Button.load("<&ui>option.png", (0, 0), (0, 0))
-            optionButton.set_hover_img(Images.quickly_load("<&ui>option_selected.png"))
-            optionButton.set_auto_resize(True)
-            optionButton.set_text(ButtonComponent.text(str(self._current_dialog_content["next_dialog_id"]["target"][i]["text"]), self._FONT_SIZE, Colors.WHITE))
-            optionButton.set_pos((Display.get_width() - optionButton.get_width()) / 2, (i + 1) * 4 * self._FONT_SIZE + optionBox_y_base)
-            self._dialog_options_container.append(optionButton)
-        self._dialog_options_container.set_visible(True)
+        _next_targets: Optional[str | list] = self._content.current.next.get("target")
+        if isinstance(_next_targets, list):
+            optionBox_y_base: int = Display.get_height() * 3 // 16 - len(_next_targets) * self._FONT_SIZE
+            for i in range(len(_next_targets)):
+                optionButton: Button = Button.load("<&ui>option.png", (0, 0), (0, 0))
+                optionButton.set_hover_img(Images.quickly_load("<&ui>option_selected.png"))
+                optionButton.set_auto_resize(True)
+                optionButton.set_text(ButtonComponent.text(str(_next_targets[i]["text"]), self._FONT_SIZE, Colors.WHITE))
+                optionButton.set_pos((Display.get_width() - optionButton.get_width()) / 2, (i + 1) * 4 * self._FONT_SIZE + optionBox_y_base)
+                self._dialog_options_container.append(optionButton)
+            self._dialog_options_container.set_visible(True)
 
     # 把基础内容画到surface上
     def draw(self, _surface: ImageSurface) -> None:
         # 检测章节是否初始化
         if self._chapter_id is None:
             raise EXCEPTION.fatal("The dialog has not been initialized!")
-        # 更新当前对话数据的指针 (请勿重用该字典，其应该作为指针一般的存在)
-        self._current_dialog_content = self._content.get_dialog()
         # 展示背景图片和npc立绘
         self.display_background_image(_surface)
         CharacterImageManager.draw(_surface)

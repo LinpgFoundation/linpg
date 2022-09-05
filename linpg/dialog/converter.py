@@ -5,7 +5,6 @@ from .dialog import *
 class DialogConverter(AbstractDialogSystem):
     def _check_and_fix_non_str_key(self, part: str) -> None:
         while True:
-            looping: bool = False
             index: int = 0
             old_key: Optional[str] = None
             for key, value in self._content.get_section(part).items():
@@ -30,7 +29,8 @@ class DialogConverter(AbstractDialogSystem):
                     self._content.get_dialog(part, key)["next_dialog_id"]["target"] = new_key
                 else:
                     self._content.get_dialog(part, key)["next_dialog_id"]["target"][index]["id"] = new_key
-                self._content.set_dialog(self._content.get_dialog(part, old_key), part, new_key)
+                self._content.get_dialog(part, new_key).clear()
+                self._content.get_dialog(part, new_key).update(self._content.get_dialog(part, old_key))
                 self._content.remove_dialog(part, old_key)
             else:
                 break

@@ -5,8 +5,8 @@ import linpg
 __LINPG_PATH: str = linpg.__path__[0]
 __LINPG_NAME: str = "linpg"
 
-datas: list = []
-folder_ignore: tuple = ("__pyinstaller", "__pycache__", ".git")
+datas: list[tuple[str, str]] = []
+folder_ignore: tuple[str, ...] = ("__pyinstaller", "__pycache__", ".git")
 
 for file_name in os.listdir(__LINPG_PATH):
     # 文件夹

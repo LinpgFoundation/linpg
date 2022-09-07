@@ -207,8 +207,8 @@ class DialogEditor(DialogConverter):
             # 如果当前dialogs不为空的，则填入未被填入的数据
             else:
                 dialog_data_t = copy.deepcopy(self._dialog_data_default)
-                for part in self._content.get():
-                    for node_id, Node in self._content.get_section(part).items():
+                for part, value in self._content.get().items():
+                    for node_id, Node in value.items():
                         if node_id not in dialog_data_t[part]:
                             dialog_data_t[part][node_id] = Node
                         else:
@@ -222,7 +222,7 @@ class DialogEditor(DialogConverter):
         # 则尝试加载后仍然出现内容为空的情况
         if self._content.is_empty():
             self._content.set_part("example_dialog")
-            self._content.get()["example_dialog"] = {}
+            self._content.set_section({})
         # 检测是否有非str的key name
         for part in self._content.get():
             if isinstance(part, str):
@@ -357,8 +357,8 @@ class DialogEditor(DialogConverter):
     def __get_last_id(self, child_node: Optional[str] = None) -> str:
         if child_node is None:
             child_node = self._content.get_id()
-        if self._content.current.last is not None:
-            return self._content.current.last
+        if self._content.last is not None:
+            return self._content.last.id
         elif child_node == "head":
             return "<NULL>"
         else:
@@ -377,7 +377,7 @@ class DialogEditor(DialogConverter):
     # 获取下一个对话的ID
     def __try_get_next_id(self, _surface: ImageSurface) -> str:
         if self._content.current.has_next() is True:
-            if self._content.current.next.get("type") == "default" or self._content.current.next.get("type") == "changeScene":
+            if not self._content.current.has_multiple_next():
                 return str(self._content.current.next["target"])
             elif self._content.current.next.get("type") == "option":
                 if len(self._content.current.next["target"]) > 1:

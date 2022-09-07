@@ -16,6 +16,15 @@ class ScriptConverter:
         self.__lines: list[str] = []
         self.__branch_labels: dict[str, str] = {}
         self.__dialog_associate_key: dict[str, str] = {}
+        self.__accumulated_comments: list[str] = []
+
+    # 从有效的视觉小说文件路径中读取信息
+    @staticmethod
+    def extract_info_from_path(_path: str) -> tuple[int, str]:
+        _path = os.path.basename(_path)
+        if not _path.startswith("chapter"):
+            EXCEPTION.fatal("Invalid path!")
+        return int(_path[7 : _path.index("_")]), _path[_path.rfind("_") + 1 : _path.rfind(".")]
 
     # 生成一个标准id
     @staticmethod
@@ -31,6 +40,11 @@ class ScriptConverter:
     @staticmethod
     def __ensure_not_null(text: str) -> Optional[str]:
         return None if text.lower() == "null" or text.lower() == "none" else text
+
+    # 如果输入字符串为None，则将其转换为null
+    @staticmethod
+    def __to_str_in_case_null(text: Optional[str]) -> str:
+        return text if text is not None else "null"
 
     # 将参数分离出来
     @classmethod
@@ -91,19 +105,22 @@ class ScriptConverter:
     def __convert(self, staring_index: int) -> None:
         index: int = staring_index
         while index < len(self.__lines):
-            if (
+            _currentLine: str = self.__lines[index].lstrip()
+            if _currentLine.startswith("//"):
+                self.__accumulated_comments.append(_currentLine.lstrip("//").lstrip())
+            elif (
                 not self.__lines[index].startswith("#")
-                and len(self.__lines[index]) > 0
+                and len(_currentLine) > 0
                 and not self.__try_handle_data(index, "[bgi]", "background_image")
                 and not self.__try_handle_data(index, "[bgm]", "background_music")
             ):
                 # 角色进场
-                if self.__lines[index].startswith("[show]"):
-                    for _name in self.__extract_string(self.__lines[index], "[show]").split():
+                if _currentLine.startswith("[show]"):
+                    for _name in self.__extract_string(_currentLine, "[show]").split():
                         self.__current_data["character_images"].append(_name)
                 # 角色退场
-                elif self.__lines[index].startswith("[hide]"):
-                    for _name in self.__extract_string(self.__lines[index], "[hide]").split():
+                elif _currentLine.startswith("[hide]"):
+                    for _name in self.__extract_string(_currentLine, "[hide]").split():
                         # 清空角色列表
                         if _name == "*":
                             self.__current_data["character_images"].clear()
@@ -114,35 +131,35 @@ class ScriptConverter:
                                 self.__current_data["character_images"].pop(i)
                                 break
                 # 清空角色列表，然后让角色重新进场
-                elif self.__lines[index].startswith("[display]"):
+                elif _currentLine.startswith("[display]"):
                     self.__current_data["character_images"].clear()
-                    for _name in self.__extract_string(self.__lines[index], "[display]").split():
+                    for _name in self.__extract_string(_currentLine, "[display]").split():
                         self.__current_data["character_images"].append(_name)
                 # 章节id
-                elif self.__lines[index].startswith("[id]"):
-                    _id: Optional[str] = self.__extract_parameter(self.__lines[index], "[id]")
+                elif _currentLine.startswith("[id]"):
+                    _id: Optional[str] = self.__extract_parameter(_currentLine, "[id]")
                     if _id is not None:
                         self.__id = int(_id)
                     else:
                         EXCEPTION.fatal("Chapter id cannot be None!")
                 # 语言
-                elif self.__lines[index].startswith("[lang]"):
-                    self.__lang = self.__extract_string(self.__lines[index], "[lang]")
+                elif _currentLine.startswith("[lang]"):
+                    self.__lang = self.__extract_string(_currentLine, "[lang]")
                 # 部分
-                elif self.__lines[index].startswith("[part]"):
+                elif _currentLine.startswith("[part]"):
                     if self.__last_dialog_id is not None:
                         self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"] = None
-                    self.__part = self.__extract_string(self.__lines[index], "[part]")
+                    self.__part = self.__extract_string(_currentLine, "[part]")
                 # 结束符
-                elif self.__lines[index].startswith("[end]"):
+                elif _currentLine.startswith("[end]"):
                     self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"] = None
                     break
                 # 转换场景
-                elif self.__lines[index].startswith("[scene]"):
+                elif _currentLine.startswith("[scene]"):
                     self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"]["type"] = "changeScene"
-                    self.__current_data["background_image"] = self.__extract_parameter(self.__lines[index], "[scene]")
+                    self.__current_data["background_image"] = self.__extract_parameter(_currentLine, "[scene]")
                 # 选项
-                elif self.__lines[index].startswith("[opt]"):
+                elif _currentLine.startswith("[opt]"):
                     # 确认在接下来的一行有branch的label
                     if not self.__lines[index + 1].startswith("[br]"):
                         EXCEPTION.fatal("For option on line {}, a branch label is not found on the following line".format(index + 1))
@@ -156,13 +173,13 @@ class ScriptConverter:
                         dialog_next["target"] = []
                     dialog_next["target"].append(
                         {
-                            "text": self.__extract_string(self.__lines[index], "[opt]"),
+                            "text": self.__extract_string(_currentLine, "[opt]"),
                             "id": self.__branch_labels[self.__extract_string(self.__lines[index + 1], "[br]")],
                         }
                     )
                     index += 1
-                elif not self.__lines[index].startswith("[") and ":" in self.__lines[index]:
-                    narrator: str = self.__lines[index].removesuffix(" ").removesuffix(":")
+                elif not _currentLine.startswith("[") and ":" in _currentLine:
+                    narrator: str = _currentLine.removesuffix(" ").removesuffix(":")
                     self.__current_data["narrator"] = self.__ensure_not_null(narrator)
                     # 获取讲述人可能的立绘名称
                     narrator_possible_images: tuple = tuple()
@@ -205,11 +222,17 @@ class ScriptConverter:
                             }
                     else:
                         self.__current_data["last_dialog_id"] = None
+                    # 添加注释
+                    if len(self.__accumulated_comments) > 0:
+                        self.__current_data["notes"] = self.__accumulated_comments
+                        self.__accumulated_comments = []
                     # 更新key
                     self.__last_dialog_id = self.__dialog_associate_key[str(index)]
                     # 更新缓存参数
                     index += len(self.__current_data["contents"])
                     self.__output[self.__part][self.__last_dialog_id] = copy.deepcopy(self.__current_data)
+                    # 移除可选参数
+                    self.__current_data.pop("notes", None)
                 else:
                     EXCEPTION.fatal("Cannot process script on line {}!".format(index))
             index += 1
@@ -224,27 +247,69 @@ class ScriptConverter:
         self.__process(path)
         Config.save(os.path.join(out_folder, "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type())), {"dialogs": self.__output})
 
-    """
     # 反编译
-    def decompile(self, path: str, out_folder: str) -> None:
-        data = Config.load_file(path)
-        resultLines: list[str] = []
+    @classmethod
+    def decompile(cls, path: str, out: str) -> None:
+        # 初始化视觉小说数据管理模块
+        _content: DialogContentManager = DialogContentManager()
+        # 获取视觉小说脚本数据
+        dialogs_data: Optional[dict] = Config.load_file(path).get("dialogs")
+        # 如果数据不为空
+        if dialogs_data is not None and len(dialogs_data) > 0:
+            # 把数据更新到管理模块中
+            _content.update(dialogs_data)
+            # 用于储存结果的列表
+            _results: list[str] = ["# Fundamental parameters\n[id]{0}\n[lang]{1}\n".format(*cls.extract_info_from_path(path))]
 
-        resultLines.extend(
-            [
-                "# Fundamental parameters\n",
-                "[id]1\n",
-                "[lang]English\n"
-                ]
-        )
+            for _part in dialogs_data:
+                # 更新视觉小说数据管理模块的当前位置
+                _content.set_id("head")
+                _content.set_part(_part)
+                # 写入当前部分的名称
+                _results.append("\n[part]" + _part + "\n")
 
-        key:str = "head"
-        part:str = "dialog_example"
+                while True:
+                    _current_dialog: dict = _content.get_dialog()
+                    # 处理注释
+                    notes: list[str] = _current_dialog.pop("notes", [])
+                    if len(notes) > 0:
+                        _results.append("\n")
+                        for _note in notes:
+                            _results.append("// " + _note + "\n")
+                    # 写入讲话人名称
+                    _results.append("null:\n" if len(_content.current.narrator) == 0 else _content.current.narrator + ":\n")
+                    # 写入对话
+                    for _sentence in _content.current.contents:
+                        _results.append("- " + _sentence + "\n")
 
-        current_content = {}
-        new_content = data["dialogs"][part][key]
+                    """如果下列内容有变化，则写入"""
+                    # 写入背景
+                    if _content.previous is None or _content.current.background_image != _content.previous.background_image:
+                        if _content.previous is None or _content.previous.next.get("type") != "changeScene":
+                            _results.append("[bgi]" + cls.__to_str_in_case_null(_content.current.background_image) + "\n")
+                        else:
+                            _results.append("[scene]" + cls.__to_str_in_case_null(_content.current.background_image) + "\n")
+                    # 写入背景音乐
+                    if _content.previous is None or _content.previous.background_music != _content.current.background_music:
+                        _results.append("[bgm]" + cls.__to_str_in_case_null(_content.current.background_music) + "\n")
+                    # 写入当前立绘
+                    if _content.previous is None or _content.previous.character_images != _content.current.character_images:
+                        if len(_content.current.character_images) == 0:
+                            _results.append("[hide]*\n")
+                        elif _content.previous is None or len(_content.previous.character_images) == 0:
+                            _line: str = "[display]"
+                            for i in range(len(_content.current.character_images)):
+                                _line += CharacterImageNameMetaData(_content.current.character_images[i]).name + " "
+                            _results.append(_line.rstrip() + "\n")
 
-        while True:
-            for key in new_content:
-                pass
-    """
+                    if _content.current.has_next():
+                        _content.set_id(_content.current.next["target"])
+                    else:
+                        break
+
+            # 写入停止符
+            _results.append("\n[end]\n")
+
+            # 保存反编译好的脚本
+            with open(out, "w+", encoding="utf-8") as f:
+                f.writelines(_results)

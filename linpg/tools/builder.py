@@ -127,15 +127,15 @@ class BuilderManager(AbstractToolSystem):
         self.copy(additional_files, source_path_in_target_folder)
         # 通过复制init修复打包工具无法定位包的bug
         # self.copy(tuple([os.path.join(source_folder, "__init__.py")]), source_path_in_target_folder)
-        # 删除build文件夹
-        if remove_building_cache is True:
-            self.delete_file_if_exist("build")
         # 删除在sitepackages中的旧build，同时复制新的build
         if update_the_one_in_sitepackages is True:
             # 移除旧的build
             self._run_py_cmd(["pip", "uninstall", os.path.basename(source_folder)])
             # 安装新的build
             self._run_py_cmd(["pip", "install", "."])
+        # 删除build文件夹
+        if remove_building_cache is True:
+            self.delete_file_if_exist("build")
 
     # 打包上传最新的文件
     def upload_package(self) -> None:

@@ -32,7 +32,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         # 装饰物
         self.__decorations: list[DecorationObject] = []
         # 处于光处的区域
-        self.__light_area: tuple[tuple[int, int], ...] = tuple()
+        self.__lit_area: tuple[tuple[int, int], ...] = tuple()
         # 追踪是否需要更新的参数
         self.__need_update_surface: bool = True
         # 追踪目前已经画出的方块
@@ -86,7 +86,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         for decoration in self.__decorations:
             DecorationImagesModule.add_image(decoration.get_type(), decoration.image if isinstance(decoration.image, str) else decoration.get_type())
         # 处于光处的区域
-        self.__light_area = tuple()
+        self.__lit_area = tuple() if MapImageParameters.get_darkness() > 0 else mapDataDic["map"].get("lit_area", tuple())
         # 追踪目前已经画出的方块
         self.__block_on_surface = numpy.zeros(self.__MAP.shape, dtype=numpy.byte)
         self.__need_to_recheck_block_on_surface = True
@@ -135,6 +135,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             "map": {
                 "array2d": numpy.vectorize(lambda _num: sorted_lookup_table.index(self.__tile_lookup_table[_num]))(self.__MAP).tolist(),
                 "lookup_table": sorted_lookup_table,
+                "lit_area": list(self.__lit_area),
             },
         }
 
@@ -276,7 +277,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                         and -MapImageParameters.get_block_width() <= posTupleTemp[1] < _surface.get_height()
                     ):
                         if self.__block_on_surface[y][x] == 0:
-                            evn_img = TileMapImagesModule.get_image(self.get_block(x, y), not self.is_coordinate_in_light_rea(x, y))
+                            evn_img = TileMapImagesModule.get_image(self.get_block(x, y), not self.is_coordinate_in_lit_area(x, y))
                             evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
                             if self.__map_surface is not None:
                                 evn_img.draw(self.__map_surface)
@@ -337,12 +338,12 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                 # 树
                 if item.get_type() == "tree":
                     offSet = offSet_tree
-                    if item.get_pos() in occupied_coordinates and self.is_coordinate_in_light_rea(item.x, item.y):
+                    if item.get_pos() in occupied_coordinates and self.is_coordinate_in_lit_area(item.x, item.y):
                         decoration_alpha = 100
                 else:
                     offSet = offSet_normal
                 # 画出
-                item.blit(_surface, Coordinates.add(thePosInMap, offSet), not self.is_coordinate_in_light_rea(item.x, item.y), decoration_alpha)
+                item.blit(_surface, Coordinates.add(thePosInMap, offSet), not self.is_coordinate_in_lit_area(item.x, item.y), decoration_alpha)
 
     # 获取方块
     def get_block(self, _x: int, _y: int) -> str:
@@ -410,13 +411,13 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             if isinstance(_item, CampfireObject):
                 for _pos in _item.get_lit_coordinates():
                     lightArea.add(_pos)
-        self.__light_area = tuple(lightArea)
+        self.__lit_area = tuple(lightArea)
         self.__need_update_surface = True
         self.__need_to_recheck_block_on_surface = True
 
     # 查看坐标是否在光亮范围内
-    def is_coordinate_in_light_rea(self, x: int_f, y: int_f) -> bool:
-        return True if MapImageParameters.get_darkness() <= 0 else (round(x), round(y)) in self.__light_area
+    def is_coordinate_in_lit_area(self, x: int_f, y: int_f) -> bool:
+        return True if MapImageParameters.get_darkness() <= 0 else (round(x), round(y)) in self.__lit_area
 
     # 寻找2点之间的最短路径
     def find_path(
@@ -437,7 +438,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         map2d: numpy.ndarray = numpy.ones((self.__column, self.__row), dtype=numpy.byte)
         if not can_move_through_darkness:
             map2d.fill(0)
-            for _pos in self.__light_area:
+            for _pos in self.__lit_area:
                 map2d[_pos[0], _pos[1]] = 1
         # 历遍地图，设置障碍方块
         for _x in range(self.__column):

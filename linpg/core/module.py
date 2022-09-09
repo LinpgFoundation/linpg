@@ -1,3 +1,4 @@
+import enum
 from abc import abstractmethod
 
 from .system import *
@@ -290,3 +291,8 @@ class GameObject2point5d(Coordinate):
         super().set_pos(x, y)
         if z is not None:
             self.z = int(z)
+
+
+class Axis(enum.IntEnum):
+    VERTICAL = enum.auto()
+    HORIZONTAL = enum.auto()

@@ -33,39 +33,23 @@ class ProgressBar(AbstractProgressBar):
 # 进度条Surface
 class ProgressBarSurface(AbstractProgressBar):
     def __init__(
-        self, imgOnTop: Optional[PoI], imgOnBottom: Optional[PoI], x: int_f, y: int_f, max_width: int, height: int, mode: str = "horizontal", tag: str = ""
+        self, imgOnTop: Optional[PoI], imgOnBottom: Optional[PoI], x: int_f, y: int_f, max_width: int, height: int, mode: Axis = Axis.HORIZONTAL, tag: str = ""
     ) -> None:
         if imgOnTop is not None:
             imgOnTop = Images.quickly_load(imgOnTop)
         super().__init__(imgOnTop, x, y, max_width, height, tag)
         self._img2: Optional[ImageSurface] = Images.quickly_load(imgOnBottom) if imgOnBottom is not None else None
-        self._mode: bool = True
-        self.set_mode(mode)
-
-    # 模式
-    @property
-    def mode(self) -> str:
-        return self.get_mode()
-
-    def get_mode(self) -> str:
-        return "horizontal" if self._mode else "vertical"
-
-    def set_mode(self, mode: str) -> None:
-        if mode == "horizontal":
-            self._mode = True
-        elif mode == "vertical":
-            self._mode = False
-        else:
-            EXCEPTION.fatal("Mode '{}' is not supported!".format(mode))
+        # 模式
+        self.axis_mode: Axis = mode
 
     # 克隆
     def copy(self) -> "ProgressBarSurface":
         return ProgressBarSurface(
-            self.get_image_copy(), self._img2.copy() if self._img2 is not None else None, self.x, self.y, self.get_width(), self.get_height(), self.get_mode()
+            self.get_image_copy(), self._img2.copy() if self._img2 is not None else None, self.x, self.y, self.get_width(), self.get_height(), self.axis_mode
         )
 
     def light_copy(self) -> "ProgressBarSurface":
-        return ProgressBarSurface(self._get_image(), self._img2, self.x, self.y, self.get_width(), self.get_height(), self.get_mode())
+        return ProgressBarSurface(self._get_image(), self._img2, self.x, self.y, self.get_width(), self.get_height(), self.axis_mode)
 
     # 展示
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
@@ -75,7 +59,7 @@ class ProgressBarSurface(AbstractProgressBar):
                 _surface.blit(Images.resize(self._img2, self.size), pos)
             if self.percentage > 0:
                 imgOnTop = Images.resize(self._get_image(), self.size)
-                if self._mode:
+                if self.axis_mode is Axis.HORIZONTAL:
                     _surface.blit(imgOnTop.subsurface(0, 0, int(self.get_width() * self.percentage), self.get_height()), pos)
                 else:
                     _surface.blit(imgOnTop.subsurface(0, 0, self.get_width(), int(self.get_height() * self.percentage)), pos)
@@ -94,7 +78,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
         height: int,
         indicator_width: int,
         indicator_height: int,
-        mode: str = "horizontal",
+        mode: Axis = Axis.HORIZONTAL,
         tag: str = "",
     ) -> None:
         super().__init__(imgOnTop, imgOnBottom, x, y, max_width, height, mode=mode, tag=tag)
@@ -107,7 +91,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
             abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             x: int
             y: int
-            if self._mode is True:
+            if self.axis_mode is Axis.HORIZONTAL:
                 x, y = Coordinates.add(
                     (int(self.get_width() * self.percentage - self.__indicator.width / 2), (self.get_height() - self.__indicator.height) // 2), abs_pos
                 )
@@ -134,7 +118,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
                 if Controller.mouse.get_pressed(0):
                     self.set_percentage(
                         (Controller.mouse.x - offSet[0] - self.x) / self.get_width()
-                        if self._mode is True
+                        if self.axis_mode is Axis.HORIZONTAL
                         else (Controller.mouse.y - offSet[1] - self.y) / self.get_height()
                     )
                 elif Controller.get_event("scroll_down"):
@@ -145,7 +129,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
 
 # 动态进度条Surface
 class DynamicProgressBarSurface(ProgressBarSurface):
-    def __init__(self, imgOnTop: Optional[PoI], imgOnBottom: Optional[PoI], x: int_f, y: int_f, max_width: int, height: int, mode: str = "horizontal"):
+    def __init__(self, imgOnTop: Optional[PoI], imgOnBottom: Optional[PoI], x: int_f, y: int_f, max_width: int, height: int, mode: Axis = Axis.HORIZONTAL):
         super().__init__(imgOnTop, imgOnBottom, x, y, max_width, height, mode)
         self._percentage_to_be: float = 0.0
         self.__percent_update_each_time: float = 0.0
@@ -174,11 +158,11 @@ class DynamicProgressBarSurface(ProgressBarSurface):
 
     def copy(self) -> "DynamicProgressBarSurface":
         return DynamicProgressBarSurface(
-            self.get_image_copy(), self._img2.copy() if self._img2 is not None else None, self.x, self.y, self.get_width(), self.get_height(), self.get_mode()
+            self.get_image_copy(), self._img2.copy() if self._img2 is not None else None, self.x, self.y, self.get_width(), self.get_height(), self.axis_mode
         )
 
     def light_copy(self) -> "DynamicProgressBarSurface":
-        return DynamicProgressBarSurface(self._get_image(), self._img2, self.x, self.y, self.get_width(), self.get_height(), self.get_mode())
+        return DynamicProgressBarSurface(self._get_image(), self._img2, self.x, self.y, self.get_width(), self.get_height(), self.axis_mode)
 
     # 获取上方图片（子类可根据需求修改）
     def _get_img_on_top(self) -> ImageSurface:
@@ -204,7 +188,7 @@ class DynamicProgressBarSurface(ProgressBarSurface):
             # 画出图形
             if super().get_percentage() > 0:
                 img_on_top_t = Images.resize(self._get_img_on_top(), self.size)
-                if self._mode:
+                if self.axis_mode is Axis.HORIZONTAL:
                     if self.__real_current_percentage < self._percentage_to_be:
                         img2 = img_on_top_t.subsurface((0, 0, int(self.get_width() * self._percentage_to_be / self.accuracy), self.get_height()))
                         img2.set_alpha(100)

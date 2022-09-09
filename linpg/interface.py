@@ -26,7 +26,7 @@ class Loader:
     # 进度条Surface
     @staticmethod
     def progress_bar_surface(
-        img_on_top_path: str, img_on_bottom_path: str, _position: tuple[int, int], size: tuple[int, int], mode: str = "horizontal", tag: str = ""
+        img_on_top_path: str, img_on_bottom_path: str, _position: tuple[int, int], size: tuple[int, int], mode: Axis = Axis.HORIZONTAL, tag: str = ""
     ) -> ProgressBarSurface:
         return ProgressBarSurface(img_on_top_path, img_on_bottom_path, _position[0], _position[1], size[0], size[1], mode, tag)
 

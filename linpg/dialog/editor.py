@@ -33,9 +33,9 @@ class DialogEditor(DialogConverter):
         # 背景音乐选择 DropDown ui
         self.__dialog_bgm_select: DropDownList = DropDownList(None, 0, 0, 1)
         # 背景图片编辑模块
-        self.__UIContainerRight_bg: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(None, 0, 0, 0, 0, "vertical")
+        self.__UIContainerRight_bg: SurfaceContainerWithScrollBar = SurfaceContainerWithScrollBar(None, 0, 0, 0, 0, Axis.VERTICAL)
         # npc立绘编辑模块
-        self.__UIContainerRight_npc: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(None, 0, 0, 0, 0, "vertical")
+        self.__UIContainerRight_npc: SurfaceContainerWithScrollBar = SurfaceContainerWithScrollBar(None, 0, 0, 0, 0, Axis.VERTICAL)
         # 控制容器转换的按钮
         self.__button_select_background: Button = Button.load("<&ui>button.png", (0, 0), (0, 0), 150)
         self.__button_select_npc: Button = Button.load("<&ui>button.png", (0, 0), (0, 0), 150)

@@ -15,8 +15,8 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self.__bottom_container_buttons: GameObjectsListContainer = GameObjectsListContainer(None, 0, 0, 0, 0)
         self.__entitiesImagesContainers: list = []
         self.__entitiesImagesContainerUsingIndex: int = -1
-        self.__envImgContainer: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(None, 0, 0, 0, 0, "vertical")
-        self.__decorationsImgContainer: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(None, 0, 0, 0, 0, "vertical")
+        self.__envImgContainer: SurfaceContainerWithScrollBar = SurfaceContainerWithScrollBar(None, 0, 0, 0, 0, Axis.VERTICAL)
+        self.__decorationsImgContainer: SurfaceContainerWithScrollBar = SurfaceContainerWithScrollBar(None, 0, 0, 0, 0, Axis.VERTICAL)
         # 用于储存即将发下的物品的具体参数
         self.__object_to_put_down: dict = {}
         # 未保存离开时的警告
@@ -171,8 +171,8 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         )
         # 加载所有角色的图片文件
         for faction in os.listdir(EntitySpriteImageManager.SPRITES_PATH):
-            newContainer: SurfaceContainerWithScrollbar = SurfaceContainerWithScrollbar(
-                None, container_width // 40, container_height * 3 // 10, container_width * 19 // 20, container_height * 3 // 5, "horizontal", faction
+            newContainer: SurfaceContainerWithScrollBar = SurfaceContainerWithScrollBar(
+                None, container_width // 40, container_height * 3 // 10, container_width * 19 // 20, container_height * 3 // 5, Axis.HORIZONTAL, faction
             )
             for img_name in os.listdir(os.path.join(EntitySpriteImageManager.SPRITES_PATH, faction)):
                 newContainer.set(

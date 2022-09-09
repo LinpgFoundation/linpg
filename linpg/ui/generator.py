@@ -212,7 +212,7 @@ class UiGenerator:
                         EXCEPTION.fatal("You need to set a indicator for progress_bar_adjuster!")
                     # 设置模式
                     if "mode" not in data:
-                        data["mode"] = "horizontal"
+                        data["mode"] = Axis.HORIZONTAL
                     # 生成ProgressBarAdjuster
                     item_t = ProgressBarAdjuster(
                         data["src"][0],

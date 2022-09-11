@@ -55,6 +55,7 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         self.__is_flipped_horizontally: bool = False
         self.__is_flipped_vertically: bool = False
         self.__crop_rect: Optional[Rectangle] = None
+        self.__bounding_rect: Rectangle = Rectangle(0, 0, 0, 0)
         self.__no_cropping_needed: bool = False
 
     # 截图的范围
@@ -112,6 +113,13 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
     def new_place_holder() -> "StaticImage":
         return StaticImage("<NULL>", 0, 0)
 
+    # 获取切割后的图片的rect
+    def get_bounding_rect(self) -> Rectangle:
+        # 如果图片需要更新，则先更新
+        if self._need_update is True:
+            self._update_img()
+        return self.__bounding_rect
+
     # 更新图片
     def _update_img(self) -> None:
         # 改变尺寸
@@ -131,7 +139,9 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
                     rect.move_to((new_x, new_y))
                     rect.set_size(min(rect.right, self.__crop_rect.right) - new_x, min(rect.bottom, self.__crop_rect.bottom) - new_y)
                 self.set_local_pos(rect.x, rect.y)
-                self._processed_img = imgTmp.subsurface(rect.get_rect())
+                self.__bounding_rect.move_to(rect.get_pos())
+                self.__bounding_rect.set_size(rect.get_width(), rect.get_height())
+                self._processed_img = imgTmp.subsurface(self.__bounding_rect.get_rect())
             else:
                 self._processed_img = imgTmp
         else:

@@ -155,7 +155,7 @@ class UiGenerator:
                 font_size: int = cls.__convert_number(data, "font_size", max_height, custom_values)
                 # 补充可选参数
                 if "color" not in data:
-                    data["color"] = "black"
+                    data["color"] = Colors.BLACK
                 if "bold" not in data:
                     data["bold"] = False
                 if "italic" not in data:

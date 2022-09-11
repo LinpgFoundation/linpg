@@ -122,6 +122,9 @@ class TileMapImagesModule:
     # 环境
     __ENV_IMAGE_DICT: Final[dict[str, StaticImage | tuple[StaticImage, ...]]] = {}
     __ENV_IMAGE_DICT_DARK: Final[dict[str, StaticImage | tuple[StaticImage, ...]]] = {}
+    # 标准Tile尺寸
+    TILE_TEMPLE_WIDTH: int = 0
+    TILE_TEMPLE_HEIGHT: int = 0
 
     # 调整尺寸
     @classmethod
@@ -142,6 +145,9 @@ class TileMapImagesModule:
             else:
                 for _temp in _imgRef:
                     _temp.set_width_with_original_image_size_locked(MapImageParameters.get_block_width())
+        # 根据Template计算tile标准尺寸和offset
+        cls.TILE_TEMPLE_WIDTH, cls.TILE_TEMPLE_HEIGHT = cls.get_image("Template", False).get_bounding_rect().get_size()
+        cls.TILE_TEMPLE_HEIGHT = cls.TILE_TEMPLE_HEIGHT * 2 // 5
 
     # 加载图片
     @classmethod
@@ -197,7 +203,8 @@ class TileMapImagesModule:
         if possible_result is not None:
             result = possible_result
         else:
-            EXCEPTION.inform("Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(_type))
+            if Debug.get_developer_mode():
+                EXCEPTION.inform("Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(_type))
             cls.add_image(_type)
             result = cls.__ENV_IMAGE_DICT_DARK[_type] if darkMode is True else cls.__ENV_IMAGE_DICT[_type]
         return result if not isinstance(result, tuple) else result[_variation]

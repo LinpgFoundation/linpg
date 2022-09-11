@@ -200,7 +200,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         # 进度条
         bar_height: int = _surface.get_height() // 100
         white_progress_bar: ProgressBar = ProgressBar(
-            bar_height, _surface.get_height() - bar_height * 2, _surface.get_width() - bar_height * 2, bar_height, "white"
+            bar_height, _surface.get_height() - bar_height * 2, _surface.get_width() - bar_height * 2, bar_height, Colors.WHITE
         )
         # 生成黑色帘幕
         BLACK_CURTAIN: ImageSurface = Surfaces.colored(_surface.get_size(), Colors.BLACK)

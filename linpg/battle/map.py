@@ -28,6 +28,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         # 地图渲染用的图层
         self.__map_surface: Optional[ImageSurface] = None
         self.__map_surface_old: Optional[ImageSurface] = None
+        self.__don_save_old_map_surface_for_next_update: bool = False
         # 背景图片
         self.__background_image: Optional[StaticImage] = None
         # 装饰物
@@ -211,10 +212,9 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         old_width: int = self.get_width()
         old_height: int = self.get_height()
         # 更新尺寸
-        self.set_size(
-            newPerBlockWidth * 0.9 * ((self.__row + self.__column + 1) / 2), newPerBlockWidth * 0.45 * ((self.__row + self.__column + 1) / 2) + newPerBlockWidth
-        )
         TileMapImagesModule.update_size(round(newPerBlockWidth), round(newPerBlockHeight))
+        self.set_size(TileMapImagesModule.TILE_TEMPLE_WIDTH * self.__column, TileMapImagesModule.TILE_TEMPLE_HEIGHT * self.__row)
+        self.__don_save_old_map_surface_for_next_update = True
         if self.get_width() < Display.get_width():
             self.set_width(Display.get_width())
         if self.get_height() < Display.get_height():
@@ -263,7 +263,10 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                 if self.__background_image is not None:
                     self.__background_image.set_size(_surface.get_width(), _surface.get_height())
                 if MapImageParameters.get_darkness() > 0:
-                    self.__map_surface_old = self.__map_surface
+                    if not self.__don_save_old_map_surface_for_next_update:
+                        self.__map_surface_old = self.__map_surface
+                    else:
+                        self.__don_save_old_map_surface_for_next_update = False
                 self.__map_surface = Surfaces.transparent(self.get_size())
                 self.__block_on_surface.fill(0)
                 self.__need_to_recheck_block_on_surface = False
@@ -280,6 +283,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                         if self.__block_on_surface[y][x] == 0:
                             evn_img = TileMapImagesModule.get_image(self.get_block(x, y), not self.is_coordinate_in_lit_area(x, y))
                             evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
+                            evn_img.set_local_pos(0, 0)
                             if self.__map_surface is not None:
                                 evn_img.draw(self.__map_surface)
                             self.__block_on_surface[y][x] = 1
@@ -296,7 +300,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         # 显示调试窗口
         if self.__debug_win is not None and not self.__need_to_recheck_block_on_surface:
             self.__debug_win.clear()
-            self.__debug_win.fill("black")
+            self.__debug_win.fill(Colors.BLACK)
             start_x: int
             start_y: int
             for y in range(len(self.__block_on_surface)):
@@ -304,9 +308,9 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                     start_x = int(x * self.__debug_win_unit * 1.25 + self.__debug_win_unit / 4)
                     start_y = int(y * self.__debug_win_unit * 1.25 + self.__debug_win_unit / 4)
                     if self.__block_on_surface[y][x] == 0:
-                        self.__debug_win.draw_rect((start_x, start_y, self.__debug_win_unit, self.__debug_win_unit), "white")
+                        self.__debug_win.draw_rect((start_x, start_y, self.__debug_win_unit, self.__debug_win_unit), Colors.WHITE)
                     else:
-                        self.__debug_win.fill_rect((start_x, start_y, self.__debug_win_unit, self.__debug_win_unit), "white")
+                        self.__debug_win.fill_rect((start_x, start_y, self.__debug_win_unit, self.__debug_win_unit), Colors.WHITE)
             # 显示开发面板
             self.__debug_win.present()
         # 画出背景
@@ -375,39 +379,26 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         self.__need_to_recheck_block_on_surface = True
 
     # 计算在地图中的方块
-    def calculate_coordinate(self, pos: tuple[int, int] = None) -> Optional[tuple[int, int]]:
-        if pos is None:
-            pos = Controller.mouse.get_pos()
+    def calculate_coordinate(self, on_screen_pos: Optional[tuple[int, int]] = None) -> Optional[tuple[int, int]]:
+        if on_screen_pos is None:
+            on_screen_pos = Controller.mouse.get_pos()
         guess_x: int = int(
-            (
-                (pos[0] - self.local_x - self.__row * MapImageParameters.get_block_width() * 0.43) / 0.43
-                + (pos[1] - self.local_y - MapImageParameters.get_block_width() * 0.4) / 0.22
-            )
-            // (MapImageParameters.get_block_width() * 2)
+            (on_screen_pos[0] - self.local_x) / TileMapImagesModule.TILE_TEMPLE_WIDTH
+            + (on_screen_pos[1] - self.local_y) / TileMapImagesModule.TILE_TEMPLE_HEIGHT
+            - self.__row / 2
         )
-        guess_y: int = int((pos[1] - self.local_y - MapImageParameters.get_block_width() * 0.4) / MapImageParameters.get_block_width() / 0.22) - guess_x
-        x: int
-        y: int
-        posTupleTemp: tuple
-        lenUnitW: float = MapImageParameters.get_block_width() / 5
-        lenUnitH: float = MapImageParameters.get_block_width() * 0.8 / 393 * 214
-        for y in range(guess_y - 1, guess_y + 4):
-            for x in range(guess_x - 1, guess_x + 4):
-                posTupleTemp = self.calculate_position(x, y)
-                if lenUnitW < pos[0] - posTupleTemp[0] - MapImageParameters.get_block_width() * 0.05 < lenUnitW * 3 and 0 < pos[1] - posTupleTemp[1] < lenUnitH:
-                    if 0 <= x < self.__column and 0 <= y < self.__row:
-                        return x, y
-        return None
+        guess_y: int = int(
+            (on_screen_pos[1] - self.local_y) / TileMapImagesModule.TILE_TEMPLE_HEIGHT
+            - (on_screen_pos[0] - self.local_x) / TileMapImagesModule.TILE_TEMPLE_WIDTH
+            + self.__row / 2
+        )
+        return (guess_x, guess_y) if self.__column > guess_x >= 0 and self.__row > guess_y >= 0 else None
 
     # 计算在地图中的位置
     def calculate_position(self, x: int_f, y: int_f) -> tuple[int, int]:
-        widthTmp: float = MapImageParameters.get_block_width() * 0.43
-        return Coordinates.add(
-            (
-                round((x - y) * widthTmp + self.__row * widthTmp),
-                round((y + x) * MapImageParameters.get_block_width() * 0.22 + MapImageParameters.get_block_width() * 0.4),
-            ),
-            self.local_pos,
+        return (
+            round((x - y + self.__row - 1) * TileMapImagesModule.TILE_TEMPLE_WIDTH / 2) + self.local_x,
+            round((y + x) * TileMapImagesModule.TILE_TEMPLE_HEIGHT / 2) + self.local_y,
         )
 
     # 计算光亮区域

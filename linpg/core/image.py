@@ -15,11 +15,11 @@ class DynamicImage(AbstractImageSurface):
 
     # 返回一个浅复制品
     def light_copy(self) -> "DynamicImage":
-        return DynamicImage(self._get_image(), self.x, self.y, self.get_width(), self.get_height(), self.tag)
+        return DynamicImage(self._get_image_reference(), self.x, self.y, self.get_width(), self.get_height(), self.tag)
 
     # 反转
     def flip(self, vertical: bool = False, horizontal: bool = False) -> None:
-        self._set_image(Images.flip(self._get_image(), vertical, horizontal))
+        self._set_image(Images.flip(self._get_image_reference(), vertical, horizontal))
 
     # 设置透明度
     def set_alpha(self, value: int) -> None:
@@ -42,10 +42,10 @@ class DynamicImage(AbstractImageSurface):
         if self.is_visible():
             if not Setting.get_low_memory_mode():
                 if self.__processed_img is None or self.__processed_img.get_size() != self.size:
-                    self.__processed_img = Images.smoothly_resize(self._get_image(), self.size)
+                    self.__processed_img = Images.smoothly_resize(self._get_image_reference(), self.size)
                 _surface.blit(self.__processed_img, Coordinates.add(self.pos, offSet))
             else:
-                _surface.blit(Images.resize(self._get_image(), self.size), Coordinates.add(self.pos, offSet))
+                _surface.blit(Images.resize(self._get_image_reference(), self.size), Coordinates.add(self.pos, offSet))
 
 
 # 用于静态图片的surface
@@ -106,7 +106,7 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
 
     # 返回一个浅复制品
     def light_copy(self) -> "StaticImage":
-        return StaticImage(self._get_image(), self.x, self.y, self.get_width(), self.get_height())
+        return StaticImage(self._get_image_reference(), self.x, self.y, self.get_width(), self.get_height())
 
     @staticmethod
     def new_place_holder() -> "StaticImage":
@@ -115,7 +115,9 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
     # 更新图片
     def _update_img(self) -> None:
         # 改变尺寸
-        imgTmp = Images.smoothly_resize(self._get_image(), self.size) if Setting.get_antialias() else Images.resize(self._get_image(), self.size)
+        imgTmp = (
+            Images.smoothly_resize(self._get_image_reference(), self.size) if Setting.get_antialias() else Images.resize(self._get_image_reference(), self.size)
+        )
         # 翻转图片
         if self.__is_flipped_horizontally is True or self.__is_flipped_vertically is True:
             imgTmp = Images.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)
@@ -181,7 +183,7 @@ class MovableImage(StaticImage):
     # 返回一个浅复制品
     def light_copy(self) -> "MovableImage":
         return MovableImage(
-            self._get_image(),
+            self._get_image_reference(),
             self.x,
             self.y,
             self.__target_x,
@@ -292,12 +294,12 @@ class AnimatedImage(AdvancedAbstractImageSurface):
 
     # 返回一个浅复制品
     def light_copy(self) -> "AnimatedImage":
-        return AnimatedImage(self._get_image(), self.x, self.y, self.get_width(), self.get_height(), self.updateGap)
+        return AnimatedImage(self._get_image_reference(), self.x, self.y, self.get_width(), self.get_height(), self.updateGap)
 
     # 当前图片
     @property
     def current_image(self) -> StaticImage:
-        return self._get_image()[self.imgId]  # type: ignore
+        return self._get_image_reference()[self.imgId]  # type: ignore
 
     # 展示
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
@@ -308,7 +310,7 @@ class AnimatedImage(AdvancedAbstractImageSurface):
             if self.countDown >= self.updateGap:
                 self.countDown = 0
                 self.imgId += 1
-                if self.imgId >= len(self._get_image()):
+                if self.imgId >= len(self._get_image_reference()):
                     self.imgId = 0
             else:
                 self.countDown += 1

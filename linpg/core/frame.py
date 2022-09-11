@@ -34,8 +34,8 @@ class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
     def __update_window_frame(self) -> None:
         if self.__if_regenerate_window is True:
             self._set_image(Surfaces.colored(self.size, Colors.WHITE))
-            Draw.rect(self._get_image(), Colors.LIGHT_GRAY, (ORIGIN, (self.get_width(), self._bar_height)))
-            Draw.rect(self._get_image(), Colors.GRAY, (ORIGIN, self.size), self.__outline_thickness)
+            Draw.rect(self._get_image_reference(), Colors.LIGHT_GRAY, (ORIGIN, (self.get_width(), self._bar_height)))
+            Draw.rect(self._get_image_reference(), Colors.GRAY, (ORIGIN, self.size), self.__outline_thickness)
             # 初始化图标
             if not self.__rescale_icon_initialized:
                 # 更新尺寸
@@ -162,7 +162,7 @@ class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
             # 更新窗口
             self.__update_window_frame()
             # 画出窗口
-            _surface.blit(self._get_image(), self.pos)
+            _surface.blit(self._get_image_reference(), self.pos)
             # 如果需要，则先更新内容surface
             if self._if_update_needed is True:
                 self._update()

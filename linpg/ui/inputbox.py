@@ -54,11 +54,8 @@ class SingleLineInputBox(AbstractInputBox):
         return self._text
 
     def set_text(self, new_txt: str = "") -> None:
-        if len(new_txt) > 0:
-            self._text = new_txt
-        else:
-            self._text = ""
-        self._holder_index = len(new_txt)
+        self._text = new_txt
+        self._holder_index = len(self._text)
         self._reset_inputbox_width()
 
     def _add_char(self, char: str) -> None:

@@ -78,7 +78,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         # 确保地图初始化
         _map_p: Optional[list] = _data.get("map")
         if _map_p is None or len(_map_p) == 0:
-            lookup_table: list[str] = ["TileSnow01", "TileSnow01ToStone01", "TileSnow01ToStone02", "TileSnow02", "TileSnow02ToStone01", "TileSnow02ToStone02"]
+            lookup_table: list[str] = ["Snow:2", "Snow:3", "Snow:4", "Snow:5", "Snow:6", "Snow:7"]
             block_y: int = 50
             block_x: int = 50
             _data["map"] = {
@@ -129,7 +129,13 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         if TileMapImagesModule.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET is None:
             EXCEPTION.fatal("Image sprite sheet for tile map is not loaded correctly!")
         for key, value in TileMapImagesModule.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.to_dict().items():
-            self.__envImgContainer.set(key, Images.resize(value, (self._MAP.block_width / 3, None)))
+            if isinstance(value, ImageSurface):
+                self.__envImgContainer.set(key, Images.resize(value, (self._MAP.block_width / 3, None)))
+            else:
+                _index: int = 0
+                for _imgRef in value:
+                    self.__envImgContainer.set("{0}:{1}".format(key, _index), Images.resize(_imgRef, (self._MAP.block_width / 3, None)))
+                    _index += 1
         self.__envImgContainer.set_item_per_line(4)
         self.__envImgContainer.set_scroll_bar_pos("right")
         self.__envImgContainer.set_visible(True)
@@ -178,7 +184,8 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 newContainer.set(
                     img_name,
                     Images.smoothly_resize(
-                        EntitySpriteImageManager.try_get_images(faction, img_name, "wait").get_image(0).get_image_copy(), (None, container_height // 3)
+                        EntitySpriteImageManager.try_get_image_references(faction, img_name, "wait").get_image(0).get_image_copy(),
+                        (None, container_height // 3),
                     ),
                 )
             newContainer.set_scroll_bar_pos("bottom")

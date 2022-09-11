@@ -229,20 +229,21 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
 
     # 淡入或淡出
     def _fade(self, _surface: ImageSurface) -> None:
-        if self.__is_fading_out is True:
-            Media.fade_out(1000)
-            for i in range(0, 255, 5):
-                self._black_bg.set_alpha(i)
-                self._black_bg.draw(_surface)
-                Display.flip()
-        else:
-            for i in range(255, 0, -5):
-                self.display_background_image(_surface)
-                self._black_bg.set_alpha(i)
-                self._black_bg.draw(_surface)
-                Display.flip()
-            # 重设black_bg的alpha值以便下一次使用
-            self._black_bg.set_alpha(255)
+        if not self.__disable_background_image_rendering:
+            if self.__is_fading_out is True:
+                Media.fade_out(1000)
+                for i in range(0, 255, 5):
+                    self._black_bg.set_alpha(i)
+                    self._black_bg.draw(_surface)
+                    Display.flip()
+            else:
+                for i in range(255, 0, -5):
+                    self.display_background_image(_surface)
+                    self._black_bg.set_alpha(i)
+                    self._black_bg.draw(_surface)
+                    Display.flip()
+                # 重设black_bg的alpha值以便下一次使用
+                self._black_bg.set_alpha(255)
 
     # 重写父类的display_background_image方法使其在背景被disable后不会继续渲染背景图片
     def display_background_image(self, _surface: ImageSurface) -> None:

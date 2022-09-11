@@ -4,23 +4,6 @@ from abc import ABCMeta
 from ..basic import *
 
 
-# 使用多线程保存数据
-class SaveDataThread(threading.Thread):
-    def __init__(self, path: str, data: dict):
-        super().__init__()
-        self.path: str = str(path)
-        self.data: dict = dict(data)
-        self.result: bool = False
-
-    # 返回一个线程的复制
-    def copy(self) -> "SaveDataThread":
-        return SaveDataThread(self.path, self.data)
-
-    def run(self) -> None:
-        Config.save(self.path, self.data)
-        self.result = True
-
-
 # 系统模块接口
 class AbstractSystem(ABC):
     def __init__(self) -> None:
@@ -160,8 +143,9 @@ class AbstractGameSystem(SystemWithBackgroundMusic, metaclass=ABCMeta):
         # 确保储存进度存档的文件夹存在
         if not os.path.exists(self.folder_for_save_file):
             os.makedirs(self.folder_for_save_file)
-        # 存档数据
-        save_thread = SaveDataThread(self.file_path, self._get_data_need_to_save())
+        # 使用多线程保存数据
+        save_thread = threading.Thread(target=Config.save, args=(self.file_path, self._get_data_need_to_save()))
+        save_thread.daemon = True
         save_thread.start()
         save_thread.join()
         del save_thread

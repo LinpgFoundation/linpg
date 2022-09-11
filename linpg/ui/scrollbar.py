@@ -341,8 +341,8 @@ class SurfaceContainerWithScrollBar(GameObjectsDictContainer, AbstractSurfaceWit
         self._item_being_hovered = None
         if self.is_visible():
             # 如果有背景图片，则画出
-            if self._get_image() is not None:
-                _surface.blit(self._get_image(), Coordinates.add(self.pos, off_set))
+            if self._get_image_reference() is not None:
+                _surface.blit(self._get_image_reference(), Coordinates.add(self.pos, off_set))
             # 计算出基础坐标
             current_x: int = self.abs_x + off_set[0]
             current_y: int = self.abs_y + off_set[1]

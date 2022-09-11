@@ -53,7 +53,7 @@ class DecorationImagesModule:
 
     # 加载场景装饰物图片
     @classmethod
-    def add_image(cls, decorationType: str, fileName: str) -> None:
+    def add_image(cls, decorationType: str, _id: str) -> None:
         # 如果是未被加载过的类型
         if decorationType not in cls.__DECORATION_IMAGE_DICT:
             cls.__DECORATION_IMAGE_DICT[decorationType] = {}
@@ -69,26 +69,26 @@ class DecorationImagesModule:
             )
         # 从sheet中读取装饰物图片
         _img: ImageSurface | tuple
-        if cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.contain(fileName):
-            _img = cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.get(fileName)
-        elif cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.contain(fileName):
-            _img = cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.get(fileName)
+        if cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.contain(_id):
+            _img = cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.get(_id)
+        elif cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.contain(_id):
+            _img = cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.get(_id)
         else:
-            EXCEPTION.fatal('Cannot find decoration image "{}"'.format(fileName))
+            EXCEPTION.fatal('Cannot find decoration image "{}"'.format(_id))
         # 常规的独立图片
         if not isinstance(_img, tuple):
             # 最后确认一下是不是需要加载
-            if fileName not in cls.__DECORATION_IMAGE_DICT[decorationType]:
+            if _id not in cls.__DECORATION_IMAGE_DICT[decorationType]:
                 # 生成图片
-                cls.__DECORATION_IMAGE_DICT[decorationType][fileName] = StaticImage(_img, 0, 0)
+                cls.__DECORATION_IMAGE_DICT[decorationType][_id] = StaticImage(_img, 0, 0)
             # 如果是夜战模式
             if MapImageParameters.get_darkness() > 0:
                 if decorationType not in cls.__DECORATION_IMAGE_DICT_DARK:
                     cls.__DECORATION_IMAGE_DICT_DARK[decorationType] = {}
-                if fileName not in cls.__DECORATION_IMAGE_DICT_DARK[decorationType]:
-                    cls.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName] = cls.__DECORATION_IMAGE_DICT[decorationType][fileName].copy()
-                    cls.__DECORATION_IMAGE_DICT_DARK[decorationType][fileName].add_darkness(MapImageParameters.get_darkness())
-        # 类Gif形式，decorationType应该与fileName一致
+                if _id not in cls.__DECORATION_IMAGE_DICT_DARK[decorationType]:
+                    cls.__DECORATION_IMAGE_DICT_DARK[decorationType][_id] = cls.__DECORATION_IMAGE_DICT[decorationType][_id].copy()
+                    cls.__DECORATION_IMAGE_DICT_DARK[decorationType][_id].add_darkness(MapImageParameters.get_darkness())
+        # 类Gif形式，decorationType应该与_id一致
         else:
             cls.__DECORATION_IMAGE_DICT[decorationType] = [StaticImage(each_img, 0, 0) for each_img in _img]
             if MapImageParameters.get_darkness() > 0:
@@ -120,8 +120,8 @@ class TileMapImagesModule:
     # 引擎自带的地图贴图
     DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET: Optional[SpriteImage] = None
     # 环境
-    __ENV_IMAGE_DICT: Final[dict[str, StaticImage]] = {}
-    __ENV_IMAGE_DICT_DARK: Final[dict[str, StaticImage]] = {}
+    __ENV_IMAGE_DICT: Final[dict[str, StaticImage | tuple[StaticImage, ...]]] = {}
+    __ENV_IMAGE_DICT_DARK: Final[dict[str, StaticImage | tuple[StaticImage, ...]]] = {}
 
     # 调整尺寸
     @classmethod
@@ -129,43 +129,78 @@ class TileMapImagesModule:
         # 更新尺寸
         MapImageParameters.set_block_size(_width, _height)
         # 调整地图方块尺寸
-        for key in cls.__ENV_IMAGE_DICT:
-            cls.__ENV_IMAGE_DICT[key].set_width_with_original_image_size_locked(MapImageParameters.get_block_width())
+        for _imgRef in cls.__ENV_IMAGE_DICT.values():
+            if not isinstance(_imgRef, tuple):
+                _imgRef.set_width_with_original_image_size_locked(MapImageParameters.get_block_width())
+            else:
+                for _temp in _imgRef:
+                    _temp.set_width_with_original_image_size_locked(MapImageParameters.get_block_width())
         # 调整黑夜模式下的地图方块尺寸
-        for key in cls.__ENV_IMAGE_DICT_DARK:
-            cls.__ENV_IMAGE_DICT_DARK[key].set_width_with_original_image_size_locked(MapImageParameters.get_block_width())
+        for _imgRef in cls.__ENV_IMAGE_DICT_DARK.values():
+            if not isinstance(_imgRef, tuple):
+                _imgRef.set_width_with_original_image_size_locked(MapImageParameters.get_block_width())
+            else:
+                for _temp in _imgRef:
+                    _temp.set_width_with_original_image_size_locked(MapImageParameters.get_block_width())
 
     # 加载图片
     @classmethod
-    def add_image(cls, fileName: str) -> None:
+    def add_image(cls, _id: str) -> None:
         if cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET is None:
             cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET = SpriteImage(
                 "<!env>block.png" if os.path.exists(Images.generate_path_according_to_prefix("<!env>block.png")) else "<NULL>"
             )
-        if cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.contain(fileName):
-            if fileName not in cls.__ENV_IMAGE_DICT:
-                _img: ImageSurface | tuple = cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.get(fileName)
+        _id = _id.split(":")[0]
+        if cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.contain(_id):
+            _temp: list[StaticImage]
+            _imgTemp: StaticImage
+            if _id not in cls.__ENV_IMAGE_DICT:
+                _img: ImageSurface | tuple[ImageSurface, ...] = cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.get(_id)
                 if isinstance(_img, tuple):
-                    EXCEPTION.fatal("Images for tile map cannot be grouped as a collection")
-                cls.__ENV_IMAGE_DICT[fileName] = StaticImage(_img, 0, 0)
-                cls.__ENV_IMAGE_DICT[fileName].set_width_with_original_image_size_locked(MapImageParameters.get_block_width())
+                    _temp = [StaticImage(_imgRef, 0, 0) for _imgRef in _img]
+                    for _imgRef in _temp:
+                        _imgRef.set_width_with_original_image_size_locked(MapImageParameters.get_block_width())
+                    cls.__ENV_IMAGE_DICT[_id] = tuple(_temp)
+                else:
+                    _imgTemp = StaticImage(_img, 0, 0)
+                    _imgTemp.set_width_with_original_image_size_locked(MapImageParameters.get_block_width())
+                    cls.__ENV_IMAGE_DICT[_id] = _imgTemp
             # 如果是夜战模式
             if MapImageParameters.get_darkness() > 0:
-                cls.__ENV_IMAGE_DICT_DARK[fileName] = cls.__ENV_IMAGE_DICT[fileName].copy()
-                cls.__ENV_IMAGE_DICT_DARK[fileName].add_darkness(MapImageParameters.get_darkness())
+                _imgRefTemp: StaticImage | tuple[StaticImage, ...] = cls.__ENV_IMAGE_DICT[_id]
+                if isinstance(_imgRefTemp, tuple):
+                    _temp = []
+                    for _imgRef in _imgRefTemp:
+                        _imgCopy = _imgRef.copy()
+                        _imgCopy.add_darkness(MapImageParameters.get_darkness())
+                        _temp.append(_imgCopy)
+                    cls.__ENV_IMAGE_DICT_DARK[_id] = tuple(_temp)
+                else:
+                    _imgTemp = _imgRefTemp.copy()
+                    _imgTemp.add_darkness(MapImageParameters.get_darkness())
+                    cls.__ENV_IMAGE_DICT_DARK[_id] = _imgTemp
         else:
-            EXCEPTION.fatal('Cannot find image "{}" in folder'.format(fileName))
+            EXCEPTION.fatal('Cannot find image "{}" in folder'.format(_id))
 
     # 获取图片
     @classmethod
-    def get_image(cls, key: str, darkMode: bool) -> StaticImage:
-        _result: Optional[StaticImage] = cls.__ENV_IMAGE_DICT_DARK.get(key) if darkMode is True else cls.__ENV_IMAGE_DICT.get(key)
-        if _result is not None:
-            return _result
+    def get_image(cls, _id: str, darkMode: bool) -> StaticImage:
+        # 获取参数
+        _absId: list[str] = _id.split(":")
+        _type: str = _absId[0]
+        _variation: int = 0 if len(_absId) <= 1 else int(_absId[1])
+        # 尝试获取图片
+        result: StaticImage | tuple[StaticImage, ...]
+        possible_result: Optional[StaticImage | tuple[StaticImage, ...]] = (
+            cls.__ENV_IMAGE_DICT_DARK.get(_type) if darkMode is True else cls.__ENV_IMAGE_DICT.get(_type)
+        )
+        if possible_result is not None:
+            result = possible_result
         else:
-            EXCEPTION.inform("Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(key))
-            cls.add_image(key)
-            return cls.__ENV_IMAGE_DICT_DARK[key] if darkMode is True else cls.__ENV_IMAGE_DICT[key]
+            EXCEPTION.inform("Cannot find block image '{}', we will try to load it for you right now, but please by aware.".format(_type))
+            cls.add_image(_type)
+            result = cls.__ENV_IMAGE_DICT_DARK[_type] if darkMode is True else cls.__ENV_IMAGE_DICT[_type]
+        return result if not isinstance(result, tuple) else result[_variation]
 
 
 # 管理单个动作所有对应图片的模块
@@ -242,7 +277,7 @@ class EntitySpriteImageManager:
 
     # 尝试获取图片
     @classmethod
-    def try_get_images(cls, faction: str, characterType: str, action: str) -> _EntityImagesCollection:
+    def try_get_image_references(cls, faction: str, characterType: str, action: str) -> _EntityImagesCollection:
         if characterType not in cls.__CHARACTERS_IMAGES or action not in cls.__CHARACTERS_IMAGES[characterType]:
             cls.load(faction, characterType, "dev")
         return cls.get_images(characterType, action)

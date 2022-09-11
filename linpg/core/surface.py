@@ -50,7 +50,7 @@ class AbstractImageSurface(Rectangle, HiddenableSurface, metaclass=ABCMeta):
         self.set_alpha(self.get_alpha() - value)
 
     # 获取图片复制品
-    def _get_image(self) -> Any:
+    def _get_image_reference(self) -> Any:
         return self.__img
 
     def get_image_copy(self) -> Any:
@@ -186,7 +186,7 @@ class AdvancedAbstractImageSurface(AbstractImageSurface, SurfaceWithLocalPos):
 
     def _set_alpha(self, value: int, update_original: bool = True) -> None:
         self._alpha = Numbers.keep_int_in_range(value, 0, 255)
-        if update_original is True and isinstance(self._get_image(), ImageSurface):
+        if update_original is True and isinstance(self._get_image_reference(), ImageSurface):
             super().set_alpha(self._alpha)
 
 
@@ -240,12 +240,12 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 加暗度
     def add_darkness(self, value: int) -> None:
-        self._set_image(Images.add_darkness(self._get_image(), value))
+        self._set_image(Images.add_darkness(self._get_image_reference(), value))
         self._need_update = True
 
     # 减暗度
     def subtract_darkness(self, value: int) -> None:
-        self._set_image(Images.subtract_darkness(self._get_image(), value))
+        self._set_image(Images.subtract_darkness(self._get_image_reference(), value))
         self._need_update = True
 
     # 旋转
@@ -256,7 +256,7 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 反转原图
     def flip_original_img(self, horizontal: bool = True, vertical: bool = False) -> None:
-        self._set_image(Images.flip(self._get_image(), horizontal, vertical))
+        self._set_image(Images.flip(self._get_image_reference(), horizontal, vertical))
         self._need_update = True
 
     # 画出轮廓

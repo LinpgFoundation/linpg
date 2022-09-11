@@ -49,7 +49,7 @@ class ProgressBarSurface(AbstractProgressBar):
         )
 
     def light_copy(self) -> "ProgressBarSurface":
-        return ProgressBarSurface(self._get_image(), self._img2, self.x, self.y, self.get_width(), self.get_height(), self.axis_mode)
+        return ProgressBarSurface(self._get_image_reference(), self._img2, self.x, self.y, self.get_width(), self.get_height(), self.axis_mode)
 
     # 展示
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
@@ -58,7 +58,7 @@ class ProgressBarSurface(AbstractProgressBar):
             if self._img2 is not None:
                 _surface.blit(Images.resize(self._img2, self.size), pos)
             if self.percentage > 0:
-                imgOnTop = Images.resize(self._get_image(), self.size)
+                imgOnTop = Images.resize(self._get_image_reference(), self.size)
                 if self.axis_mode is Axis.HORIZONTAL:
                     _surface.blit(imgOnTop.subsurface(0, 0, int(self.get_width() * self.percentage), self.get_height()), pos)
                 else:
@@ -162,11 +162,11 @@ class DynamicProgressBarSurface(ProgressBarSurface):
         )
 
     def light_copy(self) -> "DynamicProgressBarSurface":
-        return DynamicProgressBarSurface(self._get_image(), self._img2, self.x, self.y, self.get_width(), self.get_height(), self.axis_mode)
+        return DynamicProgressBarSurface(self._get_image_reference(), self._img2, self.x, self.y, self.get_width(), self.get_height(), self.axis_mode)
 
     # 获取上方图片（子类可根据需求修改）
     def _get_img_on_top(self) -> ImageSurface:
-        return self._get_image()  # type: ignore
+        return self._get_image_reference()  # type: ignore
 
     # 展示
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:

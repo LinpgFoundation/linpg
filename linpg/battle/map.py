@@ -27,6 +27,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         self.__column: int = 0
         # 地图渲染用的图层
         self.__map_surface: Optional[ImageSurface] = None
+        self.__map_surface_old: Optional[ImageSurface] = None
         # 背景图片
         self.__background_image: Optional[StaticImage] = None
         # 装饰物
@@ -74,6 +75,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         self.__decorations.sort()
         # 初始化地图渲染用的图层
         self.__map_surface = None
+        self.__map_surface_old = None
         # 背景图片路径
         theBgiPath: Optional[str] = mapDataDic.get("background_image")
         # 背景图片
@@ -86,7 +88,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         for decoration in self.__decorations:
             DecorationImagesModule.add_image(decoration.get_type(), decoration.image if isinstance(decoration.image, str) else decoration.get_type())
         # 处于光处的区域
-        self.__lit_area = tuple() if MapImageParameters.get_darkness() > 0 else mapDataDic["map"].get("lit_area", tuple())
+        self.__lit_area = tuple() if MapImageParameters.get_darkness() > 0 else tuple(mapDataDic["map"].get("lit_area", []))
         # 追踪目前已经画出的方块
         self.__block_on_surface = numpy.zeros(self.__MAP.shape, dtype=numpy.byte)
         self.__need_to_recheck_block_on_surface = True
@@ -140,11 +142,11 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         }
 
     # 是否角色能通过该方块
-    def can_pass_through(self, _x: int, _y: int) -> bool:
-        return bool(self.__BLOCKS_DATABASE[self.get_block(_x, _y)]["canPassThrough"])
+    def is_passable(self, _x: int, _y: int) -> bool:
+        return bool(self.__BLOCKS_DATABASE[self.get_block(_x, _y).split(":")[0]]["passable"])
 
     # 以百分比的形式获取本地坐标（一般用于存档数据）
-    def get_local_pos_in_percentage(self) -> dict:
+    def get_local_pos_in_percentage(self) -> dict[str, str]:
         return {"local_x": str(round(self.local_x * 100 / self.get_width(), 5)) + "%", "local_y": str(round(self.local_y * 100 / self.get_height(), 5)) + "%"}
 
     # 开发者模式
@@ -260,10 +262,9 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             if self.__need_to_recheck_block_on_surface is True:
                 if self.__background_image is not None:
                     self.__background_image.set_size(_surface.get_width(), _surface.get_height())
-                if self.__map_surface is not None:
-                    self.__map_surface.fill(Colors.TRANSPARENT)
-                else:
-                    self.__map_surface = Surfaces.transparent(self.get_size())
+                if MapImageParameters.get_darkness() > 0:
+                    self.__map_surface_old = self.__map_surface
+                self.__map_surface = Surfaces.transparent(self.get_size())
                 self.__block_on_surface.fill(0)
                 self.__need_to_recheck_block_on_surface = False
             # 画出地图
@@ -315,6 +316,16 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             _surface.fill(Colors.BLACK)
         if self.__map_surface is not None:
             _surface.blit(self.__map_surface.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), (0, 0))
+        if self.__map_surface_old is not None:
+            _surface.blit(self.__map_surface_old.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), (0, 0))
+            _alpha: Optional[int] = self.__map_surface_old.get_alpha()
+            if _alpha is None:
+                EXCEPTION.fatal("Invalid alpha detected while processing self.__map_surface_old.get_alpha()")
+            _alpha -= 15
+            if _alpha > 0:
+                self.__map_surface_old.set_alpha(_alpha)
+            else:
+                self.__map_surface_old = None
         # 返回offset
         return screen_to_move_x, screen_to_move_y
 
@@ -400,7 +411,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         )
 
     # 计算光亮区域
-    def calculate_darkness(self, alliances_data: dict) -> None:
+    def refresh_lit_area(self, alliances_data: dict) -> None:
         lightArea: set[tuple[int, int]] = set()
         for _alliance in alliances_data.values():
             for _area in _alliance.get_effective_range_coordinates(self):
@@ -443,7 +454,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         # 历遍地图，设置障碍方块
         for _x in range(self.__column):
             for _y in range(self.__row):
-                if not self.can_pass_through(_x, _y):
+                if not self.is_passable(_x, _y):
                     map2d[_x, _y] = 1
         # 历遍设施，设置障碍方块
         for item in self.__decorations:

@@ -430,7 +430,7 @@ class Entity(Position):
     # 根据给定的坐标和半径生成覆盖范围坐标列表
     @staticmethod
     def _generate_coverage_coordinates(_x: int, _y: int, _radius: int, MAP_P: TileMap) -> list[tuple[int, int]]:
-        return list(filter(lambda pos: MAP_P.can_pass_through(pos[0], pos[1]), Coordinates.get_in_diamond_shaped(_x, _y, _radius)))
+        return list(filter(lambda pos: MAP_P.is_passable(pos[0], pos[1]), Coordinates.get_in_diamond_shaped(_x, _y, _radius)))
 
     # 获取角色的攻击覆盖范围
     def get_attack_coverage_coordinates(self, _x: int, _y: int, MAP_P: TileMap) -> list[tuple[int, int]]:

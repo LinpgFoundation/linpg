@@ -1,8 +1,9 @@
 """
 结构:
-component -> character -> script -> abstract -> dialog -> converter -> editor
+component -> render -> content-> script -> abstract -> dialog -> converter -> editor
 """
 from .editor import *
+
 
 # 在指定目录创建项目
 def create_new_project(dir_path: str, config_type: str = "json") -> None:

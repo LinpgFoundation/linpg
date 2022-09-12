@@ -1,6 +1,7 @@
-from subprocess import DEVNULL, STDOUT, check_call
 from abc import ABC
-from ..lang import *
+from subprocess import DEVNULL, STDOUT, check_call
+
+from .zipper import *
 
 
 class AbstractToolSystem(ABC):

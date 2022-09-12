@@ -1,5 +1,6 @@
 from .image import *
 
+
 # 基于ImageSurface的内部窗口
 class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
 
@@ -33,8 +34,8 @@ class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
     def __update_window_frame(self) -> None:
         if self.__if_regenerate_window is True:
             self._set_image(Surfaces.colored(self.size, Colors.WHITE))
-            Draw.rect(self._get_image(), Colors.LIGHT_GRAY, (ORIGIN, (self.get_width(), self._bar_height)))
-            Draw.rect(self._get_image(), Colors.GRAY, (ORIGIN, self.size), self.__outline_thickness)
+            Draw.rect(self._get_image_reference(), Colors.LIGHT_GRAY, (ORIGIN, (self.get_width(), self._bar_height)))
+            Draw.rect(self._get_image_reference(), Colors.GRAY, (ORIGIN, self.size), self.__outline_thickness)
             # 初始化图标
             if not self.__rescale_icon_initialized:
                 # 更新尺寸
@@ -161,7 +162,7 @@ class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
             # 更新窗口
             self.__update_window_frame()
             # 画出窗口
-            _surface.blit(self._get_image(), self.pos)
+            _surface.blit(self._get_image_reference(), self.pos)
             # 如果需要，则先更新内容surface
             if self._if_update_needed is True:
                 self._update()
@@ -189,17 +190,11 @@ class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
                 height_of_sub: int = Numbers.keep_int_in_range(
                     self.get_height() - self._bar_height - self.__outline_thickness + self.local_y,
                     0,
-                    min(
-                        self._content_surface.get_height() - real_local_y,
-                        self.get_height() - self._bar_height - self.__outline_thickness,
-                    ),
+                    min(self._content_surface.get_height() - real_local_y, self.get_height() - self._bar_height - self.__outline_thickness),
                 )
                 # 展示内容
                 if width_of_sub > 0 and height_of_sub > 0:
-                    _surface.blit(
-                        self._content_surface.subsurface(real_local_x, real_local_y, width_of_sub, height_of_sub),
-                        (abs_pos_x, abs_pos_y),
-                    )
+                    _surface.blit(self._content_surface.subsurface(real_local_x, real_local_y, width_of_sub, height_of_sub), (abs_pos_x, abs_pos_y))
             # 画出放大icon
             if True in self.__rescale_directions.values():
                 # 如果鼠标触碰了边框，则旋转放大icon至对应角度

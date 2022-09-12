@@ -1,8 +1,10 @@
 from typing import Union
+
 from ..config import *
 
 # 名称类
 strint = Union[str, int]
+
 
 # 本地化语言管理模块
 class Lang:
@@ -24,9 +26,9 @@ class Lang:
         cls.__LANG_DATA.update(Config.load_file(os.path.join(os.path.dirname(__file__), "{}.json".format(Setting.get_language()))))
         # 加载游戏自定义的外部语言文件
         path_t: str
-        if os.path.exists(
-            path_t := os.path.join(cls.__EX_LANG_FOLDER, "{0}.{1}".format(Setting.get_language(), Config.get_file_type()))
-        ) or os.path.exists(path_t := os.path.join(cls.__EX_LANG_FOLDER, "{}.json".format(Setting.get_language()))):
+        if os.path.exists(path_t := os.path.join(cls.__EX_LANG_FOLDER, "{0}.{1}".format(Setting.get_language(), Config.get_file_type()))) or os.path.exists(
+            path_t := os.path.join(cls.__EX_LANG_FOLDER, "{}.json".format(Setting.get_language()))
+        ):
             try:
                 cls.__LANG_DATA.update(Config.load_file(path_t))
             except Exception:
@@ -36,9 +38,9 @@ class Lang:
         # 如果有开发者自带的语言文件
         if os.path.exists("Lang"):
             for lang_file in glob(os.path.join(cls.__LANG_PATH_PATTERN)):
-                if os.path.exists(
-                    os.path.join(cls.__EX_LANG_FOLDER, os.path.basename(lang_file).replace(".json", ".yaml"))
-                ) or os.path.exists(os.path.join(cls.__EX_LANG_FOLDER, os.path.basename(lang_file))):
+                if os.path.exists(os.path.join(cls.__EX_LANG_FOLDER, os.path.basename(lang_file).replace(".json", ".yaml"))) or os.path.exists(
+                    os.path.join(cls.__EX_LANG_FOLDER, os.path.basename(lang_file))
+                ):
                     cls.__LANG_AVAILABLE.append(Config.load(lang_file, "Language"))
         else:
             for lang_file in glob(os.path.join(cls.__LANG_PATH_PATTERN)):
@@ -86,7 +88,7 @@ class Lang:
     @classmethod
     def get_num_in_local_text(cls, num: strint) -> str:
         try:
-            return str(deepcopy(cls.__LANG_DATA["Numbers"][int(num)]))
+            return str(cls.__LANG_DATA["Numbers"][int(num)])
         except Exception:
             return str(num)
 

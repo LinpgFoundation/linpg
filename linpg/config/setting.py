@@ -1,5 +1,6 @@
 from .base import *
 
+
 # 设置参数管理系统
 class Setting:
 
@@ -17,7 +18,7 @@ class Setting:
         # 如果自定义的设置配置文件存在，则加载
         if os.path.exists(cls.__SETTING_FILE_NAME):
             cls.__SETTING_DATA.update(Config.load_file(cls.__SETTING_FILE_NAME))
-        # 如果不存在自定义的设置配置文件，则应该创建一个
+        # 如果不存在自定义的设置配置文件,则读取默认
         else:
             # 导入local,查看默认语言
             import locale
@@ -25,10 +26,8 @@ class Setting:
             # 如果是中文
             if locale.getdefaultlocale()[0] == "zh_CN":
                 cls.__SETTING_DATA["Language"] = "SimplifiedChinese"
-            elif locale.getdefaultlocale()[0] == "zh_TW":
+            elif locale.getdefaultlocale()[0] == "zh_TW" or locale.getdefaultlocale()[0] == "zh_HK":
                 cls.__SETTING_DATA["Language"] = "TraditionalChinese"
-            # 保存设置
-            cls.save()
 
     # 保存设置数据
     @classmethod
@@ -47,10 +46,14 @@ class Setting:
 
     # 修改设置数据
     @classmethod
-    def set(cls, *key: str, value: object) -> None:
+    def set(cls, *key: str, value: object, save_to_local: bool = False) -> None:
         set_value_by_keys(cls.__SETTING_DATA, key, value)
+        # 如果需要保存到本地
+        if save_to_local is True:
+            cls.save()
 
     """其他常用的重要参数"""
+
     # 文字名称
     @classmethod
     def get_font(cls) -> str:

@@ -2,6 +2,7 @@ from .component import *
 
 _DARKNESS: int = 50
 
+
 # 角色立绘名称预处理模块
 class CharacterImageNameMetaData:
 
@@ -177,9 +178,7 @@ class CharacterImageManager:
             # 确保角色存在
             if _name_data.name not in cls.__character_image:
                 # 如果不能存在，则加载角色
-                imgTemp: StaticImage = StaticImage(
-                    Specification.get_directory("character_image", _name_data.name), 0, 0, cls._WIDTH, cls._WIDTH
-                )
+                imgTemp: StaticImage = StaticImage(Specification.get_directory("character_image", _name_data.name), 0, 0, cls._WIDTH, cls._WIDTH)
                 # 以tuple的形式保存立绘，index 0 是正常图片， index 1 是深色图片
                 cls.__character_image[_name_data.name] = (imgTemp, imgTemp.copy())
                 # 生成深色图片
@@ -208,19 +207,13 @@ class CharacterImageManager:
         elif _num == 2:
             return _index * _width // _num
         elif _num > 2:
-            return (
-                int((_index + 1) * _width / (_num + 1) - _width / 4)
-                if _num % 2 == 0
-                else int((_index - _num // 2) * _width / _num + _width / 4)
-            )
+            return int((_index + 1) * _width / (_num + 1) - _width / 4) if _num % 2 == 0 else int((_index - _num // 2) * _width / _num + _width / 4)
         else:
             return 0
 
     # 渐入name1角色的同时淡出name2角色
     @classmethod
-    def __fade_in_and_out_characters(
-        cls, name1: CharacterImageNameMetaData, name2: CharacterImageNameMetaData, x: int, _surface: ImageSurface
-    ) -> None:
+    def __fade_in_and_out_characters(cls, name1: CharacterImageNameMetaData, name2: CharacterImageNameMetaData, x: int, _surface: ImageSurface) -> None:
         cls.__display_character(name1, x, cls.__last_round_image_alpha, _surface)
         cls.__display_character(name2, x, cls.__this_round_image_alpha, _surface)
 
@@ -250,11 +243,7 @@ class CharacterImageManager:
     @classmethod
     def update(cls, characterNameList: Optional[Sequence[str]]) -> None:
         cls.__previous_characters = cls.__current_characters
-        cls.__current_characters = (
-            tuple([CharacterImageNameMetaData(_name) for _name in characterNameList])
-            if characterNameList is not None
-            else tuple()
-        )
+        cls.__current_characters = tuple(CharacterImageNameMetaData(_name) for _name in characterNameList) if characterNameList is not None else tuple()
         cls.__last_round_image_alpha = 255
         cls.__this_round_image_alpha = 5
         cls.__x_correction_offset_index = 0
@@ -302,16 +291,12 @@ class CharacterImageManager:
                     cls.__fade_in_and_out_characters(
                         cls.__previous_characters[0],
                         cls.__current_characters[0],
-                        cls.__x_correction_offset_index
-                        * (cls.__estimate_x(_surface.get_width(), len(cls.__current_characters), 0) - previous_x)
-                        // 100
+                        cls.__x_correction_offset_index * (cls.__estimate_x(_surface.get_width(), len(cls.__current_characters), 0) - previous_x) // 100
                         + previous_x,
                         _surface,
                     )
                     # 显示右边立绘
-                    cls.__display_character(
-                        cls.__current_characters[1], _surface.get_width() // 2, cls.__this_round_image_alpha, _surface
-                    )
+                    cls.__display_character(cls.__current_characters[1], _surface.get_width() // 2, cls.__this_round_image_alpha, _surface)
                 # 如果之前的中间变成了现在的右边，则立绘应该先向右移动
                 elif cls.__previous_characters[0].equal(cls.__current_characters[1]):
                     if cls.__x_correction_offset_index < 100:
@@ -322,9 +307,7 @@ class CharacterImageManager:
                     cls.__fade_in_and_out_characters(
                         cls.__previous_characters[0],
                         cls.__current_characters[1],
-                        cls.__x_correction_offset_index
-                        * (cls.__estimate_x(_surface.get_width(), len(cls.__current_characters), 1) - previous_x)
-                        // 100
+                        cls.__x_correction_offset_index * (cls.__estimate_x(_surface.get_width(), len(cls.__current_characters), 1) - previous_x) // 100
                         + previous_x,
                         _surface,
                     )
@@ -352,9 +335,7 @@ class CharacterImageManager:
                         # 显示左方立绘
                         cls.__display_character(cls.__current_characters[0], current_x, cls.__this_round_image_alpha, _surface)
                     # 右边立绘消失
-                    cls.__display_character(
-                        cls.__previous_characters[1], _surface.get_width() // 2, cls.__last_round_image_alpha, _surface
-                    )
+                    cls.__display_character(cls.__previous_characters[1], _surface.get_width() // 2, cls.__last_round_image_alpha, _surface)
                 # 如果之前的右边变成了现在的中间，则立绘应该先向左边移动
                 elif cls.__previous_characters[1].equal(cls.__current_characters[0]):
                     if cls.__x_correction_offset_index < 100:

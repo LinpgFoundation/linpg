@@ -31,6 +31,7 @@ else:
     EXCEPTION.warn("Mixer has not been initialized correctly!")
     print("One possible cause could be no output device, anyway, please double check your output device(s)!")
 
+
 # 音效管理模块接口
 class AbstractSoundManager(ABC):
     def __init__(self, channel_id: int):
@@ -149,7 +150,7 @@ class Sound:
     def load_from_directory(cls, folder_path: str) -> tuple[PG_Sound, ...]:
         if not os.path.isdir(folder_path):
             EXCEPTION.fatal("The path is not a valid directory!")
-        return tuple([cls.load(_path) for _path in glob(os.path.join(folder_path, "*"))])
+        return tuple(cls.load(_path) for _path in glob(os.path.join(folder_path, "*")))
 
     # 播放音效
     @staticmethod
@@ -259,25 +260,17 @@ class Volume:
     @classmethod
     def get_background_music(cls) -> int:
         return round(
-            Numbers.keep_number_in_range(round(Setting.get("Sound", "background_music"), 2), 0, cls.__sound_unit)
-            * cls.get_global_value()
-            / cls.__sound_unit
+            Numbers.keep_number_in_range(round(Setting.get("Sound", "background_music"), 2), 0, cls.__sound_unit) * cls.get_global_value() / cls.__sound_unit
         )
 
     @classmethod
     def get_effects(cls) -> int:
-        return round(
-            Numbers.keep_number_in_range(round(Setting.get("Sound", "effects"), 2), 0, cls.__sound_unit)
-            * cls.get_global_value()
-            / cls.__sound_unit
-        )
+        return round(Numbers.keep_number_in_range(round(Setting.get("Sound", "effects"), 2), 0, cls.__sound_unit) * cls.get_global_value() / cls.__sound_unit)
 
     @classmethod
     def get_environment(cls) -> int:
         return round(
-            Numbers.keep_number_in_range(round(Setting.get("Sound", "environment"), 2), 0, cls.__sound_unit)
-            * cls.get_global_value()
-            / cls.__sound_unit
+            Numbers.keep_number_in_range(round(Setting.get("Sound", "environment"), 2), 0, cls.__sound_unit) * cls.get_global_value() / cls.__sound_unit
         )
 
 

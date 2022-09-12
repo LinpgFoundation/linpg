@@ -1,7 +1,9 @@
 import hashlib
 import shutil
 import sys
+
 from .setting import *
+
 
 # debug模块
 class Debug:
@@ -114,7 +116,7 @@ class Info:
     # 引擎次更新版本号
     __REVISION: Final[int] = 4
     # 引擎补丁版本
-    __PATCH: Final[int] = 0
+    __PATCH: Final[int] = 1
 
     # 确保linpg版本
     @classmethod
@@ -209,8 +211,7 @@ class Cache:
                 and source_file_path == cls.__CACHE_FILES_DATA[key]["source"]["path"]
                 and cls.__generate_md5(source_file_path) == cls.__CACHE_FILES_DATA[key]["source"]["md5"]
                 and os.path.exists(cls.__CACHE_FILES_DATA[key]["target"]["path"])
-                and cls.__generate_md5(cls.__CACHE_FILES_DATA[key]["target"]["path"])
-                == cls.__CACHE_FILES_DATA[key]["target"]["md5"]
+                and cls.__generate_md5(cls.__CACHE_FILES_DATA[key]["target"]["path"]) == cls.__CACHE_FILES_DATA[key]["target"]["md5"]
             ):
                 return True
             else:

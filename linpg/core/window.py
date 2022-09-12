@@ -1,9 +1,11 @@
 import PySimpleGUI  # type: ignore
 from pygame._sdl2 import Renderer, Window
+
 from .frame import *
 
 # 设置PySimpleGUI主题
 PySimpleGUI.theme(Specification.get("PySimpleGUITheme"))
+
 
 # 确认窗口
 class ConfirmMessageWindow:
@@ -56,6 +58,7 @@ class LinpgVersionChecker:
                             PySimpleGUI.Cancel(_quit_text),
                         ],
                     ],
+                    keep_on_top=True,
                 ).read(close=True)[0]
                 == _quit_text
             ):

@@ -1,7 +1,8 @@
 import io
-import zipfile
+
 from PIL import Image as PILImage  # type: ignore
 from PIL import ImageSequence as PILImageSequence  # type: ignore
+
 from .wrapper import *
 
 # 尝试导入linpgassets
@@ -20,6 +21,7 @@ if bool(Specification.get("ExtraAssets")) is True:
 DataBase.update(Config.resolve_path_and_load_file(os.path.join("Data", "database")))
 
 _KEY: Final[bytes] = bytes("82&939DcaO6002#*", "utf-8")
+
 
 # 源图形处理
 class Images:
@@ -42,11 +44,7 @@ class Images:
                 else:
                     return ""
             elif path[1] == "!":
-                return (
-                    os.path.join(linpgassets.get_image_location(), flag_key, file_name + ".zip")
-                    if _LINPGASSETS_INITIALIZED is True
-                    else ""
-                )
+                return os.path.join(linpgassets.get_image_location(), flag_key, file_name + ".zip") if _LINPGASSETS_INITIALIZED is True else ""
             elif path[1] == "@":
                 return Specification.get_directory(flag_key, file_name)
         EXCEPTION.fatal('Invalid tag: "{}"'.format(path))
@@ -73,9 +71,7 @@ class Images:
                     if not _path.endswith(".zip"):
                         _imageR = pygame.image.load(_path)
                     elif "linpgassets" in _path:
-                        _imageR = pygame.image.load(
-                            io.BytesIO(zipfile.ZipFile(_path, "r").read(path[path.index(">") + 1 :], pwd=_KEY))
-                        )
+                        _imageR = pygame.image.load(io.BytesIO(Zipper.open(_path).read(path[path.index(">") + 1 :], pwd=_KEY)))
                     elif Debug.get_developer_mode() is True:
                         EXCEPTION.fatal("Cannot find essential image with path: {}".format(_path))
                 # 根据参数处理并返回加载好的图片
@@ -103,10 +99,7 @@ class Images:
     # 动态图片加载模块
     @staticmethod
     def load_animated(path: str) -> list:
-        return [
-            Surfaces.from_array(numpy.asarray(frame.convert("RGBA"))).convert_alpha()
-            for frame in PILImageSequence.Iterator(PILImage.open(path))
-        ]
+        return [Surfaces.from_array(numpy.asarray(frame.convert("RGBA"))).convert_alpha() for frame in PILImageSequence.Iterator(PILImage.open(path))]
 
     # 重新编辑尺寸
     @staticmethod

@@ -4,6 +4,7 @@ from .images import *
 if not pygame.joystick.get_init():
     pygame.joystick.init()
 
+
 # 输入管理组件
 class Controller:
 
@@ -196,10 +197,7 @@ class Controller:
             is_y_need_update: bool = not 0.5 > y_axis_value > -0.5
             if is_x_need_update is True and is_y_need_update is True:
                 cls.mouse.set_pos(
-                    (
-                        int(cls.mouse.x + cls.mouse.get_moving_speed() * x_axis_value),
-                        int(cls.mouse.y + cls.mouse.get_moving_speed() * y_axis_value),
-                    )
+                    (int(cls.mouse.x + cls.mouse.get_moving_speed() * x_axis_value), int(cls.mouse.y + cls.mouse.get_moving_speed() * y_axis_value))
                 )
             elif is_x_need_update is True:
                 cls.mouse.set_pos((int(cls.mouse.x + cls.mouse.get_moving_speed() * x_axis_value), cls.mouse.y))

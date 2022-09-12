@@ -1,5 +1,6 @@
 from .button import *
 
+
 # Container抽象
 class AbstractGameObjectsContainer(AbstractImageSurface, metaclass=ABCMeta):
     def __init__(self, bg_img: Optional[PoI], x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
@@ -7,7 +8,7 @@ class AbstractGameObjectsContainer(AbstractImageSurface, metaclass=ABCMeta):
 
     # 获取物品container容器（子类需实现）
     @abstractmethod
-    def _get_container(self) -> Union[dict, list]:
+    def _get_container(self) -> dict | list:
         EXCEPTION.fatal("_get_container()", 1)
 
     # 物品数量
@@ -26,14 +27,14 @@ class AbstractGameObjectsContainer(AbstractImageSurface, metaclass=ABCMeta):
     # 设置宽度
     def set_width(self, value: int_f) -> None:
         super().set_width(value)
-        if self._get_image() is not None:
-            self._get_image().set_width(value)
+        if self._get_image_reference() is not None:
+            self._get_image_reference().set_width(value)
 
     # 设置高度
     def set_height(self, value: int_f) -> None:
         super().set_height(value)
-        if self._get_image() is not None:
-            self._get_image().set_height(value)
+        if self._get_image_reference() is not None:
+            self._get_image_reference().set_height(value)
 
 
 # 使用Dict储存游戏对象的容器，类似html的div
@@ -96,8 +97,8 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
         if self.is_visible():
             current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出背景
-            if Surfaces.is_not_null(self._get_image()):
-                self._get_image().display(_surface, current_abs_pos)
+            if Surfaces.is_not_null(self._get_image_reference()):
+                self._get_image_reference().display(_surface, current_abs_pos)
             # 画出物品
             for key_of_game_object, game_object_t in self.__items_container_dict.items():
                 game_object_t.display(_surface, current_abs_pos)
@@ -153,8 +154,8 @@ class GameObjectsListContainer(AbstractGameObjectsContainer):
         if self.is_visible():
             current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出背景
-            if Surfaces.is_not_null(self._get_image()):
-                self._get_image().display(_surface, current_abs_pos)
+            if Surfaces.is_not_null(self._get_image_reference()):
+                self._get_image_reference().display(_surface, current_abs_pos)
             # 画出物品
             for i in range(len(self.__items_container_list)):
                 self.__items_container_list[i].display(_surface, current_abs_pos)

@@ -1,5 +1,6 @@
 from .controller import *
 
+
 # 画面更新控制器
 class Display:
 
@@ -35,9 +36,7 @@ class Display:
         # 展示帧率信息
         if Debug.get_show_fps():
             _text: ImageSurface = cls.__FONT.render(str(round(cls.__CLOCK.get_fps())), Setting.get_antialias(), Colors.WHITE)
-            cls.__SCREEN_WINDOW.blit(
-                _text, (cls.__STANDARD_WIDTH - cls.__FONT.get_height() - _text.get_width(), cls.__FONT.get_height())
-            )
+            cls.__SCREEN_WINDOW.blit(_text, (cls.__STANDARD_WIDTH - cls.__FONT.get_height() - _text.get_width(), cls.__FONT.get_height()))
         # 使用clock进行tick
         cls.__CLOCK.tick(cls.__FPS)
         pygame.display.flip()
@@ -46,10 +45,7 @@ class Display:
             Controller.NEED_TO_TAKE_SCREENSHOT = False
             if not os.path.exists("screenshots"):
                 os.mkdir("screenshots")
-            pygame.image.save(
-                cls.__SCREEN_WINDOW,
-                os.path.join("screenshots", "{}.png".format(EXCEPTION.get_current_time().strftime("%Y%m%d%H%M%S"))),
-            )
+            pygame.image.save(cls.__SCREEN_WINDOW, os.path.join("screenshots", "{}.png".format(EXCEPTION.get_current_time().strftime("%Y%m%d%H%M%S"))))
         # 更新控制器
         Controller.update()
         Controller.mouse.draw_custom_icon(cls.__SCREEN_WINDOW)
@@ -98,9 +94,7 @@ class Display:
                 Setting.set("Resolution", "height", value=cls.__STANDARD_HEIGHT)
                 Setting.save()
         # 生成screen
-        cls.__SCREEN_WINDOW = pygame.display.set_mode(
-            cls.get_size(), flags, display=monitorId, vsync=1 if Setting.get("EnableVerticalSync") is True else 0
-        )
+        cls.__SCREEN_WINDOW = pygame.display.set_mode(cls.get_size(), flags, display=monitorId, vsync=1 if Setting.get("EnableVerticalSync") is True else 0)
         cls.__SCREEN_WINDOW.set_alpha(None)
         cls.__SCREEN_WINDOW.fill(Colors.BLACK)
         return cls.__SCREEN_WINDOW

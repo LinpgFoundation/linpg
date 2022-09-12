@@ -1,8 +1,11 @@
 from typing import Sequence
+
 import numpy
+
 from ..tools import *
 
 ORIGIN: Final[tuple[int, int]] = (0, 0)
+
 
 # 浮点坐标
 class Positions:
@@ -94,9 +97,5 @@ class Coordinates:
         if _radius == 1:
             return [(_x, _y)]
         elif _radius > 1:
-            return [
-                (x, y)
-                for y in range(_y - _radius + 1, _y + _radius)
-                for x in range(_x - _radius + abs(y - _y) + 1, _x + _radius - abs(y - _y))
-            ]
+            return [(x, y) for y in range(_y - _radius + 1, _y + _radius) for x in range(_x - _radius + abs(y - _y) + 1, _x + _radius - abs(y - _y))]
         return []

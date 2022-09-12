@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from typing import NoReturn
 
+
 # Linpg错误类管理器
 class EXCEPTION:
 
@@ -41,11 +42,7 @@ class EXCEPTION:
         if not os.path.exists(cls.__CRASH_REPORTS_PATH):
             os.mkdir(cls.__CRASH_REPORTS_PATH)
         # 写入讯息
-        with open(
-            os.path.join(cls.__CRASH_REPORTS_PATH, "crash_{}.txt".format(cls.__TIME_STAMP_WHEN_LINPG_STARTED)),
-            "a",
-            encoding="utf-8",
-        ) as f:
+        with open(os.path.join(cls.__CRASH_REPORTS_PATH, "crash_{}.txt".format(cls.__TIME_STAMP_WHEN_LINPG_STARTED)), "a", encoding="utf-8") as f:
             f.write("[{0}]\n{1}\n".format(datetime.now().strftime("%Y/%m/%d %H:%M:%S"), msg))
 
     # 告知不严重但建议查看的问题
@@ -66,9 +63,7 @@ class EXCEPTION:
         cls.__log("Error Message From Linpg: {}".format(info))
         # 打印出错误，并停止进程
         if error_type_id == 1:
-            raise cls.FunctionIsNotImplemented(
-                'A parent class requires you to implement "{}" function before you can use it'.format(info)
-            )
+            raise cls.FunctionIsNotImplemented('A parent class requires you to implement "{}" function before you can use it'.format(info))
         elif error_type_id == 2:
             raise cls.FileNotExists(info)
         elif error_type_id == 3:

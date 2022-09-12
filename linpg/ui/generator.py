@@ -1,5 +1,6 @@
 from .progressbar import *
 
+
 # ui编译器
 class UiGenerator:
 
@@ -9,7 +10,7 @@ class UiGenerator:
     for key, value in Config.resolve_path_and_load_file(os.path.join("Data", "ui")).items():
         if key not in __UI_TEMPLATES:
             __UI_TEMPLATES[key] = {}
-        __UI_TEMPLATES[key].update(deepcopy(value))
+        __UI_TEMPLATES[key].update(copy.deepcopy(value))
 
     # 尝试转换特殊的string
     @classmethod
@@ -41,11 +42,7 @@ class UiGenerator:
     @classmethod
     def __convert_number(cls, item: dict, key: str, value_in_case_percentage: int, custom_values: dict) -> int:
         if key not in item:
-            EXCEPTION.fatal(
-                'You have to set "{0}" for "{1}".'.format(key, item["name"])
-                if "name" in item
-                else 'You have to set "{}".'.format(key)
-            )
+            EXCEPTION.fatal('You have to set "{0}" for "{1}".'.format(key, item["name"]) if "name" in item else 'You have to set "{}".'.format(key))
         elif isinstance(item[key], float):
             return int(item[key])
         elif not isinstance(item[key], int):
@@ -65,9 +62,7 @@ class UiGenerator:
 
     # 检测坐标是否合法
     @classmethod
-    def __convert_coordinate(
-        cls, item: dict, key: str, value_in_case_center: int, value_in_case_percentage: int, custom_values: dict
-    ) -> int:
+    def __convert_coordinate(cls, item: dict, key: str, value_in_case_center: int, value_in_case_percentage: int, custom_values: dict) -> int:
         if key not in item:
             return 0
         elif not isinstance(item[key], int):
@@ -92,14 +87,14 @@ class UiGenerator:
         while text_index < len(text):
             if text[text_index] == "{":
                 # 寻找 "}"
-                a: int
+                a: int = 0
                 for a in range(text_index + 1, len(text)):
                     if text[a] == "}":
                         find_close_bracket = True
                         break
                 if find_close_bracket is True:
                     find_close_bracket = False
-                    final_text_list.append(Lang.get_text_by_keys(tuple([b.strip() for b in text[text_index + 1 : a].split(",")])))
+                    final_text_list.append(Lang.get_text_by_keys(tuple(b.strip() for b in text[text_index + 1 : a].split(","))))
                     text_index = a
                 else:
                     EXCEPTION.fatal("Cannot find close bracket for text: {}".format(text))
@@ -110,13 +105,10 @@ class UiGenerator:
 
     # 生成容器类
     @classmethod
-    def __generate_container(
-        cls, data: dict, custom_values: dict, max_width: int = -1, max_height: int = -1
-    ) -> GameObjectsDictContainer:
+    def __generate_container(cls, data: dict, custom_values: dict, max_width: int = -1, max_height: int = -1) -> GameObjectsDictContainer:
         # 如果没有提供最大高度，则默认使用屏幕高度
         if max_height < 0:
-            max_height = Display.get_height()
-            # 如果没有提供最大宽度，则默认使用屏幕宽度
+            max_height = Display.get_height()  # 如果没有提供最大宽度，则默认使用屏幕宽度
         if max_width < 0:
             max_width = Display.get_width()
         # 转换尺寸
@@ -158,16 +150,12 @@ class UiGenerator:
                 max_height = Display.get_height()
             item_t: GameObject2d
             # 如果对象是文字
-            if (
-                data["type"] == "text"
-                or data["type"] == "resize_when_hovered_text"
-                or data["type"] == "drop_down_single_choice_list"
-            ):
+            if data["type"] == "text" or data["type"] == "resize_when_hovered_text" or data["type"] == "drop_down_single_choice_list":
                 # 转换字体大小
                 font_size: int = cls.__convert_number(data, "font_size", max_height, custom_values)
                 # 补充可选参数
                 if "color" not in data:
-                    data["color"] = "black"
+                    data["color"] = Colors.BLACK
                 if "bold" not in data:
                     data["bold"] = False
                 if "italic" not in data:
@@ -180,9 +168,7 @@ class UiGenerator:
                 if data["type"] == "text" or data["type"] == "static_text":
                     item_t = StaticTextSurface(data["src"], 0, 0, font_size, data["color"], data["bold"], data["italic"])
                 elif data["type"] == "resize_when_hovered_text":
-                    item_t = ResizeWhenHoveredTextSurface(
-                        str(data["src"]), 0, 0, font_size, font_size * 3 / 2, data["color"], data["bold"], data["italic"]
-                    )
+                    item_t = ResizeWhenHoveredTextSurface(str(data["src"]), 0, 0, font_size, font_size * 3 / 2, data["color"], data["bold"], data["italic"])
                 else:
                     item_t = DropDownList(data["src"], 0, 0, font_size, data["color"])
             else:
@@ -209,9 +195,7 @@ class UiGenerator:
                         # 转换尺寸
                         _icon_width: int = cls.__convert_number(data["icon"], "width", max_width, custom_values)
                         _icon_height: int = cls.__convert_number(data["icon"], "height", max_height, custom_values)
-                        item_t.set_icon(
-                            ButtonComponent.icon(data["icon"]["src"], (_icon_width, _icon_height), data["alpha_when_not_hover"])
-                        )
+                        item_t.set_icon(ButtonComponent.icon(data["icon"]["src"], (_icon_width, _icon_height), data["alpha_when_not_hover"]))
                     if "scale_for_resizing_width" in data:
                         item_t.set_scale_for_resizing_width(data["scale_for_resizing_width"])
                     if "scale_for_resizing_height" in data:
@@ -220,7 +204,7 @@ class UiGenerator:
                         item_t.set_auto_resize(data["auto_resize"])
                     if "description" in data:
                         item_t.set_description(cls.__load_text(data["description"]))
-                    if not "name" in data:
+                    if "name" not in data:
                         EXCEPTION.fatal("You have to set a name for button type.")
                 elif data["type"] == "progress_bar_adjuster":
                     # 确认按钮存在
@@ -228,7 +212,7 @@ class UiGenerator:
                         EXCEPTION.fatal("You need to set a indicator for progress_bar_adjuster!")
                     # 设置模式
                     if "mode" not in data:
-                        data["mode"] = "horizontal"
+                        data["mode"] = Axis.HORIZONTAL
                     # 生成ProgressBarAdjuster
                     item_t = ProgressBarAdjuster(
                         data["src"][0],
@@ -242,7 +226,7 @@ class UiGenerator:
                         cls.__convert_number(data["indicator"], "height", object_height, custom_values),
                         data["mode"],
                     )
-                    if not "name" in data:
+                    if "name" not in data:
                         EXCEPTION.fatal("You have to set a name for button type.")
                 elif data["type"] == "image":
                     item_t = DynamicImage(data["src"], 0, 0, object_width, object_height)
@@ -265,23 +249,23 @@ class UiGenerator:
 
     # 将数据以dict的形式返回
     @classmethod
-    def __get_data_in_dict(cls, data: Union[str, dict]) -> dict:
+    def __get_data_in_dict(cls, data: str | dict) -> dict:
         if isinstance(data, str):
             result: Optional[dict] = cls.__UI_TEMPLATES.get(data)
             if result is None:
                 EXCEPTION.fatal('The ui called "{}" does not exist!'.format(data))
-            return deepcopy(result)
+            return copy.deepcopy(result)
         else:
-            return deepcopy(data)
+            return copy.deepcopy(data)
 
     # 生成GameObject2d - 如果目标是str则视为是名称，尝试从ui数据库中加载对应的模板，否则则视为模板
     @classmethod
-    def generate(cls, data: Union[str, dict], custom_values: dict = {}) -> GameObject2d:
+    def generate(cls, data: str | dict, custom_values: dict = {}) -> GameObject2d:
         return cls.__generate(cls.__get_data_in_dict(data), custom_values)
 
     # 生成container - 如果目标是str则视为是名称，尝试从ui数据库中加载对应的模板，否则则视为模板
     @classmethod
-    def generate_container(cls, data: Union[str, dict], custom_values: dict = {}) -> GameObjectsDictContainer:
+    def generate_container(cls, data: str | dict, custom_values: dict = {}) -> GameObjectsDictContainer:
         data_dict: dict = cls.__get_data_in_dict(data)
         if data_dict["type"] != "container":
             EXCEPTION.fatal('The target has to be a container, not "{}".'.format(data_dict["type"]))

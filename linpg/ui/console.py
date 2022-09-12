@@ -1,7 +1,8 @@
 from .inputbox import *
 
+
 # 控制台
-class Console(SingleLineInputBox, HiddenableSurface):
+class Console(SingleLineInputBox, HiddenableSurface, threading.Thread):
 
     _COMMAND_INDICATOR: str = "/"
 
@@ -15,6 +16,28 @@ class Console(SingleLineInputBox, HiddenableSurface):
         self._text_history: list = []
         self.__backward_id: int = 1
         self._txt_output: list = []
+        # 初始化多线程模块
+        threading.Thread.__init__(self)
+        # 多线程锁
+        self.__THREADING_LOCK: threading.Lock = threading.Lock()
+        self.daemon = True
+
+    # 安全地设置文字（主要用于确保多线程运行）
+    def safely_set_text(self, new_txt: str) -> None:
+        self.__THREADING_LOCK.acquire()
+        super().set_text(new_txt)
+        self.__THREADING_LOCK.release()
+
+    # 启用基于命令行的多线程模式
+    def run(self) -> None:
+        self.__is_using_threading = True
+        while self.__is_using_threading:
+            txt: str = self._COMMAND_INDICATOR + input("> ")
+            self.__THREADING_LOCK.acquire()
+            self._text = txt
+            self._process_command()
+            print(self._txt_output[-1])
+            self.__THREADING_LOCK.release()
 
     def _check_key_down(self, event: PG_Event) -> bool:
         if super()._check_key_down(event):
@@ -22,25 +45,21 @@ class Console(SingleLineInputBox, HiddenableSurface):
         # 向上-过去历史
         elif event.key == Keys.ARROW_UP and self.__backward_id < len(self._text_history):
             self.__backward_id += 1
-            self.set_text(self._text_history[-self.__backward_id])
+            self.safely_set_text(self._text_history[-self.__backward_id])
             return True
         # 向下-过去历史，最近的一个
         elif event.key == Keys.ARROW_DOWN and self.__backward_id > 1:
             self.__backward_id -= 1
-            self.set_text(self._text_history[-self.__backward_id])
+            self.safely_set_text(self._text_history[-self.__backward_id])
             return True
         # 回车
         elif event.key == Keys.RETURN:
+            self.__THREADING_LOCK.acquire()
             if len(self._text) > 0:
-                if self._text.startswith(self._COMMAND_INDICATOR):
-                    self._check_command(self._text.removeprefix(self._COMMAND_INDICATOR).split())
-                else:
-                    self._txt_output.append(self._text)
-                self._text_history.append(self._text)
-                self.__backward_id = 0
-                self.set_text()
+                self._process_command()
             else:
                 EXCEPTION.inform("The input box is empty!")
+            self.__THREADING_LOCK.release()
             return True
         # ESC，关闭
         elif event.key == Keys.ESCAPE:
@@ -50,66 +69,74 @@ class Console(SingleLineInputBox, HiddenableSurface):
             return True
         return False
 
-    def _check_command(self, conditions: list) -> None:
-        if conditions[0] == "cheat":
-            if len(conditions) < 2:
-                self._txt_output.append("Unknown status for cheat command.")
-            elif conditions[1] == "on":
-                if Debug.get_cheat_mode() is True:
-                    self._txt_output.append("Cheat mode has already been activated!")
+    # 处理命令
+    def _process_command(self) -> None:
+        if self._text.startswith(self._COMMAND_INDICATOR):
+            conditions: list[str] = self._text.removeprefix(self._COMMAND_INDICATOR).split()
+            if conditions[0] == "cheat":
+                if len(conditions) < 2:
+                    self._txt_output.append("Unknown status for cheat command.")
+                elif conditions[1] == "on":
+                    if Debug.get_cheat_mode() is True:
+                        self._txt_output.append("Cheat mode has already been activated!")
+                    else:
+                        Debug.set_cheat_mode(True)
+                        self._txt_output.append("Cheat mode is activated.")
+                elif conditions[1] == "off":
+                    if not Debug.get_cheat_mode():
+                        self._txt_output.append("Cheat mode has already been deactivated!")
+                    else:
+                        Debug.set_cheat_mode(False)
+                        self._txt_output.append("Cheat mode is deactivated.")
                 else:
-                    Debug.set_cheat_mode(True)
-                    self._txt_output.append("Cheat mode is activated.")
-            elif conditions[1] == "off":
-                if not Debug.get_cheat_mode():
-                    self._txt_output.append("Cheat mode has already been deactivated!")
-                else:
-                    Debug.set_cheat_mode(False)
-                    self._txt_output.append("Cheat mode is deactivated.")
-            else:
-                self._txt_output.append("Unknown status for cheat command.")
-        elif conditions[0] == "show":
-            if len(conditions) >= 3:
-                if conditions[1] == "fps":
-                    if conditions[2] == "on":
-                        Debug.set_show_fps(True)
-                    elif conditions[2] == "off":
-                        Debug.set_show_fps(False)
+                    self._txt_output.append("Unknown status for cheat command.")
+            elif conditions[0] == "show":
+                if len(conditions) >= 3:
+                    if conditions[1] == "fps":
+                        if conditions[2] == "on":
+                            Debug.set_show_fps(True)
+                        elif conditions[2] == "off":
+                            Debug.set_show_fps(False)
+                        else:
+                            self._txt_output.append("Unknown status for show command.")
                     else:
                         self._txt_output.append("Unknown status for show command.")
                 else:
                     self._txt_output.append("Unknown status for show command.")
-            else:
-                self._txt_output.append("Unknown status for show command.")
-        elif conditions[0] == "say":
-            self._txt_output.append(self._text[len(self._COMMAND_INDICATOR) + 4 :])
-        elif conditions[0] == "set":
-            Setting.set(*conditions[1 : len(conditions) - 1], value=conditions[len(conditions) - 1])
-        elif conditions[0] == "dev":
-            if len(conditions) < 2:
-                self._txt_output.append("Unknown status for dev command.")
-            elif conditions[1] == "on":
-                if Debug.get_developer_mode() is True:
-                    self._txt_output.append("Developer mode has been activated!")
+            elif conditions[0] == "say":
+                self._txt_output.append(self._text[len(self._COMMAND_INDICATOR) + 4 :])
+            elif conditions[0] == "set":
+                Setting.set(*conditions[1 : len(conditions) - 1], value=conditions[len(conditions) - 1])
+            elif conditions[0] == "dev":
+                if len(conditions) < 2:
+                    self._txt_output.append("Unknown status for dev command.")
+                elif conditions[1] == "on":
+                    if Debug.get_developer_mode() is True:
+                        self._txt_output.append("Developer mode has been activated!")
+                    else:
+                        Debug.set_developer_mode(True)
+                        self._txt_output.append("Developer mode is activated.")
+                elif conditions[1] == "off":
+                    if not Debug.get_developer_mode():
+                        self._txt_output.append("Developer mode has been deactivated!")
+                    else:
+                        Debug.set_developer_mode(False)
+                        self._txt_output.append("Developer mode is deactivated.")
                 else:
-                    Debug.set_developer_mode(True)
-                    self._txt_output.append("Developer mode is activated.")
-            elif conditions[1] == "off":
-                if not Debug.get_developer_mode():
-                    self._txt_output.append("Developer mode has been deactivated!")
-                else:
-                    Debug.set_developer_mode(False)
-                    self._txt_output.append("Developer mode is deactivated.")
+                    self._txt_output.append("Unknown status for dev command.")
+            elif conditions[0] == "linpg" and len(conditions) > 1 and conditions[1] == "info":
+                self._txt_output.append("Linpg Version: {}".format(Info.get_current_version()))
+            elif conditions[0] == "quit":
+                Display.quit()
+            elif conditions[0] == "clear":
+                self._txt_output.clear()
             else:
-                self._txt_output.append("Unknown status for dev command.")
-        elif conditions[0] == "linpg" and len(conditions) > 1 and conditions[1] == "info":
-            self._txt_output.append("Linpg Version: {}".format(Info.get_current_version()))
-        elif conditions[0] == "quit":
-            Display.quit()
-        elif conditions[0] == "clear":
-            self._txt_output.clear()
+                self._txt_output.append("The command is unknown!")
         else:
-            self._txt_output.append("The command is unknown!")
+            self._txt_output.append(self._text)
+        self._text_history.append(self._text)
+        self.__backward_id = 0
+        self.set_text()
 
     def draw(self, _surface: ImageSurface) -> None:
         if self.is_hidden():
@@ -120,10 +147,7 @@ class Console(SingleLineInputBox, HiddenableSurface):
         else:
             for event in Controller.get_events():
                 if event.type == MOUSE_BUTTON_DOWN:
-                    if (
-                        self.x <= Controller.mouse.x <= self.x + self._input_box.width
-                        and self.y <= Controller.mouse.y <= self.y + self._input_box.height
-                    ):
+                    if self.x <= Controller.mouse.x <= self.x + self._input_box.width and self.y <= Controller.mouse.y <= self.y + self._input_box.height:
                         self._active = not self._active
                         # Change the current color of the input box.
                         self._color = self.color_active if self._active else self.color_inactive

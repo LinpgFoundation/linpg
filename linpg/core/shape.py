@@ -1,5 +1,6 @@
 from .module import *
 
+
 # 正方形类
 class Square(GameObject2d):
     def __init__(self, x: int_f, y: int_f, width: int_f):
@@ -43,11 +44,7 @@ class Square(GameObject2d):
                     # 重置宽度
                     self.set_width(self.get_width())
             else:
-                EXCEPTION.fatal(
-                    "The minimum width has to be smaller than the maximum width, which in this case is {}.".format(
-                        self.__max_width
-                    )
-                )
+                EXCEPTION.fatal("The minimum width has to be smaller than the maximum width, which in this case is {}.".format(self.__max_width))
         else:
             EXCEPTION.fatal("The minimum width has to be greater than 1.")
 
@@ -65,20 +62,14 @@ class Square(GameObject2d):
             if new_width > self.__min_width:
                 self.__max_width = new_width
             else:
-                EXCEPTION.fatal(
-                    "The maximum width has to be greater than the minimum width, which in this case is {}.".format(
-                        self.__min_width
-                    )
-                )
+                EXCEPTION.fatal("The maximum width has to be greater than the minimum width, which in this case is {}.".format(self.__min_width))
         else:
             self.__max_width = -1
         # 重置宽度
         self.set_width(self.get_width())
 
     # 画出轮廓
-    def draw_outline(
-        self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN, color: str = "red", thickness: int = 2
-    ) -> None:
+    def draw_outline(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN, color: str = "red", thickness: int = 2) -> None:
         Draw.rect(_surface, Colors.get(color), (Coordinates.add(self.pos, offSet), self.size), thickness)
 
 
@@ -121,11 +112,7 @@ class Rectangle(Square):
                     # 重置高度
                     self.set_height(self.get_height())
             else:
-                EXCEPTION.fatal(
-                    "The minimum height has to be smaller than the maximum height, which in this case is {}.".format(
-                        self.__max_height
-                    )
-                )
+                EXCEPTION.fatal("The minimum height has to be smaller than the maximum height, which in this case is {}.".format(self.__max_height))
         else:
             EXCEPTION.fatal("The minimum height has to be greater than 1.")
 
@@ -143,11 +130,7 @@ class Rectangle(Square):
             if new_height > self.__min_height:
                 self.__max_height = new_height
             else:
-                EXCEPTION.fatal(
-                    "The maximum height has to be greater than the minimum height, which in this case is {}.".format(
-                        self.__min_height
-                    )
-                )
+                EXCEPTION.fatal("The maximum height has to be greater than the minimum height, which in this case is {}.".format(self.__min_height))
         else:
             self.__max_height = -1
         # 重置高度
@@ -167,7 +150,8 @@ class Rectangle(Square):
 
 
 PG_Rect = pygame.Rect
-RectLiked = Union[Rectangle, pygame.Rect, tuple]
+RectLiked = Rectangle | pygame.Rect | tuple
+
 
 # Rectangle方法管理
 class Rectangles:

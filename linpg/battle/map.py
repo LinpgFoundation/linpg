@@ -430,30 +430,37 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         enemies: dict,
         can_move_through_darkness: bool = False,
         lenMax: Optional[int] = None,
-        ignored: tuple = (),
+        enemies_ignored: tuple = tuple(),
+        ignore_alliances: bool = False,
     ) -> list[tuple[int, int]]:
-        # 确保终点没有我方角色
-        for value in alliances.values():
-            if round(value.x) == goal[0] and round(value.y) == goal[1]:
-                return []
         # 初始化寻路地图
         map2d: numpy.ndarray = numpy.ones((self.__column, self.__row), dtype=numpy.byte)
+        # 如果不忽略友方角色，则将所有友方角色的坐标点设置为障碍区块
+        if not ignore_alliances:
+            for value in alliances.values():
+                map2d[round(value.x), round(value.y)] = 0
+        # 如果忽略友方角色，则确保终点没有友方角色
+        else:
+            for value in alliances.values():
+                if round(value.x) == goal[0] and round(value.y) == goal[1]:
+                    return []
+        # 如果角色无法移动至黑暗处
         if not can_move_through_darkness:
             map2d.fill(0)
             for _pos in self.__lit_area:
                 map2d[_pos[0], _pos[1]] = 1
-        # 历遍地图，设置障碍方块
+        # 历遍地图，设置障碍区块
         for _x in range(self.__column):
             for _y in range(self.__row):
                 if not self.is_passable(_x, _y):
                     map2d[_x, _y] = 1
-        # 历遍设施，设置障碍方块
+        # 历遍设施，设置障碍区块
         for item in self.__decorations:
             if item.get_type() == "obstacle" or item.get_type() == "campfire":
                 map2d[item.x, item.y] = 0
-        # 将所有敌方角色的坐标点设置为障碍方块
+        # 将所有敌方角色的坐标点设置为障碍区块
         for key, value in enemies.items():
-            if key not in ignored:
+            if key not in enemies_ignored:
                 map2d[round(value.x), round(value.y)] = 0
         # 如果目标坐标合法
         if 0 <= goal[1] < self.__row and 0 <= goal[0] < self.__column and map2d[goal[0]][goal[1]] == 1:

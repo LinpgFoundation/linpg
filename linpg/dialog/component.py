@@ -121,7 +121,7 @@ class DialogNavigationWindow(AbstractFrame):
 
 
 # 对话框模块基础框架
-class AbstractDialogBox(HiddenableSurface, metaclass=ABCMeta):
+class AbstractDialogBox(HidableSurface, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         # 对胡框数据

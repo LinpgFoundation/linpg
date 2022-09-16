@@ -7,7 +7,9 @@ from tkinter import Tk
 import pygame
 
 # 加载颜色模块
-from PIL import ImageColor  # type: ignore
+from PIL import ImageColor as PILImageColor  # type: ignore
+from PIL import ImageFilter as PILImageFilter
+from PIL import Image as PILImage  # type: ignore
 from pygame.colordict import THECOLORS
 
 from .coordinates import *
@@ -114,7 +116,7 @@ class Colors:
     def get(cls, color: color_liked) -> tuple[int, int, int, int]:
         if isinstance(color, str):
             if color.startswith("#"):
-                return cls.__to_rgba_color(ImageColor.getrgb(color))
+                return cls.__to_rgba_color(PILImageColor.getrgb(color))
             else:
                 _the_color = THECOLORS.get(color)
                 if isinstance(_the_color, Sequence):
@@ -174,10 +176,15 @@ class Draw:
     def circle(_surface: ImageSurface, color: tuple[int, int, int, int], center_pos: tuple[int, int], radius: int, thickness: int = 0) -> None:
         pygame.draw.circle(_surface, color, center_pos, radius, thickness)
 
-    # 画抗锯齿线条
+    # 画一条抗锯齿线
     @staticmethod
     def aaline(_surface: ImageSurface, color: tuple[int, int, int, int], start_pos: tuple[int, int], end_pos: tuple[int, int], blend: int = 1) -> None:
         pygame.draw.aaline(_surface, color, start_pos, end_pos, blend)
+
+    # 画一条线
+    @staticmethod
+    def line(_surface: ImageSurface, color: tuple[int, int, int, int], start_pos: tuple[int, int], end_pos: tuple[int, int], width: int = 1) -> None:
+        pygame.draw.line(_surface, color, start_pos, end_pos, width)
 
     # 画多边形
     @staticmethod
@@ -248,3 +255,12 @@ class Surfaces:
     @classmethod
     def is_not_null(cls, _surface: Optional[ImageSurface]) -> bool:
         return _surface is not None and _surface is not cls.NULL
+
+    # 毛玻璃效果
+    @staticmethod
+    def glassmorphism_effect(_surface: ImageSurface, _rect: Optional[PG_TUPLE] = None) -> ImageSurface:
+        _layer: ImageSurface = _surface.copy() if _rect is None else _surface.subsurface(_rect).copy()
+        _processed_image = PILImage.fromarray(Surfaces.to_array(_layer)).filter(PILImageFilter.GaussianBlur(radius=6))
+        _layer = Surfaces.from_array(numpy.asarray(_processed_image.convert("RGBA"))).convert_alpha()
+        _layer.fill((10, 10, 10), special_flags=pygame.BLEND_RGB_ADD)
+        return _layer

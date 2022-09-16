@@ -1,7 +1,7 @@
 from .surface import *
 
 
-class AbstractTextSurface(GameObject2d, HiddenableSurface, metaclass=ABCMeta):
+class AbstractTextSurface(GameObject2d, HidableSurface, metaclass=ABCMeta):
     def __init__(
         self,
         text: str,
@@ -14,7 +14,7 @@ class AbstractTextSurface(GameObject2d, HiddenableSurface, metaclass=ABCMeta):
         _with_bounding: bool = False,
     ) -> None:
         GameObject2d.__init__(self, x, y)
-        HiddenableSurface.__init__(self)
+        HidableSurface.__init__(self)
         self.__text: str = text
         self.__size: int = int(size)
         self.__color: tuple[int, int, int, int] = Colors.get(_color)

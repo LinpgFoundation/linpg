@@ -149,3 +149,47 @@ class AbstractGameSystem(SystemWithBackgroundMusic, metaclass=ABCMeta):
         save_thread.start()
         save_thread.join()
         del save_thread
+
+
+# 存档系统
+class ProgressDataPackageSavingSystem:
+    def __init__(self, _data: dict, _screenshot: ImageSurface, _info: dict) -> None:
+        self.data: Final[dict] = _data
+        self.screenshot: Final[ImageSurface] = _screenshot
+        self.createdAt: Final[str] = str(_info["createdAt"])
+        self.slotId: Final[int] = int(_info["slotId"])
+
+    # 获取当前时间
+    @staticmethod
+    def __get_current_time() -> str:
+        return EXCEPTION.get_current_time().strftime("%Y-%m-%d %H:%M %p")
+
+    # 保存存档
+    @classmethod
+    def save(cls, _path: str, _data: dict, _screenshot: ImageSurface) -> None:
+        # 保存存档文件到本地
+        Config.save("data.json", _data)
+        Config.save("info.json", {"createdAt": str(cls.__get_current_time())})
+        Images.save(_screenshot, "screenshot.png")
+        # 将存档文件写入zip文件中
+        with zipfile.ZipFile(_path, "w") as zipped_f:
+            zipped_f.write("data.json")
+            zipped_f.write("info.json")
+            zipped_f.write("screenshot.png")
+        # 删除本地文件
+        Builder.delete_file_if_exist("data.json")
+        Builder.delete_file_if_exist("info.json")
+        Builder.delete_file_if_exist("screenshot.png")
+
+    # 取得存档
+    @staticmethod
+    def load(_path: str) -> "ProgressDataPackageSavingSystem":
+        # 打开zip文件并读取信息
+        zipFile: zipfile.ZipFile = Zipper.open(_path)
+        _data: dict = json.load(io.BytesIO(zipFile.read("data.json")))
+        _screenshot: ImageSurface = Images.fromBytesIO(io.BytesIO(zipFile.read("screenshot.png")))
+        _info: dict = json.load(io.BytesIO(zipFile.read("info.json")))
+        # 断开对zip文件的访问
+        zipFile.close()
+        # 返回数据
+        return ProgressDataPackageSavingSystem(_data, _screenshot, _info)

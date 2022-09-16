@@ -236,10 +236,10 @@ class UiGenerator:
             item_t.tag = data["name"] if "name" in data else ""
             # 透明度
             if "visibility" in data:
-                if isinstance(item_t, HiddenableSurface):
+                if isinstance(item_t, HidableSurface):
                     item_t.set_visible(data["visibility"])
                 else:
-                    EXCEPTION.fatal("This is not a subtype of HiddenableSurface!")
+                    EXCEPTION.fatal("This is not a subtype of HidableSurface!")
             # 设置坐标
             item_t.set_pos(
                 cls.__convert_coordinate(data, "x", (max_width - item_t.get_width()) // 2, max_width, custom_values),

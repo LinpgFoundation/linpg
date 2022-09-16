@@ -1,6 +1,5 @@
 import io
 
-from PIL import Image as PILImage  # type: ignore
 from PIL import ImageSequence as PILImageSequence  # type: ignore
 
 from .wrapper import *
@@ -71,7 +70,9 @@ class Images:
                     if not _path.endswith(".zip"):
                         _imageR = pygame.image.load(_path)
                     elif "linpgassets" in _path:
-                        _imageR = pygame.image.load(io.BytesIO(Zipper.open(_path).read(path[path.index(">") + 1 :], pwd=_KEY)))
+                        _zipFile: zipfile.ZipFile = Zipper.open(_path)
+                        _imageR = cls.fromBytesIO(io.BytesIO(_zipFile.read(path[path.index(">") + 1 :], pwd=_KEY)))
+                        _zipFile.close()
                     elif Debug.get_developer_mode() is True:
                         EXCEPTION.fatal("Cannot find essential image with path: {}".format(_path))
                 # 根据参数处理并返回加载好的图片
@@ -163,3 +164,8 @@ class Images:
     @staticmethod
     def save(_surface: ImageSurface, path: str) -> None:
         pygame.image.save(_surface, path)
+
+    # 将BytesIO转换为图片
+    @staticmethod
+    def fromBytesIO(_bytes: io.BytesIO) -> ImageSurface:
+        return pygame.image.load(_bytes)

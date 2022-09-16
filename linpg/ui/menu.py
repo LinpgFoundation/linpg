@@ -2,7 +2,7 @@ from .generator import *
 
 
 # 内部菜单模块的抽象
-class AbstractInternalMenu(HiddenableSurface, metaclass=ABCMeta):
+class AbstractInternalMenu(HidableSurface, metaclass=ABCMeta):
     def __init__(self, menu_name: str) -> None:
         super().__init__(False)
         self._CONTENT: Optional[GameObjectsDictContainer] = None
@@ -104,6 +104,7 @@ class PauseMenu(AbstractInternalMenu):
     def __init__(self) -> None:
         super().__init__("pause_menu")
         self.__screenshot: Optional[ImageSurface] = None
+        self.__options_surface: Optional[ImageSurface] = None
         # 返回确认菜单
         self.__leave_warning: Optional[GameObjectsDictContainer] = None
         # 退出确认菜单
@@ -131,6 +132,7 @@ class PauseMenu(AbstractInternalMenu):
         if self.__leave_warning is not None:
             self.__leave_warning.set_visible(False)
         self.__screenshot = None
+        self.__options_surface = None
 
     def draw(self, _surface: ImageSurface) -> None:
         self.__button_hovered = ""
@@ -142,9 +144,13 @@ class PauseMenu(AbstractInternalMenu):
                 EXCEPTION.fatal("The ui has not been correctly initialized.")
             # 展示原先的背景
             if self.__screenshot is None:
-                self.__screenshot = Images.add_darkness(_surface, 10)
-            # 画出原先的背景
+                self.__screenshot = _surface.copy()
             _surface.blit(self.__screenshot, (0, 0))
+            _right_x: int = int(self.__screenshot.get_width() * 0.3)
+            if self.__options_surface is None:
+                self.__options_surface = Surfaces.glassmorphism_effect(self.__screenshot, (0, 0, _right_x, self.__screenshot.get_height()))
+            _surface.blit(self.__options_surface, (0, 0))
+            Draw.line(_surface, Colors.WHITE, (_right_x, 0), (_right_x, self.__screenshot.get_height()), 5)
             # 画出选项
             if self.__leave_warning.is_hidden() and self.__exit_warning.is_hidden():
                 super().draw(_surface)

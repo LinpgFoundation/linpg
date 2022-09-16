@@ -293,6 +293,7 @@ class GameObject2point5d(Coordinate):
             self.z = int(z)
 
 
+# 表示方向的enum
 class Axis(enum.IntEnum):
     VERTICAL = enum.auto()
     HORIZONTAL = enum.auto()

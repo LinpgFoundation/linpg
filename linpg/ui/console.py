@@ -2,12 +2,12 @@ from .inputbox import *
 
 
 # 控制台
-class Console(SingleLineInputBox, HiddenableSurface, threading.Thread):
+class Console(SingleLineInputBox, HidableSurface, threading.Thread):
 
     _COMMAND_INDICATOR: str = "/"
 
     def __init__(self, x: int_f, y: int_f, font_size: int = 32, default_width: int = 150):
-        HiddenableSurface.__init__(self, False)
+        HidableSurface.__init__(self, False)
         self.color_active = Colors.get("dodgerblue2")
         SingleLineInputBox.__init__(self, x, y, font_size, self.color_active, default_width)
         self.color_inactive = Colors.get("lightskyblue3")

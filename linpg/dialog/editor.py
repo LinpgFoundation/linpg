@@ -148,7 +148,7 @@ class DialogEditor(DialogConverter):
         # 从配置文件中加载数据
         self._load_content()
         # 移除按钮
-        self.__remove_npc_button = Font.render_description_box(CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE, self._FONT_SIZE // 5, Colors.WHITE)
+        self.__remove_npc_button = ArtisticFont.render_description_box(CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE, self._FONT_SIZE // 5, Colors.WHITE)
         # 初始化用于选择小说脚本的key的下拉菜单
         self.__dialog_part_selection.clear()
         self.__dialog_part_selection.set_pos(button_width * 11, button_y + font_size)

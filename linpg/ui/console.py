@@ -170,7 +170,7 @@ class Console(SingleLineInputBox, HidableSurface, threading.Thread):
             # 画出输出信息
             for i in range(len(self._txt_output)):
                 _surface.blit(
-                    self._FONT.render(self._txt_output[i], self._color, with_bounding=True),
+                    self._FONT.render(self._txt_output[i], self._color),
                     (self.x + self._FONT.size // 4, self.y - (len(self._txt_output) - i) * self._FONT.size * 3 / 2),
                 )
             # 画出输入框

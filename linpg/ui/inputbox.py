@@ -20,7 +20,7 @@ class AbstractInputBox(GameObject2d, metaclass=ABCMeta):
         self._color: tuple[int, int, int, int] = Colors.get("lightskyblue3")
         self._text_color: tuple[int, int, int, int] = Colors.get(txt_color)
         self._active: bool = False
-        self._holder: ImageSurface = self._FONT.render("|", self._text_color, with_bounding=True)
+        self._holder: ImageSurface = self._FONT.render("|", self._text_color)
         self._holder_index: int = 0
         self.need_save: bool = False
 
@@ -130,7 +130,7 @@ class SingleLineInputBox(AbstractInputBox):
     # 画出文字内容
     def _draw_content(self, _surface: ImageSurface, with_holder: bool = True) -> None:
         if self._text is not None and len(self._text) > 0:
-            font_t = self._FONT.render(self._text, self._text_color, with_bounding=True)
+            font_t = self._FONT.render(self._text, self._text_color)
             _surface.blit(font_t, (self.x + self._padding, self.y + (self._input_box.height - font_t.get_height()) // 2))
         if with_holder is True:
             if int(time.time() % 2) == 0 or len(Controller.get_events()) > 0:
@@ -356,9 +356,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         if self._text is not None:
             for i in range(len(self._text)):
                 # 画出文字
-                _surface.blit(
-                    self._FONT.render(self._text[i], self._text_color, with_bounding=True), (self.x + self._FONT.size // 4, self.y + i * self._default_height)
-                )
+                _surface.blit(self._FONT.render(self._text[i], self._text_color), (self.x + self._FONT.size // 4, self.y + i * self._default_height))
         if self._active:
             # 画出输入框
             Draw.rect(_surface, self._color, self._input_box.get_rect(), 2)

@@ -1,7 +1,7 @@
 from ..core import *
 
 
-class ButtonText(StaticTextSurface):
+class ButtonText(TextSurface):
     def __init__(
         self,
         text: str,

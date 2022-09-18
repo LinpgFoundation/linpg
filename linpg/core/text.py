@@ -59,19 +59,44 @@ class AbstractTextSurface(GameObject2d, HidableSurface, metaclass=ABCMeta):
 
 
 # 高级文字类
-class StaticTextSurface(AbstractTextSurface):
+class TextSurface(AbstractTextSurface):
     def __init__(self, text: str, x: int_f, y: int_f, size: int_f, _color: color_liked = Colors.BLACK, _bold: bool = False, _italic: bool = False) -> None:
         super().__init__(text, x, y, size, _color, _bold, _italic)
         self.__text_surface: Optional[ImageSurface] = None
+        self.__outline_thickness: int = 0
+        self.__outline_color: tuple[int, int, int, int] = Colors.BLACK
+        # 更新文字图层（需作为初始化的最后一步）
         self._update_text_surface()
 
     def _update_text_surface(self) -> None:
-        self.__text_surface = (
-            Font.render(self.get_text(), self.get_color(), self.get_font_size(), self.get_bold(), self.get_italic()) if self.get_text() != "" else None
-        )
+        if len(self.get_text()) == 0:
+            self.__text_surface = None
+        else:
+            self.__text_surface = (
+                Font.render(self.get_text(), self.get_color(), self.get_font_size(), self.get_bold(), self.get_italic())
+                if self.__outline_thickness <= 0
+                else ArtisticFont.render_with_outline(
+                    self.get_text(), self.get_color(), self.get_font_size(), self.__outline_thickness, self.__outline_color, self.get_bold(), self.get_italic()
+                )
+            )
 
     def _get_text_surface(self) -> Optional[ImageSurface]:
         return self.__text_surface
+
+    # 设置轮廓粗细
+    def set_outline_thickness(self, _thickness: int) -> None:
+        self.__outline_thickness = max(_thickness, 1)
+        self._update_text_surface()
+
+    # 设置轮廓颜色
+    def set_outline_color(self, _color: color_liked) -> None:
+        self.__outline_color = Colors.get(_color)
+        self._update_text_surface()
+
+    # 关闭轮廓渲染
+    def disable_outline(self) -> None:
+        self.__outline_thickness = 0
+        self._update_text_surface()
 
     def set_text(self, value: str) -> None:
         if value != self.get_text():
@@ -105,34 +130,11 @@ class StaticTextSurface(AbstractTextSurface):
     # 画出
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible() and self.__text_surface is not None:
-            _surface.blit(self.__text_surface, Coordinates.add(self.pos, offSet))
-
-
-class DynamicTextSurface(AbstractTextSurface):
-    def __init__(self, text: str, x: int_f, y: int_f, size: int_f, _color: color_liked = Colors.BLACK, _bold: bool = False, _italic: bool = False) -> None:
-        super().__init__(text, x, y, size, _color, _bold, _italic)
-        self.__FONT_GENERATOR: FontGenerator = FontGenerator()
-        self.__FONT_GENERATOR.update(self.get_font_size(), self.get_bold(), self.get_italic())
-
-    def _update_text_surface(self) -> None:
-        self.__FONT_GENERATOR.update(self.get_font_size(), self.get_bold(), self.get_italic())
-
-    def get_width(self) -> int:
-        return self.__FONT_GENERATOR.estimate_text_width(self.get_text())
-
-    def get_height(self) -> int:
-        return self.__FONT_GENERATOR.estimate_text_height(self.get_text())
-
-    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
-        if self.is_visible():
-            _text_surface: ImageSurface = self.__FONT_GENERATOR.render(self.get_text(), self.get_color())
-            if self.get_alpha() != 255:
-                _text_surface.set_alpha(255)
-            _surface.blit(_text_surface, Coordinates.add(self.pos, offSet))
+            _surface.blit(self.__text_surface, Coordinates.add(self.pos, offSet, (-self.__outline_thickness, -self.__outline_thickness)))
 
 
 # 动态文字类
-class ResizeWhenHoveredTextSurface(StaticTextSurface):
+class ResizeWhenHoveredTextSurface(TextSurface):
     def __init__(
         self,
         text: str,
@@ -145,7 +147,7 @@ class ResizeWhenHoveredTextSurface(StaticTextSurface):
         _italic: bool = False,
     ) -> None:
         super().__init__(text, x, y, original_size, _color, _bold, _italic)
-        self.__text_when_hovered = StaticTextSurface(text, 0, 0, size_when_hovered, _color, _bold, _italic)
+        self.__text_when_hovered = TextSurface(text, 0, 0, size_when_hovered, _color, _bold, _italic)
         self.__text_when_hovered.set_center(self.centerx, self.centery)
         self.__is_hovered: bool = False
 
@@ -180,6 +182,21 @@ class ResizeWhenHoveredTextSurface(StaticTextSurface):
     def set_alpha(self, value: int) -> None:
         super().set_alpha(value)
         self.__text_when_hovered.set_alpha(value)
+
+    # 设置轮廓粗细
+    def set_outline_thickness(self, _thickness: int) -> None:
+        super().set_outline_thickness(_thickness)
+        self.__text_when_hovered.set_outline_thickness(_thickness)
+
+    # 设置轮廓颜色
+    def set_outline_color(self, _color: color_liked) -> None:
+        super().set_outline_color(_color)
+        self.__text_when_hovered.set_outline_color(_color)
+
+    # 关闭轮廓渲染
+    def disable_outline(self) -> None:
+        super().disable_outline()
+        self.__text_when_hovered.disable_outline()
 
     # 用于检测触碰的快捷
     def has_been_hovered(self) -> bool:

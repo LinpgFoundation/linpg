@@ -89,7 +89,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         super()._process_data(_data, _mode)
 
     # 初始化
-    def load(self, _surface: ImageSurface, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
+    def new(self, _surface: ImageSurface, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
         self._initialize(chapterType, chapterId, projectName)
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_map_file_location())
         self._process_data(Config.load(self.get_map_file_location()))
@@ -329,7 +329,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             if self.__buttons_container.item_being_hovered is None:
                 pass
             elif self.__buttons_container.item_being_hovered == "save":
-                self.save_progress()
+                self.save()
             elif self.__buttons_container.item_being_hovered == "back":
                 if Config.load(self.get_map_file_location()) == self._get_data_need_to_save():
                     self.stop()
@@ -359,7 +359,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         if Controller.get_event("confirm") and self.__no_save_warning.item_being_hovered is not None:
             # 保存并离开
             if self.__no_save_warning.item_being_hovered == "save":
-                self.save_progress()
+                self.save()
                 self.stop()
             # 取消
             elif self.__no_save_warning.item_being_hovered == "cancel":

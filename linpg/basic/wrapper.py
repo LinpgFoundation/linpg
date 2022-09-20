@@ -256,11 +256,37 @@ class Surfaces:
     def is_not_null(cls, _surface: Optional[ImageSurface]) -> bool:
         return _surface is not None and _surface is not cls.NULL
 
+
+# 滤镜效果
+class Filters:
+
     # 毛玻璃效果
     @staticmethod
-    def glassmorphism_effect(_surface: ImageSurface, _rect: Optional[PG_TUPLE] = None) -> ImageSurface:
-        _layer: ImageSurface = _surface.copy() if _rect is None else _surface.subsurface(_rect).copy()
-        _processed_image = PILImage.fromarray(Surfaces.to_array(_layer)).filter(PILImageFilter.GaussianBlur(radius=6))
-        _layer = Surfaces.from_array(numpy.asarray(_processed_image.convert("RGBA"))).convert_alpha()
-        _layer.fill((10, 10, 10), special_flags=pygame.BLEND_RGB_ADD)
-        return _layer
+    def glassmorphism_effect(_surface: ImageSurface, _rect: Optional[PG_TUPLE] = None, whiteness: int = 10) -> ImageSurface:
+        _processed_image = PILImage.fromarray(Surfaces.to_array(_surface if _rect is None else _surface.subsurface(_rect))).filter(
+            PILImageFilter.GaussianBlur(radius=6)
+        )
+        _surface = Surfaces.from_array(numpy.asarray(_processed_image.convert("RGBA"))).convert_alpha()
+        _surface.fill((whiteness, whiteness, whiteness), special_flags=pygame.BLEND_RGB_ADD)
+        return _surface
+
+    # 直接将毛玻璃效果应用到surface上
+    @staticmethod
+    def apply_glassmorphism_effect_to(_surface: ImageSurface, whiteness: int = 10) -> None:
+        _processed_image = PILImage.fromarray(Surfaces.to_array(_surface)).filter(PILImageFilter.GaussianBlur(radius=6))
+        _surface.blit(Surfaces.from_array(numpy.asarray(_processed_image.convert("RGBA"))).convert_alpha(), (0, 0))
+        _surface.fill((whiteness, whiteness, whiteness), special_flags=pygame.BLEND_RGB_ADD)
+
+    # 增加图层暗度
+    @staticmethod
+    def add_darkness(img: ImageSurface, value: int) -> ImageSurface:
+        newImg: ImageSurface = img.copy()
+        newImg.fill((value, value, value), special_flags=pygame.BLEND_RGB_SUB)
+        return newImg
+
+    # 减少图层暗度
+    @staticmethod
+    def subtract_darkness(img: ImageSurface, value: int) -> ImageSurface:
+        newImg: ImageSurface = img.copy()
+        newImg.fill((value, value, value), special_flags=pygame.BLEND_RGB_ADD)
+        return newImg

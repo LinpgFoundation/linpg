@@ -126,19 +126,15 @@ class Images:
             return pygame.transform.smoothscale(img, (round(size[0]), round(size[1])))
         EXCEPTION.fatal("Both width and height must be positive integer!")
 
-    # 增加图片暗度
-    @staticmethod
-    def add_darkness(img: ImageSurface, value: int) -> ImageSurface:
-        newImg: ImageSurface = img.copy()
-        newImg.fill((value, value, value), special_flags=pygame.BLEND_RGB_SUB)
-        return newImg
-
-    # 减少图片暗度
-    @staticmethod
-    def subtract_darkness(img: ImageSurface, value: int) -> ImageSurface:
-        newImg: ImageSurface = img.copy()
-        newImg.fill((value, value, value), special_flags=pygame.BLEND_RGB_ADD)
-        return newImg
+    # 精准地缩放尺寸
+    @classmethod
+    def smoothly_resize_and_crop_to_fit(cls, img: ImageSurface, size: tuple[int, int]) -> ImageSurface:
+        if img.get_height() / img.get_width() > 1:
+            img = cls.smoothly_resize(img, (None, size[1]))
+            return img.subsurface(((img.get_width() - size[0]) // 2, 0), size)
+        else:
+            img = cls.smoothly_resize(img, (size[0], None))
+            return img.subsurface((0, (img.get_height() - size[1]) // 2), size)
 
     # 翻转图片
     @staticmethod

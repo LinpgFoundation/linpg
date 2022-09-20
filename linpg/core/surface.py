@@ -240,12 +240,12 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 加暗度
     def add_darkness(self, value: int) -> None:
-        self._set_image(Images.add_darkness(self._get_image_reference(), value))
+        self._set_image(Filters.add_darkness(self._get_image_reference(), value))
         self._need_update = True
 
     # 减暗度
     def subtract_darkness(self, value: int) -> None:
-        self._set_image(Images.subtract_darkness(self._get_image_reference(), value))
+        self._set_image(Filters.subtract_darkness(self._get_image_reference(), value))
         self._need_update = True
 
     # 旋转

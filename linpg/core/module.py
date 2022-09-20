@@ -1,5 +1,4 @@
 import enum
-from abc import abstractmethod
 
 from .system import *
 

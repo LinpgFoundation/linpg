@@ -58,7 +58,7 @@ class DialogEditor(DialogConverter):
         return self.__dialog_txt_system
 
     # 加载数据
-    def load(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str] = None) -> None:
+    def new(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str] = None) -> None:
         self._initialize(chapterType, chapterId, part, projectName)
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_dialog_file_location())
         # 加载容器
@@ -239,7 +239,7 @@ class DialogEditor(DialogConverter):
         self._update_scene(self._content.get_id())
         # 如果有不同，应该立即保存
         if not self.__no_changes_were_made():
-            self.save_progress()
+            self.save()
 
     # 分离需要保存的数据
     def __split_the_stuff_need_save(self) -> dict[str, dict[str, dict]]:
@@ -324,7 +324,7 @@ class DialogEditor(DialogConverter):
             self._content.get_dialog(_id=dialogId)["character_images"] = copy.deepcopy(self._content.get_dialog(_id=lastId)["character_images"])
         # 检测是否自动保存
         if self.auto_save:
-            self.save_progress()
+            self.save()
         # 更新数据
         super()._update_scene(dialogId)
         self.__update_ui()
@@ -474,7 +474,7 @@ class DialogEditor(DialogConverter):
                 elif self.__buttons_ui_container.item_being_hovered == "add":
                     self.__add_dialog(self.generate_a_new_recommended_key())
                 elif self.__buttons_ui_container.item_being_hovered == "save":
-                    self.save_progress()
+                    self.save()
                 elif self.__buttons_ui_container.item_being_hovered == "reload":
                     self._load_content()
                 elif self.__buttons_ui_container.item_being_hovered == "mute":
@@ -535,7 +535,7 @@ class DialogEditor(DialogConverter):
         if Controller.get_event("confirm") and self.__no_save_warning.item_being_hovered != "":
             # 保存并离开
             if self.__no_save_warning.item_being_hovered == "save":
-                self.save_progress()
+                self.save()
                 self.stop()
             # 取消
             elif self.__no_save_warning.item_being_hovered == "cancel":

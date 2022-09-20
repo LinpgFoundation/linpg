@@ -79,11 +79,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         self.__dialog_txt_system.reset()
 
     # 读取章节
-    def load(self, save_path: str) -> None:
-        saveData = Config.load_file(save_path)
-        self._initialize(
-            saveData["chapter_type"], saveData["chapter_id"], saveData["type"], saveData["project_name"], saveData["dialog_id"], saveData["dialog_options"]
-        )
+    def load_progress(self, _data: dict) -> None:
+        self._initialize(_data["chapter_type"], _data["chapter_id"], _data["type"], _data["project_name"], _data["dialog_id"], _data["dialog_options"])
         # 根据已有参数载入数据
         self._load_content()
 
@@ -100,7 +97,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
             super()._update_scene(dialog_id)
             # 自动保存
             if self.auto_save:
-                self.save_progress()
+                self.save()
         else:
             EXCEPTION.fatal("The dialog id {} does not exist!".format(dialog_id))
 
@@ -278,7 +275,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         if Controller.get_event("previous") and self._content.last is not None:
             self._update_scene(self._content.last.id)
         # 暂停菜单
-        if Controller.get_event("back") and self.is_pause_menu_enabled():
+        if Controller.get_event("back") and self._is_pause_menu_enabled():
             if self.__is_showing_history is True:
                 self.__is_showing_history = False
             else:

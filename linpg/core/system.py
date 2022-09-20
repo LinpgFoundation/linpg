@@ -1,5 +1,5 @@
 import threading
-from abc import ABCMeta
+from abc import ABCMeta, abstractmethod
 
 from ..basic import *
 
@@ -138,17 +138,37 @@ class AbstractGameSystem(SystemWithBackgroundMusic, metaclass=ABCMeta):
     def _get_data_need_to_save(self) -> dict:
         EXCEPTION.fatal("_get_data_need_to_save()", 1)
 
-    # 保存进度
-    def save_progress(self) -> None:
-        # 确保储存进度存档的文件夹存在
+    # 处理保存类型的多线程
+    def __handle_save_thread(self, save_thread: threading.Thread) -> None:
+        # 确保储存数据的文件夹存在
         if not os.path.exists(self.folder_for_save_file):
             os.makedirs(self.folder_for_save_file)
-        # 使用多线程保存数据
-        save_thread = threading.Thread(target=Config.save, args=(self.file_path, self._get_data_need_to_save()))
+        # 多线程保存数据
         save_thread.daemon = True
         save_thread.start()
         save_thread.join()
-        del save_thread
+
+    # 保存进度存档至默认路径
+    def save(self) -> None:
+        self.__handle_save_thread(threading.Thread(target=Config.save, args=(self.file_path, self._get_data_need_to_save())))
+
+    # 创建进度存档
+    def save_progress(self, _screenshot: ImageSurface, slotId: int) -> None:
+        self.__handle_save_thread(
+            threading.Thread(
+                target=ProgressDataPackageSavingSystem.save,
+                args=(os.path.join(self.folder_for_save_file, "save_{}.zip".format(slotId)), self._get_data_need_to_save(), _screenshot, slotId),
+            )
+        )
+
+    # 从默认存档路径加载进度存档
+    def load(self) -> None:
+        self.load_progress(Config.load_file(self.file_path))
+
+    # 加载进度存档（子类必须实现）
+    @abstractmethod
+    def load_progress(self, _data: dict) -> None:
+        EXCEPTION.fatal("load_progress()", 1)
 
 
 # 存档系统
@@ -159,17 +179,12 @@ class ProgressDataPackageSavingSystem:
         self.createdAt: Final[str] = str(_info["createdAt"])
         self.slotId: Final[int] = int(_info["slotId"])
 
-    # 获取当前时间
-    @staticmethod
-    def __get_current_time() -> str:
-        return EXCEPTION.get_current_time().strftime("%Y-%m-%d %H:%M %p")
-
     # 保存存档
     @classmethod
-    def save(cls, _path: str, _data: dict, _screenshot: ImageSurface) -> None:
+    def save(cls, _path: str, _data: dict, _screenshot: ImageSurface, slotId: int) -> None:
         # 保存存档文件到本地
         Config.save("data.json", _data)
-        Config.save("info.json", {"createdAt": str(cls.__get_current_time())})
+        Config.save("info.json", {"createdAt": EXCEPTION.get_current_time().strftime("%Y-%m-%d %H:%M %p"), "slotId": slotId})
         Images.save(_screenshot, "screenshot.png")
         # 将存档文件写入zip文件中
         with zipfile.ZipFile(_path, "w") as zipped_f:

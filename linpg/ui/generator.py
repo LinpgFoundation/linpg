@@ -150,7 +150,7 @@ class UiGenerator:
                 max_height = Display.get_height()
             item_t: GameObject2d
             # 如果对象是文字
-            if data["type"] == "text" or data["type"] == "resize_when_hovered_text" or data["type"] == "drop_down_single_choice_list":
+            if data["type"] == "text" or data["type"] == "text&resize_when_hovered" or data["type"] == "drop_down_single_choice_list":
                 # 转换字体大小
                 font_size: int = cls.__convert_number(data, "font_size", max_height, custom_values)
                 # 补充可选参数
@@ -165,10 +165,18 @@ class UiGenerator:
                 elif data["src"] is not None:
                     data["src"] = cls.__load_text(str(data["src"]))
                 # 生成文字图层
-                if data["type"] == "text" or data["type"] == "static_text":
-                    item_t = StaticTextSurface(data["src"], 0, 0, font_size, data["color"], data["bold"], data["italic"])
-                elif data["type"] == "resize_when_hovered_text":
-                    item_t = ResizeWhenHoveredTextSurface(str(data["src"]), 0, 0, font_size, font_size * 3 / 2, data["color"], data["bold"], data["italic"])
+                if isinstance(data["type"], str) and data["type"].startswith("text"):
+                    _info: list[str] = data["type"].split("&")
+                    if len(_info) < 2:
+                        item_t = TextSurface(data["src"], 0, 0, font_size, data["color"], data["bold"], data["italic"])
+                    elif _info[1] == "resize_when_hovered":
+                        item_t = ResizeWhenHoveredTextSurface(data["src"], 0, 0, font_size, font_size * 3 / 2, data["color"], data["bold"], data["italic"])
+                    else:
+                        EXCEPTION.fatal('Unrecognized text format "{}"'.format(_info[1]))
+                    if (outline_thickness := data.get("outline_thickness", 0)) > 0:
+                        item_t.set_outline_thickness(outline_thickness)
+                    if (outline_color := data.get("outline_color")) is not None:
+                        item_t.set_outline_color(outline_color)
                 else:
                     item_t = DropDownList(data["src"], 0, 0, font_size, data["color"])
             else:
@@ -236,10 +244,10 @@ class UiGenerator:
             item_t.tag = data["name"] if "name" in data else ""
             # 透明度
             if "visibility" in data:
-                if isinstance(item_t, HiddenableSurface):
+                if isinstance(item_t, HidableSurface):
                     item_t.set_visible(data["visibility"])
                 else:
-                    EXCEPTION.fatal("This is not a subtype of HiddenableSurface!")
+                    EXCEPTION.fatal("This is not a subtype of HidableSurface!")
             # 设置坐标
             item_t.set_pos(
                 cls.__convert_coordinate(data, "x", (max_width - item_t.get_width()) // 2, max_width, custom_values),

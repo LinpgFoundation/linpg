@@ -1,6 +1,5 @@
 import io
 
-from PIL import Image as PILImage  # type: ignore
 from PIL import ImageSequence as PILImageSequence  # type: ignore
 
 from .wrapper import *
@@ -71,7 +70,9 @@ class Images:
                     if not _path.endswith(".zip"):
                         _imageR = pygame.image.load(_path)
                     elif "linpgassets" in _path:
-                        _imageR = pygame.image.load(io.BytesIO(Zipper.open(_path).read(path[path.index(">") + 1 :], pwd=_KEY)))
+                        _zipFile: zipfile.ZipFile = Zipper.open(_path)
+                        _imageR = cls.fromBytesIO(io.BytesIO(_zipFile.read(path[path.index(">") + 1 :], pwd=_KEY)))
+                        _zipFile.close()
                     elif Debug.get_developer_mode() is True:
                         EXCEPTION.fatal("Cannot find essential image with path: {}".format(_path))
                 # 根据参数处理并返回加载好的图片
@@ -125,19 +126,15 @@ class Images:
             return pygame.transform.smoothscale(img, (round(size[0]), round(size[1])))
         EXCEPTION.fatal("Both width and height must be positive integer!")
 
-    # 增加图片暗度
-    @staticmethod
-    def add_darkness(img: ImageSurface, value: int) -> ImageSurface:
-        newImg: ImageSurface = img.copy()
-        newImg.fill((value, value, value), special_flags=pygame.BLEND_RGB_SUB)
-        return newImg
-
-    # 减少图片暗度
-    @staticmethod
-    def subtract_darkness(img: ImageSurface, value: int) -> ImageSurface:
-        newImg: ImageSurface = img.copy()
-        newImg.fill((value, value, value), special_flags=pygame.BLEND_RGB_ADD)
-        return newImg
+    # 精准地缩放尺寸
+    @classmethod
+    def smoothly_resize_and_crop_to_fit(cls, img: ImageSurface, size: tuple[int, int]) -> ImageSurface:
+        if img.get_height() / img.get_width() > 1:
+            img = cls.smoothly_resize(img, (None, size[1]))
+            return img.subsurface(((img.get_width() - size[0]) // 2, 0), size)
+        else:
+            img = cls.smoothly_resize(img, (size[0], None))
+            return img.subsurface((0, (img.get_height() - size[1]) // 2), size)
 
     # 翻转图片
     @staticmethod
@@ -163,3 +160,8 @@ class Images:
     @staticmethod
     def save(_surface: ImageSurface, path: str) -> None:
         pygame.image.save(_surface, path)
+
+    # 将BytesIO转换为图片
+    @staticmethod
+    def fromBytesIO(_bytes: io.BytesIO) -> ImageSurface:
+        return pygame.image.load(_bytes)

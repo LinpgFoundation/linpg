@@ -2,7 +2,7 @@ from .generator import *
 
 
 # 内部菜单模块的抽象
-class AbstractInternalMenu(HiddenableSurface, metaclass=ABCMeta):
+class AbstractInternalMenu(HidableSurface, metaclass=ABCMeta):
     def __init__(self, menu_name: str) -> None:
         super().__init__(False)
         self._CONTENT: Optional[GameObjectsDictContainer] = None
@@ -28,25 +28,48 @@ class AbstractInternalMenu(HiddenableSurface, metaclass=ABCMeta):
 class DefaultOptionMenu(AbstractInternalMenu):
     def __init__(self) -> None:
         super().__init__("option_menu")
-        self.need_update: dict = {}
+        self.need_update: dict[str, bool] = {}
+
+    # 初始化
+    def initialize(self) -> None:
+        super().initialize()
+        if self._CONTENT is None:
+            EXCEPTION.fatal("The ui has not been correctly initialized.")
+        lang_drop_down: DropDownList = self._CONTENT.get("lang_drop_down")
+        for lang_choice in Lang.get_available_languages():
+            lang_drop_down.set(lang_choice, lang_choice)
+        lang_drop_down.set_selected_item(Lang.get_current_language())
+
+    # 确保初始化
+    def __ensure_initialization(self) -> None:
+        if not self._initialized:
+            self.initialize()
+
+    # 宽
+    def get_width(self) -> int:
+        self.__ensure_initialization()
+        return self._CONTENT.get_width() if self._CONTENT is not None else 0
+
+    # 高
+    def get_height(self) -> int:
+        self.__ensure_initialization()
+        return self._CONTENT.get_height() if self._CONTENT is not None else 0
+
+    # 更新背景（非专业人员勿碰）
+    def update_background(self, newImg: Any) -> None:
+        self.__ensure_initialization()
+        if self._CONTENT is not None:
+            self._CONTENT.update_background(newImg)
 
     # 展示
     def draw(self, _surface: ImageSurface) -> None:
-        self.need_update = {"volume": False, "language": False}
+        self.need_update.clear()
         if self.is_visible():
             # 检查是否初始化
-            if not self._initialized:
-                self.initialize()
-                if self._CONTENT is None:
-                    EXCEPTION.fatal("The ui has not been correctly initialized.")
-                lang_drop_down = self._CONTENT.get("lang_drop_down")
-                for lang_choice in Lang.get_available_languages():
-                    lang_drop_down.set(lang_choice, lang_choice)
-                lang_drop_down.set_selected_item(Lang.get_current_language())
-            else:
-                if self._CONTENT is None:
-                    EXCEPTION.fatal("The ui has not been correctly initialized.")
-                lang_drop_down = self._CONTENT.get("lang_drop_down")
+            self.__ensure_initialization()
+            if self._CONTENT is None:
+                EXCEPTION.fatal("The ui has not been correctly initialized.")
+            lang_drop_down: DropDownList = self._CONTENT.get("lang_drop_down")
             # 更新百分比
             self._CONTENT.get("global_sound_volume").set_percentage(Setting.get("Sound", "global_value") / 100)
             self._CONTENT.get("background_music_sound_volume").set_percentage(Setting.get("Sound", "background_music") / 100)
@@ -89,7 +112,7 @@ class DefaultOptionMenu(AbstractInternalMenu):
                         Setting.set("Sound", "environment", value=item_percentage_t)
                         self.need_update["volume"] = True
                 # 保存新的参数
-                if self.need_update["volume"] is True:
+                if self.need_update.get("volume") is True:
                     Setting.save()
                 if Controller.mouse.get_pressed(0) and self._CONTENT.item_being_hovered == "back_button":
                     self.set_visible(False)
@@ -103,13 +126,13 @@ OptionMenu: DefaultOptionMenu = DefaultOptionMenu()
 class PauseMenu(AbstractInternalMenu):
     def __init__(self) -> None:
         super().__init__("pause_menu")
-        self.__screenshot: Optional[ImageSurface] = None
         # 返回确认菜单
         self.__leave_warning: Optional[GameObjectsDictContainer] = None
         # 退出确认菜单
         self.__exit_warning: Optional[GameObjectsDictContainer] = None
         # 记录被按下的按钮
         self.__button_hovered: str = ""
+        self.split_point: int = -1
 
     # 被点击的按钮
     def get_button_clicked(self) -> str:
@@ -124,13 +147,13 @@ class PauseMenu(AbstractInternalMenu):
         self.__exit_warning = UI.generate_container("exit_without_saving_progress_warning")
         self.__exit_warning.set_visible(False)
 
-    def hide(self) -> None:
-        self.set_visible(False)
-        if self.__exit_warning is not None:
-            self.__exit_warning.set_visible(False)
-        if self.__leave_warning is not None:
-            self.__leave_warning.set_visible(False)
-        self.__screenshot = None
+    def set_visible(self, visible: bool) -> None:
+        super().set_visible(visible)
+        if self.is_hidden():
+            if self.__exit_warning is not None:
+                self.__exit_warning.set_visible(False)
+            if self.__leave_warning is not None:
+                self.__leave_warning.set_visible(False)
 
     def draw(self, _surface: ImageSurface) -> None:
         self.__button_hovered = ""
@@ -140,11 +163,10 @@ class PauseMenu(AbstractInternalMenu):
             # 确保所有模块已经正常初始化
             if self.__exit_warning is None or self.__leave_warning is None or self._CONTENT is None:
                 EXCEPTION.fatal("The ui has not been correctly initialized.")
-            # 展示原先的背景
-            if self.__screenshot is None:
-                self.__screenshot = Images.add_darkness(_surface, 10)
-            # 画出原先的背景
-            _surface.blit(self.__screenshot, (0, 0))
+            # 画出分割线
+            if self.split_point < 0:
+                self.split_point = int(_surface.get_width() * 0.3)
+            Draw.line(_surface, Colors.WHITE, (self.split_point, 0), (self.split_point, _surface.get_height()), 5)
             # 画出选项
             if self.__leave_warning.is_hidden() and self.__exit_warning.is_hidden():
                 super().draw(_surface)
@@ -179,17 +201,87 @@ class PauseMenu(AbstractInternalMenu):
                         self.__button_hovered = self._CONTENT.item_being_hovered
 
 
+# 选取存档的菜单
+class SaveOrLoadSelectedProgressMenu(HidableSurface):
+    def __init__(self) -> None:
+        super().__init__(False)
+        self.colum: int = 3
+        self.row: int = 3
+        self.__slotId: int = -1
+        self.__saves: dict[int, ProgressDataPackageSavingSystem] = {}
+        self.switch: bool = True
+
+    def refresh(self) -> None:
+        self.__saves.clear()
+        for _save in glob("Save/*.zip"):
+            _file: ProgressDataPackageSavingSystem = ProgressDataPackageSavingSystem.load(_save)
+            self.__saves[_file.slotId] = _file
+
+    def set_visible(self, visible: bool) -> None:
+        super().set_visible(visible)
+        if self.is_visible() is True:
+            self.refresh()
+
+    def get_selected_slot(self) -> int:
+        return self.__slotId
+
+    def get_selected_save(self) -> Optional[ProgressDataPackageSavingSystem]:
+        return self.__saves.get(self.__slotId)
+
+    def draw(self, _surface: ImageSurface) -> None:
+        self.__slotId = -1
+        if self.is_visible() is True:
+            if Controller.get_event("back"):
+                self.set_visible(False)
+            else:
+                rect_width: int = _surface.get_width() // (self.colum + 1)
+                colum_padding: int = rect_width // (self.colum + 1)
+                rect_height: int = _surface.get_height() // (self.row + 1)
+                row_padding: int = rect_height // (self.row + 1)
+                _rect: Rectangle = Rectangle(0, 0, rect_width, rect_height)
+                for _y in range(self.row):
+                    for _x in range(self.colum):
+                        _rect.set_pos(colum_padding + (colum_padding + rect_width) * _x, row_padding + (row_padding + rect_height) * _y)
+                        _slotId: int = _y * self.colum + _x
+                        _file: Optional[ProgressDataPackageSavingSystem] = self.__saves.get(_slotId)
+                        _rect.draw_outline(_surface, color=Colors.GRAY, thickness=0)
+                        if _file is not None:
+                            _img_height: int = int(_rect.get_height() * 0.8)
+                            _surface.blit(Images.smoothly_resize_and_crop_to_fit(_file.screenshot, (_rect.get_width(), _img_height)), _rect.get_pos())
+                            _createdAt: ImageSurface = Font.render(_file.createdAt, Colors.WHITE, (_rect.get_height() - _img_height) // 2)
+                            _surface.blit(
+                                _createdAt,
+                                (
+                                    _rect.x + (_rect.get_width() - _createdAt.get_width()) // 2,
+                                    _rect.y + _img_height + (_rect.get_height() - _img_height - _createdAt.get_height()) // 2,
+                                ),
+                            )
+                        if not _rect.is_hovered():
+                            _rect.draw_outline(_surface, color=Colors.WHITE, thickness=4)
+                        else:
+                            _rect.draw_outline(_surface, color=Colors.YELLOW, thickness=4)
+                            if Controller.get_event("confirm"):
+                                self.__slotId = _slotId
+
+
 # 暂停菜单处理模块
 class PauseMenuModuleForGameSystem(AbstractInternalMenu):
     def __init__(self) -> None:
         super().__init__("")
         # 暂停菜单
         self.__pause_menu: Optional[PauseMenu] = None
+        # 存档选择
+        self.__select_progress_menu: SaveOrLoadSelectedProgressMenu = SaveOrLoadSelectedProgressMenu()
 
     # 保存进度（子类需实现）
     @abstractmethod
-    def save_progress(self) -> None:
-        EXCEPTION.fatal("_get_data_need_to_save()", 1)
+    def save_progress(self, _screenshot: ImageSurface, slotId: int) -> None:
+        EXCEPTION.fatal("save_progress()", 1)
+
+    # 加载进度（子类需实现）
+    @abstractmethod
+    def load_progress(self, _data: dict) -> None:
+        EXCEPTION.fatal("load_progress()", 1)
 
     # 淡入或淡出（建议子类重写）
     def _fade(self, _surface: ImageSurface) -> None:
@@ -208,59 +300,86 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
     def update_language(self) -> None:
         EXCEPTION.fatal("update_language()", 1)
 
+    # 启用暂停菜单
     def _enable_pause_menu(self) -> None:
         self.__pause_menu = PauseMenu()
 
+    # 禁用暂停菜单
     def _disable_pause_menu(self) -> None:
         self.__pause_menu = None
 
-    def is_pause_menu_enabled(self) -> bool:
+    # 暂停菜单是否启用
+    def _is_pause_menu_enabled(self) -> bool:
         return self.__pause_menu is not None
 
+    # 初始化暂停菜单
     def _initialize_pause_menu(self) -> None:
         if self.__pause_menu is not None:
             self.__pause_menu.initialize()
 
+    # 关闭菜单（并确保所有相关子菜单正常关闭）
+    def __close_menus(self) -> None:
+        OptionMenu.set_visible(False)
+        if self.__pause_menu is not None:
+            self.__pause_menu.set_visible(False)
+        self.__select_progress_menu.set_visible(False)
+
+    # 渲染暂停页面
     def _show_pause_menu(self, _surface: ImageSurface) -> None:
         if self.__pause_menu is not None:
+            # 暂停背景音乐
             Media.pause()
-            progress_saved_text = StaticImage(
-                Font.render(Lang.get_text("Global", "progress_has_been_saved"), Colors.WHITE, Display.get_width() * 3 // 200), 0, 0
-            )
-            progress_saved_text.set_alpha(0)
-            progress_saved_text.set_center(_surface.get_width() / 2, _surface.get_height() / 2)
+            # 用于存档的截图
+            _screenshot: ImageSurface = _surface.copy()
+            # 用于背景的毛玻璃效果图
+            _background: ImageSurface = Filters.glassmorphism_effect(_screenshot)
+            # 启用菜单
             self.__pause_menu.set_visible(True)
+            # 主循环
             while self.__pause_menu.is_visible():
                 Display.flip()
-                if OptionMenu.is_hidden():
-                    self.__pause_menu.draw(_surface)
-                    if self.__pause_menu.get_button_clicked() == "resume":
-                        OptionMenu.set_visible(False)
-                        self.__pause_menu.set_visible(False)
-                    elif self.__pause_menu.get_button_clicked() == "save":
-                        self.save_progress()
-                        progress_saved_text.set_alpha(255)
-                    elif self.__pause_menu.get_button_clicked() == "option_menu":
-                        OptionMenu.set_visible(True)
-                    elif self.__pause_menu.get_button_clicked() == "back_to_mainMenu":
-                        self._fade(_surface)
-                        OptionMenu.set_visible(False)
-                        progress_saved_text.set_alpha(0)
-                        self.__pause_menu.set_visible(False)
-                        GlobalValue.set("BackToMainMenu", True)
-                        self.stop()
-                else:
-                    # 展示设置UI
+                _surface.blit(_background, (0, 0))
+                # 存档选择系统
+                if self.__select_progress_menu.is_visible():
+                    self.__select_progress_menu.draw(_surface)
+                    if self.__select_progress_menu.get_selected_slot() >= 0:
+                        # 新建存档
+                        if self.__select_progress_menu.switch is True:
+                            self.save_progress(_screenshot, self.__select_progress_menu.get_selected_slot())
+                            self.__select_progress_menu.refresh()
+                        # 读取存档
+                        else:
+                            _save: Optional[ProgressDataPackageSavingSystem] = self.__select_progress_menu.get_selected_save()
+                            if _save is not None:
+                                self.__close_menus()
+                                self.load_progress(_save.data)
+                # 设置选项菜单
+                elif OptionMenu.is_visible():
                     OptionMenu.draw(_surface)
                     # 更新音量
-                    if OptionMenu.need_update["volume"] is True:
+                    if OptionMenu.need_update.get("volume") is True:
                         self._update_sound_volume()
                     # 更新语言
-                    if OptionMenu.need_update["language"] is True:
+                    if OptionMenu.need_update.get("language") is True:
                         self.update_language()
-                # 显示进度已保存的文字
-                progress_saved_text.draw(_surface)
-                progress_saved_text.subtract_alpha(5)
-            del progress_saved_text
-            self.__pause_menu.hide()
+                # 暂停选项菜单
+                else:
+                    self.__pause_menu.draw(_surface)
+                    if len(self.__pause_menu.get_button_clicked()) > 0:
+                        if self.__pause_menu.get_button_clicked() == "resume":
+                            self.__close_menus()
+                        elif self.__pause_menu.get_button_clicked() == "save":
+                            self.__select_progress_menu.set_visible(True)
+                            self.__select_progress_menu.switch = True
+                        elif self.__pause_menu.get_button_clicked() == "load":
+                            self.__select_progress_menu.set_visible(True)
+                            self.__select_progress_menu.switch = False
+                        elif self.__pause_menu.get_button_clicked() == "option_menu":
+                            OptionMenu.set_visible(True)
+                        elif self.__pause_menu.get_button_clicked() == "back_to_mainMenu":
+                            self.__close_menus()
+                            self._fade(_surface)
+                            GlobalValue.set("BackToMainMenu", True)
+                            self.stop()
+            # 继续播放背景音乐
             Media.unpause()

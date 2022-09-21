@@ -17,8 +17,8 @@ if __name__ == "__main__":
     import os
     from glob import glob
     from multiprocessing import Process
+    from setuptools import setup  # 此import不可以在Cython.Build之后
     from Cython.Build import cythonize  # type: ignore
-    from setuptools import setup
 
     # 编译进程管理模组
     class CompileProcessManager:

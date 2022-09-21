@@ -8,8 +8,8 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 用于判断是否移动屏幕的参数
         self.__mouse_move_temp_x: int = -1
         self.__mouse_move_temp_y: int = -1
-        self._screen_to_move_x: Optional[int] = None
-        self._screen_to_move_y: Optional[int] = None
+        self._screen_to_move_speed_x: Optional[int] = None
+        self._screen_to_move_speed_y: Optional[int] = None
         # 用于检测是否有方向键被按到的字典
         self.__moving_screen_in_direction_up: bool = False
         self.__moving_screen_in_direction_down: bool = False
@@ -28,6 +28,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         self._block_is_hovering: Optional[tuple[int, int]] = None
 
     # 渲染出所有的entity - 子类需实现
+    @abstractmethod
     def _display_entities(self, _surface: ImageSurface) -> None:
         EXCEPTION.fatal("_display_entities()", 1)
 
@@ -35,6 +36,15 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
     @abstractmethod
     def _load_entities(self, _entities: dict, _mode: str) -> None:
         EXCEPTION.fatal("_load_entities()", 1)
+
+    # 初始化并加载新场景 - 子类需实现
+    @abstractmethod
+    def new(self, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
+        EXCEPTION.fatal("new()", 1)
+
+    # 读取存档
+    def load_progress(self, _data: dict) -> None:
+        self.new(_data["chapter_type"], _data["chapter_id"], _data.get("project_name"))
 
     # 加载地图数据
     def _load_map(self, _data: dict) -> None:
@@ -126,48 +136,50 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
             self.__mouse_move_temp_y = -1
         # 根据按键情况设定要移动的数值
         if self.__moving_screen_in_direction_up is True:
-            if self._screen_to_move_y is None:
-                self._screen_to_move_y = self._MAP.block_height // 4
+            if self._screen_to_move_speed_y is None:
+                self._screen_to_move_speed_y = self._MAP.block_height // 4
             else:
-                self._screen_to_move_y += self._MAP.block_height // 4
+                self._screen_to_move_speed_y += self._MAP.block_height // 4
         if self.__moving_screen_in_direction_down is True:
-            if self._screen_to_move_y is None:
-                self._screen_to_move_y = -self._MAP.block_height // 4
+            if self._screen_to_move_speed_y is None:
+                self._screen_to_move_speed_y = -self._MAP.block_height // 4
             else:
-                self._screen_to_move_y -= self._MAP.block_height // 4
+                self._screen_to_move_speed_y -= self._MAP.block_height // 4
         if self.__moving_screen_in_direction_left is True:
-            if self._screen_to_move_x is None:
-                self._screen_to_move_x = self._MAP.block_width // 4
+            if self._screen_to_move_speed_x is None:
+                self._screen_to_move_speed_x = self._MAP.block_width // 4
             else:
-                self._screen_to_move_x += self._MAP.block_width // 4
+                self._screen_to_move_speed_x += self._MAP.block_width // 4
         if self.__moving_screen_in_direction_right is True:
-            if self._screen_to_move_x is None:
-                self._screen_to_move_x = -self._MAP.block_width // 4
+            if self._screen_to_move_speed_x is None:
+                self._screen_to_move_speed_x = -self._MAP.block_width // 4
             else:
-                self._screen_to_move_x -= self._MAP.block_width // 4
+                self._screen_to_move_speed_x -= self._MAP.block_width // 4
         # 如果需要移动屏幕
         temp_value: int
-        if self._screen_to_move_x is not None and self._screen_to_move_x != 0:
-            temp_value = self._MAP.get_local_x() + self._screen_to_move_x // 5
+        if self._screen_to_move_speed_x is not None:
+            temp_value = self._MAP.get_local_x() + self._screen_to_move_speed_x // 5
             if Display.get_width() - self._MAP.get_width() <= temp_value <= 0:
                 self._MAP.set_local_x(temp_value)
-                self._screen_to_move_x = self._screen_to_move_x * 4 // 5
-                if self._screen_to_move_x == 0:
-                    self._screen_to_move_x = 0
+                self._screen_to_move_speed_x = int(self._screen_to_move_speed_x * 4 / 5)
+                if self._screen_to_move_speed_x == 0:
+                    self._screen_to_move_speed_x = None
             else:
-                self._screen_to_move_x = 0
-        if self._screen_to_move_y is not None and self._screen_to_move_y != 0:
-            temp_value = self._MAP.get_local_y() + self._screen_to_move_y // 5
+                self._screen_to_move_speed_x = None
+        if self._screen_to_move_speed_y is not None:
+            temp_value = self._MAP.get_local_y() + self._screen_to_move_speed_y // 5
             if Display.get_height() - self._MAP.get_height() <= temp_value <= 0:
                 self._MAP.set_local_y(temp_value)
-                self._screen_to_move_y = self._screen_to_move_y * 4 // 5
-                if self._screen_to_move_y == 0:
-                    self._screen_to_move_y = 0
+                self._screen_to_move_speed_y = int(self._screen_to_move_speed_y * 4 / 5)
+                if self._screen_to_move_speed_y == 0:
+                    self._screen_to_move_speed_y = None
             else:
-                self._screen_to_move_y = 0
+                self._screen_to_move_speed_y = None
         # 展示地图
-        self._screen_to_move_x, self._screen_to_move_y = self._MAP.display_map(
-            _surface, self._screen_to_move_x if self._screen_to_move_x is not None else 0, self._screen_to_move_y if self._screen_to_move_y is not None else 0
+        self._screen_to_move_speed_x, self._screen_to_move_speed_y = self._MAP.display_map(
+            _surface,
+            self._screen_to_move_speed_x if self._screen_to_move_speed_x is not None else 0,
+            self._screen_to_move_speed_y if self._screen_to_move_speed_y is not None else 0,
         )
         # 获取位于鼠标位置的tile块
         self._block_is_hovering = self._MAP.calculate_coordinate()

@@ -2,7 +2,7 @@ from .shape import *
 
 
 # 可隐藏的Surface
-class HiddenableSurface(ABC):
+class HidableSurface(ABC):
     def __init__(self, visible: bool = True) -> None:
         self.__hidden: bool = not visible
 
@@ -17,10 +17,10 @@ class HiddenableSurface(ABC):
 
 
 # 图形接口
-class AbstractImageSurface(Rectangle, HiddenableSurface, metaclass=ABCMeta):
+class AbstractImageSurface(Rectangle, HidableSurface, metaclass=ABCMeta):
     def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str) -> None:
         Rectangle.__init__(self, x, y, width, height)
-        HiddenableSurface.__init__(self)
+        HidableSurface.__init__(self)
         self.__img: Any = img
         # 确保长宽均已输入且为正整数
         if self.get_width() < 0 and self.get_height() < 0:
@@ -57,7 +57,7 @@ class AbstractImageSurface(Rectangle, HiddenableSurface, metaclass=ABCMeta):
         return self.__img.copy() if Surfaces.is_not_null(self.__img) else self.__img
 
     # 更新图片
-    def _set_image(self, newImage: ImageSurface) -> None:
+    def _set_image(self, newImage: Any) -> None:
         self.__img = newImage
 
     def update_image(self, img_path: PoI, ifConvertAlpha: bool = True) -> None:
@@ -240,12 +240,12 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 加暗度
     def add_darkness(self, value: int) -> None:
-        self._set_image(Images.add_darkness(self._get_image_reference(), value))
+        self._set_image(Filters.add_darkness(self._get_image_reference(), value))
         self._need_update = True
 
     # 减暗度
     def subtract_darkness(self, value: int) -> None:
-        self._set_image(Images.subtract_darkness(self._get_image_reference(), value))
+        self._set_image(Filters.subtract_darkness(self._get_image_reference(), value))
         self._need_update = True
 
     # 旋转

@@ -92,7 +92,7 @@ class BuilderManager(AbstractToolSystem):
         ignore_key_words: tuple = tuple(),
         smart_auto_module_combine: bool = False,
         remove_building_cache: bool = True,
-        update_the_one_in_sitepackages: bool = True,
+        update_the_one_in_sitepackages: bool = False,
         options: dict = {},
     ) -> None:
         self.delete_file_if_exist(target_folder)
@@ -132,7 +132,7 @@ class BuilderManager(AbstractToolSystem):
             # 移除旧的build
             self._run_py_cmd(["pip", "uninstall", os.path.basename(source_folder)])
             # 安装新的build
-            self._run_py_cmd(["pip", "install", "."])
+            self._run_py_cmd(["pip", "install", ".", "--user"])
         # 删除build文件夹
         if remove_building_cache is True:
             self.delete_file_if_exist("build")

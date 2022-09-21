@@ -82,7 +82,7 @@ class DropDownList(GameObjectsDictContainer):
                 Draw.rect(_surface, Colors.WHITE, (current_abs_pos, self.size))
             # 列出当前选中的选项
             current_pos: tuple = current_abs_pos
-            font_surface: ImageSurface = self.__FONT.render(self.get_selected_item(), self.__font_color, with_bounding=True)
+            font_surface: ImageSurface = self.__FONT.render(self.get_selected_item(), self.__font_color)
             _surface.blit(font_surface, Coordinates.add(current_pos, (self.__FONT.size * 3, (self.__block_height - font_surface.get_height()) // 2)))
             rect_of_outline = Rectangle(current_pos[0], current_pos[1], self.width, self.__block_height)
             Draw.rect(_surface, self.__font_color, rect_of_outline.get_rect(), self.outline_thickness)
@@ -101,7 +101,7 @@ class DropDownList(GameObjectsDictContainer):
                 index: int = 1
                 for key_of_game_object, game_object_t in self._get_container().items():
                     current_pos = Coordinates.add(current_abs_pos, (0, index * self.__block_height))
-                    font_surface = self.__FONT.render(game_object_t, self.__font_color, with_bounding=True)
+                    font_surface = self.__FONT.render(game_object_t, self.__font_color)
                     _surface.blit(font_surface, Coordinates.add(current_pos, (self.__FONT.size * 3, (self.__block_height - font_surface.get_height()) // 2)))
                     rect_of_outline = Rectangle(current_pos[0], current_pos[1], self.width, self.__block_height)
                     Draw.rect(_surface, self.__font_color, rect_of_outline.get_rect(), self.outline_thickness)

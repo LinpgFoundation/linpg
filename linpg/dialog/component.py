@@ -5,7 +5,7 @@ from ..ui import *
 class DialogNode(Button):
     def __init__(self, key_name: str, font_size: int, next_keys: list[str], tag: str = ""):
         self.__key_name: str = key_name
-        button_surface = Font.render_description_box(self.__key_name, Colors.BLACK, font_size, font_size // 2, Colors.WHITE)
+        button_surface = ArtisticFont.render_description_box(self.__key_name, Colors.BLACK, font_size, font_size // 2, Colors.WHITE)
         super().__init__(button_surface, 0, 0, width=button_surface.get_width(), height=button_surface.get_height(), tag=tag)
         self.__next_keys: tuple[str, ...] = tuple(next_keys)
         self.has_been_displayed: bool = False
@@ -121,7 +121,7 @@ class DialogNavigationWindow(AbstractFrame):
 
 
 # 对话框模块基础框架
-class AbstractDialogBox(HiddenableSurface, metaclass=ABCMeta):
+class AbstractDialogBox(HidableSurface, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         # 对胡框数据
@@ -332,10 +332,10 @@ class DialogBox(AbstractDialogBox):
                         _surface.blit(self.FONT.render(self.__narrator, Colors.WHITE), (x, self._dialoguebox.y + self.FONT.size))
                     # 对话框已播放的内容
                     for i in range(self.__displayed_lines):
-                        _surface.blit(self.FONT.render(self.__contents[i], Colors.WHITE, with_bounding=True), (x, y + self.FONT.size * 3 * i // 2))
+                        _surface.blit(self.FONT.render(self.__contents[i], Colors.WHITE), (x, y + self.FONT.size * 3 * i // 2))
                     # 对话框正在播放的内容
                     _surface.blit(
-                        self.FONT.render(self.__contents[self.__displayed_lines][: self.__text_index], Colors.WHITE, with_bounding=True),
+                        self.FONT.render(self.__contents[self.__displayed_lines][: self.__text_index], Colors.WHITE),
                         (x, y + self.FONT.size * 3 * self.__displayed_lines // 2),
                     )
                     # 如果当前行的字符还没有完全播出

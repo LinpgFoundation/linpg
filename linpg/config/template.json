@@ -24,7 +24,6 @@
     },
     "setting": {
         "AntiAlias": true,
-        "DeveloperMode": false,
         "EnableOpenGL": false,
         "EnableVerticalSync": false,
         "FPS": 60,

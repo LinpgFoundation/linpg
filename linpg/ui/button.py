@@ -1,7 +1,7 @@
 from ..core import *
 
 
-class ButtonText(StaticTextSurface):
+class ButtonText(TextSurface):
     def __init__(
         self,
         text: str,
@@ -9,13 +9,12 @@ class ButtonText(StaticTextSurface):
         _color: color_liked = Colors.BLACK,
         _bold: bool = False,
         _italic: bool = False,
-        _with_bounding: bool = True,
         alpha_when_not_hover: int = 255,
     ) -> None:
         self.__text_surface_2: Optional[ImageSurface] = None
         self.__alpha_when_not_hover: int = alpha_when_not_hover
         # 初始化文字
-        super().__init__(text, 0, 0, size, _color, _bold, _italic, _with_bounding)
+        super().__init__(text, 0, 0, size, _color, _bold, _italic)
         # 是否被触碰的flag
         self.__is_hovered: bool = False
 
@@ -91,10 +90,9 @@ class ButtonComponent(AbstractButton):
         _color: color_liked = Colors.BLACK,
         _bold: bool = False,
         _italic: bool = False,
-        _with_bounding: bool = True,
         alpha_when_not_hover: int = 255,
     ) -> ButtonText:
-        return ButtonText(text, size, _color, _bold, _italic, _with_bounding, alpha_when_not_hover)
+        return ButtonText(text, size, _color, _bold, _italic, alpha_when_not_hover)
 
 
 # 按钮的简单实现
@@ -176,7 +174,7 @@ class Button(AbstractButton):
     def set_description(self, value: str = "") -> None:
         self.__description = value
         self.__description_surface = (
-            Font.render_description_box(self.__description, Colors.BLACK, self.get_height() * 2 // 5, self.get_height() // 5, Colors.WHITE)
+            ArtisticFont.render_description_box(self.__description, Colors.BLACK, self.get_height() * 2 // 5, self.get_height() // 5, Colors.WHITE)
             if len(self.__description) > 0
             else None
         )

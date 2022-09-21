@@ -619,7 +619,7 @@
                 "font_size": "5%",
                 "name": "back_button",
                 "src": "{Global,back}",
-                "type": "resize_when_hovered_text",
+                "type": "text&resize_when_hovered",
                 "x": "center",
                 "y": "90%"
             },
@@ -650,48 +650,63 @@
         "items": [
             {
                 "color": "white",
-                "font_size": "5%",
+                "font_size": "3%",
                 "name": "resume",
+                "outline_thickness": 2,
                 "src": "{Global,resume}",
-                "type": "resize_when_hovered_text",
-                "x": "10%",
-                "y": "30%"
+                "type": "text&resize_when_hovered",
+                "x": "7.5%",
+                "y": "27.5%"
             },
             {
                 "color": "white",
-                "font_size": "5%",
+                "font_size": "3%",
                 "name": "save",
+                "outline_thickness": 2,
                 "src": "{Global,save_current_progress}",
-                "type": "resize_when_hovered_text",
-                "x": "10%",
-                "y": "40%"
+                "type": "text&resize_when_hovered",
+                "x": "7.5%",
+                "y": "35%"
             },
             {
                 "color": "white",
-                "font_size": "5%",
+                "font_size": "3%",
+                "name": "load",
+                "outline_thickness": 2,
+                "src": "{Global,load_progress}",
+                "type": "text&resize_when_hovered",
+                "x": "7.5%",
+                "y": "42.5%"
+            },
+            {
+                "color": "white",
+                "font_size": "3%",
                 "name": "option_menu",
+                "outline_thickness": 2,
                 "src": "{OptionMenu,option_menu}",
-                "type": "resize_when_hovered_text",
-                "x": "10%",
+                "type": "text&resize_when_hovered",
+                "x": "7.5%",
                 "y": "50%"
             },
             {
                 "color": "white",
-                "font_size": "5%",
+                "font_size": "3%",
                 "name": "back_to_mainMenu",
+                "outline_thickness": 2,
                 "src": "{Global,back_to_main_menu}",
-                "type": "resize_when_hovered_text",
-                "x": "10%",
-                "y": "60%"
+                "type": "text&resize_when_hovered",
+                "x": "7.5%",
+                "y": "57.5%"
             },
             {
                 "color": "white",
-                "font_size": "5%",
+                "font_size": "3%",
                 "name": "exit_to_desktop",
+                "outline_thickness": 2,
                 "src": "{OptionMenu,exit_to_desktop}",
-                "type": "resize_when_hovered_text",
-                "x": "10%",
-                "y": "70%"
+                "type": "text&resize_when_hovered",
+                "x": "7.5%",
+                "y": "65%"
             }
         ],
         "type": "container",

@@ -4,7 +4,7 @@ from .button import *
 # Container抽象
 class AbstractGameObjectsContainer(AbstractImageSurface, metaclass=ABCMeta):
     def __init__(self, bg_img: Optional[PoI], x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
-        super().__init__(StaticImage(bg_img, 0, 0, width, height) if bg_img is not None else bg_img, x, y, width, height, tag)
+        super().__init__(StaticImage(bg_img, 0, 0, width, height) if bg_img is not None else None, x, y, width, height, tag)
 
     # 获取物品container容器（子类需实现）
     @abstractmethod
@@ -35,6 +35,10 @@ class AbstractGameObjectsContainer(AbstractImageSurface, metaclass=ABCMeta):
         super().set_height(value)
         if self._get_image_reference() is not None:
             self._get_image_reference().set_height(value)
+
+    # 更新背景（非专业人员勿碰）
+    def update_background(self, newImg: Any) -> None:
+        self._set_image(newImg)
 
 
 # 使用Dict储存游戏对象的容器，类似html的div
@@ -97,7 +101,7 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
         if self.is_visible():
             current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出背景
-            if Surfaces.is_not_null(self._get_image_reference()):
+            if self._get_image_reference() is not None:
                 self._get_image_reference().display(_surface, current_abs_pos)
             # 画出物品
             for key_of_game_object, game_object_t in self.__items_container_dict.items():
@@ -154,7 +158,7 @@ class GameObjectsListContainer(AbstractGameObjectsContainer):
         if self.is_visible():
             current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出背景
-            if Surfaces.is_not_null(self._get_image_reference()):
+            if self._get_image_reference() is not None:
                 self._get_image_reference().display(_surface, current_abs_pos)
             # 画出物品
             for i in range(len(self.__items_container_list)):

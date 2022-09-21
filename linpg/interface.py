@@ -50,8 +50,8 @@ class Loader:
 
     # 普通文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class
     @staticmethod
-    def static_text(txt: strint, _color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False) -> StaticTextSurface:
-        return StaticTextSurface(str(txt), pos[0], pos[1], size, _color, ifBold, ifItalic)
+    def text(txt: strint, _color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False) -> TextSurface:
+        return TextSurface(str(txt), pos[0], pos[1], size, _color, ifBold, ifItalic)
 
     # 高级文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
     @staticmethod

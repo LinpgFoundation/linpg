@@ -88,18 +88,15 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         # 开始处理数据
         super()._process_data(_data, _mode)
 
-    # 初始化
-    def load(self, _surface: ImageSurface, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
-        self._initialize(chapterType, chapterId, projectName)
-        self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_map_file_location())
-        self._process_data(Config.load(self.get_map_file_location()))
+    # 初始化UI
+    def _init_ui(self) -> None:
         """加载右侧的界面"""
         # 加载容器图片
-        container_width: int = _surface.get_width() // 5
-        container_height: int = _surface.get_height()
-        button_width: int = _surface.get_width() // 25
-        button_height: int = _surface.get_height() // 5
-        padding: int = _surface.get_height() // 100
+        container_width: int = Display.get_width() // 5
+        container_height: int = Display.get_height()
+        button_width: int = Display.get_width() // 25
+        button_height: int = Display.get_height() // 5
+        padding: int = Display.get_height() // 100
         self.__right_container_buttons.get("select_block").set_left(
             (
                 container_width
@@ -113,10 +110,10 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self.__UIContainerRight.set_size(container_width, container_height)
         self.__UIContainerButtonRight = MovableImage(
             "<&ui>container_button.png",
-            _surface.get_width() - button_width,
-            (_surface.get_height() - button_height) // 2,
-            _surface.get_width() - button_width - container_width,
-            (_surface.get_height() - button_height) // 2,
+            Display.get_width() - button_width,
+            (Display.get_height() - button_height) // 2,
+            Display.get_width() - button_width - container_width,
+            (Display.get_height() - button_height) // 2,
             container_width // 10,
             0,
             button_width,
@@ -124,8 +121,8 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         )
         self.__UIContainerButtonRight.rotate(90)
         # 加载背景图片
-        self.__envImgContainer.set_pos(container_width * 3 // 40, _surface.get_height() // 10)
-        self.__envImgContainer.set_size(container_width * 17 // 20, _surface.get_height() * 17 // 20)
+        self.__envImgContainer.set_pos(container_width * 3 // 40, Display.get_height() // 10)
+        self.__envImgContainer.set_size(container_width * 17 // 20, Display.get_height() * 17 // 20)
         if TileMapImagesModule.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET is None:
             EXCEPTION.fatal("Image sprite sheet for tile map is not loaded correctly!")
         for key, value in TileMapImagesModule.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.to_dict().items():
@@ -141,8 +138,8 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self.__envImgContainer.set_visible(True)
         self.__envImgContainer.distance_between_item = padding
         # 加载所有的装饰品
-        self.__decorationsImgContainer.set_pos(container_width * 3 // 40, _surface.get_height() // 10)
-        self.__decorationsImgContainer.set_size(container_width * 17 // 20, _surface.get_height() * 17 // 20)
+        self.__decorationsImgContainer.set_pos(container_width * 3 // 40, Display.get_height() // 10)
+        self.__decorationsImgContainer.set_size(container_width * 17 // 20, Display.get_height() * 17 // 20)
         # 加载默认装饰物
         if DecorationImagesModule.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET is None:
             EXCEPTION.fatal("Image sprite sheet for default decorations is not loaded correctly!")
@@ -159,17 +156,17 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self.__decorationsImgContainer.set_visible(False)
         self.__decorationsImgContainer.distance_between_item = padding
         """加载下方的界面"""
-        container_width = _surface.get_width() * 4 // 5
-        container_height = _surface.get_height() * 3 // 10
-        button_width = _surface.get_width() * 7 // 50
-        button_height = _surface.get_height() // 20
+        container_width = Display.get_width() * 4 // 5
+        container_height = Display.get_height() * 3 // 10
+        button_width = Display.get_width() * 7 // 50
+        button_height = Display.get_height() // 20
         self.__UIContainerBottom.set_size(container_width, container_height)
         self.__UIContainerButtonBottom = MovableImage(
             "<&ui>container_button.png",
             (container_width - button_width) // 2,
-            _surface.get_height() - button_height,
+            Display.get_height() - button_height,
             (container_width - button_width) // 2,
-            _surface.get_height() - button_height - container_height,
+            Display.get_height() - button_height - container_height,
             0,
             container_height // 10,
             button_width,
@@ -209,6 +206,13 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self.__buttons_container.get("back").set_left(self.__buttons_container.get("save").get_right() + padding)
         self.__buttons_container.get("delete").set_left(self.__buttons_container.get("back").get_right() + padding)
         self.__buttons_container.get("reload").set_left(self.__buttons_container.get("delete").get_right() + padding)
+
+    # 初始化并加载新场景
+    def new(self, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
+        self._initialize(chapterType, chapterId, projectName)
+        self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_map_file_location())
+        self._process_data(Config.load(self.get_map_file_location()))
+        self._init_ui()
 
     # 将地图制作器的界面画到屏幕上
     def draw(self, _surface: ImageSurface) -> None:
@@ -329,7 +333,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             if self.__buttons_container.item_being_hovered is None:
                 pass
             elif self.__buttons_container.item_being_hovered == "save":
-                self.save_progress()
+                self.save()
             elif self.__buttons_container.item_being_hovered == "back":
                 if Config.load(self.get_map_file_location()) == self._get_data_need_to_save():
                     self.stop()
@@ -359,7 +363,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         if Controller.get_event("confirm") and self.__no_save_warning.item_being_hovered is not None:
             # 保存并离开
             if self.__no_save_warning.item_being_hovered == "save":
-                self.save_progress()
+                self.save()
                 self.stop()
             # 取消
             elif self.__no_save_warning.item_being_hovered == "cancel":

@@ -7,7 +7,9 @@ from tkinter import Tk
 import pygame
 
 # 加载颜色模块
-from PIL import ImageColor  # type: ignore
+from PIL import ImageColor as PILImageColor  # type: ignore
+from PIL import ImageFilter as PILImageFilter
+from PIL import Image as PILImage  # type: ignore
 from pygame.colordict import THECOLORS
 
 from .coordinates import *
@@ -27,7 +29,7 @@ ImageSurface = pygame.Surface
 PoI = str | pygame.Surface
 # 事件 type alias
 PG_Event = pygame.event.Event
-PG_TUPLE = tuple[int, int, int, int] | tuple[tuple[int, int], tuple[int, int]]  # type: ignore
+PG_TUPLE = Union[tuple[int, int, int, int], tuple[tuple[int, int], tuple[int, int]]]
 
 """指向pygame事件的指针"""
 # 鼠标
@@ -114,7 +116,7 @@ class Colors:
     def get(cls, color: color_liked) -> tuple[int, int, int, int]:
         if isinstance(color, str):
             if color.startswith("#"):
-                return cls.__to_rgba_color(ImageColor.getrgb(color))
+                return cls.__to_rgba_color(PILImageColor.getrgb(color))
             else:
                 _the_color = THECOLORS.get(color)
                 if isinstance(_the_color, Sequence):
@@ -174,10 +176,15 @@ class Draw:
     def circle(_surface: ImageSurface, color: tuple[int, int, int, int], center_pos: tuple[int, int], radius: int, thickness: int = 0) -> None:
         pygame.draw.circle(_surface, color, center_pos, radius, thickness)
 
-    # 画抗锯齿线条
+    # 画一条抗锯齿线
     @staticmethod
     def aaline(_surface: ImageSurface, color: tuple[int, int, int, int], start_pos: tuple[int, int], end_pos: tuple[int, int], blend: int = 1) -> None:
         pygame.draw.aaline(_surface, color, start_pos, end_pos, blend)
+
+    # 画一条线
+    @staticmethod
+    def line(_surface: ImageSurface, color: tuple[int, int, int, int], start_pos: tuple[int, int], end_pos: tuple[int, int], width: int = 1) -> None:
+        pygame.draw.line(_surface, color, start_pos, end_pos, width)
 
     # 画多边形
     @staticmethod
@@ -248,3 +255,38 @@ class Surfaces:
     @classmethod
     def is_not_null(cls, _surface: Optional[ImageSurface]) -> bool:
         return _surface is not None and _surface is not cls.NULL
+
+
+# 滤镜效果
+class Filters:
+
+    # 毛玻璃效果
+    @staticmethod
+    def glassmorphism_effect(_surface: ImageSurface, _rect: Optional[PG_TUPLE] = None, whiteness: int = 10) -> ImageSurface:
+        _processed_image = PILImage.fromarray(Surfaces.to_array(_surface if _rect is None else _surface.subsurface(_rect))).filter(
+            PILImageFilter.GaussianBlur(radius=6)
+        )
+        _surface = Surfaces.from_array(numpy.asarray(_processed_image.convert("RGBA"))).convert_alpha()
+        _surface.fill((whiteness, whiteness, whiteness), special_flags=pygame.BLEND_RGB_ADD)
+        return _surface
+
+    # 直接将毛玻璃效果应用到surface上
+    @staticmethod
+    def apply_glassmorphism_effect_to(_surface: ImageSurface, whiteness: int = 10) -> None:
+        _processed_image = PILImage.fromarray(Surfaces.to_array(_surface)).filter(PILImageFilter.GaussianBlur(radius=6))
+        _surface.blit(Surfaces.from_array(numpy.asarray(_processed_image.convert("RGBA"))).convert_alpha(), (0, 0))
+        _surface.fill((whiteness, whiteness, whiteness), special_flags=pygame.BLEND_RGB_ADD)
+
+    # 增加图层暗度
+    @staticmethod
+    def add_darkness(img: ImageSurface, value: int) -> ImageSurface:
+        newImg: ImageSurface = img.copy()
+        newImg.fill((value, value, value), special_flags=pygame.BLEND_RGB_SUB)
+        return newImg
+
+    # 减少图层暗度
+    @staticmethod
+    def subtract_darkness(img: ImageSurface, value: int) -> ImageSurface:
+        newImg: ImageSurface = img.copy()
+        newImg.fill((value, value, value), special_flags=pygame.BLEND_RGB_ADD)
+        return newImg

@@ -30,23 +30,46 @@ class DefaultOptionMenu(AbstractInternalMenu):
         super().__init__("option_menu")
         self.need_update: dict[str, bool] = {}
 
+    # 初始化
+    def initialize(self) -> None:
+        super().initialize()
+        if self._CONTENT is None:
+            EXCEPTION.fatal("The ui has not been correctly initialized.")
+        lang_drop_down: DropDownList = self._CONTENT.get("lang_drop_down")
+        for lang_choice in Lang.get_available_languages():
+            lang_drop_down.set(lang_choice, lang_choice)
+        lang_drop_down.set_selected_item(Lang.get_current_language())
+
+    # 确保初始化
+    def __ensure_initialization(self) -> None:
+        if not self._initialized:
+            self.initialize()
+
+    # 宽
+    def get_width(self) -> int:
+        self.__ensure_initialization()
+        return self._CONTENT.get_width() if self._CONTENT is not None else 0
+
+    # 高
+    def get_height(self) -> int:
+        self.__ensure_initialization()
+        return self._CONTENT.get_height() if self._CONTENT is not None else 0
+
+    # 更新背景（非专业人员勿碰）
+    def update_background(self, newImg: Any) -> None:
+        self.__ensure_initialization()
+        if self._CONTENT is not None:
+            self._CONTENT.update_background(newImg)
+
     # 展示
     def draw(self, _surface: ImageSurface) -> None:
         self.need_update.clear()
         if self.is_visible():
             # 检查是否初始化
-            if not self._initialized:
-                self.initialize()
-                if self._CONTENT is None:
-                    EXCEPTION.fatal("The ui has not been correctly initialized.")
-                lang_drop_down = self._CONTENT.get("lang_drop_down")
-                for lang_choice in Lang.get_available_languages():
-                    lang_drop_down.set(lang_choice, lang_choice)
-                lang_drop_down.set_selected_item(Lang.get_current_language())
-            else:
-                if self._CONTENT is None:
-                    EXCEPTION.fatal("The ui has not been correctly initialized.")
-                lang_drop_down = self._CONTENT.get("lang_drop_down")
+            self.__ensure_initialization()
+            if self._CONTENT is None:
+                EXCEPTION.fatal("The ui has not been correctly initialized.")
+            lang_drop_down: DropDownList = self._CONTENT.get("lang_drop_down")
             # 更新百分比
             self._CONTENT.get("global_sound_volume").set_percentage(Setting.get("Sound", "global_value") / 100)
             self._CONTENT.get("background_music_sound_volume").set_percentage(Setting.get("Sound", "background_music") / 100)

@@ -29,7 +29,7 @@ ImageSurface = pygame.Surface
 PoI = str | pygame.Surface
 # 事件 type alias
 PG_Event = pygame.event.Event
-PG_TUPLE = tuple[int, int, int, int] | tuple[tuple[int, int], tuple[int, int]]  # type: ignore
+PG_TUPLE = Union[tuple[int, int, int, int], tuple[tuple[int, int], tuple[int, int]]]
 
 """指向pygame事件的指针"""
 # 鼠标

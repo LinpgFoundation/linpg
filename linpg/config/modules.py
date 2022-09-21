@@ -9,7 +9,7 @@ from .setting import *
 class Debug:
 
     # 是否开启开发者模式
-    __ENABLE_DEVELOPER_MODE: bool = bool(Setting.get("DeveloperMode"))
+    __ENABLE_DEVELOPER_MODE: bool = False
     # 是否开启作弊
     __ENABLE_CHEATING: bool = False
     # 是否展示Fps

@@ -57,7 +57,7 @@ class AbstractImageSurface(Rectangle, HidableSurface, metaclass=ABCMeta):
         return self.__img.copy() if Surfaces.is_not_null(self.__img) else self.__img
 
     # 更新图片
-    def _set_image(self, newImage: ImageSurface) -> None:
+    def _set_image(self, newImage: Any) -> None:
         self.__img = newImage
 
     def update_image(self, img_path: PoI, ifConvertAlpha: bool = True) -> None:

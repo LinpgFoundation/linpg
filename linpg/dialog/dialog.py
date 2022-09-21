@@ -26,7 +26,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         # 初始化音量
         self._update_sound_volume()
         # 玩家做出的选项
-        self.__dialog_options: dict = {}
+        self.__dialog_options: Final[dict] = {}
         # 是否正在淡出的flag
         self.__is_fading_out: bool = True
 
@@ -38,7 +38,6 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
 
     def enable_basic_features(self) -> None:
         self.__disable_background_image_rendering = False
-        """加载ui"""
         self.__history_back = Button.load(
             "<&ui>back.png",
             Coordinates.convert((Display.get_width() * 0.04, Display.get_height() * 0.04)),
@@ -49,18 +48,6 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         self.__buttons_container = UI.generate_container("dialog_buttons", {"button_size": self._FONT_SIZE * 2})
         # 暂停菜单
         self._enable_pause_menu()
-
-    # 初始化关键参数
-    def _initialize(  # type: ignore[override]
-        self, chapterType: str, chapterId: int, part: str, projectName: Optional[str], dialogId: str = "head", dialog_options: dict = {}
-    ) -> None:
-        super()._initialize(chapterType, chapterId, part, projectName, dialogId)
-        # 初始化重要ui组件
-        if not self.__disable_background_image_rendering:
-            self.enable_basic_features()
-        # 玩家做出的选项
-        self.__dialog_options.clear()
-        self.__dialog_options.update(dialog_options)
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
@@ -78,17 +65,19 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         # 重置对话框
         self.__dialog_txt_system.reset()
 
-    # 读取章节
+    # 读取存档
     def load_progress(self, _data: dict) -> None:
-        self._initialize(_data["chapter_type"], _data["chapter_id"], _data["type"], _data["project_name"], _data["dialog_id"], _data["dialog_options"])
-        # 根据已有参数载入数据
-        self._load_content()
+        super().load_progress(_data)
+        # 载入玩家之前做出的选项
+        self.__dialog_options.clear()
+        self.__dialog_options.update(_data.get("dialog_options", {}))
 
-    # 新建章节
-    def new(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str] = None) -> None:
-        self._initialize(chapterType, chapterId, part, projectName)
-        # 根据已有参数载入数据
-        self._load_content()
+    # 新读取章节
+    def new(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str] = None, dialogId: str = "head") -> None:
+        super().new(chapterType, chapterId, part, projectName, dialogId)
+        # 初始化重要ui组件
+        if not self.__disable_background_image_rendering:
+            self.enable_basic_features()
 
     # 更新场景
     def _update_scene(self, dialog_id: str) -> None:

@@ -68,9 +68,14 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
     def _get_data_need_to_save(self) -> dict:
         return self.get_data_of_parent_game_system() | {"dialog_id": self._content.get_id(), "type": self._content.get_part()}
 
-    # 初始化关键参数
-    def _initialize(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str], dialogId: str = "head") -> None:  # type: ignore[override]
-        super()._initialize(chapterType, chapterId, projectName)
+    # 读取存档
+    def load_progress(self, _data: dict) -> None:
+        self.new(_data["chapter_type"], _data["chapter_id"], _data["type"], _data.get("project_name"), _data.get("dialog_id", "head"))
+
+    # 新读取章节
+    def new(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str] = None, dialogId: str = "head") -> None:
+        # 初始化关键参数
+        self._initialize(chapterType, chapterId, projectName)
         # 对白id
         self._content.set_id(dialogId)
         # 播放的部分
@@ -78,6 +83,8 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 转换所有文件夹内的linpg自定义的raw脚本
         for script_file in glob(os.path.join(self.get_dialog_folder_location(), "*.linpg.script")):
             ScriptConverter().compile(script_file, self.get_dialog_folder_location())
+        # 根据已有参数载入数据
+        self._load_content()
 
     # 载入数据
     def _load_content(self) -> None:

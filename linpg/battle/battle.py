@@ -28,6 +28,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         self._block_is_hovering: Optional[tuple[int, int]] = None
 
     # 渲染出所有的entity - 子类需实现
+    @abstractmethod
     def _display_entities(self, _surface: ImageSurface) -> None:
         EXCEPTION.fatal("_display_entities()", 1)
 
@@ -35,6 +36,15 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
     @abstractmethod
     def _load_entities(self, _entities: dict, _mode: str) -> None:
         EXCEPTION.fatal("_load_entities()", 1)
+
+    # 初始化并加载新场景 - 子类需实现
+    @abstractmethod
+    def new(self, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
+        EXCEPTION.fatal("new()", 1)
+
+    # 读取存档
+    def load_progress(self, _data: dict) -> None:
+        self.new(_data["chapter_type"], _data["chapter_id"], _data.get("project_name"))
 
     # 加载地图数据
     def _load_map(self, _data: dict) -> None:

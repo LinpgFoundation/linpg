@@ -58,9 +58,7 @@ class DialogEditor(DialogConverter):
         return self.__dialog_txt_system
 
     # 加载数据
-    def new(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str] = None) -> None:
-        self._initialize(chapterType, chapterId, part, projectName)
-        self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_dialog_file_location())
+    def new(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str] = None, dialogId: str = "head") -> None:
         # 加载容器
         container_width: int = Display.get_width() // 5
         self.__UIContainerRightImage = Images.load("<&ui>container.png", (container_width, Display.get_height()))
@@ -145,14 +143,17 @@ class DialogEditor(DialogConverter):
         self.__dialog_bgm_select.set("null", Lang.get_text("Editor", "no_bgm"))
         for file_name in os.listdir(Specification.get_directory("music")):
             self.__dialog_bgm_select.set(file_name, file_name)
-        # 从配置文件中加载数据
-        self._load_content()
         # 移除按钮
         self.__remove_npc_button = ArtisticFont.render_description_box(CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE, self._FONT_SIZE // 5, Colors.WHITE)
         # 初始化用于选择小说脚本的key的下拉菜单
         self.__dialog_part_selection.clear()
         self.__dialog_part_selection.set_pos(button_width * 11, button_y + font_size)
         self.__dialog_part_selection.update_font_size(font_size)
+
+        # 初始化数据
+        super().new(chapterType, chapterId, part, projectName, dialogId)
+        self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_dialog_file_location())
+
         # 将脚本的不同部分的key载入到ui中
         for key in self._content.get():
             self.__dialog_part_selection.set(key, key)
@@ -287,7 +288,7 @@ class DialogEditor(DialogConverter):
     # 更新场景
     def _update_scene(self, dialog_id: str) -> None:
         # 确保当前版块有对话数据。如果当前版块为空，则加载默认模板
-        if self._content.is_empty():
+        if len(self._content.get_section()) <= 0:
             self._content.get_section().update(Template.get("dialog_example"))
             for key in self._content.get_section():
                 self._content.get_dialog(_id=key)["contents"].append(self.__please_enter_content)

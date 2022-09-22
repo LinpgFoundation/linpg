@@ -29,6 +29,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         self.__dialog_options: Final[dict] = {}
         # 是否正在淡出的flag
         self.__is_fading_out: bool = True
+        # 启用检查点功能
+        self._save_checkpoint_while_saving_progress = True
 
     def disable_basic_features(self) -> None:
         self.__disable_background_image_rendering = True
@@ -73,8 +75,8 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         self.__dialog_options.update(_data.get("dialog_options", {}))
 
     # 新读取章节
-    def new(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str] = None, dialogId: str = "head") -> None:
-        super().new(chapterType, chapterId, part, projectName, dialogId)
+    def new(self, chapterType: str, chapterId: int, section: str, projectName: Optional[str] = None, dialogId: str = "head") -> None:
+        super().new(chapterType, chapterId, section, projectName, dialogId)
         # 初始化重要ui组件
         if not self.__disable_background_image_rendering:
             self.enable_basic_features()
@@ -82,7 +84,7 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
     # 更新场景
     def _update_scene(self, dialog_id: str) -> None:
         # 如果dialog Id存在
-        if dialog_id in self._content.get_section():
+        if dialog_id in self._content.get_section_content():
             super()._update_scene(dialog_id)
             # 自动保存
             if self.auto_save:
@@ -107,10 +109,6 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
     def continue_scene(self, dialog_id: str) -> None:
         self._continue()
         self._update_scene(dialog_id)
-
-    def switch_part(self, part: str) -> None:
-        self._content.set_part(part)
-        self._load_content()
 
     # 前往下一个对话
     def __go_to_next(self, _surface: ImageSurface) -> None:

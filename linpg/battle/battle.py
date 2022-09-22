@@ -26,6 +26,8 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         self._weather_system: WeatherSystem = WeatherSystem()
         # 当前鼠标位置上的tile块
         self._block_is_hovering: Optional[tuple[int, int]] = None
+        # 启用检查点功能
+        self._save_checkpoint_while_saving_progress = True
 
     # 渲染出所有的entity - 子类需实现
     @abstractmethod

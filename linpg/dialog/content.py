@@ -54,7 +54,7 @@ class DialogContentManager:
         # 视觉小说数据
         self.__dialog_data: Final[dict[str, dict[str, dict]]] = {}
         # 当前部分
-        self.__part: str = ""
+        self.__section: str = ""
         # 当前对话的id
         self.__id: str = "head"
         # 当前对话的接口模块
@@ -68,7 +68,7 @@ class DialogContentManager:
     def __refresh_current(self) -> None:
         if self.__current is None:
             self.__previous = self.__current
-            self.__current = _DialogContent(self.__dialog_data[self.__part][self.__id], self.__id)
+            self.__current = _DialogContent(self.__dialog_data[self.__section][self.__id], self.__id)
 
     # 上一个对话的缓存
     @property
@@ -87,12 +87,12 @@ class DialogContentManager:
     def last(self) -> Optional[_DialogContent]:
         # 如果指针不存在，则更新接口
         if self.__last is None and self.current.last is not None:
-            self.__last = _DialogContent(self.__dialog_data[self.__part][self.current.last], self.current.last)
+            self.__last = _DialogContent(self.__dialog_data[self.__section][self.current.last], self.current.last)
         return self.__last
 
     # 保存对当前对话的接口的修改
     def save_current_changes(self) -> None:
-        self.__dialog_data[self.__part][self.__id] = self.current.to_dict()
+        self.__dialog_data[self.__section][self.__id] = self.current.to_dict()
 
     # 是否数据为空
     def is_empty(self) -> bool:
@@ -121,31 +121,31 @@ class DialogContentManager:
         self.__last = None
 
     # 获取当前所在部分
-    def get_part(self) -> str:
-        return self.__part
+    def get_section(self) -> str:
+        return self.__section
 
     # 更新当前所在部分
-    def set_part(self, _part: str) -> None:
-        self.__part = _part
+    def set_section(self, _section: str) -> None:
+        self.__section = _section
         self.__current = None
         self.__last = None
 
     # 移除段落
     def remove_section(self, _id: Optional[str] = None) -> None:
-        self.__dialog_data[self.__part].pop(self.__id if _id is None else _id)
+        self.__dialog_data[self.__section].pop(self.__id if _id is None else _id)
 
     # 获取段落
-    def get_section(self, _part: Optional[str] = None) -> dict:
-        return self.__dialog_data[self.__part if _part is None else _part]
+    def get_section_content(self, _section: Optional[str] = None) -> dict:
+        return self.__dialog_data[self.__section if _section is None else _section]
 
     # 设置段落
-    def set_section(self, _data: dict, _part: Optional[str] = None) -> None:
-        self.__dialog_data[self.__part if _part is None else _part] = _data
+    def set_section_content(self, _data: dict, _section: Optional[str] = None) -> None:
+        self.__dialog_data[self.__section if _section is None else _section] = _data
 
     # 获取对话数据
-    def get_dialog(self, _part: Optional[str] = None, _id: Optional[str] = None) -> dict:
-        return self.__dialog_data[self.__part if _part is None else _part][self.__id if _id is None else _id]
+    def get_dialog(self, _section: Optional[str] = None, _id: Optional[str] = None) -> dict:
+        return self.__dialog_data[self.__section if _section is None else _section][self.__id if _id is None else _id]
 
     # 移除对话数据
-    def remove_dialog(self, _part: Optional[str] = None, _id: Optional[str] = None) -> None:
-        self.__dialog_data[self.__part if _part is None else _part].pop(self.__id if _id is None else _id)
+    def remove_dialog(self, _section: Optional[str] = None, _id: Optional[str] = None) -> None:
+        self.__dialog_data[self.__section if _section is None else _section].pop(self.__id if _id is None else _id)

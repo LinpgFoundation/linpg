@@ -59,27 +59,27 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
     def generate_a_new_recommended_key(self, index: int = 1) -> str:
         while True:
             newId: str = ("id_0" if index <= 9 else "id_") + str(index)
-            if newId in self._content.get_section():
+            if newId in self._content.get_section_content():
                 index += 1
             else:
                 return newId
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
-        return self.get_data_of_parent_game_system() | {"dialog_id": self._content.get_id(), "type": self._content.get_part()}
+        return self.get_data_of_parent_game_system() | {"dialog_id": self._content.get_id(), "section": self._content.get_section(), "type": "dialog"}
 
     # 读取存档
     def load_progress(self, _data: dict) -> None:
-        self.new(_data["chapter_type"], _data["chapter_id"], _data["type"], _data.get("project_name"), _data.get("dialog_id", "head"))
+        self.new(_data["chapter_type"], _data["chapter_id"], _data["section"], _data.get("project_name"), _data.get("dialog_id", "head"))
 
     # 新读取章节
-    def new(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str] = None, dialogId: str = "head") -> None:
+    def new(self, chapterType: str, chapterId: int, section: str, projectName: Optional[str] = None, dialogId: str = "head") -> None:
         # 初始化关键参数
         self._initialize(chapterType, chapterId, projectName)
         # 对白id
         self._content.set_id(dialogId)
         # 播放的部分
-        self._content.set_part(part)
+        self._content.set_section(section)
         # 转换所有文件夹内的linpg自定义的raw脚本
         for script_file in glob(os.path.join(self.get_dialog_folder_location(), "*.linpg.script")):
             ScriptConverter().compile(script_file, self.get_dialog_folder_location())
@@ -91,21 +91,23 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 读取目标对话文件的数据
         if os.path.exists(self.get_dialog_file_location()):
             # 获取目标对话数据
-            dialogData_t: dict = dict(Config.load(self.get_dialog_file_location(), "dialogs", self._content.get_part()))
+            dialogData_t: dict = dict(Config.load(self.get_dialog_file_location(), "dialogs", self._content.get_section()))
             # 如果该dialog文件是另一个语言dialog文件的子类
             if (default_lang_of_dialog := self.get_default_lang()) != Setting.get_language():
-                self._content.set_section(dict(Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._content.get_part())))
+                self._content.set_section_content(
+                    dict(Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._content.get_section()))
+                )
                 for key, values in dialogData_t.items():
                     self._content.get_dialog(_id=key).update(values)
             else:
-                self._content.set_section(dialogData_t)
+                self._content.set_section_content(dialogData_t)
         else:
-            self._content.set_section(dict(Config.load(self.get_dialog_file_location(self.get_default_lang()), "dialogs", self._content.get_part())))
+            self._content.set_section_content(dict(Config.load(self.get_dialog_file_location(self.get_default_lang()), "dialogs", self._content.get_section())))
         # 确认dialog数据合法
-        if len(self._content.get_section()) == 0:
-            EXCEPTION.fatal('The selected dialog dict "{}" has no content inside.'.format(self._content.get_part()))
-        elif "head" not in self._content.get_section():
-            EXCEPTION.fatal('You need to set up a "head" for the selected dialog "{}".'.format(self._content.get_part()))
+        if len(self._content.get_section_content()) == 0:
+            EXCEPTION.fatal('The selected dialog dict "{}" has no content inside.'.format(self._content.get_section()))
+        elif "head" not in self._content.get_section_content():
+            EXCEPTION.fatal('You need to set up a "head" for the selected dialog "{}".'.format(self._content.get_section()))
         # 将数据载入刚初始化的模块中
         self._update_scene(self._content.get_id())
 

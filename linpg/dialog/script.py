@@ -11,7 +11,7 @@ class ScriptConverter:
         self.__current_data: dict = dict(Template.get("dialog_example")["head"])
         self.__id: Optional[int] = None
         self.__lang: Optional[str] = None
-        self.__part: Optional[str] = None
+        self.__section: Optional[str] = None
         self.__last_dialog_id: Optional[str] = None
         self.__lines: list[str] = []
         self.__branch_labels: dict[str, str] = {}
@@ -91,8 +91,8 @@ class ScriptConverter:
             EXCEPTION.fatal("You have to set id!")
         elif self.__lang is None:
             EXCEPTION.fatal("You have to set lang!")
-        elif self.__part is None:
-            EXCEPTION.fatal("You have to set part!")
+        elif self.__section is None:
+            EXCEPTION.fatal("You have to set section!")
 
     # 尝试分离数据
     def __try_handle_data(self, index: int, parameter_short: str, parameter_full: str) -> bool:
@@ -146,17 +146,17 @@ class ScriptConverter:
                 elif _currentLine.startswith("[lang]"):
                     self.__lang = self.__extract_string(_currentLine, "[lang]")
                 # 部分
-                elif _currentLine.startswith("[part]"):
+                elif _currentLine.startswith("[section]"):
                     if self.__last_dialog_id is not None:
-                        self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"] = None
-                    self.__part = self.__extract_string(_currentLine, "[part]")
+                        self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = None
+                    self.__section = self.__extract_string(_currentLine, "[section]")
                 # 结束符
                 elif _currentLine.startswith("[end]"):
-                    self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"] = None
+                    self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = None
                     break
                 # 转换场景
                 elif _currentLine.startswith("[scene]"):
-                    self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"]["type"] = "changeScene"
+                    self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"]["type"] = "changeScene"
                     self.__current_data["background_image"] = self.__extract_parameter(_currentLine, "[scene]")
                 # 选项
                 elif _currentLine.startswith("[opt]"):
@@ -164,10 +164,10 @@ class ScriptConverter:
                     if not self.__lines[index + 1].startswith("[br]"):
                         EXCEPTION.fatal("For option on line {}, a branch label is not found on the following line".format(index + 1))
                     # 如果next_dialog_id没被初始化，则初始化
-                    if self.__output[self.__part][self.__last_dialog_id].get("next_dialog_id") is None:
-                        self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"] = {}
+                    if self.__output[self.__section][self.__last_dialog_id].get("next_dialog_id") is None:
+                        self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = {}
                     # 获取对应的下一个对话字典的指针
-                    dialog_next: dict = self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"]
+                    dialog_next: dict = self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"]
                     if dialog_next.get("type") != "option":
                         dialog_next["type"] = "option"
                         dialog_next["target"] = []
@@ -203,20 +203,20 @@ class ScriptConverter:
                             self.__current_data["contents"].append(self.__extract_string(self.__lines[sub_index], "- "))
                         else:
                             break
-                    # 确认part不为None，如果为None，则警告
-                    if self.__part is None:
-                        EXCEPTION.fatal("You have to specify part before script")
-                    # 如果part未在字典中，则初始化对应part的数据
-                    elif self.__part not in self.__output:
-                        self.__output[self.__part] = {}
+                    # 确认section不为None，如果为None，则警告
+                    if self.__section is None:
+                        EXCEPTION.fatal("You have to specify section before script")
+                    # 如果section未在字典中，则初始化对应section的数据
+                    elif self.__section not in self.__output:
+                        self.__output[self.__section] = {}
                     # 如果上个dialog存在（不一定非得能返回）
                     if self.__last_dialog_id is not None:
                         self.__current_data["last_dialog_id"] = self.__last_dialog_id
                         # 生成数据
-                        if self.__output[self.__part][self.__last_dialog_id].get("next_dialog_id") is not None:
-                            self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"]["target"] = self.__dialog_associate_key[str(index)]
+                        if self.__output[self.__section][self.__last_dialog_id].get("next_dialog_id") is not None:
+                            self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"]["target"] = self.__dialog_associate_key[str(index)]
                         else:
-                            self.__output[self.__part][self.__last_dialog_id]["next_dialog_id"] = {
+                            self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = {
                                 "target": self.__dialog_associate_key[str(index)],
                                 "type": "default",
                             }
@@ -230,7 +230,7 @@ class ScriptConverter:
                     self.__last_dialog_id = self.__dialog_associate_key[str(index)]
                     # 更新缓存参数
                     index += len(self.__current_data["contents"])
-                    self.__output[self.__part][self.__last_dialog_id] = copy.deepcopy(self.__current_data)
+                    self.__output[self.__section][self.__last_dialog_id] = copy.deepcopy(self.__current_data)
                     # 移除可选参数
                     self.__current_data.pop("notes", None)
                 else:
@@ -261,12 +261,12 @@ class ScriptConverter:
             # 用于储存结果的列表
             _results: list[str] = ["# Fundamental parameters\n[id]{0}\n[lang]{1}\n".format(*cls.extract_info_from_path(path))]
 
-            for _part in dialogs_data:
+            for _section in dialogs_data:
                 # 更新视觉小说数据管理模块的当前位置
                 _content.set_id("head")
-                _content.set_part(_part)
+                _content.set_section(_section)
                 # 写入当前部分的名称
-                _results.append("\n[part]" + _part + "\n")
+                _results.append("\n[section]" + _section + "\n")
 
                 while True:
                     _current_dialog: dict = _content.get_dialog()

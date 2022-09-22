@@ -275,7 +275,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
 
     # 保存进度（子类需实现）
     @abstractmethod
-    def save_progress(self, _screenshot: ImageSurface, slotId: int) -> None:
+    def save_progress(self, screenshot: ImageSurface, slotId: int) -> None:
         EXCEPTION.fatal("save_progress()", 1)
 
     # 加载进度（子类需实现）

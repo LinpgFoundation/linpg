@@ -46,7 +46,7 @@ class DialogEditor(DialogConverter):
         # 当前选择的背景的复制品
         self.__current_select_bg_copy: Optional[ImageSurface] = None
         # 用于选择小说脚本的key的下拉菜单
-        self.__dialog_part_selection: DropDownList = DropDownList(None, 0, 0, 1)
+        self.__dialog_section_selection: DropDownList = DropDownList(None, 0, 0, 1)
         # 检测并初始化deselect选中的背景
         if not self.__IS_BACKGROUND_DESELECT_IMAGE_INIT:
             self.__BACKGROUND_DESELECT_IMAGE.update_image("<&ui>deselect.png")
@@ -58,7 +58,7 @@ class DialogEditor(DialogConverter):
         return self.__dialog_txt_system
 
     # 加载数据
-    def new(self, chapterType: str, chapterId: int, part: str, projectName: Optional[str] = None, dialogId: str = "head") -> None:
+    def new(self, chapterType: str, chapterId: int, section: str, projectName: Optional[str] = None, dialogId: str = "head") -> None:
         # 加载容器
         container_width: int = Display.get_width() // 5
         self.__UIContainerRightImage = Images.load("<&ui>container.png", (container_width, Display.get_height()))
@@ -146,18 +146,18 @@ class DialogEditor(DialogConverter):
         # 移除按钮
         self.__remove_npc_button = ArtisticFont.render_description_box(CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE, self._FONT_SIZE // 5, Colors.WHITE)
         # 初始化用于选择小说脚本的key的下拉菜单
-        self.__dialog_part_selection.clear()
-        self.__dialog_part_selection.set_pos(button_width * 11, button_y + font_size)
-        self.__dialog_part_selection.update_font_size(font_size)
+        self.__dialog_section_selection.clear()
+        self.__dialog_section_selection.set_pos(button_width * 11, button_y + font_size)
+        self.__dialog_section_selection.update_font_size(font_size)
 
         # 初始化数据
-        super().new(chapterType, chapterId, part, projectName, dialogId)
+        super().new(chapterType, chapterId, section, projectName, dialogId)
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_dialog_file_location())
 
         # 将脚本的不同部分的key载入到ui中
         for key in self._content.get():
-            self.__dialog_part_selection.set(key, key)
-        self.__dialog_part_selection.set_selected_item(self._content.get_part())
+            self.__dialog_section_selection.set(key, key)
+        self.__dialog_section_selection.set_selected_item(self._content.get_section())
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
@@ -208,12 +208,12 @@ class DialogEditor(DialogConverter):
             # 如果当前dialogs不为空的，则填入未被填入的数据
             else:
                 dialog_data_t = copy.deepcopy(self._dialog_data_default)
-                for part, value in self._content.get().items():
+                for section, value in self._content.get().items():
                     for node_id, Node in value.items():
-                        if node_id not in dialog_data_t[part]:
-                            dialog_data_t[part][node_id] = Node
+                        if node_id not in dialog_data_t[section]:
+                            dialog_data_t[section][node_id] = Node
                         else:
-                            dialog_data_t[part][node_id].update(Node)
+                            dialog_data_t[section][node_id].update(Node)
                 self._content.clear()
                 self._content.update(dialog_data_t)
         # 如果是默认主语言，则不进行任何额外操作
@@ -222,20 +222,20 @@ class DialogEditor(DialogConverter):
             self._dialog_data_default.clear()
         # 则尝试加载后仍然出现内容为空的情况
         if self._content.is_empty():
-            self._content.set_part("example_dialog")
-            self._content.set_section({})
+            self._content.set_section("example_dialog")
+            self._content.set_section_content({})
         # 检测是否有非str的key name
-        for part in self._content.get():
-            if isinstance(part, str):
+        for section in self._content.get():
+            if isinstance(section, str):
                 if self.__if_try_to_fix_issues is True:
                     # 如果有，则尝试转换
-                    self._check_and_fix_non_str_key(part)
+                    self._check_and_fix_non_str_key(section)
                 else:
-                    for key in self._content.get_section(part):
+                    for key in self._content.get_section_content(section):
                         if not isinstance(key, str):
                             EXCEPTION.fatal("Key name has to be a string, not {}".format(key))
             else:
-                EXCEPTION.fatal("Part name has to be a string, not {}!".format(part))
+                EXCEPTION.fatal("Part name has to be a string, not {}!".format(section))
         # 更新场景
         self._update_scene(self._content.get_id())
         # 如果有不同，应该立即保存
@@ -250,14 +250,14 @@ class DialogEditor(DialogConverter):
         data_need_save: dict[str, dict[str, dict]] = copy.deepcopy(self._content.get())
         if not self._is_default_dialog and self.__compress_when_saving is True:
             # 移除掉相似的内容
-            for part in self._dialog_data_default:
-                for dialogId, defaultDialogData in self._dialog_data_default[part].items():
-                    if dialogId in data_need_save[part]:
+            for section in self._dialog_data_default:
+                for dialogId, defaultDialogData in self._dialog_data_default[section].items():
+                    if dialogId in data_need_save[section]:
                         for dataType in defaultDialogData:
-                            if data_need_save[part][dialogId][dataType] == defaultDialogData[dataType]:
-                                del data_need_save[part][dialogId][dataType]
-                        if len(data_need_save[part][dialogId]) == 0:
-                            del data_need_save[part][dialogId]
+                            if data_need_save[section][dialogId][dataType] == defaultDialogData[dataType]:
+                                del data_need_save[section][dialogId][dataType]
+                        if len(data_need_save[section][dialogId]) == 0:
+                            del data_need_save[section][dialogId]
         return data_need_save
 
     # 检查是否有任何改动
@@ -282,21 +282,21 @@ class DialogEditor(DialogConverter):
         else:
             EXCEPTION.fatal("The ui has not been correctly initialized.")
         # 更新dialog navigation窗口
-        self.__dialog_navigation_window.read_all(self._content.get_section())
+        self.__dialog_navigation_window.read_all(self._content.get_section_content())
         self.__dialog_navigation_window.update_selected(self._content.get_id())
 
     # 更新场景
     def _update_scene(self, dialog_id: str) -> None:
         # 确保当前版块有对话数据。如果当前版块为空，则加载默认模板
-        if len(self._content.get_section()) <= 0:
-            self._content.get_section().update(Template.get("dialog_example"))
-            for key in self._content.get_section():
+        if len(self._content.get_section_content()) <= 0:
+            self._content.get_section_content().update(Template.get("dialog_example"))
+            for key in self._content.get_section_content():
                 self._content.get_dialog(_id=key)["contents"].append(self.__please_enter_content)
                 self._content.get_dialog(_id=key)["narrator"] = self.__please_enter_name
             self._is_default_dialog = True
             self._dialog_data_default.clear()
         # 如果id存在，则加载对应数据
-        if dialog_id in self._content.get_section():
+        if dialog_id in self._content.get_section_content():
             super()._update_scene(dialog_id)
             self.__update_ui()
         # 如果id不存在，则新增一个
@@ -307,7 +307,7 @@ class DialogEditor(DialogConverter):
 
     # 添加新的对话
     def __add_dialog(self, dialogId: str) -> None:
-        self._content.get_section()[dialogId] = {
+        self._content.get_section_content()[dialogId] = {
             "background_image": self._content.current.background_image,
             "background_music": self._content.current.background_music,
             "character_images": [],
@@ -363,7 +363,7 @@ class DialogEditor(DialogConverter):
         elif child_node == "head":
             return "<NULL>"
         else:
-            for key, dialog_data in self._content.get_section().items():
+            for key, dialog_data in self._content.get_section_content().items():
                 if dialog_data["next_dialog_id"] is not None:
                     if (dialog_data["next_dialog_id"]["type"] == "default" or dialog_data["next_dialog_id"]["type"] == "changeScene") and dialog_data[
                         "next_dialog_id"
@@ -425,11 +425,11 @@ class DialogEditor(DialogConverter):
             self._content.save_current_changes()
             self._update_scene(self._content.get_id())
         # 展示出当前可供编辑的dialog部分
-        self.__dialog_part_selection.draw(_surface)
+        self.__dialog_section_selection.draw(_surface)
         # 切换当前正在浏览编辑的dialog部分
-        if self.__dialog_part_selection.get_selected_item() != self._content.get_part():
-            self._content.set_part(self.__dialog_part_selection.get_selected_item())
-            self._update_scene(self._content.get_id() if self._content.get_id() in self._content.get_section() else "head")
+        if self.__dialog_section_selection.get_selected_item() != self._content.get_section():
+            self._content.set_section(self.__dialog_section_selection.get_selected_item())
+            self._update_scene(self._content.get_id() if self._content.get_id() in self._content.get_section_content() else "head")
         # 处理输入事件
         confirm_event_tag: bool = False
         lastId: str

@@ -205,15 +205,24 @@ class PauseMenu(AbstractInternalMenu):
 class SaveOrLoadSelectedProgressMenu(HidableSurface):
     def __init__(self) -> None:
         super().__init__(False)
-        self.colum: int = 3
+        # 行
         self.row: int = 3
+        # 列
+        self.colum: int = 3
+        # 当前选中存档的id
         self.__slotId: int = -1
+        # 存档数据
         self.__saves: dict[int, ProgressDataPackageSavingSystem] = {}
+        # 当前页码
+        self.__page_id: int = 1
+        # 最高页码
+        self.__max_pages: int = 10
+        # 模式
         self.switch: bool = True
 
     def refresh(self) -> None:
         self.__saves.clear()
-        for _save in glob("Save/*.zip"):
+        for _save in glob(os.path.join(Specification.get_directory("save"), "*.linpg.save")):
             _file: ProgressDataPackageSavingSystem = ProgressDataPackageSavingSystem.load(_save)
             self.__saves[_file.slotId] = _file
 
@@ -228,6 +237,47 @@ class SaveOrLoadSelectedProgressMenu(HidableSurface):
     def get_selected_save(self) -> Optional[ProgressDataPackageSavingSystem]:
         return self.__saves.get(self.__slotId)
 
+    # 渲染切换页面的两侧按钮
+    def __process_page_switching(self, _surface: ImageSurface) -> None:
+        # 初始化参数
+        triangle_size: int = _surface.get_height() // 50
+        padding: int = _surface.get_width() // 200
+        center_y: int = _surface.get_height() // 2
+        button_rect: Rectangle = Rectangle(padding, center_y - triangle_size - padding, triangle_size + padding * 2, padding * 2 + triangle_size * 2)
+        _color: tuple[int, int, int, int] = Colors.WHITE
+        # 渲染并处理左侧按钮
+        if self.__page_id > 1:
+            if button_rect.is_hovered():
+                _color = Colors.YELLOW
+            button_rect.draw_outline(_surface, color=_color)
+            Draw.polygon(
+                _surface,
+                _color,
+                (
+                    (padding * 2, center_y),
+                    (padding * 2 + triangle_size, center_y - triangle_size),
+                    (padding * 2 + triangle_size, center_y + triangle_size),
+                ),
+            )
+            if Controller.get_event("confirm") and button_rect.is_hovered():
+                self.__page_id -= 1
+        # 渲染并处理右侧按钮
+        if self.__page_id < self.__max_pages:
+            button_rect.set_pos(_surface.get_width() - triangle_size - padding * 3, center_y - triangle_size - padding)
+            _color = Colors.WHITE if not button_rect.is_hovered() else Colors.YELLOW
+            button_rect.draw_outline(_surface, color=_color)
+            Draw.polygon(
+                _surface,
+                _color,
+                (
+                    (_surface.get_width() - padding * 2, center_y),
+                    (_surface.get_width() - triangle_size - padding * 2, center_y - triangle_size),
+                    (_surface.get_width() - triangle_size - padding * 2, center_y + triangle_size),
+                ),
+            )
+            if Controller.get_event("confirm") and button_rect.is_hovered():
+                self.__page_id += 1
+
     def draw(self, _surface: ImageSurface) -> None:
         self.__slotId = -1
         if self.is_visible() is True:
@@ -239,16 +289,26 @@ class SaveOrLoadSelectedProgressMenu(HidableSurface):
                 rect_height: int = _surface.get_height() // (self.row + 1)
                 row_padding: int = rect_height // (self.row + 1)
                 _rect: Rectangle = Rectangle(0, 0, rect_width, rect_height)
+                self.__process_page_switching(_surface)
+                # 渲染页码
+                pageIdText: ImageSurface = Font.render("- {} -".format(self.__page_id), Colors.GRAY, row_padding // 2)
+                _surface.blit(
+                    pageIdText,
+                    ((_surface.get_width() - pageIdText.get_width()) // 2, _surface.get_height() - row_padding + (row_padding - pageIdText.get_height()) // 2),
+                )
+                # 渲染存档信息
                 for _y in range(self.row):
                     for _x in range(self.colum):
                         _rect.set_pos(colum_padding + (colum_padding + rect_width) * _x, row_padding + (row_padding + rect_height) * _y)
-                        _slotId: int = _y * self.colum + _x
-                        _file: Optional[ProgressDataPackageSavingSystem] = self.__saves.get(_slotId)
+                        _slotId: int = (self.__page_id - 1) * self.colum * self.colum + _y * self.colum + _x
                         _rect.draw_outline(_surface, color=Colors.GRAY, thickness=0)
+                        _file: Optional[ProgressDataPackageSavingSystem] = self.__saves.get(_slotId)
                         if _file is not None:
                             _img_height: int = int(_rect.get_height() * 0.8)
                             _surface.blit(Images.smoothly_resize_and_crop_to_fit(_file.screenshot, (_rect.get_width(), _img_height)), _rect.get_pos())
-                            _createdAt: ImageSurface = Font.render(_file.createdAt, Colors.WHITE, (_rect.get_height() - _img_height) // 2)
+                            _createdAt: ImageSurface = Font.render(
+                                "{0} - Chapter {1}".format(_file.createdAt, _file.data.get("chapter_id")), Colors.WHITE, (_rect.get_height() - _img_height) // 2
+                            )
                             _surface.blit(
                                 _createdAt,
                                 (

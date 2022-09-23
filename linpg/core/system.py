@@ -160,7 +160,7 @@ class AbstractGameSystem(SystemWithBackgroundMusic, metaclass=ABCMeta):
         self.__handle_save_thread(
             threading.Thread(
                 target=ProgressDataPackageSavingSystem.save,
-                args=(os.path.join(self.folder_for_save_file, "save_{}.zip".format(slotId)), self._get_data_need_to_save(), screenshot, slotId),
+                args=(os.path.join(self.folder_for_save_file, "save_{}.linpg.save".format(slotId)), self._get_data_need_to_save(), screenshot, slotId),
             )
         )
         # 以配置文件的形式保存进度

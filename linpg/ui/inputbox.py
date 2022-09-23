@@ -58,10 +58,10 @@ class SingleLineInputBox(AbstractInputBox):
         self._holder_index = len(self._text)
         self._reset_inputbox_width()
 
-    def _add_char(self, char: str) -> None:
-        if len(char) > 0:
-            self._text = self._text[: self._holder_index] + char + self._text[self._holder_index :]
-            self._holder_index += len(char)
+    def _add_chars(self, chars: str) -> None:
+        if len(chars) > 0:
+            self._text = self._text[: self._holder_index] + chars + self._text[self._holder_index :]
+            self._holder_index += len(chars)
             self._reset_inputbox_width()
         elif Debug.get_developer_mode():
             EXCEPTION.inform("The value of event.unicode is empty!")
@@ -123,7 +123,7 @@ class SingleLineInputBox(AbstractInputBox):
             and Keys.get_pressed("v")
             and Keys.get_pressed(Keys.LEFT_CTRL)
         ):
-            self._add_char(Keys.get_clipboard())
+            self._add_chars(Keys.get_clipboard())
             return True
         return False
 
@@ -146,7 +146,7 @@ class SingleLineInputBox(AbstractInputBox):
                     self._active = False
                     self.need_save = True
                 else:
-                    self._add_char(event.unicode)
+                    self._add_chars(event.unicode)
             elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and self._active is True:
                 if self.x <= Controller.mouse.x <= self.x + self._input_box.width and self.y <= Controller.mouse.y <= self.y + self._input_box.height:
                     self._reset_holder_index(Controller.mouse.x)
@@ -220,18 +220,18 @@ class MultipleLinesInputBox(AbstractInputBox):
         self._reset_inputbox_width()
         self._reset_inputbox_height()
 
-    def _add_char(self, char: str) -> None:
-        if len(char) > 0:
-            if "\n" not in char:
-                self._text[self.__lineId] = self._text[self.__lineId][: self._holder_index] + char + self._text[self.__lineId][self._holder_index :]
-                self._holder_index += len(char)
+    def _add_chars(self, chars: str) -> None:
+        if len(chars) > 0:
+            if "\n" not in chars:
+                self._text[self.__lineId] = self._text[self.__lineId][: self._holder_index] + chars + self._text[self.__lineId][self._holder_index :]
+                self._holder_index += len(chars)
                 self._reset_inputbox_width()
             else:
                 theStringAfterHolderIndex = self._text[self.__lineId][self._holder_index :]
                 self._text[self.__lineId] = self._text[self.__lineId][: self._holder_index]
-                for i in range(len(char) - 1):
-                    if char[i] != "\n":
-                        self._text[self.__lineId] += char[i]
+                for i in range(len(chars) - 1):
+                    if chars[i] != "\n":
+                        self._text[self.__lineId] += chars[i]
                         self._holder_index += 1
                     else:
                         self.__lineId += 1
@@ -322,7 +322,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                         and Keys.get_pressed("v")
                         and Keys.get_pressed(Keys.LEFT_CTRL)
                     ):
-                        self._add_char(Keys.get_clipboard())
+                        self._add_chars(Keys.get_clipboard())
                     # ESC，关闭
                     elif event.key == Keys.ESCAPE:
                         self._active = False
@@ -338,7 +338,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                         self._holder_index = 0
                         self._reset_inputbox_size()
                     else:
-                        self._add_char(event.unicode)
+                        self._add_chars(event.unicode)
                 elif event.type == MOUSE_BUTTON_DOWN and event.button == 1:
                     if self.x <= Controller.mouse.x <= self.x + self._input_box.width and self.y <= Controller.mouse.y <= self.y + self._input_box.height:
                         self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
@@ -382,7 +382,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                     in_text: Optional[str] = external_input_values.get("CONTENT")
                     if in_text is not None:
                         self._remove_char(_RemoveCharLocation.ALL)
-                        self._add_char(in_text)
+                        self._add_chars(in_text)
             elif self.__show_PySimpleGUI_input_box.is_hovered() and Controller.get_event("confirm"):
                 self.__PySimpleGUIWindow = PySimpleGUI.Window(
                     "external input",

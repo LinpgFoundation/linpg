@@ -298,8 +298,8 @@ class ScriptConverter:
                             _results.append("[hide]*\n")
                         elif _content.previous is None or len(_content.previous.character_images) == 0:
                             _line: str = "[display]"
-                            for i in range(len(_content.current.character_images)):
-                                _line += CharacterImageNameMetaData(_content.current.character_images[i]).name + " "
+                            for _characterName in _content.current.character_images:
+                                _line += CharacterImageNameMetaData(_characterName).name + " "
                             _results.append(_line.rstrip() + "\n")
 
                     if _content.current.has_next():

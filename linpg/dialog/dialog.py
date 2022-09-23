@@ -295,16 +295,15 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
                         self.__history_text_surface.blit(
                             narratorTemp, (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() // 10 + local_y)
                         )
-                    for i in range(len(self._content.get_dialog(_id=dialogIdTemp)["contents"])):
-                        txt: str = str(self._content.get_dialog(_id=dialogIdTemp)["contents"][i])
+                    for i, _text in enumerate(self._content.get_dialog(_id=dialogIdTemp)["contents"]):
                         if has_narrator:
                             if i == 0:
-                                txt = '[ "' + txt
+                                _text = '[ "' + _text
                             # 这里不用elif，以免当对话行数为一的情况
                             if i == len(self._content.get_dialog(_id=dialogIdTemp)["contents"]) - 1:
-                                txt += '" ]'
+                                _text += '" ]'
                         self.__history_text_surface.blit(
-                            self.__dialog_txt_system.FONT.render(txt, Colors.WHITE), (Display.get_width() * 0.15, Display.get_height() // 10 + local_y)
+                            self.__dialog_txt_system.FONT.render(_text, Colors.WHITE), (Display.get_width() * 0.15, Display.get_height() // 10 + local_y)
                         )
                         local_y += self.__dialog_txt_system.FONT.size * 3 // 2
                     if dialogIdTemp != self._content.get_id():

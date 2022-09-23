@@ -161,11 +161,11 @@ class GameObjectsListContainer(AbstractGameObjectsContainer):
             if self._get_image_reference() is not None:
                 self._get_image_reference().display(_surface, current_abs_pos)
             # 画出物品
-            for i in range(len(self.__items_container_list)):
-                self.__items_container_list[i].display(_surface, current_abs_pos)
-                if isinstance(self.__items_container_list[i], Button):
-                    if self.__items_container_list[i].has_been_hovered() is True:
+            for i, _item in enumerate(self.__items_container_list):
+                _item.display(_surface, current_abs_pos)
+                if isinstance(_item, Button):
+                    if _item.has_been_hovered() is True:
                         self._item_being_hovered = i
-                elif isinstance(self.__items_container_list[i], GameObject2d):
-                    if self.__items_container_list[i].is_hovered(current_abs_pos):
+                elif isinstance(_item, GameObject2d):
+                    if _item.is_hovered(current_abs_pos):
                         self._item_being_hovered = i

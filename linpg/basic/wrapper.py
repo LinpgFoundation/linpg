@@ -5,6 +5,7 @@ from tkinter import Tk
 
 # 导入pygame组件
 import pygame
+import pygame.gfxdraw
 
 # 加载颜色模块
 from PIL import ImageColor as PILImageColor  # type: ignore
@@ -169,27 +170,44 @@ class Draw:
     # 根据给与的rect画出轮廓
     @staticmethod
     def rect(_surface: ImageSurface, color: tuple[int, int, int, int], rect: PG_TUPLE, thickness: int = 0) -> None:
-        pygame.draw.rect(_surface, color, rect, thickness)
+        if thickness <= 0:
+            pygame.gfxdraw.box(_surface, rect, color)
+        else:
+            pygame.draw.rect(_surface, color, rect, thickness)
 
     # 根据给与的中心点画出一个圆
     @staticmethod
     def circle(_surface: ImageSurface, color: tuple[int, int, int, int], center_pos: tuple[int, int], radius: int, thickness: int = 0) -> None:
-        pygame.draw.circle(_surface, color, center_pos, radius, thickness)
+        if thickness <= 0:
+            pygame.gfxdraw.filled_circle(_surface, center_pos[0], center_pos[1], radius, color)
+        else:
+            pygame.draw.circle(_surface, color, center_pos, radius, thickness)
 
     # 画一条抗锯齿线
     @staticmethod
     def aaline(_surface: ImageSurface, color: tuple[int, int, int, int], start_pos: tuple[int, int], end_pos: tuple[int, int], blend: int = 1) -> None:
-        pygame.draw.aaline(_surface, color, start_pos, end_pos, blend)
+        if start_pos[0] == end_pos[0]:
+            pygame.gfxdraw.vline(_surface, start_pos[0], start_pos[1], end_pos[1], color)
+        elif start_pos[1] == end_pos[1]:
+            pygame.gfxdraw.hline(_surface, start_pos[0], end_pos[0], end_pos[1], color)
+        else:
+            pygame.draw.aaline(_surface, color, start_pos, end_pos, blend)
 
     # 画一条线
     @staticmethod
     def line(_surface: ImageSurface, color: tuple[int, int, int, int], start_pos: tuple[int, int], end_pos: tuple[int, int], width: int = 1) -> None:
-        pygame.draw.line(_surface, color, start_pos, end_pos, width)
+        if width <= 1:
+            pygame.gfxdraw.line(_surface, start_pos[0], start_pos[1], end_pos[0], end_pos[1], color)
+        else:
+            pygame.draw.line(_surface, color, start_pos, end_pos, width)
 
     # 画多边形
     @staticmethod
-    def polygon(_surface: ImageSurface, _color: tuple[int, int, int, int], _points: tuple[tuple[int, int], ...], _width: int = 0) -> None:
-        pygame.draw.polygon(_surface, _color, _points, _width)
+    def polygon(_surface: ImageSurface, _color: tuple[int, int, int, int], _points: tuple[tuple[int, int], ...], thickness: int = 0) -> None:
+        if thickness <= 0:
+            pygame.gfxdraw.filled_polygon(_surface, _points, _color)
+        else:
+            pygame.draw.polygon(_surface, _color, _points, thickness)
 
 
 class Surfaces:
@@ -247,8 +265,8 @@ class Surfaces:
         texture_missing_surface: ImageSurface = cls.colored(size, Colors.BLACK)
         half_width: int = size[0] // 2
         half_height: int = size[1] // 2
-        pygame.draw.rect(texture_missing_surface, Colors.VIOLET, pygame.Rect(half_width, 0, texture_missing_surface.get_width() - half_width, half_height))
-        pygame.draw.rect(texture_missing_surface, Colors.VIOLET, pygame.Rect(0, half_height, half_width, texture_missing_surface.get_height() - half_height))
+        Draw.rect(texture_missing_surface, Colors.VIOLET, (half_width, 0, texture_missing_surface.get_width() - half_width, half_height))
+        Draw.rect(texture_missing_surface, Colors.VIOLET, (0, half_height, half_width, texture_missing_surface.get_height() - half_height))
         return texture_missing_surface
 
     # 检测图层是否是任何形式的null

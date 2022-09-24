@@ -237,7 +237,7 @@ class UiGenerator:
                     if "name" not in data:
                         EXCEPTION.fatal("You have to set a name for button type.")
                 elif data["type"] == "image":
-                    item_t = DynamicImage(data["src"], 0, 0, object_width, object_height)
+                    item_t = StaticImage(data["src"], 0, 0, object_width, object_height)
                 else:
                     EXCEPTION.fatal("Current type is not supported")
             # 如果有名字，则以tag的形式进行标注

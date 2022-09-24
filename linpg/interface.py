@@ -10,7 +10,7 @@ class Loader:
 
     # 静态图片
     @staticmethod
-    def static_image(path: str, _position: tuple, size: tuple = (-1, -1), tag: str = "") -> StaticImage:
+    def static_image(path: str, _position: tuple = (0, 0), size: tuple = (-1, -1), tag: str = "") -> StaticImage:
         return StaticImage(path, _position[0], _position[1], size[0], size[1], tag)
 
     # 动态图片

@@ -9,9 +9,9 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         # 初始化ui
         self.__buttons_container: GameObjectsDictContainer = UI.generate_container("map_editor_buttons")
         self.__right_container_buttons: GameObjectsDictContainer = UI.generate_container("map_editor_right_container_buttons")
-        self.__UIContainerRight: DynamicImage = DynamicImage("<&ui>container.png", 0, 0)
+        self.__UIContainerRight: StaticImage = StaticImage("<&ui>container.png", 0, 0)
         self.__UIContainerRight.rotate(90)
-        self.__UIContainerBottom: DynamicImage = DynamicImage("<&ui>container.png", 0, 0)
+        self.__UIContainerBottom: StaticImage = StaticImage("<&ui>container.png", 0, 0)
         self.__bottom_container_buttons: GameObjectsListContainer = GameObjectsListContainer(None, 0, 0, 0, 0)
         self.__entitiesImagesContainers: list = []
         self.__entitiesImagesContainerUsingIndex: int = -1

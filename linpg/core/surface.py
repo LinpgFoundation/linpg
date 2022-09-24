@@ -259,8 +259,8 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
         self._set_image(Images.flip(self._get_image_reference(), horizontal, vertical))
         self._need_update = True
 
-    # 画出轮廓
-    def draw_outline(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN, color: color_liked = "red", line_width: int = 2) -> None:
+    # 画出绝对轮廓
+    def draw_abs_outline(self, _surface: ImageSurface, color: color_liked = "red", line_width: int = 2, offSet: tuple[int, int] = ORIGIN) -> None:
         if self._need_update is True:
             self._update_img()
         if self._processed_img is not None:

@@ -249,7 +249,7 @@ class SaveOrLoadSelectedProgressMenu(HidableSurface):
         if self.__page_id > 1:
             if button_rect.is_hovered():
                 _color = Colors.YELLOW
-            button_rect.draw_outline(_surface, color=_color)
+            button_rect.draw_outline(_surface, _color)
             Draw.polygon(
                 _surface,
                 _color,
@@ -265,7 +265,7 @@ class SaveOrLoadSelectedProgressMenu(HidableSurface):
         if self.__page_id < self.__max_pages:
             button_rect.set_pos(_surface.get_width() - triangle_size - padding * 3, center_y - triangle_size - padding)
             _color = Colors.WHITE if not button_rect.is_hovered() else Colors.YELLOW
-            button_rect.draw_outline(_surface, color=_color)
+            button_rect.draw_outline(_surface, _color)
             Draw.polygon(
                 _surface,
                 _color,
@@ -301,7 +301,7 @@ class SaveOrLoadSelectedProgressMenu(HidableSurface):
                     for _x in range(self.colum):
                         _rect.set_pos(colum_padding + (colum_padding + rect_width) * _x, row_padding + (row_padding + rect_height) * _y)
                         _slotId: int = (self.__page_id - 1) * self.colum * self.colum + _y * self.colum + _x
-                        _rect.draw_outline(_surface, color=Colors.GRAY, thickness=0)
+                        _rect.draw_outline(_surface, Colors.GRAY, 0)
                         _file: Optional[ProgressDataPackageSavingSystem] = self.__saves.get(_slotId)
                         if _file is not None:
                             _img_height: int = int(_rect.get_height() * 0.8)
@@ -317,9 +317,9 @@ class SaveOrLoadSelectedProgressMenu(HidableSurface):
                                 ),
                             )
                         if not _rect.is_hovered():
-                            _rect.draw_outline(_surface, color=Colors.WHITE, thickness=4)
+                            _rect.draw_outline(_surface, Colors.WHITE, 4)
                         else:
-                            _rect.draw_outline(_surface, color=Colors.YELLOW, thickness=4)
+                            _rect.draw_outline(_surface, Colors.YELLOW, 4)
                             if Controller.get_event("confirm"):
                                 self.__slotId = _slotId
 

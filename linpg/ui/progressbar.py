@@ -10,7 +10,7 @@ class AbstractProgressBar(AbstractImageSurface, metaclass=ABCMeta):
     # 百分比
     @property
     def percentage(self) -> float:
-        return self.__current_percentage
+        return self.get_percentage()
 
     def get_percentage(self) -> float:
         return self.__current_percentage
@@ -23,11 +23,81 @@ class AbstractProgressBar(AbstractImageSurface, metaclass=ABCMeta):
 class ProgressBar(AbstractProgressBar):
     def __init__(self, x: int_f, y: int_f, max_width: int, height: int, color: color_liked, tag: str = ""):
         super().__init__(None, x, y, max_width, height, tag)
-        self.color: tuple[int, int, int, int] = Colors.get(color)
+        self.__color: tuple[int, int, int, int] = Colors.get(color)
 
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
-            Draw.rect(_surface, self.color, (Coordinates.add(self.pos, offSet), (int(self.get_width() * self.percentage), self.get_height())))
+            Draw.rect(_surface, self.__color, (Coordinates.add(self.pos, offSet), (int(self.get_width() * self.percentage), self.get_height())))
+
+
+# 简单的分数百分比条的实现
+class SimpleRectPointsBar(AbstractProgressBar):
+
+    __FONT: FontGenerator = FontGenerator()
+
+    def __init__(
+        self,
+        x: int_f,
+        y: int_f,
+        max_width: int,
+        height: int,
+        front_color: color_liked,
+        back_color: color_liked,
+        outline_color: color_liked,
+        font_color: color_liked,
+        tag: str = "",
+    ):
+        super().__init__(None, x, y, max_width, height, tag)
+        self.__back_color: tuple[int, int, int, int] = Colors.get(back_color)
+        self.__front_color: tuple[int, int, int, int] = Colors.get(front_color)
+        self.__outline_color: tuple[int, int, int, int] = Colors.get(outline_color)
+        self.__font_color: tuple[int, int, int, int] = Colors.get(font_color)
+        self.__current_point: int = 0
+        self.__max_point: int = 1
+
+    # 重写百分比的计算方式
+    def get_percentage(self) -> float:
+        return self.__current_point / self.__max_point
+
+    # 设置当前值
+    def set_current_point(self, value: int) -> None:
+        self.__current_point = Numbers.keep_int_in_range(value, 0, self.__max_point)
+
+    # 设置最大值
+    def set_max_point(self, value: int) -> None:
+        self.__max_point = max(value, 1)
+
+    # 设置颜色
+    def set_color(self,front_color: color_liked, back_color: Optional[color_liked] = None, outline_color: Optional[color_liked] = None, font_color: Optional[color_liked] = None) -> None:
+        self.__front_color = Colors.get(front_color)
+        if back_color is not None:
+            self.__back_color = Colors.get(back_color)
+        if outline_color is not None:
+            self.__outline_color = Colors.get(outline_color)
+        if font_color is not None:
+            self.__font_color = Colors.get(font_color)
+
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+        if self.is_visible():
+            # 更新文字模块
+            self.__FONT.check_for_update(int(self.get_height() * 0.6))
+            # 根据当前值计算条长度
+            _width: int = int(self.get_width() * self.__current_point / self.__max_point)
+            # 原先的绝对x
+            original_x: int = self.pos[0] + offSet[0]
+            # 生成一个rect用于渲染
+            bar_rect = Rectangle(self.pos[0] + offSet[0], self.pos[1] + offSet[1], _width, self.get_height())
+            # 渲染多个矩形
+            bar_rect.draw_outline(_surface, self.__front_color, 0)
+            bar_rect.move_right(_width - 1)
+            bar_rect.set_width(self.get_width() - _width)
+            bar_rect.draw_outline(_surface, self.__back_color, 0)
+            bar_rect.set_width(self.get_width() + 1)
+            bar_rect.set_left(original_x - 1)
+            bar_rect.draw_outline(_surface, self.__outline_color)
+            # 渲染数值文字并画出
+            _text: ImageSurface = self.__FONT.render("{0} / {1}".format(self.__current_point, self.__max_point), self.__font_color)
+            _surface.blit(_text, (bar_rect.x + (bar_rect.width - _text.get_width()) // 2, bar_rect.y + (bar_rect.height - _text.get_height()) // 2))
 
 
 # 进度条Surface

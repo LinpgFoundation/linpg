@@ -409,8 +409,8 @@ class Entity(Position):
     def _identify_range(_ranges: tuple[int, ...], distanceBetween: int) -> int:
         if distanceBetween > 0:
             _total: int = 0
-            for i in range(len(_ranges)):
-                _total += _ranges[i]
+            for i, num in enumerate(_ranges):
+                _total += num
                 if distanceBetween <= _total:
                     return i
         return -1

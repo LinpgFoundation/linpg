@@ -49,22 +49,22 @@ class AbstractSoundManager(ABC):
 class SoundManagement(AbstractSoundManager):
     def __init__(self, channel_id: int):
         super().__init__(channel_id)
-        self.__sound_id: int = 0
-        self.__sounds_list: list[PG_Sound] = []
+        self.__index: int = 0
+        self.__sounds: list[PG_Sound] = []
 
     # 添加音乐
     def add(self, path: str) -> None:
-        self.__sounds_list.append(Sound.load(path))
+        self.__sounds.append(Sound.load(path))
 
     # 清空列表释放内存
     def clear(self) -> None:
-        self.__sounds_list.clear()
+        self.__sounds.clear()
 
     # 播放音乐
     def play(self, sound_id: int = -1) -> None:
-        if len(self.__sounds_list) > 0 and not pygame.mixer.Channel(self._channel_id).get_busy():
-            self.__sound_id = Numbers.get_random_int(0, len(self.__sounds_list) - 1) if sound_id < 0 else sound_id
-            pygame.mixer.Channel(self._channel_id).play(self.__sounds_list[self.__sound_id])
+        if len(self.__sounds) > 0 and not pygame.mixer.Channel(self._channel_id).get_busy():
+            self.__index = Numbers.get_random_int(0, len(self.__sounds) - 1) if sound_id < 0 else sound_id
+            pygame.mixer.Channel(self._channel_id).play(self.__sounds[self.__index])
 
     # 停止播放
     def stop(self) -> None:
@@ -76,12 +76,12 @@ class SoundManagement(AbstractSoundManager):
         return self.get_volume()
 
     def get_volume(self) -> float:
-        return self.__sounds_list[0].get_volume()
+        return self.__sounds[0].get_volume()
 
     # 设置音量
     def set_volume(self, volume: number) -> None:
-        for i in range(len(self.__sounds_list)):
-            self.__sounds_list[i].set_volume(volume)
+        for _sound in self.__sounds:
+            _sound.set_volume(volume)
 
 
 # 获取视频的音频 （返回路径）

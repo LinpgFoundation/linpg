@@ -109,6 +109,8 @@ class AbstractGameSystem(SystemWithBackgroundMusic, metaclass=ABCMeta):
         self.name_for_save_file: str = "save.{}".format(Config.get_file_type())
         # 是否已经初始化
         self.__initialized: bool = False
+        # 是否在保存进度时调用save方法
+        self._save_checkpoint_while_saving_progress: bool = False
 
     # 正在读取的文件
     @property
@@ -153,13 +155,17 @@ class AbstractGameSystem(SystemWithBackgroundMusic, metaclass=ABCMeta):
         self.__handle_save_thread(threading.Thread(target=Config.save, args=(self.file_path, self._get_data_need_to_save())))
 
     # 创建进度存档
-    def save_progress(self, _screenshot: ImageSurface, slotId: int) -> None:
+    def save_progress(self, screenshot: ImageSurface, slotId: int) -> None:
+        # 以zip的形式保存进度
         self.__handle_save_thread(
             threading.Thread(
                 target=ProgressDataPackageSavingSystem.save,
-                args=(os.path.join(self.folder_for_save_file, "save_{}.zip".format(slotId)), self._get_data_need_to_save(), _screenshot, slotId),
+                args=(os.path.join(self.folder_for_save_file, "save_{}.linpg.save".format(slotId)), self._get_data_need_to_save(), screenshot, slotId),
             )
         )
+        # 以配置文件的形式保存进度
+        if self._save_checkpoint_while_saving_progress is True:
+            self.save()
 
     # 从默认存档路径加载进度存档
     def load(self) -> None:

@@ -9,9 +9,9 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         # 初始化ui
         self.__buttons_container: GameObjectsDictContainer = UI.generate_container("map_editor_buttons")
         self.__right_container_buttons: GameObjectsDictContainer = UI.generate_container("map_editor_right_container_buttons")
-        self.__UIContainerRight: DynamicImage = DynamicImage("<&ui>container.png", 0, 0)
+        self.__UIContainerRight: StaticImage = StaticImage("<&ui>container.png", 0, 0)
         self.__UIContainerRight.rotate(90)
-        self.__UIContainerBottom: DynamicImage = DynamicImage("<&ui>container.png", 0, 0)
+        self.__UIContainerBottom: StaticImage = StaticImage("<&ui>container.png", 0, 0)
         self.__bottom_container_buttons: GameObjectsListContainer = GameObjectsListContainer(None, 0, 0, 0, 0)
         self.__entitiesImagesContainers: list = []
         self.__entitiesImagesContainerUsingIndex: int = -1
@@ -31,6 +31,8 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self.__delete_mode: bool = False
         # 是否有ui容器被鼠标触碰
         self.__no_container_is_hovered: bool = False
+        # 禁用在父类中默认启用的检查点功能
+        self._save_checkpoint_while_saving_progress = False
 
     # 根据数据更新特定的角色 - 子类需实现
     @abstractmethod

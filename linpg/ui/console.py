@@ -162,7 +162,7 @@ class Console(SingleLineInputBox, HidableSurface, threading.Thread):
                         if self._check_key_down(event):
                             pass
                         else:
-                            self._add_char(event.unicode)
+                            self._add_chars(event.unicode)
                     else:
                         if event.key == Keys.BACKQUOTE or event.key == Keys.ESCAPE:
                             self.set_visible(False)

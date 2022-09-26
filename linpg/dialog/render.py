@@ -266,13 +266,13 @@ class CharacterImageManager:
         cls.character_get_click = None
         # 画上上一幕的立绘
         if len(cls.__previous_characters) == len(cls.__current_characters):
-            for i in range(len(cls.__previous_characters)):
+            for i, _characterName in enumerate(cls.__previous_characters):
                 npcImg_x: int = cls.__estimate_x(_surface.get_width(), len(cls.__previous_characters), i)
                 # 渲染立绘
-                if cls.__previous_characters[i].equal(cls.__current_characters[i], True):
+                if _characterName.equal(cls.__current_characters[i], True):
                     cls.__display_character(cls.__current_characters[i], npcImg_x, 255, _surface)
                 else:
-                    cls.__display_character(cls.__previous_characters[i], npcImg_x, cls.__last_round_image_alpha, _surface)
+                    cls.__display_character(_characterName, npcImg_x, cls.__last_round_image_alpha, _surface)
                     cls.__display_character(cls.__current_characters[i], npcImg_x, cls.__this_round_image_alpha, _surface)
         elif len(cls.__current_characters) == 0:
             cls.__fade_out_characters_last_round(_surface)

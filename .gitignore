@@ -2,6 +2,7 @@
 .mypy_cache/
 .vs*/
 __init__.py
+!linpg/*/__init__.py
 __pycache__/
 build/
 crash_reports/

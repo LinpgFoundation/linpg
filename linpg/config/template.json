@@ -7,18 +7,6 @@
             "contents": [],
             "last_dialog_id": null,
             "narrator": "",
-            "next_dialog_id": {
-                "target": "id_01",
-                "type": "default"
-            }
-        },
-        "id_01": {
-            "background_image": null,
-            "background_music": null,
-            "character_images": [],
-            "contents": [],
-            "last_dialog_id": "head",
-            "narrator": "",
             "next_dialog_id": null
         }
     },

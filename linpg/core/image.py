@@ -1,53 +1,6 @@
 from .text import *
 
 
-# 动态图形类
-class DynamicImage(AbstractImageSurface):
-    def __init__(self, img: PoI, x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = ""):
-        super().__init__(Images.quickly_load(img), x, y, width, height, tag)
-        self.__processed_img: Optional[ImageSurface] = None
-
-    # 返回一个复制
-    def copy(self) -> "DynamicImage":
-        replica: DynamicImage = DynamicImage(self.get_image_copy(), self.x, self.y, self.get_width(), self.get_height(), self.tag)
-        replica.set_alpha(255)
-        return replica
-
-    # 返回一个浅复制品
-    def light_copy(self) -> "DynamicImage":
-        return DynamicImage(self._get_image_reference(), self.x, self.y, self.get_width(), self.get_height(), self.tag)
-
-    # 反转
-    def flip(self, vertical: bool = False, horizontal: bool = False) -> None:
-        self._set_image(Images.flip(self._get_image_reference(), vertical, horizontal))
-
-    # 设置透明度
-    def set_alpha(self, value: int) -> None:
-        super().set_alpha(value)
-        if self.__processed_img is not None:
-            self.__processed_img.set_alpha(self.get_alpha())
-
-    # 更新图片
-    def update_image(self, img_path: PoI, ifConvertAlpha: bool = True) -> None:
-        super().update_image(img_path, ifConvertAlpha)
-        self.__processed_img = None
-
-    # 旋转
-    def rotate(self, angle: int) -> None:
-        super().rotate(angle)
-        self.__processed_img = None
-
-    # 展示
-    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
-        if self.is_visible():
-            if not Setting.get_low_memory_mode():
-                if self.__processed_img is None or self.__processed_img.get_size() != self.size:
-                    self.__processed_img = Images.smoothly_resize(self._get_image_reference(), self.size)
-                _surface.blit(self.__processed_img, Coordinates.add(self.pos, offSet))
-            else:
-                _surface.blit(Images.resize(self._get_image_reference(), self.size), Coordinates.add(self.pos, offSet))
-
-
 # 用于静态图片的surface
 class StaticImage(AdvancedAbstractCachingImageSurface):
     def __init__(self, img: PoI, x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = ""):
@@ -152,7 +105,7 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
 
 
 # 需要移动的动态图片
-class MovableImage(StaticImage):
+class MovableStaticImage(StaticImage):
     def __init__(
         self,
         img: PoI,
@@ -176,8 +129,8 @@ class MovableImage(StaticImage):
         self.__is_moving_toward_target: bool = False
 
     # 返回一个复制
-    def copy(self) -> "MovableImage":
-        return MovableImage(
+    def copy(self) -> "MovableStaticImage":
+        return MovableStaticImage(
             self.get_image_copy(),
             self.x,
             self.y,
@@ -191,8 +144,8 @@ class MovableImage(StaticImage):
         )
 
     # 返回一个浅复制品
-    def light_copy(self) -> "MovableImage":
-        return MovableImage(
+    def light_copy(self) -> "MovableStaticImage":
+        return MovableStaticImage(
             self._get_image_reference(),
             self.x,
             self.y,

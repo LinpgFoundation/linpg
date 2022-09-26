@@ -1,4 +1,4 @@
-from ..dialog import *
+from ..dialogue import *
 
 
 # 地图图片参数管理模块

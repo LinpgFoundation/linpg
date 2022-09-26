@@ -1,8 +1,8 @@
-from .converter import *
+from .dialog import *
 
 
 # 对话制作器
-class DialogEditor(DialogConverter):
+class DialogEditor(AbstractVisualNovelSystem):
 
     # deselect选中的背景
     __BACKGROUND_DESELECT_IMAGE: Final[StaticImage] = StaticImage.new_place_holder()
@@ -95,7 +95,7 @@ class DialogEditor(DialogConverter):
         self.__UIContainerRight_npc.distance_between_item = 0
         # 容器按钮
         button_width: int = Display.get_width() // 25
-        self.__UIContainerRightButton = MovableImage(
+        self.__UIContainerRightButton = MovableStaticImage(
             "<&ui>container_button.png",
             Display.get_width() - button_width,
             Display.get_height() * 2 // 5,
@@ -229,7 +229,36 @@ class DialogEditor(DialogConverter):
             if isinstance(section, str):
                 if self.__if_try_to_fix_issues is True:
                     # 如果有，则尝试转换
-                    self._check_and_fix_non_str_key(section)
+                    while True:
+                        index: int = 0
+                        old_key: Optional[str] = None
+                        for key, value in self._content.get_section_content(section).items():
+                            if value["next_dialog_id"] is not None and "target" in value["next_dialog_id"]:
+                                if isinstance(value["next_dialog_id"]["target"], list):
+                                    for index in range(len(value["next_dialog_id"]["target"])):
+                                        if not isinstance(value["next_dialog_id"]["target"][index]["id"], str):
+                                            old_key = copy.deepcopy(value["next_dialog_id"]["target"][index]["id"])
+                                            break
+                                    if old_key is not None:
+                                        break
+                                elif not isinstance(value["next_dialog_id"]["target"], str):
+                                    old_key = copy.deepcopy(value["next_dialog_id"]["target"])
+                                    break
+                        if old_key is not None:
+                            new_key: str
+                            try:
+                                new_key = self.generate_a_new_recommended_key(int(old_key))
+                            except Exception:
+                                new_key = self.generate_a_new_recommended_key()
+                            if not isinstance(self._content.get_dialog(section, key)["next_dialog_id"]["target"], list):
+                                self._content.get_dialog(section, key)["next_dialog_id"]["target"] = new_key
+                            else:
+                                self._content.get_dialog(section, key)["next_dialog_id"]["target"][index]["id"] = new_key
+                            self._content.get_dialog(section, new_key).clear()
+                            self._content.get_dialog(section, new_key).update(self._content.get_dialog(section, old_key))
+                            self._content.remove_dialog(section, old_key)
+                        else:
+                            break
                 else:
                     for key in self._content.get_section_content(section):
                         if not isinstance(key, str):

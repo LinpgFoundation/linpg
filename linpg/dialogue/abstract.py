@@ -2,7 +2,7 @@ from .script import *
 
 
 # 视觉小说系统接口
-class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
+class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         self._content: DialogContentManager = DialogContentManager()

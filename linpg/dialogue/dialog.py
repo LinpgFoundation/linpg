@@ -2,12 +2,12 @@ from .abstract import *
 
 
 # 视觉小说系统模块
-class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
+class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem):
 
     __CHOICE_TEXT: str = str(Lang.get_texts("Dialog", "choice"))
 
     def __init__(self) -> None:
-        AbstractDialogSystem.__init__(self)
+        AbstractVisualNovelSystem.__init__(self)
         PauseMenuModuleForGameSystem.__init__(self)
         # 加载对话框系统
         self.__dialog_txt_system: DialogBox = DialogBox(self._FONT_SIZE)

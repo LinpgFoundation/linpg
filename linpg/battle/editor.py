@@ -110,7 +110,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         )
         self.__right_container_buttons.get("select_decoration").set_left(self.__right_container_buttons.get("select_block").right + padding)
         self.__UIContainerRight.set_size(container_width, container_height)
-        self.__UIContainerButtonRight = MovableImage(
+        self.__UIContainerButtonRight = MovableStaticImage(
             "<&ui>container_button.png",
             Display.get_width() - button_width,
             (Display.get_height() - button_height) // 2,
@@ -163,7 +163,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         button_width = Display.get_width() * 7 // 50
         button_height = Display.get_height() // 20
         self.__UIContainerBottom.set_size(container_width, container_height)
-        self.__UIContainerButtonBottom = MovableImage(
+        self.__UIContainerButtonBottom = MovableStaticImage(
             "<&ui>container_button.png",
             (container_width - button_width) // 2,
             Display.get_height() - button_height,

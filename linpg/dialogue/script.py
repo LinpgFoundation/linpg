@@ -150,11 +150,6 @@ class ScriptConverter:
                     if self.__last_dialog_id is not None:
                         self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = None
                     self.__section = self.__extract_string(_currentLine, "[section]")
-                # 部分 -- 即将弃置，仅作为兼容性提供
-                elif _currentLine.startswith("[part]"):
-                    if self.__last_dialog_id is not None:
-                        self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = None
-                    self.__section = self.__extract_string(_currentLine, "[part]")
                 # 结束符
                 elif _currentLine.startswith("[end]"):
                     self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = None

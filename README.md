@@ -14,13 +14,13 @@
 
 # :sparkles: About Linpg Engine / 关于Linpg引擎
 
-Linpg Engine is a game engine developed by Tigeia Workshop, which aims to standardize the development of pygame games and make the codes easier to read, expand and maintain.
+Linpg Engine is a game engine developed by Linpg Foundation, which aims to standardize the development of pygame games and make the codes easier to read, expand and maintain.
 
 Linpg Engine is developed with a modular concept. It implements many features which are commonly used in game development. Simultaneously, the Linpg Engine also maintains a high level of compatibility with pygame, making it easy for developers to migrate existing pygame projects to Linpg Engine or using the features which Linpg Engine provides on their own pygame projects.
 
 We always need your help to make Linpg the best it can be! No matter what your region, culture, belief, or age is, any contributors are welcome!
 
-Linpg引擎是缇吉娅工坊基于pygame库自主研发的游戏引擎，目的是为了规范化pygame游戏的开发，使得游戏代码更加整洁，易读，易扩展，易维护。
+Linpg引擎是Linpg基金会基于pygame库自主研发的游戏引擎，目的是为了规范化pygame游戏的开发，使得游戏代码更加整洁，易读，易扩展，易维护。
 
 Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游戏开发过程中常用到的功能。Linpg引擎一直保持着与pygame高度的兼容性，使得开发者可以很容易将现有的pygame项目迁移到Linpg引擎上，或者在自己的pygame项目中使用Linpg引擎提供的功能或者工具。
 
@@ -50,7 +50,7 @@ Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游
 pip install linpg
 ```
 
-We also highly suggest you download and use [https://github.com/TigeiaWorkshop/A-story-of-us](https://github.com/TigeiaWorkshop/A-story-of-us) as your starting point.
+We also highly suggest you download and use [https://github.com/LinpgFoundation/A-story-of-us](https://github.com/LinpgFoundation/A-story-of-us) as your starting point.
 
 
 
@@ -110,7 +110,7 @@ https://discord.gg/3wz6bs5jvu
 
 # :open_book: ​Wiki / 维基百科
 
-https://github.com/TigeiaWorkshop/linpg/wiki
+https://github.com/LinpgFoundation/linpg/wiki
 
 
 

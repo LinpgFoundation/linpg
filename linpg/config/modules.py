@@ -138,7 +138,7 @@ class Info:
     # 获取github项目地址
     @classmethod
     def get_repository_url(cls) -> str:
-        return "https://github.com/Tigeia-Workshop/linpg"
+        return "https://github.com/LinpgFoundation/linpg"
 
 
 class Cache:

@@ -32,12 +32,14 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         # 启用检查点功能
         self._save_checkpoint_while_saving_progress = True
 
+    # 禁用基本功能
     def disable_basic_features(self) -> None:
         self.__disable_background_image_rendering = True
         self.__history_back = None
         self.__buttons_container = None
         self._disable_pause_menu()
 
+    # 启用基本功能
     def enable_basic_features(self) -> None:
         self.__disable_background_image_rendering = False
         self.__history_back = Button.load(

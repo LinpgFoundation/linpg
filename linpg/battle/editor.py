@@ -252,9 +252,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                         if decoration is not None:
                             self._MAP.remove_decoration(decoration)
                         self._MAP.add_decoration(
-                            {"image": self.__object_to_put_down["id"], "x": self._block_is_hovering[0], "y": self._block_is_hovering[1]},
-                            DataBase.get("Decorations", self.__object_to_put_down["id"]),
-                            "{0}_{1}".format(self.__object_to_put_down["id"], self._MAP.count_decorations()),
+                            {"id": self.__object_to_put_down["id"], "x": self._block_is_hovering[0], "y": self._block_is_hovering[1]},
                         )
                     elif self.__object_to_put_down["type"] == "entity":
                         # 移除坐标冲突的角色

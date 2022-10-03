@@ -1,16 +1,18 @@
 from .content import *
 
-
-class ScriptConverter:
+# 视觉小说脚本编译器
+class ScriptCompiler:
 
     # 立绘配置信息数据库
     __CHARACTER_IMAGE_DATABASE: Final[dict] = DataBase.get("Npc")
+    # 文件格式后缀
+    FILE_EXTENSION: Final[str] = ".linpg.script"
 
     def __init__(self) -> None:
         self.__output: dict = {}
         self.__current_data: dict = dict(Template.get("dialog_example")["head"])
-        self.__id: Optional[int] = None
-        self.__lang: Optional[str] = None
+        self.__id: int = -1
+        self.__lang: str = ""
         self.__section: Optional[str] = None
         self.__last_dialog_id: Optional[str] = None
         self.__lines: list[str] = []
@@ -24,6 +26,7 @@ class ScriptConverter:
         _path = os.path.basename(_path)
         if not _path.startswith("chapter"):
             EXCEPTION.fatal("Invalid path!")
+        # 返回 id, 语言
         return int(_path[7 : _path.index("_")]), _path[_path.rfind("_") + 1 : _path.rfind(".")]
 
     # 生成一个标准id
@@ -59,7 +62,7 @@ class ScriptConverter:
 
     # 处理数据
     def __process(self, path: str) -> None:
-        if path.endswith(".linpg.script"):
+        if path.endswith(self.FILE_EXTENSION):
             with open(path, "r", encoding="utf-8") as f:
                 self.__lines = f.readlines()
         # 如果文件为空
@@ -87,9 +90,9 @@ class ScriptConverter:
         self.__convert(0)
         self.__lines.clear()
         # 确保重要参数已被初始化
-        if self.__id is None:
-            EXCEPTION.fatal("You have to set id!")
-        elif self.__lang is None:
+        if self.__id < 0:
+            EXCEPTION.fatal("You have to set a nonnegative id!")
+        elif len(self.__lang) <= 0:
             EXCEPTION.fatal("You have to set lang!")
         elif self.__section is None:
             EXCEPTION.fatal("You have to set section!")

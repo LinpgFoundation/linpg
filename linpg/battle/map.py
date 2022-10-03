@@ -69,9 +69,8 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         # 重置装饰物列表
         self.__decorations.clear()
         # 加载装饰物
-        for decorationType, itemsThatType in mapDataDic["decoration"].items():
-            for key in itemsThatType:
-                self.add_decoration(itemsThatType[key], decorationType, key)
+        for _data in mapDataDic["decoration"]:
+            self.add_decoration(_data)
         # 对装饰物进行排序
         self.__decorations.sort()
         # 初始化地图渲染用的图层
@@ -87,7 +86,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         for fileName in self.__tile_lookup_table:
             TileMapImagesModule.add_image(fileName)
         for decoration in self.__decorations:
-            DecorationImagesModule.add_image(decoration.get_type(), decoration.image if isinstance(decoration.image, str) else decoration.get_type())
+            decoration.ensure_image_cached()
         # 处于光处的区域
         self.__lit_area = tuple() if MapImageParameters.get_darkness() > 0 else tuple(mapDataDic["map"].get("lit_area", []))
         # 追踪目前已经画出的方块
@@ -121,20 +120,13 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
 
     # 以字典的形式获取地图的数据
     def to_dict(self) -> dict:
-        # 转换场景装饰物数据
-        decoration_dict: dict = {}
-        for theDecoration in self.__decorations:
-            theDecorationInDict: dict = theDecoration.to_dict()
-            if theDecoration.get_type() not in decoration_dict:
-                decoration_dict[theDecoration.get_type()] = {}
-            decoration_dict[theDecoration.get_type()][theDecoration.get_id()] = theDecorationInDict
         # 重新生成最优 lookup table
         unique_elem_table: tuple = numpy.unique(self.__MAP, return_counts=True)
         lookup_table: dict[str, int] = {self.__tile_lookup_table[unique_elem_table[0][i]]: unique_elem_table[1][i] for i in range(len(unique_elem_table[0]))}
         sorted_lookup_table: list[str] = sorted(lookup_table, key=lookup_table.get, reverse=True)  # type: ignore
         # 返回数据
         return {
-            "decoration": decoration_dict,
+            "decoration": [_item.to_dict() for _item in self.__decorations],
             "map": {
                 "array2d": numpy.vectorize(lambda _num: sorted_lookup_table.index(self.__tile_lookup_table[_num]))(self.__MAP).tolist(),
                 "lookup_table": sorted_lookup_table,
@@ -174,24 +166,9 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                 return decoration
         return None
 
-    # 与给定Index的场景装饰物进行互动
-    def interact_decoration_with_id(self, index: int) -> None:
-        if self.__decorations[index].get_type() == "campfire":
-            self.__decorations[index].set_status("lit", not self.__decorations[index].get_status("lit"))
-
     # 新增装饰物
-    def add_decoration(self, _data: dict, _type: str, _id: str, _sort: bool = False) -> None:
-        if "status" not in _data:
-            _data["status"] = {}
-        if _type == "campfire":
-            self.__decorations.append(CampfireObject(_data["x"], _data["y"], _id, _type, _data["range"], _data["status"]))
-        elif _type == "chest":
-            self.__decorations.append(ChestObject(_data["x"], _data["y"], _id, _type, _data.get("items", []), _data.get("whitelist", []), _data["status"]))
-        else:
-            new_decoration: DecorationObject = DecorationObject(_data["x"], _data["y"], _id, _type, _data["image"], _data["status"])
-            if _type == "tree":
-                new_decoration.scale = 0.75
-            self.__decorations.append(new_decoration)
+    def add_decoration(self, _data: dict, _sort: bool = False) -> None:
+        self.__decorations.append(DecorationObject.from_dict(_data))
         if _sort is True:
             self.__decorations.sort()
 
@@ -351,7 +328,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             if screen_min <= thePosInMap[0] < _surface.get_width() and screen_min <= thePosInMap[1] < _surface.get_height():
                 decoration_alpha = 255
                 # 树
-                if item.get_type() == "tree":
+                if item.type == "tree":
                     offSet = offSet_tree
                     if item.get_pos() in occupied_coordinates and self.is_coordinate_in_lit_area(item.x, item.y):
                         decoration_alpha = 100
@@ -401,19 +378,19 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             round((y + x) * TileMapImagesModule.TILE_TEMPLE_HEIGHT / 2) + self.local_y,
         )
 
-    # 计算光亮区域
-    def refresh_lit_area(self, alliances_data: dict) -> None:
+    # 获取可视光亮区域（子类可按需重写）
+    def _get_lit_area(self, alliances_data: dict) -> set[tuple[int, int]]:
         lightArea: set[tuple[int, int]] = set()
         for _alliance in alliances_data.values():
             for _area in _alliance.get_effective_range_coordinates(self):
                 for _pos in _area:
                     lightArea.add(_pos)
             lightArea.add((round(_alliance.x), round(_alliance.y)))
-        for _item in self.__decorations:
-            if isinstance(_item, CampfireObject):
-                for _pos in _item.get_lit_coordinates():
-                    lightArea.add(_pos)
-        self.__lit_area = tuple(lightArea)
+        return lightArea
+
+    # 刷新可视光亮区域
+    def refresh_lit_area(self, alliances_data: dict) -> None:
+        self.__lit_area = tuple(self._get_lit_area(alliances_data))
         self.__need_update_surface = True
         self.__need_to_recheck_block_on_surface = True
 
@@ -454,10 +431,12 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             for _y in range(self.__row):
                 if not self.is_passable(_x, _y):
                     map2d[_x, _y] = 1
-        # 历遍设施，设置障碍区块
+        # 历遍场景装饰物，设置障碍区块
+        """
         for item in self.__decorations:
             if item.get_type() == "obstacle" or item.get_type() == "campfire":
                 map2d[item.x, item.y] = 0
+        """
         # 将所有敌方角色的坐标点设置为障碍区块
         for key, value in enemies.items():
             if key not in enemies_ignored:

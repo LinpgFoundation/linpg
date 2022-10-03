@@ -3,25 +3,44 @@ from .image import *
 
 # 管理场景装饰物的类
 class DecorationObject(GameObject2d):
-    def __init__(self, x: int, y: int, _id: str, itemType: str, image: str, status: dict):
+    def __init__(self, x: int, y: int, _type: str, _variation: int = 0, status: dict = {}):
         super().__init__(x, y)
-        self.__id: str = _id
-        self.__type: str = itemType
-        self.image: strint = image
-        self.__status: dict = status
+        self.__type: Final[str] = _type
+        self.__variation: int = _variation
+        self.__status: Final[dict] = status
         self.scale: float = 0.5
 
-    def get_id(self) -> str:
-        return self.__id
+    # 确保图片已经被存档
+    def ensure_image_cached(self) -> None:
+        DecorationImagesModule.add_image(self.__type)
 
-    def get_type(self) -> str:
+    @property
+    def id(self) -> str:
+        return self.__type + ":" + str(self.__variation)
+
+    @property
+    def type(self) -> str:
         return self.__type
 
+    @property
+    def variation(self) -> int:
+        return self.__variation
+
     def to_dict(self) -> dict:
-        data_t: dict = {"x": self.x, "y": self.y, "image": self.image}
+        data_t: dict = {"x": self.x, "y": self.y, "id": self.id}
         if len(self.__status) > 0:
             data_t["status"] = copy.deepcopy(self.__status)
         return data_t
+
+    @staticmethod
+    def from_dict(_data: dict) -> "DecorationObject":
+        _type, sub_id = str(_data["id"]).split(":")
+        if not isinstance(_data.get("status"), dict):
+            _data["status"] = {}
+        theDecoration: DecorationObject = DecorationObject(_data["x"], _data["y"], _type, id(sub_id), _data["status"])
+        if _type == "tree":
+            theDecoration.scale = 0.75
+        return theDecoration
 
     def is_on_pos(self, pos: object) -> bool:
         return Coordinates.is_same(self.get_pos(), pos)
@@ -42,7 +61,7 @@ class DecorationObject(GameObject2d):
             EXCEPTION.fatal('Cannot remove status "{}" because it does not exist'.format(key))
 
     def blit(self, _surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:  # type: ignore[override]
-        imgToBlit = DecorationImagesModule.get_image(self.__type, self.image, is_dark)
+        imgToBlit = DecorationImagesModule.get_image(self.id, is_dark)
         imgToBlit.set_size(MapImageParameters.get_block_width() * self.scale, MapImageParameters.get_block_width() * self.scale)
         imgToBlit.set_alpha(alpha)
         imgToBlit.move_to(pos)
@@ -53,70 +72,3 @@ class DecorationObject(GameObject2d):
 
     def get_height(self) -> int:
         return 0
-
-
-# 篝火
-class CampfireObject(DecorationObject):
-    def __init__(self, x: int, y: int, _id: str, itemType: str, _range: int, status: dict):
-        super().__init__(x, y, _id, itemType, itemType, status)
-        self.__range: int = _range
-        self.__alpha: int = 255
-        self.__img_id: int = Numbers.get_random_int(0, 90)
-        if not self._has_status("lit"):
-            self.set_status("lit", True)
-
-    def get_range(self) -> int:
-        return self.__range
-
-    def get_lit_coordinates(self) -> list[tuple[int, int]]:
-        return Coordinates.get_in_diamond_shaped(self.x, self.y, self.__range) if self.get_status("lit") is True else []
-
-    def to_dict(self) -> dict:
-        data_t: dict = super().to_dict()
-        del data_t["image"]
-        data_t["range"] = self.__range
-        if "status" in data_t and data_t["status"]["lit"] is True:
-            del data_t["status"]["lit"]
-            if len(data_t["status"]) <= 0:
-                del data_t["status"]
-        return data_t
-
-    # 画出篝火（注意，alpha不会被使用，它只因为兼容性和一致性而存在）
-    def blit(self, _surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:  # type: ignore[override]
-        # 查看篝火的状态是否正在变化，并调整对应的alpha值
-        if self.get_status("lit") is True:
-            if self.__alpha < 255:
-                self.__alpha += 15
-        elif self.__alpha > 0:
-            self.__alpha -= 15
-        # 底层 - 未燃烧的图片
-        if self.__alpha < 255:
-            self.image = 0
-            super().blit(_surface, pos, is_dark, 255)
-        # 顶层 - 燃烧的图片
-        if self.__alpha > 0:
-            self.image = self.__img_id // 10
-            super().blit(_surface, pos, is_dark, self.__alpha)
-            if self.image < DecorationImagesModule.get_image_num(self.get_type()) - 1:
-                self.__img_id += 1
-            else:
-                self.__img_id = 10
-
-
-# 箱子
-class ChestObject(DecorationObject):
-    def __init__(self, x: int, y: int, _id: str, itemType: str, items: dict, whitelist: list, status: dict):
-        super().__init__(x, y, _id, itemType, itemType, status)
-        # 箱内物品
-        self.items: dict = items
-        # 是否箱子有白名单（只能被特定角色拾取）
-        self.whitelist: list = whitelist
-
-    def to_dict(self) -> dict:
-        data_t: dict = super().to_dict()
-        del data_t["image"]
-        if len(self.items) > 0:
-            data_t["items"] = copy.deepcopy(self.items)
-        if len(self.whitelist) > 0:
-            data_t["whitelist"] = copy.deepcopy(self.whitelist)
-        return data_t

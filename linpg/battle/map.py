@@ -82,7 +82,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         self.__background_image = (
             StaticImage(Images.quickly_load(Specification.get_directory("background_image", theBgiPath), False), 0, 0) if theBgiPath is not None else None
         )
-        # 加载图片
+        # 加载图片（确保图片模块初始化）
         for fileName in self.__tile_lookup_table:
             TileMapImagesModule.add_image(fileName)
         for decoration in self.__decorations:
@@ -95,7 +95,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
 
     # 装饰物
     @property
-    def decorations(self) -> list:
+    def decorations(self) -> list[DecorationObject]:
         return self.__decorations
 
     # 行

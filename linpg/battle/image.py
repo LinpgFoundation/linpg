@@ -38,17 +38,35 @@ class MapImageParameters:
 # 装饰物的图片管理模块
 class DecorationImagesModule:
 
-    # 引擎自带的场景装饰物
-    DEFAULT_DECORATION_IMAGE_SPRITE_SHEET: Optional[SpriteImage] = None
-    # 项目自带的场景装饰物
-    CUSTOM_DECORATION_IMAGE_SPRITE_SHEET: Optional[SpriteImage] = None
+    # 引擎自带的场景装饰物，默认为空的sheet
+    DEFAULT_DECORATION_IMAGE_SPRITE_SHEET: SpriteImage = SpriteImage("<NULL>")
+    # 引擎自带的场景装饰物是否被加载
+    __IS_DEFAULT_DECORATION_IMAGE_SPRITE_SHEET_INITIALIZED: bool = False
+    # 项目自带的场景装饰物，默认为空的sheet
+    CUSTOM_DECORATION_IMAGE_SPRITE_SHEET: SpriteImage = SpriteImage("<NULL>")
+    # 项目自带的场景装饰物是否被加载
+    __IS_CUSTOM_DECORATION_IMAGE_SPRITE_SHEET_INITIALIZED: bool = False
     # 经过处理的场景装饰物
     __DECORATION_IMAGE_DICT: Final[dict[str, StaticImage | tuple[StaticImage, ...]]] = {}
     __DECORATION_IMAGE_DICT_DARK: Final[dict[str, StaticImage | tuple[StaticImage, ...]]] = {}
 
+    # 确认场景装饰物已经初始化
+    @classmethod
+    def init(cls) -> None:
+        # 如果自带的SPRITE SHEET未被初始化，则初始化
+        if not cls.__IS_DEFAULT_DECORATION_IMAGE_SPRITE_SHEET_INITIALIZED:
+            if os.path.exists(Images.generate_path_according_to_prefix("<!env>decoration.png")):
+                cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET = SpriteImage("<!env>decoration.png")
+            cls.__IS_DEFAULT_DECORATION_IMAGE_SPRITE_SHEET_INITIALIZED = True
+        # 如果开发者自定义的SPRITE SHEET未被初始化，则初始化
+        if not cls.__IS_CUSTOM_DECORATION_IMAGE_SPRITE_SHEET_INITIALIZED:
+            if os.path.exists(Images.generate_path_according_to_prefix("<@env>decoration.png")):
+                cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET = SpriteImage("<@env>decoration.png")
+            cls.__IS_CUSTOM_DECORATION_IMAGE_SPRITE_SHEET_INITIALIZED = True
+
     # 获取当前装饰物种类的数量
     @classmethod
-    def get_image_num(cls, _type: str) -> int:
+    def count_variations(cls, _type: str) -> int:
         _ref: Optional[StaticImage | tuple[StaticImage, ...]] = cls.__DECORATION_IMAGE_DICT.get(_type)
         if _ref is None:
             EXCEPTION.fatal('Cannot find decoration image "{}"'.format(_type))
@@ -57,17 +75,8 @@ class DecorationImagesModule:
     # 加载场景装饰物图片
     @classmethod
     def add_image(cls, _type: str) -> None:
-        # 如果自带的SPRITE SHEET未被初始化，则初始化
-        if cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET is None:
-            cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET = SpriteImage(
-                "<!env>decoration.png" if os.path.exists(Images.generate_path_according_to_prefix("<!env>decoration.png")) else "<NULL>"
-            )
-        # 如果开发者自定义的SPRITE SHEET未被初始化，则初始化
-        if cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET is None:
-            # 确认自带的sheet存在; 如果不存在，则加载一个空的sheet
-            cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET = SpriteImage(
-                "<@env>decoration.png" if os.path.exists(Images.generate_path_according_to_prefix("<@env>decoration.png")) else "<NULL>"
-            )
+        # 确保初始化
+        cls.init()
         # 查看图片是否在自带或自定义的SPRITE SHEET中存在，不存在则为None
         sheet_ref: Optional[SpriteImage] = (
             cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET
@@ -126,8 +135,10 @@ class DecorationImagesModule:
 # 地图贴图的管理模块
 class TileMapImagesModule:
 
-    # 引擎自带的地图贴图
-    DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET: Optional[SpriteImage] = None
+    # 引擎自带的地图贴图，默认为空的sheet
+    DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET: SpriteImage = SpriteImage("<NULL>")
+    # 引擎自带的地图贴图是否被加载
+    __DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET_INITIALIZED: bool = False
     # 环境
     __ENV_IMAGE_DICT: Final[dict[str, StaticImage | tuple[StaticImage, ...]]] = {}
     __ENV_IMAGE_DICT_DARK: Final[dict[str, StaticImage | tuple[StaticImage, ...]]] = {}
@@ -155,17 +166,17 @@ class TileMapImagesModule:
                 for _temp in _imgRef:
                     _temp.set_width_with_original_image_size_locked(MapImageParameters.get_block_width())
         # 根据Template计算tile标准尺寸和offset
-        cls.TILE_TEMPLE_WIDTH, cls.TILE_TEMPLE_HEIGHT = cls.get_image("Template", False).get_bounding_rect().get_size()
+        cls.TILE_TEMPLE_WIDTH, cls.TILE_TEMPLE_HEIGHT = cls.get_image("template", False).get_bounding_rect().get_size()
         cls.TILE_TEMPLE_HEIGHT = cls.TILE_TEMPLE_HEIGHT * 2 // 5
 
     # 加载图片
     @classmethod
     def add_image(cls, _id: str) -> None:
         # 如果SPRITE SHEET未被初始化，则初始化
-        if cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET is None:
-            cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET = SpriteImage(
-                "<!env>block.png" if os.path.exists(Images.generate_path_according_to_prefix("<!env>block.png")) else "<NULL>"
-            )
+        if not cls.__DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET_INITIALIZED:
+            if os.path.exists(Images.generate_path_according_to_prefix("<!env>block.png")):
+                cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET = SpriteImage("<!env>block.png")
+            cls.__DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET_INITIALIZED = True
         # 根据id决定如何处理图片加载
         _id = _id.split(":")[0]
         if cls.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.contain(_id):

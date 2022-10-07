@@ -3,10 +3,10 @@ from .image import *
 
 # 管理场景装饰物的类
 class DecorationObject(GameObject2d):
-    def __init__(self, x: int, y: int, _type: str, _variation: int = 0, status: dict = {}):
+    def __init__(self, x: int, y: int, _type: str, _variation: int, status: dict = {}):
         super().__init__(x, y)
         self.__type: Final[str] = _type
-        self.__variation: int = _variation
+        self._variation: int = _variation
         self.__status: Final[dict] = status
         self.scale: float = 0.5
 
@@ -16,7 +16,7 @@ class DecorationObject(GameObject2d):
 
     @property
     def id(self) -> str:
-        return self.__type + ":" + str(self.__variation)
+        return self.__type if self._variation <= 0 else self.__type + ":" + str(self._variation)
 
     @property
     def type(self) -> str:
@@ -24,7 +24,7 @@ class DecorationObject(GameObject2d):
 
     @property
     def variation(self) -> int:
-        return self.__variation
+        return self._variation
 
     def to_dict(self) -> dict:
         data_t: dict = {"x": self.x, "y": self.y, "id": self.id}
@@ -34,11 +34,13 @@ class DecorationObject(GameObject2d):
 
     @staticmethod
     def from_dict(_data: dict) -> "DecorationObject":
-        _type, sub_id = str(_data["id"]).split(":")
+        index_args: list[str] = str(_data["id"]).split(":")
         if not isinstance(_data.get("status"), dict):
             _data["status"] = {}
-        theDecoration: DecorationObject = DecorationObject(_data["x"], _data["y"], _type, id(sub_id), _data["status"])
-        if _type == "tree":
+        theDecoration: DecorationObject = DecorationObject(
+            _data["x"], _data["y"], index_args[0], int(index_args[1]) if len(index_args) > 1 else 0, _data["status"]
+        )
+        if theDecoration.type == "tree":
             theDecoration.scale = 0.75
         return theDecoration
 

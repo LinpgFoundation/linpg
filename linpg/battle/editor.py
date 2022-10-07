@@ -80,7 +80,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         # 确保地图初始化
         _map_p: Optional[list] = _data.get("map")
         if _map_p is None or len(_map_p) == 0:
-            lookup_table: list[str] = ["Snow:2", "Snow:3", "Snow:4", "Snow:5", "Snow:6", "Snow:7"]
+            lookup_table: list[str] = ["snow:2", "snow:3", "snow:4", "snow:5", "snow:6", "snow:7"]
             block_y: int = 50
             block_x: int = 50
             _data["map"] = {
@@ -142,14 +142,12 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         # 加载所有的装饰品
         self.__decorationsImgContainer.set_pos(container_width * 3 // 40, Display.get_height() // 10)
         self.__decorationsImgContainer.set_size(container_width * 17 // 20, Display.get_height() * 17 // 20)
+        # 确保装饰物材质模块已经初始化
+        DecorationImagesModule.init()
         # 加载默认装饰物
-        if DecorationImagesModule.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET is None:
-            EXCEPTION.fatal("Image sprite sheet for default decorations is not loaded correctly!")
         for key, value in DecorationImagesModule.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.to_dict().items():
             self.__decorationsImgContainer.set(key, Images.resize(value if not isinstance(value, tuple) else value[0], (self._MAP.block_width / 3, None)))
         # 加载自带的装饰物
-        if DecorationImagesModule.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET is None:
-            EXCEPTION.fatal("Image sprite sheet for custom decorations is not loaded correctly!")
         for key, value in DecorationImagesModule.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.to_dict().items():
             self.__decorationsImgContainer.set(key, Images.resize(value if not isinstance(value, tuple) else value[0], (self._MAP.block_width / 3, None)))
         # 设置容器参数
@@ -213,7 +211,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
     def new(self, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
         self._initialize(chapterType, chapterId, projectName)
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_map_file_location())
-        self._process_data(Config.load(self.get_map_file_location()))
+        self._process_data(Config.load_file(self.get_map_file_location()))
         self._init_ui()
 
     # 将地图制作器的界面画到屏幕上

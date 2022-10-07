@@ -361,7 +361,7 @@ class Entity(Position):
             EXCEPTION.fatal("Character cannot move to a invalid path!")
 
     # 查看是否一个Entity在该角色的附近
-    def near(self, otherEntity: "Entity") -> bool:
+    def near(self, otherEntity: Position | GameObject2d) -> bool:
         self_x: int = round(self.x)
         o_x: int = round(otherEntity.x)
         self_y: int = round(self.y)

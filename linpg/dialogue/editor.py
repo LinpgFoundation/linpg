@@ -318,7 +318,7 @@ class DialogEditor(AbstractVisualNovelSystem):
     def _update_scene(self, dialog_id: str) -> None:
         # 确保当前版块有对话数据。如果当前版块为空，则加载默认模板
         if len(self._content.get_section_content()) <= 0:
-            self._content.get_section_content().update(Template.get("dialog_example"))
+            self._content.get_section_content()["head"] = {}
             for key in self._content.get_section_content():
                 self._content.get_dialog(_id=key)["contents"].append(self.__please_enter_content)
                 self._content.get_dialog(_id=key)["narrator"] = self.__please_enter_name

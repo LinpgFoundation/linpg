@@ -1,7 +1,7 @@
 {
     "Battle": {
-        "block": "方块",
-        "decoration": "装饰物"
+        "decoration": "装饰物",
+        "tile": "方块"
     },
     "Dialog": {
         "auto": "自动",

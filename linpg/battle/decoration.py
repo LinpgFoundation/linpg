@@ -64,7 +64,7 @@ class DecorationObject(GameObject2d):
 
     def blit(self, _surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:  # type: ignore[override]
         imgToBlit = DecorationImagesModule.get_image(self.id, is_dark)
-        imgToBlit.set_size(MapImageParameters.get_block_width() * self.scale, MapImageParameters.get_block_width() * self.scale)
+        imgToBlit.set_size(MapImageParameters.get_tile_width() * self.scale, MapImageParameters.get_tile_width() * self.scale)
         imgToBlit.set_alpha(alpha)
         imgToBlit.move_to(pos)
         imgToBlit.draw(_surface)

@@ -1,5 +1,31 @@
 {
     "ConfigFileType": "json",
+    "DefaultSetting": {
+        "AntiAlias": true,
+        "EnableOpenGL": false,
+        "EnableVerticalSync": false,
+        "FPS": 60,
+        "Font": "MicrosoftYaHei-2",
+        "FontType": "custom",
+        "Language": "English",
+        "LowMemoryMode": false,
+        "MonitorToDisplay": 0,
+        "MouseIconWidth": 18,
+        "MouseMoveSpeed": 30,
+        "NumberOfChannels": 8,
+        "ReadingSpeed": 1,
+        "Resolution": {
+            "height": 1080,
+            "scale": 100,
+            "width": 1920
+        },
+        "Sound": {
+            "background_music": 100,
+            "effects": 100,
+            "environment": 100,
+            "global_value": 100
+        }
+    },
     "Directory": {
         "background_image": [
             "Assets",

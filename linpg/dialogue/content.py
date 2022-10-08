@@ -2,7 +2,7 @@ from .render import *
 
 
 # 视觉小说数据操作接口
-class _DialogContent:
+class DialogContent:
     def __init__(self, _data: dict, _id: str) -> None:
         # id
         self.__id: str = _id
@@ -21,6 +21,8 @@ class _DialogContent:
         # 下一个
         _next: Optional[dict] = _data.get("next_dialog_id")
         self.next: dict = _next if _next is not None else {}
+        # 注释
+        self.notes: list[str] = []
 
     @property
     def id(self) -> str:
@@ -37,7 +39,7 @@ class _DialogContent:
         return isinstance(_target, list) and len(_target) > 1
 
     def to_dict(self) -> dict:
-        return {
+        _result: dict = {
             "background_image": self.background_image,
             "background_music": self.background_music,
             "character_images": self.character_images,
@@ -46,6 +48,9 @@ class _DialogContent:
             "narrator": self.narrator,
             "next_dialog_id": self.next,
         }
+        if len(self.notes) > 0:
+            _result["notes"] = self.notes
+        return _result
 
 
 # 视觉小说数据管理模块
@@ -58,36 +63,36 @@ class DialogContentManager:
         # 当前对话的id
         self.__id: str = "head"
         # 当前对话的接口模块
-        self.__current: Optional[_DialogContent] = None
+        self.__current: Optional[DialogContent] = None
         # 之前对话的接口模块
-        self.__last: Optional[_DialogContent] = None
+        self.__last: Optional[DialogContent] = None
         # 上一次对话的接口模块
-        self.__previous: Optional[_DialogContent] = None
+        self.__previous: Optional[DialogContent] = None
 
     # 如果指向当前对话数据的指针不存在，则更新指针
     def __refresh_current(self) -> None:
         if self.__current is None:
             self.__previous = self.__current
-            self.__current = _DialogContent(self.__dialog_data[self.__section][self.__id], self.__id)
+            self.__current = DialogContent(self.__dialog_data[self.__section][self.__id], self.__id)
 
     # 上一个对话的缓存
     @property
-    def previous(self) -> Optional[_DialogContent]:
+    def previous(self) -> Optional[DialogContent]:
         self.__refresh_current()
         return self.__previous
 
     # 指向当前对话数据的指针
     @property
-    def current(self) -> _DialogContent:
+    def current(self) -> DialogContent:
         self.__refresh_current()
         return self.__current  # type: ignore
 
     # 指向之前对话数据的指针
     @property
-    def last(self) -> Optional[_DialogContent]:
+    def last(self) -> Optional[DialogContent]:
         # 如果指针不存在，则更新接口
         if self.__last is None and self.current.last is not None:
-            self.__last = _DialogContent(self.__dialog_data[self.__section][self.current.last], self.current.last)
+            self.__last = DialogContent(self.__dialog_data[self.__section][self.current.last], self.current.last)
         return self.__last
 
     # 保存对当前对话的接口的修改

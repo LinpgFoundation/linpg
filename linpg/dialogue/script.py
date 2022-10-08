@@ -10,7 +10,7 @@ class ScriptCompiler:
 
     def __init__(self) -> None:
         self.__output: dict = {}
-        self.__current_data: dict = dict(Template.get("dialog_example")["head"])
+        self.__current_data: DialogContent = DialogContent({}, "head")
         self.__id: int = -1
         self.__lang: str = ""
         self.__section: Optional[str] = None
@@ -97,13 +97,6 @@ class ScriptCompiler:
         elif self.__section is None:
             EXCEPTION.fatal("You have to set section!")
 
-    # 尝试分离数据
-    def __try_handle_data(self, index: int, parameter_short: str, parameter_full: str) -> bool:
-        if self.__lines[index].startswith(parameter_short):
-            self.__current_data[parameter_full] = self.__extract_parameter(self.__lines[index], parameter_short)
-            return True
-        return False
-
     # 转换
     def __convert(self, staring_index: int) -> None:
         index: int = staring_index
@@ -111,33 +104,34 @@ class ScriptCompiler:
             _currentLine: str = self.__lines[index].lstrip()
             if _currentLine.startswith("//"):
                 self.__accumulated_comments.append(_currentLine.lstrip("//").lstrip())
-            elif (
-                not self.__lines[index].startswith("#")
-                and len(_currentLine) > 0
-                and not self.__try_handle_data(index, "[bgi]", "background_image")
-                and not self.__try_handle_data(index, "[bgm]", "background_music")
-            ):
+            elif not self.__lines[index].startswith("#") and len(_currentLine) > 0:
+                # 背景图片
+                if _currentLine.startswith("[bgi]"):
+                    self.__current_data.background_image = self.__extract_parameter(_currentLine, "[bgi]")
+                # 背景音乐
+                elif _currentLine.startswith("[bgm]"):
+                    self.__current_data.background_music = self.__extract_parameter(_currentLine, "[bgm]")
                 # 角色进场
-                if _currentLine.startswith("[show]"):
+                elif _currentLine.startswith("[show]"):
                     for _name in self.__extract_string(_currentLine, "[show]").split():
-                        self.__current_data["character_images"].append(_name)
+                        self.__current_data.character_images.append(_name)
                 # 角色退场
                 elif _currentLine.startswith("[hide]"):
                     for _name in self.__extract_string(_currentLine, "[hide]").split():
                         # 清空角色列表
                         if _name == "*":
-                            self.__current_data["character_images"].clear()
+                            self.__current_data.character_images.clear()
                             break
                         # 移除角色
-                        for i in range(len(self.__current_data["character_images"])):
-                            if CharacterImageNameMetaData(self.__current_data["character_images"][i]).equal(CharacterImageNameMetaData(_name)):
-                                self.__current_data["character_images"].pop(i)
+                        for i in range(len(self.__current_data.character_images)):
+                            if CharacterImageNameMetaData(self.__current_data.character_images[i]).equal(CharacterImageNameMetaData(_name)):
+                                self.__current_data.character_images.pop(i)
                                 break
                 # 清空角色列表，然后让角色重新进场
                 elif _currentLine.startswith("[display]"):
-                    self.__current_data["character_images"].clear()
+                    self.__current_data.character_images.clear()
                     for _name in self.__extract_string(_currentLine, "[display]").split():
-                        self.__current_data["character_images"].append(_name)
+                        self.__current_data.character_images.append(_name)
                 # 章节id
                 elif _currentLine.startswith("[id]"):
                     _id: Optional[str] = self.__extract_parameter(_currentLine, "[id]")
@@ -160,7 +154,7 @@ class ScriptCompiler:
                 # 转换场景
                 elif _currentLine.startswith("[scene]"):
                     self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"]["type"] = "changeScene"
-                    self.__current_data["background_image"] = self.__extract_parameter(_currentLine, "[scene]")
+                    self.__current_data.background_image = self.__extract_parameter(_currentLine, "[scene]")
                 # 选项
                 elif _currentLine.startswith("[opt]"):
                     # 确认在接下来的一行有branch的label
@@ -182,28 +176,25 @@ class ScriptCompiler:
                     )
                     index += 1
                 elif not _currentLine.startswith("[") and ":" in _currentLine:
-                    narrator: str = _currentLine.removesuffix(" ").removesuffix(":")
-                    self.__current_data["narrator"] = self.__ensure_not_null(narrator)
+                    _narrator: Optional[str] = self.__ensure_not_null(_currentLine.removesuffix(" ").removesuffix(":"))
+                    self.__current_data.narrator = _narrator if _narrator is not None else ""
                     # 获取讲述人可能的立绘名称
                     narrator_possible_images: tuple = tuple()
-                    if self.__current_data["narrator"] is not None:
-                        if self.__current_data["narrator"].lower() in self.__CHARACTER_IMAGE_DATABASE:
-                            narrator_possible_images = tuple(self.__CHARACTER_IMAGE_DATABASE[self.__current_data["narrator"].lower()])
-                    else:
-                        self.__current_data["narrator"] = ""
+                    if self.__current_data.narrator.lower() in self.__CHARACTER_IMAGE_DATABASE:
+                        narrator_possible_images = tuple(self.__CHARACTER_IMAGE_DATABASE[self.__current_data.narrator.lower()])
                     # 检查名称列表，更新character_images以确保不在说话的人处于黑暗状态
-                    for i in range(len(self.__current_data["character_images"])):
-                        _name_data: CharacterImageNameMetaData = CharacterImageNameMetaData(self.__current_data["character_images"][i])
+                    for i in range(len(self.__current_data.character_images)):
+                        _name_data: CharacterImageNameMetaData = CharacterImageNameMetaData(self.__current_data.character_images[i])
                         if _name_data.name in narrator_possible_images:
                             _name_data.remove_tag("silent")
                         else:
                             _name_data.add_tag("silent")
-                        self.__current_data["character_images"][i] = _name_data.get_raw_name()
+                        self.__current_data.character_images[i] = _name_data.get_raw_name()
                     # 更新对话内容
-                    self.__current_data["contents"] = []
+                    self.__current_data.contents.clear()
                     for sub_index in range(index + 1, len(self.__lines)):
                         if self.__lines[sub_index].startswith("- "):
-                            self.__current_data["contents"].append(self.__extract_string(self.__lines[sub_index], "- "))
+                            self.__current_data.contents.append(self.__extract_string(self.__lines[sub_index], "- "))
                         else:
                             break
                     # 确认section不为None，如果为None，则警告
@@ -214,7 +205,7 @@ class ScriptCompiler:
                         self.__output[self.__section] = {}
                     # 如果上个dialog存在（不一定非得能返回）
                     if self.__last_dialog_id is not None:
-                        self.__current_data["last_dialog_id"] = self.__last_dialog_id
+                        self.__current_data.last = self.__last_dialog_id
                         # 生成数据
                         if self.__output[self.__section][self.__last_dialog_id].get("next_dialog_id") is not None:
                             self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"]["target"] = self.__dialog_associate_key[str(index)]
@@ -224,18 +215,18 @@ class ScriptCompiler:
                                 "type": "default",
                             }
                     else:
-                        self.__current_data["last_dialog_id"] = None
+                        self.__current_data.last = None
                     # 添加注释
                     if len(self.__accumulated_comments) > 0:
-                        self.__current_data["notes"] = self.__accumulated_comments
+                        self.__current_data.notes = self.__accumulated_comments
                         self.__accumulated_comments = []
                     # 更新key
                     self.__last_dialog_id = self.__dialog_associate_key[str(index)]
                     # 更新缓存参数
-                    index += len(self.__current_data["contents"])
+                    index += len(self.__current_data.contents)
                     self.__output[self.__section][self.__last_dialog_id] = copy.deepcopy(self.__current_data)
-                    # 移除可选参数
-                    self.__current_data.pop("notes", None)
+                    # 移除注释
+                    self.__current_data.notes.clear()
                 else:
                     EXCEPTION.fatal("Cannot process script on line {}!".format(index))
             index += 1

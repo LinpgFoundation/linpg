@@ -1,7 +1,7 @@
 {
     "Battle": {
-        "block": "Block",
-        "decoration": "Decoration"
+        "decoration": "Decoration",
+        "tile": "Tile"
     },
     "Dialog": {
         "auto": "Auto",

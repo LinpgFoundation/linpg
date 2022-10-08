@@ -471,11 +471,11 @@
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
                 "height": "3%",
-                "name": "select_block",
+                "name": "select_tile",
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Battle,block}"
+                    "src": "{Battle,tile}"
                 },
                 "type": "button",
                 "width": 0,

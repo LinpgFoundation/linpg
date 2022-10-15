@@ -1,4 +1,5 @@
 import io
+import zipfile
 
 from PIL import ImageSequence as PILImageSequence  # type: ignore
 
@@ -70,7 +71,7 @@ class Images:
                     if not _path.endswith(".zip"):
                         _imageR = pygame.image.load(_path)
                     elif "linpgassets" in _path:
-                        _zipFile: zipfile.ZipFile = Zipper.open(_path)
+                        _zipFile: zipfile.ZipFile = zipfile.ZipFile(_path)
                         _imageR = cls.fromBytesIO(io.BytesIO(_zipFile.read(path[path.index(">") + 1 :], pwd=_KEY)))
                         _zipFile.close()
                     elif Debug.get_developer_mode() is True:
@@ -150,11 +151,6 @@ class Images:
     @classmethod
     def crop_bounding(cls, img: ImageSurface) -> ImageSurface:
         return img.subsurface(img.get_bounding_rect())
-
-    # 使用ImageFixer组件修复或优化png
-    @staticmethod
-    def fix(path: str) -> None:
-        ImageFixer.fix(path)
 
     # 保存图片
     @staticmethod

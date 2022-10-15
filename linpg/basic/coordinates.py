@@ -2,7 +2,7 @@ from typing import Sequence
 
 import numpy
 
-from ..tools import *
+from ..language import *
 
 ORIGIN: Final[tuple[int, int]] = (0, 0)
 

@@ -1,5 +1,5 @@
 from os import path as PATH
-from linpg import Builder
+from linpg import Files
 
 # 编译源代码
 if not PATH.exists("src") or input("Do you want to recompile everything (Y/n):") == "Y":
@@ -26,4 +26,4 @@ action: str = input("Do you want to package and upload the latest build (Y/n):")
 if action == "Y":
     Builder.upload_package()
 elif action != "N":
-    Builder.delete_file_if_exist("src")
+    Files.delete_if_exist("src")

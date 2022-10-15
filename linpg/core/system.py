@@ -198,15 +198,15 @@ class ProgressDataPackageSavingSystem:
             zipped_f.write("info.json")
             zipped_f.write("screenshot.png")
         # 删除本地文件
-        Builder.delete_file_if_exist("data.json")
-        Builder.delete_file_if_exist("info.json")
-        Builder.delete_file_if_exist("screenshot.png")
+        Files.delete_if_exist("data.json")
+        Files.delete_if_exist("info.json")
+        Files.delete_if_exist("screenshot.png")
 
     # 取得存档
     @staticmethod
     def load(_path: str) -> "ProgressDataPackageSavingSystem":
         # 打开zip文件并读取信息
-        zipFile: zipfile.ZipFile = Zipper.open(_path)
+        zipFile: zipfile.ZipFile = zipfile.ZipFile(_path)
         _data: dict = json.load(io.BytesIO(zipFile.read("data.json")))
         _screenshot: ImageSurface = Images.fromBytesIO(io.BytesIO(zipFile.read("screenshot.png")))
         _info: dict = json.load(io.BytesIO(zipFile.read("info.json")))

@@ -104,12 +104,12 @@ class SpriteImage:
         # 图片总数
         _count: int = 0
         # 历遍目标文件夹中的图片
-        for _path in Organizer.natural_sort(glob(os.path.join(img_folder_path, "*"))):
+        for _path in Files.natural_sort(glob(os.path.join(img_folder_path, "*"))):
             _name: str
             if os.path.isdir(_path):
                 _name = os.path.basename(_path)
                 _data[_name] = [
-                    cls.__process_image(_imgPath, max_block_size, minimize_pixels) for _imgPath in Organizer.natural_sort(glob(os.path.join(_path, "*")))
+                    cls.__process_image(_imgPath, max_block_size, minimize_pixels) for _imgPath in Files.natural_sort(glob(os.path.join(_path, "*")))
                 ]
                 _count += len(_data[_name])
             elif _path.endswith(".png") or _path.endswith(".jpg"):

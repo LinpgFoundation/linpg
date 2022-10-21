@@ -1,5 +1,5 @@
 from os import path as PATH
-from linpg import Files
+from linpgtoolbox.builder import Builder  # type: ignore
 
 # 编译源代码
 if not PATH.exists("src") or input("Do you want to recompile everything (Y/n):") == "Y":
@@ -8,9 +8,9 @@ if not PATH.exists("src") or input("Do you want to recompile everything (Y/n):")
     Builder.compile(
         "linpg",
         additional_files=additional_files,
-        ignore_key_words=("compiler.py",),
         smart_auto_module_combine=True,
         update_the_one_in_sitepackages=False,
+        include_default_pyinstaller_program=True,
         options={"enable_multiprocessing": True, "compiler_directives": {"emit_code_comments": False}},
     )
 
@@ -26,4 +26,4 @@ action: str = input("Do you want to package and upload the latest build (Y/n):")
 if action == "Y":
     Builder.upload_package()
 elif action != "N":
-    Files.delete_if_exist("src")
+    Builder.delete_file_if_exist("src")

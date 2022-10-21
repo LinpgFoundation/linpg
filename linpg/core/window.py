@@ -62,7 +62,7 @@ class LinpgVersionChecker:
                 ).read(close=True)[0]
                 == _quit_text
             ):
-                Display.quit()
+                exit()
 
 
 # 窗口

@@ -104,12 +104,6 @@ class Display:
     def get_window(cls) -> ImageSurface:
         return cls.__SCREEN_WINDOW
 
-    # 退出
-    @staticmethod
-    def quit() -> None:
-        # 退出游戏
-        sys.exit()
-
     # 直接画到屏幕上
     @classmethod
     def blit(cls, surface_to_draw: ImageSurface, pos: Sequence) -> None:

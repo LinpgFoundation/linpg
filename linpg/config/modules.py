@@ -1,7 +1,6 @@
 import hashlib
 import re
 import shutil
-import sys
 from typing import Callable
 
 from .setting import *
@@ -16,8 +15,6 @@ class Debug:
     __ENABLE_CHEATING: bool = False
     # 是否展示Fps
     __SHOW_FPS: bool = False
-    # 是否在windows上运行
-    __RUNNING_WINDOWS: bool = sys.platform.startswith("win")
 
     # 开发者模式
     @classmethod
@@ -45,11 +42,6 @@ class Debug:
     @classmethod
     def set_show_fps(cls, value: bool) -> None:
         cls.__SHOW_FPS = value
-
-    # 是否在windows上运行
-    @classmethod
-    def is_running_on_windows(cls) -> bool:
-        return cls.__RUNNING_WINDOWS
 
 
 # 全局数据
@@ -149,6 +141,20 @@ class Files:
         _key: Callable[[str], list[int | str]] = lambda key: [convert(c) for c in re.split("([0-9]+)", key)]
         return sorted(sorted(_files), key=_key)
 
+    # 删除特定patten的文件夹
+    @classmethod
+    def search_and_remove_folder(cls, folder_to_search: str, stuff_to_remove: str) -> None:
+        # 确保folder_to_search是一个目录
+        if not os.path.isdir(folder_to_search):
+            raise NotADirectoryError("You can only search a folder!")
+        # 移除当前文件夹符合条件的目录/文件
+        for path in glob(os.path.join(folder_to_search, "*")):
+            if path.endswith(stuff_to_remove):
+                shutil.rmtree(path)
+            elif os.path.isdir(path):
+                cls.search_and_remove_folder(path, stuff_to_remove)
+
+    # 根据地址删除文件夹
     @staticmethod
     def delete_if_exist(path: str) -> None:
         if os.path.exists(path):

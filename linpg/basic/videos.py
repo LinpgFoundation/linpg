@@ -1,5 +1,5 @@
+import subprocess
 from abc import ABC
-from subprocess import DEVNULL, STDOUT, check_call
 
 from .display import *
 
@@ -23,7 +23,7 @@ class Videos(ABC):
         # 检测文件是否存在
         cls.__check_path(input_path)
         # 转换
-        check_call([cls.__PATH, "-i", input_path, output_path], stdout=DEVNULL, stderr=STDOUT)
+        subprocess.check_call([cls.__PATH, "-i", input_path, output_path], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
     # 使用ffmpeg转换视频文件至音乐文件
     @classmethod
@@ -32,9 +32,11 @@ class Videos(ABC):
         cls.__check_path(input_path)
         # 转换
         if output_path.endswith(".ogg"):
-            check_call([cls.__PATH, "-i", input_path, "-vn", "-acodec", "libvorbis", "-y", output_path], stdout=DEVNULL, stderr=STDOUT)
+            subprocess.check_call(
+                [cls.__PATH, "-i", input_path, "-vn", "-acodec", "libvorbis", "-y", output_path], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
+            )
         else:
-            check_call([cls.__PATH, "-i", input_path, "-vn", output_path], stdout=DEVNULL, stderr=STDOUT)
+            subprocess.check_call([cls.__PATH, "-i", input_path, "-vn", output_path], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
     # 获取视频的音频 （返回路径）
     @classmethod

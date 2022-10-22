@@ -8,7 +8,6 @@ class DecorationObject(GameObject2d):
         self.__type: Final[str] = _type
         self._variation: int = _variation
         self.__status: Final[dict] = status
-        self.scale: float = 0.5
 
     # 确保图片已经被存档
     def ensure_image_cached(self) -> None:
@@ -40,8 +39,6 @@ class DecorationObject(GameObject2d):
         theDecoration: DecorationObject = DecorationObject(
             _data["x"], _data["y"], index_args[0], int(index_args[1]) if len(index_args) > 1 else 0, _data["status"]
         )
-        if theDecoration.type == "tree":
-            theDecoration.scale = 0.75
         return theDecoration
 
     def is_on_pos(self, pos: object) -> bool:
@@ -64,9 +61,10 @@ class DecorationObject(GameObject2d):
 
     def blit(self, _surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:  # type: ignore[override]
         imgToBlit = DecorationImagesModule.get_image(self.id, is_dark)
-        imgToBlit.set_size(MapImageParameters.get_tile_width() * self.scale, MapImageParameters.get_tile_width() * self.scale)
+        imgToBlit.set_width_with_original_image_size_locked(TileMapImagesModule.TILE_TEMPLE_WIDTH // 2)
         imgToBlit.set_alpha(alpha)
-        imgToBlit.move_to(pos)
+        imgToBlit.set_left(pos[0] + TileMapImagesModule.TILE_TEMPLE_WIDTH // 4)
+        imgToBlit.set_bottom(pos[1] + TileMapImagesModule.TILE_TEMPLE_HEIGHT * 0.85)
         imgToBlit.draw(_surface)
 
     def get_width(self) -> int:

@@ -311,30 +311,23 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
 
     # 把装饰物画到屏幕上
     def display_decoration(self, _surface: ImageSurface, occupied_coordinates: tuple) -> None:
-        # 计算offSet
-        offSet: tuple[int, int]
-        offSet_normal: tuple[int, int] = (round(MapImageParameters.get_tile_width() / 4), -round(MapImageParameters.get_tile_width() / 8))
-        offSet_tree: tuple[int, int] = (round(MapImageParameters.get_tile_width() * 0.125), -round(MapImageParameters.get_tile_width() * 0.375))
         # 计算需要画出的范围
         screen_min: int = -MapImageParameters.get_tile_width()
-        # 透明度
-        decoration_alpha: int
-        # 在地图的坐标
-        thePosInMap: tuple[int, int]
         # 历遍装饰物列表里的物品
-        for item in self.__decorations.values():
-            thePosInMap = self.calculate_position(item.x, item.y)
+        for _item in self.__decorations.values():
+            # 在地图的坐标
+            thePosInMap: tuple[int, int] = self.calculate_position(_item.x, _item.y)
             if screen_min <= thePosInMap[0] < _surface.get_width() and screen_min <= thePosInMap[1] < _surface.get_height():
-                decoration_alpha = 255
-                # 树
-                if item.type == "tree":
-                    offSet = offSet_tree
-                    if item.get_pos() in occupied_coordinates and self.is_coordinate_in_lit_area(item.x, item.y):
-                        decoration_alpha = 100
-                else:
-                    offSet = offSet_normal
+                # 透明度
+                decoration_alpha: int = 255
+                if (
+                    self.__DECORATION_DATABASE[_item.type].get("hidable", False) is True
+                    and _item.get_pos() in occupied_coordinates
+                    and self.is_coordinate_in_lit_area(_item.x, _item.y)
+                ):
+                    decoration_alpha = 100
                 # 画出
-                item.blit(_surface, Coordinates.add(thePosInMap, offSet), not self.is_coordinate_in_lit_area(item.x, item.y), decoration_alpha)
+                _item.blit(_surface, thePosInMap, not self.is_coordinate_in_lit_area(_item.x, _item.y), decoration_alpha)
 
     # 获取方块
     def get_tile(self, _x: int, _y: int) -> str:

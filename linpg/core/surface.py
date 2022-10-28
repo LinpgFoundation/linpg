@@ -127,7 +127,7 @@ class SurfaceWithLocalPos:
         self.set_local_x(local_x)
         self.set_local_y(local_y)
 
-    def locally_move_to(self, local_pos: tuple) -> None:
+    def locally_move_to(self, local_pos: tuple[int_f, int_f]) -> None:
         self.set_local_pos(local_pos[0], local_pos[1])
 
     # 增加本地坐标
@@ -155,18 +155,24 @@ class SurfaceWithLocalPos:
     # 绝对的本地坐标
     @property
     def abs_x(self) -> int:
+        return self.get_abs_x()
+
+    def get_abs_x(self) -> int:
         return self.get_left() + self.__local_x
 
     @property
     def abs_y(self) -> int:
+        return self.get_abs_y()
+
+    def get_abs_y(self) -> int:
         return self.get_top() + self.__local_y
 
     @property
     def abs_pos(self) -> tuple[int, int]:
-        return self.abs_x, self.abs_y
+        return self.get_abs_x(), self.get_abs_y()
 
     def get_abs_pos(self) -> tuple[int, int]:
-        return self.abs_x, self.abs_y
+        return self.get_abs_x(), self.get_abs_y()
 
 
 # 有本地坐标的图形接口
@@ -196,10 +202,22 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
         super().__init__(img, x, y, width, height, tag=tag)
         self._processed_img: Optional[ImageSurface] = None
         self._need_update: bool = True if self.get_width() >= 0 and self.get_height() >= 0 else False
+        self.__is_local_offset_enable: bool = True
 
     # 处理图片（子类必须实现）
     def _update_img(self) -> None:
         EXCEPTION.fatal("_update_img()", 1)
+
+    # 是否启用本地坐标
+    def set_local_offset_availability(self, value: bool) -> None:
+        self.__is_local_offset_enable = value
+
+    # 绝对的本地坐标
+    def get_abs_x(self) -> int:
+        return super().get_abs_x() if self.__is_local_offset_enable is True else self.get_left()
+
+    def get_abs_y(self) -> int:
+        return super().get_abs_y() if self.__is_local_offset_enable is True else self.get_top()
 
     # 更新图片
     def update_image(self, img_path: PoI, ifConvertAlpha: bool = True) -> None:

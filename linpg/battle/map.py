@@ -256,17 +256,17 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                         -MapImageParameters.get_tile_width() <= posTupleTemp[0] < _surface.get_width()
                         and -MapImageParameters.get_tile_width() <= posTupleTemp[1] < _surface.get_height()
                     ):
-                        if self.__tile_on_surface[y][x] == 0:
+                        if self.__tile_on_surface[y, x] == 0:
                             evn_img = TileMapImagesModule.get_image(self.get_tile(x, y), not self.is_coordinate_in_lit_area(x, y))
                             evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
-                            evn_img.set_local_pos(0, 0)
+                            evn_img.set_local_offset_availability(False)
                             if self.__map_surface is not None:
                                 evn_img.draw(self.__map_surface)
-                            self.__tile_on_surface[y][x] = 1
+                            self.__tile_on_surface[y, x] = 1
                             if y < self.__row - 1:
-                                self.__tile_on_surface[y + 1][x] = 0
+                                self.__tile_on_surface[y + 1, x] = 0
                             if x < self.__column - 1:
-                                self.__tile_on_surface[y][x + 1] = 0
+                                self.__tile_on_surface[y, x + 1] = 0
                         else:
                             pass
                     elif posTupleTemp[0] >= _surface.get_width() or posTupleTemp[1] >= _surface.get_height():
@@ -283,7 +283,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
                 for x in range(len(self.__tile_on_surface[y])):
                     start_x = int(x * self.__debug_win_unit * 1.25 + self.__debug_win_unit / 4)
                     start_y = int(y * self.__debug_win_unit * 1.25 + self.__debug_win_unit / 4)
-                    if self.__tile_on_surface[y][x] == 0:
+                    if self.__tile_on_surface[y, x] == 0:
                         self.__debug_win.draw_rect((start_x, start_y, self.__debug_win_unit, self.__debug_win_unit), Colors.WHITE)
                     else:
                         self.__debug_win.fill_rect((start_x, start_y, self.__debug_win_unit, self.__debug_win_unit), Colors.WHITE)
@@ -335,14 +335,12 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
 
     # 更新方块
     def set_tile(self, _x: int, _y: int, name: str) -> None:
-        tile_id: int
+        # 根据坐标更新地图块
         try:
-            tile_id = self.__tile_lookup_table.index(name)
+            self.__MAP[_y, _x] = self.__tile_lookup_table.index(name)
         except ValueError:
             self.__tile_lookup_table.append(name)
-            tile_id = len(self.__tile_lookup_table) - 1
-        # 根据坐标更新地图块
-        self.__MAP[_y, _x] = tile_id
+            self.__MAP[_y, _x] = len(self.__tile_lookup_table) - 1
         # 需更新
         self.__need_update_surface = True
         self.__need_to_recheck_tile_on_surface = True
@@ -428,7 +426,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             if key not in enemies_ignored:
                 map2d[round(value.x), round(value.y)] = 0
         # 如果目标坐标合法
-        if 0 <= goal[1] < self.__row and 0 <= goal[0] < self.__column and map2d[goal[0]][goal[1]] == 1:
+        if 0 <= goal[1] < self.__row and 0 <= goal[0] < self.__column and map2d[goal[0], goal[1]] == 1:
             # 开始寻路
             _path: list[tuple[int, int]] = tcod.path.AStar(map2d, 1.0).get_path(start[0], start[1], goal[0], goal[1])
             # 预处理路径并返回

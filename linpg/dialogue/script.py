@@ -209,6 +209,8 @@ class ScriptCompiler:
                         # 生成数据
                         if self.__output[self.__section][self.__last_dialog_id].get("next_dialog_id") is not None:
                             self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"]["target"] = self.__dialog_associate_key[str(index)]
+                            if "type" not in self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"]:
+                                self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"]["type"] = "default"
                         else:
                             self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = {
                                 "target": self.__dialog_associate_key[str(index)],
@@ -224,7 +226,7 @@ class ScriptCompiler:
                     self.__last_dialog_id = self.__dialog_associate_key[str(index)]
                     # 更新缓存参数
                     index += len(self.__current_data.contents)
-                    self.__output[self.__section][self.__last_dialog_id] = copy.deepcopy(self.__current_data)
+                    self.__output[self.__section][self.__last_dialog_id] = copy.deepcopy(self.__current_data.to_dict())
                     # 移除注释
                     self.__current_data.notes.clear()
                 else:

@@ -2,7 +2,7 @@ from .script import *
 
 
 # 视觉小说系统接口
-class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
+class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         self._content: DialogContentManager = DialogContentManager()
@@ -81,8 +81,8 @@ class AbstractDialogSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 播放的部分
         self._content.set_section(section)
         # 转换所有文件夹内的linpg自定义的raw脚本
-        for script_file in glob(os.path.join(self.get_dialog_folder_location(), "*.linpg.script")):
-            ScriptConverter().compile(script_file, self.get_dialog_folder_location())
+        for script_file in glob(os.path.join(self.get_dialog_folder_location(), "*" + ScriptCompiler.FILE_EXTENSION)):
+            ScriptCompiler().compile(script_file, self.get_dialog_folder_location())
         # 根据已有参数载入数据
         self._load_content()
 

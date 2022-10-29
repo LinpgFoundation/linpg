@@ -68,7 +68,13 @@ class SimpleRectPointsBar(AbstractProgressBar):
         self.__max_point = max(value, 1)
 
     # 设置颜色
-    def set_color(self,front_color: color_liked, back_color: Optional[color_liked] = None, outline_color: Optional[color_liked] = None, font_color: Optional[color_liked] = None) -> None:
+    def set_color(
+        self,
+        front_color: color_liked,
+        back_color: Optional[color_liked] = None,
+        outline_color: Optional[color_liked] = None,
+        font_color: Optional[color_liked] = None,
+    ) -> None:
         self.__front_color = Colors.get(front_color)
         if back_color is not None:
             self.__back_color = Colors.get(back_color)

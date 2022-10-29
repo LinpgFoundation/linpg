@@ -361,7 +361,7 @@ class Entity(Position):
             EXCEPTION.fatal("Character cannot move to a invalid path!")
 
     # 查看是否一个Entity在该角色的附近
-    def near(self, otherEntity: "Entity") -> bool:
+    def near(self, otherEntity: Position | GameObject2d) -> bool:
         self_x: int = round(self.x)
         o_x: int = round(otherEntity.x)
         self_y: int = round(self.y)
@@ -473,7 +473,7 @@ class Entity(Position):
         _image = EntitySpriteImageManager.get_images(self.__type, action)
         _image.set_index(self.__imgId_dict[action]["imgId"])
         # 调整小人图片的尺寸
-        img_width: float = round(MapImageParameters.get_block_width() * 8 / 5, 2)
+        img_width: float = round(MapImageParameters.get_tile_width() * 8 / 5, 2)
         _image.set_size(img_width, img_width)
         # 如果没有指定pos,则默认使用当前的动作
         if pos is None:
@@ -483,7 +483,7 @@ class Entity(Position):
             _surface,
             alpha,
             self._if_flip,
-            (pos[0] - MapImageParameters.get_block_width() * 0.3, pos[1] - MapImageParameters.get_block_width() * 0.85),
+            (pos[0] - MapImageParameters.get_tile_width() * 0.3, pos[1] - MapImageParameters.get_tile_width() * 0.85),
             self.__is_selected,
         )
         # 更新角色的rect

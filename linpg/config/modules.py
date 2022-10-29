@@ -1,6 +1,7 @@
 import hashlib
+import re
 import shutil
-import sys
+from typing import Callable
 
 from .setting import *
 
@@ -14,8 +15,6 @@ class Debug:
     __ENABLE_CHEATING: bool = False
     # 是否展示Fps
     __SHOW_FPS: bool = False
-    # 是否在windows上运行
-    __RUNNING_WINDOWS: bool = sys.platform.startswith("win")
 
     # 开发者模式
     @classmethod
@@ -44,35 +43,27 @@ class Debug:
     def set_show_fps(cls, value: bool) -> None:
         cls.__SHOW_FPS = value
 
-    # 是否在windows上运行
-    @classmethod
-    def is_running_on_windows(cls) -> bool:
-        return cls.__RUNNING_WINDOWS
-
 
 # 全局数据
 class GlobalValue:
 
     # 用于存放全局数据的字典
     __GLOBAL_VALUES_DICT: Final[dict] = {}
-    # 读取本地的全局数据
-    if os.path.exists(_path := os.path.join("save", "global.yaml")):
-        __GLOBAL_VALUES_DICT.update(Config.load_file(_path))
 
     # 获取特定的全局数据
     @classmethod
-    def get(cls, key: str) -> object:
-        return cls.__GLOBAL_VALUES_DICT[key]
+    def get(cls, _key: str) -> object:
+        return cls.__GLOBAL_VALUES_DICT[_key]
 
     # 设置特定的全局数据
     @classmethod
-    def set(cls, key: str, value: object) -> None:
-        cls.__GLOBAL_VALUES_DICT[key] = value
+    def set(cls, _key: str, value: object) -> None:
+        cls.__GLOBAL_VALUES_DICT[_key] = value
 
     # 删除特定的全局数据
     @classmethod
-    def remove(cls, key: str) -> None:
-        del cls.__GLOBAL_VALUES_DICT[key]
+    def remove(cls, _key: str) -> None:
+        del cls.__GLOBAL_VALUES_DICT[_key]
 
     # 清空所有全局数据
     @classmethod
@@ -81,9 +72,9 @@ class GlobalValue:
 
     # 如果不是对应的值，则设置为对应的值，返回是否对应
     @classmethod
-    def if_get_set(cls, key: str, valueToGet: object, valueToSet: object) -> bool:
-        if cls.__GLOBAL_VALUES_DICT[key] == valueToGet:
-            cls.__GLOBAL_VALUES_DICT[key] = valueToSet
+    def if_get_set(cls, _key: str, valueToGet: object, valueToSet: object) -> bool:
+        if cls.__GLOBAL_VALUES_DICT[_key] == valueToGet:
+            cls.__GLOBAL_VALUES_DICT[_key] = valueToSet
             return True
         else:
             return False
@@ -93,11 +84,11 @@ class GlobalValue:
 class DataBase:
 
     # 用于存放数据库数据的字典
-    __DATA_BASE_DICT: Final[dict] = {"Blocks": {}, "Decorations": {}, "Npc": {}, "Filters": {}}
+    __DATA_BASE_DICT: Final[dict] = {"Tiles": {}, "Decorations": {}, "Npc": {}, "Filters": {}}
 
     @classmethod
-    def get(cls, *key: str) -> Any:
-        return get_value_by_keys(cls.__DATA_BASE_DICT, key)
+    def get(cls, *_key: str) -> Any:
+        return get_value_by_keys(cls.__DATA_BASE_DICT, _key)
 
     @classmethod
     def update(cls, _value: dict) -> None:
@@ -114,9 +105,9 @@ class Info:
     # 引擎主版本号
     __VERSION: Final[int] = 3
     # 引擎次更新版本号
-    __REVISION: Final[int] = 4
+    __REVISION: Final[int] = 5
     # 引擎补丁版本
-    __PATCH: Final[int] = 3
+    __PATCH: Final[int] = 0
 
     # 确保linpg版本
     @classmethod
@@ -141,6 +132,47 @@ class Info:
         return "https://github.com/LinpgFoundation/linpg"
 
 
+class Files:
+
+    # 一个简单的 natural sort 实现
+    @staticmethod
+    def natural_sort(_files: list[str]) -> list[str]:
+        convert: Callable[[str], int | str] = lambda text: int(text) if text.isdigit() else text.lower()
+        _key: Callable[[str], list[int | str]] = lambda key: [convert(c) for c in re.split("([0-9]+)", key)]
+        return sorted(sorted(_files), key=_key)
+
+    # 删除特定patten的文件夹
+    @classmethod
+    def search_and_remove_folder(cls, folder_to_search: str, stuff_to_remove: str) -> None:
+        # 确保folder_to_search是一个目录
+        if not os.path.isdir(folder_to_search):
+            raise NotADirectoryError("You can only search a folder!")
+        # 移除当前文件夹符合条件的目录/文件
+        for path in glob(os.path.join(folder_to_search, "*")):
+            if path.endswith(stuff_to_remove):
+                shutil.rmtree(path)
+            elif os.path.isdir(path):
+                cls.search_and_remove_folder(path, stuff_to_remove)
+
+    # 根据地址删除文件夹
+    @staticmethod
+    def delete_if_exist(path: str) -> None:
+        if os.path.exists(path):
+            if os.path.isdir(path):
+                shutil.rmtree(path)
+            else:
+                os.remove(path)
+
+    # 为一个文件生产md5值
+    @staticmethod
+    def generate_md5(path: str) -> str:
+        if os.path.exists(path):
+            with open(path, "rb") as f:
+                return hashlib.md5(f.read()).hexdigest()
+        else:
+            EXCEPTION.fatal("Cannot generate md5 for a file that does not exist in path: {}".format(path))
+
+
 class Cache:
 
     # 缓存文件夹路径
@@ -159,61 +191,73 @@ class Cache:
         # 返回文件夹路径
         return cls.__CACHE_FOLDER
 
-    @staticmethod
-    def delete_file_if_exist(path: str) -> None:
-        if os.path.exists(path):
-            if os.path.isdir(path):
-                shutil.rmtree(path)
-            else:
-                os.remove(path)
-
-    # 为一个文件夹生产md5值
-    @staticmethod
-    def __generate_md5(path: str) -> str:
-        if os.path.exists(path):
-            with open(path, "rb") as f:
-                return hashlib.md5(f.read()).hexdigest()
-        else:
-            EXCEPTION.fatal("Cannot generate md5 for a file that does not exist in path: {}".format(path))
-
     # 新建一个对比关系
     @classmethod
-    def new(cls, key: str, source_file_path: str, target_file_path: str) -> None:
-        if key not in cls.__CACHE_FILES_DATA:
-            cls.__CACHE_FILES_DATA[key] = {
-                "source": {"path": source_file_path, "md5": cls.__generate_md5(source_file_path)},
-                "target": {"path": target_file_path, "md5": cls.__generate_md5(target_file_path)},
+    def new(cls, _key: str, source_file_path: str, target_file_path: str) -> None:
+        if _key not in cls.__CACHE_FILES_DATA:
+            cls.__CACHE_FILES_DATA[_key] = {
+                "source": {"path": source_file_path, "md5": Files.generate_md5(source_file_path)},
+                "target": {"path": target_file_path, "md5": Files.generate_md5(target_file_path)},
                 "version": Info.get_current_version(),
             }
             # 保存缓存文件的相关数据
             Config.save(cls.__CACHE_FILES_DATA_PATH, cls.__CACHE_FILES_DATA)
         else:
-            EXCEPTION.fatal('The key named "{}" already exists. Please create a new unique one!'.format(key))
+            EXCEPTION.fatal('The key named "{}" already exists. Please create a new unique one!'.format(_key))
 
     # 移除
     @classmethod
-    def remove(cls, key: str) -> None:
-        cls.delete_file_if_exist(cls.__CACHE_FILES_DATA[key]["target"]["path"])
-        del cls.__CACHE_FILES_DATA[key]
+    def remove(cls, _key: str) -> None:
+        Files.delete_if_exist(cls.__CACHE_FILES_DATA[_key]["target"]["path"])
+        del cls.__CACHE_FILES_DATA[_key]
         Config.save(cls.__CACHE_FILES_DATA_PATH, cls.__CACHE_FILES_DATA)
 
     @classmethod
-    def get_cache_path(cls, key: str) -> str:
-        return str(cls.__CACHE_FILES_DATA[key]["target"]["path"])
+    def get_cache_path(cls, _key: str) -> str:
+        return str(cls.__CACHE_FILES_DATA[_key]["target"]["path"])
 
     # 对比数据
     @classmethod
-    def match(cls, key: str, source_file_path: str) -> bool:
-        if key in cls.__CACHE_FILES_DATA:
+    def match(cls, _key: str, source_file_path: str) -> bool:
+        if _key in cls.__CACHE_FILES_DATA:
             if (
-                Info.get_current_version() == cls.__CACHE_FILES_DATA[key]["version"]
+                Info.get_current_version() == cls.__CACHE_FILES_DATA[_key]["version"]
                 and os.path.exists(source_file_path)
-                and source_file_path == cls.__CACHE_FILES_DATA[key]["source"]["path"]
-                and cls.__generate_md5(source_file_path) == cls.__CACHE_FILES_DATA[key]["source"]["md5"]
-                and os.path.exists(cls.__CACHE_FILES_DATA[key]["target"]["path"])
-                and cls.__generate_md5(cls.__CACHE_FILES_DATA[key]["target"]["path"]) == cls.__CACHE_FILES_DATA[key]["target"]["md5"]
+                and source_file_path == cls.__CACHE_FILES_DATA[_key]["source"]["path"]
+                and Files.generate_md5(source_file_path) == cls.__CACHE_FILES_DATA[_key]["source"]["md5"]
+                and os.path.exists(cls.__CACHE_FILES_DATA[_key]["target"]["path"])
+                and Files.generate_md5(cls.__CACHE_FILES_DATA[_key]["target"]["path"]) == cls.__CACHE_FILES_DATA[_key]["target"]["md5"]
             ):
                 return True
             else:
-                cls.remove(key)
+                cls.remove(_key)
         return False
+
+
+# 持久数据管理IO
+class PersistentData:
+
+    __DATA: Final[dict[str, Any]] = {}
+    __PATH: Final[str] = Specification.get_directory("save", "persistent." + Config.get_file_type())
+
+    @classmethod
+    def get(cls, _key: str) -> Optional[Any]:
+        return cls.__DATA.get(_key)
+
+    @classmethod
+    def set(cls, _key: str, _value: Any) -> None:
+        cls.__DATA[_key] = _value
+
+    @classmethod
+    def reload(cls) -> None:
+        cls.__DATA.clear()
+        if os.path.exists(cls.__PATH):
+            cls.__DATA.update(Config.load_file(cls.__PATH))
+
+    @classmethod
+    def save(cls) -> None:
+        Config.save(cls.__PATH, cls.__DATA)
+
+
+# 初始化持久数据库
+PersistentData.reload()

@@ -1,4 +1,4 @@
-from .display import *
+from .videos import *
 
 # 声音 type alias
 PG_Sound = pygame.mixer.Sound
@@ -84,36 +84,6 @@ class SoundManagement(AbstractSoundManager):
             _sound.set_volume(volume)
 
 
-# 获取视频的音频 （返回路径）
-def _split_audio_from_video(input_path: str, audio_type: str = "ogg") -> str:
-    # 产生不重名的output文件名称
-    output_file_name_t: str = os.path.basename(input_path).replace(".", "_") + "{0}.{1}"
-    output_file_name: str
-    index: int = 0
-    while True:
-        output_file_name = output_file_name_t.format(index, audio_type)
-        if not os.path.exists(output_file_name):
-            break
-        else:
-            index += 1
-    # 生成output路径
-    output_path: str = os.path.join(Cache.get_directory(), output_file_name)
-    try:
-        # 生成视频文件
-        VideoConverter.convert_from_video_to_audio(input_path, output_path)
-        # 如果一切正常，返回output路径
-        return output_path
-    # 如果不正常...
-    except EXCEPTION.FileNotExists:
-        EXCEPTION.fatal('Cannot find media file on path "{}".'.format(input_path))
-    except EXCEPTION.ToolIsMissing:
-        EXCEPTION.fatal(
-            'To split audio from video, "ffmpeg.exe" needs to be placed under directory "{}" inside your project. FFmpeg is never a part of Linpg Engine.'.format(
-                os.path.dirname(VideoConverter.get_tool_path())
-            )
-        )
-
-
 # 音效管理
 class Sound:
 
@@ -135,7 +105,7 @@ class Sound:
             except Exception:
                 pass
         # 如果读取失败或者没有缓存key或者match失败，则应根据给定的路径生成音乐文件并返回
-        path_of_sound: str = _split_audio_from_video(path)
+        path_of_sound: str = Videos.split_audio(path)
         sound_audio: PG_Sound = cls.load(path_of_sound, volume)
         # 如果给了缓存key，则应该生成缓存联系并保留缓存文件
         if cache_key is not None and len(cache_key) > 0:
@@ -193,7 +163,7 @@ class Music:
     @staticmethod
     def load_from_video(path: str) -> str:
         Music.unload()
-        path_of_music: str = _split_audio_from_video(path, "mp3")
+        path_of_music: str = Videos.split_audio(path, "mp3")
         Music.load(path_of_music)
         return path_of_music
 

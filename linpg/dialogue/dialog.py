@@ -2,12 +2,12 @@ from .abstract import *
 
 
 # 视觉小说系统模块
-class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
+class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem):
 
     __CHOICE_TEXT: str = str(Lang.get_texts("Dialog", "choice"))
 
     def __init__(self) -> None:
-        AbstractDialogSystem.__init__(self)
+        AbstractVisualNovelSystem.__init__(self)
         PauseMenuModuleForGameSystem.__init__(self)
         # 加载对话框系统
         self.__dialog_txt_system: DialogBox = DialogBox(self._FONT_SIZE)
@@ -32,12 +32,14 @@ class DialogSystem(AbstractDialogSystem, PauseMenuModuleForGameSystem):
         # 启用检查点功能
         self._save_checkpoint_while_saving_progress = True
 
+    # 禁用基本功能
     def disable_basic_features(self) -> None:
         self.__disable_background_image_rendering = True
         self.__history_back = None
         self.__buttons_container = None
         self._disable_pause_menu()
 
+    # 启用基本功能
     def enable_basic_features(self) -> None:
         self.__disable_background_image_rendering = False
         self.__history_back = Button.load(

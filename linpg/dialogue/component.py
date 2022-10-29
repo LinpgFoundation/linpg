@@ -43,11 +43,12 @@ class DialogNavigationWindow(AbstractFrame):
         self.__nodes_map.clear()
         for key in dialogs_data:
             next_keys: list[str] = []
-            if dialogs_data[key]["next_dialog_id"] is not None and len(dialogs_data[key]["next_dialog_id"]) > 0:
-                if dialogs_data[key]["next_dialog_id"]["type"] == "option":
-                    for next_keys_options in dialogs_data[key]["next_dialog_id"]["target"]:
+            theNext: Optional[dict] = dialogs_data[key].get("next_dialog_id")
+            if theNext is not None and len(theNext) > 0:
+                if theNext["type"] == "option":
+                    for next_keys_options in theNext["target"]:
                         next_keys.append(next_keys_options["id"])
-                elif isinstance(the_next_key := dialogs_data[key]["next_dialog_id"]["target"], (str, int)):
+                elif isinstance(the_next_key := theNext["target"], (str, int)):
                     next_keys.append(str(the_next_key))
             self.add_node(key, next_keys)
 
@@ -125,10 +126,10 @@ class AbstractDialogBox(HidableSurface, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         # 对胡框数据
-        self._dialoguebox_max_height: int = Display.get_height() // 4
-        self._dialoguebox_max_y: int = Display.get_height() * 65 // 100
+        self._dialogue_box_max_height: int = Display.get_height() // 4
+        self._dialogue_box_max_y: int = Display.get_height() * 65 // 100
         # 对胡框图片
-        self._dialoguebox: StaticImage = StaticImage("<&ui>dialoguebox.png", Display.get_width() * 13 // 100, 0, Display.get_width() * 74 // 100)
+        self._dialogue_box: StaticImage = StaticImage("<&ui>dialoguebox.png", Display.get_width() * 13 // 100, 0, Display.get_width() * 74 // 100)
 
     # 画出（子类需实现）
     def draw(self, _surface: ImageSurface) -> None:
@@ -144,10 +145,10 @@ class EditableDialogBox(AbstractDialogBox):
     def __init__(self, fontSize: int):
         super().__init__()
         self.__contents: MultipleLinesInputBox = MultipleLinesInputBox(Display.get_width() * 2 / 10, Display.get_height() * 73 // 100, fontSize, Colors.WHITE)
-        self.__narrator: SingleLineInputBox = SingleLineInputBox(Display.get_width() * 2 / 10, self._dialoguebox_max_y + fontSize, fontSize, Colors.WHITE)
+        self.__narrator: SingleLineInputBox = SingleLineInputBox(Display.get_width() * 2 / 10, self._dialogue_box_max_y + fontSize, fontSize, Colors.WHITE)
         # 设置对话框高度和坐标
-        self._dialoguebox.set_top(self._dialoguebox_max_y)
-        self._dialoguebox.set_height(self._dialoguebox_max_height)
+        self._dialogue_box.set_top(self._dialogue_box_max_y)
+        self._dialogue_box.set_height(self._dialogue_box_max_height)
 
     # 是否内容相比上次有任何改变
     def any_changed_was_made(self) -> bool:
@@ -176,7 +177,7 @@ class EditableDialogBox(AbstractDialogBox):
     def draw(self, _surface: ImageSurface) -> None:
         if self.is_visible():
             # 画上对话框图片
-            self._dialoguebox.draw(_surface)
+            self._dialogue_box.draw(_surface)
             # 将文字画到屏幕上
             self.__narrator.draw(_surface)
             self.__contents.draw(_surface)
@@ -234,14 +235,14 @@ class DialogBox(AbstractDialogBox):
         # 是否处于淡出阶段
         self.__fade_out_stage: bool = False
         # 设置对话框高度和坐标
-        self._dialoguebox.set_top(-1)
-        self._dialoguebox.set_height(0)
+        self._dialogue_box.set_top(-1)
+        self._dialogue_box.set_height(0)
 
     # 重置
     def reset(self) -> None:
         self.__fade_out_stage = False
-        self._dialoguebox.set_height(0)
-        self._dialoguebox.set_top(-1)
+        self._dialogue_box.set_height(0)
+        self._dialogue_box.set_top(-1)
 
     # 是否所有内容均已展出
     def is_all_played(self) -> bool:
@@ -257,7 +258,7 @@ class DialogBox(AbstractDialogBox):
             self.__text_index = max(len(self.__contents[self.__displayed_lines]) - 1, 0)
 
     # 更新内容
-    def update(self, narrator: Optional[str], contents: Optional[list], forceNotResizeDialoguebox: bool = False) -> None:
+    def update(self, narrator: Optional[str], contents: Optional[list], forceNotResizeDialogueBox: bool = False) -> None:
         self.stop_playing_text_sound()
         # 重设部分参数
         self.__text_index = 0
@@ -271,7 +272,7 @@ class DialogBox(AbstractDialogBox):
         # 更新讲述者名称
         if narrator is None:
             narrator = ""
-        if self.__narrator != narrator and not forceNotResizeDialoguebox:
+        if self.__narrator != narrator and not forceNotResizeDialogueBox:
             self.__fade_out_stage = True
         self.__narrator = narrator
 
@@ -313,23 +314,23 @@ class DialogBox(AbstractDialogBox):
             # 渐入
             if not self.__fade_out_stage:
                 # 如果当前对话框图片的y坐标不存在（一般出现在对话系统例行初始化后），则根据屏幕大小设置一个
-                if self._dialoguebox.y < 0:
-                    self._dialoguebox.set_top(self._dialoguebox_max_y + self._dialoguebox_max_height / 2)
+                if self._dialogue_box.y < 0:
+                    self._dialogue_box.set_top(self._dialogue_box_max_y + self._dialogue_box_max_height / 2)
                 # 画出对话框
-                self._dialoguebox.draw(_surface)
+                self._dialogue_box.draw(_surface)
                 # 如果对话框图片还在放大阶段
-                if self._dialoguebox.height < self._dialoguebox_max_height:
-                    self._dialoguebox.set_height(
-                        min(self._dialoguebox.height + self._dialoguebox_max_height / Display.get_delta_time() // 10, self._dialoguebox_max_height)
+                if self._dialogue_box.height < self._dialogue_box_max_height:
+                    self._dialogue_box.set_height(
+                        min(self._dialogue_box.height + self._dialogue_box_max_height / Display.get_delta_time() // 10, self._dialogue_box_max_height)
                     )
-                    self._dialoguebox.move_upward(self._dialoguebox_max_height / Display.get_delta_time() // 20)
+                    self._dialogue_box.move_upward(self._dialogue_box_max_height / Display.get_delta_time() // 20)
                 # 如果已经放大好了，则将文字画到屏幕上
                 else:
                     x: int = _surface.get_width() * 2 // 10
                     y: int = _surface.get_height() * 73 // 100
                     # 写上当前讲话人的名字
                     if len(self.__narrator) > 0:
-                        _surface.blit(self.FONT.render(self.__narrator, Colors.WHITE), (x, self._dialoguebox.y + self.FONT.size))
+                        _surface.blit(self.FONT.render(self.__narrator, Colors.WHITE), (x, self._dialogue_box.y + self.FONT.size))
                     # 对话框已播放的内容
                     for i in range(self.__displayed_lines):
                         _surface.blit(self.FONT.render(self.__contents[i], Colors.WHITE), (x, y + self.FONT.size * 3 * i // 2))
@@ -359,14 +360,14 @@ class DialogBox(AbstractDialogBox):
                             self.__read_time += self.__READING_SPEED
                     # 画出翻页指示动态图标
                     _width: int = self.FONT.size * 2 // 3
-                    self.__next_page_indicator_icon.draw_to(_surface, self._dialoguebox.right - _width * 4, self._dialoguebox.bottom - _width * 3, _width)
+                    self.__next_page_indicator_icon.draw_to(_surface, self._dialogue_box.right - _width * 4, self._dialogue_box.bottom - _width * 3, _width)
             # 淡出
             else:
                 # 画出对话框图片
-                self._dialoguebox.draw(_surface)
-                height_t: int = self._dialoguebox.height - int(self._dialoguebox_max_height / Display.get_delta_time() / 10)
+                self._dialogue_box.draw(_surface)
+                height_t: int = self._dialogue_box.height - int(self._dialogue_box_max_height / Display.get_delta_time() / 10)
                 if height_t > 0:
-                    self._dialoguebox.set_height(height_t)
-                    self._dialoguebox.move_downward(self._dialoguebox_max_height / Display.get_delta_time() // 20)
+                    self._dialogue_box.set_height(height_t)
+                    self._dialogue_box.move_downward(self._dialogue_box_max_height / Display.get_delta_time() // 20)
                 else:
                     self.reset()

@@ -139,17 +139,6 @@ class Config:
         return cls.load_file(path) if len(path) > 0 else {}
 
 
-# 引擎部分生产的配置文件的模板
-class Template:
-
-    __TEMPLATE: Final[dict] = Config.load_internal_file("template.json")
-
-    @classmethod
-    def get(cls, key: str) -> dict:
-        # 返回一个复制，以防止原数据被篡改
-        return copy.deepcopy(cls.__TEMPLATE[key])
-
-
 # 使用引擎的开发者可以自定义的参数
 class Specification:
 

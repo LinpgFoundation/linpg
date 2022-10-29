@@ -20,12 +20,12 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 地图数据
         self._MAP: TileMap = TileMap()
         # 方格标准尺寸
-        self._standard_block_width: int = Display.get_width() // 10
-        self._standard_block_height: int = Display.get_height() // 10
+        self._standard_tile_width: int = Display.get_width() // 10
+        self._standard_tile_height: int = Display.get_height() // 10
         # 天气系统
         self._weather_system: WeatherSystem = WeatherSystem()
         # 当前鼠标位置上的tile块
-        self._block_is_hovering: Optional[tuple[int, int]] = None
+        self._tile_is_hovering: Optional[tuple[int, int]] = None
         # 启用检查点功能
         self._save_checkpoint_while_saving_progress = True
 
@@ -50,7 +50,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
 
     # 加载地图数据
     def _load_map(self, _data: dict) -> None:
-        self._MAP.update(_data, self._standard_block_width, self._standard_block_height)
+        self._MAP.update(_data, self._standard_tile_width, self._standard_tile_height)
 
     # 处理数据
     def _process_data(self, _data: dict, _mode: str = "default") -> None:
@@ -139,24 +139,24 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 根据按键情况设定要移动的数值
         if self.__moving_screen_in_direction_up is True:
             if self._screen_to_move_speed_y is None:
-                self._screen_to_move_speed_y = self._MAP.block_height // 4
+                self._screen_to_move_speed_y = self._MAP.tile_height // 4
             else:
-                self._screen_to_move_speed_y += self._MAP.block_height // 4
+                self._screen_to_move_speed_y += self._MAP.tile_height // 4
         if self.__moving_screen_in_direction_down is True:
             if self._screen_to_move_speed_y is None:
-                self._screen_to_move_speed_y = -self._MAP.block_height // 4
+                self._screen_to_move_speed_y = -self._MAP.tile_height // 4
             else:
-                self._screen_to_move_speed_y -= self._MAP.block_height // 4
+                self._screen_to_move_speed_y -= self._MAP.tile_height // 4
         if self.__moving_screen_in_direction_left is True:
             if self._screen_to_move_speed_x is None:
-                self._screen_to_move_speed_x = self._MAP.block_width // 4
+                self._screen_to_move_speed_x = self._MAP.tile_width // 4
             else:
-                self._screen_to_move_speed_x += self._MAP.block_width // 4
+                self._screen_to_move_speed_x += self._MAP.tile_width // 4
         if self.__moving_screen_in_direction_right is True:
             if self._screen_to_move_speed_x is None:
-                self._screen_to_move_speed_x = -self._MAP.block_width // 4
+                self._screen_to_move_speed_x = -self._MAP.tile_width // 4
             else:
-                self._screen_to_move_speed_x -= self._MAP.block_width // 4
+                self._screen_to_move_speed_x -= self._MAP.tile_width // 4
         # 如果需要移动屏幕
         temp_value: int
         if self._screen_to_move_speed_x is not None:
@@ -184,7 +184,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
             self._screen_to_move_speed_y if self._screen_to_move_speed_y is not None else 0,
         )
         # 获取位于鼠标位置的tile块
-        self._block_is_hovering = self._MAP.calculate_coordinate()
+        self._tile_is_hovering = self._MAP.calculate_coordinate()
         # 展示角色动画
         self._display_entities(_surface)
         # 检测角色所占据的装饰物（即需要透明化，方便玩家看到角色）

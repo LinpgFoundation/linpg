@@ -13,15 +13,10 @@ class Loader:
     def static_image(path: str, _position: tuple = (0, 0), size: tuple = (-1, -1), tag: str = "") -> StaticImage:
         return StaticImage(path, _position[0], _position[1], size[0], size[1], tag)
 
-    # 动态图片
-    @staticmethod
-    def dynamic_image(path: str, _position: tuple, size: tuple = (-1, -1), tag: str = "") -> DynamicImage:
-        return DynamicImage(path, _position[0], _position[1], size[0], size[1], tag)
-
     # 可自行移动的图片
     @staticmethod
-    def movable_image(path: str, _position: tuple, target_position: tuple, move_speed: tuple, size: tuple, tag: str = "") -> MovableImage:
-        return MovableImage(path, _position[0], _position[1], target_position[0], target_position[1], move_speed[0], move_speed[1], size[0], size[1], tag)
+    def movable_static_image(path: str, _position: tuple, target_position: tuple, move_speed: tuple, size: tuple, tag: str = "") -> MovableStaticImage:
+        return MovableStaticImage(path, _position[0], _position[1], target_position[0], target_position[1], move_speed[0], move_speed[1], size[0], size[1], tag)
 
     # 进度条Surface
     @staticmethod

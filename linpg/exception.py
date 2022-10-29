@@ -1,4 +1,5 @@
 import os
+import platform
 from datetime import datetime
 from typing import NoReturn
 
@@ -44,6 +45,12 @@ class EXCEPTION:
         # 写入讯息
         with open(os.path.join(cls.__CRASH_REPORTS_PATH, "crash_{}.txt".format(cls.__TIME_STAMP_WHEN_LINPG_STARTED)), "a", encoding="utf-8") as f:
             f.write("[{0}]\n{1}\n".format(datetime.now().strftime("%Y/%m/%d %H:%M:%S"), msg))
+            f.write("Environment: {0} with {1}".format(platform.platform(), cls.get_python_version()))
+
+    # 获取python版本
+    @staticmethod
+    def get_python_version() -> str:
+        return platform.python_version()
 
     # 告知不严重但建议查看的问题
     @staticmethod

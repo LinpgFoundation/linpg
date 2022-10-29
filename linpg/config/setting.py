@@ -14,7 +14,7 @@ class Setting:
     def reload(cls) -> None:
         # 加载内部默认的设置配置文件
         cls.__SETTING_DATA.clear()
-        cls.__SETTING_DATA.update(Template.get("setting"))
+        cls.__SETTING_DATA.update(dict(Specification.get("DefaultSetting")))
         # 如果自定义的设置配置文件存在，则加载
         if os.path.exists(cls.__SETTING_FILE_NAME):
             cls.__SETTING_DATA.update(Config.load_file(cls.__SETTING_FILE_NAME))

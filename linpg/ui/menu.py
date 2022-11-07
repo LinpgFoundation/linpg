@@ -439,7 +439,6 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
                         elif self.__pause_menu.get_button_clicked() == "back_to_mainMenu":
                             self.__close_menus()
                             self._fade(_surface)
-                            GlobalValue.set("BackToMainMenu", True)
                             self.stop()
             # 继续播放背景音乐
             Media.unpause()

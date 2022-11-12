@@ -62,6 +62,7 @@ class LinpgVersionChecker:
                 ).read(close=True)[0]
                 == _quit_text
             ):
+                from sys import exit
                 exit()
 
 

@@ -80,10 +80,21 @@ class GlobalVariables:
         _temp = cls.__GLOBAL_VARIABLES_DICT.get(_key)
         return int(_temp) if _temp is not None else _temp
 
+    # 以dict的形式获取特定的全局数据
+    @classmethod
+    def get_dict(cls, _key: str) -> dict:
+        return dict(cls.__GLOBAL_VARIABLES_DICT[_key])
+
+    # 尝试以dict的形式获取特定的全局数据
+    @classmethod
+    def try_get_dict(cls, _key: str) -> Optional[dict]:
+        _temp = cls.__GLOBAL_VARIABLES_DICT.get(_key)
+        return dict(_temp) if _temp is not None else _temp
+
     # 是否值存在且不为None
     @classmethod
     def is_not_none(cls, _key: str) -> bool:
-        return cls.__GLOBAL_VARIABLES_DICT.get(_key) is None
+        return cls.__GLOBAL_VARIABLES_DICT.get(_key) is not None
 
     # 设置特定的全局数据
     @classmethod
@@ -93,7 +104,7 @@ class GlobalVariables:
     # 删除特定的全局数据
     @classmethod
     def remove(cls, _key: str) -> None:
-        del cls.__GLOBAL_VARIABLES_DICT[_key]
+        cls.__GLOBAL_VARIABLES_DICT.pop(_key, None)
 
     # 清空所有全局数据
     @classmethod

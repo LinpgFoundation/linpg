@@ -44,61 +44,6 @@ class Debug:
         cls.__SHOW_FPS = value
 
 
-# 全局数据
-class GlobalValue:
-
-    # 用于存放全局数据的字典
-    __GLOBAL_VALUES_DICT: Final[dict] = {}
-
-    # 获取特定的全局数据
-    @classmethod
-    def get(cls, _key: str) -> object:
-        return cls.__GLOBAL_VALUES_DICT[_key]
-
-    # 设置特定的全局数据
-    @classmethod
-    def set(cls, _key: str, value: object) -> None:
-        cls.__GLOBAL_VALUES_DICT[_key] = value
-
-    # 删除特定的全局数据
-    @classmethod
-    def remove(cls, _key: str) -> None:
-        del cls.__GLOBAL_VALUES_DICT[_key]
-
-    # 清空所有全局数据
-    @classmethod
-    def clear(cls) -> None:
-        cls.__GLOBAL_VALUES_DICT.clear()
-
-    # 如果不是对应的值，则设置为对应的值，返回是否对应
-    @classmethod
-    def if_get_set(cls, _key: str, valueToGet: object, valueToSet: object) -> bool:
-        if cls.__GLOBAL_VALUES_DICT[_key] == valueToGet:
-            cls.__GLOBAL_VALUES_DICT[_key] = valueToSet
-            return True
-        else:
-            return False
-
-
-# 数据库
-class DataBase:
-
-    # 用于存放数据库数据的字典
-    __DATA_BASE_DICT: Final[dict] = {"Tiles": {}, "Decorations": {}, "Npc": {}, "Filters": {}}
-
-    @classmethod
-    def get(cls, *_key: str) -> Any:
-        return get_value_by_keys(cls.__DATA_BASE_DICT, _key)
-
-    @classmethod
-    def update(cls, _value: dict) -> None:
-        for key, value in _value.items():
-            if key not in cls.__DATA_BASE_DICT:
-                cls.__DATA_BASE_DICT[key] = value
-            else:
-                cls.__DATA_BASE_DICT[key].update(value)
-
-
 # 版本信息管理模块
 class Info:
 
@@ -107,7 +52,7 @@ class Info:
     # 引擎次更新版本号
     __REVISION: Final[int] = 5
     # 引擎补丁版本
-    __PATCH: Final[int] = 0
+    __PATCH: Final[int] = 1
 
     # 确保linpg版本
     @classmethod
@@ -232,32 +177,3 @@ class Cache:
             else:
                 cls.remove(_key)
         return False
-
-
-# 持久数据管理IO
-class PersistentData:
-
-    __DATA: Final[dict[str, Any]] = {}
-    __PATH: Final[str] = Specification.get_directory("save", "persistent." + Config.get_file_type())
-
-    @classmethod
-    def get(cls, _key: str) -> Optional[Any]:
-        return cls.__DATA.get(_key)
-
-    @classmethod
-    def set(cls, _key: str, _value: Any) -> None:
-        cls.__DATA[_key] = _value
-
-    @classmethod
-    def reload(cls) -> None:
-        cls.__DATA.clear()
-        if os.path.exists(cls.__PATH):
-            cls.__DATA.update(Config.load_file(cls.__PATH))
-
-    @classmethod
-    def save(cls) -> None:
-        Config.save(cls.__PATH, cls.__DATA)
-
-
-# 初始化持久数据库
-PersistentData.reload()

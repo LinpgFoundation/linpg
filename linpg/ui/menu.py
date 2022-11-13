@@ -189,6 +189,7 @@ class PauseMenu(AbstractInternalMenu):
                         self.__leave_warning.set_visible(False)
                 elif self.__exit_warning.is_visible():
                     if self.__exit_warning.item_being_hovered == "confirm":
+                        from sys import exit
                         exit()
                     elif self.__exit_warning.item_being_hovered == "cancel":
                         self.__exit_warning.set_visible(False)
@@ -439,7 +440,6 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
                         elif self.__pause_menu.get_button_clicked() == "back_to_mainMenu":
                             self.__close_menus()
                             self._fade(_surface)
-                            GlobalValue.set("BackToMainMenu", True)
                             self.stop()
             # 继续播放背景音乐
             Media.unpause()

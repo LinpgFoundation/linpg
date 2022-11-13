@@ -94,7 +94,11 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         for decoration in self.__decorations.values():
             decoration.ensure_image_cached()
         # 处于光处的区域
-        self.__lit_area = tuple() if MapImageParameters.get_darkness() > 0 else tuple(mapDataDic["map"].get("lit_area", []))
+        self.__lit_area = (
+            tuple()
+            if MapImageParameters.get_darkness() > 0
+            else tuple(Coordinates.convert(area_coordinate) for area_coordinate in mapDataDic["map"].get("lit_area", []))
+        )
         # 追踪目前已经画出的方块
         self.__tile_on_surface = numpy.zeros(self.__MAP.shape, dtype=numpy.byte)
         self.__need_to_recheck_tile_on_surface = True
@@ -136,7 +140,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             "map": {
                 "array2d": numpy.vectorize(lambda _num: sorted_lookup_table.index(self.__tile_lookup_table[_num]))(self.__MAP).tolist(),
                 "lookup_table": sorted_lookup_table,
-                "lit_area": list(self.__lit_area),
+                "lit_area": [list(area_coordinate) for area_coordinate in self.__lit_area],
             },
         }
 

@@ -29,6 +29,8 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         self.__dialog_options: Final[dict] = {}
         # 是否正在淡出的flag
         self.__is_fading_out: bool = True
+        # 是否已经完成最后一个Node
+        self.__has_reached_the_end: bool = False
         # 启用检查点功能
         self._save_checkpoint_while_saving_progress = True
 
@@ -61,6 +63,10 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
     def _get_dialog_box(self) -> DialogBox:
         return self.__dialog_txt_system
 
+    # 是否已经完成最后一个Node
+    def _has_reached_the_end(self) -> bool:
+        return self.__has_reached_the_end
+
     # 载入数据
     def _load_content(self) -> None:
         super()._load_content()
@@ -68,6 +74,8 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         CharacterImageManager.dev_mode = False
         # 重置对话框
         self.__dialog_txt_system.reset()
+        # 重置播放完成的flag
+        self.__has_reached_the_end = False
 
     # 读取存档
     def load_progress(self, _data: dict) -> None:
@@ -117,6 +125,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         self.__is_fading_out = True
         if not self._content.current.has_next():
             self._fade(_surface)
+            self.__has_reached_the_end = True
             self.stop()
         elif (next_dialog_type := self._content.current.next.get("type")) is not None:
             # 默认转到下一个对话
@@ -157,6 +166,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
             elif self.__buttons_container.item_being_hovered == "skip":
                 self.__is_fading_out = True
                 self._fade(_surface)
+                self.__has_reached_the_end = True
                 self.stop()
             elif self.__buttons_container.item_being_hovered == "is_auto":
                 self.__dialog_txt_system.set_playing_automatically(False)

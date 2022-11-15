@@ -49,9 +49,9 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         self._MAP.update(_data, self._standard_tile_width, self._standard_tile_height)
 
     # 处理数据
-    def _process_data(self, _data: dict, _mode: str = "default") -> None:
+    def _process_data(self, _data: dict) -> None:
         # 初始化角色信息
-        self._load_entities(_data.get("entities", {}), _mode)
+        self._load_entities(_data.get("entities", {}), _data.get("_mode", "default"))
         # 初始化地图
         self._load_map(_data)
 

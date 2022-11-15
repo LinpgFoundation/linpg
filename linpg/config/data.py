@@ -22,7 +22,10 @@ class PersistentData:
 
     @classmethod
     def save(cls) -> None:
-        Config.save(cls.__PATH, cls.__DATA)
+        if len(cls.__DATA) > 0:
+            Config.save(cls.__PATH, cls.__DATA)
+        else:
+            Files.delete_if_exist(cls.__PATH)
 
 
 # 初始化持久数据库

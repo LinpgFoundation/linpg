@@ -63,6 +63,7 @@ class LinpgVersionChecker:
                 == _quit_text
             ):
                 from sys import exit
+
                 exit()
 
 

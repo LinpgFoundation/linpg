@@ -14,8 +14,8 @@ class Display:
     # 主要的窗口
     __SCREEN_WINDOW: ImageSurface = Surfaces.NULL
     # 窗口尺寸
-    __STANDARD_WIDTH: int = max(int(Setting.get("Resolution", "width")), 0) * __SCALE // 100
-    __STANDARD_HEIGHT: int = max(int(Setting.get("Resolution", "height")), 0) * __SCALE // 100
+    __STANDARD_WIDTH: int = max(int(Setting.get("Resolution", "width")), 1) * __SCALE // 100
+    __STANDARD_HEIGHT: int = max(int(Setting.get("Resolution", "height")), 1) * __SCALE // 100
     # 信息渲染使用的文字模块
     __FONT: Final[pygame.font.Font] = pygame.font.SysFont("arial", __STANDARD_HEIGHT // 40)
 

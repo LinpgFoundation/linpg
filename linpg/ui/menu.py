@@ -190,6 +190,7 @@ class PauseMenu(AbstractInternalMenu):
                 elif self.__exit_warning.is_visible():
                     if self.__exit_warning.item_being_hovered == "confirm":
                         from sys import exit
+
                         exit()
                     elif self.__exit_warning.item_being_hovered == "cancel":
                         self.__exit_warning.set_visible(False)

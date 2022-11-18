@@ -136,6 +136,7 @@ class Console(SingleLineInputBox, HidableSurface, threading.Thread):
             self._txt_output.append("Linpg Version: {}".format(Info.get_current_version()))
         elif command_blocks[0] == "quit":
             from sys import exit
+
             exit()
         elif command_blocks[0] == "clear":
             self._txt_output.clear()

@@ -220,7 +220,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_map_file_location())
         self._process_data(Config.load_file(self.get_map_file_location()))
         self._init_ui()
-    
+
     # 重写load_progress - 功能上应和new一直，并忽略其他数据
     def load_progress(self, _data: dict) -> None:
         self.new(_data["chapter_type"], _data["chapter_id"], _data.get("project_name"))

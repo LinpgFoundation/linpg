@@ -120,8 +120,6 @@ class CharacterImageManager:
     # 存放当前对话的参与角色名称
     __current_characters: tuple[CharacterImageNameMetaData, ...] = tuple()
     __this_round_image_alpha: int = 0
-    # 立绘边长
-    _WIDTH: int = Display.get_width() // 2
     # 加载滤镜
     __filters: Final[dict[str, _FilterEffect]] = {}
     # 移动的x
@@ -129,12 +127,15 @@ class CharacterImageManager:
     # x轴offset
     __x_offset_for_this_round: int = 0
     __x_offset_for_last_round: int = 0
-    # y轴坐标
-    __NPC_Y: int = Display.get_height() - _WIDTH
     # 开发者模式
     dev_mode: bool = False
     # 被点击的角色
     character_get_click: Optional[str] = None
+
+    # 立绘边长
+    @staticmethod
+    def __GET_WIDTH() -> int:
+        return Display.get_width() // 2
 
     # 重新加载滤镜
     @classmethod
@@ -178,16 +179,16 @@ class CharacterImageManager:
             # 确保角色存在
             if _name_data.name not in cls.__character_image:
                 # 如果不能存在，则加载角色
-                imgTemp: StaticImage = StaticImage(Specification.get_directory("character_image", _name_data.name), 0, 0, cls._WIDTH, cls._WIDTH)
+                imgTemp: StaticImage = StaticImage(Specification.get_directory("character_image", _name_data.name), 0, 0, cls.__GET_WIDTH(), cls.__GET_WIDTH())
                 # 以tuple的形式保存立绘，index 0 是正常图片， index 1 是深色图片
                 cls.__character_image[_name_data.name] = (imgTemp, imgTemp.copy())
                 # 生成深色图片
                 cls.__character_image[_name_data.name][1].add_darkness(_DARKNESS)
             # 获取npc立绘的指针
             img: StaticImage = cls.__character_image[_name_data.name][1 if _name_data.has_tag("silent") else 0]
-            img.set_size(cls._WIDTH, cls._WIDTH)
+            img.set_size(cls.__GET_WIDTH(), cls.__GET_WIDTH())
             img.set_alpha(alpha)
-            img.set_pos(x, cls.__NPC_Y)
+            img.set_pos(x, Display.get_height() - cls.__GET_WIDTH())
             if len(_name_data.tags) > 0:
                 for _tag in _name_data.tags:
                     cls.__filters[_tag].render(img, _surface, _name_data.has_tag("silent"))
@@ -254,12 +255,12 @@ class CharacterImageManager:
         # 更新alpha值，并根据alpha值计算offset
         if cls.__last_round_image_alpha > 0:
             cls.__last_round_image_alpha -= 15
-            cls.__x_offset_for_last_round = int(cls._WIDTH / 4 - cls._WIDTH / 4 * cls.__last_round_image_alpha / 255)
+            cls.__x_offset_for_last_round = int(cls.__GET_WIDTH() / 4 - cls.__GET_WIDTH() / 4 * cls.__last_round_image_alpha / 255)
         else:
             cls.__x_offset_for_last_round = 0
         if cls.__this_round_image_alpha < 255:
             cls.__this_round_image_alpha += 25
-            cls.__x_offset_for_this_round = int(cls._WIDTH / 4 * cls.__this_round_image_alpha / 255 - cls._WIDTH / 4)
+            cls.__x_offset_for_this_round = int(cls.__GET_WIDTH() / 4 * cls.__this_round_image_alpha / 255 - cls.__GET_WIDTH() / 4)
         else:
             cls.__x_offset_for_this_round = 0
         # 初始化被选择的角色名字

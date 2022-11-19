@@ -31,8 +31,6 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         self.__is_fading_out: bool = True
         # 是否已经完成最后一个Node
         self.__has_reached_the_end: bool = False
-        # 启用检查点功能
-        self._save_checkpoint_while_saving_progress = True
 
     # 禁用基本功能
     def disable_basic_features(self) -> None:
@@ -96,9 +94,6 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         # 如果dialog Id存在
         if dialog_id in self._content.get_section_content():
             super()._update_scene(dialog_id)
-            # 自动保存
-            if self.auto_save:
-                self.save()
         else:
             EXCEPTION.fatal("The dialog id {} does not exist!".format(dialog_id))
 

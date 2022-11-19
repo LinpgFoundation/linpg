@@ -13,8 +13,6 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 背景图片
         self.__background_image_name: Optional[str] = None
         self.__background_image_surface: StaticImage | VideoSurface = self._black_bg.copy()
-        # 是否开启自动保存
-        self.auto_save: bool = False
         # 是否静音
         self._is_muted: bool = False
         # 选项菜单
@@ -40,10 +38,14 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
         )
 
     # 获取对话文件所在的具体路径
-    def get_dialog_file_location(self, lang: str = "") -> str:
-        if len(lang) == 0:
-            lang = Setting.get_language()
+    def get_dialog_file_location(self, lang: str) -> str:
         return os.path.join(self.get_dialog_folder_location(), "chapter{0}_dialogs_{1}.{2}".format(self._chapter_id, lang, Config.get_file_type()))
+
+    # 获取对话文件所在的具体路径
+    def get_data_file_path(self) -> str:
+        return os.path.join(
+            self.get_dialog_folder_location(), "chapter{0}_dialogs_{1}.{2}".format(self._chapter_id, Setting.get_language(), Config.get_file_type())
+        )
 
     # 获取对话文件的主语言
     def get_default_lang(self) -> str:
@@ -89,9 +91,9 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
     # 载入数据
     def _load_content(self) -> None:
         # 读取目标对话文件的数据
-        if os.path.exists(self.get_dialog_file_location()):
+        if os.path.exists(self.get_data_file_path()):
             # 获取目标对话数据
-            dialogData_t: dict = dict(Config.load(self.get_dialog_file_location(), "dialogs", self._content.get_section()))
+            dialogData_t: dict = dict(Config.load(self.get_data_file_path(), "dialogs", self._content.get_section()))
             # 如果该dialog文件是另一个语言dialog文件的子类
             if (default_lang_of_dialog := self.get_default_lang()) != Setting.get_language():
                 self._content.set_section_content(

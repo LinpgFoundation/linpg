@@ -368,6 +368,6 @@ class DialogBox(AbstractDialogBox):
                 height_t: int = self._dialogue_box.height - int(self._dialogue_box_max_height / Display.get_delta_time() / 10)
                 if height_t > 0:
                     self._dialogue_box.set_height(height_t)
-                    self._dialogue_box.move_downward(self._dialogue_box_max_height / Display.get_delta_time() // 20)
+                    self._dialogue_box.move_downward(self._dialogue_box_max_height // (Display.get_delta_time() * 20))
                 else:
                     self.reset()

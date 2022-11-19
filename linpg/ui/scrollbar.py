@@ -283,9 +283,9 @@ class AbstractSurfaceWithScrollBar(AbstractScrollBarsSurface, metaclass=ABCMeta)
         # 需要调整本地坐标
         if self.__is_holding_scroll_button is True:
             if self.axis_mode is Axis.VERTICAL:
-                self.add_local_y(Controller.mouse.get_y_moved() * (self.get_surface_height() / self.get_height()))
+                self.add_local_y(Controller.mouse.get_y_moved() * self.get_surface_height() / self.get_height())
             else:
-                self.add_local_x(Controller.mouse.get_x_moved() * (self.get_surface_width() / self.get_width()))
+                self.add_local_x(Controller.mouse.get_x_moved() * self.get_surface_width() / self.get_width())
         # 防止local坐标越界
         if self.axis_mode is Axis.VERTICAL:
             if self.local_y > 0:

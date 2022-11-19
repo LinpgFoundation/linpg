@@ -1,4 +1,3 @@
-import threading
 from abc import ABCMeta, abstractmethod
 
 from ..basic import *
@@ -103,19 +102,8 @@ class AbstractGameSystem(SystemWithBackgroundMusic, metaclass=ABCMeta):
         self._chapter_type: str = ""
         self._chapter_id: int = 0
         self._project_name: Optional[str] = None
-        # 储存进度存档的文件夹的路径
-        self.folder_for_save_file: str = Specification.get_directory("save")
-        # 存档文件的名称
-        self.name_for_save_file: str = "save.{}".format(Config.get_file_type())
         # 是否已经初始化
         self.__initialized: bool = False
-        # 是否在保存进度时调用save方法
-        self._save_checkpoint_while_saving_progress: bool = False
-
-    # 正在读取的文件
-    @property
-    def file_path(self) -> str:
-        return os.path.join(self.folder_for_save_file, self.name_for_save_file)
 
     # 是否初始化
     def is_initialized(self) -> bool:
@@ -137,80 +125,24 @@ class AbstractGameSystem(SystemWithBackgroundMusic, metaclass=ABCMeta):
         return {"chapter_type": self._chapter_type, "chapter_id": self._chapter_id, "project_name": self._project_name}
 
     # 获取需要保存的数据（子类必须实现）
+    @abstractmethod
     def _get_data_need_to_save(self) -> dict:
         EXCEPTION.fatal("_get_data_need_to_save()", 1)
 
-    # 处理保存类型的多线程
-    def __handle_save_thread(self, save_thread: threading.Thread) -> None:
-        # 确保储存数据的文件夹存在
-        if not os.path.exists(self.folder_for_save_file):
-            os.makedirs(self.folder_for_save_file)
-        # 多线程保存数据
-        save_thread.daemon = True
-        save_thread.start()
-        save_thread.join()
+    # 默认加载数据的路径（子类需实现）
+    @abstractmethod
+    def get_data_file_path(self) -> str:
+        EXCEPTION.fatal("get_data_file_path()", 1)
 
-    # 保存进度存档至默认路径
-    def save(self) -> None:
-        self.__handle_save_thread(threading.Thread(target=Config.save, args=(self.file_path, self._get_data_need_to_save())))
-
-    # 创建进度存档
-    def save_progress(self, screenshot: ImageSurface, slotId: int) -> None:
-        # 以zip的形式保存进度
-        self.__handle_save_thread(
-            threading.Thread(
-                target=ProgressDataPackageSavingSystem.save,
-                args=(os.path.join(self.folder_for_save_file, "save_{}.linpg.save".format(slotId)), self._get_data_need_to_save(), screenshot, slotId),
-            )
-        )
-        # 以配置文件的形式保存进度
-        if self._save_checkpoint_while_saving_progress is True:
-            self.save()
-
-    # 从默认存档路径加载进度存档
-    def load(self) -> None:
-        self.load_progress(Config.load_file(self.file_path))
-
-    # 加载进度存档（子类必须实现）
+    # 加载进度（子类需实现）
     @abstractmethod
     def load_progress(self, _data: dict) -> None:
         EXCEPTION.fatal("load_progress()", 1)
 
+    # 从默认的路径加载数据
+    def load(self) -> None:
+        self.load_progress(Config.load_file(self.get_data_file_path()))
 
-# 存档系统
-class ProgressDataPackageSavingSystem:
-    def __init__(self, _data: dict, _screenshot: ImageSurface, _info: dict) -> None:
-        self.data: Final[dict] = _data
-        self.screenshot: Final[ImageSurface] = _screenshot
-        self.createdAt: Final[str] = str(_info["createdAt"])
-        self.slotId: Final[int] = int(_info["slotId"])
-
-    # 保存存档
-    @classmethod
-    def save(cls, _path: str, _data: dict, _screenshot: ImageSurface, slotId: int) -> None:
-        # 保存存档文件到本地
-        Config.save("data.json", _data)
-        Config.save("info.json", {"createdAt": EXCEPTION.get_current_time().strftime("%Y-%m-%d %H:%M %p"), "slotId": slotId})
-        Images.save(_screenshot, "screenshot.png")
-        # 将存档文件写入zip文件中
-        with zipfile.ZipFile(_path, "w") as zipped_f:
-            zipped_f.write("data.json")
-            zipped_f.write("info.json")
-            zipped_f.write("screenshot.png")
-        # 删除本地文件
-        Files.delete_if_exist("data.json")
-        Files.delete_if_exist("info.json")
-        Files.delete_if_exist("screenshot.png")
-
-    # 取得存档
-    @staticmethod
-    def load(_path: str) -> "ProgressDataPackageSavingSystem":
-        # 打开zip文件并读取信息
-        zipFile: zipfile.ZipFile = zipfile.ZipFile(_path)
-        _data: dict = json.load(io.BytesIO(zipFile.read("data.json")))
-        _screenshot: ImageSurface = Images.fromBytesIO(io.BytesIO(zipFile.read("screenshot.png")))
-        _info: dict = json.load(io.BytesIO(zipFile.read("info.json")))
-        # 断开对zip文件的访问
-        zipFile.close()
-        # 返回数据
-        return ProgressDataPackageSavingSystem(_data, _screenshot, _info)
+    # 将数据保存到加载的路径
+    def _save(self) -> None:
+        Config.save(self.get_data_file_path(), self._get_data_need_to_save())

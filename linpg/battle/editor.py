@@ -31,8 +31,6 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self.__delete_mode: bool = False
         # 是否有ui容器被鼠标触碰
         self.__no_container_is_hovered: bool = False
-        # 禁用在父类中默认启用的检查点功能
-        self._save_checkpoint_while_saving_progress = False
 
     # 根据数据更新特定的角色 - 子类需实现
     @abstractmethod
@@ -65,7 +63,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
-        return Config.load_file(self.get_map_file_location()) | super()._get_data_need_to_save()
+        return Config.load_file(self.get_data_file_path()) | super()._get_data_need_to_save()
 
     # 移除在给定坐标上的角色
     def remove_entity_on_pos(self, target_pos: tuple[int, int]) -> None:
@@ -217,8 +215,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
     # 初始化并加载新场景
     def new(self, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
         self._initialize(chapterType, chapterId, projectName)
-        self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_map_file_location())
-        self._process_data(Config.load_file(self.get_map_file_location()))
+        self._process_data(Config.load_file(self.get_data_file_path()))
         self._init_ui()
 
     # 重写load_progress - 功能上应和new一直，并忽略其他数据
@@ -342,9 +339,9 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             if self.__buttons_container.item_being_hovered is None:
                 pass
             elif self.__buttons_container.item_being_hovered == "save":
-                self.save()
+                self._save()
             elif self.__buttons_container.item_being_hovered == "back":
-                if Config.load(self.get_map_file_location()) == self._get_data_need_to_save():
+                if Config.load(self.get_data_file_path()) == self._get_data_need_to_save():
                     self.stop()
                 else:
                     self.__no_save_warning.set_visible(True)
@@ -353,7 +350,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 self.__delete_mode = True
             elif self.__buttons_container.item_being_hovered == "reload":
                 tempLocal_x, tempLocal_y = self._MAP.get_local_pos()
-                self._process_data(Config.load(self.get_map_file_location()))
+                self._process_data(Config.load(self.get_data_file_path()))
                 self._MAP.set_local_pos(tempLocal_x, tempLocal_y)
 
         # 跟随鼠标显示即将被放下的物品
@@ -372,7 +369,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         if Controller.get_event("confirm") and self.__no_save_warning.item_being_hovered is not None:
             # 保存并离开
             if self.__no_save_warning.item_being_hovered == "save":
-                self.save()
+                self._save()
                 self.stop()
             # 取消
             elif self.__no_save_warning.item_being_hovered == "cancel":

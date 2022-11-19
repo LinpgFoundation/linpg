@@ -1,36 +1,5 @@
 from .modules import *
 
-# 持久数据管理IO
-class PersistentData:
-
-    __DATA: Final[dict[str, Any]] = {}
-    __PATH: Final[str] = Specification.get_directory("save", "persistent." + Config.get_file_type())
-
-    @classmethod
-    def get(cls, _key: str) -> Optional[Any]:
-        return cls.__DATA.get(_key)
-
-    @classmethod
-    def set(cls, _key: str, _value: Any) -> None:
-        cls.__DATA[_key] = _value
-
-    @classmethod
-    def reload(cls) -> None:
-        cls.__DATA.clear()
-        if os.path.exists(cls.__PATH):
-            cls.__DATA.update(Config.load_file(cls.__PATH))
-
-    @classmethod
-    def save(cls) -> None:
-        if len(cls.__DATA) > 0:
-            Config.save(cls.__PATH, cls.__DATA)
-        else:
-            Files.delete_if_exist(cls.__PATH)
-
-
-# 初始化持久数据库
-PersistentData.reload()
-
 # 数据库
 class DataBase:
 

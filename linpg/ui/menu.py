@@ -214,29 +214,22 @@ class SaveOrLoadSelectedProgressMenu(HidableSurface):
         # 当前选中存档的id
         self.__slotId: int = -1
         # 存档数据
-        self.__saves: dict[int, ProgressDataPackageSavingSystem] = {}
+        self.__saves: dict[int, Saves.Progress] = {}
         # 当前页码
         self.__page_id: int = 1
         # 最高页码
         self.__max_pages: int = 10
-        # 模式
-        self.switch: bool = True
 
-    def refresh(self) -> None:
-        self.__saves.clear()
-        for _save in glob(os.path.join(Specification.get_directory("save"), "*.linpg.save")):
-            _file: ProgressDataPackageSavingSystem = ProgressDataPackageSavingSystem.load(_save)
-            self.__saves[_file.slotId] = _file
-
+    # 是否显示
     def set_visible(self, visible: bool) -> None:
         super().set_visible(visible)
         if self.is_visible() is True:
-            self.refresh()
+            self.__saves = Saves.get_progresses()
 
     def get_selected_slot(self) -> int:
         return self.__slotId
 
-    def get_selected_save(self) -> Optional[ProgressDataPackageSavingSystem]:
+    def get_selected_save(self) -> Optional[Saves.Progress]:
         return self.__saves.get(self.__slotId)
 
     # 渲染切换页面的两侧按钮
@@ -304,7 +297,7 @@ class SaveOrLoadSelectedProgressMenu(HidableSurface):
                         _rect.set_pos(colum_padding + (colum_padding + rect_width) * _x, row_padding + (row_padding + rect_height) * _y)
                         _slotId: int = (self.__page_id - 1) * self.colum * self.colum + _y * self.colum + _x
                         _rect.draw_outline(_surface, Colors.GRAY, 0)
-                        _file: Optional[ProgressDataPackageSavingSystem] = self.__saves.get(_slotId)
+                        _file: Optional[Saves.Progress] = self.__saves.get(_slotId)
                         if _file is not None:
                             _img_height: int = int(_rect.get_height() * 0.8)
                             _surface.blit(Images.smoothly_resize_and_crop_to_fit(_file.screenshot, (_rect.get_width(), _img_height)), _rect.get_pos())
@@ -334,11 +327,13 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
         self.__pause_menu: Optional[PauseMenu] = None
         # 存档选择
         self.__select_progress_menu: SaveOrLoadSelectedProgressMenu = SaveOrLoadSelectedProgressMenu()
+        # 是保存进程还是读取存档
+        self.__save_or_load: bool = False
 
-    # 保存进度（子类需实现）
+    # 获取需要保存的数据（子类必须实现）
     @abstractmethod
-    def save_progress(self, screenshot: ImageSurface, slotId: int) -> None:
-        EXCEPTION.fatal("save_progress()", 1)
+    def _get_data_need_to_save(self) -> dict:
+        EXCEPTION.fatal("_get_data_need_to_save()", 1)
 
     # 加载进度（子类需实现）
     @abstractmethod
@@ -406,12 +401,12 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
                     self.__select_progress_menu.draw(_surface)
                     if self.__select_progress_menu.get_selected_slot() >= 0:
                         # 新建存档
-                        if self.__select_progress_menu.switch is True:
-                            self.save_progress(_screenshot, self.__select_progress_menu.get_selected_slot())
-                            self.__select_progress_menu.refresh()
+                        if self.__save_or_load is True:
+                            Saves.save(self._get_data_need_to_save(), _screenshot, self.__select_progress_menu.get_selected_slot())
+                            self.__select_progress_menu.set_visible(True)
                         # 读取存档
                         else:
-                            _save: Optional[ProgressDataPackageSavingSystem] = self.__select_progress_menu.get_selected_save()
+                            _save: Optional[Saves.Progress] = self.__select_progress_menu.get_selected_save()
                             if _save is not None:
                                 self.__close_menus()
                                 self.load_progress(_save.data)
@@ -432,10 +427,10 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
                             self.__close_menus()
                         elif self.__pause_menu.get_button_clicked() == "save":
                             self.__select_progress_menu.set_visible(True)
-                            self.__select_progress_menu.switch = True
+                            self.__save_or_load = True
                         elif self.__pause_menu.get_button_clicked() == "load":
                             self.__select_progress_menu.set_visible(True)
-                            self.__select_progress_menu.switch = False
+                            self.__save_or_load = False
                         elif self.__pause_menu.get_button_clicked() == "option_menu":
                             OptionMenu.set_visible(True)
                         elif self.__pause_menu.get_button_clicked() == "back_to_mainMenu":

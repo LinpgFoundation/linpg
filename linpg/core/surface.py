@@ -26,9 +26,9 @@ class AbstractImageSurface(Rectangle, HidableSurface, metaclass=ABCMeta):
         if self.get_width() < 0 and self.get_height() < 0:
             self.set_size(self.__img.get_width(), self.__img.get_height())
         elif self.get_width() < 0 <= self.get_height():
-            self.set_width(self.get_height() / self.__img.get_height() * self.__img.get_width())
+            self.set_width(self.get_height() * self.__img.get_width() // self.__img.get_height())
         elif self.get_width() >= 0 > self.get_height():
-            self.set_height(self.get_width() / self.__img.get_width() * self.__img.get_height())
+            self.set_height(self.get_width() * self.__img.get_height() // self.__img.get_width())
         self.tag = tag
 
     """透明度"""
@@ -65,10 +65,10 @@ class AbstractImageSurface(Rectangle, HidableSurface, metaclass=ABCMeta):
 
     # 在尺寸比例不变的情况下改变尺寸
     def set_width_with_original_image_size_locked(self, width: int_f) -> None:
-        self.set_size(width, width / self.__img.get_width() * self.__img.get_height())
+        self.set_size(width, width * self.__img.get_height() / self.__img.get_width())
 
     def set_height_with_original_image_size_locked(self, height: int_f) -> None:
-        self.set_size(height / self.__img.get_height() * self.__img.get_width(), height)
+        self.set_size(height * self.__img.get_width() / self.__img.get_height(), height)
 
     # 自动放大2倍
     def scale_n_times(self, times: float) -> None:

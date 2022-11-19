@@ -26,8 +26,6 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         self._weather_system: WeatherSystem = WeatherSystem()
         # 当前鼠标位置上的tile块
         self._tile_is_hovering: Optional[tuple[int, int]] = None
-        # 启用检查点功能
-        self._save_checkpoint_while_saving_progress = True
 
     # 渲染出所有的entity - 子类需实现
     @abstractmethod
@@ -55,8 +53,12 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 初始化地图
         self._load_map(_data)
 
-    # 获取对话文件所在的具体路径
+    # 获取地图文件所在的具体路径（即将弃置）
     def get_map_file_location(self) -> str:
+        return self.get_data_file_path()
+
+    # 获取地图文件所在的具体路径
+    def get_data_file_path(self) -> str:
         return (
             os.path.join("Data", self._chapter_type, "chapter{0}_map.{1}".format(self._chapter_id, Config.get_file_type()))
             if self._project_name is None
@@ -159,7 +161,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
             temp_value = self._MAP.get_local_x() + self._screen_to_move_speed_x // 5
             if Display.get_width() - self._MAP.get_width() <= temp_value <= 0:
                 self._MAP.set_local_x(temp_value)
-                self._screen_to_move_speed_x = int(self._screen_to_move_speed_x * 4 / 5)
+                self._screen_to_move_speed_x = self._screen_to_move_speed_x * 4 // 5
                 if self._screen_to_move_speed_x == 0:
                     self._screen_to_move_speed_x = None
             else:
@@ -168,7 +170,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
             temp_value = self._MAP.get_local_y() + self._screen_to_move_speed_y // 5
             if Display.get_height() - self._MAP.get_height() <= temp_value <= 0:
                 self._MAP.set_local_y(temp_value)
-                self._screen_to_move_speed_y = int(self._screen_to_move_speed_y * 4 / 5)
+                self._screen_to_move_speed_y = self._screen_to_move_speed_y * 4 // 5
                 if self._screen_to_move_speed_y == 0:
                     self._screen_to_move_speed_y = None
             else:

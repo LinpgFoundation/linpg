@@ -37,6 +37,8 @@ def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Optional[object],
     for index in range(key_range):
         try:
             if index < last_key_index:
+                if keys[index] not in pointer:
+                    pointer[keys[index]] = {}
                 pointer = pointer[keys[index]]
             else:
                 pointer[keys[index]] = value
@@ -82,6 +84,11 @@ class Config:
     @classmethod
     def load_file(cls, path: str) -> dict:
         return cls.__load_file(path)
+
+    # 尝试加载可能不存在的配置文件，如果不存在则返回一个空字典
+    @classmethod
+    def try_load_file_if_exists(cls, _path: str, _default: dict = {}) -> dict:
+        return cls.__load_file(_path) if os.path.exists(_path) else _default
 
     # 加载配置文件，并根据key（s）返回对应的数据
     @classmethod

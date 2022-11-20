@@ -32,10 +32,6 @@ class EXCEPTION:
         def __init__(self, *args: object):
             super().__init__(*args)
 
-    @staticmethod
-    def get_current_time() -> datetime:
-        return datetime.now()
-
     # 生成错误报告
     @classmethod
     def __log(cls, msg: str) -> None:

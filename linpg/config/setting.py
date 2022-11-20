@@ -42,7 +42,7 @@ class Setting:
     # 在不确定的情况下尝试获取设置数据
     @classmethod
     def try_get(cls, *key: str) -> Any:
-        return get_value_by_keys(cls.__SETTING_DATA, key, False)
+        return get_value_by_keys(cls.__SETTING_DATA, key, str(key))
 
     # 修改设置数据
     @classmethod

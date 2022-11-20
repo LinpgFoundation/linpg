@@ -1,7 +1,8 @@
-import copy
 import json
+from functools import reduce
 from glob import glob
-from typing import Any, Final, Optional
+from operator import getitem
+from typing import Any, Final, Optional, Sequence
 
 from ..exception import EXCEPTION, os
 
@@ -16,35 +17,33 @@ except Exception:
 
 
 # 根据keys查找值，最后返回一个复制的对象
-def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) -> object:
-    pointer = dict_to_check
-    for key in keys:
-        try:
-            pointer = pointer[key]
-        except KeyError:
-            if warning is True:
-                EXCEPTION.fatal('Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'.format(key))
-            return key
-    return copy.deepcopy(pointer)
+def get_value_by_keys(_dict: dict, _keys: Sequence, _default: Optional[Any] = None) -> Any:
+    try:
+        return reduce(getitem, _keys, _dict)
+    except KeyError:
+        if _default is None:
+            EXCEPTION.fatal('Getting "KeyError" while trying to get keys {} from dict!'.format(_keys))
+        return _default
 
 
 # 根据keys查找被设置对应对应对象为指定值
-def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Optional[object], warning: bool = True) -> None:
-    pointer = dict_to_check
-    key_range: int = len(keys)
-    last_key_index: int = key_range - 1
-    index: int
-    for index in range(key_range):
-        try:
-            if index < last_key_index:
-                if keys[index] not in pointer:
-                    pointer[keys[index]] = {}
-                pointer = pointer[keys[index]]
-            else:
-                pointer[keys[index]] = value
-        except KeyError:
-            if warning is True:
-                EXCEPTION.fatal('Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'.format(keys[index]))
+def set_value_by_keys(_dict: dict, _keys: Sequence, value: object, assumeKeyExists: bool = True) -> None:
+    if len(_keys) < 1:
+        EXCEPTION.fatal("Keys' length has to be greater than 0.")
+    pointer: dict = _dict
+    last_key_index: int = len(_keys) - 1
+    for index in range(last_key_index):
+        _item: Optional[object] = pointer.get(_keys[index])
+        if isinstance(_item, dict):
+            pointer = _item
+        elif _item is None:
+            if assumeKeyExists is True:
+                EXCEPTION.fatal('Getting "KeyError" while trying to set keys {} to dict!'.format(_keys))
+            pointer[_keys[index]] = {}
+            pointer = pointer[_keys[index]]
+        else:
+            EXCEPTION.fatal("Getting not dict object {0} while trying to set keys {1} to dict!".format(_item, _keys))
+    pointer[_keys[last_key_index]] = value
 
 
 # 配置文件管理模块

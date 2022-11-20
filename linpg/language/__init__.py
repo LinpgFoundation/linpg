@@ -77,7 +77,7 @@ class Lang:
 
     @classmethod
     def get_text_by_keys(cls, keys: tuple) -> str:
-        return str(get_value_by_keys(cls.__LANG_DATA, keys if isinstance(keys, tuple) else tuple(keys)))
+        return str(get_value_by_keys(cls.__LANG_DATA, keys))
 
     # 根据key(s)获取对应的语言 - 与get_text不同，这里返回的是any，通常是列表或者字典
     @classmethod

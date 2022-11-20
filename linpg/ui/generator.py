@@ -1,3 +1,5 @@
+import copy
+
 from .progressbar import *
 
 

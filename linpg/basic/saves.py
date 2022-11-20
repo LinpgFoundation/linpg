@@ -10,12 +10,12 @@ class PersistentData:
     __PATH: Final[str] = Specification.get_directory("save", "persistent." + Config.get_file_type())
 
     @classmethod
-    def get(cls, *_keys: str) -> Optional[Any]:
-        return get_value_by_keys(cls.__DATA, _keys)
+    def get(cls, *_keys: str, _default: Optional[Any] = None) -> Any:
+        return get_value_by_keys(cls.__DATA, _keys, _default)
 
     @classmethod
-    def set(cls, *_keys: str, value: Any) -> None:
-        set_value_by_keys(cls.__DATA, _keys, value)
+    def set(cls, *_keys: str, value: object) -> None:
+        set_value_by_keys(cls.__DATA, _keys, value, False)
         cls.save()
 
     @classmethod
@@ -47,21 +47,38 @@ class Saves:
         createdAt: str
         slotId: int
 
+    # 是否有至少一个存档存在
+    @staticmethod
+    def any_progress_exists() -> bool:
+        return len(glob(Specification.get_directory("save", "*.linpg.save"))) > 0
+
     # 获取全部存档
     @classmethod
-    def get_progresses(cls) -> dict[int, "Saves.Progress"]:
+    def get_progresses(cls) -> dict[int, Progress]:
         progresses: dict[int, Saves.Progress] = {}
         for _save in glob(Specification.get_directory("save", "*.linpg.save")):
-            _file: Saves.Progress = Saves.load(_save)
+            _file: Saves.Progress = cls.load(_save)
             progresses[_file.slotId] = _file
         return progresses
+
+    # 获取最近的一次存档
+    @classmethod
+    def get_latest_progresses(cls) -> Progress:
+        progresses: dict[int, Saves.Progress] = cls.get_progresses()
+        latest: Optional[Saves.Progress] = None
+        for _progress in progresses.values():
+            if latest is None or datetime.strptime(latest.createdAt, "%Y-%m-%d %H:%M %p") < datetime.strptime(_progress.createdAt, "%Y-%m-%d %H:%M %p"):
+                latest = _progress
+        if latest is None:
+            EXCEPTION.fatal("No progress exists!")
+        return latest
 
     # 保存存档
     @classmethod
     def __save(cls, _path: str, _data: dict, _screenshot: ImageSurface, slotId: int) -> None:
         # 保存存档文件到本地
         Config.save("data.json", _data)
-        Config.save("info.json", {"createdAt": EXCEPTION.get_current_time().strftime("%Y-%m-%d %H:%M %p"), "slotId": slotId})
+        Config.save("info.json", {"createdAt": datetime.now().strftime("%Y-%m-%d %H:%M %p"), "slotId": slotId})
         Images.save(_screenshot, "screenshot.png")
         # 将存档文件写入zip文件中
         with zipfile.ZipFile(_path, "w") as zipped_f:
@@ -85,8 +102,6 @@ class Saves:
         save_thread.daemon = True
         save_thread.start()
         save_thread.join()
-        # 写入最近保存的存档的slot id以支持快速继续游戏的功能
-        PersistentData.set("system", "latest_save_at", value=slotId)
 
     # 取得存档
     @classmethod

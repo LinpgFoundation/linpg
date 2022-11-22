@@ -1,5 +1,3 @@
-import copy
-
 from .progressbar import *
 
 
@@ -12,7 +10,7 @@ class UiGenerator:
     for key, value in Config.resolve_path_and_load_file(os.path.join("Data", "ui")).items():
         if key not in __UI_TEMPLATES:
             __UI_TEMPLATES[key] = {}
-        __UI_TEMPLATES[key].update(copy.deepcopy(value))
+        __UI_TEMPLATES[key].update(value)
 
     # 尝试转换特殊的string
     @classmethod

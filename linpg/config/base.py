@@ -1,3 +1,4 @@
+import copy
 import json
 from functools import reduce
 from glob import glob
@@ -19,7 +20,7 @@ except Exception:
 # 根据keys查找值，最后返回一个复制的对象
 def get_value_by_keys(_dict: dict, _keys: Sequence, _default: Optional[Any] = None) -> Any:
     try:
-        return reduce(getitem, _keys, _dict)
+        return copy.deepcopy(reduce(getitem, _keys, _dict))
     except KeyError:
         if _default is None:
             EXCEPTION.fatal('Getting "KeyError" while trying to get keys {} from dict!'.format(_keys))

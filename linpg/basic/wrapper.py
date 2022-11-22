@@ -11,7 +11,6 @@ import pygame.gfxdraw
 from PIL import ImageColor as PILImageColor  # type: ignore
 from PIL import ImageFilter as PILImageFilter
 from PIL import Image as PILImage  # type: ignore
-from pygame.colordict import THECOLORS
 
 from .coordinates import *
 
@@ -103,7 +102,7 @@ class Colors:
 
     # 转换至rgba颜色tuple
     @staticmethod
-    def __to_rgba_color(color: tuple) -> tuple[int, int, int, int]:
+    def __to_rgba_color(color: Sequence) -> tuple[int, int, int, int]:
         _r: int = int(color[0])
         _g: int = int(color[1])
         _b: int = int(color[2])
@@ -116,16 +115,12 @@ class Colors:
     @classmethod
     def get(cls, color: color_liked) -> tuple[int, int, int, int]:
         if isinstance(color, str):
-            if color.startswith("#"):
+            try:
                 return cls.__to_rgba_color(PILImageColor.getrgb(color))
-            else:
-                _the_color = THECOLORS.get(color)
-                if isinstance(_the_color, Sequence):
-                    return cls.__to_rgba_color(tuple(_the_color))
-                else:
-                    EXCEPTION.fatal('The color "{}" is currently not available!'.format(color))
+            except ValueError:
+                EXCEPTION.fatal('The color "{}" is currently not available!'.format(color))
         else:
-            return cls.__to_rgba_color(tuple(color))
+            return cls.__to_rgba_color(color)
 
 
 class Keys:

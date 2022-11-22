@@ -8,9 +8,9 @@ class Console(SingleLineInputBox, HidableSurface, threading.Thread):
 
     def __init__(self, x: int_f, y: int_f, font_size: int = 32, default_width: int = 150):
         HidableSurface.__init__(self, False)
-        self.color_active = Colors.get("dodgerblue2")
+        self.color_active = Colors.get("dodgerblue")
         SingleLineInputBox.__init__(self, x, y, font_size, self.color_active, default_width)
-        self.color_inactive = Colors.get("lightskyblue3")
+        self.color_inactive = Colors.get("lightskyblue")
         self._color = self.color_active
         self._active: bool = True
         self._text_history: list[str] = []

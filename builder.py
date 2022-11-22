@@ -1,18 +1,42 @@
-from os import path as PATH
+import os
+
 from linpgtoolbox.builder import Builder  # type: ignore
 
 # 编译源代码
-if not PATH.exists("src") or input("Do you want to recompile everything (Y/n):") == "Y":
-    # 编译所有文件
+if not os.path.exists("src") or input("Do you want to recompile everything (Y/n):") == "Y":
+    # 暂时重命名__init__.py文件以防止其干扰mypy typing生成工具
+    TEMP_INIT_NAME: str = "TEMP__init__.py"
+    if os.path.exists("__init__.py"):
+        os.rename("__init__.py", TEMP_INIT_NAME)
+    # 额外需要打包的文件
     additional_files: tuple[str, ...] = ("README.md", "LICENSE", "CODE_OF_CONDUCT.md", "doc")
+    # 开始编译
     Builder.compile(
         "linpg",
         additional_files=additional_files,
         smart_auto_module_combine=True,
         update_the_one_in_sitepackages=False,
-        include_default_pyinstaller_program=True,
-        options={"enable_multiprocessing": True, "compiler_directives": {"emit_code_comments": False}},
+        include_pyinstaller_program=True,
+        options={
+            "enable_multiprocessing": True,
+            "compiler_directives": {"emit_code_comments": False},
+            "hidden_imports": [
+                "PIL.Image",
+                "PIL.ImageColor",
+                "PIL.ImageFilter",
+                "PySimpleGUI",
+                "numpy",
+                "pygame",
+                "pygame._sdl2",
+                "pygame.gfxdraw",
+                "tcod",
+                "tkinter",
+            ],
+        },
     )
+    # 如果前面__init__.py已被成功重命名，则把其重命名回去
+    if os.path.exists(TEMP_INIT_NAME):
+        os.rename(TEMP_INIT_NAME, "__init__.py")
 
 # 提示编译完成
 for i in range(2):

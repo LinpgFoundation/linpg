@@ -1,10 +1,7 @@
-import copy
 import json
-from functools import reduce
 from glob import glob
-from operator import getitem
-from typing import Any, Final, Optional, Sequence
 
+from ..abstracts import *
 from ..exception import EXCEPTION, os
 
 # 尝试导入yaml库
@@ -15,37 +12,6 @@ try:
     _YAML_INITIALIZED = True
 except Exception:
     pass
-
-
-# 根据keys查找值，最后返回一个复制的对象
-def get_value_by_keys(_dict: dict, _keys: Sequence, _default: Optional[Any] = None) -> Any:
-    try:
-        return copy.deepcopy(reduce(getitem, _keys, _dict))
-    except KeyError:
-        if _default is None:
-            EXCEPTION.fatal('Getting "KeyError" while trying to get keys {} from dict!'.format(_keys))
-        return _default
-
-
-# 根据keys查找被设置对应对应对象为指定值
-def set_value_by_keys(_dict: dict, _keys: Sequence, value: object, assumeKeyExists: bool = True) -> None:
-    if len(_keys) < 1:
-        EXCEPTION.fatal("Keys' length has to be greater than 0.")
-    pointer: dict = _dict
-    last_key_index: int = len(_keys) - 1
-    for index in range(last_key_index):
-        _item: Optional[object] = pointer.get(_keys[index])
-        if isinstance(_item, dict):
-            pointer = _item
-        elif _item is None:
-            if assumeKeyExists is True:
-                EXCEPTION.fatal('Getting "KeyError" while trying to set keys {} to dict!'.format(_keys))
-            pointer[_keys[index]] = {}
-            pointer = pointer[_keys[index]]
-        else:
-            EXCEPTION.fatal("Getting not dict object {0} while trying to set keys {1} to dict!".format(_item, _keys))
-    pointer[_keys[last_key_index]] = value
-
 
 # 配置文件管理模块
 class Config:
@@ -93,7 +59,7 @@ class Config:
     # 加载配置文件，并根据key（s）返回对应的数据
     @classmethod
     def load(cls, path: str, *key: str) -> Any:
-        return get_value_by_keys(cls.__load_file(path), key)
+        return TypeSafeGetter.get_by_keys(cls.__load_file(path), key)
 
     # 加载内部配置文件
     @classmethod
@@ -147,16 +113,60 @@ class Config:
 
 
 # 使用引擎的开发者可以自定义的参数
-class Specification:
+class Specification(TypeSafeGetter):
 
     __SPECIFICATIONS: Final[dict] = Config.load_internal_file("specifications.json")
     # 尝试加载项目自定义的参数
     __SPECIFICATIONS.update(Config.resolve_path_and_load_file(os.path.join("Data", "specifications")))
 
     @classmethod
-    def get(cls, *key: str) -> Any:
-        return get_value_by_keys(cls.__SPECIFICATIONS, key)
+    def _get_data(cls) -> dict:
+        return cls.__SPECIFICATIONS
 
     @classmethod
     def get_directory(cls, category: str, *_sub: str) -> str:
         return str(os.path.join(*cls.__SPECIFICATIONS["Directory"][category], *_sub))
+
+
+# 数据库
+class DataBase(TypeSafeGetter):
+
+    # 用于存放数据库数据的字典
+    __DATA_BASE_DICT: Final[dict] = {"Tiles": {}, "Decorations": {}, "Npc": {}, "Filters": {}}
+
+    @classmethod
+    def _get_data(cls) -> dict:
+        return cls.__DATA_BASE_DICT
+
+    @classmethod
+    def update(cls, _value: dict) -> None:
+        for key, value in _value.items():
+            if key not in cls.__DATA_BASE_DICT:
+                cls.__DATA_BASE_DICT[key] = value
+            else:
+                cls.__DATA_BASE_DICT[key].update(value)
+
+
+# 全局数据
+class GlobalVariables(TypeSafeGetter, TypeSafeSetter):
+
+    # 用于存放全局数据的字典
+    __GLOBAL_VARIABLES_DICT: Final[dict] = {}
+
+    @classmethod
+    def _get_data(cls) -> dict:
+        return cls.__GLOBAL_VARIABLES_DICT
+
+    # 删除特定的全局数据
+    @classmethod
+    def remove(cls, _key: str) -> None:
+        cls.__GLOBAL_VARIABLES_DICT.pop(_key, None)
+
+    # 如果不是对应的值，则设置为对应的值，返回是否对应
+    @classmethod
+    def if_get_set(cls, _key: str, valueToGet: object, valueToSet: object) -> bool:
+        if cls.__GLOBAL_VARIABLES_DICT[_key] == valueToGet:
+            cls.__GLOBAL_VARIABLES_DICT[_key] = valueToSet
+            return True
+        else:
+            return False

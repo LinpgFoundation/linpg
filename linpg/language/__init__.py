@@ -73,16 +73,16 @@ class Lang:
     # 根据key(s)获取对应的语言
     @classmethod
     def get_text(cls, *key: str) -> str:
-        return str(get_value_by_keys(cls.__LANG_DATA, key))
+        return str(TypeSafeGetter.get_by_keys(cls.__LANG_DATA, key))
 
     @classmethod
     def get_text_by_keys(cls, keys: tuple) -> str:
-        return str(get_value_by_keys(cls.__LANG_DATA, keys))
+        return str(TypeSafeGetter.get_by_keys(cls.__LANG_DATA, keys))
 
     # 根据key(s)获取对应的语言 - 与get_text不同，这里返回的是any，通常是列表或者字典
     @classmethod
     def get_texts(cls, *key: str) -> Any:
-        return get_value_by_keys(cls.__LANG_DATA, key)
+        return TypeSafeGetter.get_by_keys(cls.__LANG_DATA, key)
 
     # 获取本地化的数字
     @classmethod

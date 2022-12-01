@@ -4,18 +4,18 @@ from dataclasses import dataclass
 from .font import *
 
 # 持久数据管理IO
-class PersistentData:
+class PersistentData(TypeSafeGetter, TypeSafeSetter):
 
     __DATA: Final[dict[str, Any]] = {}
     __PATH: Final[str] = Specification.get_directory("save", "persistent." + Config.get_file_type())
 
     @classmethod
-    def get(cls, *_keys: str, _default: Optional[Any] = None) -> Any:
-        return get_value_by_keys(cls.__DATA, _keys, _default)
+    def _get_data(cls) -> dict:
+        return cls.__DATA
 
     @classmethod
-    def set(cls, *_keys: str, value: object) -> None:
-        set_value_by_keys(cls.__DATA, _keys, value, False)
+    def set(cls, *_key: str, value: Any, assumeKeyExists: bool = False) -> None:
+        super().set(*_key, value=value, assumeKeyExists=assumeKeyExists)
         cls.save()
 
     @classmethod

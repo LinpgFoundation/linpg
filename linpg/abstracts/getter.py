@@ -28,12 +28,12 @@ class TypeSafeGetter:
     # 获取特定的数据
     @classmethod
     def get(cls, *_key: Any, _deepcopy: bool = True) -> Any:
-        return cls.get_by_keys(cls._get_data(), _key, _deepcopy)
+        return cls.get_by_keys(cls._get_data(), _key, _deepcopy=_deepcopy)
 
     # 尝试获取特定的数据
     @classmethod
-    def try_get(cls, *_key: Any, _default: Optional[Any] = None) -> Optional[Any]:
-        return cls.get_by_keys(cls._get_data(), _key, _default)
+    def try_get(cls, *_key: Any, _default: Optional[Any] = None, _deepcopy: bool = True) -> Optional[Any]:
+        return cls.get_by_keys(cls._get_data(), _key, _default, _deepcopy)
 
     # 是否值存在且不为None
     @classmethod

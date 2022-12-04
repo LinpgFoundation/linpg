@@ -32,6 +32,11 @@ class EXCEPTION:
         def __init__(self, *args: object):
             super().__init__(*args)
 
+    # 第三方库不存在
+    class SitePackageNotExists(Exception):
+        def __init__(self, *args: object):
+            super().__init__(*args)
+
     # 生成错误报告
     @classmethod
     def __log(cls, msg: str) -> None:
@@ -71,5 +76,7 @@ class EXCEPTION:
             raise cls.FileNotExists(info)
         elif error_type_id == 3:
             raise cls.ToolIsMissing(info)
+        elif error_type_id == 4:
+            raise cls.SitePackageNotExists(info)
         else:
             raise cls.Error(info)

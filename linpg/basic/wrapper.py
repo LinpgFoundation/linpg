@@ -276,7 +276,7 @@ class Filters:
     # 毛玻璃效果
     @staticmethod
     def glassmorphism_effect(_surface: ImageSurface, _rect: Optional[PG_TUPLE] = None, whiteness: int = 10) -> ImageSurface:
-        _processed_image = PILImage.fromarray(Surfaces.to_array(_surface if _rect is None else _surface.subsurface(_rect))).filter(
+        _processed_image: PILImage.Image = PILImage.fromarray(Surfaces.to_array(_surface if _rect is None else _surface.subsurface(_rect))).filter(
             PILImageFilter.GaussianBlur(radius=6)
         )
         _surface = Surfaces.from_array(numpy.asarray(_processed_image.convert("RGBA"))).convert_alpha()
@@ -286,7 +286,7 @@ class Filters:
     # 直接将毛玻璃效果应用到surface上
     @staticmethod
     def apply_glassmorphism_effect_to(_surface: ImageSurface, whiteness: int = 10) -> None:
-        _processed_image = PILImage.fromarray(Surfaces.to_array(_surface)).filter(PILImageFilter.GaussianBlur(radius=6))
+        _processed_image: PILImage.Image = PILImage.fromarray(Surfaces.to_array(_surface)).filter(PILImageFilter.GaussianBlur(radius=6))
         _surface.blit(Surfaces.from_array(numpy.asarray(_processed_image.convert("RGBA"))).convert_alpha(), (0, 0))
         _surface.fill((whiteness, whiteness, whiteness), special_flags=pygame.BLEND_RGB_ADD)
 

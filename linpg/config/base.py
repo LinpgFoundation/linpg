@@ -39,7 +39,7 @@ class Config:
                         _result: Any = yaml.load(f.read(), Loader=yaml.Loader)
                         return dict(_result) if _result is not None else {}
                     else:
-                        EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.")
+                        EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.", 4)
                 # 使用json模块加载配置文件
                 elif path.endswith(".json") or path.endswith(".linpg.meta"):
                     return dict(json.load(f))

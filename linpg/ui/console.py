@@ -115,6 +115,8 @@ class Console(SingleLineInputBox, HidableSurface, threading.Thread):
             self._txt_output.append(self._text[len(self._COMMAND_INDICATOR) + 4 :])
         elif command_blocks[0] == "set":
             Setting.set(*command_blocks[1 : len(command_blocks) - 1], value=command_blocks[len(command_blocks) - 1])
+        elif command_blocks[0] == "setgv":
+            GlobalVariables.set(*command_blocks[1 : len(command_blocks) - 1], value=command_blocks[len(command_blocks) - 1], assumeKeyExists=False)
         elif command_blocks[0] == "dev":
             if len(command_blocks) < 2:
                 self._txt_output.append("Unknown status for dev command.")

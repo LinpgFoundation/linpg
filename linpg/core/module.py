@@ -286,7 +286,7 @@ class GameObject2point5d(Coordinate):
         return self.x, self.y, self.z
 
     # 设置坐标
-    def set_pos(self, x: int_f, y: int_f, z: int_f = None) -> None:
+    def set_pos(self, x: int_f, y: int_f, z: Optional[int_f] = None) -> None:
         super().set_pos(x, y)
         if z is not None:
             self.z = int(z)

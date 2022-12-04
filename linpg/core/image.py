@@ -109,8 +109,8 @@ class MovableStaticImage(StaticImage):
     def __init__(
         self,
         img: PoI,
-        x: int_f,
-        y: int_f,
+        default_x: int_f,
+        default_y: int_f,
         target_x: int_f,
         target_y: int_f,
         move_speed_x: int_f,
@@ -119,7 +119,7 @@ class MovableStaticImage(StaticImage):
         height: int_f = -1,
         tag: str = "",
     ):
-        super().__init__(img, x, y, width, height, tag)
+        super().__init__(img, default_x, default_y, width, height, tag)
         self.__default_x: int = self.x
         self.__default_y: int = self.y
         self.__target_x: int = int(target_x)
@@ -158,15 +158,6 @@ class MovableStaticImage(StaticImage):
             self.tag,
         )
 
-    # 设置初始坐标
-    def set_pos(self, x: int_f, y: int_f) -> None:
-        self.__default_x = int(x)
-        self.__default_y = int(y)
-
-    # 设置当前的所在坐标
-    def set_real_pos(self, x: int_f, y: int_f) -> None:
-        super().set_pos(x, y)
-
     # 设置目标坐标
     def set_target(self, target_x: int_f, target_y: int_f, move_speed_x: int_f, move_speed_y: int_f) -> None:
         self.__target_x = int(target_x)
@@ -183,6 +174,10 @@ class MovableStaticImage(StaticImage):
 
     def move_back(self) -> None:
         self.__is_moving_toward_target = False
+
+    # 重置坐标
+    def reset_position(self) -> None:
+        self.set_pos(self.__default_x, self.__default_y)
 
     # 移动状态
     def is_moving_toward_target(self) -> bool:

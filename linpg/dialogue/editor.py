@@ -152,7 +152,6 @@ class DialogEditor(AbstractVisualNovelSystem):
 
         # 初始化数据
         super().new(chapterType, chapterId, section, projectName, dialogId)
-        self.folder_for_save_file, self.name_for_save_file = os.path.split(self.get_dialog_file_location())
 
         # 将脚本的不同部分的key载入到ui中
         for key in self._content.get():
@@ -161,7 +160,7 @@ class DialogEditor(AbstractVisualNovelSystem):
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
-        original_data: dict = Config.load_file(self.get_dialog_file_location()) if os.path.exists(self.get_dialog_file_location()) else {}
+        original_data: dict = Config.try_load_file_if_exists(self.get_data_file_path())
         original_data["dialogs"] = self.__split_the_stuff_need_save()
         return original_data
 
@@ -191,7 +190,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         CharacterImageManager.dev_mode = True
         # 加载内容数据
         self._content.clear()
-        if os.path.exists(path := self.get_dialog_file_location()) and "dialogs" in (data_t := Config.load_file(path)):
+        if os.path.exists(path := self.get_data_file_path()) and "dialogs" in (data_t := Config.load_file(path)):
             _dialogs: Optional[dict] = data_t.get("dialogs")
             if _dialogs is not None:
                 self._content.update(_dialogs)
@@ -269,7 +268,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         self._update_scene(self._content.get_id())
         # 如果有不同，应该立即保存
         if not self.__no_changes_were_made():
-            self.save()
+            self._save()
 
     # 分离需要保存的数据
     def __split_the_stuff_need_save(self) -> dict[str, dict[str, dict]]:
@@ -292,7 +291,7 @@ class DialogEditor(AbstractVisualNovelSystem):
     # 检查是否有任何改动
     def __no_changes_were_made(self) -> bool:
         return (
-            os.path.exists((dialog_file_location_t := self.get_dialog_file_location()))
+            os.path.exists((dialog_file_location_t := self.get_data_file_path()))
             and Config.load(dialog_file_location_t, "dialogs") == self.__split_the_stuff_need_save()
         )
 
@@ -349,9 +348,6 @@ class DialogEditor(AbstractVisualNovelSystem):
         if _lastId != "<NULL>":
             self._content.get_dialog(_id=dialogId)["narrator"] = self._content.get_dialog(_id=_lastId)["narrator"]
             self._content.get_dialog(_id=dialogId)["character_images"] = copy.deepcopy(self._content.get_dialog(_id=_lastId)["character_images"])
-        # 检测是否自动保存
-        if self.auto_save:
-            self.save()
         # 更新数据
         super()._update_scene(dialogId)
         self.__update_ui()
@@ -500,7 +496,7 @@ class DialogEditor(AbstractVisualNovelSystem):
                 elif self.__buttons_ui_container.item_being_hovered == "add":
                     self.__add_dialog(self.generate_a_new_recommended_key())
                 elif self.__buttons_ui_container.item_being_hovered == "save":
-                    self.save()
+                    self._save()
                 elif self.__buttons_ui_container.item_being_hovered == "reload":
                     self._load_content()
                 elif self.__buttons_ui_container.item_being_hovered == "mute":
@@ -561,7 +557,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         if Controller.get_event("confirm") and self.__no_save_warning.item_being_hovered != "":
             # 保存并离开
             if self.__no_save_warning.item_being_hovered == "save":
-                self.save()
+                self._save()
                 self.stop()
             # 取消
             elif self.__no_save_warning.item_being_hovered == "cancel":

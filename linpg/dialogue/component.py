@@ -114,7 +114,7 @@ class DialogNavigationWindow(AbstractFrame):
     def _any_content_container_event(self) -> bool:
         for key, value in self.__nodes_map.items():
             if Controller.mouse.is_in_rect(
-                value.x + self.x - self.get_local_x(), value.y + self.y + self._bar_height - self.get_local_y(), value.get_width(), value.get_height()
+                value.x + self.x - self.get_local_x(), value.y + self.y + self._get_bar_height() - self.get_local_y(), value.get_width(), value.get_height()
             ):
                 self.update_selected(key)
                 return True
@@ -368,6 +368,6 @@ class DialogBox(AbstractDialogBox):
                 height_t: int = self._dialogue_box.height - int(self._dialogue_box_max_height / Display.get_delta_time() / 10)
                 if height_t > 0:
                     self._dialogue_box.set_height(height_t)
-                    self._dialogue_box.move_downward(self._dialogue_box_max_height / Display.get_delta_time() // 20)
+                    self._dialogue_box.move_downward(self._dialogue_box_max_height // (Display.get_delta_time() * 20))
                 else:
                     self.reset()

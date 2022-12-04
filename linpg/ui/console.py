@@ -8,9 +8,9 @@ class Console(SingleLineInputBox, HidableSurface, threading.Thread):
 
     def __init__(self, x: int_f, y: int_f, font_size: int = 32, default_width: int = 150):
         HidableSurface.__init__(self, False)
-        self.color_active = Colors.get("dodgerblue2")
+        self.color_active = Colors.get("dodgerblue")
         SingleLineInputBox.__init__(self, x, y, font_size, self.color_active, default_width)
-        self.color_inactive = Colors.get("lightskyblue3")
+        self.color_inactive = Colors.get("lightskyblue")
         self._color = self.color_active
         self._active: bool = True
         self._text_history: list[str] = []
@@ -115,6 +115,8 @@ class Console(SingleLineInputBox, HidableSurface, threading.Thread):
             self._txt_output.append(self._text[len(self._COMMAND_INDICATOR) + 4 :])
         elif command_blocks[0] == "set":
             Setting.set(*command_blocks[1 : len(command_blocks) - 1], value=command_blocks[len(command_blocks) - 1])
+        elif command_blocks[0] == "setgv":
+            GlobalVariables.set(*command_blocks[1 : len(command_blocks) - 1], value=command_blocks[len(command_blocks) - 1], assumeKeyExists=False)
         elif command_blocks[0] == "dev":
             if len(command_blocks) < 2:
                 self._txt_output.append("Unknown status for dev command.")
@@ -136,6 +138,7 @@ class Console(SingleLineInputBox, HidableSurface, threading.Thread):
             self._txt_output.append("Linpg Version: {}".format(Info.get_current_version()))
         elif command_blocks[0] == "quit":
             from sys import exit
+
             exit()
         elif command_blocks[0] == "clear":
             self._txt_output.clear()

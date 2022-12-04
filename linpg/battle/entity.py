@@ -9,12 +9,7 @@ class Entity(Position):
     # 存放音效的字典
     __SOUNDS: Final[dict[str, dict[str, tuple]]] = {}
     # 角色数据库
-    __DATABASE: Final[dict[str, dict]] = {}
-    # 尝试加载角色数据
-    _path: str = os.path.join("Data", "character_data." + Config.get_file_type())
-    if os.path.exists(_path):
-        __DATABASE.update(Config.load_file(_path))
-    del _path
+    __DATABASE: Final[dict[str, dict]] = Config.try_load_file_if_exists(os.path.join("Data", "character_data." + Config.get_file_type()))
     # idle动作
     __IDLE_ACTION: Final[str] = "wait"
 

@@ -2,12 +2,16 @@ from .base import *
 
 
 # 设置参数管理系统
-class Setting:
+class Setting(TypeSafeGetter, TypeSafeSetter):
 
     # 储存设置配置文件的数据
     __SETTING_DATA: Final[dict] = {}
     # 当前配置文件保存路径的参数
     __SETTING_FILE_NAME: Final[str] = Specification.get_directory("setting", "setting." + Config.get_file_type())
+
+    @classmethod
+    def _get_data(cls) -> dict:
+        return cls.__SETTING_DATA
 
     # 重新加载设置数据
     @classmethod
@@ -33,24 +37,6 @@ class Setting:
     @classmethod
     def save(cls) -> None:
         Config.save(cls.__SETTING_FILE_NAME, cls.__SETTING_DATA)
-
-    # 获取设置数据
-    @classmethod
-    def get(cls, *key: str) -> Any:
-        return get_value_by_keys(cls.__SETTING_DATA, key)
-
-    # 在不确定的情况下尝试获取设置数据
-    @classmethod
-    def try_get(cls, *key: str) -> Any:
-        return get_value_by_keys(cls.__SETTING_DATA, key, False)
-
-    # 修改设置数据
-    @classmethod
-    def set(cls, *key: str, value: object, save_to_local: bool = False) -> None:
-        set_value_by_keys(cls.__SETTING_DATA, key, value)
-        # 如果需要保存到本地
-        if save_to_local is True:
-            cls.save()
 
     """其他常用的重要参数"""
 

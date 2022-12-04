@@ -1,5 +1,5 @@
 """
 结构:
-base -> setting -> modules -> data
+base -> setting -> modules
 """
-from .data import *
+from .modules import *

@@ -14,7 +14,7 @@ except ImportError:
 def _video_validator(path: str) -> None:
     # 如果opencv没有成功地导入
     if not _OPENCV_INITIALIZED:
-        EXCEPTION.fatal("You cannot use any video module unless you install opencv!")
+        EXCEPTION.fatal("You cannot use any video module unless you install opencv!", 4)
     # 确保路径存在
     elif not os.path.exists(path):
         EXCEPTION.fatal('Cannot find file on path: "{}"'.format(path))

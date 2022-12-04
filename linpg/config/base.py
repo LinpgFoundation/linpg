@@ -1,8 +1,7 @@
-import copy
 import json
 from glob import glob
-from typing import Any, Final, Optional
 
+from ..abstracts import *
 from ..exception import EXCEPTION, os
 
 # 尝试导入yaml库
@@ -13,37 +12,6 @@ try:
     _YAML_INITIALIZED = True
 except Exception:
     pass
-
-
-# 根据keys查找值，最后返回一个复制的对象
-def get_value_by_keys(dict_to_check: dict, keys: tuple, warning: bool = True) -> object:
-    pointer = dict_to_check
-    for key in keys:
-        try:
-            pointer = pointer[key]
-        except KeyError:
-            if warning is True:
-                EXCEPTION.fatal('Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'.format(key))
-            return key
-    return copy.deepcopy(pointer)
-
-
-# 根据keys查找被设置对应对应对象为指定值
-def set_value_by_keys(dict_to_check: dict, keys: tuple, value: Optional[object], warning: bool = True) -> None:
-    pointer = dict_to_check
-    key_range: int = len(keys)
-    last_key_index: int = key_range - 1
-    index: int
-    for index in range(key_range):
-        try:
-            if index < last_key_index:
-                pointer = pointer[keys[index]]
-            else:
-                pointer[keys[index]] = value
-        except KeyError:
-            if warning is True:
-                EXCEPTION.fatal('Getting "KeyError" while trying to get {}!\nPlease check your code or report this bug to the developer!'.format(keys[index]))
-
 
 # 配置文件管理模块
 class Config:
@@ -71,7 +39,7 @@ class Config:
                         _result: Any = yaml.load(f.read(), Loader=yaml.Loader)
                         return dict(_result) if _result is not None else {}
                     else:
-                        EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.")
+                        EXCEPTION.fatal("You cannot load YAML file because yaml is not imported successfully.", 4)
                 # 使用json模块加载配置文件
                 elif path.endswith(".json") or path.endswith(".linpg.meta"):
                     return dict(json.load(f))
@@ -83,10 +51,15 @@ class Config:
     def load_file(cls, path: str) -> dict:
         return cls.__load_file(path)
 
+    # 尝试加载可能不存在的配置文件，如果不存在则返回一个空字典
+    @classmethod
+    def try_load_file_if_exists(cls, _path: str, _default: dict = {}) -> dict:
+        return cls.__load_file(_path) if os.path.exists(_path) else _default
+
     # 加载配置文件，并根据key（s）返回对应的数据
     @classmethod
     def load(cls, path: str, *key: str) -> Any:
-        return get_value_by_keys(cls.__load_file(path), key)
+        return TypeSafeGetter.get_by_keys(cls.__load_file(path), key)
 
     # 加载内部配置文件
     @classmethod
@@ -140,16 +113,60 @@ class Config:
 
 
 # 使用引擎的开发者可以自定义的参数
-class Specification:
+class Specification(TypeSafeGetter):
 
     __SPECIFICATIONS: Final[dict] = Config.load_internal_file("specifications.json")
     # 尝试加载项目自定义的参数
     __SPECIFICATIONS.update(Config.resolve_path_and_load_file(os.path.join("Data", "specifications")))
 
     @classmethod
-    def get(cls, *key: str) -> Any:
-        return get_value_by_keys(cls.__SPECIFICATIONS, key)
+    def _get_data(cls) -> dict:
+        return cls.__SPECIFICATIONS
 
     @classmethod
     def get_directory(cls, category: str, *_sub: str) -> str:
         return str(os.path.join(*cls.__SPECIFICATIONS["Directory"][category], *_sub))
+
+
+# 数据库
+class DataBase(TypeSafeGetter):
+
+    # 用于存放数据库数据的字典
+    __DATA_BASE_DICT: Final[dict] = {"Tiles": {}, "Decorations": {}, "Npc": {}, "Filters": {}}
+
+    @classmethod
+    def _get_data(cls) -> dict:
+        return cls.__DATA_BASE_DICT
+
+    @classmethod
+    def update(cls, _value: dict) -> None:
+        for key, value in _value.items():
+            if key not in cls.__DATA_BASE_DICT:
+                cls.__DATA_BASE_DICT[key] = value
+            else:
+                cls.__DATA_BASE_DICT[key].update(value)
+
+
+# 全局数据
+class GlobalVariables(TypeSafeGetter, TypeSafeSetter):
+
+    # 用于存放全局数据的字典
+    __GLOBAL_VARIABLES_DICT: Final[dict] = {}
+
+    @classmethod
+    def _get_data(cls) -> dict:
+        return cls.__GLOBAL_VARIABLES_DICT
+
+    # 删除特定的全局数据
+    @classmethod
+    def remove(cls, _key: str) -> None:
+        cls.__GLOBAL_VARIABLES_DICT.pop(_key, None)
+
+    # 如果不是对应的值，则设置为对应的值，返回是否对应
+    @classmethod
+    def if_get_set(cls, _key: str, valueToGet: object, valueToSet: object) -> bool:
+        if cls.__GLOBAL_VARIABLES_DICT[_key] == valueToGet:
+            cls.__GLOBAL_VARIABLES_DICT[_key] = valueToSet
+            return True
+        else:
+            return False

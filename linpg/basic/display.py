@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from .controller import *
 
 
@@ -14,8 +16,8 @@ class Display:
     # 主要的窗口
     __SCREEN_WINDOW: ImageSurface = Surfaces.NULL
     # 窗口尺寸
-    __STANDARD_WIDTH: int = max(int(Setting.get("Resolution", "width")), 0) * __SCALE // 100
-    __STANDARD_HEIGHT: int = max(int(Setting.get("Resolution", "height")), 0) * __SCALE // 100
+    __STANDARD_WIDTH: int = max(int(Setting.get("Resolution", "width")), 1) * __SCALE // 100
+    __STANDARD_HEIGHT: int = max(int(Setting.get("Resolution", "height")), 1) * __SCALE // 100
     # 信息渲染使用的文字模块
     __FONT: Final[pygame.font.Font] = pygame.font.SysFont("arial", __STANDARD_HEIGHT // 40)
 
@@ -45,7 +47,7 @@ class Display:
             Controller.NEED_TO_TAKE_SCREENSHOT = False
             if not os.path.exists("screenshots"):
                 os.mkdir("screenshots")
-            pygame.image.save(cls.__SCREEN_WINDOW, os.path.join("screenshots", "{}.png".format(EXCEPTION.get_current_time().strftime("%Y%m%d%H%M%S"))))
+            pygame.image.save(cls.__SCREEN_WINDOW, os.path.join("screenshots", "{}.png".format(datetime.now().strftime("%Y%m%d%H%M%S"))))
         # 更新控制器
         Controller.update()
         Controller.mouse.draw_custom_icon(cls.__SCREEN_WINDOW)

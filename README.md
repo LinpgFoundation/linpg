@@ -1,9 +1,3 @@
-**Open Source after reaching 1k star!!**
-
-### **1k star后开源！！**
-
-
-
 # :speech_balloon: Preamble / 前言
 
 ###### *"Just because c++ is the greatest language ever invented doesn't mean that writing games in c++ is easy and fun, and the same goes for pygame."*
@@ -30,17 +24,23 @@ Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游
 
 # :hammer_and_wrench: Dependencies / 运行库 
 
-| pygame      |
+| Required / 必需安装 |
 | :---------- |
-| pyyaml      |
-| opencv      |
+| pygame      |
 | numpy       |
 | PySimpleGUI |
-| tcod   |
+
+| Recommended* / 建议安装* |
+| ------------------------ |
+| pyyaml                   |
+| opencv                   |
+| tcod                     |
 
 ***Special shout out to the developers of these libraries. They make game development using python no longer unthinkable.***
 
 ##### ***感谢这些库的开发者，他（她）们让使用python开发游戏不再遥远。***
+
+\* these libraries will be installed by default as some common features cannot be enabled without these libraries
 
 
 

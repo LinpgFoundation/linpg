@@ -11,7 +11,6 @@ import pygame.gfxdraw
 from PIL import ImageColor as PILImageColor  # type: ignore
 from PIL import ImageFilter as PILImageFilter
 from PIL import Image as PILImage  # type: ignore
-from pygame.colordict import THECOLORS
 
 from .coordinates import *
 
@@ -103,7 +102,7 @@ class Colors:
 
     # 转换至rgba颜色tuple
     @staticmethod
-    def __to_rgba_color(color: tuple) -> tuple[int, int, int, int]:
+    def __to_rgba_color(color: Sequence) -> tuple[int, int, int, int]:
         _r: int = int(color[0])
         _g: int = int(color[1])
         _b: int = int(color[2])
@@ -116,16 +115,12 @@ class Colors:
     @classmethod
     def get(cls, color: color_liked) -> tuple[int, int, int, int]:
         if isinstance(color, str):
-            if color.startswith("#"):
+            try:
                 return cls.__to_rgba_color(PILImageColor.getrgb(color))
-            else:
-                _the_color = THECOLORS.get(color)
-                if isinstance(_the_color, Sequence):
-                    return cls.__to_rgba_color(tuple(_the_color))
-                else:
-                    EXCEPTION.fatal('The color "{}" is currently not available!'.format(color))
+            except ValueError:
+                EXCEPTION.fatal('The color "{}" is currently not available!'.format(color))
         else:
-            return cls.__to_rgba_color(tuple(color))
+            return cls.__to_rgba_color(color)
 
 
 class Keys:
@@ -281,7 +276,7 @@ class Filters:
     # 毛玻璃效果
     @staticmethod
     def glassmorphism_effect(_surface: ImageSurface, _rect: Optional[PG_TUPLE] = None, whiteness: int = 10) -> ImageSurface:
-        _processed_image = PILImage.fromarray(Surfaces.to_array(_surface if _rect is None else _surface.subsurface(_rect))).filter(
+        _processed_image: PILImage.Image = PILImage.fromarray(Surfaces.to_array(_surface if _rect is None else _surface.subsurface(_rect))).filter(
             PILImageFilter.GaussianBlur(radius=6)
         )
         _surface = Surfaces.from_array(numpy.asarray(_processed_image.convert("RGBA"))).convert_alpha()
@@ -291,7 +286,7 @@ class Filters:
     # 直接将毛玻璃效果应用到surface上
     @staticmethod
     def apply_glassmorphism_effect_to(_surface: ImageSurface, whiteness: int = 10) -> None:
-        _processed_image = PILImage.fromarray(Surfaces.to_array(_surface)).filter(PILImageFilter.GaussianBlur(radius=6))
+        _processed_image: PILImage.Image = PILImage.fromarray(Surfaces.to_array(_surface)).filter(PILImageFilter.GaussianBlur(radius=6))
         _surface.blit(Surfaces.from_array(numpy.asarray(_processed_image.convert("RGBA"))).convert_alpha(), (0, 0))
         _surface.fill((whiteness, whiteness, whiteness), special_flags=pygame.BLEND_RGB_ADD)
 

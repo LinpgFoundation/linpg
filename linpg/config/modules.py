@@ -52,19 +52,20 @@ class Info:
     # 引擎次更新版本号
     __REVISION: Final[int] = 5
     # 引擎补丁版本
-    __PATCH: Final[int] = 2
+    __PATCH: Final[int] = 3
 
     # 确保linpg版本
     @classmethod
     def ensure_linpg_version(cls, action: str, revision: int, patch: int, version: int = 3) -> bool:
-        if action == "==":
-            return cls.__VERSION == version and cls.__REVISION == revision and cls.__PATCH == patch
-        elif action == ">=":
-            return cls.__VERSION >= version and cls.__REVISION >= revision and cls.__PATCH >= patch
-        elif action == "<=":
-            return cls.__VERSION <= version and cls.__REVISION <= revision and cls.__PATCH <= patch
-        else:
-            EXCEPTION.fatal('Action "{}" is not supported!'.format(action))
+        match action:
+            case "==":
+                return cls.__VERSION == version and cls.__REVISION == revision and cls.__PATCH == patch
+            case ">=":
+                return cls.__VERSION >= version and cls.__REVISION >= revision and cls.__PATCH >= patch
+            case "<=":
+                return cls.__VERSION <= version and cls.__REVISION <= revision and cls.__PATCH <= patch
+            case _:
+                EXCEPTION.fatal('Action "{}" is not supported!'.format(action))
 
     # 获取当前版本号
     @classmethod

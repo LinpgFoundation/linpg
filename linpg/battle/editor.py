@@ -249,29 +249,30 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                     else:
                         self.remove_entity_on_pos(self._tile_is_hovering)
                 elif len(self.__object_to_put_down) > 0 and self.__no_container_is_hovered is True:
-                    if self.__object_to_put_down["type"] == "tile":
-                        self._MAP.set_tile(*self._tile_is_hovering, self.__object_to_put_down["id"])
-                    elif self.__object_to_put_down["type"] == "decoration":
-                        # 查看当前位置是否有装饰物
-                        decoration = self._MAP.get_decoration(self._tile_is_hovering)
-                        # 如果发现有冲突的装饰物
-                        if decoration is not None:
-                            self._MAP.remove_decoration(decoration)
-                        self._MAP.add_decoration(
-                            {"id": self.__object_to_put_down["id"], "x": self._tile_is_hovering[0], "y": self._tile_is_hovering[1]},
-                        )
-                    elif self.__object_to_put_down["type"] == "entity":
-                        # 移除坐标冲突的角色
-                        self.remove_entity_on_pos(self._tile_is_hovering)
-                        # 生成需要更新的数据
-                        _new_data: dict = copy.deepcopy(Entity.get_entity_data(self.__object_to_put_down["id"]))
-                        _new_data.update({"x": self._tile_is_hovering[0], "y": self._tile_is_hovering[1], "type": self.__object_to_put_down["id"]})
-                        the_id: int = 0
-                        nameTemp: str = self.__object_to_put_down["id"] + "_" + str(the_id)
-                        while nameTemp in self._entities_data[_new_data["faction"]]:
-                            the_id += 1
-                            nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
-                        self.update_entity(_new_data["faction"], nameTemp, _new_data)
+                    match self.__object_to_put_down["type"]:
+                        case "tile":
+                            self._MAP.set_tile(*self._tile_is_hovering, self.__object_to_put_down["id"])
+                        case "decoration":
+                            # 查看当前位置是否有装饰物
+                            decoration = self._MAP.get_decoration(self._tile_is_hovering)
+                            # 如果发现有冲突的装饰物
+                            if decoration is not None:
+                                self._MAP.remove_decoration(decoration)
+                            self._MAP.add_decoration(
+                                {"id": self.__object_to_put_down["id"], "x": self._tile_is_hovering[0], "y": self._tile_is_hovering[1]},
+                            )
+                        case "entity":
+                            # 移除坐标冲突的角色
+                            self.remove_entity_on_pos(self._tile_is_hovering)
+                            # 生成需要更新的数据
+                            _new_data: dict = copy.deepcopy(Entity.get_entity_data(self.__object_to_put_down["id"]))
+                            _new_data.update({"x": self._tile_is_hovering[0], "y": self._tile_is_hovering[1], "type": self.__object_to_put_down["id"]})
+                            the_id: int = 0
+                            nameTemp: str = self.__object_to_put_down["id"] + "_" + str(the_id)
+                            while nameTemp in self._entities_data[_new_data["faction"]]:
+                                the_id += 1
+                                nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
+                            self.update_entity(_new_data["faction"], nameTemp, _new_data)
 
         # 画出地图
         self._display_map(_surface)
@@ -284,17 +285,18 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             self.__decorationsImgContainer.display(_surface, UIContainerRight_offset_pos)
             self.__right_container_buttons.display(_surface, UIContainerRight_offset_pos)
             if Controller.get_event("confirm") is True:
-                if self.__right_container_buttons.item_being_hovered == "select_tile":
-                    self.__envImgContainer.set_visible(True)
-                    self.__decorationsImgContainer.set_visible(False)
-                elif self.__right_container_buttons.item_being_hovered == "select_decoration":
-                    self.__envImgContainer.set_visible(False)
-                    self.__decorationsImgContainer.set_visible(True)
-            if Controller.get_event("confirm") is True:
-                if self.__envImgContainer.is_visible() and self.__envImgContainer.item_being_hovered is not None:
-                    self.__object_to_put_down = {"type": "tile", "id": self.__envImgContainer.item_being_hovered}
-                elif self.__decorationsImgContainer.is_visible() and self.__decorationsImgContainer.item_being_hovered is not None:
-                    self.__object_to_put_down = {"type": "decoration", "id": self.__decorationsImgContainer.item_being_hovered}
+                match self.__right_container_buttons.item_being_hovered:
+                    case "select_tile":
+                        self.__envImgContainer.set_visible(True)
+                        self.__decorationsImgContainer.set_visible(False)
+                    case "select_decoration":
+                        self.__envImgContainer.set_visible(False)
+                        self.__decorationsImgContainer.set_visible(True)
+                    case _:
+                        if self.__envImgContainer.is_visible() and self.__envImgContainer.item_being_hovered is not None:
+                            self.__object_to_put_down = {"type": "tile", "id": self.__envImgContainer.item_being_hovered}
+                        elif self.__decorationsImgContainer.is_visible() and self.__decorationsImgContainer.item_being_hovered is not None:
+                            self.__object_to_put_down = {"type": "decoration", "id": self.__decorationsImgContainer.item_being_hovered}
 
         # 画出下方容器的UI
         self.__UIContainerButtonBottom.draw(_surface)
@@ -336,44 +338,46 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         # 画出上方按钮
         self.__buttons_container.draw(_surface)
         if Controller.get_event("confirm") and len(self.__object_to_put_down) <= 0 and not self.__delete_mode:
-            if self.__buttons_container.item_being_hovered is None:
-                pass
-            elif self.__buttons_container.item_being_hovered == "save":
-                self._save()
-            elif self.__buttons_container.item_being_hovered == "back":
-                if Config.load(self.get_data_file_path()) == self._get_data_need_to_save():
-                    self.stop()
-                else:
-                    self.__no_save_warning.set_visible(True)
-            elif self.__buttons_container.item_being_hovered == "delete":
-                self.__object_to_put_down.clear()
-                self.__delete_mode = True
-            elif self.__buttons_container.item_being_hovered == "reload":
-                tempLocal_x, tempLocal_y = self._MAP.get_local_pos()
-                self._process_data(Config.load(self.get_data_file_path()))
-                self._MAP.set_local_pos(tempLocal_x, tempLocal_y)
+            match self.__buttons_container.item_being_hovered:
+                case "save":
+                    self._save()
+                case "back":
+                    if Config.load(self.get_data_file_path()) == self._get_data_need_to_save():
+                        self.stop()
+                    else:
+                        self.__no_save_warning.set_visible(True)
+                case "delete":
+                    self.__object_to_put_down.clear()
+                    self.__delete_mode = True
+                case "reload":
+                    tempLocal_x, tempLocal_y = self._MAP.get_local_pos()
+                    self._process_data(Config.load(self.get_data_file_path()))
+                    self._MAP.set_local_pos(tempLocal_x, tempLocal_y)
 
         # 跟随鼠标显示即将被放下的物品
         if len(self.__object_to_put_down) > 0:
-            if self.__object_to_put_down["type"] == "tile":
-                _surface.blit(self.__envImgContainer.get(self.__object_to_put_down["id"]), Controller.mouse.get_pos())
-            elif self.__object_to_put_down["type"] == "decoration":
-                _surface.blit(self.__decorationsImgContainer.get(self.__object_to_put_down["id"]), Controller.mouse.get_pos())
-            elif self.__object_to_put_down["type"] == "entity":
-                _surface.blit(
-                    self.__entitiesImagesContainers[self.__object_to_put_down["container_id"]].get(self.__object_to_put_down["id"]), Controller.mouse.get_pos()
-                )
+            match self.__object_to_put_down["type"]:
+                case "tile":
+                    _surface.blit(self.__envImgContainer.get(self.__object_to_put_down["id"]), Controller.mouse.get_pos())
+                case "decoration":
+                    _surface.blit(self.__decorationsImgContainer.get(self.__object_to_put_down["id"]), Controller.mouse.get_pos())
+                case "entity":
+                    _surface.blit(
+                        self.__entitiesImagesContainers[self.__object_to_put_down["container_id"]].get(self.__object_to_put_down["id"]),
+                        Controller.mouse.get_pos(),
+                    )
 
         # 未保存离开时的警告
         self.__no_save_warning.draw(_surface)
-        if Controller.get_event("confirm") and self.__no_save_warning.item_being_hovered is not None:
-            # 保存并离开
-            if self.__no_save_warning.item_being_hovered == "save":
-                self._save()
-                self.stop()
-            # 取消
-            elif self.__no_save_warning.item_being_hovered == "cancel":
-                self.__no_save_warning.set_visible(False)
-            # 不保存并离开
-            elif self.__no_save_warning.item_being_hovered == "dont_save":
-                self.stop()
+        if Controller.get_event("confirm"):
+            match self.__no_save_warning.item_being_hovered:
+                # 保存并离开
+                case "save":
+                    self._save()
+                    self.stop()
+                # 取消
+                case "cancel":
+                    self.__no_save_warning.set_visible(False)
+                # 不保存并离开
+                case "dont_save":
+                    self.stop()

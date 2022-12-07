@@ -122,58 +122,60 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
             self._fade(_surface)
             self.__has_reached_the_end = True
             self.stop()
-        elif (next_dialog_type := self._content.current.next.get("type")) is not None:
-            # 默认转到下一个对话
-            if next_dialog_type == "default":
-                self._update_scene(self._content.current.next["target"])
-            # 如果是多选项，则不用处理
-            elif next_dialog_type == "option":
-                pass
-            # 如果是切换场景
-            elif next_dialog_type == "changeScene":
-                self._fade(_surface)
-                # 更新场景
-                self._update_scene(str(self._content.current.next["target"]))
-                self.__dialog_txt_system.reset()
-                self.__is_fading_out = False
-                self._fade(_surface)
-            # 如果是需要播放过程动画
-            elif next_dialog_type == "cutscene":
-                self._fade(_surface)
-                self.stop()
-                self.play_cutscene(_surface)
-            # break被视为立刻退出，没有淡出动画
-            elif next_dialog_type == "break":
-                self.stop()
-            # 非法type
-            else:
-                EXCEPTION.fatal('Type "{}" is not a valid type.'.format(next_dialog_type))
+        else:
+            match self._content.current.next.get("type"):
+                # 默认转到下一个对话
+                case "default":
+                    self._update_scene(self._content.current.next["target"])
+                # 如果是多选项，则不用处理
+                case "option":
+                    pass
+                # 如果是切换场景
+                case "changeScene":
+                    self._fade(_surface)
+                    # 更新场景
+                    self._update_scene(str(self._content.current.next["target"]))
+                    self.__dialog_txt_system.reset()
+                    self.__is_fading_out = False
+                    self._fade(_surface)
+                # 如果是需要播放过程动画
+                case "cutscene":
+                    self._fade(_surface)
+                    self.stop()
+                    self.play_cutscene(_surface)
+                # break被视为立刻退出，没有淡出动画
+                case "break":
+                    self.stop()
+                # 非法type
+                case _:
+                    EXCEPTION.fatal('Current dialog "{}" has a valid next type.'.format(self._content.current.id))
 
     def __check_button_event(self, _surface: ImageSurface) -> bool:
         if self.__buttons_container is not None:
             if self.__buttons_container.is_hidden():
                 self.__buttons_container.set_visible(True)
                 self.__dialog_txt_system.set_visible(True)
-            elif self.__buttons_container.item_being_hovered == "hide":
-                self.__buttons_container.set_visible(False)
-                self.__dialog_txt_system.set_visible(False)
-            # 如果接来下没有文档了或者玩家按到了跳过按钮, 则准备淡出并停止播放
-            elif self.__buttons_container.item_being_hovered == "skip":
-                self.__is_fading_out = True
-                self._fade(_surface)
-                self.__has_reached_the_end = True
-                self.stop()
-            elif self.__buttons_container.item_being_hovered == "is_auto":
-                self.__dialog_txt_system.set_playing_automatically(False)
-                self.__buttons_container.get("not_auto").set_visible(True)
-                self.__buttons_container.get("is_auto").set_visible(False)
-            elif self.__buttons_container.item_being_hovered == "not_auto":
-                self.__dialog_txt_system.set_playing_automatically(True)
-                self.__buttons_container.get("not_auto").set_visible(False)
-                self.__buttons_container.get("is_auto").set_visible(True)
-            elif self.__buttons_container.item_being_hovered == "history":
-                self.__is_showing_history = True
             else:
+                match self.__buttons_container.item_being_hovered:
+                    case "hide":
+                        self.__buttons_container.set_visible(False)
+                        self.__dialog_txt_system.set_visible(False)
+                    # 如果接来下没有文档了或者玩家按到了跳过按钮, 则准备淡出并停止播放
+                    case "skip":
+                        self.__is_fading_out = True
+                        self._fade(_surface)
+                        self.__has_reached_the_end = True
+                        self.stop()
+                    case "is_auto":
+                        self.__dialog_txt_system.set_playing_automatically(False)
+                        self.__buttons_container.get("not_auto").set_visible(True)
+                        self.__buttons_container.get("is_auto").set_visible(False)
+                    case "not_auto":
+                        self.__dialog_txt_system.set_playing_automatically(True)
+                        self.__buttons_container.get("not_auto").set_visible(False)
+                        self.__buttons_container.get("is_auto").set_visible(True)
+                    case "history":
+                        self.__is_showing_history = True
                 return False
             return True
         else:
@@ -314,35 +316,35 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
                         )
                         local_y += self.__dialog_txt_system.FONT.size * 3 // 2
                     if dialogIdTemp != self._content.get_id():
-                        _next_dialog_type: str = str(self._content.get_dialog(_id=dialogIdTemp)["next_dialog_id"]["type"])
-                        if _next_dialog_type == "default" or _next_dialog_type == "changeScene":
-                            if (target_temp := self._content.get_dialog(_id=dialogIdTemp)["next_dialog_id"]["target"]) is not None:
-                                dialogIdTemp = str(target_temp)
-                            else:
-                                break
-                        elif _next_dialog_type == "option":
-                            narratorTemp = self.__dialog_txt_system.FONT.render(self.__CHOICE_TEXT + ":", (0, 191, 255))
-                            self.__history_text_surface.blit(
-                                narratorTemp, (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() // 10 + local_y)
-                            )
-                            self.__history_text_surface.blit(
-                                self.__dialog_txt_system.FONT.render(
-                                    str(
-                                        self._content.get_dialog(_id=dialogIdTemp)["next_dialog_id"]["target"][int(self.__dialog_options[dialogIdTemp]["id"])][
-                                            "text"
-                                        ]
+                        match str(self._content.get_dialog(_id=dialogIdTemp)["next_dialog_id"]["type"]):
+                            case "default" | "changeScene":
+                                if (target_temp := self._content.get_dialog(_id=dialogIdTemp)["next_dialog_id"]["target"]) is not None:
+                                    dialogIdTemp = str(target_temp)
+                                else:
+                                    break
+                            case "option":
+                                narratorTemp = self.__dialog_txt_system.FONT.render(self.__CHOICE_TEXT + ":", (0, 191, 255))
+                                self.__history_text_surface.blit(
+                                    narratorTemp, (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() // 10 + local_y)
+                                )
+                                self.__history_text_surface.blit(
+                                    self.__dialog_txt_system.FONT.render(
+                                        str(
+                                            self._content.get_dialog(_id=dialogIdTemp)["next_dialog_id"]["target"][
+                                                int(self.__dialog_options[dialogIdTemp]["id"])
+                                            ]["text"]
+                                        ),
+                                        (0, 191, 255),
                                     ),
-                                    (0, 191, 255),
-                                ),
-                                (Display.get_width() * 0.15, Display.get_height() // 10 + local_y),
-                            )
-                            local_y += self.__dialog_txt_system.FONT.size * 3 // 2
-                            if (target_temp := self.__dialog_options[dialogIdTemp]["target"]) is not None and local_y < Display.get_height():
-                                dialogIdTemp = str(target_temp)
-                            else:
+                                    (Display.get_width() * 0.15, Display.get_height() // 10 + local_y),
+                                )
+                                local_y += self.__dialog_txt_system.FONT.size * 3 // 2
+                                if (target_temp := self.__dialog_options[dialogIdTemp]["target"]) is not None and local_y < Display.get_height():
+                                    dialogIdTemp = str(target_temp)
+                                else:
+                                    break
+                            case _:
                                 break
-                        else:
-                            break
                     else:
                         break
             _surface.blit(self.__history_bg_surface, (0, 0))

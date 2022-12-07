@@ -186,60 +186,61 @@ class UiGenerator:
                 # 转换尺寸
                 object_width: int = cls.__convert_number(data, "width", max_width, custom_values)
                 object_height: int = cls.__convert_number(data, "height", max_height, custom_values)
-                if data["type"] == "button":
-                    if "alpha_when_not_hover" not in data:
-                        data["alpha_when_not_hover"] = 255
-                    item_t = Button.load(data["src"], ORIGIN, (object_width, object_height), data["alpha_when_not_hover"])
-                    if "text" in data:
-                        item_t.set_text(
-                            ButtonComponent.text(
-                                cls.__load_text(data["text"]["src"]),
-                                object_height / 2,
-                                data["text"]["color"],
-                                alpha_when_not_hover=data["alpha_when_not_hover"],
+                match data["type"]:
+                    case "button":
+                        if "alpha_when_not_hover" not in data:
+                            data["alpha_when_not_hover"] = 255
+                        item_t = Button.load(data["src"], ORIGIN, (object_width, object_height), data["alpha_when_not_hover"])
+                        if "text" in data:
+                            item_t.set_text(
+                                ButtonComponent.text(
+                                    cls.__load_text(data["text"]["src"]),
+                                    object_height / 2,
+                                    data["text"]["color"],
+                                    alpha_when_not_hover=data["alpha_when_not_hover"],
+                                )
                             )
+                        if "icon" in data:
+                            # 转换尺寸
+                            _icon_width: int = cls.__convert_number(data["icon"], "width", max_width, custom_values)
+                            _icon_height: int = cls.__convert_number(data["icon"], "height", max_height, custom_values)
+                            item_t.set_icon(ButtonComponent.icon(data["icon"]["src"], (_icon_width, _icon_height), data["alpha_when_not_hover"]))
+                        if "scale_for_resizing_width" in data:
+                            item_t.set_scale_for_resizing_width(data["scale_for_resizing_width"])
+                        if "scale_for_resizing_height" in data:
+                            item_t.set_scale_for_resizing_height(data["scale_for_resizing_height"])
+                        if "auto_resize" in data:
+                            item_t.set_auto_resize(data["auto_resize"])
+                        if "description" in data:
+                            item_t.set_description(cls.__load_text(data["description"]))
+                        if "name" not in data:
+                            EXCEPTION.fatal("You have to set a name for button type.")
+                    case "progress_bar_adjuster":
+                        # 确认按钮存在
+                        if "indicator" not in data:
+                            EXCEPTION.fatal("You need to set a indicator for progress_bar_adjuster!")
+                        # 设置模式
+                        if "mode" not in data:
+                            data["mode"] = Axis.HORIZONTAL
+                        # 生成ProgressBarAdjuster
+                        item_t = ProgressBarAdjuster(
+                            data["src"][0],
+                            data["src"][1],
+                            data["indicator"]["src"],
+                            0,
+                            0,
+                            object_width,
+                            object_height,
+                            cls.__convert_number(data["indicator"], "width", object_width, custom_values),
+                            cls.__convert_number(data["indicator"], "height", object_height, custom_values),
+                            data["mode"],
                         )
-                    if "icon" in data:
-                        # 转换尺寸
-                        _icon_width: int = cls.__convert_number(data["icon"], "width", max_width, custom_values)
-                        _icon_height: int = cls.__convert_number(data["icon"], "height", max_height, custom_values)
-                        item_t.set_icon(ButtonComponent.icon(data["icon"]["src"], (_icon_width, _icon_height), data["alpha_when_not_hover"]))
-                    if "scale_for_resizing_width" in data:
-                        item_t.set_scale_for_resizing_width(data["scale_for_resizing_width"])
-                    if "scale_for_resizing_height" in data:
-                        item_t.set_scale_for_resizing_height(data["scale_for_resizing_height"])
-                    if "auto_resize" in data:
-                        item_t.set_auto_resize(data["auto_resize"])
-                    if "description" in data:
-                        item_t.set_description(cls.__load_text(data["description"]))
-                    if "name" not in data:
-                        EXCEPTION.fatal("You have to set a name for button type.")
-                elif data["type"] == "progress_bar_adjuster":
-                    # 确认按钮存在
-                    if "indicator" not in data:
-                        EXCEPTION.fatal("You need to set a indicator for progress_bar_adjuster!")
-                    # 设置模式
-                    if "mode" not in data:
-                        data["mode"] = Axis.HORIZONTAL
-                    # 生成ProgressBarAdjuster
-                    item_t = ProgressBarAdjuster(
-                        data["src"][0],
-                        data["src"][1],
-                        data["indicator"]["src"],
-                        0,
-                        0,
-                        object_width,
-                        object_height,
-                        cls.__convert_number(data["indicator"], "width", object_width, custom_values),
-                        cls.__convert_number(data["indicator"], "height", object_height, custom_values),
-                        data["mode"],
-                    )
-                    if "name" not in data:
-                        EXCEPTION.fatal("You have to set a name for button type.")
-                elif data["type"] == "image":
-                    item_t = StaticImage(data["src"], 0, 0, object_width, object_height)
-                else:
-                    EXCEPTION.fatal("Current type is not supported")
+                        if "name" not in data:
+                            EXCEPTION.fatal("You have to set a name for button type.")
+                    case "image":
+                        item_t = StaticImage(data["src"], 0, 0, object_width, object_height)
+                    case _:
+                        EXCEPTION.fatal("Current type is not supported")
             # 如果有名字，则以tag的形式进行标注
             item_t.tag = data["name"] if "name" in data else ""
             # 透明度

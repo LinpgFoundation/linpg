@@ -46,8 +46,8 @@ for i in range(2):
     print("")
 
 # 打包上传最新的文件
-action: str = input("Do you want to package and upload the latest build (Y/n):")
-if action == "Y":
-    Builder.upload_package()
-elif action != "N":
-    Builder.delete_file_if_exist("src")
+match input("Do you want to package and upload the latest build (Y/n):"):
+    case "Y":
+        Builder.upload_package()
+    case "N":
+        Builder.delete_file_if_exist("src")

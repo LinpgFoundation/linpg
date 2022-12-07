@@ -185,28 +185,29 @@ class AbstractSurfaceWithScrollBar(AbstractScrollBarsSurface, metaclass=ABCMeta)
             return "bottom" if not self.__scroll_bar_pos else "top"
 
     def set_scroll_bar_pos(self, pos: str) -> None:
-        if pos == "left":
-            if self.axis_mode is Axis.VERTICAL:
-                self.__scroll_bar_pos = True
-            else:
-                EXCEPTION.fatal("You cannot put the scroll bar on the left during horizontal mode!")
-        elif pos == "right":
-            if self.axis_mode is Axis.VERTICAL:
-                self.__scroll_bar_pos = False
-            else:
-                EXCEPTION.fatal("You cannot put the scroll bar on the right during horizontal mode!")
-        elif pos == "top":
-            if self.axis_mode is Axis.HORIZONTAL:
-                self.__scroll_bar_pos = True
-            else:
-                EXCEPTION.fatal("You cannot put the scroll bar on the top during vertical mode!")
-        elif pos == "bottom":
-            if self.axis_mode is Axis.HORIZONTAL:
-                self.__scroll_bar_pos = False
-            else:
-                EXCEPTION.fatal("You cannot put the scroll bar on the bottom during vertical mode!")
-        else:
-            EXCEPTION.fatal('Scroll bar position "{}" is not supported! Try sth like "right" or "bottom" instead.'.format(pos))
+        match pos:
+            case "left":
+                if self.axis_mode is Axis.VERTICAL:
+                    self.__scroll_bar_pos = True
+                else:
+                    EXCEPTION.fatal("You cannot put the scroll bar on the left during horizontal mode!")
+            case "right":
+                if self.axis_mode is Axis.VERTICAL:
+                    self.__scroll_bar_pos = False
+                else:
+                    EXCEPTION.fatal("You cannot put the scroll bar on the right during horizontal mode!")
+            case "top":
+                if self.axis_mode is Axis.HORIZONTAL:
+                    self.__scroll_bar_pos = True
+                else:
+                    EXCEPTION.fatal("You cannot put the scroll bar on the top during vertical mode!")
+            case "bottom":
+                if self.axis_mode is Axis.HORIZONTAL:
+                    self.__scroll_bar_pos = False
+                else:
+                    EXCEPTION.fatal("You cannot put the scroll bar on the bottom during vertical mode!")
+            case _:
+                EXCEPTION.fatal('Scroll bar position "{}" is not supported! Try sth like "right" or "bottom" instead.'.format(pos))
 
     # 获取滚动条按钮的Rect
     def _get_scroll_button_rect(self, off_set_x: number, off_set_y: number) -> Optional[Rectangle]:

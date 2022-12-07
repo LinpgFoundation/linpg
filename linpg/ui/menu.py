@@ -88,30 +88,32 @@ class DefaultOptionMenu(AbstractInternalMenu):
             # 按键的判定按钮
             if self._CONTENT.item_being_hovered is not None and not lang_drop_down.is_hovered():
                 item_percentage_t: int
-                # 如果碰到全局音量条
-                if self._CONTENT.item_being_hovered == "global_sound_volume":
-                    item_percentage_t = int(self._CONTENT.get("global_sound_volume").percentage * 100)
-                    if item_percentage_t != int(Setting.get("Sound", "global_value")):
-                        Setting.set("Sound", "global_value", value=item_percentage_t)
-                        self.need_update["volume"] = True
-                elif self._CONTENT.item_being_hovered == "background_music_sound_volume":
-                    item_percentage_t = int(self._CONTENT.get("background_music_sound_volume").percentage * 100)
-                    if item_percentage_t != int(Setting.get("Sound", "background_music")):
-                        Setting.set("Sound", "background_music", value=item_percentage_t)
-                        Music.set_volume(Volume.get_background_music() / 100.0)
-                        self.need_update["volume"] = True
-                # 如果碰到音效的音量条
-                elif self._CONTENT.item_being_hovered == "effects_sound_volume":
-                    item_percentage_t = int(self._CONTENT.get("effects_sound_volume").percentage * 100)
-                    if item_percentage_t != int(Setting.get("Sound", "effects")):
-                        Setting.set("Sound", "effects", value=item_percentage_t)
-                        self.need_update["volume"] = True
-                # 如果碰到环境声的音量条
-                elif self._CONTENT.item_being_hovered == "environment_sound_volume":
-                    item_percentage_t = int(self._CONTENT.get("environment_sound_volume").percentage * 100)
-                    if item_percentage_t != int(Setting.get("Sound", "environment")):
-                        Setting.set("Sound", "environment", value=item_percentage_t)
-                        self.need_update["volume"] = True
+                match self._CONTENT.item_being_hovered:
+                    # 如果碰到全局音量条
+                    case "global_sound_volume":
+                        item_percentage_t = int(self._CONTENT.get("global_sound_volume").percentage * 100)
+                        if item_percentage_t != int(Setting.get("Sound", "global_value")):
+                            Setting.set("Sound", "global_value", value=item_percentage_t)
+                            self.need_update["volume"] = True
+                    # 如果碰到背景音乐音量条
+                    case "background_music_sound_volume":
+                        item_percentage_t = int(self._CONTENT.get("background_music_sound_volume").percentage * 100)
+                        if item_percentage_t != int(Setting.get("Sound", "background_music")):
+                            Setting.set("Sound", "background_music", value=item_percentage_t)
+                            Music.set_volume(Volume.get_background_music() / 100.0)
+                            self.need_update["volume"] = True
+                    # 如果碰到音效的音量条
+                    case "effects_sound_volume":
+                        item_percentage_t = int(self._CONTENT.get("effects_sound_volume").percentage * 100)
+                        if item_percentage_t != int(Setting.get("Sound", "effects")):
+                            Setting.set("Sound", "effects", value=item_percentage_t)
+                            self.need_update["volume"] = True
+                    # 如果碰到环境声的音量条
+                    case "environment_sound_volume":
+                        item_percentage_t = int(self._CONTENT.get("environment_sound_volume").percentage * 100)
+                        if item_percentage_t != int(Setting.get("Sound", "environment")):
+                            Setting.set("Sound", "environment", value=item_percentage_t)
+                            self.need_update["volume"] = True
                 # 保存新的参数
                 if self.need_update.get("volume") is True:
                     Setting.save()
@@ -184,24 +186,27 @@ class PauseMenu(AbstractInternalMenu):
                     self.__button_hovered = "resume"
             elif Controller.get_event("confirm"):
                 if self.__leave_warning.is_visible():
-                    if self.__leave_warning.item_being_hovered == "confirm":
-                        self.__button_hovered = "back_to_mainMenu"
-                    elif self.__leave_warning.item_being_hovered == "cancel":
-                        self.__leave_warning.set_visible(False)
+                    match self.__leave_warning.item_being_hovered:
+                        case "confirm":
+                            self.__button_hovered = "back_to_mainMenu"
+                        case "cancel":
+                            self.__leave_warning.set_visible(False)
                 elif self.__exit_warning.is_visible():
-                    if self.__exit_warning.item_being_hovered == "confirm":
-                        from sys import exit
+                    match self.__exit_warning.item_being_hovered:
+                        case "confirm":
+                            from sys import exit
 
-                        exit()
-                    elif self.__exit_warning.item_being_hovered == "cancel":
-                        self.__exit_warning.set_visible(False)
+                            exit()
+                        case "cancel":
+                            self.__exit_warning.set_visible(False)
                 elif self._CONTENT.item_being_hovered is not None:
-                    if self._CONTENT.item_being_hovered == "back_to_mainMenu":
-                        self.__leave_warning.set_visible(True)
-                    elif self._CONTENT.item_being_hovered == "exit_to_desktop":
-                        self.__exit_warning.set_visible(True)
-                    else:
-                        self.__button_hovered = self._CONTENT.item_being_hovered
+                    match self._CONTENT.item_being_hovered:
+                        case "back_to_mainMenu":
+                            self.__leave_warning.set_visible(True)
+                        case "exit_to_desktop":
+                            self.__exit_warning.set_visible(True)
+                        case _:
+                            self.__button_hovered = self._CONTENT.item_being_hovered
 
 
 # 选取存档的菜单
@@ -423,18 +428,18 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
                 # 暂停选项菜单
                 else:
                     self.__pause_menu.draw(_surface)
-                    if len(self.__pause_menu.get_button_clicked()) > 0:
-                        if self.__pause_menu.get_button_clicked() == "resume":
+                    match self.__pause_menu.get_button_clicked():
+                        case "resume":
                             self.__close_menus()
-                        elif self.__pause_menu.get_button_clicked() == "save":
+                        case "save":
                             self.__select_progress_menu.set_visible(True)
                             self.__save_or_load = True
-                        elif self.__pause_menu.get_button_clicked() == "load":
+                        case "load":
                             self.__select_progress_menu.set_visible(True)
                             self.__save_or_load = False
-                        elif self.__pause_menu.get_button_clicked() == "option_menu":
+                        case "option_menu":
                             OptionMenu.set_visible(True)
-                        elif self.__pause_menu.get_button_clicked() == "back_to_mainMenu":
+                        case "back_to_mainMenu":
                             self.__close_menus()
                             self._fade(_surface)
                             self.stop()

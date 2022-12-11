@@ -79,7 +79,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         # 加载动态背景图片
         if os.path.exists(Specification.get_directory("movie")):
             for imgPath in glob(Specification.get_directory("movie", "*")):
-                self.__UIContainerRight_bg.set(os.path.basename(imgPath), Images.resize(VideoSurface.get_preview(imgPath), (container_width * 4 // 5, None)))
+                self.__UIContainerRight_bg.set(os.path.basename(imgPath), Images.resize(Videos.get_thumbnail(imgPath), (container_width * 4 // 5, None)))
         self.__UIContainerRight_bg.distance_between_item = Display.get_height() // 50
         self.__current_select_bg_name = None
         self.__current_select_bg_copy = None

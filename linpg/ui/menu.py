@@ -20,12 +20,20 @@ class AbstractInternalMenu(HidableSurface, metaclass=ABCMeta):
 
     # 画出内容
     def draw(self, _surface: ImageSurface) -> None:
-        if self._CONTENT is not None:
+        if self.is_visible() and self._CONTENT is not None:
             self._CONTENT.draw(_surface)
 
 
+# 警告确认窗口
+class ConfirmationWarningWindow(AbstractInternalMenu):
+
+    @property
+    def item_being_hovered(self) -> Optional[str]:
+        return self._CONTENT.item_being_hovered if self._CONTENT is not None else None
+
+
 # 设置UI
-class DefaultOptionMenu(AbstractInternalMenu):
+class OptionMenu(AbstractInternalMenu):
     def __init__(self) -> None:
         super().__init__("option_menu")
         self.need_update: dict[str, bool] = {}
@@ -117,12 +125,9 @@ class DefaultOptionMenu(AbstractInternalMenu):
                 # 保存新的参数
                 if self.need_update.get("volume") is True:
                     Setting.save()
-                if Controller.mouse.get_pressed(0) and self._CONTENT.item_being_hovered == "back_button":
-                    self.set_visible(False)
-
-
-# 引擎本体的选项菜单
-OptionMenu: DefaultOptionMenu = DefaultOptionMenu()
+            # 关闭菜单
+            if Controller.get_event("back") is True:
+                self.set_visible(False)
 
 
 # 暂停菜单
@@ -130,9 +135,9 @@ class PauseMenu(AbstractInternalMenu):
     def __init__(self) -> None:
         super().__init__("pause_menu")
         # 返回确认菜单
-        self.__leave_warning: Optional[GameObjectsDictContainer] = None
+        self.__leave_warning: ConfirmationWarningWindow = ConfirmationWarningWindow("leave_without_saving_progress_warning")
         # 退出确认菜单
-        self.__exit_warning: Optional[GameObjectsDictContainer] = None
+        self.__exit_warning: ConfirmationWarningWindow = ConfirmationWarningWindow("exit_without_saving_progress_warning")
         # 记录被按下的按钮
         self.__button_hovered: str = ""
         self.split_point: int = -1
@@ -144,32 +149,28 @@ class PauseMenu(AbstractInternalMenu):
     def initialize(self) -> None:
         super().initialize()
         # 加载返回确认菜单
-        self.__leave_warning = UI.generate_container("leave_without_saving_progress_warning")
+        self.__leave_warning.initialize()
         self.__leave_warning.set_visible(False)
         # 加载退出确认菜单
-        self.__exit_warning = UI.generate_container("exit_without_saving_progress_warning")
+        self.__exit_warning.initialize()
         self.__exit_warning.set_visible(False)
 
     def set_visible(self, visible: bool) -> None:
         super().set_visible(visible)
         if self.is_hidden():
-            if self.__exit_warning is not None:
-                self.__exit_warning.set_visible(False)
-            if self.__leave_warning is not None:
-                self.__leave_warning.set_visible(False)
+            self.__exit_warning.set_visible(False)
+            self.__leave_warning.set_visible(False)
 
     def draw(self, _surface: ImageSurface) -> None:
         self.__button_hovered = ""
         if self.is_visible():
             if not self._initialized:
                 self.initialize()
-            # 确保所有模块已经正常初始化
-            if self.__exit_warning is None or self.__leave_warning is None or self._CONTENT is None:
-                EXCEPTION.fatal("The ui has not been correctly initialized.")
             # 画出分割线
-            if self.split_point < 0:
-                self.split_point = int(_surface.get_width() * 0.3)
-            Draw.line(_surface, Colors.WHITE, (self.split_point, 0), (self.split_point, _surface.get_height()), 5)
+            if self.__leave_warning.is_hidden() and self.__exit_warning.is_hidden():
+                if self.split_point < 0:
+                    self.split_point = int(_surface.get_width() * 0.3)
+                Draw.line(_surface, Colors.WHITE, (self.split_point, 0), (self.split_point, _surface.get_height()), 5)
             # 画出选项
             if self.__leave_warning.is_hidden() and self.__exit_warning.is_hidden():
                 super().draw(_surface)
@@ -199,7 +200,7 @@ class PauseMenu(AbstractInternalMenu):
                             exit()
                         case "cancel":
                             self.__exit_warning.set_visible(False)
-                elif self._CONTENT.item_being_hovered is not None:
+                elif self._CONTENT is not None and self._CONTENT.item_being_hovered is not None:
                     match self._CONTENT.item_being_hovered:
                         case "back_to_mainMenu":
                             self.__leave_warning.set_visible(True)
@@ -327,6 +328,10 @@ class SaveOrLoadSelectedProgressMenu(HidableSurface):
 
 # 暂停菜单处理模块
 class PauseMenuModuleForGameSystem(AbstractInternalMenu):
+
+    # 引擎本体的选项菜单
+    OPTION_MENU: OptionMenu = OptionMenu()
+
     def __init__(self) -> None:
         super().__init__("")
         # 暂停菜单
@@ -382,7 +387,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
 
     # 关闭菜单（并确保所有相关子菜单正常关闭）
     def __close_menus(self) -> None:
-        OptionMenu.set_visible(False)
+        self.OPTION_MENU.set_visible(False)
         if self.__pause_menu is not None:
             self.__pause_menu.set_visible(False)
         self.__select_progress_menu.set_visible(False)
@@ -417,13 +422,13 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
                                 self.__close_menus()
                                 self.load_progress(_save.data)
                 # 设置选项菜单
-                elif OptionMenu.is_visible():
-                    OptionMenu.draw(_surface)
+                elif self.OPTION_MENU.is_visible():
+                    self.OPTION_MENU.draw(_surface)
                     # 更新音量
-                    if OptionMenu.need_update.get("volume") is True:
+                    if self.OPTION_MENU.need_update.get("volume") is True:
                         self._update_sound_volume()
                     # 更新语言
-                    if OptionMenu.need_update.get("language") is True:
+                    if self.OPTION_MENU.need_update.get("language") is True:
                         self.update_language()
                 # 暂停选项菜单
                 else:
@@ -438,7 +443,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
                             self.__select_progress_menu.set_visible(True)
                             self.__save_or_load = False
                         case "option_menu":
-                            OptionMenu.set_visible(True)
+                            self.OPTION_MENU.set_visible(True)
                         case "back_to_mainMenu":
                             self.__close_menus()
                             self._fade(_surface)

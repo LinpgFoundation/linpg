@@ -81,27 +81,34 @@ class UiGenerator:
     # 转换文字
     @staticmethod
     def __load_text(text: str) -> str:
-        final_text_list: list = []
-        text_index: int = 0
-        find_close_bracket: bool = False
-        while text_index < len(text):
-            if text[text_index] == "{":
-                # 寻找 "}"
-                a: int = 0
-                for a in range(text_index + 1, len(text)):
-                    if text[a] == "}":
-                        find_close_bracket = True
-                        break
-                if find_close_bracket is True:
-                    find_close_bracket = False
-                    final_text_list.append(Lang.get_text_by_keys(tuple(b.strip() for b in text[text_index + 1 : a].split(","))))
-                    text_index = a
+        if text.startswith("{") and text.endswith("}"):
+            final_text_list: list = []
+            text_index: int = 0
+            find_close_bracket: bool = False
+            while text_index < len(text):
+                if text[text_index] == "{":
+                    # 寻找 "}"
+                    a: int = 0
+                    for a in range(text_index + 1, len(text)):
+                        if text[a] == "}":
+                            find_close_bracket = True
+                            break
+                    if find_close_bracket is True:
+                        find_close_bracket = False
+                        final_text_list.append(Lang.get_text_by_keys(tuple(b.strip() for b in text[text_index + 1 : a].split(","))))
+                        text_index = a
+                    else:
+                        EXCEPTION.fatal("Cannot find close bracket for text: {}".format(text))
                 else:
-                    EXCEPTION.fatal("Cannot find close bracket for text: {}".format(text))
-            else:
-                final_text_list.append(text[text_index])
-            text_index += 1
-        return "".join(final_text_list)
+                    final_text_list.append(text[text_index])
+                text_index += 1
+            return "".join(final_text_list)
+        # 加载自定义参数
+        elif text.startswith("<") and text.startswith(">"):
+            _key: str = text[1 : len(text) - 1]
+            if _key != "NULL":
+                return Specification.get_str(*(b.strip() for b in _key.split(",")))
+        return text
 
     # 生成容器类
     @classmethod

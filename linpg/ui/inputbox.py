@@ -17,7 +17,7 @@ class AbstractInputBox(GameObject2d, metaclass=ABCMeta):
         self._default_width: int = default_width
         self._default_height: int = self._FONT.size * 3 // 2
         self._input_box: Rectangle = Rectangle(x, y, default_width, self._default_height)
-        self._color: tuple[int, int, int, int] = Colors.get("lightskyblue")
+        self._color: tuple[int, int, int, int] = Colors.LIGHT_SKY_BLUE
         self._text_color: tuple[int, int, int, int] = Colors.get(txt_color)
         self._active: bool = False
         self._holder: ImageSurface = self._FONT.render("|", self._text_color)
@@ -146,20 +146,16 @@ class SingleLineInputBox(AbstractInputBox):
                     self.need_save = True
                 else:
                     self._add_chars(event.unicode)
-            elif event.type == MOUSE_BUTTON_DOWN and event.button == 1 and self._active is True:
-                if self.x <= Controller.mouse.x <= self.x + self._input_box.width and self.y <= Controller.mouse.y <= self.y + self._input_box.height:
+            elif event.type == MOUSE_BUTTON_DOWN and event.button == 1:
+                if self._active is True:
+                    if self.x <= Controller.mouse.x <= self.x + self._input_box.width and self.y <= Controller.mouse.y <= self.y + self._input_box.height:
+                        self._reset_holder_index(Controller.mouse.x)
+                    else:
+                        self._active = False
+                        self.need_save = True
+                elif 0 <= Controller.mouse.x - self.x <= self._input_box.width and 0 <= Controller.mouse.y - self.y <= self._input_box.height:
+                    self._active = True
                     self._reset_holder_index(Controller.mouse.x)
-                else:
-                    self._active = False
-                    self.need_save = True
-            elif (
-                event.type == MOUSE_BUTTON_DOWN
-                and event.button == 1
-                and 0 <= Controller.mouse.x - self.x <= self._input_box.width
-                and 0 <= Controller.mouse.y - self.y <= self._input_box.height
-            ):
-                self._active = True
-                self._reset_holder_index(Controller.mouse.x)
         # 画出输入框
         if self._active:
             Draw.rect(_surface, self._color, self._input_box.get_rect(), 2)

@@ -1,5 +1,3 @@
-import enum
-
 from .system import *
 
 

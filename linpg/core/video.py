@@ -1,33 +1,11 @@
 from .window import *
 
-# 尝试导入opencv库
-_OPENCV_INITIALIZED: bool = False
-try:
-    import cv2  # type: ignore
-
-    _OPENCV_INITIALIZED = True
-except ImportError:
-    pass
-
-
-# 视频模块专属的错误检测器
-def _video_validator(path: str) -> None:
-    # 如果opencv没有成功地导入
-    if not _OPENCV_INITIALIZED:
-        EXCEPTION.fatal("You cannot use any video module unless you install opencv!", 4)
-    # 确保路径存在
-    elif not os.path.exists(path):
-        EXCEPTION.fatal('Cannot find file on path: "{}"'.format(path))
-
-
 # 视频抽象类
 class AbstractVideo(ABC):
     def __init__(self, path: str, buffer_num: int, play_range: tuple[int, int] = (0, -1)):
-        _video_validator(path)
         self._path: str = path
-        # 确保路径存在
-        if not os.path.exists(self._path):
-            EXCEPTION.fatal('Cannot find file on path: "{}"'.format(self._path))
+        # 确保路径存在且模块已经正常初始化
+        Videos.validation(self._path)
         """视频流"""
         self.__video_stream: cv2.VideoCapture = None
         self._frame_rate: int = 0
@@ -156,19 +134,6 @@ class VideoSurface(AbstractVideo):
         self.__looped_times: int = 0
         self.__audio: Optional[PG_Sound] = Sound.load_from_video(path, cache_key=cache_key) if with_audio is True else None
         self.__audio_channel: Optional[PG_Channel] = None
-
-    # 获取视频封面
-    @staticmethod
-    def get_preview(path: str, size: Optional[tuple[int, int]] = None) -> ImageSurface:
-        _video_validator(path)
-        video_stream = cv2.VideoCapture(path)
-        video_stream.set(cv2.CAP_PROP_POS_FRAMES, video_stream.get(cv2.CAP_PROP_FRAME_COUNT) // 10)
-        current_frame = cv2.cvtColor(video_stream.read()[1], cv2.COLOR_BGR2RGB)
-        video_stream.release()
-        del video_stream
-        if size is not None and (current_frame.shape[0] != size[0] or current_frame.shape[1] != size[1]):
-            current_frame = cv2.resize(current_frame, size)
-        return Surfaces.from_array(current_frame)
 
     # 返回一个复制
     def copy(self) -> "VideoSurface":

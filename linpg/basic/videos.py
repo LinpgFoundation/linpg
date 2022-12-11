@@ -1,6 +1,15 @@
 import subprocess
 from abc import ABC
 
+# 尝试导入opencv库
+_OPENCV_INITIALIZED: bool = False
+try:
+    import cv2  # type: ignore
+
+    _OPENCV_INITIALIZED = True
+except ImportError:
+    pass
+
 from .display import *
 
 
@@ -16,6 +25,16 @@ class Videos(ABC):
             raise EXCEPTION.FileNotExists()
         elif not os.path.exists(cls.__PATH):
             raise EXCEPTION.ToolIsMissing()
+
+    # 是否opencv模块已经初始化且路径存在
+    @staticmethod
+    def validation(_path: str) -> None:
+        # 如果opencv没有成功地导入
+        if not _OPENCV_INITIALIZED:
+            EXCEPTION.fatal("You cannot use any video module unless you install opencv!", 4)
+        # 确保路径存在
+        elif not os.path.exists(_path):
+            EXCEPTION.fatal('Cannot find file on path: "{}"'.format(_path))
 
     # 使用ffmpeg直接转换文件
     @classmethod
@@ -37,6 +56,19 @@ class Videos(ABC):
             )
         else:
             subprocess.check_call([cls.__PATH, "-i", input_path, "-vn", output_path], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+
+    # 获取视频封面
+    @classmethod
+    def get_thumbnail(cls, path: str, size: Optional[tuple[int, int]] = None) -> ImageSurface:
+        cls.validation(path)
+        video_stream = cv2.VideoCapture(path)
+        video_stream.set(cv2.CAP_PROP_POS_FRAMES, video_stream.get(cv2.CAP_PROP_FRAME_COUNT) // 10)
+        current_frame = cv2.cvtColor(video_stream.read()[1], cv2.COLOR_BGR2RGB)
+        video_stream.release()
+        del video_stream
+        if size is not None and (current_frame.shape[0] != size[0] or current_frame.shape[1] != size[1]):
+            current_frame = cv2.resize(current_frame, size)
+        return Surfaces.from_array(current_frame)
 
     # 获取视频的音频 （返回路径）
     @classmethod

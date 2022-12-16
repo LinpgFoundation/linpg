@@ -26,7 +26,6 @@ class AbstractInternalMenu(HidableSurface, metaclass=ABCMeta):
 
 # 警告确认窗口
 class ConfirmationWarningWindow(AbstractInternalMenu):
-
     @property
     def item_being_hovered(self) -> Optional[str]:
         return self._CONTENT.item_being_hovered if self._CONTENT is not None else None

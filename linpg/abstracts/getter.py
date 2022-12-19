@@ -23,7 +23,7 @@ class TypeSafeGetter:
     # 获取static数据字典 (子类需实现)
     @classmethod
     def _get_data(cls) -> dict:
-        raise EXCEPTION.fatal("_get_data()", 1)
+        EXCEPTION.fatal("_get_data()", 1)
 
     # 获取特定的数据
     @classmethod

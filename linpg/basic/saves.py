@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from .font import *
 
 # 持久数据管理IO
-class PersistentData(TypeSafeGetter, TypeSafeSetter):
+class PersistentVariables(TypeSafeGetter, TypeSafeSetter):
 
     __DATA: Final[dict[str, Any]] = {}
     __PATH: Final[str] = Specification.get_directory("save", "persistent." + Config.get_file_type())
@@ -33,7 +33,8 @@ class PersistentData(TypeSafeGetter, TypeSafeSetter):
 
 
 # 初始化持久数据库
-PersistentData.reload()
+PersistentVariables.reload()
+PersistentData = PersistentVariables  # 即将弃置
 
 
 # 存档系统

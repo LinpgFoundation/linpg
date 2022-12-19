@@ -1,6 +1,6 @@
 import os
 
-from linpgtoolbox.builder import Builder  # type: ignore
+from linpgtoolbox.builder import Builder, SmartAutoModuleCombineMode  # type: ignore
 
 # 编译源代码
 if not os.path.exists("src") or input("Do you want to recompile everything (Y/n):") == "Y":
@@ -14,7 +14,7 @@ if not os.path.exists("src") or input("Do you want to recompile everything (Y/n)
     Builder.compile(
         "linpg",
         additional_files=additional_files,
-        smart_auto_module_combine=True,
+        smart_auto_module_combine=SmartAutoModuleCombineMode.FOLDER_ONLY,
         update_the_one_in_sitepackages=False,
         include_pyinstaller_program=True,
         options={
@@ -48,6 +48,6 @@ for i in range(2):
 # 打包上传最新的文件
 match input("Do you want to package and upload the latest build (Y/n):"):
     case "Y":
-        Builder.upload_package()
+        Builder.upload_package("cp310")
     case "N":
         Builder.delete_file_if_exist("src")

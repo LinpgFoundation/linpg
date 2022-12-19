@@ -9,9 +9,9 @@ import pygame
 import pygame.gfxdraw
 
 # 加载颜色模块
+from PIL import Image as PILImage  # type: ignore
 from PIL import ImageColor as PILImageColor  # type: ignore
 from PIL import ImageFilter as PILImageFilter
-from PIL import Image as PILImage  # type: ignore
 
 from .coordinates import *
 
@@ -50,6 +50,20 @@ class Events(enum.IntEnum):
     # 键盘
     KEY_DOWN = pygame.KEYDOWN
     KEY_UP = pygame.KEYUP
+
+
+# 表示方向的enum
+class Axis(enum.IntEnum):
+    VERTICAL = enum.auto()
+    HORIZONTAL = enum.auto()
+
+
+# 表示位置
+class Locations(enum.IntEnum):
+    BEGINNING = enum.auto()
+    END = enum.auto()
+    MIDDLE = enum.auto()
+    EVERYWHERE = enum.auto()
 
 
 # 与数字有关的常用方法

@@ -132,7 +132,7 @@ class Specification(TypeSafeGetter):
 class DataBase(TypeSafeGetter):
 
     # 用于存放数据库数据的字典
-    __DATA_BASE_DICT: Final[dict] = {"Tiles": {}, "Decorations": {}, "Npc": {}, "Filters": {}}
+    __DATA_BASE_DICT: Final[dict] = {"Tiles": {}, "Decorations": {}, "Npc": {}}
 
     @classmethod
     def _get_data(cls) -> dict:

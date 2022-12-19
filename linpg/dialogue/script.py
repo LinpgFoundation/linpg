@@ -124,7 +124,9 @@ class ScriptCompiler:
                             break
                         # 移除角色
                         for i in range(len(self.__current_data.character_images)):
-                            if CharacterImageNameMetaData(self.__current_data.character_images[i]).equal(CharacterImageNameMetaData(_name)):
+                            if VisualNovelCharacterImageNameMetaData(self.__current_data.character_images[i]).equal(
+                                VisualNovelCharacterImageNameMetaData(_name)
+                            ):
                                 self.__current_data.character_images.pop(i)
                                 break
                 # 清空角色列表，然后让角色重新进场
@@ -184,7 +186,7 @@ class ScriptCompiler:
                         narrator_possible_images = tuple(self.__CHARACTER_IMAGE_DATABASE[self.__current_data.narrator.lower()])
                     # 检查名称列表，更新character_images以确保不在说话的人处于黑暗状态
                     for i in range(len(self.__current_data.character_images)):
-                        _name_data: CharacterImageNameMetaData = CharacterImageNameMetaData(self.__current_data.character_images[i])
+                        _name_data: VisualNovelCharacterImageNameMetaData = VisualNovelCharacterImageNameMetaData(self.__current_data.character_images[i])
                         if _name_data.name in narrator_possible_images:
                             _name_data.remove_tag("silent")
                         else:
@@ -295,7 +297,7 @@ class ScriptCompiler:
                         elif _content.previous is None or len(_content.previous.character_images) == 0:
                             _line: str = "[display]"
                             for _characterName in _content.current.character_images:
-                                _line += CharacterImageNameMetaData(_characterName).name + " "
+                                _line += VisualNovelCharacterImageNameMetaData(_characterName).name + " "
                             _results.append(_line.rstrip() + "\n")
 
                     if _content.current.has_next():

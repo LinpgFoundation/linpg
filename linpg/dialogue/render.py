@@ -1,10 +1,8 @@
 from .component import *
 
-_DARKNESS: int = 50
-
 
 # 角色立绘名称预处理模块
-class CharacterImageNameMetaData:
+class VisualNovelCharacterImageNameMetaData:
 
     # 立绘配置信息数据库
     __CHARACTER_IMAGE_DATABASE: Final[dict] = DataBase.get("Npc")
@@ -29,7 +27,7 @@ class CharacterImageNameMetaData:
         return self.__tags
 
     # 根据文件名判断是否是同一角色名下的图片
-    def equal(self, otherNameData: "CharacterImageNameMetaData", must_be_the_same: bool = False) -> bool:
+    def equal(self, otherNameData: "VisualNovelCharacterImageNameMetaData", must_be_the_same: bool = False) -> bool:
         if self.__name == otherNameData.name:
             return True
         elif self.__IS_CHARACTER_IMAGE_DATABASE_ENABLED and not must_be_the_same:
@@ -81,47 +79,28 @@ class CharacterImageNameMetaData:
 
 
 # 角色立绘滤镜
-class _FilterEffect:
-    def __init__(self, path: str, _x: int, _y: int, _width: int, _height: int) -> None:
-        self.__N_IMAGE: StaticImage = StaticImage(path, _x, _y, _width, _height)
-        self.__D_IMAGE: StaticImage = self.__N_IMAGE.copy()
-        self.__D_IMAGE.add_darkness(_DARKNESS)
-        self.__crop_rect: Optional[Rectangle] = None
-
-    def get_rect(self) -> Rectangle:
-        return self.__N_IMAGE.get_rectangle()
-
-    def set_crop_rect(self, rect: Optional[Rectangle]) -> None:
-        self.__crop_rect = rect
+class AbstractVisualNovelCharacterImageFilterEffect(ABC):
 
     # 将滤镜应用到立绘上并渲染到屏幕上
     def render(self, characterImage: StaticImage, _surface: ImageSurface, is_silent: bool) -> None:
-        # 如果自定义的crop_rect为None，则以self.__N_IMAGE的rect为中心
-        characterImage.set_crop_rect(self.__crop_rect if self.__crop_rect is not None else self.get_rect())
-        # 画出立绘
-        characterImage.draw(_surface)
-        # 画出滤镜
-        if not is_silent:
-            self.__N_IMAGE.set_alpha(characterImage.get_alpha())
-            self.__N_IMAGE.display(_surface, characterImage.get_pos())
-        else:
-            self.__D_IMAGE.set_alpha(characterImage.get_alpha())
-            self.__D_IMAGE.display(_surface, characterImage.get_pos())
+        EXCEPTION.fatal("render()", 1)
 
 
 # 角色立绘系统
-class CharacterImageManager:
+class VisualNovelCharacterImageManager:
 
     # 用于存放立绘的字典
     __character_image: Final[dict[str, tuple[StaticImage, ...]]] = {}
     # 存放前一对话的参与角色名称
-    __previous_characters: tuple[CharacterImageNameMetaData, ...] = tuple()
+    __previous_characters: tuple[VisualNovelCharacterImageNameMetaData, ...] = tuple()
     __last_round_image_alpha: int = 255
     # 存放当前对话的参与角色名称
-    __current_characters: tuple[CharacterImageNameMetaData, ...] = tuple()
+    __current_characters: tuple[VisualNovelCharacterImageNameMetaData, ...] = tuple()
     __this_round_image_alpha: int = 0
-    # 加载滤镜
-    __filters: Final[dict[str, _FilterEffect]] = {}
+    # 滤镜
+    FILTERS: Final[dict[str, AbstractVisualNovelCharacterImageFilterEffect]] = {}
+    # 暗度
+    DARKNESS: int = 50
     # 移动的x
     __x_correction_offset_index: int = 0
     # x轴offset
@@ -137,44 +116,28 @@ class CharacterImageManager:
     def __GET_WIDTH() -> int:
         return Display.get_width() // 2
 
-    # 重新加载滤镜
+    # 重新加载滤镜（即将弃置）
     @classmethod
     def init(cls) -> None:
         cls.unload()
-        for key, value in DataBase.get("Filters").items():
-            if value.get("type") == "image":
-                cls.__filters[key] = _FilterEffect(
-                    value["path"],
-                    round(Display.get_width() * Numbers.convert_percentage(value["rect"][0])),
-                    round(Display.get_width() * Numbers.convert_percentage(value["rect"][1])),
-                    round(Display.get_width() * Numbers.convert_percentage(value["rect"][2])),
-                    round(Display.get_width() * Numbers.convert_percentage(value["rect"][3])),
-                )
-                _crop: Optional[list] = value.get("crop")
-                if _crop is not None:
-                    _rect: Rectangle = cls.__filters[key].get_rect()
-                    cls.__filters[key].set_crop_rect(
-                        Rectangle(
-                            _rect.x + round(_rect.width * Numbers.convert_percentage(_crop[0])),
-                            _rect.y + round(_rect.height * Numbers.convert_percentage(_crop[1])),
-                            round(_rect.width * Numbers.convert_percentage(_crop[2])),
-                            round(_rect.height * Numbers.convert_percentage(_crop[3])),
-                        )
-                    )
 
-    # 卸载占用的内存
+    # 卸载占用的内存（即将弃置）
     @classmethod
     def unload(cls) -> None:
+        cls.reset()
+
+    # 重置并卸载占用的内存
+    @classmethod
+    def reset(cls) -> None:
         cls.__previous_characters = tuple()
         cls.__last_round_image_alpha = 255
         cls.__current_characters = tuple()
         cls.__this_round_image_alpha = 0
-        cls.__filters.clear()
         cls.__character_image.clear()
 
     # 画出角色
     @classmethod
-    def __display_character(cls, _name_data: CharacterImageNameMetaData, x: int, alpha: int, _surface: ImageSurface) -> None:
+    def __display_character(cls, _name_data: VisualNovelCharacterImageNameMetaData, x: int, alpha: int, _surface: ImageSurface) -> None:
         if alpha > 0:
             # 确保角色存在
             if _name_data.name not in cls.__character_image:
@@ -183,7 +146,7 @@ class CharacterImageManager:
                 # 以tuple的形式保存立绘，index 0 是正常图片， index 1 是深色图片
                 cls.__character_image[_name_data.name] = (imgTemp, imgTemp.copy())
                 # 生成深色图片
-                cls.__character_image[_name_data.name][1].add_darkness(_DARKNESS)
+                cls.__character_image[_name_data.name][1].add_darkness(cls.DARKNESS)
             # 获取npc立绘的指针
             img: StaticImage = cls.__character_image[_name_data.name][1 if _name_data.has_tag("silent") else 0]
             img.set_size(cls.__GET_WIDTH(), cls.__GET_WIDTH())
@@ -191,7 +154,7 @@ class CharacterImageManager:
             img.set_pos(x, Display.get_height() - cls.__GET_WIDTH())
             if len(_name_data.tags) > 0:
                 for _tag in _name_data.tags:
-                    cls.__filters[_tag].render(img, _surface, _name_data.has_tag("silent"))
+                    cls.FILTERS[_tag].render(img, _surface, _name_data.has_tag("silent"))
             else:
                 img.set_crop_rect(None)
                 img.draw(_surface)
@@ -214,7 +177,9 @@ class CharacterImageManager:
 
     # 渐入name1角色的同时淡出name2角色
     @classmethod
-    def __fade_in_and_out_characters(cls, name1: CharacterImageNameMetaData, name2: CharacterImageNameMetaData, x: int, _surface: ImageSurface) -> None:
+    def __fade_in_and_out_characters(
+        cls, name1: VisualNovelCharacterImageNameMetaData, name2: VisualNovelCharacterImageNameMetaData, x: int, _surface: ImageSurface
+    ) -> None:
         cls.__display_character(name1, x, cls.__last_round_image_alpha, _surface)
         cls.__display_character(name2, x, cls.__this_round_image_alpha, _surface)
 
@@ -244,7 +209,9 @@ class CharacterImageManager:
     @classmethod
     def update(cls, characterNameList: Optional[Sequence[str]]) -> None:
         cls.__previous_characters = cls.__current_characters
-        cls.__current_characters = tuple(CharacterImageNameMetaData(_name) for _name in characterNameList) if characterNameList is not None else tuple()
+        cls.__current_characters = (
+            tuple(VisualNovelCharacterImageNameMetaData(_name) for _name in characterNameList) if characterNameList is not None else tuple()
+        )
         cls.__last_round_image_alpha = 255
         cls.__this_round_image_alpha = 5
         cls.__x_correction_offset_index = 0

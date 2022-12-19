@@ -2,13 +2,6 @@ import time
 
 from .scrollbar import *
 
-# 用于表示移除字符的位置的Enum
-class _RemoveCharLocation(enum.IntEnum):
-    LEFT = enum.auto()
-    RIGHT = enum.auto()
-    ALL = enum.auto()
-
-
 # 输入框Abstract，请勿实体化
 class AbstractInputBox(GameObject2d, metaclass=ABCMeta):
     def __init__(self, x: int_f, y: int_f, font_size: int, txt_color: color_liked, default_width: int) -> None:
@@ -66,15 +59,15 @@ class SingleLineInputBox(AbstractInputBox):
         elif Debug.get_developer_mode():
             EXCEPTION.inform("The value of event.unicode is empty!")
 
-    def _remove_char(self, action: _RemoveCharLocation) -> None:
-        if action is _RemoveCharLocation.LEFT:
+    def _remove_char(self, action: Locations) -> None:
+        if action is Locations.BEGINNING:
             if self._holder_index > 0:
                 self._text = self._text[: self._holder_index - 1] + self._text[self._holder_index :]
                 self._holder_index -= 1
-        elif action is _RemoveCharLocation.RIGHT:
+        elif action is Locations.END:
             if self._holder_index < len(self._text):
                 self._text = self._text[: self._holder_index] + self._text[self._holder_index + 1 :]
-        elif action is _RemoveCharLocation.ALL:
+        elif action is Locations.EVERYWHERE:
             self.set_text()
         else:
             EXCEPTION.fatal("Action has to be either 'ahead' or 'behind'!")
@@ -105,10 +98,10 @@ class SingleLineInputBox(AbstractInputBox):
     def _check_key_down(self, event: PG_Event) -> bool:
         match event.key:
             case Keys.BACKSPACE:
-                self._remove_char(_RemoveCharLocation.LEFT)
+                self._remove_char(Locations.BEGINNING)
                 return True
             case Keys.DELETE:
-                self._remove_char(_RemoveCharLocation.RIGHT)
+                self._remove_char(Locations.END)
                 return True
             case Keys.ARROW_LEFT:
                 if self._holder_index > 0:
@@ -238,8 +231,8 @@ class MultipleLinesInputBox(AbstractInputBox):
             EXCEPTION.inform("The value of event.unicode is empty!")
 
     # 删除对应字符
-    def _remove_char(self, action: _RemoveCharLocation) -> None:
-        if action is _RemoveCharLocation.LEFT:
+    def _remove_char(self, action: Locations) -> None:
+        if action is Locations.BEGINNING:
             if self._holder_index > 0:
                 self._text[self.__lineId] = self._text[self.__lineId][: self._holder_index - 1] + self._text[self.__lineId][self._holder_index :]
                 self._holder_index -= 1
@@ -254,7 +247,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                     self._text.pop(self.__lineId)
                     self.__lineId -= 1
                     self._holder_index = len(self._text[self.__lineId])
-        elif action is _RemoveCharLocation.RIGHT:
+        elif action is Locations.END:
             if self._holder_index < len(self._text[self.__lineId]):
                 self._text[self.__lineId] = self._text[self.__lineId][: self._holder_index] + self._text[self.__lineId][self._holder_index + 1 :]
             elif self.__lineId < len(self._text) - 1:
@@ -262,7 +255,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                 if len(self._text[self.__lineId + 1]) > 0:
                     self._text[self.__lineId] += self._text[self.__lineId + 1]
                 self._text.pop(self.__lineId + 1)
-        elif action is _RemoveCharLocation.ALL:
+        elif action is Locations.EVERYWHERE:
             self.set_text()
         else:
             EXCEPTION.fatal("Action has to be either 'ahead' or 'behind'!")
@@ -295,9 +288,9 @@ class MultipleLinesInputBox(AbstractInputBox):
                 if event.type == Keys.DOWN:
                     match event.key:
                         case Keys.BACKSPACE:
-                            self._remove_char(_RemoveCharLocation.LEFT)
+                            self._remove_char(Locations.BEGINNING)
                         case Keys.DELETE:
-                            self._remove_char(_RemoveCharLocation.RIGHT)
+                            self._remove_char(Locations.END)
                         case Keys.ARROW_LEFT:
                             if self._holder_index > 0:
                                 self._holder_index -= 1
@@ -382,7 +375,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                 else:
                     in_text: Optional[str] = external_input_values.get("CONTENT")
                     if in_text is not None:
-                        self._remove_char(_RemoveCharLocation.ALL)
+                        self._remove_char(Locations.EVERYWHERE)
                         self._add_chars(in_text)
             elif self.__show_PySimpleGUI_input_box.is_hovered() and Controller.get_event("confirm"):
                 self.__PySimpleGUIWindow = PySimpleGUI.Window(

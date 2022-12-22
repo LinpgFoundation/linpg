@@ -457,6 +457,66 @@
                 "width": 0,
                 "x": 0,
                 "y": "2%"
+            },
+            {
+                "alpha_when_not_hover": 100,
+                "auto_resize": true,
+                "height": "5%",
+                "name": "new_row",
+                "src": "<&ui>button.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Editor,new_row}"
+                },
+                "type": "button",
+                "width": 0,
+                "x": 0,
+                "y": "2%"
+            },
+            {
+                "alpha_when_not_hover": 100,
+                "auto_resize": true,
+                "height": "5%",
+                "name": "new_colum",
+                "src": "<&ui>button.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Editor,new_colum}"
+                },
+                "type": "button",
+                "width": 0,
+                "x": 0,
+                "y": "2%"
+            },
+            {
+                "alpha_when_not_hover": 100,
+                "auto_resize": true,
+                "height": "5%",
+                "name": "remove_row",
+                "src": "<&ui>button.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Editor,remove_row}"
+                },
+                "type": "button",
+                "width": 0,
+                "x": 0,
+                "y": "2%"
+            },
+            {
+                "alpha_when_not_hover": 100,
+                "auto_resize": true,
+                "height": "5%",
+                "name": "remove_colum",
+                "src": "<&ui>button.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Editor,remove_colum}"
+                },
+                "type": "button",
+                "width": 0,
+                "x": 0,
+                "y": "2%"
             }
         ],
         "type": "container",

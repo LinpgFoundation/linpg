@@ -79,11 +79,11 @@ class Display:
 
     # 初始化屏幕
     @classmethod
-    def init(cls, flags: int = -1) -> ImageSurface:
+    def init(cls, flags: int = 0) -> ImageSurface:
         monitorId: int = int(Setting.get("MonitorToDisplay"))
         # 如果是全屏模式
         if cls.__SCALE >= 100:
-            if flags < 0:
+            if flags <= 0:
                 flags = pygame.FULLSCREEN | pygame.SCALED
             if Setting.get("EnableOpenGL") is True:
                 flags |= pygame.OPENGL

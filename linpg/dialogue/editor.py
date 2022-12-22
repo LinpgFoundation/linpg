@@ -231,6 +231,7 @@ class DialogEditor(AbstractVisualNovelSystem):
                     while True:
                         index: int = 0
                         old_key: Optional[str] = None
+                        key: str = ""
                         for key, value in self._content.get_section_content(section).items():
                             if value["next_dialog_id"] is not None and "target" in value["next_dialog_id"]:
                                 if isinstance(value["next_dialog_id"]["target"], list):

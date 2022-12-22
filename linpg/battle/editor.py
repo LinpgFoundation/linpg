@@ -211,6 +211,10 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self.__buttons_container.get("back").set_left(self.__buttons_container.get("save").get_right() + padding)
         self.__buttons_container.get("delete").set_left(self.__buttons_container.get("back").get_right() + padding)
         self.__buttons_container.get("reload").set_left(self.__buttons_container.get("delete").get_right() + padding)
+        self.__buttons_container.get("new_row").set_left(self.__buttons_container.get("reload").get_right() + padding)
+        self.__buttons_container.get("new_colum").set_left(self.__buttons_container.get("new_row").get_right() + padding)
+        self.__buttons_container.get("remove_row").set_left(self.__buttons_container.get("new_colum").get_right() + padding)
+        self.__buttons_container.get("remove_colum").set_left(self.__buttons_container.get("remove_row").get_right() + padding)
 
     # 初始化并加载新场景
     def new(self, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
@@ -353,6 +357,22 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                     tempLocal_x, tempLocal_y = self._MAP.get_local_pos()
                     self._process_data(Config.load(self.get_data_file_path()))
                     self._MAP.set_local_pos(tempLocal_x, tempLocal_y)
+                case "new_row":
+                    self._MAP.add_on_axis()
+                case "new_colum":
+                    self._MAP.add_on_axis(axis=1)
+                case "remove_row":
+                    self._MAP.remove_on_axis()
+                    for _value in self._entities_data.values():
+                        for key in tuple(_value.keys()):
+                            if _value[key].y == self._MAP.row:
+                                _value.pop(key)
+                case "remove_colum":
+                    self._MAP.remove_on_axis(axis=1)
+                    for _value in self._entities_data.values():
+                        for key in tuple(_value.keys()):
+                            if _value[key].x == self._MAP.column:
+                                _value.pop(key)
 
         # 跟随鼠标显示即将被放下的物品
         if len(self.__object_to_put_down) > 0:

@@ -28,7 +28,7 @@ if pygame.mixer.get_init() is not None:
     LINPG_RESERVED_SOUND_EFFECTS_CHANNEL = pygame.mixer.Channel(__RESERVED_SOUND_EFFECTS_CHANNEL_ID)
     LINPG_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL = pygame.mixer.Channel(__RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID)
 else:
-    EXCEPTION.warn("Mixer has not been initialized correctly!")
+    EXCEPTION.inform("Mixer has not been initialized correctly!")
     print("One possible cause could be no output device, anyway, please double check your output device(s)!")
 
 

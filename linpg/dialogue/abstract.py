@@ -23,7 +23,7 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 文字大小
         self._FONT_SIZE: int = Display.get_width() * 3 // 200
         # 初始化滤镜系统
-        CharacterImageManager.init()
+        VisualNovelCharacterImageManager.reset()
 
     # 获取对话框模块（子类需实现）
     def _get_dialog_box(self) -> AbstractDialogBox:
@@ -140,7 +140,7 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 更新dialogId
         self._content.set_id(dialog_id)
         # 更新立绘和背景
-        CharacterImageManager.update(self._content.current.character_images)
+        VisualNovelCharacterImageManager.update(self._content.current.character_images)
         self._update_background_image(self._content.current.background_image)
         # 更新对话框
         self._get_dialog_box().update(self._content.current.narrator, self._content.current.contents)
@@ -164,7 +164,7 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
         if isinstance(self.__background_image_surface, VideoSurface):
             self.__background_image_surface.stop()
         # 释放立绘渲染系统占用的内存
-        CharacterImageManager.unload()
+        VisualNovelCharacterImageManager.reset()
         # 设置停止播放
         super().stop()
 
@@ -172,7 +172,9 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
     def display_background_image(self, _surface: ImageSurface) -> None:
         if self.__background_image_surface is not None:
             if isinstance(self.__background_image_surface, StaticImage):
-                self.__background_image_surface.set_size(_surface.get_width(), _surface.get_height())
+                self.__background_image_surface.set_width_with_original_image_size_locked(_surface.get_width())
+                self.__background_image_surface.set_left(0)
+                self.__background_image_surface.set_centery(_surface.get_height() // 2)
             self.__background_image_surface.draw(_surface)
 
     def _get_dialog_options_container_ready(self) -> None:
@@ -193,10 +195,10 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
     def draw(self, _surface: ImageSurface) -> None:
         # 检测章节是否初始化
         if self._chapter_id is None:
-            raise EXCEPTION.fatal("The dialog has not been initialized!")
+            EXCEPTION.fatal("The dialog has not been initialized!")
         # 展示背景图片和npc立绘
         self.display_background_image(_surface)
-        CharacterImageManager.draw(_surface)
+        VisualNovelCharacterImageManager.draw(_surface)
         self._get_dialog_box().draw(_surface)
         # 如果不处于静音状态
         if not self._is_muted:

@@ -1,5 +1,3 @@
-import enum
-
 from .system import *
 
 
@@ -290,9 +288,3 @@ class GameObject2point5d(Coordinate):
         super().set_pos(x, y)
         if z is not None:
             self.z = int(z)
-
-
-# 表示方向的enum
-class Axis(enum.IntEnum):
-    VERTICAL = enum.auto()
-    HORIZONTAL = enum.auto()

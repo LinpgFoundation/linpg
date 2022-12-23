@@ -1,3 +1,4 @@
+import enum
 from random import randint as RANDINT
 
 # 粘贴板内容模块
@@ -8,9 +9,9 @@ import pygame
 import pygame.gfxdraw
 
 # 加载颜色模块
+from PIL import Image as PILImage  # type: ignore
 from PIL import ImageColor as PILImageColor  # type: ignore
 from PIL import ImageFilter as PILImageFilter
-from PIL import Image as PILImage  # type: ignore
 
 from .coordinates import *
 
@@ -31,12 +32,38 @@ PoI = str | pygame.Surface
 PG_Event = pygame.event.Event
 PG_TUPLE = Union[tuple[int, int, int, int], tuple[tuple[int, int], tuple[int, int]]]
 
-"""指向pygame事件的指针"""
+"""# 指向pygame事件的指针 即将弃置"""
 # 鼠标
 MOUSE_BUTTON_DOWN = pygame.MOUSEBUTTONDOWN
 MOUSE_BUTTON_UP = pygame.MOUSEBUTTONUP
 # 手柄
 JOYSTICK_BUTTON_DOWN = pygame.JOYBUTTONDOWN
+
+# 指向pygame事件的指针
+class Events(enum.IntEnum):
+    # 鼠标
+    MOUSE_BUTTON_DOWN = pygame.MOUSEBUTTONDOWN
+    MOUSE_BUTTON_UP = pygame.MOUSEBUTTONUP
+    # 手柄
+    JOYSTICK_BUTTON_DOWN = pygame.JOYBUTTONDOWN
+    JOYSTICK_BUTTON_UP = pygame.JOYBUTTONUP
+    # 键盘
+    KEY_DOWN = pygame.KEYDOWN
+    KEY_UP = pygame.KEYUP
+
+
+# 表示方向的enum
+class Axis(enum.IntEnum):
+    VERTICAL = enum.auto()
+    HORIZONTAL = enum.auto()
+
+
+# 表示位置
+class Locations(enum.IntEnum):
+    BEGINNING = enum.auto()
+    END = enum.auto()
+    MIDDLE = enum.auto()
+    EVERYWHERE = enum.auto()
 
 
 # 与数字有关的常用方法
@@ -99,6 +126,10 @@ class Colors:
     VIOLET: Final[tuple[int, int, int, int]] = (148, 0, 211, 255)
     # 透明
     TRANSPARENT: Final[tuple[int, int, int, int]] = (0, 0, 0, 0)
+    # 淡蓝色
+    LIGHT_SKY_BLUE: Final[tuple[int, int, int, int]] = (135, 206, 250, 255)
+    # 深蓝色
+    DODGER_BLUE: Final[tuple[int, int, int, int]] = (30, 144, 255, 255)
 
     # 转换至rgba颜色tuple
     @staticmethod
@@ -125,9 +156,10 @@ class Colors:
 
 class Keys:
 
+    DOWN: Final[int] = pygame.KEYDOWN  # 即将弃置
+    UP: Final[int] = pygame.KEYUP  # 即将弃置
+
     # 按键常量
-    DOWN: Final[int] = pygame.KEYDOWN
-    UP: Final[int] = pygame.KEYUP
     ESCAPE: Final[int] = pygame.K_ESCAPE
     SPACE: Final[int] = pygame.K_SPACE
     BACKSPACE: Final[int] = pygame.K_BACKSPACE

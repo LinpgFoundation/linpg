@@ -109,36 +109,21 @@ class AbstractScrollBarsSurface(SurfaceWithLocalPos, metaclass=ABCMeta):
         bottom_scroll_bar_rect: Optional[Rectangle] = self._get_bottom_scroll_bar_rect(off_set[0], off_set[1])
         bottom_scroll_button_rect: Optional[Rectangle] = self._get_bottom_scroll_button_rect(off_set[0], off_set[1])
         # 获取鼠标坐标
-        if self.is_hovered(off_set):
-            if Controller.mouse.get_pressed(0):
-                if right_scroll_bar_rect is not None and right_scroll_button_rect is not None and right_scroll_bar_rect.is_hovered():
-                    if right_scroll_button_rect.is_hovered():
-                        self.add_local_y(Controller.mouse.get_y_moved() * (self.get_surface_height() / self.get_height()))
-                    else:
-                        self.set_local_y(
-                            (self.get_top() - Controller.mouse.y + right_scroll_button_rect.height / 2)
-                            / right_scroll_bar_rect.height
-                            * self.get_surface_height()
-                        )
-                if bottom_scroll_bar_rect is not None and bottom_scroll_button_rect is not None and bottom_scroll_bar_rect.is_hovered():
-                    if bottom_scroll_button_rect.is_hovered():
-                        self.add_local_x(Controller.mouse.get_x_moved() * (self.get_surface_width() / self.get_width()))
-                    else:
-                        self.set_local_x(
-                            (self.get_left() - Controller.mouse.x + bottom_scroll_button_rect.width / 2)
-                            / bottom_scroll_bar_rect.width
-                            * self.get_surface_width()
-                        )
-            if Controller.get_event("scroll_up"):
-                if self._get_right_scroll_bar_rect(off_set[0], off_set[1]):
-                    self.add_local_y(self._move_speed)
-                if self._get_bottom_scroll_bar_rect(off_set[0], off_set[1]):
-                    self.subtract_local_x(self._move_speed)
-            if Controller.get_event("scroll_down"):
-                if self._get_right_scroll_bar_rect(off_set[0], off_set[1]):
-                    self.subtract_local_y(self._move_speed)
-                if self._get_bottom_scroll_bar_rect(off_set[0], off_set[1]):
-                    self.add_local_x(self._move_speed)
+        if Controller.mouse.get_pressed(0):
+            if right_scroll_bar_rect is not None and right_scroll_button_rect is not None and right_scroll_bar_rect.is_hovered():
+                if right_scroll_button_rect.is_hovered():
+                    self.add_local_y(Controller.mouse.get_y_moved() * (self.get_surface_height() / self.get_height()))
+                else:
+                    self.set_local_y(
+                        (self.get_top() - Controller.mouse.y + right_scroll_button_rect.height / 2) / right_scroll_bar_rect.height * self.get_surface_height()
+                    )
+            if bottom_scroll_bar_rect is not None and bottom_scroll_button_rect is not None and bottom_scroll_bar_rect.is_hovered():
+                if bottom_scroll_button_rect.is_hovered():
+                    self.add_local_x(Controller.mouse.get_x_moved() * (self.get_surface_width() / self.get_width()))
+                else:
+                    self.set_local_x(
+                        (self.get_left() - Controller.mouse.x + bottom_scroll_button_rect.width / 2) / bottom_scroll_bar_rect.width * self.get_surface_width()
+                    )
         # 防止local坐标越界
         if self.local_y > 0:
             self.set_local_y(0)
@@ -185,28 +170,29 @@ class AbstractSurfaceWithScrollBar(AbstractScrollBarsSurface, metaclass=ABCMeta)
             return "bottom" if not self.__scroll_bar_pos else "top"
 
     def set_scroll_bar_pos(self, pos: str) -> None:
-        if pos == "left":
-            if self.axis_mode is Axis.VERTICAL:
-                self.__scroll_bar_pos = True
-            else:
-                EXCEPTION.fatal("You cannot put the scroll bar on the left during horizontal mode!")
-        elif pos == "right":
-            if self.axis_mode is Axis.VERTICAL:
-                self.__scroll_bar_pos = False
-            else:
-                EXCEPTION.fatal("You cannot put the scroll bar on the right during horizontal mode!")
-        elif pos == "top":
-            if self.axis_mode is Axis.HORIZONTAL:
-                self.__scroll_bar_pos = True
-            else:
-                EXCEPTION.fatal("You cannot put the scroll bar on the top during vertical mode!")
-        elif pos == "bottom":
-            if self.axis_mode is Axis.HORIZONTAL:
-                self.__scroll_bar_pos = False
-            else:
-                EXCEPTION.fatal("You cannot put the scroll bar on the bottom during vertical mode!")
-        else:
-            EXCEPTION.fatal('Scroll bar position "{}" is not supported! Try sth like "right" or "bottom" instead.'.format(pos))
+        match pos:
+            case "left":
+                if self.axis_mode is Axis.VERTICAL:
+                    self.__scroll_bar_pos = True
+                else:
+                    EXCEPTION.fatal("You cannot put the scroll bar on the left during horizontal mode!")
+            case "right":
+                if self.axis_mode is Axis.VERTICAL:
+                    self.__scroll_bar_pos = False
+                else:
+                    EXCEPTION.fatal("You cannot put the scroll bar on the right during horizontal mode!")
+            case "top":
+                if self.axis_mode is Axis.HORIZONTAL:
+                    self.__scroll_bar_pos = True
+                else:
+                    EXCEPTION.fatal("You cannot put the scroll bar on the top during vertical mode!")
+            case "bottom":
+                if self.axis_mode is Axis.HORIZONTAL:
+                    self.__scroll_bar_pos = False
+                else:
+                    EXCEPTION.fatal("You cannot put the scroll bar on the bottom during vertical mode!")
+            case _:
+                EXCEPTION.fatal('Scroll bar position "{}" is not supported! Try sth like "right" or "bottom" instead.'.format(pos))
 
     # 获取滚动条按钮的Rect
     def _get_scroll_button_rect(self, off_set_x: number, off_set_y: number) -> Optional[Rectangle]:
@@ -250,11 +236,13 @@ class AbstractSurfaceWithScrollBar(AbstractScrollBarsSurface, metaclass=ABCMeta)
         # 获取滚轮条
         scroll_bar_rect: Optional[Rectangle] = self._get_scroll_bar_rect(off_set[0], off_set[1])
         scroll_button_rect: Optional[Rectangle] = self._get_scroll_button_rect(off_set[0], off_set[1])
-        # 获取鼠标坐标
-        if self.is_hovered(off_set):
-            # 查看与鼠标有关的事件
-            if scroll_bar_rect is not None and scroll_button_rect is not None and Controller.mouse.get_pressed(0):
-                if scroll_bar_rect.is_hovered():
+        if scroll_bar_rect is not None and scroll_button_rect is not None:
+            # 如果没有按下的事件，则重置holding_scroll_button的flag
+            if not Controller.mouse.get_pressed(0):
+                self.__is_holding_scroll_button = False
+            # 如果有按下的事件
+            if self.is_hovered(off_set):
+                if Controller.mouse.get_pressed(0) is True and not self.__is_holding_scroll_button and scroll_bar_rect.is_hovered():
                     # 根据按钮位置调整本地坐标
                     if scroll_button_rect.is_hovered():
                         self.__is_holding_scroll_button = True
@@ -266,20 +254,16 @@ class AbstractSurfaceWithScrollBar(AbstractScrollBarsSurface, metaclass=ABCMeta)
                         self.set_local_x(
                             (self.get_left() - Controller.mouse.x + scroll_button_rect.width / 2) / scroll_bar_rect.width * self.get_surface_width()
                         )
-            else:
-                self.__is_holding_scroll_button = False
-            if Controller.get_event("scroll_up"):
-                if self.axis_mode is Axis.VERTICAL:
-                    self.add_local_y(self._move_speed)
-                else:
-                    self.subtract_local_x(self._move_speed)
-            if Controller.get_event("scroll_down"):
-                if self.axis_mode is Axis.VERTICAL:
-                    self.subtract_local_y(self._move_speed)
-                else:
-                    self.add_local_x(self._move_speed)
-        else:
-            self.__is_holding_scroll_button = False
+                if Controller.get_event("scroll_up"):
+                    if self.axis_mode is Axis.VERTICAL:
+                        self.add_local_y(self._move_speed)
+                    else:
+                        self.subtract_local_x(self._move_speed)
+                if Controller.get_event("scroll_down"):
+                    if self.axis_mode is Axis.VERTICAL:
+                        self.subtract_local_y(self._move_speed)
+                    else:
+                        self.add_local_x(self._move_speed)
         # 需要调整本地坐标
         if self.__is_holding_scroll_button is True:
             if self.axis_mode is Axis.VERTICAL:

@@ -1,3 +1,4 @@
+from typing import NoReturn
 from .content import *
 
 # 视觉小说脚本编译器
@@ -9,6 +10,8 @@ class ScriptCompiler:
     FILE_EXTENSION: Final[str] = ".linpg.script"
 
     def __init__(self) -> None:
+        self.__path_in: str = ""
+        self.__line_index: int = 0
         self.__output: dict = {}
         self.__current_data: DialogContent = DialogContent({}, "head")
         self.__id: int = -1
@@ -60,14 +63,25 @@ class ScriptCompiler:
         sharp_index: int = text.find("#")
         return text.removeprefix(prefix) if sharp_index < 0 else text[:sharp_index].removeprefix(prefix)
 
+    # 编译失败
+    def __terminated(self, _reason: str) -> NoReturn:
+        EXCEPTION.fatal(
+            'File "{0}", line {1}\n  {2}\nFail to compile due to {3}'.format(self.__path_in, self.__line_index + 1, self.__get_current_line(), _reason)
+        )
+
+    # 获取当前行
+    def __get_current_line(self) -> str:
+        return self.__lines[self.__line_index].lstrip()
+
     # 处理数据
-    def __process(self, path: str) -> None:
-        if path.endswith(self.FILE_EXTENSION):
-            with open(path, "r", encoding="utf-8") as f:
+    def __process(self, _path: str) -> None:
+        self.__path_in = _path
+        if self.__path_in.endswith(self.FILE_EXTENSION):
+            with open(self.__path_in, "r", encoding="utf-8") as f:
                 self.__lines = f.readlines()
         # 如果文件为空
         if len(self.__lines) <= 0:
-            EXCEPTION.fatal("Cannot convert an empty script file!")
+            self.__terminated("Cannot convert an empty script file!")
         else:
             last_label: Optional[str] = None
             # 预处理文件
@@ -75,7 +89,7 @@ class ScriptCompiler:
                 self.__lines[index] = self.__lines[index].removesuffix("\n")
                 if self.__lines[index].startswith("[label]"):
                     if last_label is not None:
-                        EXCEPTION.fatal("The label on line {} is overwriting the previous".format(index))
+                        self.__terminated("The label is overwriting the previous one")
                     last_label = self.__extract_parameter(self.__lines[index], "[label]")
                 elif not self.__lines[index].startswith("[") and ":" in self.__lines[index]:
                     self.__dialog_associate_key[str(index)] = (
@@ -99,12 +113,14 @@ class ScriptCompiler:
 
     # 转换
     def __convert(self, staring_index: int) -> None:
-        index: int = staring_index
-        while index < len(self.__lines):
-            _currentLine: str = self.__lines[index].lstrip()
-            if _currentLine.startswith("//"):
+        self.__line_index = staring_index
+        while self.__line_index < len(self.__lines):
+            _currentLine: str = self.__get_current_line()
+            if len(_currentLine) <= 0 or self.__lines[self.__line_index].startswith("#"):
+                pass
+            elif _currentLine.startswith("//"):
                 self.__accumulated_comments.append(_currentLine.lstrip("//").lstrip())
-            elif not self.__lines[index].startswith("#") and len(_currentLine) > 0:
+            else:
                 # 背景图片
                 if _currentLine.startswith("[bgi]"):
                     self.__current_data.background_image = self.__extract_parameter(_currentLine, "[bgi]")
@@ -124,7 +140,9 @@ class ScriptCompiler:
                             break
                         # 移除角色
                         for i in range(len(self.__current_data.character_images)):
-                            if CharacterImageNameMetaData(self.__current_data.character_images[i]).equal(CharacterImageNameMetaData(_name)):
+                            if VisualNovelCharacterImageNameMetaData(self.__current_data.character_images[i]).equal(
+                                VisualNovelCharacterImageNameMetaData(_name)
+                            ):
                                 self.__current_data.character_images.pop(i)
                                 break
                 # 清空角色列表，然后让角色重新进场
@@ -138,7 +156,7 @@ class ScriptCompiler:
                     if _id is not None:
                         self.__id = int(_id)
                     else:
-                        EXCEPTION.fatal("Chapter id cannot be None!")
+                        self.__terminated("Chapter id cannot be None!")
                 # 语言
                 elif _currentLine.startswith("[lang]"):
                     self.__lang = self.__extract_string(_currentLine, "[lang]")
@@ -147,6 +165,8 @@ class ScriptCompiler:
                     if self.__last_dialog_id is not None:
                         self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = None
                     self.__section = self.__extract_string(_currentLine, "[section]")
+                    self.__current_data = DialogContent({}, "head")
+                    self.__last_dialog_id = None
                 # 结束符
                 elif _currentLine.startswith("[end]"):
                     self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = None
@@ -158,8 +178,8 @@ class ScriptCompiler:
                 # 选项
                 elif _currentLine.startswith("[opt]"):
                     # 确认在接下来的一行有branch的label
-                    if not self.__lines[index + 1].startswith("[br]"):
-                        EXCEPTION.fatal("For option on line {}, a branch label is not found on the following line".format(index + 1))
+                    if not self.__lines[self.__line_index + 1].startswith("[br]"):
+                        self.__terminated("For option on line {}, a branch label is not found on the following line".format(self.__line_index + 1))
                     # 如果next_dialog_id没被初始化，则初始化
                     if self.__output[self.__section][self.__last_dialog_id].get("next_dialog_id") is None:
                         self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = {}
@@ -171,10 +191,10 @@ class ScriptCompiler:
                     dialog_next["target"].append(
                         {
                             "text": self.__extract_string(_currentLine, "[opt]"),
-                            "id": self.__branch_labels[self.__extract_string(self.__lines[index + 1], "[br]")],
+                            "id": self.__branch_labels[self.__extract_string(self.__lines[self.__line_index + 1], "[br]")],
                         }
                     )
-                    index += 1
+                    self.__line_index += 1
                 elif not _currentLine.startswith("[") and ":" in _currentLine:
                     _narrator: Optional[str] = self.__ensure_not_null(_currentLine.removesuffix(" ").removesuffix(":"))
                     self.__current_data.narrator = _narrator if _narrator is not None else ""
@@ -184,7 +204,7 @@ class ScriptCompiler:
                         narrator_possible_images = tuple(self.__CHARACTER_IMAGE_DATABASE[self.__current_data.narrator.lower()])
                     # 检查名称列表，更新character_images以确保不在说话的人处于黑暗状态
                     for i in range(len(self.__current_data.character_images)):
-                        _name_data: CharacterImageNameMetaData = CharacterImageNameMetaData(self.__current_data.character_images[i])
+                        _name_data: VisualNovelCharacterImageNameMetaData = VisualNovelCharacterImageNameMetaData(self.__current_data.character_images[i])
                         if _name_data.name in narrator_possible_images:
                             _name_data.remove_tag("silent")
                         else:
@@ -192,14 +212,14 @@ class ScriptCompiler:
                         self.__current_data.character_images[i] = _name_data.get_raw_name()
                     # 更新对话内容
                     self.__current_data.contents.clear()
-                    for sub_index in range(index + 1, len(self.__lines)):
+                    for sub_index in range(self.__line_index + 1, len(self.__lines)):
                         if self.__lines[sub_index].startswith("- "):
                             self.__current_data.contents.append(self.__extract_string(self.__lines[sub_index], "- "))
                         else:
                             break
                     # 确认section不为None，如果为None，则警告
                     if self.__section is None:
-                        EXCEPTION.fatal("You have to specify section before script")
+                        self.__terminated("You have to specify section before script")
                     # 如果section未在字典中，则初始化对应section的数据
                     elif self.__section not in self.__output:
                         self.__output[self.__section] = {}
@@ -207,15 +227,19 @@ class ScriptCompiler:
                     if self.__last_dialog_id is not None:
                         self.__current_data.last = self.__last_dialog_id
                         # 生成数据
-                        if self.__output[self.__section][self.__last_dialog_id].get("next_dialog_id") is not None:
-                            self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"]["target"] = self.__dialog_associate_key[str(index)]
-                            if "type" not in self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"]:
-                                self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"]["type"] = "default"
+                        last_ref: Optional[dict] = self.__output[self.__section].get(self.__last_dialog_id)
+                        if last_ref is not None:
+                            if last_ref.get("next_dialog_id") is not None:
+                                last_ref["next_dialog_id"]["target"] = self.__dialog_associate_key[str(self.__line_index)]
+                                if "type" not in last_ref["next_dialog_id"]:
+                                    last_ref["next_dialog_id"]["type"] = "default"
+                            else:
+                                last_ref["next_dialog_id"] = {
+                                    "target": self.__dialog_associate_key[str(self.__line_index)],
+                                    "type": "default",
+                                }
                         else:
-                            self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = {
-                                "target": self.__dialog_associate_key[str(index)],
-                                "type": "default",
-                            }
+                            self.__terminated("KeyError: {}".format(self.__last_dialog_id))
                     else:
                         self.__current_data.last = None
                     # 添加注释
@@ -223,15 +247,15 @@ class ScriptCompiler:
                         self.__current_data.notes = self.__accumulated_comments
                         self.__accumulated_comments = []
                     # 更新key
-                    self.__last_dialog_id = self.__dialog_associate_key[str(index)]
+                    self.__last_dialog_id = self.__dialog_associate_key[str(self.__line_index)]
                     # 更新缓存参数
-                    index += len(self.__current_data.contents)
+                    self.__line_index += len(self.__current_data.contents)
                     self.__output[self.__section][self.__last_dialog_id] = copy.deepcopy(self.__current_data.to_dict())
                     # 移除注释
                     self.__current_data.notes.clear()
                 else:
-                    EXCEPTION.fatal("Cannot process script on line {}!".format(index))
-            index += 1
+                    self.__terminated("unexpected reason")
+            self.__line_index += 1
 
     # 直接加载
     def load(self, path: str) -> dict:
@@ -295,7 +319,7 @@ class ScriptCompiler:
                         elif _content.previous is None or len(_content.previous.character_images) == 0:
                             _line: str = "[display]"
                             for _characterName in _content.current.character_images:
-                                _line += CharacterImageNameMetaData(_characterName).name + " "
+                                _line += VisualNovelCharacterImageNameMetaData(_characterName).name + " "
                             _results.append(_line.rstrip() + "\n")
 
                     if _content.current.has_next():

@@ -1,12 +1,14 @@
 {
     "ConfigFileType": "json",
+    "DefaultFont": {
+        "font": "Arial",
+        "type": "default"
+    },
     "DefaultSetting": {
         "AntiAlias": true,
         "EnableOpenGL": false,
         "EnableVerticalSync": false,
         "FPS": 60,
-        "Font": "MicrosoftYaHei-2",
-        "FontType": "custom",
         "Language": "English",
         "LowMemoryMode": false,
         "MonitorToDisplay": 0,

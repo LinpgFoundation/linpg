@@ -56,16 +56,25 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
     def __get_coordinate_format_key(_coordinate: tuple[int, int]) -> str:
         return str(_coordinate[0]) + "_" + str(_coordinate[1])
 
+    # 初始化地图数据
+    def __init_map(self, map_data: numpy.ndarray, tile_width: int_f, tile_height: int_f) -> None:
+        self.__MAP = map_data
+        self.__row, self.__column = self.__MAP.shape
+        # 初始化追踪目前已经画出的方块的2d列表
+        self.__tile_on_surface = numpy.zeros(self.__MAP.shape, dtype=numpy.byte)
+        # 初始化地图渲染用的图层
+        self.__map_surface = None
+        self.__map_surface_old = None
+        # 更新地图渲染图层的尺寸
+        self.set_tile_size(tile_width, tile_height)
+
     # 更新数据
     def update(self, mapDataDic: dict, perBlockWidth: int_f, perBlockHeight: int_f) -> None:
         # 初始化地图数据
         self.__tile_lookup_table = list(mapDataDic["map"]["lookup_table"])
-        self.__MAP = numpy.asarray(mapDataDic["map"]["array2d"], dtype=numpy.byte)
-        self.__row, self.__column = self.__MAP.shape
+        self.__init_map(numpy.asarray(mapDataDic["map"]["array2d"], dtype=numpy.byte), perBlockWidth, perBlockHeight)
         # 暗度（仅黑夜场景有效）
         MapImageParameters.set_darkness(155 if bool(mapDataDic.get("at_night", False)) is True else 0)
-        # 更新地图渲染图层的尺寸
-        self.set_tile_size(perBlockWidth, perBlockHeight)
         # 设置本地坐标
         _local_x = mapDataDic.get("local_x")
         if _local_x is None:
@@ -86,9 +95,6 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         # 加载装饰物
         for _data in mapDataDic["decoration"]:
             self.add_decoration(_data)
-        # 初始化地图渲染用的图层
-        self.__map_surface = None
-        self.__map_surface_old = None
         # 背景图片路径
         theBgiPath: Optional[str] = mapDataDic.get("background_image")
         # 背景图片
@@ -106,9 +112,6 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             if MapImageParameters.get_darkness() > 0
             else tuple(Coordinates.convert(area_coordinate) for area_coordinate in mapDataDic["map"].get("lit_area", []))
         )
-        # 追踪目前已经画出的方块
-        self.__tile_on_surface = numpy.zeros(self.__MAP.shape, dtype=numpy.byte)
-        self.__need_to_recheck_tile_on_surface = True
 
     # 装饰物
     @property
@@ -124,6 +127,32 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
     @property
     def column(self) -> int:
         return self.__column
+
+    # 新增轴
+    def add_on_axis(self, index: int = -1, axis: int = 0) -> None:
+        axis = Numbers.keep_int_in_range(axis, 0, 1)
+        if index < 0:
+            index = self.__row if axis == 0 else self.__column
+        self.__init_map(
+            numpy.insert(self.__MAP, index, numpy.random.randint(len(self.__tile_lookup_table), size=self.__row if axis == 1 else self.__column), axis),
+            self.tile_width,
+            self.tile_height,
+        )
+
+    # 移除轴
+    def remove_on_axis(self, index: int = -1, axis: int = 0) -> None:
+        axis = Numbers.keep_int_in_range(axis, 0, 1)
+        if index < 0:
+            index = self.__row - 1 if axis == 0 else self.__column - 1
+        if axis == 0:
+            for key in tuple(self.__decorations.keys()):
+                if self.__decorations[key].y == index:
+                    self.__decorations.pop(key)
+        else:
+            for key in tuple(self.__decorations.keys()):
+                if self.__decorations[key].x == index:
+                    self.__decorations.pop(key)
+        self.__init_map(numpy.delete(self.__MAP, index, axis), self.tile_width, self.tile_height)
 
     # 获取方块宽度
     @property

@@ -13,13 +13,17 @@
         "background": "Background Image",
         "delete": "Delete current dialog",
         "example_project": "Example Project",
+        "new_colum": "New Colum",
+        "new_row": "New Row",
         "next": "Next dialog",
         "no_bgm": "No background music",
         "npc": "Npc",
         "please_enter_content": "Content",
         "please_enter_name": "Name",
         "previous": "Previous dialog",
-        "remove_npc": "Remove this npc"
+        "remove_colum": "Remove Colum",
+        "remove_npc": "Remove this npc",
+        "remove_row": "Remove Row"
     },
     "Global": {
         "back": "Back",
@@ -31,7 +35,7 @@
         "load_progress": "Load progress",
         "mute": "Mute",
         "no": "No",
-        "no_translation": "Translation is not available",
+        "no_translation": "Translation Needed",
         "progress_has_been_saved": "The progress has been saved.",
         "reload_file": "Reload the file",
         "resume": "Resume",

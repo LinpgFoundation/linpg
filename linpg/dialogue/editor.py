@@ -79,7 +79,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         # 加载动态背景图片
         if os.path.exists(Specification.get_directory("movie")):
             for imgPath in glob(Specification.get_directory("movie", "*")):
-                self.__UIContainerRight_bg.set(os.path.basename(imgPath), Images.resize(VideoSurface.get_preview(imgPath), (container_width * 4 // 5, None)))
+                self.__UIContainerRight_bg.set(os.path.basename(imgPath), Images.resize(Videos.get_thumbnail(imgPath), (container_width * 4 // 5, None)))
         self.__UIContainerRight_bg.distance_between_item = Display.get_height() // 50
         self.__current_select_bg_name = None
         self.__current_select_bg_copy = None
@@ -187,7 +187,7 @@ class DialogEditor(AbstractVisualNovelSystem):
     # 读取章节信息
     def _load_content(self) -> None:
         # 将npc立绘系统设置为开发者模式
-        CharacterImageManager.dev_mode = True
+        VisualNovelCharacterImageManager.dev_mode = True
         # 加载内容数据
         self._content.clear()
         if os.path.exists(path := self.get_data_file_path()) and "dialogs" in (data_t := Config.load_file(path)):
@@ -231,6 +231,7 @@ class DialogEditor(AbstractVisualNovelSystem):
                     while True:
                         index: int = 0
                         old_key: Optional[str] = None
+                        key: str = ""
                         for key, value in self._content.get_section_content(section).items():
                             if value["next_dialog_id"] is not None and "target" in value["next_dialog_id"]:
                                 if isinstance(value["next_dialog_id"]["target"], list):
@@ -357,16 +358,17 @@ class DialogEditor(AbstractVisualNovelSystem):
         if key1 is not None:
             seniorNodePointer = self._content.get_dialog(_id=key1)["next_dialog_id"]
             if not addNode:
-                if seniorNodePointer["type"] == "default" or seniorNodePointer["type"] == "changeScene":
-                    seniorNodePointer["target"] = key2
-                elif seniorNodePointer["type"] == "option":
-                    for optionChoice in seniorNodePointer["target"]:
-                        if optionChoice["id"] == self._content.get_id():
-                            optionChoice["id"] = key2
-                            break
-                else:
-                    # 如果当前next_dialog_id的类型不支持的话，报错
-                    EXCEPTION.fatal("Cannot recognize next_dialog_id type: {}, please fix it".format(seniorNodePointer["type"]))
+                match seniorNodePointer["type"]:
+                    case "default" | "changeScene":
+                        seniorNodePointer["target"] = key2
+                    case "option":
+                        for optionChoice in seniorNodePointer["target"]:
+                            if optionChoice["id"] == self._content.get_id():
+                                optionChoice["id"] = key2
+                                break
+                    case _:
+                        # 如果当前next_dialog_id的类型不支持的话，报错
+                        EXCEPTION.fatal("Cannot recognize next_dialog_id type: {}, please fix it".format(seniorNodePointer["type"]))
                 # 修改下一个对白配置文件中的"last_dialog_id"的参数
                 if key2 is not None:
                     if self._content.get_dialog(_id=key2).get("last_dialog_id") is not None:
@@ -385,14 +387,14 @@ class DialogEditor(AbstractVisualNovelSystem):
         else:
             for key, dialog_data in self._content.get_section_content().items():
                 if dialog_data["next_dialog_id"] is not None:
-                    if (dialog_data["next_dialog_id"]["type"] == "default" or dialog_data["next_dialog_id"]["type"] == "changeScene") and dialog_data[
-                        "next_dialog_id"
-                    ]["target"] == self._content.get_id():
-                        return str(key)
-                    elif dialog_data["next_dialog_id"]["type"] == "option":
-                        for optionChoice in dialog_data["next_dialog_id"]["target"]:
-                            if optionChoice["id"] == self._content.get_id():
+                    match dialog_data["next_dialog_id"]["type"]:
+                        case "default" | "changeScene":
+                            if dialog_data["next_dialog_id"]["target"] == self._content.get_id():
                                 return str(key)
+                        case "option":
+                            for optionChoice in dialog_data["next_dialog_id"]["target"]:
+                                if optionChoice["id"] == self._content.get_id():
+                                    return str(key)
             return "<NULL>"
 
     # 获取下一个对话的ID
@@ -458,60 +460,69 @@ class DialogEditor(AbstractVisualNovelSystem):
                 if self.__UIContainerRightButton.is_hovered():
                     self.__UIContainerRightButton.switch()
                     self.__UIContainerRightButton.flip()
-                # 退出
-                elif self.__buttons_ui_container.item_being_hovered == "back":
-                    if self.__no_changes_were_made() is True:
-                        self.stop()
-                    else:
-                        self.__no_save_warning.set_visible(True)
-                elif self.__buttons_ui_container.item_being_hovered == "previous":
-                    lastId = self.__get_last_id()
-                    if lastId == "<NULL>":
-                        EXCEPTION.inform("There is no last dialog id.")
-                    else:
-                        self._update_scene(lastId)
-                elif self.__buttons_ui_container.item_being_hovered == "delete":
-                    if self._content.get_id() != "head":
-                        lastId = self.__get_last_id()
-                        nextId: str = self.__try_get_next_id(_surface)
-                        self._content.remove_section()
-                        if lastId != "<NULL>":
-                            if nextId != "<NULL>":
-                                self.__make_connection(lastId, nextId)
-                            else:
-                                self._content.get_dialog(_id=lastId)["next_dialog_id"] = None
-                            self._update_scene(lastId)
-                        elif nextId != "<NULL>":
-                            self._content.get_dialog(_id=nextId)["last_dialog_id"] = None
-                            self._update_scene(nextId)
-                        else:
-                            EXCEPTION.inform("Cannot delete this dialog because there is no valid last and next id; you need to delete it manually.")
-                    else:
-                        EXCEPTION.inform("Cannot delete head; you need to delete it manually.")
-                elif self.__buttons_ui_container.item_being_hovered == "next":
-                    if (nextId := self.__try_get_next_id(_surface)) != "<NULL>":
-                        self._update_scene(str(nextId))
-                    else:
-                        EXCEPTION.inform("There is no next dialog id.")
-                elif self.__buttons_ui_container.item_being_hovered == "add":
-                    self.__add_dialog(self.generate_a_new_recommended_key())
-                elif self.__buttons_ui_container.item_being_hovered == "save":
-                    self._save()
-                elif self.__buttons_ui_container.item_being_hovered == "reload":
-                    self._load_content()
-                elif self.__buttons_ui_container.item_being_hovered == "mute":
-                    self._is_muted = not self._is_muted
-                    if self._is_muted is True:
-                        self.stop_bgm()
                 else:
-                    confirm_event_tag = True
+                    match self.__buttons_ui_container.item_being_hovered:
+                        # 退出
+                        case "back":
+                            if self.__no_changes_were_made() is True:
+                                self.stop()
+                            else:
+                                self.__no_save_warning.set_visible(True)
+                        # 前一对话
+                        case "previous":
+                            lastId = self.__get_last_id()
+                            if lastId == "<NULL>":
+                                EXCEPTION.inform("There is no last dialog id.")
+                            else:
+                                self._update_scene(lastId)
+                        # 删除当前对话
+                        case "delete":
+                            if self._content.get_id() != "head":
+                                lastId = self.__get_last_id()
+                                nextId: str = self.__try_get_next_id(_surface)
+                                self._content.remove_section()
+                                if lastId != "<NULL>":
+                                    if nextId != "<NULL>":
+                                        self.__make_connection(lastId, nextId)
+                                    else:
+                                        self._content.get_dialog(_id=lastId)["next_dialog_id"] = None
+                                    self._update_scene(lastId)
+                                elif nextId != "<NULL>":
+                                    self._content.get_dialog(_id=nextId)["last_dialog_id"] = None
+                                    self._update_scene(nextId)
+                                else:
+                                    EXCEPTION.inform("Cannot delete this dialog because there is no valid last and next id; you need to delete it manually.")
+                            else:
+                                EXCEPTION.inform("Cannot delete head; you need to delete it manually.")
+                        # 下一对话
+                        case "next":
+                            if (nextId := self.__try_get_next_id(_surface)) != "<NULL>":
+                                self._update_scene(str(nextId))
+                            else:
+                                EXCEPTION.inform("There is no next dialog id.")
+                        # 新增
+                        case "add":
+                            self.__add_dialog(self.generate_a_new_recommended_key())
+                        # 保存进度
+                        case "save":
+                            self._save()
+                        # 重新加载进度
+                        case "reload":
+                            self._load_content()
+                        # 停止播放背景音乐
+                        case "mute":
+                            self._is_muted = not self._is_muted
+                            if self._is_muted is True:
+                                self.stop_bgm()
+                        case _:
+                            confirm_event_tag = True
             # 移除角色立绘
-            elif Controller.get_event("delete") and CharacterImageManager.character_get_click is not None:
-                self._content.current.character_images.remove(CharacterImageManager.character_get_click)
+            elif Controller.get_event("delete") and VisualNovelCharacterImageManager.character_get_click is not None:
+                self._content.current.character_images.remove(VisualNovelCharacterImageManager.character_get_click)
                 self._content.save_current_changes()
                 self._update_scene(self._content.get_id())
         # 显示移除角色的提示
-        if CharacterImageManager.character_get_click is not None:
+        if VisualNovelCharacterImageManager.character_get_click is not None:
             _surface.blit(self.__remove_npc_button, Controller.mouse.get_pos())
         # 画上右侧菜单的按钮
         self.__UIContainerRightButton.draw(_surface)
@@ -544,7 +555,7 @@ class DialogEditor(AbstractVisualNovelSystem):
                 elif self.__UIContainerRight_npc.is_visible() and self.__UIContainerRight_npc.item_being_hovered is not None:
                     self._content.current.character_images.append(self.__UIContainerRight_npc.item_being_hovered)
                     self._content.save_current_changes()
-                    CharacterImageManager.update(self._content.current.character_images)
+                    VisualNovelCharacterImageManager.update(self._content.current.character_images)
 
         # 展示dialog navigation窗口
         self.__dialog_navigation_window.present_on(_surface)
@@ -554,14 +565,15 @@ class DialogEditor(AbstractVisualNovelSystem):
 
         # 未保存离开时的警告
         self.__no_save_warning.draw(_surface)
-        if Controller.get_event("confirm") and self.__no_save_warning.item_being_hovered != "":
-            # 保存并离开
-            if self.__no_save_warning.item_being_hovered == "save":
-                self._save()
-                self.stop()
-            # 取消
-            elif self.__no_save_warning.item_being_hovered == "cancel":
-                self.__no_save_warning.set_visible(False)
-            # 不保存并离开
-            elif self.__no_save_warning.item_being_hovered == "dont_save":
-                self.stop()
+        if Controller.get_event("confirm"):
+            match self.__no_save_warning.item_being_hovered:
+                # 保存并离开
+                case "save":
+                    self._save()
+                    self.stop()
+                # 取消
+                case "cancel":
+                    self.__no_save_warning.set_visible(False)
+                # 不保存并离开
+                case "dont_save":
+                    self.stop()

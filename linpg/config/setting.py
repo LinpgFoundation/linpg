@@ -19,6 +19,7 @@ class Setting(TypeSafeGetter, TypeSafeSetter):
         # 加载内部默认的设置配置文件
         cls.__SETTING_DATA.clear()
         cls.__SETTING_DATA.update(dict(Specification.get("DefaultSetting")))
+        cls.__SETTING_DATA["Font"] = Specification.get("DefaultFont")
         # 如果自定义的设置配置文件存在，则加载
         if os.path.exists(cls.__SETTING_FILE_NAME):
             cls.__SETTING_DATA.update(Config.load_file(cls.__SETTING_FILE_NAME))
@@ -27,11 +28,12 @@ class Setting(TypeSafeGetter, TypeSafeSetter):
             # 导入local,查看默认语言
             import locale
 
-            # 如果是中文
-            if locale.getdefaultlocale()[0] == "zh_CN":
-                cls.__SETTING_DATA["Language"] = "SimplifiedChinese"
-            elif locale.getdefaultlocale()[0] == "zh_TW" or locale.getdefaultlocale()[0] == "zh_HK":
-                cls.__SETTING_DATA["Language"] = "TraditionalChinese"
+            # 默认语言为英文， 但如果用户系统环境语言是中文
+            match locale.getdefaultlocale()[0]:
+                case "zh_CN":
+                    cls.__SETTING_DATA["Language"] = "SimplifiedChinese"
+                case "zh_TW" | "zh_HK":
+                    cls.__SETTING_DATA["Language"] = "TraditionalChinese"
 
     # 保存设置数据
     @classmethod
@@ -43,22 +45,22 @@ class Setting(TypeSafeGetter, TypeSafeSetter):
     # 文字名称
     @classmethod
     def get_font(cls) -> str:
-        return str(cls.__SETTING_DATA["Font"])
+        return str(cls.__SETTING_DATA["Font"]["font"])
 
     # 设置文字名称
     @classmethod
     def set_font(cls, font_name: str) -> None:
-        cls.__SETTING_DATA["Font"] = font_name
+        cls.__SETTING_DATA["Font"]["font"] = font_name
 
     # 文字类型
     @classmethod
     def get_font_type(cls) -> str:
-        return str(cls.__SETTING_DATA["FontType"])
+        return str(cls.__SETTING_DATA["Font"]["type"])
 
     # 设置文字类型
     @classmethod
     def set_font_type(cls, font_type: str) -> None:
-        cls.__SETTING_DATA["FontType"] = font_type
+        cls.__SETTING_DATA["Font"]["type"] = font_type
 
     # 抗锯齿参数
     @classmethod

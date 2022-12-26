@@ -2,7 +2,7 @@ from typing import NoReturn
 from .content import *
 
 # 视觉小说脚本编译器
-class ScriptCompiler:
+class _ScriptProcessor:
 
     # 立绘配置信息数据库
     __CHARACTER_IMAGE_DATABASE: Final[dict] = DataBase.get("Npc")
@@ -22,15 +22,7 @@ class ScriptCompiler:
         self.__branch_labels: dict[str, str] = {}
         self.__dialog_associate_key: dict[str, str] = {}
         self.__accumulated_comments: list[str] = []
-
-    # 从有效的视觉小说文件路径中读取信息
-    @staticmethod
-    def extract_info_from_path(_path: str) -> tuple[int, str]:
-        _path = os.path.basename(_path)
-        if not _path.startswith("chapter"):
-            EXCEPTION.fatal("Invalid path!")
-        # 返回 id, 语言
-        return int(_path[7 : _path.index("_")]), _path[_path.rfind("_") + 1 : _path.rfind(".")]
+        self.__head_place: bool = False
 
     # 生成一个标准id
     @staticmethod
@@ -46,11 +38,6 @@ class ScriptCompiler:
     @staticmethod
     def __ensure_not_null(text: str) -> Optional[str]:
         return None if text.lower() == "null" or text.lower() == "none" else text
-
-    # 如果输入字符串为None，则将其转换为null
-    @staticmethod
-    def __to_str_in_case_null(text: Optional[str]) -> str:
-        return text if text is not None else "null"
 
     # 将参数分离出来
     @classmethod
@@ -73,8 +60,12 @@ class ScriptCompiler:
     def __get_current_line(self) -> str:
         return self.__lines[self.__line_index].lstrip()
 
+    # 获取输出
+    def get_output(self) -> dict:
+        return self.__output
+
     # 处理数据
-    def __process(self, _path: str) -> None:
+    def process(self, _path: str) -> None:
         self.__path_in = _path
         if self.__path_in.endswith(self.FILE_EXTENSION):
             with open(self.__path_in, "r", encoding="utf-8") as f:
@@ -91,10 +82,14 @@ class ScriptCompiler:
                     if last_label is not None:
                         self.__terminated("The label is overwriting the previous one")
                     last_label = self.__extract_parameter(self.__lines[index], "[label]")
+                if self.__lines[index].startswith("[section]"):
+                    self.__head_place = False
                 elif not self.__lines[index].startswith("[") and ":" in self.__lines[index]:
-                    self.__dialog_associate_key[str(index)] = (
-                        self.__generate_id(len(self.__dialog_associate_key)) if len(self.__dialog_associate_key) > 0 else "head"
-                    )
+                    if self.__head_place is True:
+                        self.__dialog_associate_key[str(index)] = self.__generate_id(len(self.__dialog_associate_key))
+                    else:
+                        self.__dialog_associate_key[str(index)] = "head"
+                        self.__head_place = True
                     # 将id与label关联
                     if last_label is not None:
                         self.__branch_labels[last_label] = self.__dialog_associate_key[str(index)]
@@ -175,6 +170,8 @@ class ScriptCompiler:
                 elif _currentLine.startswith("[scene]"):
                     self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"]["type"] = "changeScene"
                     self.__current_data.background_image = self.__extract_parameter(_currentLine, "[scene]")
+                    self.__last_dialog_id = None
+                    self.__current_data.last = None
                 # 选项
                 elif _currentLine.startswith("[opt]"):
                     # 确认在接下来的一行有branch的label
@@ -257,15 +254,48 @@ class ScriptCompiler:
                     self.__terminated("unexpected reason")
             self.__line_index += 1
 
+    # 保存至
+    def save_to(self, out_folder: str) -> None:
+        Config.save(os.path.join(out_folder, "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type())), {"dialogs": self.__output})
+
+
+class ScriptCompiler:
+
+    # 如果输入字符串为None，则将其转换为null
+    @staticmethod
+    def __to_str_in_case_null(text: Optional[str]) -> str:
+        return text if text is not None else "null"
+
+    # 从有效的视觉小说文件路径中读取信息
+    @staticmethod
+    def extract_info_from_path(_path: str) -> tuple[int, str]:
+        _path = os.path.basename(_path)
+        if not _path.startswith("chapter"):
+            EXCEPTION.fatal("Invalid path!")
+        # 返回 id, 语言
+        return int(_path[7 : _path.index("_")]), _path[_path.rfind("_") + 1 : _path.rfind(".")]
+
     # 直接加载
     def load(self, path: str) -> dict:
-        self.__process(path)
-        return self.__output
+        processor: _ScriptProcessor = _ScriptProcessor()
+        processor.process(path)
+        return processor.get_output()
 
-    # 转换
-    def compile(self, path: str, out_folder: str) -> None:
-        self.__process(path)
-        Config.save(os.path.join(out_folder, "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type())), {"dialogs": self.__output})
+    # 编译
+    @staticmethod
+    def compile(path: str, out_folder: str) -> None:
+        processor: _ScriptProcessor = _ScriptProcessor()
+        processor.process(path)
+        processor.save_to(out_folder)
+
+    # 编译文件夹内的所有原始视觉小说文件
+    @classmethod
+    def compile_files_in_directory(cls, _path: str) -> None:
+        for _file in glob(os.path.join(_path, "*")):
+            if os.path.isdir(_file):
+                cls.compile_files_in_directory(_file)
+            elif _file.endswith(_ScriptProcessor.FILE_EXTENSION):
+                cls.compile(_file, _path)
 
     # 反编译
     @classmethod

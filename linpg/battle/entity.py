@@ -52,7 +52,7 @@ class Entity(Position):
         # 动作是正序列播放还是反序播放
         self._if_play_action_in_reversing: bool = bool(DATA.get("if_play_action_in_reversing", False))
         # 需要移动的路径
-        self.__moving_path: deque = deque(DATA.get("moving_path", []))
+        self.__moving_path: deque[tuple[int, int]] = deque(DATA.get("moving_path", []))
         self.__moving_complete: bool = bool(DATA.get("moving_complete", len(self.__moving_path) <= 0))
         # 是否无敌
         self.__if_invincible: bool = bool(DATA.get("if_invincible", False))
@@ -79,7 +79,7 @@ class Entity(Position):
     """修改父类的方法"""
 
     def to_dict(self) -> dict:
-        data: dict = {
+        data: dict[str, Any] = {
             "x": self.x,
             "y": self.y,
             "attack_coverage": self.__attack_coverage,
@@ -347,8 +347,8 @@ class Entity(Position):
                     LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.play(sound)
 
     # 设置需要移动的路径
-    def move_follow(self, path: list) -> None:
-        if isinstance(path, list) and len(path) > 0:
+    def move_follow(self, path: Sequence[tuple[int, int]]) -> None:
+        if isinstance(path, Sequence) and len(path) > 0:
             self.__moving_path = deque(path)
             self.__moving_complete = False
             self.set_action("move")
@@ -468,7 +468,7 @@ class Entity(Position):
         _image = EntitySpriteImageManager.get_images(self.__type, action)
         _image.set_index(self.__imgId_dict[action]["imgId"])
         # 调整小人图片的尺寸
-        img_width: float = round(MapImageParameters.get_tile_width() * 8 / 5, 2)
+        img_width: int = TileMapImagesModule.TILE_TEMPLE_WIDTH * 2
         _image.set_size(img_width, img_width)
         # 如果没有指定pos,则默认使用当前的动作
         if pos is None:
@@ -478,7 +478,7 @@ class Entity(Position):
             _surface,
             alpha,
             self._if_flip,
-            (pos[0] - MapImageParameters.get_tile_width() * 0.3, pos[1] - MapImageParameters.get_tile_width() * 0.85),
+            (pos[0] - TileMapImagesModule.TILE_TEMPLE_WIDTH // 2, pos[1] - int(TileMapImagesModule.TILE_TEMPLE_HEIGHT * 2.1)),
             self.__is_selected,
         )
         # 更新角色的rect

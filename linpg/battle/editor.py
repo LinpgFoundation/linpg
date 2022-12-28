@@ -43,10 +43,10 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         if self._tile_is_hovering is not None and self.__no_container_is_hovered is True:
             if self.__delete_mode is True:
                 xTemp, yTemp = self._MAP.calculate_position(self._tile_is_hovering[0], self._tile_is_hovering[1])
-                _surface.blit(self.__range_red, (xTemp + self._MAP.tile_width // 10, yTemp))
+                _surface.blit(self.__range_red, (xTemp + (self._MAP.tile_width - self.__range_red.get_width()) // 2, yTemp))
             elif len(self.__object_to_put_down) > 0:
                 xTemp, yTemp = self._MAP.calculate_position(self._tile_is_hovering[0], self._tile_is_hovering[1])
-                _surface.blit(self.__range_green, (xTemp + self._MAP.tile_width // 10, yTemp))
+                _surface.blit(self.__range_green, (xTemp + (self._MAP.tile_width - self.__range_green.get_width()) // 2, yTemp))
         # 角色动画
         for faction in self._entities_data:
             for value in self._entities_data[faction].values():
@@ -128,10 +128,10 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             EXCEPTION.fatal("Image sprite sheet for tile map is not loaded correctly!")
         for key, value in TileMapImagesModule.DEFAULT_TILE_MAP_IMAGE_SPRITE_SHEET.to_dict().items():
             if not isinstance(value, tuple):
-                self.__envImgContainer.set(key, Images.resize(value, (self._MAP.tile_width / 3, None)))
+                self.__envImgContainer.set(key, Images.resize(value, (self._MAP.tile_size / 3, None)))
             else:
                 for i, _ref in enumerate(value):
-                    self.__envImgContainer.set("{0}:{1}".format(key, i), Images.resize(_ref, (self._MAP.tile_width / 3, None)))
+                    self.__envImgContainer.set("{0}:{1}".format(key, i), Images.resize(_ref, (self._MAP.tile_size / 3, None)))
         self.__envImgContainer.set_item_per_line(4)
         self.__envImgContainer.set_scroll_bar_pos("right")
         self.__envImgContainer.set_visible(True)
@@ -144,17 +144,17 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         # 加载默认装饰物
         for key, value in DecorationImagesModule.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.to_dict().items():
             if not isinstance(value, tuple):
-                self.__decorationsImgContainer.set(key, Images.resize(value, (self._MAP.tile_width / 3, None)))
+                self.__decorationsImgContainer.set(key, Images.resize(value, (self._MAP.tile_size / 3, None)))
             else:
                 for i, _ref in enumerate(value):
-                    self.__decorationsImgContainer.set("{0}:{1}".format(key, i), Images.resize(_ref, (self._MAP.tile_width / 3, None)))
+                    self.__decorationsImgContainer.set("{0}:{1}".format(key, i), Images.resize(_ref, (self._MAP.tile_size / 3, None)))
         # 加载自带的装饰物
         for key, value in DecorationImagesModule.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.to_dict().items():
             if not isinstance(value, tuple):
-                self.__decorationsImgContainer.set(key, Images.resize(value, (self._MAP.tile_width / 3, None)))
+                self.__decorationsImgContainer.set(key, Images.resize(value, (self._MAP.tile_size / 3, None)))
             else:
                 for i, _ref in enumerate(value):
-                    self.__decorationsImgContainer.set("{0}:{1}".format(key, i), Images.resize(_ref, (self._MAP.tile_width / 3, None)))
+                    self.__decorationsImgContainer.set("{0}:{1}".format(key, i), Images.resize(_ref, (self._MAP.tile_size / 3, None)))
         # 设置容器参数
         self.__decorationsImgContainer.set_item_per_line(4)
         self.__decorationsImgContainer.set_scroll_bar_pos("right")
@@ -202,9 +202,9 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 self.__entitiesImagesContainerUsingIndex = 0
             self.__bottom_container_buttons.append(newButton)
         # 绿色方块/方块标准
-        self.__range_green = Images.load("<&ui>range_green.png", (self._MAP.tile_width * 4 // 5, None))
+        self.__range_green = Images.load("<&ui>range_green.png", (self._MAP.tile_width, None))
         self.__range_green.set_alpha(150)
-        self.__range_red = Images.load("<&ui>range_red.png", (self._MAP.tile_width * 4 // 5, None))
+        self.__range_red = Images.load("<&ui>range_red.png", (self._MAP.tile_width, None))
         self.__range_red.set_alpha(150)
         self.__object_to_put_down.clear()
         # 设置按钮位置
@@ -378,12 +378,12 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         if len(self.__object_to_put_down) > 0:
             match self.__object_to_put_down["type"]:
                 case "tile":
-                    _surface.blit(self.__envImgContainer.get(self.__object_to_put_down["id"]), Controller.mouse.get_pos())
+                    _surface.blit(self.__envImgContainer.get(str(self.__object_to_put_down["id"])), Controller.mouse.get_pos())
                 case "decoration":
-                    _surface.blit(self.__decorationsImgContainer.get(self.__object_to_put_down["id"]), Controller.mouse.get_pos())
+                    _surface.blit(self.__decorationsImgContainer.get(str(self.__object_to_put_down["id"])), Controller.mouse.get_pos())
                 case "entity":
                     _surface.blit(
-                        self.__entitiesImagesContainers[self.__object_to_put_down["container_id"]].get(self.__object_to_put_down["id"]),
+                        self.__entitiesImagesContainers[int(self.__object_to_put_down["container_id"])].get(self.__object_to_put_down["id"]),
                         Controller.mouse.get_pos(),
                     )
 

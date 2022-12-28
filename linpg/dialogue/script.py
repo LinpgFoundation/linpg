@@ -160,6 +160,8 @@ class _ScriptProcessor:
                     if self.__last_dialog_id is not None:
                         self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = None
                     self.__section = self.__extract_string(_currentLine, "[section]")
+                    self.__output[self.__section] = {}
+                    self.__output[self.__section]["head"] = {}
                     self.__current_data = DialogContent({}, "head")
                     self.__last_dialog_id = None
                 # 结束符

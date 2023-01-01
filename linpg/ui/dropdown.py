@@ -81,7 +81,7 @@ class DropDownList(GameObjectsDictContainer):
             else:
                 Draw.rect(_surface, Colors.WHITE, (current_abs_pos, self.size))
             # 列出当前选中的选项
-            current_pos: tuple = current_abs_pos
+            current_pos: tuple[int, int] = current_abs_pos
             font_surface: ImageSurface = self.__FONT.render(self.get_selected_item(), self.__font_color)
             _surface.blit(font_surface, Coordinates.add(current_pos, (self.__FONT.size * 3, (self.__block_height - font_surface.get_height()) // 2)))
             rect_of_outline = Rectangle(current_pos[0], current_pos[1], self.width, self.__block_height)

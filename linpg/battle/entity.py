@@ -444,14 +444,12 @@ class Entity(Position):
         return []
 
     # 根据坐标反转角色
-    def set_flip_based_on_pos(self, pos: object) -> None:
-        # 转换坐标
-        x, y = Positions.convert(pos)
+    def set_flip_based_on_pos(self, _pos: tuple[number, number]) -> None:
         # 检测坐标
-        if self.x > x:
+        if self.x > _pos[0]:
             self.set_flip(True)
-        elif self.x == x:
-            self.set_flip(self.y <= y)
+        elif self.x == _pos[0]:
+            self.set_flip(self.y <= _pos[1])
         else:
             self.set_flip(False)
 
@@ -495,27 +493,24 @@ class Entity(Position):
             self.__just_entered_a_new_tile = False
             if len(self.__moving_path) > 0:
                 need_pop: bool = False
+                self.set_flip_based_on_pos(self.__moving_path[0])
                 if self.x < self.__moving_path[0][0]:
                     self.set_x(self.x + 0.05)
-                    self.set_flip(False)
                     if self.x >= self.__moving_path[0][0]:
                         self.set_x(self.__moving_path[0][0])
                         need_pop = True
                 elif self.x > self.__moving_path[0][0]:
                     self.set_x(self.x - 0.05)
-                    self.set_flip(True)
                     if self.x <= self.__moving_path[0][0]:
                         self.set_x(self.__moving_path[0][0])
                         need_pop = True
                 if self.y < self.__moving_path[0][1]:
                     self.set_y(self.y + 0.05)
-                    self.set_flip(True)
                     if self.y >= self.__moving_path[0][1]:
                         self.set_y(self.__moving_path[0][1])
                         need_pop = True
                 elif self.y > self.__moving_path[0][1]:
                     self.set_y(self.y - 0.05)
-                    self.set_flip(False)
                     if self.y <= self.__moving_path[0][1]:
                         self.set_y(self.__moving_path[0][1])
                         need_pop = True

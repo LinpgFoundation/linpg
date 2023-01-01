@@ -19,10 +19,6 @@ from .coordinates import *
 pygame.init()
 
 """linpg自带属性"""
-# int_f指参数推荐输入int, 但一开始接受时可以为float，但最后会转换为int
-int_f = int | float
-# number，即数字，建议int但接受float
-number = int | float
 # 颜色类
 color_liked = Sequence[int] | str
 # 图形类

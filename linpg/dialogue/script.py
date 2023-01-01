@@ -22,7 +22,7 @@ class _ScriptProcessor:
         self.__branch_labels: dict[str, str] = {}
         self.__dialog_associate_key: dict[str, str] = {}
         self.__accumulated_comments: list[str] = []
-        self.__head_place: bool = False
+        self.__blocked: bool = False
 
     # 生成一个标准id
     @staticmethod
@@ -67,6 +67,7 @@ class _ScriptProcessor:
     # 处理数据
     def process(self, _path: str) -> None:
         self.__path_in = _path
+        current_index: int = 0
         if self.__path_in.endswith(self.FILE_EXTENSION):
             with open(self.__path_in, "r", encoding="utf-8") as f:
                 self.__lines = f.readlines()
@@ -83,13 +84,13 @@ class _ScriptProcessor:
                         self.__terminated("The label is overwriting the previous one")
                     last_label = self.__extract_parameter(self.__lines[index], "[label]")
                 if self.__lines[index].startswith("[section]"):
-                    self.__head_place = False
+                    current_index = 0
                 elif not self.__lines[index].startswith("[") and ":" in self.__lines[index]:
-                    if self.__head_place is True:
-                        self.__dialog_associate_key[str(index)] = self.__generate_id(len(self.__dialog_associate_key))
+                    if current_index > 0:
+                        self.__dialog_associate_key[str(index)] = self.__generate_id(current_index)
                     else:
                         self.__dialog_associate_key[str(index)] = "head"
-                        self.__head_place = True
+                    current_index += 1
                     # 将id与label关联
                     if last_label is not None:
                         self.__branch_labels[last_label] = self.__dialog_associate_key[str(index)]
@@ -172,8 +173,13 @@ class _ScriptProcessor:
                 elif _currentLine.startswith("[scene]"):
                     self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"]["type"] = "changeScene"
                     self.__current_data.background_image = self.__extract_parameter(_currentLine, "[scene]")
+                    self.__blocked = True
+                # 终端
+                elif _currentLine.startswith("[block]"):
+                    if self.__last_dialog_id is not None:
+                        self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = None
+                    self.__current_data = DialogContent({}, "id_needed")
                     self.__last_dialog_id = None
-                    self.__current_data.last = None
                 # 选项
                 elif _currentLine.startswith("[opt]"):
                     # 确认在接下来的一行有branch的label
@@ -224,7 +230,11 @@ class _ScriptProcessor:
                         self.__output[self.__section] = {}
                     # 如果上个dialog存在（不一定非得能返回）
                     if self.__last_dialog_id is not None:
-                        self.__current_data.last = self.__last_dialog_id
+                        if not self.__blocked:
+                            self.__current_data.last = self.__last_dialog_id
+                        else:
+                            self.__current_data.last = None
+                            self.__blocked = False
                         # 生成数据
                         last_ref: Optional[dict] = self.__output[self.__section].get(self.__last_dialog_id)
                         if last_ref is not None:

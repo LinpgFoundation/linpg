@@ -14,7 +14,7 @@ class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
     def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         super().__init__(None, x, y, width, height, tag=tag)
         # 鼠标触碰bar时的相对坐标
-        self.__mouse_hovered_offset_pos: tuple = tuple()
+        self.__mouse_hovered_offset_pos: tuple[number, number] = (0, 0)
         # 放大方向
         self.__rescale_directions: dict[str, bool] = {"left": False, "right": False, "top": False, "bottom": False}
         # 是否重新放大窗口
@@ -163,7 +163,7 @@ class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
             else:
                 for key in self.__rescale_directions:
                     self.__rescale_directions[key] = False
-                self.__mouse_hovered_offset_pos = tuple()
+                self.__mouse_hovered_offset_pos = (0, 0)
                 self.__if_move_local_pos = False
             # 更新窗口
             self.__update_window_frame()

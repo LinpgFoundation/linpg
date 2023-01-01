@@ -2,15 +2,19 @@ import numpy
 
 from ..language import *
 
+# 原点
 ORIGIN: Final[tuple[int, int]] = (0, 0)
-
+# int_f指参数推荐输入int, 但一开始接受时可以为float，但最后会转换为int
+int_f = int | float
+# number，即数字，建议int但接受float
+number = int | float
 
 # 浮点坐标
 class Positions:
 
     # 转换坐标
     @staticmethod
-    def convert(pos: Any) -> tuple:
+    def convert(pos: Any) -> tuple[number, number]:
         # 检测坐标
         if isinstance(pos, dict):
             return pos["x"], pos["y"]
@@ -29,9 +33,9 @@ class Positions:
 
     # 相加2个坐标
     @staticmethod
-    def add(*positions: tuple) -> tuple:
-        x = 0
-        y = 0
+    def add(*positions: tuple[number, number]) -> tuple[number, number]:
+        x: number = 0
+        y: number = 0
         for pos in positions:
             x += pos[0]
             y += pos[1]
@@ -39,9 +43,9 @@ class Positions:
 
     # 相减2个坐标
     @staticmethod
-    def subtract(position: tuple, *positions: tuple) -> tuple:
-        x = position[0]
-        y = position[1]
+    def subtract(position: tuple[number, number], *positions: tuple[number, number]) -> tuple[number, number]:
+        x: number = position[0]
+        y: number = position[1]
         for pos in positions:
             x -= pos[0]
             y -= pos[1]
@@ -72,9 +76,9 @@ class Coordinates:
 
     # 相加2个坐标
     @staticmethod
-    def add(*positions: tuple) -> tuple[int, int]:
-        x = 0
-        y = 0
+    def add(*positions: tuple[number, number]) -> tuple[int, int]:
+        x: number = 0
+        y: number = 0
         for pos in positions:
             x += pos[0]
             y += pos[1]
@@ -82,9 +86,9 @@ class Coordinates:
 
     # 相减2个坐标
     @staticmethod
-    def subtract(position: tuple, *positions: tuple) -> tuple[int, int]:
-        x = position[0]
-        y = position[1]
+    def subtract(position: tuple[number, number], *positions: tuple[number, number]) -> tuple[int, int]:
+        x: number = position[0]
+        y: number = position[1]
         for pos in positions:
             x -= pos[0]
             y -= pos[1]

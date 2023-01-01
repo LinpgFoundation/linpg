@@ -176,10 +176,10 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
                         self.__buttons_container.get("is_auto").set_visible(True)
                     case "history":
                         self.__is_showing_history = True
-                return False
+                    case _:
+                        return False
             return True
-        else:
-            return False
+        return False
 
     # 过场动画
     def play_cutscene(self, _surface: ImageSurface, fade_out_in_ms: int = 3000) -> None:

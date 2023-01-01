@@ -57,7 +57,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         return str(_coordinate[0]) + "_" + str(_coordinate[1])
 
     # 初始化地图数据
-    def __init_map(self, map_data: numpy.ndarray, tile_width: int_f, tile_height: int_f) -> None:
+    def __init_map(self, map_data: numpy.ndarray, tile_size: int_f) -> None:
         self.__MAP = map_data
         self.__row, self.__column = self.__MAP.shape
         # 初始化追踪目前已经画出的方块的2d列表
@@ -66,15 +66,15 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         self.__map_surface = None
         self.__map_surface_old = None
         # 更新地图渲染图层的尺寸
-        self.set_tile_size(tile_width, tile_height)
+        self.set_tile_size(tile_size)
 
     # 更新数据
-    def update(self, mapDataDic: dict, perBlockWidth: int_f, perBlockHeight: int_f) -> None:
+    def update(self, mapDataDic: dict, perBlockWidth: int_f) -> None:
         # 初始化地图数据
         self.__tile_lookup_table = list(mapDataDic["map"]["lookup_table"])
-        self.__init_map(numpy.asarray(mapDataDic["map"]["array2d"], dtype=numpy.byte), perBlockWidth, perBlockHeight)
+        self.__init_map(numpy.asarray(mapDataDic["map"]["array2d"], dtype=numpy.byte), perBlockWidth)
         # 暗度（仅黑夜场景有效）
-        MapImageParameters.set_darkness(155 if bool(mapDataDic.get("at_night", False)) is True else 0)
+        TileMapImagesModule.DARKNESS = 155 if bool(mapDataDic.get("at_night", False)) is True else 0
         # 设置本地坐标
         _local_x = mapDataDic.get("local_x")
         if _local_x is None:
@@ -109,7 +109,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         # 处于光处的区域
         self.__lit_area = (
             tuple()
-            if MapImageParameters.get_darkness() > 0
+            if TileMapImagesModule.DARKNESS > 0
             else tuple(Coordinates.convert(area_coordinate) for area_coordinate in mapDataDic["map"].get("lit_area", []))
         )
 
@@ -135,8 +135,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             index = self.__row if axis == 0 else self.__column
         self.__init_map(
             numpy.insert(self.__MAP, index, numpy.random.randint(len(self.__tile_lookup_table), size=self.__row if axis == 1 else self.__column), axis),
-            self.tile_width,
-            self.tile_height,
+            TileMapImagesModule.TILE_SIZE,
         )
 
     # 移除轴
@@ -152,17 +151,22 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             for key in tuple(self.__decorations.keys()):
                 if self.__decorations[key].x == index:
                     self.__decorations.pop(key)
-        self.__init_map(numpy.delete(self.__MAP, index, axis), self.tile_width, self.tile_height)
+        self.__init_map(numpy.delete(self.__MAP, index, axis), TileMapImagesModule.TILE_SIZE)
 
     # 获取方块宽度
     @property
     def tile_width(self) -> int:
-        return MapImageParameters.get_tile_width()
+        return TileMapImagesModule.TILE_TEMPLE_WIDTH
 
     # 获取方块高度
     @property
     def tile_height(self) -> int:
-        return MapImageParameters.get_tile_height()
+        return TileMapImagesModule.TILE_TEMPLE_HEIGHT
+
+    # 获取方块图片尺寸
+    @property
+    def tile_size(self) -> int:
+        return TileMapImagesModule.TILE_SIZE
 
     # 以字典的形式获取地图的数据
     def to_dict(self) -> dict:
@@ -223,13 +227,13 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         return len(self.__decorations)
 
     # 控制地图放大缩小
-    def set_tile_size(self, newPerBlockWidth: int_f, newPerBlockHeight: int_f) -> None:
+    def set_tile_size(self, newPerBlockWidth: int_f) -> None:
         # 记录老尺寸
         old_width: int = self.get_width()
         old_height: int = self.get_height()
         # 更新尺寸
-        TileMapImagesModule.update_size(round(newPerBlockWidth), round(newPerBlockHeight))
-        self.set_size(TileMapImagesModule.TILE_TEMPLE_WIDTH * self.__column, TileMapImagesModule.TILE_TEMPLE_HEIGHT * self.__row)
+        TileMapImagesModule.update_size(round(newPerBlockWidth))
+        self.set_size(self.tile_width * max(self.__column, self.__row), self.tile_height * max(self.__column, self.__row))
         self.__don_save_old_map_surface_for_next_update = True
         if self.get_width() < Display.get_width():
             self.set_width(Display.get_width())
@@ -278,7 +282,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             if self.__need_to_recheck_tile_on_surface is True:
                 if self.__background_image is not None:
                     self.__background_image.set_size(_surface.get_width(), _surface.get_height())
-                if MapImageParameters.get_darkness() > 0:
+                if TileMapImagesModule.DARKNESS > 0:
                     if not self.__don_save_old_map_surface_for_next_update:
                         self.__map_surface_old = self.__map_surface
                     else:
@@ -292,10 +296,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             for y in range(self.__row):
                 for x in range(self.__column):
                     posTupleTemp = self.calculate_position(x, y)
-                    if (
-                        -MapImageParameters.get_tile_width() <= posTupleTemp[0] < _surface.get_width()
-                        and -MapImageParameters.get_tile_width() <= posTupleTemp[1] < _surface.get_height()
-                    ):
+                    if -self.tile_width <= posTupleTemp[0] < _surface.get_width() and -self.tile_width <= posTupleTemp[1] < _surface.get_height():
                         if self.__tile_on_surface[y, x] == 0:
                             evn_img = TileMapImagesModule.get_image(self.get_tile(x, y), not self.is_coordinate_in_lit_area(x, y))
                             evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
@@ -352,7 +353,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
     # 把装饰物画到屏幕上
     def display_decoration(self, _surface: ImageSurface, occupied_coordinates: tuple) -> None:
         # 计算需要画出的范围
-        screen_min: int = -MapImageParameters.get_tile_width()
+        screen_min: int = -self.tile_width
         # 历遍装饰物列表里的物品
         for _item in self.__decorations.values():
             # 在地图的坐标
@@ -389,23 +390,15 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
     def calculate_coordinate(self, on_screen_pos: Optional[tuple[int, int]] = None) -> Optional[tuple[int, int]]:
         if on_screen_pos is None:
             on_screen_pos = Controller.mouse.get_pos()
-        guess_x: int = int(
-            (on_screen_pos[0] - self.local_x) / TileMapImagesModule.TILE_TEMPLE_WIDTH
-            + (on_screen_pos[1] - self.local_y) / TileMapImagesModule.TILE_TEMPLE_HEIGHT
-            - self.__row / 2
-        )
-        guess_y: int = int(
-            (on_screen_pos[1] - self.local_y) / TileMapImagesModule.TILE_TEMPLE_HEIGHT
-            - (on_screen_pos[0] - self.local_x) / TileMapImagesModule.TILE_TEMPLE_WIDTH
-            + self.__row / 2
-        )
+        guess_x: int = int((on_screen_pos[0] - self.local_x) / self.tile_width + (on_screen_pos[1] - self.local_y) / self.tile_height - self.__row / 2)
+        guess_y: int = int((on_screen_pos[1] - self.local_y) / self.tile_height - (on_screen_pos[0] - self.local_x) / self.tile_width + self.__row / 2)
         return (guess_x, guess_y) if self.__column > guess_x >= 0 and self.__row > guess_y >= 0 else None
 
     # 计算在地图中的位置
     def calculate_position(self, x: int_f, y: int_f) -> tuple[int, int]:
         return (
-            round((x - y + self.__row - 1) * TileMapImagesModule.TILE_TEMPLE_WIDTH / 2) + self.local_x,
-            round((y + x) * TileMapImagesModule.TILE_TEMPLE_HEIGHT / 2) + self.local_y,
+            round((x - y + self.__row - 1) * self.tile_width / 2) + self.local_x,
+            round((y + x) * self.tile_height / 2) + self.local_y,
         )
 
     # 获取可视光亮区域（子类可按需重写）
@@ -426,7 +419,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
 
     # 查看坐标是否在光亮范围内
     def is_coordinate_in_lit_area(self, x: int_f, y: int_f) -> bool:
-        return True if MapImageParameters.get_darkness() <= 0 else (round(x), round(y)) in self.__lit_area
+        return True if TileMapImagesModule.DARKNESS <= 0 else (round(x), round(y)) in self.__lit_area
 
     # 寻找2点之间的最短路径
     def find_path(

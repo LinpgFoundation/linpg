@@ -20,8 +20,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 地图数据
         self._MAP: TileMap = TileMap()
         # 方格标准尺寸
-        self._standard_tile_width: int = Display.get_width() // 10
-        self._standard_tile_height: int = Display.get_height() // 10
+        self._standard_tile_size: int = Display.get_width() // 10
         # 天气系统
         self._weather_system: WeatherSystem = WeatherSystem()
         # 当前鼠标位置上的tile块
@@ -44,7 +43,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
 
     # 加载地图数据
     def _load_map(self, _data: dict) -> None:
-        self._MAP.update(_data, self._standard_tile_width, self._standard_tile_height)
+        self._MAP.update(_data, self._standard_tile_size)
 
     # 处理数据
     def _process_data(self, _data: dict) -> None:
@@ -160,21 +159,22 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
             else:
                 self._screen_to_move_speed_x -= self._MAP.tile_width // 4
         # 如果需要移动屏幕
+        # 注意，因为self._screen_to_move_speed可能是复数，所以//会可能导致问题
         temp_value: int
         if self._screen_to_move_speed_x is not None:
-            temp_value = self._MAP.get_local_x() + self._screen_to_move_speed_x // 5
+            temp_value = self._MAP.get_local_x() + int(self._screen_to_move_speed_x / 5)
             if Display.get_width() - self._MAP.get_width() <= temp_value <= 0:
                 self._MAP.set_local_x(temp_value)
-                self._screen_to_move_speed_x = self._screen_to_move_speed_x * 4 // 5
+                self._screen_to_move_speed_x = int(self._screen_to_move_speed_x * 4 / 5)
                 if self._screen_to_move_speed_x == 0:
                     self._screen_to_move_speed_x = None
             else:
                 self._screen_to_move_speed_x = None
         if self._screen_to_move_speed_y is not None:
-            temp_value = self._MAP.get_local_y() + self._screen_to_move_speed_y // 5
+            temp_value = self._MAP.get_local_y() + int(self._screen_to_move_speed_y / 5)
             if Display.get_height() - self._MAP.get_height() <= temp_value <= 0:
                 self._MAP.set_local_y(temp_value)
-                self._screen_to_move_speed_y = self._screen_to_move_speed_y * 4 // 5
+                self._screen_to_move_speed_y = int(self._screen_to_move_speed_y * 4 / 5)
                 if self._screen_to_move_speed_y == 0:
                     self._screen_to_move_speed_y = None
             else:

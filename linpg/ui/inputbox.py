@@ -131,24 +131,30 @@ class SingleLineInputBox(AbstractInputBox):
     # 画出内容
     def draw(self, _surface: ImageSurface) -> None:
         for event in Controller.get_events():
-            if event.type == Keys.DOWN and self._active is True:
-                if self._check_key_down(event):
-                    pass
-                elif event.key == Keys.ESCAPE:
-                    self._active = False
-                    self.need_save = True
-                else:
-                    self._add_chars(event.unicode)
-            elif event.type == MOUSE_BUTTON_DOWN and event.button == 1:
-                if self._active is True:
-                    if self.x <= Controller.mouse.x <= self.x + self._input_box.width and self.y <= Controller.mouse.y <= self.y + self._input_box.height:
-                        self._reset_holder_index(Controller.mouse.x)
-                    else:
-                        self._active = False
-                        self.need_save = True
-                elif 0 <= Controller.mouse.x - self.x <= self._input_box.width and 0 <= Controller.mouse.y - self.y <= self._input_box.height:
-                    self._active = True
-                    self._reset_holder_index(Controller.mouse.x)
+            match event.type:
+                case Events.KEY_DOWN:
+                    if self._active is True:
+                        if self._check_key_down(event):
+                            pass
+                        elif event.key == Keys.ESCAPE:
+                            self._active = False
+                            self.need_save = True
+                        else:
+                            self._add_chars(event.unicode)
+                case Events.MOUSE_BUTTON_DOWN:
+                    if event.button == 1:
+                        if self._active is True:
+                            if (
+                                self.x <= Controller.mouse.x <= self.x + self._input_box.width
+                                and self.y <= Controller.mouse.y <= self.y + self._input_box.height
+                            ):
+                                self._reset_holder_index(Controller.mouse.x)
+                            else:
+                                self._active = False
+                                self.need_save = True
+                        elif 0 <= Controller.mouse.x - self.x <= self._input_box.width and 0 <= Controller.mouse.y - self.y <= self._input_box.height:
+                            self._active = True
+                            self._reset_holder_index(Controller.mouse.x)
         # 画出输入框
         if self._active:
             Draw.rect(_surface, self._color, self._input_box.get_rect(), 2)
@@ -285,62 +291,67 @@ class MultipleLinesInputBox(AbstractInputBox):
     def draw(self, _surface: ImageSurface) -> None:
         for event in Controller.get_events():
             if self._active:
-                if event.type == Keys.DOWN:
-                    match event.key:
-                        case Keys.BACKSPACE:
-                            self._remove_char(Locations.BEGINNING)
-                        case Keys.DELETE:
-                            self._remove_char(Locations.END)
-                        case Keys.ARROW_LEFT:
-                            if self._holder_index > 0:
-                                self._holder_index -= 1
-                        case Keys.ARROW_RIGHT:
-                            if self._holder_index < len(self._text[self.__lineId]):
-                                self._holder_index += 1
-                        case Keys.ARROW_UP:
-                            if self.__lineId > 0:
-                                self.__lineId -= 1
-                                if self._holder_index > len(self._text[self.__lineId]) - 1:
-                                    self._holder_index = len(self._text[self.__lineId]) - 1
-                        case Keys.ARROW_DOWN:
-                            if self.__lineId < len(self._text) - 1:
+                match event.type:
+                    case Events.KEY_DOWN:
+                        match event.key:
+                            case Keys.BACKSPACE:
+                                self._remove_char(Locations.BEGINNING)
+                            case Keys.DELETE:
+                                self._remove_char(Locations.END)
+                            case Keys.ARROW_LEFT:
+                                if self._holder_index > 0:
+                                    self._holder_index -= 1
+                            case Keys.ARROW_RIGHT:
+                                if self._holder_index < len(self._text[self.__lineId]):
+                                    self._holder_index += 1
+                            case Keys.ARROW_UP:
+                                if self.__lineId > 0:
+                                    self.__lineId -= 1
+                                    if self._holder_index > len(self._text[self.__lineId]) - 1:
+                                        self._holder_index = len(self._text[self.__lineId]) - 1
+                            case Keys.ARROW_DOWN:
+                                if self.__lineId < len(self._text) - 1:
+                                    self.__lineId += 1
+                                    if self._holder_index > len(self._text[self.__lineId]) - 1:
+                                        self._holder_index = len(self._text[self.__lineId]) - 1
+                            # ESC，关闭
+                            case Keys.ESCAPE:
+                                self._active = False
+                                self.need_save = True
+                            case Keys.RETURN:
+                                # 如果“|”位于最后
+                                if self._holder_index == len(self._text[self.__lineId]):
+                                    self._text.insert(self.__lineId + 1, "")
+                                else:
+                                    self._text.insert(self.__lineId + 1, self._text[self.__lineId][self._holder_index :])
+                                    self._text[self.__lineId] = self._text[self.__lineId][: self._holder_index]
                                 self.__lineId += 1
-                                if self._holder_index > len(self._text[self.__lineId]) - 1:
-                                    self._holder_index = len(self._text[self.__lineId]) - 1
-                        # ESC，关闭
-                        case Keys.ESCAPE:
-                            self._active = False
-                            self.need_save = True
-                        case Keys.RETURN:
-                            # 如果“|”位于最后
-                            if self._holder_index == len(self._text[self.__lineId]):
-                                self._text.insert(self.__lineId + 1, "")
-                            else:
-                                self._text.insert(self.__lineId + 1, self._text[self.__lineId][self._holder_index :])
-                                self._text[self.__lineId] = self._text[self.__lineId][: self._holder_index]
-                            self.__lineId += 1
-                            self._holder_index = 0
-                            self._reset_inputbox_size()
-                        case _:
+                                self._holder_index = 0
+                                self._reset_inputbox_size()
+                            case _:
+                                if (
+                                    event.unicode == "v"
+                                    and Keys.get_pressed("v")
+                                    and Keys.get_pressed(Keys.LEFT_CTRL)
+                                    or event.key == Keys.LEFT_CTRL
+                                    and Keys.get_pressed("v")
+                                    and Keys.get_pressed(Keys.LEFT_CTRL)
+                                ):
+                                    self._add_chars(Keys.get_clipboard())
+                                else:
+                                    self._add_chars(event.unicode)
+                    case Events.MOUSE_BUTTON_DOWN:
+                        if event.button == 1:
                             if (
-                                event.unicode == "v"
-                                and Keys.get_pressed("v")
-                                and Keys.get_pressed(Keys.LEFT_CTRL)
-                                or event.key == Keys.LEFT_CTRL
-                                and Keys.get_pressed("v")
-                                and Keys.get_pressed(Keys.LEFT_CTRL)
+                                self.x <= Controller.mouse.x <= self.x + self._input_box.width
+                                and self.y <= Controller.mouse.y <= self.y + self._input_box.height
                             ):
-                                self._add_chars(Keys.get_clipboard())
+                                self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
                             else:
-                                self._add_chars(event.unicode)
-                elif event.type == MOUSE_BUTTON_DOWN and event.button == 1:
-                    if self.x <= Controller.mouse.x <= self.x + self._input_box.width and self.y <= Controller.mouse.y <= self.y + self._input_box.height:
-                        self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
-                    else:
-                        self._active = False
-                        self.need_save = True
+                                self._active = False
+                                self.need_save = True
             elif (
-                event.type == MOUSE_BUTTON_DOWN
+                event.type is Events.MOUSE_BUTTON_DOWN
                 and event.button == 1
                 and self.x <= Controller.mouse.x <= self.x + self._input_box.width
                 and self.y <= Controller.mouse.y <= self.y + self._input_box.height

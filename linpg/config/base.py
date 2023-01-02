@@ -2,7 +2,7 @@ import json
 from glob import glob
 
 from ..abstracts import *
-from ..exception import EXCEPTION, os
+from ..exception import os
 
 # 尝试导入yaml库
 _YAML_INITIALIZED: bool = False

@@ -116,16 +116,6 @@ class VisualNovelCharacterImageManager:
     def __GET_WIDTH() -> int:
         return Display.get_width() // 2
 
-    # 重新加载滤镜（即将弃置）
-    @classmethod
-    def init(cls) -> None:
-        cls.unload()
-
-    # 卸载占用的内存（即将弃置）
-    @classmethod
-    def unload(cls) -> None:
-        cls.reset()
-
     # 重置并卸载占用的内存
     @classmethod
     def reset(cls) -> None:

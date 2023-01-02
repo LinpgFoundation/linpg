@@ -1,26 +1,10 @@
 from .shape import *
 
-
-# 可隐藏的Surface
-class HidableSurface(ABC):
-    def __init__(self, visible: bool = True) -> None:
-        self.__hidden: bool = not visible
-
-    def set_visible(self, visible: bool) -> None:
-        self.__hidden = not visible
-
-    def is_visible(self) -> bool:
-        return not self.__hidden
-
-    def is_hidden(self) -> bool:
-        return self.__hidden
-
-
 # 图形接口
-class AbstractImageSurface(Rectangle, HidableSurface, metaclass=ABCMeta):
+class AbstractImageSurface(Rectangle, Hidable, metaclass=ABCMeta):
     def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str) -> None:
         Rectangle.__init__(self, x, y, width, height)
-        HidableSurface.__init__(self)
+        Hidable.__init__(self)
         self.__img: Any = img
         # 确保长宽均已输入且为正整数
         if self.get_width() < 0 and self.get_height() < 0:

@@ -268,7 +268,10 @@ class _ScriptProcessor:
 
     # 保存至
     def save_to(self, out_folder: str) -> None:
-        Config.save(os.path.join(out_folder, "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type())), {"dialogs": self.__output})
+        Config.save(
+            os.path.join(out_folder, "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type())),
+            {"dialogs": self.__output, "compiledAt": int(time.time())},
+        )
 
 
 class ScriptCompiler:

@@ -2,12 +2,12 @@ from .inputbox import *
 
 
 # 控制台
-class Console(SingleLineInputBox, HidableSurface, threading.Thread):
+class Console(SingleLineInputBox, Hidable, threading.Thread):
 
     _COMMAND_INDICATOR: str = "/"
 
     def __init__(self, x: int_f, y: int_f, font_size: int = 32, default_width: int = 150):
-        HidableSurface.__init__(self, False)
+        Hidable.__init__(self, False)
         self.color_active = Colors.DODGER_BLUE
         SingleLineInputBox.__init__(self, x, y, font_size, self.color_active, default_width)
         self.color_inactive = Colors.LIGHT_SKY_BLUE
@@ -160,29 +160,30 @@ class Console(SingleLineInputBox, HidableSurface, threading.Thread):
     def draw(self, _surface: ImageSurface) -> None:
         if self.is_hidden():
             for event in Controller.get_events():
-                if event.type == Keys.DOWN and event.unicode == self._COMMAND_INDICATOR:
+                if event.type == Events.KEY_DOWN and event.unicode == self._COMMAND_INDICATOR:
                     self.set_visible(True)
                     break
         else:
             for event in Controller.get_events():
-                if event.type == MOUSE_BUTTON_DOWN:
-                    if self.x <= Controller.mouse.x <= self.x + self._input_box.width and self.y <= Controller.mouse.y <= self.y + self._input_box.height:
-                        self._active = not self._active
-                        # Change the current color of the input box.
-                        self._color = self.color_active if self._active else self.color_inactive
-                    else:
-                        self._active = False
-                        self._color = self.color_inactive
-                elif event.type == Keys.DOWN:
-                    if self._active is True:
-                        if self._check_key_down(event):
-                            pass
+                match event.type:
+                    case Events.MOUSE_BUTTON_DOWN:
+                        if self.x <= Controller.mouse.x <= self.x + self._input_box.width and self.y <= Controller.mouse.y <= self.y + self._input_box.height:
+                            self._active = not self._active
+                            # Change the current color of the input box.
+                            self._color = self.color_active if self._active else self.color_inactive
                         else:
-                            self._add_chars(event.unicode)
-                    else:
-                        if event.key == Keys.BACKQUOTE or event.key == Keys.ESCAPE:
-                            self.set_visible(False)
-                            self.set_text()
+                            self._active = False
+                            self._color = self.color_inactive
+                    case Events.KEY_DOWN:
+                        if self._active is True:
+                            if self._check_key_down(event):
+                                pass
+                            else:
+                                self._add_chars(event.unicode)
+                        else:
+                            if event.key == Keys.BACKQUOTE or event.key == Keys.ESCAPE:
+                                self.set_visible(False)
+                                self.set_text()
             # 画出输出信息
             for i in range(len(self._txt_output)):
                 _surface.blit(

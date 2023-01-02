@@ -1,9 +1,9 @@
 from .videos import *
 
 # 声音 type alias
-PG_Sound = pygame.mixer.Sound
+Sound = pygame.mixer.Sound
 # 频道 type alias
-PG_Channel = pygame.mixer.Channel
+SoundChannel = pygame.mixer.Channel
 
 # 根据设置参数改变声道数量
 __MIXER_CHANNEL_NUM: Final[int] = max(int(Setting.get("NumberOfChannels")), 8) + 3
@@ -12,13 +12,13 @@ linpg引擎保留的频道
 """
 # 背景音乐
 __RESERVED_BACKGROUND_MUSIC_CHANNEL_ID: Final[int] = __MIXER_CHANNEL_NUM - 3
-LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL: Optional[PG_Channel] = None
+LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL: Optional[SoundChannel] = None
 # 音效
 __RESERVED_SOUND_EFFECTS_CHANNEL_ID: Final[int] = __MIXER_CHANNEL_NUM - 2
-LINPG_RESERVED_SOUND_EFFECTS_CHANNEL: Optional[PG_Channel] = None
+LINPG_RESERVED_SOUND_EFFECTS_CHANNEL: Optional[SoundChannel] = None
 # 环境
 __RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID: Final[int] = __MIXER_CHANNEL_NUM - 1
-LINPG_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL: Optional[PG_Channel] = None
+LINPG_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL: Optional[SoundChannel] = None
 """
 初始化对应频道
 """
@@ -50,11 +50,11 @@ class SoundManagement(AbstractSoundManager):
     def __init__(self, channel_id: int):
         super().__init__(channel_id)
         self.__index: int = 0
-        self.__sounds: list[PG_Sound] = []
+        self.__sounds: list[Sound] = []
 
     # 添加音乐
     def add(self, path: str) -> None:
-        self.__sounds.append(Sound.load(path))
+        self.__sounds.append(Sounds.load(path))
 
     # 清空列表释放内存
     def clear(self) -> None:
@@ -85,19 +85,19 @@ class SoundManagement(AbstractSoundManager):
 
 
 # 音效管理
-class Sound:
+class Sounds:
 
     # 加载音效
     @staticmethod
-    def load(path: str, volume: Optional[float] = None) -> PG_Sound:
-        soundTmp: PG_Sound = pygame.mixer.Sound(path)
+    def load(path: str, volume: Optional[float] = None) -> Sound:
+        soundTmp: Sound = pygame.mixer.Sound(path)
         if volume is not None:
             soundTmp.set_volume(volume)
         return soundTmp
 
     # 从一个视频中加载音效
     @classmethod
-    def load_from_video(cls, path: str, volume: Optional[float] = None, cache_key: Optional[str] = None) -> PG_Sound:
+    def load_from_video(cls, path: str, volume: Optional[float] = None, cache_key: Optional[str] = None) -> Sound:
         # 如果给定了cache_key，则先尝试从缓存中读取音乐文件
         if cache_key is not None and len(cache_key) > 0 and Cache.match(cache_key, path) is True:
             try:
@@ -106,7 +106,7 @@ class Sound:
                 pass
         # 如果读取失败或者没有缓存key或者match失败，则应根据给定的路径生成音乐文件并返回
         path_of_sound: str = Videos.split_audio(path)
-        sound_audio: PG_Sound = cls.load(path_of_sound, volume)
+        sound_audio: Sound = cls.load(path_of_sound, volume)
         # 如果给了缓存key，则应该生成缓存联系并保留缓存文件
         if cache_key is not None and len(cache_key) > 0:
             Cache.new(cache_key, path, path_of_sound)
@@ -117,14 +117,14 @@ class Sound:
 
     # 从一个文件夹中加载音效
     @classmethod
-    def load_from_directory(cls, folder_path: str) -> tuple[PG_Sound, ...]:
+    def load_from_directory(cls, folder_path: str) -> tuple[Sound, ...]:
         if not os.path.isdir(folder_path):
             EXCEPTION.fatal("The path is not a valid directory!")
         return tuple(cls.load(_path) for _path in glob(os.path.join(folder_path, "*")))
 
     # 播放音效
     @staticmethod
-    def play(sound: PG_Sound, channel_id: int) -> None:
+    def play(sound: Sound, channel_id: int) -> None:
         pygame.mixer.Channel(channel_id).play(sound)
 
     # 淡出音效
@@ -134,7 +134,7 @@ class Sound:
 
     # 寻找一个可用的频道
     @staticmethod
-    def find_channel(force: bool = False) -> PG_Channel:
+    def find_channel(force: bool = False) -> SoundChannel:
         return pygame.mixer.find_channel(force)
 
     # 获取频道的数量
@@ -144,7 +144,7 @@ class Sound:
 
     # 获取对应id的频道
     @classmethod
-    def get_channel(cls, channel_id: int) -> PG_Channel:
+    def get_channel(cls, channel_id: int) -> SoundChannel:
         if channel_id < cls.get_num_channels():
             return pygame.mixer.Channel(channel_id)
         else:
@@ -271,5 +271,5 @@ class Media:
     # 淡出所有音乐
     @staticmethod
     def fade_out(time: int) -> None:
-        Sound.fade_out(time)
+        Sounds.fade_out(time)
         Music.fade_out(time)

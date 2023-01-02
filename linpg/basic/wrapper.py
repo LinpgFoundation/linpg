@@ -26,14 +26,6 @@ ImageSurface = pygame.Surface
 PoI = str | pygame.Surface
 # 事件 type alias
 PG_Event = pygame.event.Event
-PG_TUPLE = Union[tuple[int, int, int, int], tuple[tuple[int, int], tuple[int, int]]]
-
-"""# 指向pygame事件的指针 即将弃置"""
-# 鼠标
-MOUSE_BUTTON_DOWN = pygame.MOUSEBUTTONDOWN
-MOUSE_BUTTON_UP = pygame.MOUSEBUTTONUP
-# 手柄
-JOYSTICK_BUTTON_DOWN = pygame.JOYBUTTONDOWN
 
 # 指向pygame事件的指针
 class Events(enum.IntEnum):
@@ -152,9 +144,6 @@ class Colors:
 
 class Keys:
 
-    DOWN: Final[int] = pygame.KEYDOWN  # 即将弃置
-    UP: Final[int] = pygame.KEYUP  # 即将弃置
-
     # 按键常量
     ESCAPE: Final[int] = pygame.K_ESCAPE
     SPACE: Final[int] = pygame.K_SPACE
@@ -174,7 +163,7 @@ class Keys:
 
     # key是否被按下
     @classmethod
-    def get_pressed(cls, key_name: strint) -> bool:
+    def get_pressed(cls, key_name: str | int) -> bool:
         return pygame.key.get_pressed()[cls.get_key_code(key_name) if isinstance(key_name, str) else key_name]
 
     # 获取key的代号
@@ -192,7 +181,9 @@ class Draw:
 
     # 根据给与的rect画出轮廓
     @staticmethod
-    def rect(_surface: ImageSurface, color: tuple[int, int, int, int], rect: PG_TUPLE, thickness: int = 0) -> None:
+    def rect(
+        _surface: ImageSurface, color: tuple[int, int, int, int], rect: tuple[int, int, int, int] | tuple[tuple[int, int], tuple[int, int]], thickness: int = 0
+    ) -> None:
         if thickness <= 0:
             pygame.gfxdraw.box(_surface, rect, color)
         else:
@@ -303,7 +294,9 @@ class Filters:
 
     # 毛玻璃效果
     @staticmethod
-    def glassmorphism_effect(_surface: ImageSurface, _rect: Optional[PG_TUPLE] = None, whiteness: int = 10) -> ImageSurface:
+    def glassmorphism_effect(
+        _surface: ImageSurface, _rect: Optional[tuple[int, int, int, int] | tuple[tuple[int, int], tuple[int, int]]] = None, whiteness: int = 10
+    ) -> ImageSurface:
         _processed_image: PILImage.Image = PILImage.fromarray(Surfaces.to_array(_surface if _rect is None else _surface.subsurface(_rect))).filter(
             PILImageFilter.GaussianBlur(radius=6)
         )

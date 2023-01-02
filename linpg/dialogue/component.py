@@ -122,7 +122,7 @@ class DialogNavigationWindow(AbstractFrame):
 
 
 # 对话框模块基础框架
-class AbstractDialogBox(HidableSurface, metaclass=ABCMeta):
+class AbstractDialogBox(Hidable, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         # 对胡框数据
@@ -220,9 +220,9 @@ class DialogBox(AbstractDialogBox):
         self.__narrator: str = ""
         self.__text_index: int = 0
         self.__displayed_lines: int = 0
-        self.__textPlayingSound: Optional[PG_Sound] = None
+        self.__textPlayingSound: Optional[Sound] = None
         if os.path.exists(_path := Specification.get_directory("sound", "ui", "dialog_words_playing.ogg")):
-            self.__textPlayingSound = Sound.load(_path)
+            self.__textPlayingSound = Sounds.load(_path)
         self.__READING_SPEED: int = max(int(Setting.get("ReadingSpeed")), 1)
         # 翻页指示动态图标
         self.__next_page_indicator_icon = self.__NextPageIndicatorIcon()

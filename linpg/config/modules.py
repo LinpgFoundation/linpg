@@ -50,9 +50,9 @@ class Info:
     # 引擎主版本号
     __VERSION: Final[int] = 3
     # 引擎次更新版本号
-    __REVISION: Final[int] = 5
+    __REVISION: Final[int] = 6
     # 引擎补丁版本
-    __PATCH: Final[int] = 4
+    __PATCH: Final[int] = 0
 
     # 确保linpg版本
     @classmethod

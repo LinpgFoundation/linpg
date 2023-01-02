@@ -34,7 +34,7 @@ class AbstractSystem(ABC):
 class SystemWithBackgroundMusic(AbstractSystem):
     def __init__(self) -> None:
         super().__init__()
-        self.__audio: Optional[PG_Sound] = None
+        self.__audio: Optional[Sound] = None
         self.__bgm_path: Optional[str] = None
         self.__bgm_volume: float = 1.0
 
@@ -61,7 +61,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
             if self.__bgm_path != path or forced is True:
                 self.unload_bgm()
                 self.__bgm_path = path
-                self.__audio = Sound.load(self.__bgm_path, self.__bgm_volume)
+                self.__audio = Sounds.load(self.__bgm_path, self.__bgm_volume)
         else:
             EXCEPTION.fatal("Path '{}' does not exist!".format(path))
 

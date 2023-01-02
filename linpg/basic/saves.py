@@ -34,7 +34,6 @@ class PersistentVariables(TypeSafeGetter, TypeSafeSetter):
 
 # 初始化持久数据库
 PersistentVariables.reload()
-PersistentData = PersistentVariables  # 即将弃置
 
 
 # 存档系统

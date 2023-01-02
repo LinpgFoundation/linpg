@@ -65,7 +65,7 @@ class Entity(Position):
             and os.path.exists(_sound_directory := Specification.get_directory("character_sound", self.__type))
         ):
             self.__SOUNDS[self.__type] = {
-                soundType: Sound.load_from_directory(os.path.join(_sound_directory, soundType)) for soundType in os.listdir(_sound_directory)
+                soundType: Sounds.load_from_directory(os.path.join(_sound_directory, soundType)) for soundType in os.listdir(_sound_directory)
             }
         # 角色的攻击范围
         self.__effective_range_coordinates: Optional[list[list[tuple[int, int]]]] = None

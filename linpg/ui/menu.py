@@ -2,7 +2,7 @@ from .generator import *
 
 
 # 内部菜单模块的抽象
-class AbstractInternalMenu(HidableSurface, metaclass=ABCMeta):
+class AbstractInternalMenu(Hidable, metaclass=ABCMeta):
     def __init__(self, menu_name: str) -> None:
         super().__init__(False)
         self._CONTENT: Optional[GameObjectsDictContainer] = None
@@ -210,7 +210,7 @@ class PauseMenu(AbstractInternalMenu):
 
 
 # 选取存档的菜单
-class SaveOrLoadSelectedProgressMenu(HidableSurface):
+class SaveOrLoadSelectedProgressMenu(Hidable):
     def __init__(self) -> None:
         super().__init__(False)
         # 行

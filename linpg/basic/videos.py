@@ -1,5 +1,4 @@
 import subprocess
-from abc import ABC
 
 # 尝试导入opencv库
 _OPENCV_INITIALIZED: bool = False

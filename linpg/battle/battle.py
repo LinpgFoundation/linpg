@@ -52,10 +52,6 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 初始化地图
         self._load_map(_data)
 
-    # 获取地图文件所在的具体路径（即将弃置）
-    def get_map_file_location(self) -> str:
-        return self.get_data_file_path()
-
     # 获取地图文件所在的具体路径
     def get_data_file_path(self) -> str:
         return (
@@ -114,9 +110,9 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 处理鼠标事件
         for event in Controller.get_events():
             match event.type:
-                case Keys.DOWN:
+                case Events.KEY_DOWN:
                     self._check_key_down(event)
-                case Keys.UP:
+                case Events.KEY_UP:
                     self._check_key_up(event)
         # 处理手柄事件
         if Controller.joystick.get_init():

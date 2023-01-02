@@ -1,6 +1,6 @@
 """
 结构:
-exception -> config -> language -> basic -> core -> ui -> dialogue -> battle -> api
+exception -> abstracts -> config -> language -> basic -> core -> ui -> dialogue -> battle -> api
 """
 from .interface import *
 

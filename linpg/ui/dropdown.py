@@ -25,7 +25,7 @@ class DropDownList(GameObjectsDictContainer):
             self.__update_width(item)
 
     # 根据物品判定是否需要更新宽度
-    def __update_width(self, item: strint) -> None:
+    def __update_width(self, item: str | int) -> None:
         _new_width: int = self.__FONT.estimate_text_width(item) + self.__FONT.size * 7
         if self.get_width() < _new_width:
             self.set_width(_new_width)
@@ -41,12 +41,12 @@ class DropDownList(GameObjectsDictContainer):
         self.__font_color = Colors.get(font_color)
 
     # 新增一个物品
-    def set(self, key: str, new_item: strint) -> None:  # type: ignore[override]
+    def set(self, key: str, new_item: str | int) -> None:  # type: ignore[override]
         super().set(key, new_item)
         self.__update_width(new_item)
 
     # 获取一个物品
-    def get(self, key: str) -> strint:
+    def get(self, key: str) -> str | int:
         return super().get(key) if not self.is_empty() else self.__DEFAULT_CONTENT
 
     # 获取当前选中的物品

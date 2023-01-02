@@ -90,9 +90,10 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 读取目标对话文件的数据
         if os.path.exists(self.get_data_file_path()):
             # 获取目标对话数据
-            dialogData_t: dict = dict(Config.load(self.get_data_file_path(), "dialogs", self._content.get_section()))
+            _data: dict = Config.load_file(self.get_data_file_path())
+            dialogData_t: dict = _data["dialogs"][self._content.get_section()]
             # 如果该dialog文件是另一个语言dialog文件的子类
-            if (default_lang_of_dialog := self.get_default_lang()) != Setting.get_language():
+            if _data.get("compiledAt") is None and (default_lang_of_dialog := self.get_default_lang()) != Setting.get_language():
                 self._content.set_section_content(
                     dict(Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._content.get_section()))
                 )

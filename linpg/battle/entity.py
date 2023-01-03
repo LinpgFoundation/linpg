@@ -337,14 +337,14 @@ class Entity(Position):
 
     # 播放角色声音
     def play_sound(self, kind_of_sound: str) -> None:
-        if LINPG_RESERVED_SOUND_EFFECTS_CHANNEL is not None:
+        if LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL is not None:
             _point: Optional[dict] = self.__SOUNDS.get(self.__type)
             if _point is not None:
                 sound_list: Optional[tuple] = _point.get(kind_of_sound)
                 if sound_list is not None and len(sound_list) > 0:
                     sound = sound_list[Numbers.get_random_int(0, len(sound_list) - 1) if len(sound_list) > 1 else 0]
                     sound.set_volume(Volume.get_effects() / 100.0)
-                    LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.play(sound)
+                    LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL.play(sound)
 
     # 设置需要移动的路径
     def move_follow(self, path: Sequence[tuple[int, int]]) -> None:

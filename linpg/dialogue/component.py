@@ -299,8 +299,8 @@ class DialogBox(AbstractDialogBox):
     # 如果音效还在播放则停止播放文字音效
     @staticmethod
     def stop_playing_text_sound() -> None:
-        if LINPG_RESERVED_SOUND_EFFECTS_CHANNEL is not None and LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy():
-            LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.stop()
+        if LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL is not None and LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL.get_busy():
+            LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL.stop()
 
     def set_visible(self, visible: bool) -> None:
         super().set_visible(visible)
@@ -343,11 +343,11 @@ class DialogBox(AbstractDialogBox):
                     if self.__text_index < len(self.__contents[self.__displayed_lines]):
                         # 播放文字音效
                         if (
-                            LINPG_RESERVED_SOUND_EFFECTS_CHANNEL is not None
-                            and not LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy()
+                            LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL is not None
+                            and not LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL.get_busy()
                             and self.__textPlayingSound is not None
                         ):
-                            LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.play(self.__textPlayingSound)
+                            LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL.play(self.__textPlayingSound)
                         self.__text_index += 1
                     # 当前行的所有字都播出后，播出下一行
                     elif self.__displayed_lines < len(self.__contents) - 1:

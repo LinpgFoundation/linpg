@@ -1,56 +1,94 @@
 from .videos import *
 
-# 声音 type alias
-Sound = pygame.mixer.Sound
 # 频道 type alias
 SoundChannel = pygame.mixer.Channel
 
-# 根据设置参数改变声道数量
-__MIXER_CHANNEL_NUM: Final[int] = max(int(Setting.get("NumberOfChannels")), 8) + 3
-"""
-linpg引擎保留的频道
-"""
-# 背景音乐
-__RESERVED_BACKGROUND_MUSIC_CHANNEL_ID: Final[int] = __MIXER_CHANNEL_NUM - 3
-LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL: Optional[SoundChannel] = None
-# 音效
-__RESERVED_SOUND_EFFECTS_CHANNEL_ID: Final[int] = __MIXER_CHANNEL_NUM - 2
-LINPG_RESERVED_SOUND_EFFECTS_CHANNEL: Optional[SoundChannel] = None
-# 环境
-__RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID: Final[int] = __MIXER_CHANNEL_NUM - 1
-LINPG_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL: Optional[SoundChannel] = None
-"""
-初始化对应频道
-"""
-if pygame.mixer.get_init() is not None:
-    pygame.mixer.set_num_channels(__MIXER_CHANNEL_NUM)
-    LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL = pygame.mixer.Channel(__RESERVED_BACKGROUND_MUSIC_CHANNEL_ID)
-    LINPG_RESERVED_SOUND_EFFECTS_CHANNEL = pygame.mixer.Channel(__RESERVED_SOUND_EFFECTS_CHANNEL_ID)
-    LINPG_RESERVED_ENVIRONMENTAL_SOUND_CHANNEL = pygame.mixer.Channel(__RESERVED_ENVIRONMENTAL_SOUND_CHANNEL_ID)
-else:
-    EXCEPTION.inform("Mixer has not been initialized correctly!")
-    print("One possible cause could be no output device, anyway, please double check your output device(s)!")
+# linpg引擎保留的频道
+class LINPG_RESERVED_CHANNELS:
+
+    # 根据设置参数改变声道数量
+    __MIXER_CHANNEL_NUM: Final[int] = max(int(Setting.get("NumberOfChannels")), 8) + 3
+    # 背景音乐
+    __BACKGROUND_MUSIC_CHANNEL_ID: Final[int] = __MIXER_CHANNEL_NUM - 3
+    BACKGROUND_MUSIC_CHANNEL: Optional[SoundChannel] = None
+    # 音效
+    __SOUND_EFFECTS_CHANNEL_ID: Final[int] = __MIXER_CHANNEL_NUM - 2
+    SOUND_EFFECTS_CHANNEL: Optional[SoundChannel] = None
+    # 环境
+    __ENVIRONMENTAL_SOUND_CHANNEL_ID: Final[int] = __MIXER_CHANNEL_NUM - 1
+    ENVIRONMENTAL_SOUND_CHANNEL: Optional[SoundChannel] = None
+
+    # 初始化对应频道
+    @classmethod
+    def init(cls) -> None:
+        if pygame.mixer.get_init() is not None:
+            pygame.mixer.set_num_channels(cls.__MIXER_CHANNEL_NUM)
+            cls.BACKGROUND_MUSIC_CHANNEL = pygame.mixer.Channel(cls.__BACKGROUND_MUSIC_CHANNEL_ID)
+            cls.SOUND_EFFECTS_CHANNEL = pygame.mixer.Channel(cls.__SOUND_EFFECTS_CHANNEL_ID)
+            cls.ENVIRONMENTAL_SOUND_CHANNEL = pygame.mixer.Channel(cls.__ENVIRONMENTAL_SOUND_CHANNEL_ID)
+        else:
+            EXCEPTION.inform("Mixer has not been initialized correctly!")
+            print("One possible cause could be no output device, anyway, please double check your output device(s)!")
 
 
-# 音效管理模块接口
-class AbstractSoundManager(ABC):
-    def __init__(self, channel_id: int):
-        self._channel_id: int = channel_id
+# 初始化引擎保留频道
+LINPG_RESERVED_CHANNELS.init()
 
-    @property
-    def channel_id(self) -> int:
-        return self._channel_id
+# 声音类
+class Sound(pygame.mixer.Sound):
+    def __init__(self, _input: Any) -> None:
+        self.__input: Any = _input
+        self.__init: bool = False
+        self.__volume: float = 1.0
+        self.__try_init()
 
-    def get_channel_id(self) -> int:
-        return self._channel_id
+    # 尝试初始化
+    def __try_init(self) -> None:
+        if not self.__init and pygame.mixer.get_init() is not None:
+            super().__init__(self.__input)
+            self.set_volume(self.__volume)
+            self.__init = True
+
+    def play(self, loops: int = 0, max_time: int = 0, fade_ms: int = 0) -> Optional[SoundChannel]:  # type: ignore[override]
+        self.__try_init()
+        if self.__init is True:
+            return super().play(loops, max_time, fade_ms)
+        return None
+
+    def set_volume(self, value: float) -> None:
+        if self.__init is True:
+            super().set_volume(value)
+        else:
+            self.__volume = value
+
+    def get_volume(self) -> float:
+        if self.__init is True:
+            return super().get_volume()
+        else:
+            return self.__volume
+
+    def stop(self) -> None:
+        if self.__init is True:
+            super().stop()
+
+    def fadeout(self, time: int) -> None:
+        if self.__init is True:
+            super().fadeout(time)
 
 
 # 音效管理模块-列表
-class SoundManagement(AbstractSoundManager):
+class SoundsManager:
     def __init__(self, channel_id: int):
-        super().__init__(channel_id)
+        self.__channel_id: int = channel_id
         self.__index: int = 0
         self.__sounds: list[Sound] = []
+
+    @property
+    def channel_id(self) -> int:
+        return self.__channel_id
+
+    def get_channel_id(self) -> int:
+        return self.__channel_id
 
     # 添加音乐
     def add(self, path: str) -> None:
@@ -62,13 +100,14 @@ class SoundManagement(AbstractSoundManager):
 
     # 播放音乐
     def play(self, sound_id: int = -1) -> None:
-        if len(self.__sounds) > 0 and not pygame.mixer.Channel(self._channel_id).get_busy():
+        if len(self.__sounds) > 0 and pygame.mixer.get_init() is not None and not pygame.mixer.Channel(self.__channel_id).get_busy():
             self.__index = Numbers.get_random_int(0, len(self.__sounds) - 1) if sound_id < 0 else sound_id
-            pygame.mixer.Channel(self._channel_id).play(self.__sounds[self.__index])
+            pygame.mixer.Channel(self.__channel_id).play(self.__sounds[self.__index])
 
     # 停止播放
     def stop(self) -> None:
-        pygame.mixer.Channel(self._channel_id).stop()
+        if pygame.mixer.get_init() is not None:
+            pygame.mixer.Channel(self.__channel_id).stop()
 
     # 获取音量
     @property
@@ -87,10 +126,15 @@ class SoundManagement(AbstractSoundManager):
 # 音效管理
 class Sounds:
 
+    # 是否成功初始化
+    @staticmethod
+    def get_init() -> bool:
+        return pygame.mixer.get_init() is not None
+
     # 加载音效
     @staticmethod
     def load(path: str, volume: Optional[float] = None) -> Sound:
-        soundTmp: Sound = pygame.mixer.Sound(path)
+        soundTmp: Sound = Sound(path)
         if volume is not None:
             soundTmp.set_volume(volume)
         return soundTmp
@@ -123,19 +167,27 @@ class Sounds:
         return tuple(cls.load(_path) for _path in glob(os.path.join(folder_path, "*")))
 
     # 播放音效
-    @staticmethod
-    def play(sound: Sound, channel_id: int) -> None:
-        pygame.mixer.Channel(channel_id).play(sound)
+    @classmethod
+    def play(cls, sound: Sound, channel_id: int) -> None:
+        if cls.get_init() is True:
+            pygame.mixer.Channel(channel_id).play(sound)
+
+    # 停止播放
+    @classmethod
+    def stop(cls) -> None:
+        if cls.get_init() is True:
+            pygame.mixer.stop()
 
     # 淡出音效
-    @staticmethod
-    def fade_out(time: int) -> None:
-        pygame.mixer.fadeout(time)
+    @classmethod
+    def fade_out(cls, time: int) -> None:
+        if cls.get_init() is True:
+            pygame.mixer.fadeout(time)
 
     # 寻找一个可用的频道
-    @staticmethod
-    def find_channel(force: bool = False) -> SoundChannel:
-        return pygame.mixer.find_channel(force)
+    @classmethod
+    def find_channel(cls, force: bool = False) -> Optional[SoundChannel]:
+        return pygame.mixer.find_channel(force) if cls.get_init() is True else None
 
     # 获取频道的数量
     @staticmethod
@@ -170,7 +222,8 @@ class Music:
     # 卸载背景音乐
     @staticmethod
     def unload() -> None:
-        pygame.mixer.music.unload()
+        if Sounds.get_init() is True:
+            pygame.mixer.music.unload()
 
     # 重新开始播放背景音乐
     @staticmethod
@@ -185,7 +238,8 @@ class Music:
     # 停止播放
     @staticmethod
     def stop() -> None:
-        pygame.mixer.music.stop()
+        if Sounds.get_init() is True:
+            pygame.mixer.music.stop()
 
     # 淡出背景音乐
     @staticmethod
@@ -265,8 +319,8 @@ class Media:
     # 卸载所有音乐
     @staticmethod
     def unload() -> None:
+        Sounds.stop()
         Music.unload()
-        pygame.mixer.stop()
 
     # 淡出所有音乐
     @staticmethod

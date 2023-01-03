@@ -132,10 +132,12 @@ class AbstractDialogBox(Hidable, metaclass=ABCMeta):
         self._dialogue_box: StaticImage = StaticImage("<&ui>dialoguebox.png", Display.get_width() * 13 // 100, 0, Display.get_width() * 74 // 100)
 
     # 画出（子类需实现）
+    @abstractmethod
     def draw(self, _surface: ImageSurface) -> None:
         EXCEPTION.fatal("draw()", 1)
 
     # 更新内容（子类需实现）
+    @abstractmethod
     def update(self, narrator: str, contents: list) -> None:
         EXCEPTION.fatal("update()", 1)
 

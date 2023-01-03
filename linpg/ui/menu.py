@@ -360,10 +360,12 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
         EXCEPTION.fatal("stop()", 1)
 
     # 更新音量（子类需实现）
+    @abstractmethod
     def _update_sound_volume(self) -> None:
         EXCEPTION.fatal("_update_sound_volume()", 1)
 
     # 更新语言（子类需实现）
+    @abstractmethod
     def update_language(self) -> None:
         EXCEPTION.fatal("update_language()", 1)
 

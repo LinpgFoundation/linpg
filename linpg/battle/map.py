@@ -11,7 +11,7 @@ from .decoration import *
 
 
 # 地图模块
-class TileMap(Rectangle, SurfaceWithLocalPos):
+class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
 
     # 开发者使用的窗口
     __debug_win: Optional[RenderedWindow] = None
@@ -36,7 +36,9 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         self.__column: int = 0
         # 地图渲染用的图层
         self.__map_surface: Optional[ImageSurface] = None
+        # 地图旧图层以渲染渐变效果
         self.__map_surface_old: Optional[ImageSurface] = None
+        # 不要保存地图旧图层
         self.__don_save_old_map_surface_for_next_update: bool = False
         # 背景图片
         self.__background_image: Optional[StaticImage] = None
@@ -69,21 +71,21 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         self.set_tile_size(tile_size)
 
     # 更新数据
-    def update(self, mapDataDic: dict, perBlockWidth: int_f) -> None:
+    def update(self, _data: dict, _block_size: int_f) -> None:
         # 初始化地图数据
-        self.__tile_lookup_table = list(mapDataDic["map"]["lookup_table"])
-        self.__init_map(numpy.asarray(mapDataDic["map"]["array2d"], dtype=numpy.byte), perBlockWidth)
+        self.__tile_lookup_table = list(_data["map"]["lookup_table"])
+        self.__init_map(numpy.asarray(_data["map"]["array2d"], dtype=numpy.byte), _block_size)
         # 暗度（仅黑夜场景有效）
-        TileMapImagesModule.DARKNESS = 155 if bool(mapDataDic.get("at_night", False)) is True else 0
+        TileMapImagesModule.DARKNESS = 155 if bool(_data.get("at_night", False)) is True else 0
         # 设置本地坐标
-        _local_x = mapDataDic.get("local_x")
+        _local_x = _data.get("local_x")
         if _local_x is None:
             self.set_local_x(0)
         elif isinstance(_local_x, str):
             self.set_local_x(Numbers.convert_percentage(_local_x) * self.get_width())
         else:
             self.set_local_x(_local_x)
-        _local_y = mapDataDic.get("local_y")
+        _local_y = _data.get("local_y")
         if _local_y is None:
             self.set_local_y(0)
         elif isinstance(_local_y, str):
@@ -93,10 +95,10 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         # 重置装饰物列表
         self.__decorations.clear()
         # 加载装饰物
-        for _data in mapDataDic["decoration"]:
-            self.add_decoration(_data)
+        for _decoration in _data["decoration"]:
+            self.add_decoration(_decoration)
         # 背景图片路径
-        theBgiPath: Optional[str] = mapDataDic.get("background_image")
+        theBgiPath: Optional[str] = _data.get("background_image")
         # 背景图片
         self.__background_image = (
             StaticImage(Images.quickly_load(Specification.get_directory("background_image", theBgiPath), False), 0, 0) if theBgiPath is not None else None
@@ -108,9 +110,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             decoration.ensure_image_cached()
         # 处于光处的区域
         self.__lit_area = (
-            tuple()
-            if TileMapImagesModule.DARKNESS > 0
-            else tuple(Coordinates.convert(area_coordinate) for area_coordinate in mapDataDic["map"].get("lit_area", []))
+            tuple() if TileMapImagesModule.DARKNESS > 0 else tuple(Coordinates.convert(area_coordinate) for area_coordinate in _data["map"].get("lit_area", []))
         )
 
     # 装饰物
@@ -215,6 +215,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
     def _add_decoration(self, _item: DecorationObject) -> None:
         self.__decorations[self.__get_coordinate_format_key(_item.get_pos())] = _item
 
+    # 新增装饰物
     def add_decoration(self, _data: dict) -> None:
         self._add_decoration(DecorationObject.from_dict(_data))
 
@@ -260,7 +261,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
             self.__need_update_surface = True
 
     # 把地图画到屏幕上
-    def display_map(self, _surface: ImageSurface, screen_to_move_x: int = 0, screen_to_move_y: int = 0) -> tuple:
+    def render(self, _surface: ImageSurface, screen_to_move_x: int = 0, screen_to_move_y: int = 0) -> tuple:
         # 检测屏幕是不是移到了不移到的地方
         _min_local_x: int = _surface.get_width() - self.get_width()
         if self.local_x < _min_local_x:
@@ -387,19 +388,14 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         self.__need_to_recheck_tile_on_surface = True
 
     # 计算在地图中的方块
+    @abstractmethod
     def calculate_coordinate(self, on_screen_pos: Optional[tuple[int, int]] = None) -> Optional[tuple[int, int]]:
-        if on_screen_pos is None:
-            on_screen_pos = Controller.mouse.get_pos()
-        guess_x: int = int((on_screen_pos[0] - self.local_x) / self.tile_width + (on_screen_pos[1] - self.local_y) / self.tile_height - self.__row / 2)
-        guess_y: int = int((on_screen_pos[1] - self.local_y) / self.tile_height - (on_screen_pos[0] - self.local_x) / self.tile_width + self.__row / 2)
-        return (guess_x, guess_y) if self.__column > guess_x >= 0 and self.__row > guess_y >= 0 else None
+        EXCEPTION.fatal("calculate_coordinate()", 1)
 
     # 计算在地图中的位置
+    @abstractmethod
     def calculate_position(self, x: int_f, y: int_f) -> tuple[int, int]:
-        return (
-            round((x - y + self.__row - 1) * self.tile_width / 2) + self.local_x,
-            round((y + x) * self.tile_height / 2) + self.local_y,
-        )
+        EXCEPTION.fatal("calculate_position()", 1)
 
     # 获取可视光亮区域（子类可按需重写）
     def _get_lit_area(self, alliances_data: dict) -> set[tuple[int, int]]:
@@ -436,7 +432,7 @@ class TileMap(Rectangle, SurfaceWithLocalPos):
         # 初始化寻路地图
         map2d: numpy.ndarray = numpy.ones((self.__column, self.__row), dtype=numpy.byte)
         # 如果角色无法移动至黑暗处
-        if not can_move_through_darkness:
+        if not can_move_through_darkness and TileMapImagesModule.DARKNESS > 0:
             map2d.fill(0)
             for _pos in self.__lit_area:
                 map2d[_pos[0], _pos[1]] = 1

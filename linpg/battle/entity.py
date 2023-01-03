@@ -370,7 +370,7 @@ class Entity(Position):
     # 根据给定的坐标和范围列表生成范围坐标列表
     @classmethod
     def _generate_range_coordinates(
-        cls, _x: int, _y: int, _ranges: tuple[int, ...], MAP_P: TileMap, ifFlip: bool, ifHalfMode: bool = False
+        cls, _x: int, _y: int, _ranges: tuple[int, ...], MAP_P: AbstractTileMap, ifFlip: bool, ifHalfMode: bool = False
     ) -> list[list[tuple[int, int]]]:
         # 初始化数据
         start_point: int
@@ -411,7 +411,7 @@ class Entity(Position):
         return -1
 
     # 获取角色的攻击范围
-    def get_effective_range_coordinates(self, MAP_P: TileMap, ifHalfMode: bool = False) -> list[list[tuple[int, int]]]:
+    def get_effective_range_coordinates(self, MAP_P: AbstractTileMap, ifHalfMode: bool = False) -> list[list[tuple[int, int]]]:
         if self.__effective_range_coordinates is None:
             self.__effective_range_coordinates = self._generate_range_coordinates(
                 round(self.x), round(self.y), self.__effective_range, MAP_P, self._if_flip, ifHalfMode
@@ -424,7 +424,7 @@ class Entity(Position):
 
     # 根据给定的坐标和半径生成覆盖范围坐标列表
     @staticmethod
-    def _generate_coverage_coordinates(_x: int, _y: int, _radius: int, MAP_P: TileMap) -> list[tuple[int, int]]:
+    def _generate_coverage_coordinates(_x: int, _y: int, _radius: int, MAP_P: AbstractTileMap) -> list[tuple[int, int]]:
         return list(
             filter(
                 lambda pos: MAP_P.is_passable(pos[0], pos[1]) and MAP_P.row > pos[1] >= 0 and MAP_P.column > pos[0] >= 0,
@@ -433,7 +433,7 @@ class Entity(Position):
         )
 
     # 获取角色的攻击覆盖范围
-    def get_attack_coverage_coordinates(self, _x: int, _y: int, MAP_P: TileMap) -> list[tuple[int, int]]:
+    def get_attack_coverage_coordinates(self, _x: int, _y: int, MAP_P: AbstractTileMap) -> list[tuple[int, int]]:
         if self._identify_range(self.__effective_range, abs(_x - round(self.x)) + abs(_y - round(self.y))) >= 0:
             return list(
                 filter(
@@ -456,102 +456,94 @@ class Entity(Position):
     """画出角色"""
 
     # 角色画到surface上
-    def __blit_entity_img(
-        self, _surface: ImageSurface, MAP_P: TileMap, alpha: int, action: Optional[str] = None, pos: Optional[tuple[int, int]] = None
-    ) -> None:
-        # 如果没有指定action,则默认使用当前的动作
-        if action is None:
-            action = self.__current_action
+    def __render(self, _surface: ImageSurface, pos: tuple[int, int], size: tuple[int, int], action: str, alpha: int) -> None:
+        # 当alpha小等于0时意味着没必要渲染任何东西
+        if alpha <= 0:
+            # 重置角色的rect
+            self.__current_image_rect = None
+            return
         # 获取对应动作的图片管理模块
         _image = EntitySpriteImageManager.get_images(self.__type, action)
         _image.set_index(self.__imgId_dict[action]["imgId"])
-        # 调整小人图片的尺寸
-        img_width: int = TileMapImagesModule.TILE_TEMPLE_WIDTH * 2
-        _image.set_size(img_width, img_width)
-        # 如果没有指定pos,则默认使用当前的动作
-        if pos is None:
-            pos = MAP_P.calculate_position(self.x, self.y)
+        _image.set_size(size[0], size[1])
         # 把角色图片画到屏幕上
-        _image.draw_onto(
-            _surface,
-            alpha,
-            self._if_flip,
-            (pos[0] - TileMapImagesModule.TILE_TEMPLE_WIDTH // 2, pos[1] - int(TileMapImagesModule.TILE_TEMPLE_HEIGHT * 2.1)),
-            self.__is_selected,
-        )
+        _image.render(_surface, (pos[0], pos[1]), alpha, self._if_flip, self.__is_selected)
         # 更新角色的rect
         self.__current_image_rect = _image.get_rectangle()
 
     # 把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
-    def draw(self, _surface: ImageSurface, MAP_P: TileMap, update_id_only: bool = False) -> None:
-        # 画出角色
-        if not update_id_only:
-            self.__blit_entity_img(_surface, MAP_P, self.get_imgAlpha(self.__current_action))
-        """计算imgId"""
-        # 如果正在播放移动动作，则需要根据现有路径更新坐标
-        if self.__current_action == "move" and not self.__moving_complete:
-            self.__just_entered_a_new_tile = False
-            if len(self.__moving_path) > 0:
-                need_pop: bool = False
-                self.set_flip_based_on_pos(self.__moving_path[0])
-                if self.x < self.__moving_path[0][0]:
-                    self.set_x(self.x + 0.05)
-                    if self.x >= self.__moving_path[0][0]:
-                        self.set_x(self.__moving_path[0][0])
-                        need_pop = True
-                elif self.x > self.__moving_path[0][0]:
-                    self.set_x(self.x - 0.05)
-                    if self.x <= self.__moving_path[0][0]:
-                        self.set_x(self.__moving_path[0][0])
-                        need_pop = True
-                if self.y < self.__moving_path[0][1]:
-                    self.set_y(self.y + 0.05)
-                    if self.y >= self.__moving_path[0][1]:
-                        self.set_y(self.__moving_path[0][1])
-                        need_pop = True
-                elif self.y > self.__moving_path[0][1]:
-                    self.set_y(self.y - 0.05)
-                    if self.y <= self.__moving_path[0][1]:
-                        self.set_y(self.__moving_path[0][1])
-                        need_pop = True
-                if need_pop is True:
-                    self.__moving_path.popleft()
-                    self.__just_entered_a_new_tile = True
-            elif not self.__moving_complete:
-                self.__moving_complete = True
-                if EntitySpriteImageManager.does_action_exist(self.type, "set") is True:
-                    self.set_action("set", False)
-                else:
+    def render(self, _surface: ImageSurface, pos: tuple[int, int], size: tuple[int, int], action: Optional[str] = None, alpha: Optional[int] = None) -> None:
+        # 加载初始alpha值
+        if alpha is None:
+            alpha = self.get_imgAlpha(self.__current_action)
+        # 不是自定义action
+        if action is None:
+            # 画出角色
+            self.__render(_surface, pos, size, self.__current_action, alpha)
+            # 如果正在播放移动动作，则需要根据现有路径更新坐标
+            if self.__current_action == "move" and not self.__moving_complete:
+                self.__just_entered_a_new_tile = False
+                if len(self.__moving_path) > 0:
+                    need_pop: bool = False
+                    self.set_flip_based_on_pos(self.__moving_path[0])
+                    if self.x < self.__moving_path[0][0]:
+                        self.set_x(self.x + 0.05)
+                        if self.x >= self.__moving_path[0][0]:
+                            self.set_x(self.__moving_path[0][0])
+                            need_pop = True
+                    elif self.x > self.__moving_path[0][0]:
+                        self.set_x(self.x - 0.05)
+                        if self.x <= self.__moving_path[0][0]:
+                            self.set_x(self.__moving_path[0][0])
+                            need_pop = True
+                    if self.y < self.__moving_path[0][1]:
+                        self.set_y(self.y + 0.05)
+                        if self.y >= self.__moving_path[0][1]:
+                            self.set_y(self.__moving_path[0][1])
+                            need_pop = True
+                    elif self.y > self.__moving_path[0][1]:
+                        self.set_y(self.y - 0.05)
+                        if self.y <= self.__moving_path[0][1]:
+                            self.set_y(self.__moving_path[0][1])
+                            need_pop = True
+                    if need_pop is True:
+                        self.__moving_path.popleft()
+                        self.__just_entered_a_new_tile = True
+                elif not self.__moving_complete:
+                    self.__moving_complete = True
+                    if EntitySpriteImageManager.does_action_exist(self.type, "set") is True:
+                        self.set_action("set", False)
+                    else:
+                        self.set_action()
+            # 如果是正序播放
+            if not self._if_play_action_in_reversing:
+                # 如果角色图片还没播放完，则增加id by 1
+                if self.__imgId_dict[self.__current_action]["imgId"] < self.get_imgNum(self.__current_action) - 1:
+                    self.__imgId_dict[self.__current_action]["imgId"] += 1
+                # 如果角色图片播放完需要重新播
+                elif self.__if_action_loop is True:
+                    self.__imgId_dict[self.__current_action]["imgId"] = 0
+                # 如果角色图片播放完但不打算重新播
+                elif not self.__if_switch_to_idle_afterwards:
+                    pass
+                # 如果角色图片播放完需要回到待机状态
+                elif not self.__if_action_loop:
                     self.set_action()
-        # 如果是正序播放
-        if not self._if_play_action_in_reversing:
-            # 如果角色图片还没播放完，则增加id by 1
-            if self.__imgId_dict[self.__current_action]["imgId"] < self.get_imgNum(self.__current_action) - 1:
-                self.__imgId_dict[self.__current_action]["imgId"] += 1
-            # 如果角色图片播放完需要重新播
-            elif self.__if_action_loop is True:
-                self.__imgId_dict[self.__current_action]["imgId"] = 0
-            # 如果角色图片播放完但不打算重新播
-            elif not self.__if_switch_to_idle_afterwards:
-                pass
-            # 如果角色图片播放完需要回到待机状态
-            elif not self.__if_action_loop:
-                self.set_action()
+                else:
+                    EXCEPTION.fatal("The self.__if_action_loop data error: {}".format(self.__if_action_loop))
+            # 如果是颠倒播放，但id还未降至0，则减去1
+            elif self.__imgId_dict[self.__current_action]["imgId"] > 0:
+                self.__imgId_dict[self.__current_action]["imgId"] -= 1
+            # 如果是颠倒播放，但id已经降至0
             else:
-                EXCEPTION.fatal("The self.__if_action_loop data error: {}".format(self.__if_action_loop))
-        # 如果是颠倒播放，但id还未降至0，则减去1
-        elif self.__imgId_dict[self.__current_action]["imgId"] > 0:
-            self.__imgId_dict[self.__current_action]["imgId"] -= 1
-        # 如果是颠倒播放，但id已经降至0
+                self._if_play_action_in_reversing = False
+                self.set_action()
         else:
-            self._if_play_action_in_reversing = False
-            self.set_action()
-
-    def draw_custom(self, action: str, pos: tuple[int, int], _surface: ImageSurface, MAP_P: TileMap, alpha: int = 155) -> None:
-        self.__blit_entity_img(_surface, MAP_P, alpha, action, pos)
-        # 调整id，并返回对应的bool状态
-        if self.__imgId_dict[action]["imgId"] < self.get_imgNum(action) - 1:
-            self.__imgId_dict[action]["imgId"] += 1
-        # 如果需要循环，则重设播放的index
-        else:
-            self.__imgId_dict[action]["imgId"] = 0
+            # 画出角色
+            self.__render(_surface, pos, size, action, alpha)
+            # 调整id，并返回对应的bool状态
+            if self.__imgId_dict[action]["imgId"] < self.get_imgNum(action) - 1:
+                self.__imgId_dict[action]["imgId"] += 1
+            # 如果需要循环，则重设播放的index
+            else:
+                self.__imgId_dict[action]["imgId"] = 0

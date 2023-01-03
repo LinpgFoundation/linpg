@@ -12,6 +12,7 @@ class AbstractTextSurface(GameObject2d, Hidable, metaclass=ABCMeta):
         self.__italic: bool = _italic
         self.__alpha: int = 255
 
+    @abstractmethod
     def _update_text_surface(self) -> None:
         EXCEPTION.fatal("_update_text_surface()", 1)
 

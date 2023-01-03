@@ -26,6 +26,7 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
         VisualNovelCharacterImageManager.reset()
 
     # 获取对话框模块（子类需实现）
+    @abstractmethod
     def _get_dialog_box(self) -> AbstractDialogBox:
         return EXCEPTION.fatal("_dialogBox()", 1)
 

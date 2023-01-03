@@ -69,6 +69,7 @@ class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
             self.__if_regenerate_window = False
 
     # 更新内容surface（子类必须实现该功能）
+    @abstractmethod
     def _update(self) -> None:
         EXCEPTION.fatal("_update()", 1)
 

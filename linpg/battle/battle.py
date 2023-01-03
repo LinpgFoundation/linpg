@@ -18,7 +18,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 角色数据
         self._entities_data: dict[str, dict[str, Entity]] = {}
         # 地图数据
-        self._MAP: TileMap = TileMap()
+        self.__map: Optional[AbstractTileMap] = None
         # 方格标准尺寸
         self._standard_tile_size: int = Display.get_width() // 10
         # 天气系统
@@ -41,9 +41,20 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
     def new(self, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
         EXCEPTION.fatal("new()", 1)
 
+    # 获取地图
+    def get_map(self) -> AbstractTileMap:
+        if self.__map is not None:
+            return self.__map
+        else:
+            EXCEPTION.fatal("Map has not been initialized!")
+
+    # 获取地图
+    def set_map(self, _map: AbstractTileMap) -> None:
+        self.__map = _map
+
     # 加载地图数据
     def _load_map(self, _data: dict) -> None:
-        self._MAP.update(_data, self._standard_tile_size)
+        self.get_map().update(_data, self._standard_tile_size)
 
     # 处理数据
     def _process_data(self, _data: dict) -> None:
@@ -68,7 +79,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
             for key in entitiesDict:
                 _data["entities"][faction][key] = entitiesDict[key].to_dict()
         _data.update(self.get_data_of_parent_game_system())
-        _data.update(self._MAP.to_dict())
+        _data.update(self.get_map().to_dict())
         return _data
 
     # 检测按下按键的事件
@@ -84,7 +95,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
                 self.__moving_screen_in_direction_right = True
             case _:
                 if event.unicode == "p":
-                    self._MAP.dev_mode()
+                    self.get_map().dev_mode()
 
     # 检测按键回弹的事件
     def _check_key_up(self, event: PG_Event) -> None:
@@ -125,9 +136,9 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
             else:
                 if self.__mouse_move_temp_x != Controller.mouse.x or self.__mouse_move_temp_y != Controller.mouse.y:
                     if self.__mouse_move_temp_x != Controller.mouse.x:
-                        self._MAP.add_local_x(self.__mouse_move_temp_x - Controller.mouse.x)
+                        self.get_map().add_local_x(self.__mouse_move_temp_x - Controller.mouse.x)
                     if self.__mouse_move_temp_y != Controller.mouse.y:
-                        self._MAP.add_local_y(self.__mouse_move_temp_y - Controller.mouse.y)
+                        self.get_map().add_local_y(self.__mouse_move_temp_y - Controller.mouse.y)
                     self.__mouse_move_temp_x = Controller.mouse.x
                     self.__mouse_move_temp_y = Controller.mouse.y
         else:
@@ -136,53 +147,53 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 根据按键情况设定要移动的数值
         if self.__moving_screen_in_direction_up is True:
             if self._screen_to_move_speed_y is None:
-                self._screen_to_move_speed_y = self._MAP.tile_height // 4
+                self._screen_to_move_speed_y = self.get_map().tile_height // 4
             else:
-                self._screen_to_move_speed_y += self._MAP.tile_height // 4
+                self._screen_to_move_speed_y += self.get_map().tile_height // 4
         if self.__moving_screen_in_direction_down is True:
             if self._screen_to_move_speed_y is None:
-                self._screen_to_move_speed_y = -self._MAP.tile_height // 4
+                self._screen_to_move_speed_y = -self.get_map().tile_height // 4
             else:
-                self._screen_to_move_speed_y -= self._MAP.tile_height // 4
+                self._screen_to_move_speed_y -= self.get_map().tile_height // 4
         if self.__moving_screen_in_direction_left is True:
             if self._screen_to_move_speed_x is None:
-                self._screen_to_move_speed_x = self._MAP.tile_width // 4
+                self._screen_to_move_speed_x = self.get_map().tile_width // 4
             else:
-                self._screen_to_move_speed_x += self._MAP.tile_width // 4
+                self._screen_to_move_speed_x += self.get_map().tile_width // 4
         if self.__moving_screen_in_direction_right is True:
             if self._screen_to_move_speed_x is None:
-                self._screen_to_move_speed_x = -self._MAP.tile_width // 4
+                self._screen_to_move_speed_x = -self.get_map().tile_width // 4
             else:
-                self._screen_to_move_speed_x -= self._MAP.tile_width // 4
+                self._screen_to_move_speed_x -= self.get_map().tile_width // 4
         # 如果需要移动屏幕
         # 注意，因为self._screen_to_move_speed可能是复数，所以//会可能导致问题
         temp_value: int
         if self._screen_to_move_speed_x is not None:
-            temp_value = self._MAP.get_local_x() + int(self._screen_to_move_speed_x / 5)
-            if Display.get_width() - self._MAP.get_width() <= temp_value <= 0:
-                self._MAP.set_local_x(temp_value)
+            temp_value = self.get_map().get_local_x() + int(self._screen_to_move_speed_x / 5)
+            if Display.get_width() - self.get_map().get_width() <= temp_value <= 0:
+                self.get_map().set_local_x(temp_value)
                 self._screen_to_move_speed_x = int(self._screen_to_move_speed_x * 4 / 5)
                 if self._screen_to_move_speed_x == 0:
                     self._screen_to_move_speed_x = None
             else:
                 self._screen_to_move_speed_x = None
         if self._screen_to_move_speed_y is not None:
-            temp_value = self._MAP.get_local_y() + int(self._screen_to_move_speed_y / 5)
-            if Display.get_height() - self._MAP.get_height() <= temp_value <= 0:
-                self._MAP.set_local_y(temp_value)
+            temp_value = self.get_map().get_local_y() + int(self._screen_to_move_speed_y / 5)
+            if Display.get_height() - self.get_map().get_height() <= temp_value <= 0:
+                self.get_map().set_local_y(temp_value)
                 self._screen_to_move_speed_y = int(self._screen_to_move_speed_y * 4 / 5)
                 if self._screen_to_move_speed_y == 0:
                     self._screen_to_move_speed_y = None
             else:
                 self._screen_to_move_speed_y = None
         # 展示地图
-        self._screen_to_move_speed_x, self._screen_to_move_speed_y = self._MAP.display_map(
+        self._screen_to_move_speed_x, self._screen_to_move_speed_y = self.get_map().render(
             _surface,
             self._screen_to_move_speed_x if self._screen_to_move_speed_x is not None else 0,
             self._screen_to_move_speed_y if self._screen_to_move_speed_y is not None else 0,
         )
         # 获取位于鼠标位置的tile块
-        self._tile_is_hovering = self._MAP.calculate_coordinate()
+        self._tile_is_hovering = self.get_map().calculate_coordinate()
         # 展示角色动画
         self._display_entities(_surface)
         # 检测角色所占据的装饰物（即需要透明化，方便玩家看到角色）
@@ -192,4 +203,4 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
                 charactersPos.append((round(dataDict.x), round(dataDict.y)))
                 charactersPos.append((round(dataDict.x) + 1, round(dataDict.y) + 1))
         # 展示场景装饰物
-        self._MAP.display_decoration(_surface, tuple(charactersPos))
+        self.get_map().display_decoration(_surface, tuple(charactersPos))

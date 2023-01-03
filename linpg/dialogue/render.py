@@ -82,6 +82,7 @@ class VisualNovelCharacterImageNameMetaData:
 class AbstractVisualNovelCharacterImageFilterEffect(ABC):
 
     # 将滤镜应用到立绘上并渲染到屏幕上
+    @abstractmethod
     def render(self, characterImage: StaticImage, _surface: ImageSurface, is_silent: bool) -> None:
         EXCEPTION.fatal("render()", 1)
 

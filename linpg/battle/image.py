@@ -209,8 +209,8 @@ class _EntityImagesCollection:
     def __init__(self, imagesList: tuple[StaticImage, ...], crop_size: list[int], offset: list[int], original_img_size: list[int]) -> None:
         self.__images: tuple[StaticImage, ...] = imagesList
         self.__current_image_pointer: StaticImage = self.__images[0]
-        self.__width: number = 0
-        self.__height: number = 0
+        self.__width: int = 0
+        self.__height: int = 0
         self.__cropped_image_width: int = crop_size[0]
         self.__cropped_image_height: int = crop_size[1]
         self.__left_offset_x: int = offset[0]
@@ -227,9 +227,9 @@ class _EntityImagesCollection:
         return self.__images[index]
 
     # 设置尺寸
-    def set_size(self, width: number, height: number) -> None:
-        self.__width = width * self.__cropped_image_width / self.__real_width
-        self.__height = height * self.__cropped_image_height / self.__real_height
+    def set_size(self, width: int_f, height: int_f) -> None:
+        self.__width = round(width * self.__cropped_image_width / self.__real_width)
+        self.__height = round(height * self.__cropped_image_height / self.__real_height)
 
     # 设置要播放图片的index
     def set_index(self, index: int) -> None:
@@ -248,7 +248,7 @@ class _EntityImagesCollection:
         return self.__current_image_pointer.get_rectangle()
 
     # 展示
-    def draw_onto(self, _surface: ImageSurface, alpha: int, ifFlip: bool, pos: tuple, draw_outline: bool) -> None:
+    def render(self, _surface: ImageSurface, pos: tuple[int, int], alpha: int, ifFlip: bool, draw_outline: bool) -> None:
         self.__current_image_pointer.set_size(self.__width, self.__height)
         self.__current_image_pointer.set_alpha(alpha)  # 翻转图片
         self.__current_image_pointer.set_top(self.__offset_y * self.__height / self.__cropped_image_height + pos[1])

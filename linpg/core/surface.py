@@ -71,10 +71,12 @@ class SurfaceWithLocalPos:
         self.__local_y: int = 0
 
     # 获取x坐标（子类需实现）
+    @abstractmethod
     def get_left(self) -> int:
         EXCEPTION.fatal("get_left()", 1)
 
     # 获取y坐标（子类需实现）
+    @abstractmethod
     def get_top(self) -> int:
         EXCEPTION.fatal("get_top()", 1)
 
@@ -189,6 +191,7 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
         self.__is_local_offset_enable: bool = True
 
     # 处理图片（子类必须实现）
+    @abstractmethod
     def _update_img(self) -> None:
         EXCEPTION.fatal("_update_img()", 1)
 

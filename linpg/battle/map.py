@@ -7,7 +7,7 @@ try:
 except ImportError:
     pass
 
-from .decoration import *
+from .entity import *
 
 
 # 地图模块

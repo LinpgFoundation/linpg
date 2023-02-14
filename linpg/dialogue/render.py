@@ -3,7 +3,6 @@ from .component import *
 
 # 角色立绘名称预处理模块
 class VisualNovelCharacterImageNameMetaData:
-
     # 立绘配置信息数据库
     __CHARACTER_IMAGE_DATABASE: Final[dict] = DataBase.get("Npc")
     # 是否立绘配置信息数据库
@@ -80,7 +79,6 @@ class VisualNovelCharacterImageNameMetaData:
 
 # 角色立绘滤镜
 class AbstractVisualNovelCharacterImageFilterEffect(ABC):
-
     # 将滤镜应用到立绘上并渲染到屏幕上
     @abstractmethod
     def render(self, characterImage: StaticImage, _surface: ImageSurface, is_silent: bool) -> None:
@@ -89,7 +87,6 @@ class AbstractVisualNovelCharacterImageFilterEffect(ABC):
 
 # 角色立绘系统
 class VisualNovelCharacterImageManager:
-
     # 用于存放立绘的字典
     __character_image: Final[dict[str, tuple[StaticImage, ...]]] = {}
     # 存放前一对话的参与角色名称

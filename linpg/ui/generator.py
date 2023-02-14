@@ -3,7 +3,6 @@ from .progressbar import *
 
 # ui编译器
 class UiGenerator:
-
     # 获取默认ui模板
     __UI_TEMPLATES: Final[dict] = Config.load_internal_file("ui.json")
     # 加载自定义的ui数据（如果存在）

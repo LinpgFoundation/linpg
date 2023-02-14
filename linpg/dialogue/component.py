@@ -187,7 +187,6 @@ class EditableDialogBox(AbstractDialogBox):
 
 # 对话框和对话框内容
 class DialogBox(AbstractDialogBox):
-
     # 翻页指示动态图标数据管理模块
     class __NextPageIndicatorIcon:
         def __init__(self) -> None:

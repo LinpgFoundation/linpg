@@ -327,7 +327,6 @@ class SaveOrLoadSelectedProgressMenu(Hidable):
 
 # 暂停菜单处理模块
 class PauseMenuModuleForGameSystem(AbstractInternalMenu):
-
     # 引擎本体的选项菜单
     OPTION_MENU: OptionMenu = OptionMenu()
 

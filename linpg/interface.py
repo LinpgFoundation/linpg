@@ -2,7 +2,6 @@ from .battle import *
 
 
 class Loader:
-
     # 原始图片
     @staticmethod
     def img(path: str, size: tuple = tuple(), alpha: int = 255, ifConvertAlpha: bool = True) -> ImageSurface:

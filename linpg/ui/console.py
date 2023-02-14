@@ -3,7 +3,6 @@ from .inputbox import *
 
 # 控制台
 class Console(SingleLineInputBox, Hidable, threading.Thread):
-
     _COMMAND_INDICATOR: str = "/"
 
     def __init__(self, x: int_f, y: int_f, font_size: int = 32, default_width: int = 150):

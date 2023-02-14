@@ -21,16 +21,13 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self.__object_to_put_down: dict = {}
         # 未保存离开时的警告
         self.__no_save_warning: GameObjectsDictContainer = UI.generate_container("leave_without_saving_warning")
-        # 绿色方块/方块标准
-        self.__range_green: ImageSurface = Surfaces.NULL
-        self.__range_red: ImageSurface = Surfaces.NULL
         # 选中框
-        self.__select_rect: Rectangle = Rectangle(0, 0, 0, 0)
-        self.__select_pos: tuple = tuple()
+        self._select_rect: Rectangle = Rectangle(0, 0, 0, 0)
+        self._select_pos: tuple = tuple()
         # 是否是delete模式
-        self.__delete_mode: bool = False
+        self._delete_mode: bool = False
         # 是否有ui容器被鼠标触碰
-        self.__no_container_is_hovered: bool = False
+        self._no_container_is_hovered: bool = False
 
     # 根据数据更新特定的角色 - 子类需实现
     @abstractmethod
@@ -42,11 +39,15 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         super()._check_key_down(event)
         if event.key == Keys.ESCAPE:
             self.__object_to_put_down.clear()
-            self.__delete_mode = False
+            self._delete_mode = False
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
         return Config.load_file(self.get_data_file_path()) | super()._get_data_need_to_save()
+
+    # 是否有物品被选中
+    def isAnyObjectSelected(self) -> bool:
+        return len(self.__object_to_put_down) > 0
 
     # 移除在给定坐标上的角色
     def remove_entity_on_pos(self, target_pos: tuple[int, int]) -> None:
@@ -184,11 +185,6 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             else:
                 self.__entitiesImagesContainerUsingIndex = 0
             self.__bottom_container_buttons.append(newButton)
-        # 绿色方块/方块标准
-        self.__range_green = Images.load("<&ui>range_green.png", (self.get_map().tile_width, None))
-        self.__range_green.set_alpha(150)
-        self.__range_red = Images.load("<&ui>range_red.png", (self.get_map().tile_width, None))
-        self.__range_red.set_alpha(150)
         self.__object_to_put_down.clear()
         # 设置按钮位置
         self.__buttons_container.get("back").set_left(self.__buttons_container.get("save").get_right() + padding)
@@ -213,11 +209,11 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
     def draw(self, _surface: ImageSurface) -> None:
         UIContainerRight_offset_pos: tuple[int, int] = (self.__UIContainerButtonRight.right, 0)
         UIContainerBottom_offset_pos: tuple[int, int] = (0, self.__UIContainerButtonBottom.bottom)
-        self.__no_container_is_hovered = not self.__UIContainerRight.is_hovered(UIContainerRight_offset_pos) and not self.__UIContainerBottom.is_hovered(
+        self._no_container_is_hovered = not self.__UIContainerRight.is_hovered(UIContainerRight_offset_pos) and not self.__UIContainerBottom.is_hovered(
             UIContainerBottom_offset_pos
         )
         # 如果鼠标与任何Container进行了互动
-        if Controller.get_event("confirm") and len(self.__select_pos) <= 0:
+        if Controller.get_event("confirm") and len(self._select_pos) <= 0:
             # 显示或隐藏右侧的容器
             if self.__UIContainerButtonRight.is_hovered():
                 self.__UIContainerButtonRight.switch()
@@ -227,7 +223,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 self.__UIContainerButtonBottom.switch()
                 self.__UIContainerButtonBottom.flip(False, True)
             elif self._tile_is_hovering is not None:
-                if self.__delete_mode is True:
+                if self._delete_mode is True:
                     # 查看当前位置是否有装饰物
                     decoration: Optional[DecorationObject] = self.get_map().get_decoration(self._tile_is_hovering)
                     # 如果发现有冲突的装饰物
@@ -235,7 +231,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                         self.get_map().remove_decoration(decoration)
                     else:
                         self.remove_entity_on_pos(self._tile_is_hovering)
-                elif len(self.__object_to_put_down) > 0 and self.__no_container_is_hovered is True:
+                elif self.isAnyObjectSelected() is True and self._no_container_is_hovered is True:
                     match self.__object_to_put_down["type"]:
                         case "tile":
                             self.get_map().set_tile(*self._tile_is_hovering, self.__object_to_put_down["id"])
@@ -306,25 +302,25 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                     }
 
         # 画出选中框
-        if self.__no_container_is_hovered is True and Controller.mouse.get_pressed_since(0):
-            if len(self.__select_pos) <= 0:
-                self.__select_pos = Controller.mouse.get_pos()
+        if self._no_container_is_hovered is True and Controller.mouse.get_pressed_since(0):
+            if len(self._select_pos) <= 0:
+                self._select_pos = Controller.mouse.get_pos()
             # 设置宽度
-            new_width: int = Controller.mouse.x - self.__select_pos[0]
-            self.__select_rect.set_width(abs(new_width))
-            self.__select_rect.set_left(self.__select_pos[0] if new_width >= 0 else Controller.mouse.x)
+            new_width: int = Controller.mouse.x - self._select_pos[0]
+            self._select_rect.set_width(abs(new_width))
+            self._select_rect.set_left(self._select_pos[0] if new_width >= 0 else Controller.mouse.x)
             # 设置高度
-            new_height: int = Controller.mouse.y - self.__select_pos[1]
-            self.__select_rect.set_height(abs(new_height))
-            self.__select_rect.set_top(self.__select_pos[1] if new_height >= 0 else Controller.mouse.y)
+            new_height: int = Controller.mouse.y - self._select_pos[1]
+            self._select_rect.set_height(abs(new_height))
+            self._select_rect.set_top(self._select_pos[1] if new_height >= 0 else Controller.mouse.y)
             # 将选中框画到屏幕上
-            self.__select_rect.draw_outline(_surface)
+            self._select_rect.draw_outline(_surface)
         else:
-            self.__select_pos = tuple()
+            self._select_pos = tuple()
 
         # 画出上方按钮
         self.__buttons_container.draw(_surface)
-        if Controller.get_event("confirm") and len(self.__object_to_put_down) <= 0 and not self.__delete_mode:
+        if Controller.get_event("confirm") and len(self.__object_to_put_down) <= 0 and not self._delete_mode:
             match self.__buttons_container.item_being_hovered:
                 case "save":
                     self._save()
@@ -335,7 +331,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                         self.__no_save_warning.set_visible(True)
                 case "delete":
                     self.__object_to_put_down.clear()
-                    self.__delete_mode = True
+                    self._delete_mode = True
                 case "reload":
                     tempLocal_x, tempLocal_y = self.get_map().get_local_pos()
                     self._process_data(Config.load(self.get_data_file_path()))
@@ -358,7 +354,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                                 _value.pop(key)
 
         # 跟随鼠标显示即将被放下的物品
-        if len(self.__object_to_put_down) > 0:
+        if self.isAnyObjectSelected() is True:
             match self.__object_to_put_down["type"]:
                 case "tile":
                     _surface.blit(self.__envImgContainer.get(str(self.__object_to_put_down["id"])), Controller.mouse.get_pos())

@@ -1,9 +1,9 @@
 from typing import NoReturn
 from .content import *
 
+
 # 视觉小说脚本编译器
 class _ScriptProcessor:
-
     # 立绘配置信息数据库
     __CHARACTER_IMAGE_DATABASE: Final[dict] = DataBase.get("Npc")
     # 文件格式后缀
@@ -275,7 +275,6 @@ class _ScriptProcessor:
 
 
 class ScriptCompiler:
-
     # 如果输入字符串为None，则将其转换为null
     @staticmethod
     def __to_str_in_case_null(text: Optional[str]) -> str:

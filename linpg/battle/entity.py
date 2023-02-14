@@ -5,7 +5,6 @@ from .decoration import *
 
 # 人形模块
 class Entity(Position):
-
     # 存放音效的字典
     __SOUNDS: Final[dict[str, dict[str, tuple]]] = {}
     # 角色数据库

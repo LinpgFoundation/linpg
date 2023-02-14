@@ -1,8 +1,8 @@
 from ..config import *
 
+
 # 本地化语言管理模块
 class Lang:
-
     # 语言配置文件
     __LANG_DATA: Final[dict] = {}
     # 可选的语言

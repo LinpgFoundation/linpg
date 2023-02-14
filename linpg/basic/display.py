@@ -5,7 +5,6 @@ from .controller import *
 
 # 画面更新控制器
 class Display:
-
     # 帧率控制器
     __CLOCK: Final[pygame.time.Clock] = pygame.time.Clock()
     # 帧率

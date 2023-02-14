@@ -1,5 +1,6 @@
 from .shape import *
 
+
 # 图形接口
 class AbstractImageSurface(Rectangle, Hidable, metaclass=ABCMeta):
     def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str) -> None:

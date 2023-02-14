@@ -32,7 +32,6 @@ class ProgressBar(AbstractProgressBar):
 
 # 简单的分数百分比条的实现
 class SimpleRectPointsBar(AbstractProgressBar):
-
     __FONT: FontGenerator = FontGenerator()
 
     def __init__(

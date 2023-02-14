@@ -14,7 +14,6 @@ from .display import *
 
 # 视频转换系统
 class Videos(ABC):
-
     __PATH: Final[str] = os.path.join("ThirdPartyLibraries", Specification.get("ThirdPartyLibraries", "ffmpeg"))
 
     # 检测文件是否存在

@@ -3,7 +3,6 @@ from ..dialogue import *
 
 # 地图贴图的管理模块
 class TileMapImagesModule:
-
     # 暗度（仅黑夜场景有效，为0时视为白天）
     DARKNESS: int = 0
     # 引擎自带的地图贴图，默认为空的sheet
@@ -109,7 +108,6 @@ class TileMapImagesModule:
 
 # 装饰物的图片管理模块
 class DecorationImagesModule:
-
     # 引擎自带的场景装饰物，默认为空的sheet
     DEFAULT_DECORATION_IMAGE_SPRITE_SHEET: SpriteImage = SpriteImage("<NULL>")
     # 引擎自带的场景装饰物是否被加载
@@ -265,7 +263,6 @@ class _EntityImagesCollection:
 
 # 角色图片管理模块
 class EntitySpriteImageManager:
-
     # 用于存放角色图片的字典
     __CHARACTERS_IMAGES: Final[dict[str, dict[str, _EntityImagesCollection]]] = {}
     # 角色图片文件夹路径

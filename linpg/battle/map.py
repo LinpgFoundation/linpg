@@ -12,7 +12,6 @@ from .entity import *
 
 # 地图模块
 class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
-
     # 开发者使用的窗口
     __debug_win: Optional[RenderedWindow] = None
     __debug_win_unit: Final[int] = 10

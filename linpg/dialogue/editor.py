@@ -3,7 +3,6 @@ from .dialog import *
 
 # 对话制作器
 class DialogEditor(AbstractVisualNovelSystem):
-
     # deselect选中的背景
     __BACKGROUND_DESELECT_IMAGE: Final[StaticImage] = StaticImage.new_place_holder()
     __IS_BACKGROUND_DESELECT_IMAGE_INIT: bool = False

@@ -13,9 +13,9 @@ try:
 except Exception:
     pass
 
+
 # 配置文件管理模块
 class Config:
-
     # 支持的配置文件后缀
     __EXTENSIONS_SUPPORTED: Final[tuple[str, ...]] = (".yml", ".yaml", ".json")
 
@@ -114,7 +114,6 @@ class Config:
 
 # 使用引擎的开发者可以自定义的参数
 class Specification(TypeSafeGetter):
-
     __SPECIFICATIONS: Final[dict] = Config.load_internal_file("specifications.json")
     # 尝试加载项目自定义的参数
     __SPECIFICATIONS.update(Config.resolve_path_and_load_file(os.path.join("Data", "specifications")))
@@ -130,7 +129,6 @@ class Specification(TypeSafeGetter):
 
 # 数据库
 class DataBase(TypeSafeGetter):
-
     # 用于存放数据库数据的字典
     __DATA_BASE_DICT: Final[dict] = {"Tiles": {}, "Decorations": {}, "Npc": {}}
 
@@ -149,7 +147,6 @@ class DataBase(TypeSafeGetter):
 
 # 全局数据
 class GlobalVariables(TypeSafeGetter, TypeSafeSetter):
-
     # 用于存放全局数据的字典
     __GLOBAL_VARIABLES_DICT: Final[dict] = {}
 

@@ -3,7 +3,6 @@ from .image import *
 
 # 基于ImageSurface的内部窗口
 class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
-
     # 放大指示图标
     __rescale_icon_0: StaticImage = StaticImage.new_place_holder()
     __rescale_icon_45: StaticImage = StaticImage.new_place_holder()

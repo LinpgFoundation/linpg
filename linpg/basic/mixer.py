@@ -3,9 +3,9 @@ from .videos import *
 # 频道 type alias
 SoundChannel = pygame.mixer.Channel
 
+
 # linpg引擎保留的频道
 class LINPG_RESERVED_CHANNELS:
-
     # 根据设置参数改变声道数量
     __MIXER_CHANNEL_NUM: Final[int] = max(int(Setting.get("NumberOfChannels")), 8) + 3
     # 背景音乐
@@ -33,6 +33,7 @@ class LINPG_RESERVED_CHANNELS:
 
 # 初始化引擎保留频道
 LINPG_RESERVED_CHANNELS.init()
+
 
 # 声音类
 class Sound(pygame.mixer.Sound):
@@ -125,7 +126,6 @@ class SoundsManager:
 
 # 音效管理
 class Sounds:
-
     # 是否成功初始化
     @staticmethod
     def get_init() -> bool:
@@ -205,7 +205,6 @@ class Sounds:
 
 # 音乐管理
 class Music:
-
     # 加载背景音乐（但不播放）
     @staticmethod
     def load(path: str) -> None:
@@ -274,7 +273,6 @@ class Music:
 
 # 音量管理
 class Volume:
-
     __sound_unit: Final[int] = 100
 
     @classmethod
@@ -300,7 +298,6 @@ class Volume:
 
 # 多媒体全局管理
 class Media:
-
     # 是否有任何音乐在播放
     @staticmethod
     def get_busy() -> bool:

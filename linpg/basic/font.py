@@ -1,8 +1,8 @@
 from .mixer import *
 
+
 # 文字渲染模块
 class FontGenerator:
-
     __FONT_IS_NOT_INITIALIZED_MSG: Final[str] = "Font is not initialized!"
 
     def __init__(self) -> None:
@@ -85,7 +85,6 @@ class FontGenerator:
 
 # 文字渲染器管理模块
 class Font:
-
     # 引擎标准文件渲染器
     __LINPG_GLOBAL_FONTS: Final[dict[str, FontGenerator]] = {}
     # 上一次render的字体
@@ -144,7 +143,6 @@ class Font:
 
 # 艺术字效果
 class ArtisticFont:
-
     # 描述框效果
     @staticmethod
     def render_description_box(

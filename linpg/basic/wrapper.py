@@ -27,6 +27,7 @@ PoI = str | pygame.Surface
 # 事件 type alias
 PG_Event = pygame.event.Event
 
+
 # 指向pygame事件的指针
 class Events(enum.IntEnum):
     # 鼠标
@@ -56,7 +57,6 @@ class Locations(enum.IntEnum):
 
 # 与数字有关的常用方法
 class Numbers:
-
     # 随机数
     @staticmethod
     def get_random_int(start: int, end: int) -> int:
@@ -143,7 +143,6 @@ class Colors:
 
 
 class Keys:
-
     # 按键常量
     ESCAPE: Final[int] = pygame.K_ESCAPE
     SPACE: Final[int] = pygame.K_SPACE
@@ -178,7 +177,6 @@ class Keys:
 
 
 class Draw:
-
     # 根据给与的rect画出轮廓
     @staticmethod
     def rect(
@@ -225,7 +223,6 @@ class Draw:
 
 
 class Surfaces:
-
     # null图层占位符
     NULL: Final[ImageSurface] = pygame.surface.Surface((0, 0))
 
@@ -291,7 +288,6 @@ class Surfaces:
 
 # 滤镜效果
 class Filters:
-
     # 毛玻璃效果
     @staticmethod
     def glassmorphism_effect(

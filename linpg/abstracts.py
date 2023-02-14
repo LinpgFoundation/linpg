@@ -8,7 +8,6 @@ from .exception import EXCEPTION
 
 
 class TypeSafeGetter:
-
     __RETURN_NONE_FOR_KEY_ERROR: Final[str] = "<!RETURN_NONE_FOR_KEY_ERROR>"
 
     # 根据keys查找值，最后返回一个复制的对象
@@ -119,7 +118,6 @@ class TypeSafeGetter:
 
 
 class TypeSafeSetter:
-
     # 根据keys查找被设置对应对应对象为指定值
     @staticmethod
     def set_by_keys(_dict: dict, _keys: Sequence, value: object, assumeKeyExists: bool = True) -> None:

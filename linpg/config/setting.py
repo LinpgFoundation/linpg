@@ -3,7 +3,6 @@ from .base import *
 
 # 设置参数管理系统
 class Setting(TypeSafeGetter, TypeSafeSetter):
-
     # 储存设置配置文件的数据
     __SETTING_DATA: Final[dict] = {}
     # 当前配置文件保存路径的参数

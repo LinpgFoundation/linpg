@@ -1,5 +1,6 @@
 from .window import *
 
+
 # 视频抽象类
 class AbstractVideo(ABC):
     def __init__(self, path: str, buffer_num: int, play_range: tuple[int, int] = (0, -1)):

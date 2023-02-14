@@ -7,10 +7,8 @@ if not pygame.joystick.get_init():
 
 # 输入管理组件
 class Controller:
-
     # 手柄控制组件
     class __JoystickController:
-
         __input: Optional[pygame.joystick.JoystickType] = None
 
         # 手柄是否初始化
@@ -55,7 +53,6 @@ class Controller:
 
     # 鼠标控制
     class __MouseController:
-
         # 当前鼠标坐标
         x: int = 0
         y: int = 0

@@ -14,7 +14,7 @@ class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
     def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         super().__init__(None, x, y, width, height, tag=tag)
         # 鼠标触碰bar时的相对坐标
-        self.__mouse_hovered_offset_pos: tuple[number, number] = (0, 0)
+        self.__mouse_hovered_offset_pos: Optional[tuple[number, number]] = None
         # 放大方向
         self.__rescale_directions: dict[str, bool] = {"left": False, "right": False, "top": False, "bottom": False}
         # 是否重新放大窗口
@@ -125,11 +125,12 @@ class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
                         self.__mouse_hovered_offset_pos = Coordinates.subtract(Controller.mouse.get_pos(), self.local_pos)
             elif Controller.mouse.get_pressed(0):
                 # 根据鼠标位置修改本地坐标
-                if self.__if_move_local_pos is True:
-                    self.locally_move_to(Coordinates.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_offset_pos))
-                # 移动窗口
-                elif len(self.__mouse_hovered_offset_pos) > 0:
-                    self.move_to(Coordinates.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_offset_pos))
+                if self.__mouse_hovered_offset_pos is not None:
+                    if self.__if_move_local_pos is True:
+                        self.locally_move_to(Coordinates.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_offset_pos))
+                    # 移动窗口
+                    else:
+                        self.move_to(Coordinates.subtract(Controller.mouse.get_pos(), self.__mouse_hovered_offset_pos))
                 else:
                     # 向左放大
                     if self.__rescale_directions["left"] is True:
@@ -164,7 +165,7 @@ class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
             else:
                 for key in self.__rescale_directions:
                     self.__rescale_directions[key] = False
-                self.__mouse_hovered_offset_pos = (0, 0)
+                self.__mouse_hovered_offset_pos = None
                 self.__if_move_local_pos = False
             # 更新窗口
             self.__update_window_frame()

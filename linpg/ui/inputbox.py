@@ -129,7 +129,7 @@ class SingleLineInputBox(AbstractInputBox):
                 _surface.blit(self._holder, (self.x + self._padding + self._FONT.estimate_text_width(self._text[: self._holder_index]), self.y + self._padding))
 
     # 画出内容
-    def draw(self, _surface: ImageSurface) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         for event in Controller.get_events():
             match event.type:
                 case Events.KEY_DOWN:
@@ -144,15 +144,12 @@ class SingleLineInputBox(AbstractInputBox):
                 case Events.MOUSE_BUTTON_DOWN:
                     if event.button == 1:
                         if self._active is True:
-                            if (
-                                self.x <= Controller.mouse.x <= self.x + self._input_box.width
-                                and self.y <= Controller.mouse.y <= self.y + self._input_box.height
-                            ):
+                            if self.is_hovered(offSet):
                                 self._reset_holder_index(Controller.mouse.x)
                             else:
                                 self._active = False
                                 self.need_save = True
-                        elif 0 <= Controller.mouse.x - self.x <= self._input_box.width and 0 <= Controller.mouse.y - self.y <= self._input_box.height:
+                        elif self.is_hovered(offSet):
                             self._active = True
                             self._reset_holder_index(Controller.mouse.x)
         # 画出输入框
@@ -288,7 +285,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         else:
             self._holder_index = i - 1
 
-    def draw(self, _surface: ImageSurface) -> None:
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         for event in Controller.get_events():
             if self._active:
                 match event.type:
@@ -342,26 +339,22 @@ class MultipleLinesInputBox(AbstractInputBox):
                                     self._add_chars(event.unicode)
                     case Events.MOUSE_BUTTON_DOWN:
                         if event.button == 1:
-                            if (
-                                self.x <= Controller.mouse.x <= self.x + self._input_box.width
-                                and self.y <= Controller.mouse.y <= self.y + self._input_box.height
-                            ):
+                            if self.is_hovered(offSet):
                                 self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
                             else:
                                 self._active = False
                                 self.need_save = True
-            elif (
-                event.type is Events.MOUSE_BUTTON_DOWN
-                and event.button == 1
-                and self.x <= Controller.mouse.x <= self.x + self._input_box.width
-                and self.y <= Controller.mouse.y <= self.y + self._input_box.height
-            ):
+            elif event.type == Events.MOUSE_BUTTON_DOWN and event.button == 1 and self.is_hovered(offSet):
                 self._active = True
                 self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
+        # 计算绝对坐标
+        abs_pos: Final[tuple[int, int]] = Coordinates.add(self.get_pos(), offSet)
+        # 如果有内容
         if self._text is not None:
             for i in range(len(self._text)):
                 # 画出文字
-                _surface.blit(self._FONT.render(self._text[i], self._text_color), (self.x + self._FONT.size // 4, self.y + i * self._default_height))
+                _surface.blit(self._FONT.render(self._text[i], self._text_color), (abs_pos[0] + self._FONT.size // 4, abs_pos[1] + i * self._default_height))
+        # 如果输入模式被激活
         if self._active:
             # 画出输入框
             Draw.rect(_surface, self._color, self._input_box.get_rect(), 2)
@@ -370,8 +363,8 @@ class MultipleLinesInputBox(AbstractInputBox):
                 _surface.blit(
                     self._holder,
                     (
-                        self.x + self._FONT.size // 10 + self._FONT.estimate_text_width(self._text[self.__lineId][: self._holder_index]),
-                        self.y + self.__lineId * self._default_height,
+                        abs_pos[0] + self._FONT.size // 10 + self._FONT.estimate_text_width(self._text[self.__lineId][: self._holder_index]),
+                        abs_pos[1] + self.__lineId * self._default_height,
                     ),
                 )
             # 展示基于PySimpleGUI的外部输入框

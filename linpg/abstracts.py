@@ -21,6 +21,11 @@ class TypeSafeGetter:
                 EXCEPTION.fatal('Getting "KeyError" while trying to get keys {} from dict!'.format(_keys))
             return _default if _default is not cls.__RETURN_NONE_FOR_KEY_ERROR else None
 
+    # 获取特定的数据
+    @classmethod
+    def keys(cls) -> tuple:
+        return tuple(cls._get_data().keys())
+
     # 获取static数据字典 (子类需实现)
     @classmethod
     def _get_data(cls) -> dict:

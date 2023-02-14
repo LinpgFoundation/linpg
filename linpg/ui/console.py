@@ -127,6 +127,20 @@ class Console(SingleLineInputBox, Hidable, threading.Thread):
                 GlobalVariables.set(*command_blocks[1 : len(command_blocks) - 1], value=command_blocks[len(command_blocks) - 1], assumeKeyExists=False)
             case "setpv":
                 PersistentVariables.set(*command_blocks[1 : len(command_blocks) - 1], value=command_blocks[len(command_blocks) - 1])
+            case "getgv":
+                if command_blocks[1] == "*":
+                    for key in GlobalVariables.keys():
+                        self._txt_output.append("{0}: {1}".format(key, GlobalVariables.try_get(key, _deepcopy=False)))
+                else:
+                    gv_keys: list = command_blocks[1 : len(command_blocks) - 1]
+                    self._txt_output.append("{0}: {1}".format(gv_keys, GlobalVariables.try_get(*gv_keys, _deepcopy=False)))
+            case "getpv":
+                if command_blocks[1] == "*":
+                    for key in PersistentVariables.keys():
+                        self._txt_output.append("{0}: {1}".format(key, PersistentVariables.try_get(key, _deepcopy=False)))
+                else:
+                    pv_keys: list = command_blocks[1 : len(command_blocks) - 1]
+                    self._txt_output.append("{0}: {1}".format(pv_keys, PersistentVariables.try_get(*pv_keys, _deepcopy=False)))
             case "dev":
                 if len(command_blocks) < 2:
                     self._txt_output.append("Unknown status for dev command.")

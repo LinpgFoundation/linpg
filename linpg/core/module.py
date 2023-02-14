@@ -69,7 +69,7 @@ class Coordinate:
         self.set_left(_x)
         self.set_top(_y)
 
-    def move_to(self, pos: tuple) -> None:
+    def move_to(self, pos: tuple[int_f, int_f]) -> None:
         self.set_pos(pos[0], pos[1])
 
     # 检测是否在给定的位置上
@@ -241,6 +241,7 @@ class GameObject2d(Coordinate):
         self.display(Display.get_window())
 
     # 根据offSet将图片展示到surface的对应位置上 - 子类必须实现
+    @abstractmethod
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         EXCEPTION.fatal("display()", 1)
 
@@ -261,30 +262,3 @@ class GameObject2d(Coordinate):
         self.move_to(pos)
         self.draw(Display.get_window())
         self.move_to(old_pos)
-
-
-# 2.5d游戏对象接口 - 使用z轴判断图案的图层
-class GameObject2point5d(Coordinate):
-    def __init__(self, x: int_f, y: int_f, z: int_f):
-        super().__init__(x, y)
-        self.z: int = int(z)
-
-    def __lt__(self, other: "GameObject2point5d") -> bool:  # type: ignore[override]
-        if self.z != other.z:
-            return self.z < other.z
-        else:
-            return self.y + self.x < other.y + other.x
-
-    # 获取坐标
-    @property
-    def pos(self) -> tuple[int, int, int]:  # type: ignore[override]
-        return self.x, self.y, self.z
-
-    def get_pos(self) -> tuple[int, int, int]:  # type: ignore[override]
-        return self.x, self.y, self.z
-
-    # 设置坐标
-    def set_pos(self, x: int_f, y: int_f, z: Optional[int_f] = None) -> None:
-        super().set_pos(x, y)
-        if z is not None:
-            self.z = int(z)

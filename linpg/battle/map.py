@@ -361,15 +361,18 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             thePosInMap: tuple[int, int] = self.calculate_position(_item.x, _item.y)
             if screen_min <= thePosInMap[0] < _surface.get_width() and screen_min <= thePosInMap[1] < _surface.get_height():
                 # 透明度
-                decoration_alpha: int = 255
-                if (
-                    self.__DECORATION_DATABASE[_item.type].get("hidable", False) is True
-                    and _item.get_pos() in occupied_coordinates
-                    and self.is_coordinate_in_lit_area(_item.x, _item.y)
-                ):
-                    decoration_alpha = 100
+                _item.set_alpha(
+                    100
+                    if (
+                        self.__DECORATION_DATABASE[_item.type].get("hidable", False) is True
+                        and _item.get_pos() in occupied_coordinates
+                        and self.is_coordinate_in_lit_area(_item.x, _item.y)
+                    )
+                    else 255
+                )
                 # 画出
-                _item.blit(_surface, thePosInMap, not self.is_coordinate_in_lit_area(_item.x, _item.y), decoration_alpha)
+                _item.set_dark_mode(not self.is_coordinate_in_lit_area(_item.x, _item.y))
+                _item.blit(_surface, thePosInMap)
 
     # 获取方块
     def get_tile(self, _x: int, _y: int) -> str:

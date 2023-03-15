@@ -12,9 +12,6 @@ from .entity import *
 
 # 地图模块
 class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
-    # 开发者使用的窗口
-    __debug_win: Optional[RenderedWindow] = None
-    __debug_win_unit: Final[int] = 10
     # 获取方块数据库
     __TILES_DATABASE: Final[dict] = DataBase.get("Tiles")
     # 获取场景装饰物数据库
@@ -194,18 +191,6 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
     def get_local_pos_in_percentage(self) -> dict[str, str]:
         return {"local_x": str(round(self.local_x * 100 / self.get_width(), 5)) + "%", "local_y": str(round(self.local_y * 100 / self.get_height(), 5)) + "%"}
 
-    # 开发者模式
-    def dev_mode(self) -> None:
-        if self.__debug_win is None:
-            self.__debug_win = RenderedWindow(
-                self.__row * self.__debug_win_unit + self.__debug_win_unit * (self.__row + 1) // 4,
-                self.__column * self.__debug_win_unit + self.__debug_win_unit * (self.__row + 1) // 4,
-                "debug window",
-                True,
-            )
-        else:
-            self.__debug_win = None
-
     # 根据坐标寻找装饰物
     def get_decoration(self, pos: object) -> Optional[DecorationObject]:
         return self.__decorations.get(self.__get_coordinate_format_key(Coordinates.convert(pos)))
@@ -314,22 +299,6 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
                         break
                 if self.calculate_position(0, y + 1)[1] >= _surface.get_height():
                     break
-        # 显示调试窗口
-        if self.__debug_win is not None and not self.__need_to_recheck_tile_on_surface:
-            self.__debug_win.clear()
-            self.__debug_win.fill(Colors.BLACK)
-            start_x: int
-            start_y: int
-            for y in range(len(self.__tile_on_surface)):
-                for x in range(len(self.__tile_on_surface[y])):
-                    start_x = int(x * self.__debug_win_unit * 1.25 + self.__debug_win_unit / 4)
-                    start_y = int(y * self.__debug_win_unit * 1.25 + self.__debug_win_unit / 4)
-                    if self.__tile_on_surface[y, x] == 0:
-                        self.__debug_win.draw_rect((start_x, start_y, self.__debug_win_unit, self.__debug_win_unit), Colors.WHITE)
-                    else:
-                        self.__debug_win.fill_rect((start_x, start_y, self.__debug_win_unit, self.__debug_win_unit), Colors.WHITE)
-            # 显示开发面板
-            self.__debug_win.present()
         # 画出背景
         if self.__background_image is not None:
             self.__background_image.draw(_surface)

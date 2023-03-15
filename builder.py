@@ -27,7 +27,6 @@ if not os.path.exists("src") or input("Do you want to recompile everything (Y/n)
                 "PySimpleGUI",
                 "numpy",
                 "pygame",
-                "pygame._sdl2",
                 "pygame.gfxdraw",
                 "tcod",
                 "tkinter",

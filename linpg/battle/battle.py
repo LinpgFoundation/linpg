@@ -93,9 +93,6 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
                 self.__moving_screen_in_direction_left = True
             case Keys.ARROW_RIGHT:
                 self.__moving_screen_in_direction_right = True
-            case _:
-                if event.unicode == "p":
-                    self.get_map().dev_mode()
 
     # 检测按键回弹的事件
     def _check_key_up(self, event: PG_Event) -> None:

@@ -1,6 +1,4 @@
 import PySimpleGUI  # type: ignore
-from pygame._sdl2 import Renderer, Window
-
 from .frame import *
 
 # 设置PySimpleGUI主题
@@ -65,46 +63,3 @@ class LinpgVersionChecker:
                 from sys import exit
 
                 exit()
-
-
-# 窗口
-class RenderedWindow(Rectangle):
-    def __init__(self, width: int, height: int, title: str, is_win_always_on_top: bool) -> None:
-        super().__init__(0, 0, width, height)
-        self.title: str = title
-        self.always_on_top: bool = is_win_always_on_top
-        self.__win: Renderer = Renderer(Window(self.title, self.size, always_on_top=self.always_on_top))
-
-    # 设置尺寸
-    def set_width(self, value: int_f) -> None:
-        super().set_width(value)
-        self.__update_window()
-
-    def set_height(self, value: int_f) -> None:
-        super().set_height(value)
-        self.__update_window()
-
-    # 更新窗口
-    def __update_window(self) -> None:
-        self.__win = Renderer(Window(self.title, self.size, always_on_top=self.always_on_top))
-
-    def draw_rect(self, rect_pos: RectLiked, color: color_liked) -> None:
-        _color: tuple[int, int, int, int] = Colors.get(color)
-        self.__win.draw_color = pygame.Color(_color[0], _color[1], _color[2], _color[3])
-        self.__win.draw_rect(convert_to_pygame_rect(rect_pos))
-
-    def fill_rect(self, rect_pos: RectLiked, color: color_liked) -> None:
-        _color: tuple[int, int, int, int] = Colors.get(color)
-        self.__win.draw_color = pygame.Color(_color[0], _color[1], _color[2], _color[3])
-        self.__win.fill_rect(convert_to_pygame_rect(rect_pos))
-
-    def fill(self, color: color_liked) -> None:
-        self.fill_rect(((0, 0), self.get_size()), color)
-
-    # 清空窗口
-    def clear(self) -> None:
-        self.__win.clear()
-
-    # 展示
-    def present(self) -> None:
-        self.__win.present()

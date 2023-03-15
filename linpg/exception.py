@@ -6,7 +6,6 @@ from typing import NoReturn
 
 # Linpg错误类管理器
 class EXCEPTION:
-
     # 错误报告存储的路径
     __CRASH_REPORTS_PATH: str = "crash_reports"
     # 引擎启动时的时间戳

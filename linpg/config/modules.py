@@ -8,7 +8,6 @@ from .setting import *
 
 # debug模块
 class Debug:
-
     # 是否开启开发者模式
     __ENABLE_DEVELOPER_MODE: bool = False
     # 是否开启作弊
@@ -46,13 +45,12 @@ class Debug:
 
 # 版本信息管理模块
 class Info:
-
     # 引擎主版本号
     __VERSION: Final[int] = 3
     # 引擎次更新版本号
-    __REVISION: Final[int] = 5
+    __REVISION: Final[int] = 6
     # 引擎补丁版本
-    __PATCH: Final[int] = 4
+    __PATCH: Final[int] = 0
 
     # 确保linpg版本
     @classmethod
@@ -79,7 +77,6 @@ class Info:
 
 
 class Files:
-
     # 一个简单的 natural sort 实现
     @staticmethod
     def natural_sort(_files: list[str]) -> list[str]:
@@ -120,7 +117,6 @@ class Files:
 
 
 class Cache:
-
     # 缓存文件夹路径
     __CACHE_FOLDER: Final[str] = Specification.get_directory("cache")
     # 缓存文件清单路径

@@ -9,9 +9,9 @@ int_f = int | float
 # number，即数字，建议int但接受float
 number = int | float
 
+
 # 浮点坐标
 class Positions:
-
     # 转换坐标
     @staticmethod
     def convert(pos: Any) -> tuple[number, number]:
@@ -54,7 +54,6 @@ class Positions:
 
 # 整数坐标
 class Coordinates:
-
     # 转换坐标
     @staticmethod
     def convert(pos: Any) -> tuple[int, int]:

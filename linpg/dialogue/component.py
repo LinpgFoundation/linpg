@@ -122,7 +122,7 @@ class DialogNavigationWindow(AbstractFrame):
 
 
 # 对话框模块基础框架
-class AbstractDialogBox(HidableSurface, metaclass=ABCMeta):
+class AbstractDialogBox(Hidable, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         # 对胡框数据
@@ -132,10 +132,12 @@ class AbstractDialogBox(HidableSurface, metaclass=ABCMeta):
         self._dialogue_box: StaticImage = StaticImage("<&ui>dialoguebox.png", Display.get_width() * 13 // 100, 0, Display.get_width() * 74 // 100)
 
     # 画出（子类需实现）
+    @abstractmethod
     def draw(self, _surface: ImageSurface) -> None:
         EXCEPTION.fatal("draw()", 1)
 
     # 更新内容（子类需实现）
+    @abstractmethod
     def update(self, narrator: str, contents: list) -> None:
         EXCEPTION.fatal("update()", 1)
 
@@ -185,7 +187,6 @@ class EditableDialogBox(AbstractDialogBox):
 
 # 对话框和对话框内容
 class DialogBox(AbstractDialogBox):
-
     # 翻页指示动态图标数据管理模块
     class __NextPageIndicatorIcon:
         def __init__(self) -> None:
@@ -220,9 +221,9 @@ class DialogBox(AbstractDialogBox):
         self.__narrator: str = ""
         self.__text_index: int = 0
         self.__displayed_lines: int = 0
-        self.__textPlayingSound: Optional[PG_Sound] = None
+        self.__textPlayingSound: Optional[Sound] = None
         if os.path.exists(_path := Specification.get_directory("sound", "ui", "dialog_words_playing.ogg")):
-            self.__textPlayingSound = Sound.load(_path)
+            self.__textPlayingSound = Sounds.load(_path)
         self.__READING_SPEED: int = max(int(Setting.get("ReadingSpeed")), 1)
         # 翻页指示动态图标
         self.__next_page_indicator_icon = self.__NextPageIndicatorIcon()
@@ -299,8 +300,8 @@ class DialogBox(AbstractDialogBox):
     # 如果音效还在播放则停止播放文字音效
     @staticmethod
     def stop_playing_text_sound() -> None:
-        if LINPG_RESERVED_SOUND_EFFECTS_CHANNEL is not None and LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy():
-            LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.stop()
+        if LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL is not None and LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL.get_busy():
+            LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL.stop()
 
     def set_visible(self, visible: bool) -> None:
         super().set_visible(visible)
@@ -343,11 +344,11 @@ class DialogBox(AbstractDialogBox):
                     if self.__text_index < len(self.__contents[self.__displayed_lines]):
                         # 播放文字音效
                         if (
-                            LINPG_RESERVED_SOUND_EFFECTS_CHANNEL is not None
-                            and not LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.get_busy()
+                            LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL is not None
+                            and not LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL.get_busy()
                             and self.__textPlayingSound is not None
                         ):
-                            LINPG_RESERVED_SOUND_EFFECTS_CHANNEL.play(self.__textPlayingSound)
+                            LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL.play(self.__textPlayingSound)
                         self.__text_index += 1
                     # 当前行的所有字都播出后，播出下一行
                     elif self.__displayed_lines < len(self.__contents) - 1:

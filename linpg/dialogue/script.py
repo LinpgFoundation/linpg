@@ -1,9 +1,9 @@
 from typing import NoReturn
 from .content import *
 
+
 # 视觉小说脚本编译器
 class _ScriptProcessor:
-
     # 立绘配置信息数据库
     __CHARACTER_IMAGE_DATABASE: Final[dict] = DataBase.get("Npc")
     # 文件格式后缀
@@ -268,11 +268,13 @@ class _ScriptProcessor:
 
     # 保存至
     def save_to(self, out_folder: str) -> None:
-        Config.save(os.path.join(out_folder, "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type())), {"dialogs": self.__output})
+        Config.save(
+            os.path.join(out_folder, "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type())),
+            {"dialogs": self.__output, "compiledAt": int(time.time())},
+        )
 
 
 class ScriptCompiler:
-
     # 如果输入字符串为None，则将其转换为null
     @staticmethod
     def __to_str_in_case_null(text: Optional[str]) -> str:

@@ -8,6 +8,8 @@ class DecorationObject(GameObject2d):
         self.__type: Final[str] = _type
         self._variation: int = _variation
         self.__status: Final[dict] = status
+        self.__alpha: int = 255
+        self.__is_dark_mode: bool = False
 
     # 确保图片已经被存档
     def ensure_image_cached(self) -> None:
@@ -24,6 +26,15 @@ class DecorationObject(GameObject2d):
     @property
     def variation(self) -> int:
         return self._variation
+
+    def get_alpha(self) -> int:
+        return self.__alpha
+
+    def set_alpha(self, value: int) -> None:
+        self.__alpha = value
+
+    def set_dark_mode(self, value: bool) -> None:
+        self.__is_dark_mode = value
 
     def to_dict(self) -> dict:
         data_t: dict = {"x": self.x, "y": self.y, "id": self.id}
@@ -59,12 +70,13 @@ class DecorationObject(GameObject2d):
         else:
             EXCEPTION.fatal('Cannot remove status "{}" because it does not exist'.format(key))
 
-    def blit(self, _surface: ImageSurface, pos: tuple[int, int], is_dark: bool, alpha: int) -> None:  # type: ignore[override]
-        imgToBlit = DecorationImagesModule.get_image(self.id, is_dark)
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+        abs_pos: Final[tuple[int, int]] = Coordinates.add(self.get_pos(), offSet)
+        imgToBlit = DecorationImagesModule.get_image(self.id, self.__is_dark_mode)
         imgToBlit.set_width_with_original_image_size_locked(TileMapImagesModule.TILE_TEMPLE_WIDTH // 2)
-        imgToBlit.set_alpha(alpha)
-        imgToBlit.set_left(pos[0] + TileMapImagesModule.TILE_TEMPLE_WIDTH // 4)
-        imgToBlit.set_bottom(pos[1] + TileMapImagesModule.TILE_TEMPLE_HEIGHT * 0.85)
+        imgToBlit.set_alpha(self.__alpha)
+        imgToBlit.set_left(abs_pos[0] + TileMapImagesModule.TILE_TEMPLE_WIDTH // 4)
+        imgToBlit.set_bottom(abs_pos[1] + TileMapImagesModule.TILE_TEMPLE_HEIGHT * 0.85)
         imgToBlit.draw(_surface)
 
     def get_width(self) -> int:

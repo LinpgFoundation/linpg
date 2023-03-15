@@ -25,7 +25,6 @@ _KEY: Final[bytes] = bytes("82&939DcaO6002#*", "utf-8")
 
 # 源图形处理
 class Images:
-
     # flag查询表
     __FLAG_LOOKUP_TABLE: Final[dict[str, str]] = {"env": "environment", "ui": "user_interface"}
 

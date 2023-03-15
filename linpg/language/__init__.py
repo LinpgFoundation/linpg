@@ -1,14 +1,8 @@
-from typing import Union
-
 from ..config import *
-
-# 名称类
-strint = Union[str, int]
 
 
 # 本地化语言管理模块
 class Lang:
-
     # 语言配置文件
     __LANG_DATA: Final[dict] = {}
     # 可选的语言
@@ -86,7 +80,7 @@ class Lang:
 
     # 获取本地化的数字
     @classmethod
-    def get_num_in_local_text(cls, num: strint) -> str:
+    def get_num_in_local_text(cls, num: str | int) -> str:
         try:
             return str(cls.__LANG_DATA["Numbers"][int(num)])
         except Exception:

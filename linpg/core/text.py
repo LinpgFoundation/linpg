@@ -1,10 +1,10 @@
 from .surface import *
 
 
-class AbstractTextSurface(GameObject2d, HidableSurface, metaclass=ABCMeta):
+class AbstractTextSurface(GameObject2d, Hidable, metaclass=ABCMeta):
     def __init__(self, text: str, x: int_f, y: int_f, size: int_f, _color: color_liked = Colors.BLACK, _bold: bool = False, _italic: bool = False) -> None:
         GameObject2d.__init__(self, x, y)
-        HidableSurface.__init__(self)
+        Hidable.__init__(self)
         self.__text: str = text
         self.__size: int = int(size)
         self.__color: tuple[int, int, int, int] = Colors.get(_color)
@@ -12,6 +12,7 @@ class AbstractTextSurface(GameObject2d, HidableSurface, metaclass=ABCMeta):
         self.__italic: bool = _italic
         self.__alpha: int = 255
 
+    @abstractmethod
     def _update_text_surface(self) -> None:
         EXCEPTION.fatal("_update_text_surface()", 1)
 

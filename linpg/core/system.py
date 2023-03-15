@@ -34,7 +34,7 @@ class AbstractSystem(ABC):
 class SystemWithBackgroundMusic(AbstractSystem):
     def __init__(self) -> None:
         super().__init__()
-        self.__audio: Optional[PG_Sound] = None
+        self.__audio: Optional[Sound] = None
         self.__bgm_path: Optional[str] = None
         self.__bgm_volume: float = 1.0
 
@@ -61,7 +61,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
             if self.__bgm_path != path or forced is True:
                 self.unload_bgm()
                 self.__bgm_path = path
-                self.__audio = Sound.load(self.__bgm_path, self.__bgm_volume)
+                self.__audio = Sounds.load(self.__bgm_path, self.__bgm_volume)
         else:
             EXCEPTION.fatal("Path '{}' does not exist!".format(path))
 
@@ -76,16 +76,21 @@ class SystemWithBackgroundMusic(AbstractSystem):
 
     # 播放bgm
     def play_bgm(self) -> None:
-        if self.__audio is not None and LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL is not None and not LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.get_busy():
-            LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.play(self.__audio)
+        if (
+            self.__audio is not None
+            and LINPG_RESERVED_CHANNELS.BACKGROUND_MUSIC_CHANNEL is not None
+            and not LINPG_RESERVED_CHANNELS.BACKGROUND_MUSIC_CHANNEL.get_busy()
+        ):
+            LINPG_RESERVED_CHANNELS.BACKGROUND_MUSIC_CHANNEL.play(self.__audio)
 
     # 停止播放
     @staticmethod
     def stop_bgm() -> None:
-        if LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL is not None:
-            LINPG_RESERVED_BACKGROUND_MUSIC_CHANNEL.stop()
+        if LINPG_RESERVED_CHANNELS.BACKGROUND_MUSIC_CHANNEL is not None:
+            LINPG_RESERVED_CHANNELS.BACKGROUND_MUSIC_CHANNEL.stop()
 
     # 把内容画到surface上（子类必须实现）
+    @abstractmethod
     def draw(self, _surface: ImageSurface) -> None:
         EXCEPTION.fatal("draw()", 1)
 

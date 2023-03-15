@@ -3,7 +3,6 @@ from .abstract import *
 
 # 视觉小说系统模块
 class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem):
-
     __CHOICE_TEXT: str = str(Lang.get_texts("Dialog", "choice"))
 
     def __init__(self) -> None:

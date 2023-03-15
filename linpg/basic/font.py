@@ -1,8 +1,8 @@
 from .mixer import *
 
+
 # 文字渲染模块
 class FontGenerator:
-
     __FONT_IS_NOT_INITIALIZED_MSG: Final[str] = "Font is not initialized!"
 
     def __init__(self) -> None:
@@ -53,14 +53,14 @@ class FontGenerator:
         self.__FONT.italic = ifItalic
 
     # 估计文字的宽度
-    def estimate_text_width(self, text: strint) -> int:
+    def estimate_text_width(self, text: str | int) -> int:
         if self.__FONT is not None:
             return self.__FONT.size(str(text))[0]
         else:
             EXCEPTION.fatal(self.__FONT_IS_NOT_INITIALIZED_MSG)
 
     # 估计文字的高度
-    def estimate_text_height(self, text: strint) -> int:
+    def estimate_text_height(self, text: str | int) -> int:
         if self.__FONT is not None:
             return self.__FONT.size(str(text))[1]
         else:
@@ -75,7 +75,7 @@ class FontGenerator:
             self.__FONT.italic = ifItalic
 
     # 渲染文字
-    def render(self, txt: strint, color: color_liked, background_color: Optional[color_liked] = None) -> ImageSurface:
+    def render(self, txt: str | int, color: color_liked, background_color: Optional[color_liked] = None) -> ImageSurface:
         if not isinstance(txt, (str, int)):
             EXCEPTION.fatal("The text must be a unicode or bytes, not {}".format(txt))
         if self.__FONT is None:
@@ -85,7 +85,6 @@ class FontGenerator:
 
 # 文字渲染器管理模块
 class Font:
-
     # 引擎标准文件渲染器
     __LINPG_GLOBAL_FONTS: Final[dict[str, FontGenerator]] = {}
     # 上一次render的字体
@@ -136,7 +135,7 @@ class Font:
     # 接受文字，颜色，文字大小，样式等信息，返回制作完的文字
     @classmethod
     def render(
-        cls, txt: strint, color: color_liked, size: int_f, ifBold: bool = False, ifItalic: bool = False, background_color: Optional[color_liked] = None
+        cls, txt: str | int, color: color_liked, size: int_f, ifBold: bool = False, ifItalic: bool = False, background_color: Optional[color_liked] = None
     ) -> ImageSurface:
         cls.__LINPG_LAST_FONT.check_for_update(int(size), ifBold, ifItalic)
         return cls.__LINPG_LAST_FONT.render(txt, color, background_color)
@@ -144,11 +143,10 @@ class Font:
 
 # 艺术字效果
 class ArtisticFont:
-
     # 描述框效果
     @staticmethod
     def render_description_box(
-        txt: strint,
+        txt: str | int,
         color: color_liked,
         size: int,
         padding: int,
@@ -167,7 +165,7 @@ class ArtisticFont:
     # 渲染有轮廓的文字
     @staticmethod
     def render_with_outline(
-        _text: strint,
+        _text: str | int,
         color: color_liked,
         size: int,
         outline_thickness: int = 1,

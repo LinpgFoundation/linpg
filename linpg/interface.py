@@ -2,7 +2,6 @@ from .battle import *
 
 
 class Loader:
-
     # 原始图片
     @staticmethod
     def img(path: str, size: tuple = tuple(), alpha: int = 255, ifConvertAlpha: bool = True) -> ImageSurface:
@@ -45,13 +44,13 @@ class Loader:
 
     # 普通文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class
     @staticmethod
-    def text(txt: strint, _color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False) -> TextSurface:
+    def text(txt: str | int, _color: color_liked, pos: tuple, size: int, ifBold: bool = False, ifItalic: bool = False) -> TextSurface:
         return TextSurface(str(txt), pos[0], pos[1], size, _color, ifBold, ifItalic)
 
     # 高级文字模块：接受文字，颜色，位置，文字大小，文字样式，模式，返回制作完的文字Class，该Class具有一大一普通的字号
     @staticmethod
     def resize_when_hovered_text(
-        txt: strint, _color: color_liked, pos: tuple[int, int], size: int, _bold: bool = False, _italic: bool = False
+        txt: str | int, _color: color_liked, pos: tuple[int, int], size: int, _bold: bool = False, _italic: bool = False
     ) -> ResizeWhenHoveredTextSurface:
         return ResizeWhenHoveredTextSurface(str(txt), pos[0], pos[1], size, size * 3 / 2, _color, _bold, _italic)
 
@@ -63,16 +62,14 @@ setting = Setting
 info = Info
 keys = Keys
 config = Config
-color = Colors  # 即将弃置
 colors = Colors
 global_variables = GlobalVariables
-sound = Sound
+sounds = Sounds
 music = Music
 volume = Volume
 media = Media
 images = Images
 controller = Controller
-option_menu = PauseMenuModuleForGameSystem.OPTION_MENU  # 即将弃置
 ui = UI
 font = Font
 position = Positions

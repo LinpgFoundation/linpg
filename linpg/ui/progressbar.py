@@ -101,7 +101,7 @@ class SimpleRectPointsBar(AbstractProgressBar):
             bar_rect.set_left(original_x - 1)
             bar_rect.draw_outline(_surface, self.__outline_color)
             # 渲染数值文字并画出
-            _text: ImageSurface = self.__FONT.render("{0} / {1}".format(self.__current_point, self.__max_point), self.__font_color)
+            _text: ImageSurface = self.__FONT.render(f"{self.__current_point} / {self.__max_point}", self.__font_color)
             _surface.blit(_text, (bar_rect.x + (bar_rect.width - _text.get_width()) // 2, bar_rect.y + (bar_rect.height - _text.get_height()) // 2))
 
 

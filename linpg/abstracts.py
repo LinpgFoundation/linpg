@@ -17,7 +17,7 @@ class TypeSafeGetter:
             return copy.deepcopy(reduce(getitem, _keys, _dict)) if _deepcopy is True else reduce(getitem, _keys, _dict)
         except KeyError:
             if _default is None:
-                EXCEPTION.fatal('Getting "KeyError" while trying to get keys {} from dict!'.format(_keys))
+                EXCEPTION.fatal(f'Getting "KeyError" while trying to get keys {_keys} from dict!')
             return _default if _default is not cls.__RETURN_NONE_FOR_KEY_ERROR else None
 
     # 获取特定的数据
@@ -131,11 +131,11 @@ class TypeSafeSetter:
                 pointer = _item
             elif _item is None:
                 if assumeKeyExists is True:
-                    EXCEPTION.fatal('Getting "KeyError" while trying to set keys {} to dict!'.format(_keys))
+                    EXCEPTION.fatal(f'Getting "KeyError" while trying to set keys {_keys} to dict!')
                 pointer[_keys[index]] = {}
                 pointer = pointer[_keys[index]]
             else:
-                EXCEPTION.fatal("Getting not dict object {0} while trying to set keys {1} to dict!".format(_item, _keys))
+                EXCEPTION.fatal(f"Getting not dict object {_item} while trying to set keys {_keys} to dict!")
         pointer[_keys[last_key_index]] = value
 
     # 获取static数据字典 (子类需实现)

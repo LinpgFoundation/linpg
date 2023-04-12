@@ -63,7 +63,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
                 self.__bgm_path = path
                 self.__audio = Sounds.load(self.__bgm_path, self.__bgm_volume)
         else:
-            EXCEPTION.fatal("Path '{}' does not exist!".format(path))
+            EXCEPTION.fatal(f"Path '{path}' does not exist!")
 
     # 设置bgm音量
     def set_bgm_volume(self, volume: number) -> None:
@@ -72,7 +72,7 @@ class SystemWithBackgroundMusic(AbstractSystem):
             if self.__audio is not None:
                 self.__audio.set_volume(self.__bgm_volume)
         else:
-            EXCEPTION.fatal("Volume '{}' is out of the range! (must between 0 and 1)".format(volume))
+            EXCEPTION.fatal(f"Volume '{volume}' is out of the range! (must between 0 and 1)")
 
     # 播放bgm
     def play_bgm(self) -> None:

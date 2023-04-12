@@ -66,9 +66,9 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
     # 获取地图文件所在的具体路径
     def get_data_file_path(self) -> str:
         return (
-            os.path.join("Data", self._chapter_type, "chapter{0}_map.{1}".format(self._chapter_id, Config.get_file_type()))
+            os.path.join("Data", self._chapter_type, f"chapter{self._chapter_id}_map.{Config.get_file_type()}")
             if self._project_name is None
-            else os.path.join("Data", self._chapter_type, self._project_name, "chapter{0}_map.{1}".format(self._chapter_id, Config.get_file_type()))
+            else os.path.join("Data", self._chapter_type, self._project_name, f"chapter{self._chapter_id}_map.{Config.get_file_type()}")
         )
 
     # 返回需要保存数据

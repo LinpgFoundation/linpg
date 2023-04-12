@@ -172,7 +172,7 @@ class Controller:
         if _result is not None:
             return _result
         else:
-            EXCEPTION.fatal('The event type "{}" is not supported!'.format(event_type))
+            EXCEPTION.fatal(f'The event type "{event_type}" is not supported!')
 
     # 完成这一帧的收尾工作
     @classmethod

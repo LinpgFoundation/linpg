@@ -52,9 +52,7 @@ class _ScriptProcessor:
 
     # 编译失败
     def __terminated(self, _reason: str) -> NoReturn:
-        EXCEPTION.fatal(
-            'File "{0}", line {1}\n  {2}\nFail to compile due to {3}'.format(self.__path_in, self.__line_index + 1, self.__get_current_line(), _reason)
-        )
+        EXCEPTION.fatal(f'File "{self.__path_in}", line {self.__line_index + 1}\n  {self.__get_current_line()}\nFail to compile due to {_reason}')
 
     # 获取当前行
     def __get_current_line(self) -> str:
@@ -96,7 +94,7 @@ class _ScriptProcessor:
                         self.__branch_labels[last_label] = self.__dialog_associate_key[str(index)]
                         last_label = None
             if last_label is not None:
-                EXCEPTION.warn("The last label call {} is not necessary!".format(last_label))
+                EXCEPTION.warn(f"The last label call {last_label} is not necessary!")
         self.__convert(0)
         self.__lines.clear()
         # 确保重要参数已被初始化
@@ -184,7 +182,7 @@ class _ScriptProcessor:
                 elif _currentLine.startswith("[opt]"):
                     # 确认在接下来的一行有branch的label
                     if not self.__lines[self.__line_index + 1].startswith("[br]"):
-                        self.__terminated("For option on line {}, a branch label is not found on the following line".format(self.__line_index + 1))
+                        self.__terminated(f"For option on line {self.__line_index + 1}, a branch label is not found on the following line")
                     # 如果next_dialog_id没被初始化，则初始化
                     if self.__output[self.__section][self.__last_dialog_id].get("next_dialog_id") is None:
                         self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = {}
@@ -248,7 +246,7 @@ class _ScriptProcessor:
                                     "type": "default",
                                 }
                         else:
-                            self.__terminated("KeyError: {}".format(self.__last_dialog_id))
+                            self.__terminated(f"KeyError: {self.__last_dialog_id}")
                     else:
                         self.__current_data.last = None
                     # 添加注释
@@ -269,7 +267,7 @@ class _ScriptProcessor:
     # 保存至
     def save_to(self, out_folder: str) -> None:
         Config.save(
-            os.path.join(out_folder, "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type())),
+            os.path.join(out_folder, f"chapter{self.__id}_dialogs_{self.__lang}.{Config.get_file_type()}"),
             {"dialogs": self.__output, "compiledAt": int(time.time())},
         )
 
@@ -323,7 +321,8 @@ class ScriptCompiler:
             # 把数据更新到管理模块中
             _content.update(dialogs_data)
             # 用于储存结果的列表
-            _results: list[str] = ["# Fundamental parameters\n[id]{0}\n[lang]{1}\n".format(*cls.extract_info_from_path(path))]
+            _id, _lang = cls.extract_info_from_path(path)
+            _results: list[str] = [f"# Fundamental parameters\n[id]{_id}\n[lang]{_lang}\n"]
 
             for _section in dialogs_data:
                 # 更新视觉小说数据管理模块的当前位置

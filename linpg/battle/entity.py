@@ -453,7 +453,7 @@ class Entity(Position):
                 elif not self.__if_action_loop:
                     self.set_action()
                 else:
-                    EXCEPTION.fatal("The self.__if_action_loop data error: {}".format(self.__if_action_loop))
+                    EXCEPTION.fatal(f"The self.__if_action_loop data error: {self.__if_action_loop}")
             # 如果是颠倒播放，但id还未降至0，则减去1
             elif self.__imgId_dict[self.__current_action]["imgId"] > 0:
                 self.__imgId_dict[self.__current_action]["imgId"] -= 1

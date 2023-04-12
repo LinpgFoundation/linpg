@@ -47,7 +47,7 @@ class Images:
                     return os.path.join(linpgassets.get_image_location(), flag_key, file_name + ".zip") if _LINPGASSETS_INITIALIZED is True else ""
                 case "@":
                     return Specification.get_directory(flag_key, file_name)
-        EXCEPTION.fatal('Invalid tag: "{}"'.format(path))
+        EXCEPTION.fatal(f'Invalid tag: "{path}"')
 
     # 识快速加载图片
     @classmethod
@@ -63,7 +63,7 @@ class Images:
                         _imageR = pygame.image.load(path)
                     except Exception:
                         if Debug.get_developer_mode() is True:
-                            EXCEPTION.fatal("Cannot load image from path: {}".format(path))
+                            EXCEPTION.fatal(f"Cannot load image from path: {path}")
                         else:
                             _imageR = None
                 # 如果需要加载属于linpgassets的图片
@@ -75,7 +75,7 @@ class Images:
                         _imageR = cls.fromBytesIO(io.BytesIO(_zipFile.read(path[path.index(">") + 1 :], pwd=_KEY)))
                         _zipFile.close()
                     elif Debug.get_developer_mode() is True:
-                        EXCEPTION.fatal("Cannot find essential image with path: {}".format(_path))
+                        EXCEPTION.fatal(f"Cannot find essential image with path: {_path}")
                 # 根据参数处理并返回加载好的图片
                 if _imageR is not None:
                     return _imageR.convert_alpha() if convert_alpha is True else _imageR.convert()
@@ -85,7 +85,7 @@ class Images:
             else:
                 return Surfaces.NULL
         else:
-            EXCEPTION.fatal("The path '{}' has to be a string or at least a ImageSurface!".format(path))
+            EXCEPTION.fatal(f"The path '{path}' has to be a string or at least a ImageSurface!")
 
     # 图片加载模块：接收图片路径,长,高,返回对应图片
     @classmethod

@@ -94,7 +94,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         if dialog_id in self._content.get_section_content():
             super()._update_scene(dialog_id)
         else:
-            EXCEPTION.fatal("The dialog id {} does not exist!".format(dialog_id))
+            EXCEPTION.fatal(f"The dialog id {dialog_id} does not exist!")
 
     # 更新音量
     def _update_sound_volume(self) -> None:
@@ -147,7 +147,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
                     self.stop()
                 # 非法type
                 case _:
-                    EXCEPTION.fatal('Current dialog "{}" has a valid next type.'.format(self._content.current.id))
+                    EXCEPTION.fatal(f'Current dialog "{self._content.current.id}" has a valid next type.')
 
     def __check_button_event(self, _surface: ImageSurface) -> bool:
         if self.__buttons_container is not None:

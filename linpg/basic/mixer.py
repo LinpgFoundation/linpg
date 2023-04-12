@@ -200,7 +200,7 @@ class Sounds:
         if channel_id < cls.get_num_channels():
             return pygame.mixer.Channel(channel_id)
         else:
-            EXCEPTION.fatal('The channel_id "{0}" is out of bound of {1}'.format(channel_id, cls.get_num_channels()))
+            EXCEPTION.fatal(f'The channel_id "{channel_id}" is out of bound of {cls.get_num_channels()}')
 
 
 # 音乐管理

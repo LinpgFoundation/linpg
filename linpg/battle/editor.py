@@ -115,7 +115,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 self.__envImgContainer.set(key, Images.resize(value, (self.get_map().tile_size / 3, None)))
             else:
                 for i, _ref in enumerate(value):
-                    self.__envImgContainer.set("{0}:{1}".format(key, i), Images.resize(_ref, (self.get_map().tile_size / 3, None)))
+                    self.__envImgContainer.set(f"{key}:{i}", Images.resize(_ref, (self.get_map().tile_size / 3, None)))
         self.__envImgContainer.set_item_per_line(4)
         self.__envImgContainer.set_scroll_bar_pos("right")
         self.__envImgContainer.set_visible(True)
@@ -131,14 +131,14 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 self.__decorationsImgContainer.set(key, Images.resize(value, (self.get_map().tile_size / 3, None)))
             else:
                 for i, _ref in enumerate(value):
-                    self.__decorationsImgContainer.set("{0}:{1}".format(key, i), Images.resize(_ref, (self.get_map().tile_size / 3, None)))
+                    self.__decorationsImgContainer.set(f"{key}:{i}", Images.resize(_ref, (self.get_map().tile_size / 3, None)))
         # 加载自带的装饰物
         for key, value in DecorationImagesModule.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.to_dict().items():
             if not isinstance(value, tuple):
                 self.__decorationsImgContainer.set(key, Images.resize(value, (self.get_map().tile_size / 3, None)))
             else:
                 for i, _ref in enumerate(value):
-                    self.__decorationsImgContainer.set("{0}:{1}".format(key, i), Images.resize(_ref, (self.get_map().tile_size / 3, None)))
+                    self.__decorationsImgContainer.set(f"{key}:{i}", Images.resize(_ref, (self.get_map().tile_size / 3, None)))
         # 设置容器参数
         self.__decorationsImgContainer.set_item_per_line(4)
         self.__decorationsImgContainer.set_scroll_bar_pos("right")

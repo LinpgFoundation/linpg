@@ -261,9 +261,9 @@ class DialogEditor(AbstractVisualNovelSystem):
                 else:
                     for key in self._content.get_section_content(section):
                         if not isinstance(key, str):
-                            EXCEPTION.fatal("Key name has to be a string, not {}".format(key))
+                            EXCEPTION.fatal(f"Key name has to be a string, not {key}")
             else:
-                EXCEPTION.fatal("Part name has to be a string, not {}!".format(section))
+                EXCEPTION.fatal(f"Part name has to be a string, not {section}!")
         # 更新场景
         self._update_scene(self._content.get_id())
         # 如果有不同，应该立即保存
@@ -367,7 +367,7 @@ class DialogEditor(AbstractVisualNovelSystem):
                                 break
                     case _:
                         # 如果当前next_dialog_id的类型不支持的话，报错
-                        EXCEPTION.fatal("Cannot recognize next_dialog_id type: {}, please fix it".format(seniorNodePointer["type"]))
+                        EXCEPTION.fatal(f"Cannot recognize next_dialog_id type: {seniorNodePointer['type']}, please fix it")
                 # 修改下一个对白配置文件中的"last_dialog_id"的参数
                 if key2 is not None:
                     if self._content.get_dialog(_id=key2).get("last_dialog_id") is not None:
@@ -375,7 +375,7 @@ class DialogEditor(AbstractVisualNovelSystem):
                 else:
                     self._content.get_dialog(_id=key1)["next_dialog_id"] = None
         else:
-            EXCEPTION.warn('Fail to make a connection between "{0}" and "{1}".'.format(key1, key2))
+            EXCEPTION.warn(f'Fail to make a connection between "{key1}" and "{key2}".')
 
     # 获取上一个对话的ID
     def __get_last_id(self) -> str:

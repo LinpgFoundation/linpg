@@ -46,7 +46,7 @@ class Display:
             Controller.NEED_TO_TAKE_SCREENSHOT = False
             if not os.path.exists("screenshots"):
                 os.mkdir("screenshots")
-            pygame.image.save(cls.__SCREEN_WINDOW, os.path.join("screenshots", "{}.png".format(datetime.now().strftime("%Y%m%d%H%M%S"))))
+            pygame.image.save(cls.__SCREEN_WINDOW, os.path.join("screenshots", f"{datetime.now().strftime('%Y%m%d%H%M%S')}.png"))
         # 更新控制器
         Controller.update()
         Controller.mouse.draw_custom_icon(cls.__SCREEN_WINDOW)

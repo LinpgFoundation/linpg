@@ -32,7 +32,7 @@ class Videos(ABC):
             EXCEPTION.fatal("You cannot use any video module unless you install opencv!", 4)
         # 确保路径存在
         elif not os.path.exists(_path):
-            EXCEPTION.fatal('Cannot find file on path: "{}"'.format(_path))
+            EXCEPTION.fatal(f'Cannot find file on path: "{_path}"')
 
     # 使用ffmpeg直接转换文件
     @classmethod
@@ -90,10 +90,8 @@ class Videos(ABC):
             return output_path
         # 如果不正常...
         except EXCEPTION.FileNotExists:
-            EXCEPTION.fatal('Cannot find media file on path "{}".'.format(input_path))
+            EXCEPTION.fatal(f'Cannot find media file on path "{input_path}".')
         except EXCEPTION.ToolIsMissing:
             EXCEPTION.fatal(
-                'To split audio from video, "ffmpeg.exe" needs to be placed under directory "{}" inside your project. FFmpeg is never a part of Linpg Engine.'.format(
-                    os.path.dirname(cls.__PATH)
-                )
+                f'To split audio from video, "ffmpeg.exe" needs to be placed under directory "{os.path.dirname(cls.__PATH)}" inside your project. FFmpeg is never a part of Linpg Engine.'
             )

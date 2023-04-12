@@ -47,14 +47,11 @@ class LinpgVersionChecker:
                         [
                             PySimpleGUI.Text(
                                 Lang.get_text("LinpgVersionIncorrect", "message").format(
-                                    "3.{0}.{1}".format(recommended_revision, recommended_patch), Info.get_current_version()
+                                    f"3.{recommended_revision}.{recommended_patch}", Info.get_current_version()
                                 )
                             )
                         ],
-                        [
-                            PySimpleGUI.Submit(Lang.get_text("LinpgVersionIncorrect", "continue_button")),
-                            PySimpleGUI.Cancel(_quit_text),
-                        ],
+                        [PySimpleGUI.Submit(Lang.get_text("LinpgVersionIncorrect", "continue_button")), PySimpleGUI.Cancel(_quit_text)],
                     ],
                     keep_on_top=True,
                 ).read(close=True)[0]

@@ -63,12 +63,12 @@ class Info:
             case "<=":
                 return cls.__VERSION <= version and cls.__REVISION <= revision and cls.__PATCH <= patch
             case _:
-                EXCEPTION.fatal('Action "{}" is not supported!'.format(action))
+                EXCEPTION.fatal(f'Action "{action}" is not supported!')
 
     # 获取当前版本号
     @classmethod
     def get_current_version(cls) -> str:
-        return "{0}.{1}.{2}".format(cls.__VERSION, cls.__REVISION, cls.__PATCH)
+        return f"{cls.__VERSION}.{cls.__REVISION}.{cls.__PATCH}"
 
     # 获取github项目地址
     @classmethod
@@ -113,14 +113,14 @@ class Files:
             with open(path, "rb") as f:
                 return hashlib.md5(f.read()).hexdigest()
         else:
-            EXCEPTION.fatal("Cannot generate md5 for a file that does not exist in path: {}".format(path))
+            EXCEPTION.fatal(f"Cannot generate md5 for a file that does not exist in path: {path}")
 
 
 class Cache:
     # 缓存文件夹路径
     __CACHE_FOLDER: Final[str] = Specification.get_directory("cache")
     # 缓存文件清单路径
-    __CACHE_FILES_DATA_PATH: Final[str] = os.path.join(__CACHE_FOLDER, "files.{}".format(Config.get_file_type()))
+    __CACHE_FILES_DATA_PATH: Final[str] = os.path.join(__CACHE_FOLDER, f"files.{Config.get_file_type()}")
     # 如果缓存文件目录存在, 则加载数据， 否则初始化一个新的空字典
     __CACHE_FILES_DATA: Final[dict] = Config.load_file(__CACHE_FILES_DATA_PATH) if os.path.exists(__CACHE_FILES_DATA_PATH) else {}
 
@@ -145,7 +145,7 @@ class Cache:
             # 保存缓存文件的相关数据
             Config.save(cls.__CACHE_FILES_DATA_PATH, cls.__CACHE_FILES_DATA)
         else:
-            EXCEPTION.fatal('The key named "{}" already exists. Please create a new unique one!'.format(_key))
+            EXCEPTION.fatal(f'The key named "{_key}" already exists. Please create a new unique one!')
 
     # 移除
     @classmethod

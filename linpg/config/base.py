@@ -29,7 +29,7 @@ class Config:
     def __load_file(path: str) -> dict:
         # 如果路径不存在
         if not os.path.exists(path):
-            EXCEPTION.fatal("Cannot find file on path: {}".format(path))
+            EXCEPTION.fatal(f"Cannot find file on path: {path}")
         else:
             # 按照类型加载配置文件
             with open(path, "r", encoding="utf-8") as f:

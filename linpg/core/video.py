@@ -67,7 +67,7 @@ class AbstractVideo(ABC):
 
     def set_frame_index(self, num: int) -> None:
         if num > self.get_frame_num():
-            EXCEPTION.fatal('Frame index "{0}" is out of range "{1}"'.format(num, self.get_frame_num()))
+            EXCEPTION.fatal(f'Frame index "{num}" is out of range "{self.get_frame_num()}"')
         elif num < 0:
             EXCEPTION.fatal("You cannot set negative frame index.")
         else:

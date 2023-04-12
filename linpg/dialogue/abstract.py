@@ -40,22 +40,18 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
 
     # 获取对话文件所在的具体路径
     def get_dialog_file_location(self, lang: str) -> str:
-        return os.path.join(self.get_dialog_folder_location(), "chapter{0}_dialogs_{1}.{2}".format(self._chapter_id, lang, Config.get_file_type()))
+        return os.path.join(self.get_dialog_folder_location(), f"chapter{self._chapter_id}_dialogs_{lang}.{Config.get_file_type()}")
 
     # 获取对话文件所在的具体路径
     def get_data_file_path(self) -> str:
-        return os.path.join(
-            self.get_dialog_folder_location(), "chapter{0}_dialogs_{1}.{2}".format(self._chapter_id, Setting.get_language(), Config.get_file_type())
-        )
+        return os.path.join(self.get_dialog_folder_location(), f"chapter{self._chapter_id}_dialogs_{Setting.get_language()}.{Config.get_file_type()}")
 
     # 获取对话文件的主语言
     def get_default_lang(self) -> str:
         return str(
-            Config.load(os.path.join(self._dialog_folder_path, self._chapter_type, "info.{}".format(Config.get_file_type())), "default_lang")
+            Config.load(os.path.join(self._dialog_folder_path, self._chapter_type, f"info.{Config.get_file_type()}"), "default_lang")
             if self._project_name is None
-            else Config.load(
-                os.path.join(self._dialog_folder_path, self._chapter_type, self._project_name, "info.{}".format(Config.get_file_type())), "default_lang"
-            )
+            else Config.load(os.path.join(self._dialog_folder_path, self._chapter_type, self._project_name, f"info.{Config.get_file_type()}"), "default_lang")
         )
 
     # 生产一个新的推荐id
@@ -106,9 +102,9 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
             self._content.set_section_content(dict(Config.load(self.get_dialog_file_location(self.get_default_lang()), "dialogs", self._content.get_section())))
         # 确认dialog数据合法
         if len(self._content.get_section_content()) == 0:
-            EXCEPTION.fatal('The selected dialog dict "{}" has no content inside.'.format(self._content.get_section()))
+            EXCEPTION.fatal(f'The selected dialog dict "{self._content.get_section()}" has no content inside.')
         elif "head" not in self._content.get_section_content():
-            EXCEPTION.fatal('You need to set up a "head" for the selected dialog "{}".'.format(self._content.get_section()))
+            EXCEPTION.fatal(f'You need to set up a "head" for the selected dialog "{self._content.get_section()}".')
         # 将数据载入刚初始化的模块中
         self._update_scene(self._content.get_id())
 
@@ -130,7 +126,7 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
                 elif os.path.exists(_path := Specification.get_directory("movie", self.__background_image_name)):
                     self.__background_image_surface = VideoSurface(_path, with_audio=False)
                 else:
-                    EXCEPTION.fatal("Cannot find a background image or video file called '{}'.".format(self.__background_image_name))
+                    EXCEPTION.fatal(f"Cannot find a background image or video file called '{self.__background_image_name}'.")
             else:
                 self.__background_image_surface = self._black_bg.copy()
 

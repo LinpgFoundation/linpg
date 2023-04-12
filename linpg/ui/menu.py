@@ -292,7 +292,7 @@ class SaveOrLoadSelectedProgressMenu(Hidable):
                 _rect: Rectangle = Rectangle(0, 0, rect_width, rect_height)
                 self.__process_page_switching(_surface)
                 # 渲染页码
-                pageIdText: ImageSurface = Font.render("- {} -".format(self.__page_id), Colors.GRAY, row_padding // 2)
+                pageIdText: ImageSurface = Font.render(f"- {self.__page_id} -", Colors.GRAY, row_padding // 2)
                 _surface.blit(
                     pageIdText,
                     ((_surface.get_width() - pageIdText.get_width()) // 2, _surface.get_height() - row_padding + (row_padding - pageIdText.get_height()) // 2),
@@ -308,7 +308,7 @@ class SaveOrLoadSelectedProgressMenu(Hidable):
                             _img_height: int = int(_rect.get_height() * 0.8)
                             _surface.blit(Images.smoothly_resize_and_crop_to_fit(_file.screenshot, (_rect.get_width(), _img_height)), _rect.get_pos())
                             _createdAt: ImageSurface = Font.render(
-                                "{0} - Chapter {1}".format(_file.createdAt, _file.data.get("chapter_id")), Colors.WHITE, (_rect.get_height() - _img_height) // 2
+                                f"{_file.createdAt} - Chapter {_file.data.get('chapter_id')}", Colors.WHITE, (_rect.get_height() - _img_height) // 2
                             )
                             _surface.blit(
                                 _createdAt,

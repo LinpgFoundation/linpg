@@ -14,5 +14,5 @@ if clean_up is True:
     # 整理内部设置配置文件
     Config.organize_internal()
 
-print("linpg {0} ({1}, Python {2})".format(Info.get_current_version(), "Pygame {}".format(pygame.version.ver), EXCEPTION.get_python_version()))
-print("Hello from the linpg community. {}".format(Info.get_repository_url()))
+print(f'linpg {Info.get_current_version()} ({f"Pygame {pygame.version.ver}"}, Python {EXCEPTION.get_python_version()})')
+print(f"Hello from the linpg community. {Info.get_repository_url()}")

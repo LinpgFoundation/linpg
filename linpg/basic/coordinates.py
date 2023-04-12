@@ -24,7 +24,7 @@ class Positions:
             try:
                 return pos.x, pos.y
             except Exception:
-                EXCEPTION.fatal('Unable to convert position "{}".'.format(pos))
+                EXCEPTION.fatal(f'Unable to convert position "{pos}".')
 
     # 判断2个坐标是否相同
     @staticmethod
@@ -66,7 +66,7 @@ class Coordinates:
             try:
                 return int(pos.x), int(pos.y)
             except Exception:
-                EXCEPTION.fatal('Unable to convert position "{}".'.format(pos))
+                EXCEPTION.fatal(f'Unable to convert position "{pos}".')
 
     # 判断2个坐标是否相同
     @staticmethod

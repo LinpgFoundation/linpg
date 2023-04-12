@@ -22,6 +22,6 @@ def create_new_project(dir_path: str, config_type: str = "json") -> None:
             "version": "0.0",
         }
         info_data["title"][Setting.get_language()] = Lang.get_text("Editor", "example_project")
-        Config.save(os.path.join(dir_path, "info.{}".format(config_type)), info_data)
+        Config.save(os.path.join(dir_path, f"info.{config_type}"), info_data)
     else:
-        EXCEPTION.fatal('Target path "{}" cannot be a file path!'.format(dir_path))
+        EXCEPTION.fatal(f'Target path "{dir_path}" cannot be a file path!')

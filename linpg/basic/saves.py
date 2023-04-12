@@ -95,7 +95,7 @@ class Saves:
         os.makedirs(Specification.get_directory("save"), exist_ok=True)
         save_thread = threading.Thread(
             target=cls.__save,
-            args=(Specification.get_directory("save", "save_{}.linpg.save".format(slotId)), _data, _screenshot, slotId),
+            args=(Specification.get_directory("save", f"save_{slotId}.linpg.save"), _data, _screenshot, slotId),
         )
         # 多线程保存数据
         save_thread.daemon = True

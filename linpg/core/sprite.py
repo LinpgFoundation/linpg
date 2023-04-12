@@ -63,9 +63,7 @@ class SpriteImage:
             _out_path: str = os.path.join(output_directory, key)
             os.mkdir(_out_path)
             for i in range(value[4]):
-                Images.save(
-                    _sprite_image.subsurface((value[0] + i * value[2], value[1], value[2], value[3])), os.path.join(_out_path, "{0}_{1}.png".format(key, i))
-                )
+                Images.save(_sprite_image.subsurface((value[0] + i * value[2], value[1], value[2], value[3])), os.path.join(_out_path, f"{key}_{i}.png"))
 
     # 处理图片并返回对应的数据
     @staticmethod
@@ -237,7 +235,7 @@ class SpriteImage:
                         current_column += 1
             sprite_surface = sprite_surface.subsurface((0, 0, sprite_surface.get_width(), (current_row + 1) * max_block_size[1]))
         # 保存sprite图
-        target_file_name: str = "{0}.{1}".format(img_folder_path, resultFileType)
+        target_file_name: str = f"{img_folder_path}.{resultFileType}"
         Images.save(sprite_surface, target_file_name)
         # 保存sprite图数据
         Config.save(target_file_name + ".linpg.meta", _out)

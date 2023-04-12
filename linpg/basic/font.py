@@ -43,9 +43,9 @@ class FontGenerator:
             case "default":
                 self.__FONT = pygame.font.SysFont(Setting.get_font(), self.__size)
             case "custom":
-                font_path: str = Specification.get_directory("font", "{}.ttf".format(Setting.get_font()))
+                font_path: str = Specification.get_directory("font", f"{Setting.get_font()}.ttf")
                 if not os.path.exists(font_path):
-                    EXCEPTION.fatal("Cannot find the {}.ttf file!".format(Setting.get_font()))
+                    EXCEPTION.fatal(f"Cannot find the {Setting.get_font()}.ttf file!")
                 self.__FONT = pygame.font.Font(font_path, self.__size)
             case _:
                 EXCEPTION.fatal("FontType option in setting file is incorrect!")
@@ -77,7 +77,7 @@ class FontGenerator:
     # 渲染文字
     def render(self, txt: str | int, color: color_liked, background_color: Optional[color_liked] = None) -> ImageSurface:
         if not isinstance(txt, (str, int)):
-            EXCEPTION.fatal("The text must be a unicode or bytes, not {}".format(txt))
+            EXCEPTION.fatal(f"The text must be a unicode or bytes, not {txt}")
         if self.__FONT is None:
             EXCEPTION.fatal(self.__FONT_IS_NOT_INITIALIZED_MSG)
         return self.__FONT.render(str(txt), Setting.get_antialias(), Colors.get(color), Colors.get(background_color) if background_color is not None else None)
@@ -98,7 +98,7 @@ class Font:
                 cls.__LINPG_GLOBAL_FONTS[key] = FontGenerator()
             cls.__LINPG_GLOBAL_FONTS[key].update(size, ifBold, ifItalic)
         else:
-            EXCEPTION.fatal("Font size must be positive integer not {}!".format(size))
+            EXCEPTION.fatal(f"Font size must be positive integer not {size}!")
 
     # 获取全局文字
     @classmethod
@@ -107,7 +107,7 @@ class Font:
         if _font is not None:
             return _font
         else:
-            EXCEPTION.fatal('You did not set any font named "{}".'.format(key))
+            EXCEPTION.fatal(f'You did not set any font named "{key}".')
 
     # 获取全局文字
     @classmethod

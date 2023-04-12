@@ -82,7 +82,7 @@ class Numbers:
         elif isinstance(percentage, float):
             return percentage
         else:
-            EXCEPTION.fatal('"{}" is not a valid percentage that can be converted'.format(percentage))
+            EXCEPTION.fatal(f'"{percentage}" is not a valid percentage that can be converted')
 
 
 # 颜色管理
@@ -137,7 +137,7 @@ class Colors:
             try:
                 return cls.__to_rgba_color(PILImageColor.getrgb(color))
             except ValueError:
-                EXCEPTION.fatal('The color "{}" is currently not available!'.format(color))
+                EXCEPTION.fatal(f'The color "{color}" is currently not available!')
         else:
             return cls.__to_rgba_color(color)
 

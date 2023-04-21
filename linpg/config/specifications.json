@@ -91,6 +91,7 @@
         ]
     },
     "ExtraAssets": false,
+    "HashingAlgorithm": "sha3_256",
     "PySimpleGUITheme": "SystemDefault",
     "ThirdPartyLibraries": {
         "ffmpeg": "ffmpeg.exe"

@@ -69,7 +69,7 @@ class Entity(Position):
         # 是否刚进入一个新的tile
         self.__just_entered_a_new_tile: bool = False
         # 当前图片的rect
-        self.__current_image_rect: Optional[Rectangle] = None
+        self.__current_image_rect: Rectangle | None = None
         # 是否被选中
         self.__is_selected: bool = False
 
@@ -211,7 +211,7 @@ class Entity(Position):
 
     # 获取角色特定动作的图片播放ID
     def get_imgId(self, action: str) -> int:
-        action_dict: Optional[dict] = self.__imgId_dict.get(action)
+        action_dict: dict | None = self.__imgId_dict.get(action)
         return int(action_dict["imgId"]) if action_dict is not None else -1
 
     # 获取角色特定动作的图片总数量
@@ -322,9 +322,9 @@ class Entity(Position):
     # 播放角色声音
     def play_sound(self, kind_of_sound: str) -> None:
         if LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL is not None:
-            _point: Optional[dict] = self.__SOUNDS.get(self.__type)
+            _point: dict | None = self.__SOUNDS.get(self.__type)
             if _point is not None:
-                sound_list: Optional[tuple] = _point.get(kind_of_sound)
+                sound_list: tuple | None = _point.get(kind_of_sound)
                 if sound_list is not None and len(sound_list) > 0:
                     sound = sound_list[Numbers.get_random_int(0, len(sound_list) - 1) if len(sound_list) > 1 else 0]
                     sound.set_volume(Volume.get_effects() / 100.0)
@@ -395,7 +395,7 @@ class Entity(Position):
         self.__current_image_rect = _image.get_rectangle()
 
     # 把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
-    def render(self, _surface: ImageSurface, pos: tuple[int, int], size: tuple[int, int], action: Optional[str] = None, alpha: Optional[int] = None) -> None:
+    def render(self, _surface: ImageSurface, pos: tuple[int, int], size: tuple[int, int], action: str | None = None, alpha: int | None = None) -> None:
         # 加载初始alpha值
         if alpha is None:
             alpha = self.get_imgAlpha(self.__current_action)

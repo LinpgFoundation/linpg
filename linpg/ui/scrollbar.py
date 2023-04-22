@@ -51,7 +51,7 @@ class AbstractScrollBarsSurface(SurfaceWithLocalPos, metaclass=ABCMeta):
 
     # 是否被鼠标触碰（子类需实现）
     @abstractmethod
-    def is_hovered(self, off_set: Optional[tuple[int, int]] = None) -> bool:
+    def is_hovered(self, off_set: tuple[int, int] | None = None) -> bool:
         EXCEPTION.fatal("is_hovered()", 1)
 
     # 获取scrollbar的颜色
@@ -63,14 +63,14 @@ class AbstractScrollBarsSurface(SurfaceWithLocalPos, metaclass=ABCMeta):
         self._bar_color = Colors.get(color)
 
     # 获取滚动条的Rect
-    def _get_right_scroll_bar_rect(self, off_set_x: number, off_set_y: number) -> Optional[Rectangle]:
+    def _get_right_scroll_bar_rect(self, off_set_x: number, off_set_y: number) -> Rectangle | None:
         return (
             Rectangle(self.get_right() - self._button_thickness + int(off_set_x), self.get_top() + int(off_set_y), self._button_thickness, self.get_height())
             if self.get_surface_height() > self.get_height()
             else None
         )
 
-    def _get_bottom_scroll_bar_rect(self, off_set_x: number, off_set_y: number) -> Optional[Rectangle]:
+    def _get_bottom_scroll_bar_rect(self, off_set_x: number, off_set_y: number) -> Rectangle | None:
         return (
             Rectangle(self.get_left() + int(off_set_x), self.get_bottom() - self._button_thickness + int(off_set_y), self.get_width(), self._button_thickness)
             if self.get_surface_width() > self.get_width()
@@ -78,7 +78,7 @@ class AbstractScrollBarsSurface(SurfaceWithLocalPos, metaclass=ABCMeta):
         )
 
     # 获取滚动条按钮的Rect
-    def _get_right_scroll_button_rect(self, off_set_x: number, off_set_y: number) -> Optional[Rectangle]:
+    def _get_right_scroll_button_rect(self, off_set_x: number, off_set_y: number) -> Rectangle | None:
         return (
             Rectangle(
                 self.get_right() - self._button_thickness + int(off_set_x),
@@ -90,7 +90,7 @@ class AbstractScrollBarsSurface(SurfaceWithLocalPos, metaclass=ABCMeta):
             else None
         )
 
-    def _get_bottom_scroll_button_rect(self, off_set_x: number, off_set_y: number) -> Optional[Rectangle]:
+    def _get_bottom_scroll_button_rect(self, off_set_x: number, off_set_y: number) -> Rectangle | None:
         return (
             Rectangle(
                 int(self.get_left() - self.get_width() * self.local_x / self.get_surface_width() + off_set_x),
@@ -104,10 +104,10 @@ class AbstractScrollBarsSurface(SurfaceWithLocalPos, metaclass=ABCMeta):
 
     def display_scrollbar(self, _surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
         # 获取滚轮条
-        right_scroll_bar_rect: Optional[Rectangle] = self._get_right_scroll_bar_rect(off_set[0], off_set[1])
-        right_scroll_button_rect: Optional[Rectangle] = self._get_right_scroll_button_rect(off_set[0], off_set[1])
-        bottom_scroll_bar_rect: Optional[Rectangle] = self._get_bottom_scroll_bar_rect(off_set[0], off_set[1])
-        bottom_scroll_button_rect: Optional[Rectangle] = self._get_bottom_scroll_button_rect(off_set[0], off_set[1])
+        right_scroll_bar_rect: Rectangle | None = self._get_right_scroll_bar_rect(off_set[0], off_set[1])
+        right_scroll_button_rect: Rectangle | None = self._get_right_scroll_button_rect(off_set[0], off_set[1])
+        bottom_scroll_bar_rect: Rectangle | None = self._get_bottom_scroll_bar_rect(off_set[0], off_set[1])
+        bottom_scroll_button_rect: Rectangle | None = self._get_bottom_scroll_button_rect(off_set[0], off_set[1])
         # 获取鼠标坐标
         if Controller.mouse.get_pressed(0):
             if right_scroll_bar_rect is not None and right_scroll_button_rect is not None and right_scroll_bar_rect.is_hovered():
@@ -195,7 +195,7 @@ class AbstractSurfaceWithScrollBar(AbstractScrollBarsSurface, metaclass=ABCMeta)
                 EXCEPTION.fatal(f'Scroll bar position "{pos}" is not supported! Try sth like "right" or "bottom" instead.')
 
     # 获取滚动条按钮的Rect
-    def _get_scroll_button_rect(self, off_set_x: number, off_set_y: number) -> Optional[Rectangle]:
+    def _get_scroll_button_rect(self, off_set_x: number, off_set_y: number) -> Rectangle | None:
         if self.axis_mode is Axis.VERTICAL:
             if not self.__scroll_bar_pos:
                 return self._get_right_scroll_button_rect(off_set_x, off_set_y)
@@ -219,7 +219,7 @@ class AbstractSurfaceWithScrollBar(AbstractScrollBarsSurface, metaclass=ABCMeta)
         return None
 
     # 获取滚动条的Rect
-    def _get_scroll_bar_rect(self, off_set_x: number, off_set_y: number) -> Optional[Rectangle]:
+    def _get_scroll_bar_rect(self, off_set_x: number, off_set_y: number) -> Rectangle | None:
         if self.axis_mode is Axis.VERTICAL:
             if not self.__scroll_bar_pos:
                 return self._get_right_scroll_bar_rect(off_set_x, off_set_y)
@@ -234,8 +234,8 @@ class AbstractSurfaceWithScrollBar(AbstractScrollBarsSurface, metaclass=ABCMeta)
 
     def display_scrollbar(self, _surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
         # 获取滚轮条
-        scroll_bar_rect: Optional[Rectangle] = self._get_scroll_bar_rect(off_set[0], off_set[1])
-        scroll_button_rect: Optional[Rectangle] = self._get_scroll_button_rect(off_set[0], off_set[1])
+        scroll_bar_rect: Rectangle | None = self._get_scroll_bar_rect(off_set[0], off_set[1])
+        scroll_button_rect: Rectangle | None = self._get_scroll_button_rect(off_set[0], off_set[1])
         if scroll_bar_rect is not None and scroll_button_rect is not None:
             # 如果没有按下的事件，则重置holding_scroll_button的flag
             if not Controller.mouse.get_pressed(0):
@@ -289,7 +289,7 @@ class AbstractSurfaceWithScrollBar(AbstractScrollBarsSurface, metaclass=ABCMeta)
 
 # 带有滚动条的Surface容器
 class SurfaceContainerWithScrollBar(GameObjectsDictContainer, AbstractSurfaceWithScrollBar):
-    def __init__(self, img: Optional[PoI], x: int_f, y: int_f, width: int, height: int, mode: Axis = Axis.HORIZONTAL, tag: str = "") -> None:
+    def __init__(self, img: PoI | None, x: int_f, y: int_f, width: int, height: int, mode: Axis = Axis.HORIZONTAL, tag: str = "") -> None:
         GameObjectsDictContainer.__init__(self, img, x, y, width, height, tag)
         AbstractSurfaceWithScrollBar.__init__(self)
         self.__surface_width: int = 0

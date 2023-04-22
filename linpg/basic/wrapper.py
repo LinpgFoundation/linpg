@@ -282,7 +282,7 @@ class Surfaces:
 
     # 检测图层是否是任何形式的null
     @classmethod
-    def is_not_null(cls, _surface: Optional[ImageSurface]) -> bool:
+    def is_not_null(cls, _surface: ImageSurface | None) -> bool:
         return _surface is not None and _surface is not cls.NULL
 
 
@@ -291,7 +291,7 @@ class Filters:
     # 毛玻璃效果
     @staticmethod
     def glassmorphism_effect(
-        _surface: ImageSurface, _rect: Optional[tuple[int, int, int, int] | tuple[tuple[int, int], tuple[int, int]]] = None, whiteness: int = 10
+        _surface: ImageSurface, _rect: tuple[int, int, int, int] | tuple[tuple[int, int], tuple[int, int]] | None = None, whiteness: int = 10
     ) -> ImageSurface:
         _processed_image: PILImage.Image = PILImage.fromarray(Surfaces.to_array(_surface if _rect is None else _surface.subsurface(_rect))).filter(
             PILImageFilter.GaussianBlur(radius=6)

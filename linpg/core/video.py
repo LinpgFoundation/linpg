@@ -128,13 +128,13 @@ class VideoSurface(AbstractVideo):
         with_audio: bool = True,
         play_range: tuple[int, int] = (0, -1),
         buffer_num: int = 10,
-        cache_key: Optional[str] = None,
+        cache_key: str | None = None,
     ) -> None:
         super().__init__(path, buffer_num, play_range)
         self.__loop: bool = loop
         self.__looped_times: int = 0
-        self.__audio: Optional[Sound] = Sounds.load_from_video(path, cache_key=cache_key) if with_audio is True else None
-        self.__audio_channel: Optional[SoundChannel] = None
+        self.__audio: Sound | None = Sounds.load_from_video(path, cache_key=cache_key) if with_audio is True else None
+        self.__audio_channel: SoundChannel | None = None
 
     # 返回一个复制
     def copy(self) -> "VideoSurface":

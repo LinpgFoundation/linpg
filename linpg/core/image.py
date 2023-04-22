@@ -7,22 +7,22 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         super().__init__(Images.quickly_load(img), x, y, width, height, tag)
         self.__is_flipped_horizontally: bool = False
         self.__is_flipped_vertically: bool = False
-        self.__crop_rect: Optional[Rectangle] = None
+        self.__crop_rect: Rectangle | None = None
         self.__bounding_rect: Rectangle = Rectangle(0, 0, 0, 0)
         self.__no_cropping_needed: bool = False
 
     # 截图的范围
     @property
-    def crop_rect(self) -> Optional[Rectangle]:
+    def crop_rect(self) -> Rectangle | None:
         return self.__crop_rect
 
-    def get_crop_rect(self) -> Optional[Rectangle]:
+    def get_crop_rect(self) -> Rectangle | None:
         return self.__crop_rect
 
     def disable_cropping(self) -> None:
         self.__no_cropping_needed = True
 
-    def set_crop_rect(self, rect: Optional[Rectangle]) -> None:
+    def set_crop_rect(self, rect: Rectangle | None) -> None:
         if not Rectangles.equal(self.__crop_rect, rect):
             self.__crop_rect = rect
             self._need_update = True

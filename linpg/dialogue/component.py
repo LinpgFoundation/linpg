@@ -43,7 +43,7 @@ class DialogNavigationWindow(AbstractFrame):
         self.__nodes_map.clear()
         for key in dialogs_data:
             next_keys: list[str] = []
-            theNext: Optional[dict] = dialogs_data[key].get("next_dialog_id")
+            theNext: dict | None = dialogs_data[key].get("next_dialog_id")
             if theNext is not None and len(theNext) > 0:
                 if theNext["type"] == "option":
                     for next_keys_options in theNext["target"]:
@@ -165,7 +165,7 @@ class EditableDialogBox(AbstractDialogBox):
         return self.__contents.get_text()
 
     # 更新内容
-    def update(self, narrator: Optional[str], contents: Optional[list]) -> None:
+    def update(self, narrator: str | None, contents: list | None) -> None:
         if narrator is None:
             self.__narrator.set_text()
         else:
@@ -221,7 +221,7 @@ class DialogBox(AbstractDialogBox):
         self.__narrator: str = ""
         self.__text_index: int = 0
         self.__displayed_lines: int = 0
-        self.__textPlayingSound: Optional[Sound] = None
+        self.__textPlayingSound: Sound | None = None
         if os.path.exists(_path := Specification.get_directory("sound", "ui", "dialog_words_playing.ogg")):
             self.__textPlayingSound = Sounds.load(_path)
         self.__READING_SPEED: int = max(int(Setting.get("ReadingSpeed")), 1)
@@ -259,7 +259,7 @@ class DialogBox(AbstractDialogBox):
             self.__text_index = max(len(self.__contents[self.__displayed_lines]) - 1, 0)
 
     # 更新内容
-    def update(self, narrator: Optional[str], contents: Optional[list], forceNotResizeDialogueBox: bool = False) -> None:
+    def update(self, narrator: str | None, contents: list | None, forceNotResizeDialogueBox: bool = False) -> None:
         self.stop_playing_text_sound()
         # 重设部分参数
         self.__text_index = 0

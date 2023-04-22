@@ -266,7 +266,7 @@ class UiGenerator:
     @classmethod
     def __get_data_in_dict(cls, data: str | dict) -> dict:
         if isinstance(data, str):
-            result: Optional[dict] = cls.__UI_TEMPLATES.get(data)
+            result: dict | None = cls.__UI_TEMPLATES.get(data)
             if result is None:
                 EXCEPTION.fatal(f'The ui called "{data}" does not exist!')
             return copy.deepcopy(result)

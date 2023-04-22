@@ -93,7 +93,7 @@ class TileMapImagesModule:
         _absId: list[str] = _id.split(":")
         # 尝试获取图片
         result: StaticImage | tuple[StaticImage, ...]
-        possible_result: Optional[StaticImage | tuple[StaticImage, ...]] = (
+        possible_result: StaticImage | tuple[StaticImage, ...] | None = (
             cls.__ENV_IMAGE_DICT_DARK.get(_absId[0]) if darkMode is True else cls.__ENV_IMAGE_DICT.get(_absId[0])
         )
         if possible_result is not None:
@@ -137,7 +137,7 @@ class DecorationImagesModule:
     # 获取当前装饰物种类的数量
     @classmethod
     def count_variations(cls, _type: str) -> int:
-        _ref: Optional[StaticImage | tuple[StaticImage, ...]] = cls.__DECORATION_IMAGE_DICT.get(_type)
+        _ref: StaticImage | tuple[StaticImage, ...] | None = cls.__DECORATION_IMAGE_DICT.get(_type)
         if _ref is None:
             EXCEPTION.fatal(f'Cannot find decoration image "{_type}"')
         return len(_ref) if isinstance(_ref, tuple) else 1
@@ -148,7 +148,7 @@ class DecorationImagesModule:
         # 确保初始化
         cls.init()
         # 查看图片是否在自带或自定义的SPRITE SHEET中存在，不存在则为None
-        sheet_ref: Optional[SpriteImage] = (
+        sheet_ref: SpriteImage | None = (
             cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET
             if cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.contain(_type)
             else cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET
@@ -189,7 +189,7 @@ class DecorationImagesModule:
         _absId: list[str] = _id.split(":")
         # 尝试获取图片
         result: StaticImage | tuple[StaticImage, ...]
-        possible_result: Optional[StaticImage | tuple[StaticImage, ...]] = (
+        possible_result: StaticImage | tuple[StaticImage, ...] | None = (
             cls.__DECORATION_IMAGE_DICT_DARK.get(_absId[0]) if darkMode is True else cls.__DECORATION_IMAGE_DICT.get(_absId[0])
         )
         if possible_result is not None:
@@ -305,7 +305,7 @@ class EntitySpriteImageManager:
                 img_list: list[str] = glob(os.path.join(_action_folder_path, "*.png"))
                 if len(img_list) > 0:
                     img_list.sort(key=lambda f: int("".join(filter(str.isdigit, f))))
-                    _image: Optional[ImageSurface] = None
+                    _image: ImageSurface | None = None
                     # 加载所有图片
                     for _path in img_list:
                         # 加载单个图片

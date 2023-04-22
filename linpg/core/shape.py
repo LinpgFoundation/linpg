@@ -161,7 +161,7 @@ RectLiked = Rectangle | pygame.Rect | tuple
 class Rectangles:
     # 是否2个Rectangle形状一样
     @staticmethod
-    def equal(rect1: Optional[Rectangle], rect2: Optional[Rectangle]) -> bool:
+    def equal(rect1: Rectangle | None, rect2: Rectangle | None) -> bool:
         if rect1 is not None and rect2 is not None:
             return rect1.x == rect2.x and rect1.y == rect2.y and rect1.width == rect2.width and rect1.height == rect2.height
         else:

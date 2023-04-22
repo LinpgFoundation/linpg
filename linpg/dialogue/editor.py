@@ -28,7 +28,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         # 压缩模式
         self.__compress_when_saving: bool = True
         # 存放并管理编辑器上方所有按钮的容器
-        self.__buttons_ui_container: Optional[GameObjectsDictContainer] = None
+        self.__buttons_ui_container: GameObjectsDictContainer | None = None
         # 背景音乐选择 DropDown ui
         self.__dialog_bgm_select: DropDownList = DropDownList(None, 0, 0, 1)
         # 背景图片编辑模块
@@ -41,9 +41,9 @@ class DialogEditor(AbstractVisualNovelSystem):
         # 未保存数据时警告的窗口
         self.__no_save_warning: GameObjectsDictContainer = UI.generate_container("leave_without_saving_warning")
         # 当前选择的背景的名称
-        self.__current_select_bg_name: Optional[str] = None
+        self.__current_select_bg_name: str | None = None
         # 当前选择的背景的复制品
-        self.__current_select_bg_copy: Optional[ImageSurface] = None
+        self.__current_select_bg_copy: ImageSurface | None = None
         # 用于选择小说脚本的key的下拉菜单
         self.__dialog_section_selection: DropDownList = DropDownList(None, 0, 0, 1)
         # 检测并初始化deselect选中的背景
@@ -57,7 +57,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         return self.__dialog_txt_system
 
     # 加载数据
-    def new(self, chapterType: str, chapterId: int, section: str, projectName: Optional[str] = None, dialogId: str = "head") -> None:
+    def new(self, chapterType: str, chapterId: int, section: str, projectName: str | None = None, dialogId: str = "head") -> None:
         # 加载容器
         container_width: int = Display.get_width() // 5
         self.__UIContainerRightImage = Images.load("<&ui>container.png", (container_width, Display.get_height()))
@@ -164,7 +164,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         return original_data
 
     # 更新背景选项栏
-    def _update_background_image(self, image_name: Optional[str]) -> None:
+    def _update_background_image(self, image_name: str | None) -> None:
         super()._update_background_image(image_name)
         if image_name is not None:
             if self.__current_select_bg_name is not None:
@@ -190,7 +190,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         # 加载内容数据
         self._content.clear()
         if os.path.exists(path := self.get_data_file_path()) and "dialogs" in (data_t := Config.load_file(path)):
-            _dialogs: Optional[dict] = data_t.get("dialogs")
+            _dialogs: dict | None = data_t.get("dialogs")
             if _dialogs is not None:
                 self._content.update(_dialogs)
             else:
@@ -229,7 +229,7 @@ class DialogEditor(AbstractVisualNovelSystem):
                     # 如果有，则尝试转换
                     while True:
                         index: int = 0
-                        old_key: Optional[str] = None
+                        old_key: str | None = None
                         key: str = ""
                         for key, value in self._content.get_section_content(section).items():
                             if value["next_dialog_id"] is not None and "target" in value["next_dialog_id"]:
@@ -353,7 +353,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         self.__update_ui()
 
     # 连接2个dialog node
-    def __make_connection(self, key1: Optional[str], key2: Optional[str], addNode: bool = False) -> None:
+    def __make_connection(self, key1: str | None, key2: str | None, addNode: bool = False) -> None:
         if key1 is not None:
             seniorNodePointer = self._content.get_dialog(_id=key1)["next_dialog_id"]
             if not addNode:

@@ -70,9 +70,9 @@ class SimpleRectPointsBar(AbstractProgressBar):
     def set_color(
         self,
         front_color: color_liked,
-        back_color: Optional[color_liked] = None,
-        outline_color: Optional[color_liked] = None,
-        font_color: Optional[color_liked] = None,
+        back_color: color_liked | None = None,
+        outline_color: color_liked | None = None,
+        font_color: color_liked | None = None,
     ) -> None:
         self.__front_color = Colors.get(front_color)
         if back_color is not None:
@@ -108,12 +108,12 @@ class SimpleRectPointsBar(AbstractProgressBar):
 # 进度条Surface
 class ProgressBarSurface(AbstractProgressBar):
     def __init__(
-        self, imgOnTop: Optional[PoI], imgOnBottom: Optional[PoI], x: int_f, y: int_f, max_width: int, height: int, mode: Axis = Axis.HORIZONTAL, tag: str = ""
+        self, imgOnTop: PoI | None, imgOnBottom: PoI | None, x: int_f, y: int_f, max_width: int, height: int, mode: Axis = Axis.HORIZONTAL, tag: str = ""
     ) -> None:
         if imgOnTop is not None:
             imgOnTop = Images.quickly_load(imgOnTop)
         super().__init__(imgOnTop, x, y, max_width, height, tag)
-        self._img2: Optional[ImageSurface] = Images.quickly_load(imgOnBottom) if imgOnBottom is not None else None
+        self._img2: ImageSurface | None = Images.quickly_load(imgOnBottom) if imgOnBottom is not None else None
         # 模式
         self.axis_mode: Axis = mode
 
@@ -144,8 +144,8 @@ class ProgressBarSurface(AbstractProgressBar):
 class ProgressBarAdjuster(ProgressBarSurface):
     def __init__(
         self,
-        imgOnTop: Optional[PoI],
-        imgOnBottom: Optional[PoI],
+        imgOnTop: PoI | None,
+        imgOnBottom: PoI | None,
         indicator_img: PoI,
         x: int_f,
         y: int_f,
@@ -204,7 +204,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
 
 # 动态进度条Surface
 class DynamicProgressBarSurface(ProgressBarSurface):
-    def __init__(self, imgOnTop: Optional[PoI], imgOnBottom: Optional[PoI], x: int_f, y: int_f, max_width: int, height: int, mode: Axis = Axis.HORIZONTAL):
+    def __init__(self, imgOnTop: PoI | None, imgOnBottom: PoI | None, x: int_f, y: int_f, max_width: int, height: int, mode: Axis = Axis.HORIZONTAL):
         super().__init__(imgOnTop, imgOnBottom, x, y, max_width, height, mode)
         self._percentage_to_be: float = 0.0
         self.__percent_update_each_time: float = 0.0

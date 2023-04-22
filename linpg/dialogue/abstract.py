@@ -11,7 +11,7 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 对话文件路径
         self._dialog_folder_path: str = "Data"
         # 背景图片
-        self.__background_image_name: Optional[str] = None
+        self.__background_image_name: str | None = None
         self.__background_image_surface: StaticImage | VideoSurface = self._black_bg.copy()
         # 是否静音
         self._is_muted: bool = False
@@ -72,7 +72,7 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
         self.new(_data["chapter_type"], _data["chapter_id"], _data["section"], _data.get("project_name"), _data.get("dialog_id", "head"))
 
     # 新读取章节
-    def new(self, chapterType: str, chapterId: int, section: str, projectName: Optional[str] = None, dialogId: str = "head") -> None:
+    def new(self, chapterType: str, chapterId: int, section: str, projectName: str | None = None, dialogId: str = "head") -> None:
         # 初始化关键参数
         self._initialize(chapterType, chapterId, projectName)
         # 对白id
@@ -109,7 +109,7 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
         self._update_scene(self._content.get_id())
 
     # 更新背景图片
-    def _update_background_image(self, image_name: Optional[str]) -> None:
+    def _update_background_image(self, image_name: str | None) -> None:
         if self.__background_image_name != image_name:
             # 更新背景的名称
             self.__background_image_name = image_name
@@ -174,7 +174,7 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
 
     def _get_dialog_options_container_ready(self) -> None:
         self._dialog_options_container.clear()
-        _next_targets: Optional[str | list] = self._content.current.next.get("target")
+        _next_targets: str | list | None = self._content.current.next.get("target")
         if isinstance(_next_targets, list):
             optionBox_y_base: int = Display.get_height() * 3 // 16 - len(_next_targets) * self._FONT_SIZE
             for i in range(len(_next_targets)):

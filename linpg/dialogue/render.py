@@ -107,7 +107,7 @@ class VisualNovelCharacterImageManager:
     # 开发者模式
     dev_mode: bool = False
     # 被点击的角色
-    character_get_click: Optional[str] = None
+    character_get_click: str | None = None
 
     # 立绘边长
     @staticmethod
@@ -195,7 +195,7 @@ class VisualNovelCharacterImageManager:
 
     # 更新立绘
     @classmethod
-    def update(cls, characterNameList: Optional[Sequence[str]]) -> None:
+    def update(cls, characterNameList: Sequence[str] | None) -> None:
         cls.__previous_characters = cls.__current_characters
         cls.__current_characters = (
             tuple(VisualNovelCharacterImageNameMetaData(_name) for _name in characterNameList) if characterNameList is not None else tuple()

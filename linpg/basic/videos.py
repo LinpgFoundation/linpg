@@ -57,7 +57,7 @@ class Videos(ABC):
 
     # 获取视频封面
     @classmethod
-    def get_thumbnail(cls, path: str, size: Optional[tuple[int, int]] = None) -> ImageSurface:
+    def get_thumbnail(cls, path: str, size: tuple[int, int] | None = None) -> ImageSurface:
         cls.validation(path)
         video_stream = cv2.VideoCapture(path)
         video_stream.set(cv2.CAP_PROP_POS_FRAMES, video_stream.get(cv2.CAP_PROP_FRAME_COUNT) // 10)

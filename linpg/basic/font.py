@@ -6,7 +6,7 @@ class FontGenerator:
     __FONT_IS_NOT_INITIALIZED_MSG: Final[str] = "Font is not initialized!"
 
     def __init__(self) -> None:
-        self.__FONT: Optional[pygame.font.Font] = None
+        self.__FONT: pygame.font.Font | None = None
         self.__size: int = 0
 
     # 是否加粗
@@ -75,7 +75,7 @@ class FontGenerator:
             self.__FONT.italic = ifItalic
 
     # 渲染文字
-    def render(self, txt: str | int, color: color_liked, background_color: Optional[color_liked] = None) -> ImageSurface:
+    def render(self, txt: str | int, color: color_liked, background_color: color_liked | None = None) -> ImageSurface:
         if not isinstance(txt, (str, int)):
             EXCEPTION.fatal(f"The text must be a unicode or bytes, not {txt}")
         if self.__FONT is None:
@@ -103,7 +103,7 @@ class Font:
     # 获取全局文字
     @classmethod
     def get_global_font(cls, key: str) -> FontGenerator:
-        _font: Optional[FontGenerator] = cls.__LINPG_GLOBAL_FONTS.get(key)
+        _font: FontGenerator | None = cls.__LINPG_GLOBAL_FONTS.get(key)
         if _font is not None:
             return _font
         else:
@@ -116,7 +116,7 @@ class Font:
 
     # 获取全局文字
     @classmethod
-    def render_global_font(cls, key: str, txt: str, color: color_liked, background_color: Optional[color_liked] = None) -> ImageSurface:
+    def render_global_font(cls, key: str, txt: str, color: color_liked, background_color: color_liked | None = None) -> ImageSurface:
         return cls.get_global_font(key).render(txt, color, background_color)
 
     # 删除全局文字
@@ -135,7 +135,7 @@ class Font:
     # 接受文字，颜色，文字大小，样式等信息，返回制作完的文字
     @classmethod
     def render(
-        cls, txt: str | int, color: color_liked, size: int_f, ifBold: bool = False, ifItalic: bool = False, background_color: Optional[color_liked] = None
+        cls, txt: str | int, color: color_liked, size: int_f, ifBold: bool = False, ifItalic: bool = False, background_color: color_liked | None = None
     ) -> ImageSurface:
         cls.__LINPG_LAST_FONT.check_for_update(int(size), ifBold, ifItalic)
         return cls.__LINPG_LAST_FONT.render(txt, color, background_color)
@@ -153,7 +153,7 @@ class ArtisticFont:
         background_color: color_liked,
         ifBold: bool = False,
         ifItalic: bool = False,
-        outline_color: Optional[color_liked] = None,
+        outline_color: color_liked | None = None,
         thickness: int = 2,
     ) -> ImageSurface:
         font_surface: ImageSurface = Font.render(txt, color, size, ifBold, ifItalic)

@@ -8,8 +8,8 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 用于判断是否移动屏幕的参数
         self.__mouse_move_temp_x: int = -1
         self.__mouse_move_temp_y: int = -1
-        self._screen_to_move_speed_x: Optional[int] = None
-        self._screen_to_move_speed_y: Optional[int] = None
+        self._screen_to_move_speed_x: int | None = None
+        self._screen_to_move_speed_y: int | None = None
         # 用于检测是否有方向键被按到的字典
         self.__moving_screen_in_direction_up: bool = False
         self.__moving_screen_in_direction_down: bool = False
@@ -18,13 +18,13 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 角色数据
         self._entities_data: dict[str, dict[str, Entity]] = {}
         # 地图数据
-        self.__map: Optional[AbstractTileMap] = None
+        self.__map: AbstractTileMap | None = None
         # 方格标准尺寸
         self._standard_tile_size: int = Display.get_width() // 10
         # 天气系统
         self._weather_system: WeatherSystem = WeatherSystem()
         # 当前鼠标位置上的tile块
-        self._tile_is_hovering: Optional[tuple[int, int]] = None
+        self._tile_is_hovering: tuple[int, int] | None = None
 
     # 渲染出所有的entity - 子类需实现
     @abstractmethod
@@ -38,7 +38,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
 
     # 初始化并加载新场景 - 子类需实现
     @abstractmethod
-    def new(self, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
+    def new(self, chapterType: str, chapterId: int, projectName: str | None = None) -> None:
         EXCEPTION.fatal("new()", 1)
 
     # 获取地图

@@ -112,8 +112,8 @@ class SpriteImage:
         img_folder_path: str,
         minimize_pixels: bool = False,
         actionOnSameRow: bool = False,
-        universal_width: Optional[int] = None,
-        universal_height: Optional[int] = None,
+        universal_width: int | None = None,
+        universal_height: int | None = None,
         additional_padding: int = 0,
         resultFileType: str = "png",
     ) -> None:

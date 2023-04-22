@@ -11,15 +11,15 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         # 加载对话框系统
         self.__dialog_txt_system: DialogBox = DialogBox(self._FONT_SIZE)
         # UI按钮
-        self.__buttons_container: Optional[GameObjectsDictContainer] = None
+        self.__buttons_container: GameObjectsDictContainer | None = None
         # 是否要显示历史对白页面
         self.__is_showing_history: bool = False
         self.__history_bg_surface: ImageSurface = Surfaces.colored(Display.get_size(), Colors.BLACK)
         self.__history_bg_surface.set_alpha(150)
-        self.__history_text_surface: Optional[ImageSurface] = None
+        self.__history_text_surface: ImageSurface | None = None
         self.__history_surface_local_y: int = 0
         # 展示历史界面-返回按钮
-        self.__history_back: Optional[Button] = None
+        self.__history_back: Button | None = None
         # 是否取消背景渲染
         self.__disable_background_image_rendering: bool = False
         # 初始化音量
@@ -82,7 +82,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         self.__dialog_options.update(_data.get("dialog_options", {}))
 
     # 新读取章节
-    def new(self, chapterType: str, chapterId: int, section: str, projectName: Optional[str] = None, dialogId: str = "head") -> None:
+    def new(self, chapterType: str, chapterId: int, section: str, projectName: str | None = None, dialogId: str = "head") -> None:
         super().new(chapterType, chapterId, section, projectName, dialogId)
         # 初始化重要ui组件
         if not self.__disable_background_image_rendering:
@@ -296,7 +296,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
                 dialogIdTemp: str = "head"
                 local_y: int = self.__history_surface_local_y
                 while True:
-                    narratorTxt: Optional[str] = self._content.get_dialog(_id=dialogIdTemp).get("narrator")
+                    narratorTxt: str | None = self._content.get_dialog(_id=dialogIdTemp).get("narrator")
                     has_narrator: bool = narratorTxt is not None and len(narratorTxt) > 0
                     if has_narrator:
                         narratorTemp = self.__dialog_txt_system.FONT.render(narratorTxt + ":", Colors.WHITE)  # type: ignore

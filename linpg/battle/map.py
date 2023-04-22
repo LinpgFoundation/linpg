@@ -31,13 +31,13 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         # 列
         self.__column: int = 0
         # 地图渲染用的图层
-        self.__map_surface: Optional[ImageSurface] = None
+        self.__map_surface: ImageSurface | None = None
         # 地图旧图层以渲染渐变效果
-        self.__map_surface_old: Optional[ImageSurface] = None
+        self.__map_surface_old: ImageSurface | None = None
         # 不要保存地图旧图层
         self.__don_save_old_map_surface_for_next_update: bool = False
         # 背景图片
-        self.__background_image: Optional[StaticImage] = None
+        self.__background_image: StaticImage | None = None
         # 使用一个hashmap以加速根据坐标寻找装饰物
         self.__decorations: dict[str, DecorationObject] = {}
         # 处于光处的区域
@@ -94,7 +94,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         for _decoration in _data["decoration"]:
             self.add_decoration(_decoration)
         # 背景图片路径
-        theBgiPath: Optional[str] = _data.get("background_image")
+        theBgiPath: str | None = _data.get("background_image")
         # 背景图片
         self.__background_image = (
             StaticImage(Images.quickly_load(Specification.get_directory("background_image", theBgiPath), False), 0, 0) if theBgiPath is not None else None
@@ -183,7 +183,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
     # 是否角色能通过该方块
     def is_passable(self, _x: int, _y: int) -> bool:
         if bool(self.__TILES_DATABASE[self.get_tile(_x, _y).split(":")[0]]["passable"]) is True:
-            _decoration: Optional[DecorationObject] = self.__decorations.get(self.__get_coordinate_format_key((_x, _y)))
+            _decoration: DecorationObject | None = self.__decorations.get(self.__get_coordinate_format_key((_x, _y)))
             return _decoration is None or bool(self.__DECORATION_DATABASE[_decoration.type]["passable"])
         return False
 
@@ -192,7 +192,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         return {"local_x": str(round(self.local_x * 100 / self.get_width(), 5)) + "%", "local_y": str(round(self.local_y * 100 / self.get_height(), 5)) + "%"}
 
     # 根据坐标寻找装饰物
-    def get_decoration(self, pos: object) -> Optional[DecorationObject]:
+    def get_decoration(self, pos: object) -> DecorationObject | None:
         return self.__decorations.get(self.__get_coordinate_format_key(Coordinates.convert(pos)))
 
     # 新增装饰物
@@ -308,7 +308,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             _surface.blit(self.__map_surface.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), (0, 0))
         if self.__map_surface_old is not None:
             _surface.blit(self.__map_surface_old.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), (0, 0))
-            _alpha: Optional[int] = self.__map_surface_old.get_alpha()
+            _alpha: int | None = self.__map_surface_old.get_alpha()
             if _alpha is None:
                 EXCEPTION.fatal("Invalid alpha detected while processing self.__map_surface_old.get_alpha()")
             _alpha -= 15
@@ -360,7 +360,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
 
     # 计算在地图中的方块
     @abstractmethod
-    def calculate_coordinate(self, on_screen_pos: Optional[tuple[int, int]] = None) -> Optional[tuple[int, int]]:
+    def calculate_coordinate(self, on_screen_pos: tuple[int, int] | None = None) -> tuple[int, int] | None:
         EXCEPTION.fatal("calculate_coordinate()", 1)
 
     # 计算在地图中的位置
@@ -396,7 +396,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         alliances: dict,
         enemies: dict,
         can_move_through_darkness: bool = False,
-        lenMax: Optional[int] = None,
+        lenMax: int | None = None,
         enemies_ignored: tuple = tuple(),
         ignore_alliances: bool = False,
     ) -> list[tuple[int, int]]:

@@ -33,7 +33,7 @@ class Images:
     def generate_path_according_to_prefix(cls, path: str) -> str:
         flag_end_index: int = path.index(">")
         file_name: str = path[flag_end_index + 1 :]
-        flag_key: Optional[str] = cls.__FLAG_LOOKUP_TABLE.get(path[2:flag_end_index])
+        flag_key: str | None = cls.__FLAG_LOOKUP_TABLE.get(path[2:flag_end_index])
         if flag_key is not None:
             match path[1]:
                 case "&":
@@ -56,7 +56,7 @@ class Images:
             return path
         elif isinstance(path, str):
             if path != "<NULL>":
-                _imageR: Optional[ImageSurface] = None
+                _imageR: ImageSurface | None = None
                 # 如果正在加载不属于linpgassets的图片
                 if not path.startswith("<"):
                     try:

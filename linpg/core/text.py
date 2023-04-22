@@ -63,7 +63,7 @@ class AbstractTextSurface(GameObject2d, Hidable, metaclass=ABCMeta):
 class TextSurface(AbstractTextSurface):
     def __init__(self, text: str, x: int_f, y: int_f, size: int_f, _color: color_liked = Colors.BLACK, _bold: bool = False, _italic: bool = False) -> None:
         super().__init__(text, x, y, size, _color, _bold, _italic)
-        self.__text_surface: Optional[ImageSurface] = None
+        self.__text_surface: ImageSurface | None = None
         self.__outline_thickness: int = 0
         self.__outline_color: tuple[int, int, int, int] = Colors.BLACK
         # 更新文字图层（需作为初始化的最后一步）
@@ -81,7 +81,7 @@ class TextSurface(AbstractTextSurface):
                 )
             )
 
-    def _get_text_surface(self) -> Optional[ImageSurface]:
+    def _get_text_surface(self) -> ImageSurface | None:
         return self.__text_surface
 
     # 设置轮廓粗细

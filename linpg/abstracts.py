@@ -1,7 +1,7 @@
 import copy
 from functools import reduce
 from operator import getitem
-from typing import Any, Final, Optional, Sequence
+from typing import Any, Final, Sequence
 from abc import ABC
 
 from .exception import EXCEPTION
@@ -12,7 +12,7 @@ class TypeSafeGetter:
 
     # 根据keys查找值，最后返回一个复制的对象
     @classmethod
-    def get_by_keys(cls, _dict: dict, _keys: Sequence, _default: Optional[Any] = None, _deepcopy: bool = True) -> Any:
+    def get_by_keys(cls, _dict: dict, _keys: Sequence, _default: Any | None = None, _deepcopy: bool = True) -> Any:
         try:
             return copy.deepcopy(reduce(getitem, _keys, _dict)) if _deepcopy is True else reduce(getitem, _keys, _dict)
         except KeyError:
@@ -37,7 +37,7 @@ class TypeSafeGetter:
 
     # 尝试获取特定的数据
     @classmethod
-    def try_get(cls, *_key: Any, _default: Optional[Any] = None, _deepcopy: bool = True) -> Optional[Any]:
+    def try_get(cls, *_key: Any, _default: Any | None = None, _deepcopy: bool = True) -> Any | None:
         return cls.get_by_keys(cls._get_data(), _key, _default, _deepcopy)
 
     # 是否值存在且不为None
@@ -52,8 +52,8 @@ class TypeSafeGetter:
 
     # 尝试以str的形式获取特定的数据
     @classmethod
-    def try_get_str(cls, *_key: Any) -> Optional[str]:
-        _temp: Optional[Any] = cls.try_get(*_key, _default=cls.__RETURN_NONE_FOR_KEY_ERROR)
+    def try_get_str(cls, *_key: Any) -> str | None:
+        _temp: Any | None = cls.try_get(*_key, _default=cls.__RETURN_NONE_FOR_KEY_ERROR)
         return str(_temp) if _temp is not None else _temp
 
     # 以int的形式获取特定的数据
@@ -63,8 +63,8 @@ class TypeSafeGetter:
 
     # 尝试以int的形式获取特定的数据
     @classmethod
-    def try_get_int(cls, *_key: Any) -> Optional[int]:
-        _temp: Optional[Any] = cls.try_get(*_key, _default=cls.__RETURN_NONE_FOR_KEY_ERROR)
+    def try_get_int(cls, *_key: Any) -> int | None:
+        _temp: Any | None = cls.try_get(*_key, _default=cls.__RETURN_NONE_FOR_KEY_ERROR)
         return int(_temp) if _temp is not None else _temp
 
     # 以bool的形式获取特定的数据
@@ -74,8 +74,8 @@ class TypeSafeGetter:
 
     # 尝试以bool的形式获取特定的数据
     @classmethod
-    def try_get_bool(cls, *_key: Any) -> Optional[bool]:
-        _temp: Optional[Any] = cls.try_get(*_key, _default=cls.__RETURN_NONE_FOR_KEY_ERROR)
+    def try_get_bool(cls, *_key: Any) -> bool | None:
+        _temp: Any | None = cls.try_get(*_key, _default=cls.__RETURN_NONE_FOR_KEY_ERROR)
         return bool(_temp) if _temp is not None else _temp
 
     # 以dict的形式获取特定的数据
@@ -90,8 +90,8 @@ class TypeSafeGetter:
 
     # 尝试以dict的形式获取特定的数据
     @classmethod
-    def try_get_dict(cls, *_key: Any) -> Optional[dict]:
-        _temp: Optional[Any] = cls.try_get(*_key, _default=cls.__RETURN_NONE_FOR_KEY_ERROR)
+    def try_get_dict(cls, *_key: Any) -> dict | None:
+        _temp: Any | None = cls.try_get(*_key, _default=cls.__RETURN_NONE_FOR_KEY_ERROR)
         return dict(_temp) if _temp is not None else _temp
 
     # 以list的形式获取特定的数据
@@ -101,8 +101,8 @@ class TypeSafeGetter:
 
     # 尝试以list的形式获取特定的数据
     @classmethod
-    def try_get_list(cls, *_key: Any) -> Optional[list]:
-        _temp: Optional[Any] = cls.try_get(*_key, _default=cls.__RETURN_NONE_FOR_KEY_ERROR)
+    def try_get_list(cls, *_key: Any) -> list | None:
+        _temp: Any | None = cls.try_get(*_key, _default=cls.__RETURN_NONE_FOR_KEY_ERROR)
         return list(_temp) if _temp is not None else _temp
 
     # 以tuple的形式获取特定的数据
@@ -112,8 +112,8 @@ class TypeSafeGetter:
 
     # 尝试以tuple的形式获取特定的数据
     @classmethod
-    def try_get_tuple(cls, *_key: Any) -> Optional[tuple]:
-        _temp: Optional[Any] = cls.try_get(*_key, _default=cls.__RETURN_NONE_FOR_KEY_ERROR)
+    def try_get_tuple(cls, *_key: Any) -> tuple | None:
+        _temp: Any | None = cls.try_get(*_key, _default=cls.__RETURN_NONE_FOR_KEY_ERROR)
         return tuple(_temp) if _temp is not None else _temp
 
 
@@ -126,7 +126,7 @@ class TypeSafeSetter:
         pointer: dict = _dict
         last_key_index: int = len(_keys) - 1
         for index in range(last_key_index):
-            _item: Optional[object] = pointer.get(_keys[index])
+            _item: object | None = pointer.get(_keys[index])
             if isinstance(_item, dict):
                 pointer = _item
             elif _item is None:

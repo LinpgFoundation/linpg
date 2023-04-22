@@ -16,8 +16,8 @@ class _ScriptProcessor:
         self.__current_data: DialogContent = DialogContent({}, "head")
         self.__id: int = -1
         self.__lang: str = ""
-        self.__section: Optional[str] = None
-        self.__last_dialog_id: Optional[str] = None
+        self.__section: str | None = None
+        self.__last_dialog_id: str | None = None
         self.__lines: list[str] = []
         self.__branch_labels: dict[str, str] = {}
         self.__dialog_associate_key: dict[str, str] = {}
@@ -36,12 +36,12 @@ class _ScriptProcessor:
 
     # 转换一个str
     @staticmethod
-    def __ensure_not_null(text: str) -> Optional[str]:
+    def __ensure_not_null(text: str) -> str | None:
         return None if text.lower() == "null" or text.lower() == "none" else text
 
     # 将参数分离出来
     @classmethod
-    def __extract_parameter(cls, text: str, prefix: str) -> Optional[str]:
+    def __extract_parameter(cls, text: str, prefix: str) -> str | None:
         return cls.__ensure_not_null(cls.__extract_string(text, prefix))
 
     # 将字符串内容分离出来
@@ -73,7 +73,7 @@ class _ScriptProcessor:
         if len(self.__lines) <= 0:
             self.__terminated("Cannot convert an empty script file!")
         else:
-            last_label: Optional[str] = None
+            last_label: str | None = None
             # 预处理文件
             for index in range(len(self.__lines)):
                 self.__lines[index] = self.__lines[index].removesuffix("\n")
@@ -146,7 +146,7 @@ class _ScriptProcessor:
                         self.__current_data.character_images.append(_name)
                 # 章节id
                 elif _currentLine.startswith("[id]"):
-                    _id: Optional[str] = self.__extract_parameter(_currentLine, "[id]")
+                    _id: str | None = self.__extract_parameter(_currentLine, "[id]")
                     if _id is not None:
                         self.__id = int(_id)
                     else:
@@ -199,7 +199,7 @@ class _ScriptProcessor:
                     )
                     self.__line_index += 1
                 elif not _currentLine.startswith("[") and ":" in _currentLine:
-                    _narrator: Optional[str] = self.__ensure_not_null(_currentLine.removesuffix(" ").removesuffix(":"))
+                    _narrator: str | None = self.__ensure_not_null(_currentLine.removesuffix(" ").removesuffix(":"))
                     self.__current_data.narrator = _narrator if _narrator is not None else ""
                     # 获取讲述人可能的立绘名称
                     narrator_possible_images: tuple = tuple()
@@ -234,7 +234,7 @@ class _ScriptProcessor:
                             self.__current_data.last = None
                             self.__blocked = False
                         # 生成数据
-                        last_ref: Optional[dict] = self.__output[self.__section].get(self.__last_dialog_id)
+                        last_ref: dict | None = self.__output[self.__section].get(self.__last_dialog_id)
                         if last_ref is not None:
                             if last_ref.get("next_dialog_id") is not None:
                                 last_ref["next_dialog_id"]["target"] = self.__dialog_associate_key[str(self.__line_index)]
@@ -275,7 +275,7 @@ class _ScriptProcessor:
 class ScriptCompiler:
     # 如果输入字符串为None，则将其转换为null
     @staticmethod
-    def __to_str_in_case_null(text: Optional[str]) -> str:
+    def __to_str_in_case_null(text: str | None) -> str:
         return text if text is not None else "null"
 
     # 从有效的视觉小说文件路径中读取信息
@@ -315,7 +315,7 @@ class ScriptCompiler:
         # 初始化视觉小说数据管理模块
         _content: DialogContentManager = DialogContentManager()
         # 获取视觉小说脚本数据
-        dialogs_data: Optional[dict] = Config.load_file(path).get("dialogs")
+        dialogs_data: dict | None = Config.load_file(path).get("dialogs")
         # 如果数据不为空
         if dialogs_data is not None and len(dialogs_data) > 0:
             # 把数据更新到管理模块中

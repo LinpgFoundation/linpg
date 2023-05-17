@@ -19,6 +19,10 @@ class Display:
     __STANDARD_HEIGHT: int = max(int(Setting.get("Resolution", "height")), 1) * __SCALE // 100
     # 信息渲染使用的文字模块
     __FONT: Final[pygame.font.Font] = pygame.font.SysFont("arial", __STANDARD_HEIGHT // 40)
+    # 时间增量
+    __MAX_STEP: Final[int] = 500
+    __TICKS: int = 0
+    __DELTA_TIME: float = __MAX_STEP / 1000
 
     # 帧数
     @classmethod
@@ -28,7 +32,7 @@ class Display:
     # 时间增量
     @classmethod
     def get_delta_time(cls) -> float:
-        return max(cls.__CLOCK.get_fps() / cls.__STANDARD_FPS, 0.5)
+        return cls.__DELTA_TIME
 
     # 更新屏幕
     @classmethod
@@ -50,6 +54,10 @@ class Display:
         # 更新控制器
         Controller.update()
         Controller.mouse.draw_custom_icon(cls.__SCREEN_WINDOW)
+        # 计算新的时间增量
+        new_ticks: int = pygame.time.get_ticks()
+        cls.__DELTA_TIME = max(new_ticks - cls.__TICKS, cls.__MAX_STEP) / 1000
+        cls.__TICKS = new_ticks
 
     # 设置窗口标题
     @staticmethod

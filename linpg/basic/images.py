@@ -1,7 +1,7 @@
 import io
 import zipfile
 
-from PIL import ImageSequence as PILImageSequence  # type: ignore
+from PIL import ImageSequence as PILImageSequence
 
 from .wrapper import *
 

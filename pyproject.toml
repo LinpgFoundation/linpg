@@ -1,3 +1,38 @@
+[build-system]
+requires = [
+    "setuptools>=64",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "linpg"
+version = "3.6.1"
+authors = [
+    {name = "Linpg Foundation", email = "yudong9912@gmail.com"},
+]
+description = "A game engine based on pygame, which aims to make game development easier."
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pygame-ce",
+    "numpy",
+    "opencv-python",
+    "pillow",
+    "PySimpleGUI",
+    "PyYAML",
+    "tcod",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/LinpgFoundation/linpg"
+"Bug Tracker" = "https://github.com/LinpgFoundation/linpg/issues"
+
 [tool.mypy]
 python_version = "3.10"
 # disallow_any_generics = true
@@ -11,9 +46,11 @@ warn_unreachable = true
 line-length = 160
 target-version = ['py310']
 
-[build-system]
-requires = [
-    "setuptools>=59",
-    "wheel"
-]
-build-backend = "setuptools.build_meta"
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*"]
+
+[options.entry_points."pyinstaller40"]
+hook-dirs = "linpg.__pyinstaller:get_hook_dirs"

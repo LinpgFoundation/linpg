@@ -1,6 +1,6 @@
 import os
 
-from linpgtoolbox.builder import Builder, SmartAutoModuleCombineMode  # type: ignore
+from linpgtoolbox.builder import Builder, SmartAutoModuleCombineMode
 
 # 编译源代码
 if not os.path.exists("src") or input("Do you want to recompile everything (Y/n):") == "Y":

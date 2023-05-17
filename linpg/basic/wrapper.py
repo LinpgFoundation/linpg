@@ -9,8 +9,8 @@ import pygame
 import pygame.gfxdraw
 
 # 加载颜色模块
-from PIL import Image as PILImage  # type: ignore
-from PIL import ImageColor as PILImageColor  # type: ignore
+from PIL import Image as PILImage
+from PIL import ImageColor as PILImageColor
 from PIL import ImageFilter as PILImageFilter
 
 from .coordinates import *

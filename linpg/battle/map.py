@@ -1,7 +1,7 @@
 # 尝试导入tcod库
 _TCOD_INITIALIZED: bool = False
 try:
-    import tcod  # type: ignore
+    import tcod
 
     _TCOD_INITIALIZED = True
 except ImportError:

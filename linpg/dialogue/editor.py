@@ -280,12 +280,14 @@ class DialogEditor(AbstractVisualNovelSystem):
             # 移除掉相似的内容
             for section in self._dialog_data_default:
                 for dialogId, defaultDialogData in self._dialog_data_default[section].items():
-                    if dialogId in data_need_save[section]:
+                    section_ref = data_need_save[section]
+                    if dialogId in section_ref:
+                        content_ref: dict = section_ref[dialogId]
                         for dataType in defaultDialogData:
-                            if data_need_save[section][dialogId][dataType] == defaultDialogData[dataType]:
-                                del data_need_save[section][dialogId][dataType]
-                        if len(data_need_save[section][dialogId]) == 0:
-                            del data_need_save[section][dialogId]
+                            if dataType in content_ref and content_ref[dataType] == defaultDialogData[dataType]:
+                                del content_ref[dataType]
+                        if len(content_ref) == 0:
+                            section_ref.pop(dialogId)
         return data_need_save
 
     # 检查是否有任何改动

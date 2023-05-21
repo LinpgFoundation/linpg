@@ -402,8 +402,8 @@ class Snow(Coordinate):
         self.speed: int = speed
 
     def move(self, speed_unit: int) -> None:
-        self.move_left(self.speed * speed_unit)
-        self.move_downward(self.speed * speed_unit)
+        self.move_left(self.speed * speed_unit * Display.get_delta_time_in_ms() // 100)
+        self.move_downward(self.speed * speed_unit * Display.get_delta_time_in_ms() // 100)
 
 
 # 天气系统
@@ -427,7 +427,7 @@ class WeatherSystem:
                 Snow(
                     imgId=Numbers.get_random_int(0, len(self.__img_tuple) - 1),
                     size=Numbers.get_random_int(5, 10),
-                    speed=Numbers.get_random_int(1, 4),
+                    speed=Numbers.get_random_int(1, 30),
                     x=Numbers.get_random_int(1, Display.get_width() * 3 // 2),
                     y=Numbers.get_random_int(1, Display.get_height()),
                 )

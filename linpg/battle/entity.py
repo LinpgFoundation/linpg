@@ -56,7 +56,7 @@ class Entity(Position):
         # 是否无敌
         self.__if_invincible: bool = bool(DATA.get("if_invincible", False))
         # gif图片管理
-        self.__imgId_dict: dict = EntitySpriteImageManager.load(self.__faction, self.__type, mode)
+        self.__imgId_dict: dict[str, dict[str, float]] = EntitySpriteImageManager.load(self.__faction, self.__type, mode)
         # 加载角色的音效
         if (
             mode != "dev"
@@ -72,6 +72,8 @@ class Entity(Position):
         self.__current_image_rect: Rectangle | None = None
         # 是否被选中
         self.__is_selected: bool = False
+        # 移动速率
+        self._move_speed_scale = 0.02
 
     """修改父类的方法"""
 
@@ -211,7 +213,7 @@ class Entity(Position):
 
     # 获取角色特定动作的图片播放ID
     def get_imgId(self, action: str) -> int:
-        action_dict: dict | None = self.__imgId_dict.get(action)
+        action_dict: dict[str, float] | None = self.__imgId_dict.get(action)
         return int(action_dict["imgId"]) if action_dict is not None else -1
 
     # 获取角色特定动作的图片总数量
@@ -219,7 +221,7 @@ class Entity(Position):
         return len(EntitySpriteImageManager.get_images(self.__type, action))
 
     # 设定角色特定动作的图片播放ID
-    def set_imgId(self, action: str, imgId: int) -> None:
+    def set_imgId(self, action: str, imgId: float) -> None:
         self.__imgId_dict[action]["imgId"] = imgId
 
     # 重置角色特定动作的图片播放ID
@@ -227,7 +229,7 @@ class Entity(Position):
         self.set_imgId(action, 0)
 
     # 增加角色特定动作的图片播放ID
-    def add_imgId(self, action: str, amount: int = 1) -> None:
+    def add_imgId(self, action: str, amount: float = 1.0) -> None:
         self.__imgId_dict[action]["imgId"] += amount
 
     # 获取角色特定动作的图片透明度
@@ -387,12 +389,20 @@ class Entity(Position):
             return
         # 获取对应动作的图片管理模块
         _image = EntitySpriteImageManager.get_images(self.__type, action)
-        _image.set_index(self.__imgId_dict[action]["imgId"])
+        _image.set_index(min(int(self.__imgId_dict[action]["imgId"]), self.get_imgNum(action) - 1))
         _image.set_size(size[0], size[1])
         # 把角色图片画到屏幕上
         _image.render(_surface, (pos[0], pos[1]), alpha, self._if_flip, self.__is_selected)
         # 更新角色的rect
         self.__current_image_rect = _image.get_rectangle()
+
+    # 获取当前x轴速度
+    def _get_current_speed_x(self) -> float:
+        return TileMapImagesModule.TILE_SIZE * self._move_speed_scale * Display.get_delta_time()
+
+    # 获取当前y轴速度
+    def _get_current_speed_y(self) -> float:
+        return TileMapImagesModule.TILE_SIZE * self._move_speed_scale * Display.get_delta_time()
 
     # 把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
     def render(self, _surface: ImageSurface, pos: tuple[int, int], size: tuple[int, int], action: str | None = None, alpha: int | None = None) -> None:
@@ -410,22 +420,22 @@ class Entity(Position):
                     need_pop: bool = False
                     self.set_flip_based_on_pos(self.__moving_path[0])
                     if self.x < self.__moving_path[0][0]:
-                        self.set_x(self.x + 0.05)
+                        self.set_x(self.x + self._get_current_speed_x())
                         if self.x >= self.__moving_path[0][0]:
                             self.set_x(self.__moving_path[0][0])
                             need_pop = True
                     elif self.x > self.__moving_path[0][0]:
-                        self.set_x(self.x - 0.05)
+                        self.set_x(self.x - self._get_current_speed_x())
                         if self.x <= self.__moving_path[0][0]:
                             self.set_x(self.__moving_path[0][0])
                             need_pop = True
                     if self.y < self.__moving_path[0][1]:
-                        self.set_y(self.y + 0.05)
+                        self.set_y(self.y + self._get_current_speed_y())
                         if self.y >= self.__moving_path[0][1]:
                             self.set_y(self.__moving_path[0][1])
                             need_pop = True
                     elif self.y > self.__moving_path[0][1]:
-                        self.set_y(self.y - 0.05)
+                        self.set_y(self.y - self._get_current_speed_y())
                         if self.y <= self.__moving_path[0][1]:
                             self.set_y(self.__moving_path[0][1])
                             need_pop = True
@@ -442,7 +452,7 @@ class Entity(Position):
             if not self._if_play_action_in_reversing:
                 # 如果角色图片还没播放完，则增加id by 1
                 if self.__imgId_dict[self.__current_action]["imgId"] < self.get_imgNum(self.__current_action) - 1:
-                    self.__imgId_dict[self.__current_action]["imgId"] += 1
+                    self.__imgId_dict[self.__current_action]["imgId"] += Display.get_delta_time_in_ms() / 20
                 # 如果角色图片播放完需要重新播
                 elif self.__if_action_loop is True:
                     self.__imgId_dict[self.__current_action]["imgId"] = 0
@@ -456,7 +466,7 @@ class Entity(Position):
                     EXCEPTION.fatal(f"The self.__if_action_loop data error: {self.__if_action_loop}")
             # 如果是颠倒播放，但id还未降至0，则减去1
             elif self.__imgId_dict[self.__current_action]["imgId"] > 0:
-                self.__imgId_dict[self.__current_action]["imgId"] -= 1
+                self.__imgId_dict[self.__current_action]["imgId"] -= Display.get_delta_time_in_ms() / 20
             # 如果是颠倒播放，但id已经降至0
             else:
                 self._if_play_action_in_reversing = False
@@ -466,7 +476,7 @@ class Entity(Position):
             self.__render(_surface, pos, size, action, alpha)
             # 调整id，并返回对应的bool状态
             if self.__imgId_dict[action]["imgId"] < self.get_imgNum(action) - 1:
-                self.__imgId_dict[action]["imgId"] += 1
+                self.__imgId_dict[action]["imgId"] += Display.get_delta_time_in_ms() / 20
             # 如果需要循环，则重设播放的index
             else:
                 self.__imgId_dict[action]["imgId"] = 0

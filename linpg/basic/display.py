@@ -20,19 +20,24 @@ class Display:
     # 信息渲染使用的文字模块
     __FONT: Final[pygame.font.Font] = pygame.font.SysFont("arial", __STANDARD_HEIGHT // 40)
     # 时间增量
-    __MAX_STEP: Final[int] = 500
     __TICKS: int = 0
-    __DELTA_TIME: float = __MAX_STEP / 1000
+    __DELTA_TIME_IN_MS: int = 1
+    __DELTA_TIME: float = __DELTA_TIME_IN_MS / 1000
 
     # 帧数
     @classmethod
     def get_fps(cls) -> int:
         return cls.__FPS
 
-    # 时间增量
+    # 时间增量(s)
     @classmethod
     def get_delta_time(cls) -> float:
         return cls.__DELTA_TIME
+
+    # 时间增量(ms)
+    @classmethod
+    def get_delta_time_in_ms(cls) -> int:
+        return cls.__DELTA_TIME_IN_MS
 
     # 更新屏幕
     @classmethod
@@ -40,7 +45,9 @@ class Display:
         Controller.finish_up()
         # 展示帧率信息
         if Debug.get_show_fps():
-            _text: ImageSurface = cls.__FONT.render(str(round(cls.__CLOCK.get_fps())), Setting.get_antialias(), Colors.WHITE)
+            _text: ImageSurface = cls.__FONT.render(
+                f"fps: {round(cls.__CLOCK.get_fps(), 2)} delta time: {round(cls.__DELTA_TIME, 3)}", Setting.get_antialias(), Colors.WHITE
+            )
             cls.__SCREEN_WINDOW.blit(_text, (cls.__STANDARD_WIDTH - cls.__FONT.get_height() - _text.get_width(), cls.__FONT.get_height()))
         # 使用clock进行tick
         cls.__CLOCK.tick(cls.__FPS)
@@ -56,7 +63,8 @@ class Display:
         Controller.mouse.draw_custom_icon(cls.__SCREEN_WINDOW)
         # 计算新的时间增量
         new_ticks: int = pygame.time.get_ticks()
-        cls.__DELTA_TIME = max(new_ticks - cls.__TICKS, cls.__MAX_STEP) / 1000
+        cls.__DELTA_TIME_IN_MS = max(new_ticks - cls.__TICKS, 1)
+        cls.__DELTA_TIME = cls.__DELTA_TIME_IN_MS / 1000
         cls.__TICKS = new_ticks
 
     # 设置窗口标题

@@ -398,11 +398,11 @@ class Entity(Position):
 
     # 获取当前x轴速度
     def _get_current_speed_x(self) -> float:
-        return TileMapImagesModule.TILE_SIZE * self._move_speed_scale * Display.get_delta_time()
+        return TileMapImagesModule.TILE_SIZE * self._move_speed_scale * Display.get_delta_time() / 1000
 
     # 获取当前y轴速度
     def _get_current_speed_y(self) -> float:
-        return TileMapImagesModule.TILE_SIZE * self._move_speed_scale * Display.get_delta_time()
+        return TileMapImagesModule.TILE_SIZE * self._move_speed_scale * Display.get_delta_time() / 1000
 
     # 把角色画到surface上，并操控imgId以跟踪判定下一帧的动画
     def render(self, _surface: ImageSurface, pos: tuple[int, int], size: tuple[int, int], action: str | None = None, alpha: int | None = None) -> None:
@@ -452,7 +452,7 @@ class Entity(Position):
             if not self._if_play_action_in_reversing:
                 # 如果角色图片还没播放完，则增加id by 1
                 if self.__imgId_dict[self.__current_action]["imgId"] < self.get_imgNum(self.__current_action) - 1:
-                    self.__imgId_dict[self.__current_action]["imgId"] += Display.get_delta_time_in_ms() / 20
+                    self.__imgId_dict[self.__current_action]["imgId"] += Display.get_delta_time() / 20
                 # 如果角色图片播放完需要重新播
                 elif self.__if_action_loop is True:
                     self.__imgId_dict[self.__current_action]["imgId"] = 0
@@ -466,7 +466,7 @@ class Entity(Position):
                     EXCEPTION.fatal(f"The self.__if_action_loop data error: {self.__if_action_loop}")
             # 如果是颠倒播放，但id还未降至0，则减去1
             elif self.__imgId_dict[self.__current_action]["imgId"] > 0:
-                self.__imgId_dict[self.__current_action]["imgId"] -= Display.get_delta_time_in_ms() / 20
+                self.__imgId_dict[self.__current_action]["imgId"] -= Display.get_delta_time() / 20
             # 如果是颠倒播放，但id已经降至0
             else:
                 self._if_play_action_in_reversing = False
@@ -476,7 +476,7 @@ class Entity(Position):
             self.__render(_surface, pos, size, action, alpha)
             # 调整id，并返回对应的bool状态
             if self.__imgId_dict[action]["imgId"] < self.get_imgNum(action) - 1:
-                self.__imgId_dict[action]["imgId"] += Display.get_delta_time_in_ms() / 20
+                self.__imgId_dict[action]["imgId"] += Display.get_delta_time() / 20
             # 如果需要循环，则重设播放的index
             else:
                 self.__imgId_dict[action]["imgId"] = 0

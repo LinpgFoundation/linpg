@@ -322,9 +322,9 @@ class DialogBox(AbstractDialogBox):
                 # 如果对话框图片还在放大阶段
                 if self._dialogue_box.height < self._dialogue_box_max_height:
                     self._dialogue_box.set_height(
-                        min(self._dialogue_box.height + self._dialogue_box_max_height / Display.get_delta_time() // 10, self._dialogue_box_max_height)
+                        min(self._dialogue_box.height + self._dialogue_box_max_height * Display.get_delta_time() // 200, self._dialogue_box_max_height)
                     )
-                    self._dialogue_box.move_upward(self._dialogue_box_max_height / Display.get_delta_time() // 20)
+                    self._dialogue_box.move_upward(self._dialogue_box_max_height * Display.get_delta_time() // 400)
                 # 如果已经放大好了，则将文字画到屏幕上
                 else:
                     x: int = _surface.get_width() * 2 // 10
@@ -366,9 +366,9 @@ class DialogBox(AbstractDialogBox):
             else:
                 # 画出对话框图片
                 self._dialogue_box.draw(_surface)
-                height_t: int = self._dialogue_box.height - int(self._dialogue_box_max_height / Display.get_delta_time() / 10)
+                height_t: int = self._dialogue_box.height - int(self._dialogue_box_max_height * Display.get_delta_time() // 200)
                 if height_t > 0:
                     self._dialogue_box.set_height(height_t)
-                    self._dialogue_box.move_downward(self._dialogue_box_max_height // (Display.get_delta_time() * 20))
+                    self._dialogue_box.move_downward(self._dialogue_box_max_height * Display.get_delta_time() // 400)
                 else:
                     self.reset()

@@ -222,17 +222,24 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
     # 淡入或淡出
     def _fade(self, _surface: ImageSurface) -> None:
         if not self.__disable_background_image_rendering:
+            _alpha: int = 0
+            _alpha_max: int = 1275
+            _personal_offset: int = 100
             if self.__is_fading_out is True:
                 Media.fade_out(1000)
-                for i in range(0, 255, 5):
-                    self._black_bg.set_alpha(i)
+                while _alpha <= _alpha_max + _personal_offset:
+                    self.display_background_image(_surface)
+                    self._black_bg.set_alpha(_alpha // 5)
                     self._black_bg.draw(_surface)
+                    _alpha += Display.get_delta_time()
                     Display.flip()
             else:
-                for i in range(255, 0, -5):
+                _alpha = _alpha_max
+                while _alpha >= 0:
                     self.display_background_image(_surface)
-                    self._black_bg.set_alpha(i)
+                    self._black_bg.set_alpha(_alpha // 5)
                     self._black_bg.draw(_surface)
+                    _alpha -= Display.get_delta_time()
                     Display.flip()
                 # 重设black_bg的alpha值以便下一次使用
                 self._black_bg.set_alpha(255)

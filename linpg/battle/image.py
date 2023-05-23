@@ -402,8 +402,8 @@ class Snow(Coordinate):
         self.speed: int = speed
 
     def move(self, speed_unit: int) -> None:
-        self.move_left(self.speed * speed_unit * Display.get_delta_time_in_ms() // 100)
-        self.move_downward(self.speed * speed_unit * Display.get_delta_time_in_ms() // 100)
+        self.move_left(self.speed * speed_unit * Display.get_delta_time() // 100)
+        self.move_downward(self.speed * speed_unit * Display.get_delta_time() // 100)
 
 
 # 天气系统

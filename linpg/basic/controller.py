@@ -169,10 +169,9 @@ class Controller:
     @classmethod
     def get_event(cls, event_type: str) -> bool:
         _result: bool | None = cls.__SPECIFIC_EVENTS.get(event_type)
-        if _result is not None:
-            return _result
-        else:
+        if _result is None:
             EXCEPTION.fatal(f'The event type "{event_type}" is not supported!')
+        return _result
 
     # 完成这一帧的收尾工作
     @classmethod

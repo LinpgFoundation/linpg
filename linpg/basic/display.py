@@ -1,3 +1,4 @@
+import threading
 from datetime import datetime
 
 from .controller import *
@@ -36,6 +37,13 @@ class Display:
     def get_delta_time(cls) -> int:
         return cls.__DELTA_TIME
 
+    # 截图
+    @classmethod
+    def __save_screenshot(cls) -> None:
+        if not os.path.exists(Specification.get_directory("screenshots")):
+            os.mkdir(Specification.get_directory("screenshots"))
+        Images.save(cls.__SCREEN_WINDOW, Specification.get_directory("screenshots", f"{datetime.now().strftime('%Y%m%d%H%M%S')}.png"))
+
     # 更新屏幕
     @classmethod
     def flip(cls) -> None:
@@ -52,9 +60,7 @@ class Display:
         # 如果需要截图
         if Controller.NEED_TO_TAKE_SCREENSHOT is True:
             Controller.NEED_TO_TAKE_SCREENSHOT = False
-            if not os.path.exists(Specification.get_directory("screenshots")):
-                os.mkdir(Specification.get_directory("screenshots"))
-            pygame.image.save(cls.__SCREEN_WINDOW, Specification.get_directory("screenshots", f"{datetime.now().strftime('%Y%m%d%H%M%S')}.png"))
+            threading.Thread(target=cls.__save_screenshot).start()
         # 更新控制器
         Controller.update()
         Controller.mouse.draw_custom_icon(cls.__SCREEN_WINDOW)

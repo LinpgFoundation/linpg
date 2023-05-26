@@ -223,13 +223,11 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
     def _fade(self, _surface: ImageSurface) -> None:
         if not self.__disable_background_image_rendering:
             _alpha: int = 0
-            _alpha_max: int = 1275
-            _personal_offset: int = 100
+            _alpha_max: Final[int] = 1275
             if self.__is_fading_out is True:
                 Media.fade_out(1000)
-                while _alpha <= _alpha_max + _personal_offset:
-                    self.display_background_image(_surface)
-                    self._black_bg.set_alpha(_alpha // 5)
+                while _alpha <= _alpha_max:
+                    self._black_bg.set_alpha(_alpha // 20)
                     self._black_bg.draw(_surface)
                     _alpha += Display.get_delta_time()
                     Display.flip()

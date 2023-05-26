@@ -191,27 +191,27 @@ class DialogBox(AbstractDialogBox):
     class __NextPageIndicatorIcon:
         def __init__(self) -> None:
             self.__status: bool = False
-            self.__x_offset: int = 0
-            self.__y_offset: int = 0
+            self.__x_offset: float = 0
+            self.__y_offset: float = 0
 
         def draw_to(self, _surface: ImageSurface, _x: int, _y: int, _width: int) -> None:
             # 更新坐标数值
             if not self.__status:
-                self.__x_offset += 1
-                self.__y_offset += 1
-                if self.__x_offset >= _width:
+                self.__x_offset += Display.get_delta_time() / 30
+                self.__y_offset += Display.get_delta_time() / 20
+                if self.__y_offset >= _width / 2:
                     self.__status = True
             else:
-                self.__x_offset -= 1
-                self.__y_offset -= 1
-                if self.__x_offset <= 0:
+                self.__x_offset -= Display.get_delta_time() / 30
+                self.__y_offset -= Display.get_delta_time() / 20
+                if self.__y_offset <= 0:
                     self.__status = False
-            final_y: int = _y + self.__y_offset // 4
+            final_y: int = int(_y + self.__y_offset)
             # 渲染
             Draw.polygon(
                 _surface,
                 Colors.WHITE,
-                ((_x + self.__x_offset // 4, final_y), (_x + _width - self.__x_offset // 4, final_y), (_x + _width // 2, final_y + _width)),
+                ((_x + int(self.__x_offset), final_y), (_x + _width - int(self.__x_offset), final_y), (_x + _width // 2, final_y + _width)),
             )
 
     def __init__(self, fontSize: int):
@@ -220,6 +220,8 @@ class DialogBox(AbstractDialogBox):
         self.__contents: list = []
         self.__narrator: str = ""
         self.__text_index: int = 0
+        self.__next_text_index_count: int = 0
+        self.__next_text_index_count_required: int = 10
         self.__displayed_lines: int = 0
         self.__textPlayingSound: Sound | None = None
         if os.path.exists(_path := Specification.get_directory("sound", "ui", "dialog_words_playing.ogg")):
@@ -257,12 +259,14 @@ class DialogBox(AbstractDialogBox):
         if not self.is_all_played():
             self.__displayed_lines = max(len(self.__contents) - 1, 0)
             self.__text_index = max(len(self.__contents[self.__displayed_lines]) - 1, 0)
+            self.__next_text_index_count = self.__next_text_index_count_required
 
     # 更新内容
     def update(self, narrator: str | None, contents: list | None, forceNotResizeDialogueBox: bool = False) -> None:
         self.stop_playing_text_sound()
         # 重设部分参数
         self.__text_index = 0
+        self.__next_text_index_count = 0
         self.__displayed_lines = 0
         self.__total_letters = 0
         self.__read_time = 0
@@ -295,7 +299,7 @@ class DialogBox(AbstractDialogBox):
 
     # 是否需要更新
     def is_update_needed(self) -> bool:
-        return self.__auto_mode is True and self.__read_time >= self.__total_letters
+        return self.__auto_mode is True and self.__read_time >= self.__total_letters * 100
 
     # 如果音效还在播放则停止播放文字音效
     @staticmethod
@@ -327,6 +331,7 @@ class DialogBox(AbstractDialogBox):
                     self._dialogue_box.move_upward(self._dialogue_box_max_height * Display.get_delta_time() // 400)
                 # 如果已经放大好了，则将文字画到屏幕上
                 else:
+                    self._dialogue_box.set_top(self._dialogue_box_max_y)
                     x: int = _surface.get_width() * 2 // 10
                     y: int = _surface.get_height() * 73 // 100
                     # 写上当前讲话人的名字
@@ -349,16 +354,21 @@ class DialogBox(AbstractDialogBox):
                             and self.__textPlayingSound is not None
                         ):
                             LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL.play(self.__textPlayingSound)
-                        self.__text_index += 1
+                        if self.__next_text_index_count < self.__next_text_index_count_required:
+                            self.__next_text_index_count += Display.get_delta_time()
+                        else:
+                            self.__text_index += 1
+                            self.__next_text_index_count = 0
                     # 当前行的所有字都播出后，播出下一行
                     elif self.__displayed_lines < len(self.__contents) - 1:
                         self.__text_index = 0
+                        self.__next_text_index_count = 0
                         self.__displayed_lines += 1
                     # 当所有行都播出后
                     else:
                         self.stop_playing_text_sound()
-                        if self.__auto_mode is True and self.__read_time < self.__total_letters:
-                            self.__read_time += self.__READING_SPEED
+                        if self.__auto_mode is True and self.__read_time < self.__total_letters * 100:
+                            self.__read_time += Display.get_delta_time() * self.__READING_SPEED
                     # 画出翻页指示动态图标
                     _width: int = self.FONT.size * 2 // 3
                     self.__next_page_indicator_icon.draw_to(_surface, self._dialogue_box.right - _width * 4, self._dialogue_box.bottom - _width * 3, _width)

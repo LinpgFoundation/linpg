@@ -16,8 +16,8 @@ class _ScriptProcessor:
         self.__current_data: DialogContent = DialogContent({}, "head")
         self.__id: int = -1
         self.__lang: str = ""
-        self.__section: Optional[str] = None
-        self.__last_dialog_id: Optional[str] = None
+        self.__section: str | None = None
+        self.__last_dialog_id: str | None = None
         self.__lines: list[str] = []
         self.__branch_labels: dict[str, str] = {}
         self.__dialog_associate_key: dict[str, str] = {}
@@ -36,12 +36,12 @@ class _ScriptProcessor:
 
     # 转换一个str
     @staticmethod
-    def __ensure_not_null(text: str) -> Optional[str]:
+    def __ensure_not_null(text: str) -> str | None:
         return None if text.lower() == "null" or text.lower() == "none" else text
 
     # 将参数分离出来
     @classmethod
-    def __extract_parameter(cls, text: str, prefix: str) -> Optional[str]:
+    def __extract_parameter(cls, text: str, prefix: str) -> str | None:
         return cls.__ensure_not_null(cls.__extract_string(text, prefix))
 
     # 将字符串内容分离出来
@@ -52,9 +52,7 @@ class _ScriptProcessor:
 
     # 编译失败
     def __terminated(self, _reason: str) -> NoReturn:
-        EXCEPTION.fatal(
-            'File "{0}", line {1}\n  {2}\nFail to compile due to {3}'.format(self.__path_in, self.__line_index + 1, self.__get_current_line(), _reason)
-        )
+        EXCEPTION.fatal(f'File "{self.__path_in}", line {self.__line_index + 1}\n  {self.__get_current_line()}\nFail to compile due to {_reason}')
 
     # 获取当前行
     def __get_current_line(self) -> str:
@@ -75,7 +73,7 @@ class _ScriptProcessor:
         if len(self.__lines) <= 0:
             self.__terminated("Cannot convert an empty script file!")
         else:
-            last_label: Optional[str] = None
+            last_label: str | None = None
             # 预处理文件
             for index in range(len(self.__lines)):
                 self.__lines[index] = self.__lines[index].removesuffix("\n")
@@ -96,7 +94,7 @@ class _ScriptProcessor:
                         self.__branch_labels[last_label] = self.__dialog_associate_key[str(index)]
                         last_label = None
             if last_label is not None:
-                EXCEPTION.warn("The last label call {} is not necessary!".format(last_label))
+                EXCEPTION.warn(f"The last label call {last_label} is not necessary!")
         self.__convert(0)
         self.__lines.clear()
         # 确保重要参数已被初始化
@@ -148,7 +146,7 @@ class _ScriptProcessor:
                         self.__current_data.character_images.append(_name)
                 # 章节id
                 elif _currentLine.startswith("[id]"):
-                    _id: Optional[str] = self.__extract_parameter(_currentLine, "[id]")
+                    _id: str | None = self.__extract_parameter(_currentLine, "[id]")
                     if _id is not None:
                         self.__id = int(_id)
                     else:
@@ -184,7 +182,7 @@ class _ScriptProcessor:
                 elif _currentLine.startswith("[opt]"):
                     # 确认在接下来的一行有branch的label
                     if not self.__lines[self.__line_index + 1].startswith("[br]"):
-                        self.__terminated("For option on line {}, a branch label is not found on the following line".format(self.__line_index + 1))
+                        self.__terminated(f"For option on line {self.__line_index + 1}, a branch label is not found on the following line")
                     # 如果next_dialog_id没被初始化，则初始化
                     if self.__output[self.__section][self.__last_dialog_id].get("next_dialog_id") is None:
                         self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = {}
@@ -201,7 +199,7 @@ class _ScriptProcessor:
                     )
                     self.__line_index += 1
                 elif not _currentLine.startswith("[") and ":" in _currentLine:
-                    _narrator: Optional[str] = self.__ensure_not_null(_currentLine.removesuffix(" ").removesuffix(":"))
+                    _narrator: str | None = self.__ensure_not_null(_currentLine.removesuffix(" ").removesuffix(":"))
                     self.__current_data.narrator = _narrator if _narrator is not None else ""
                     # 获取讲述人可能的立绘名称
                     narrator_possible_images: tuple = tuple()
@@ -236,7 +234,7 @@ class _ScriptProcessor:
                             self.__current_data.last = None
                             self.__blocked = False
                         # 生成数据
-                        last_ref: Optional[dict] = self.__output[self.__section].get(self.__last_dialog_id)
+                        last_ref: dict | None = self.__output[self.__section].get(self.__last_dialog_id)
                         if last_ref is not None:
                             if last_ref.get("next_dialog_id") is not None:
                                 last_ref["next_dialog_id"]["target"] = self.__dialog_associate_key[str(self.__line_index)]
@@ -248,7 +246,7 @@ class _ScriptProcessor:
                                     "type": "default",
                                 }
                         else:
-                            self.__terminated("KeyError: {}".format(self.__last_dialog_id))
+                            self.__terminated(f"KeyError: {self.__last_dialog_id}")
                     else:
                         self.__current_data.last = None
                     # 添加注释
@@ -269,7 +267,7 @@ class _ScriptProcessor:
     # 保存至
     def save_to(self, out_folder: str) -> None:
         Config.save(
-            os.path.join(out_folder, "chapter{0}_dialogs_{1}.{2}".format(self.__id, self.__lang, Config.get_file_type())),
+            os.path.join(out_folder, f"chapter{self.__id}_dialogs_{self.__lang}.{Config.get_file_type()}"),
             {"dialogs": self.__output, "compiledAt": int(time.time())},
         )
 
@@ -277,7 +275,7 @@ class _ScriptProcessor:
 class ScriptCompiler:
     # 如果输入字符串为None，则将其转换为null
     @staticmethod
-    def __to_str_in_case_null(text: Optional[str]) -> str:
+    def __to_str_in_case_null(text: str | None) -> str:
         return text if text is not None else "null"
 
     # 从有效的视觉小说文件路径中读取信息
@@ -317,13 +315,14 @@ class ScriptCompiler:
         # 初始化视觉小说数据管理模块
         _content: DialogContentManager = DialogContentManager()
         # 获取视觉小说脚本数据
-        dialogs_data: Optional[dict] = Config.load_file(path).get("dialogs")
+        dialogs_data: dict | None = Config.load_file(path).get("dialogs")
         # 如果数据不为空
         if dialogs_data is not None and len(dialogs_data) > 0:
             # 把数据更新到管理模块中
             _content.update(dialogs_data)
             # 用于储存结果的列表
-            _results: list[str] = ["# Fundamental parameters\n[id]{0}\n[lang]{1}\n".format(*cls.extract_info_from_path(path))]
+            _id, _lang = cls.extract_info_from_path(path)
+            _results: list[str] = [f"# Fundamental parameters\n[id]{_id}\n[lang]{_lang}\n"]
 
             for _section in dialogs_data:
                 # 更新视觉小说数据管理模块的当前位置

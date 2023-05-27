@@ -187,7 +187,7 @@ class AdvancedAbstractImageSurface(AbstractImageSurface, SurfaceWithLocalPos):
 class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
     def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = "") -> None:
         super().__init__(img, x, y, width, height, tag=tag)
-        self._processed_img: Optional[ImageSurface] = None
+        self._processed_img: ImageSurface | None = None
         self._need_update: bool = True if self.get_width() >= 0 and self.get_height() >= 0 else False
         self.__is_local_offset_enable: bool = True
 
@@ -233,7 +233,7 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
             self._need_update = True
 
     # 是否被鼠标触碰
-    def is_hovered(self, off_set: Optional[tuple[int, int]] = None) -> bool:
+    def is_hovered(self, off_set: tuple[int, int] | None = None) -> bool:
         if self._processed_img is not None:
             _x: int = self.x + self.local_x
             _y: int = self.y + self.local_y

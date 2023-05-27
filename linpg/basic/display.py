@@ -1,3 +1,4 @@
+import threading
 from datetime import datetime
 
 from .controller import *
@@ -8,8 +9,7 @@ class Display:
     # 帧率控制器
     __CLOCK: Final[pygame.time.Clock] = pygame.time.Clock()
     # 帧率
-    __FPS: int = max(int(Setting.get("FPS")), 1)
-    __STANDARD_FPS: int = 60
+    __MAX_FPS: int = min(max(int(Setting.get("MaxFps")), 30), 1000)
     # 窗口比例
     __SCALE: int = Numbers.keep_int_in_range(int(Setting.get("Resolution", "scale")), 0, 100)
     # 主要的窗口
@@ -19,16 +19,30 @@ class Display:
     __STANDARD_HEIGHT: int = max(int(Setting.get("Resolution", "height")), 1) * __SCALE // 100
     # 信息渲染使用的文字模块
     __FONT: Final[pygame.font.Font] = pygame.font.SysFont("arial", __STANDARD_HEIGHT // 40)
+    # 时间增量
+    __TICKS: int = 0
+    __DELTA_TIME: int = 1
 
     # 帧数
     @classmethod
-    def get_fps(cls) -> int:
-        return cls.__FPS
+    def get_current_fps(cls) -> float:
+        return cls.__CLOCK.get_fps()
 
-    # 时间增量
     @classmethod
-    def get_delta_time(cls) -> float:
-        return max(cls.__CLOCK.get_fps() / cls.__STANDARD_FPS, 0.5)
+    def get_max_fps(cls) -> int:
+        return cls.__MAX_FPS
+
+    # 时间增量(ms)
+    @classmethod
+    def get_delta_time(cls) -> int:
+        return cls.__DELTA_TIME
+
+    # 截图
+    @classmethod
+    def __save_screenshot(cls) -> None:
+        if not os.path.exists(Specification.get_directory("screenshots")):
+            os.mkdir(Specification.get_directory("screenshots"))
+        Images.save(cls.__SCREEN_WINDOW, Specification.get_directory("screenshots", f"{datetime.now().strftime('%Y%m%d%H%M%S')}.png"))
 
     # 更新屏幕
     @classmethod
@@ -36,20 +50,24 @@ class Display:
         Controller.finish_up()
         # 展示帧率信息
         if Debug.get_show_fps():
-            _text: ImageSurface = cls.__FONT.render(str(round(cls.__CLOCK.get_fps())), Setting.get_antialias(), Colors.WHITE)
+            _text: ImageSurface = cls.__FONT.render(
+                f"fps: {round(cls.get_current_fps(), 2)} delta time (ms): {cls.__DELTA_TIME}", Setting.get_antialias(), Colors.WHITE
+            )
             cls.__SCREEN_WINDOW.blit(_text, (cls.__STANDARD_WIDTH - cls.__FONT.get_height() - _text.get_width(), cls.__FONT.get_height()))
         # 使用clock进行tick
-        cls.__CLOCK.tick(cls.__FPS)
+        cls.__CLOCK.tick(cls.__MAX_FPS)
         pygame.display.flip()
         # 如果需要截图
         if Controller.NEED_TO_TAKE_SCREENSHOT is True:
             Controller.NEED_TO_TAKE_SCREENSHOT = False
-            if not os.path.exists("screenshots"):
-                os.mkdir("screenshots")
-            pygame.image.save(cls.__SCREEN_WINDOW, os.path.join("screenshots", "{}.png".format(datetime.now().strftime("%Y%m%d%H%M%S"))))
+            threading.Thread(target=cls.__save_screenshot).start()
         # 更新控制器
         Controller.update()
         Controller.mouse.draw_custom_icon(cls.__SCREEN_WINDOW)
+        # 计算新的时间增量
+        new_ticks: int = pygame.time.get_ticks()
+        cls.__DELTA_TIME = max(new_ticks - cls.__TICKS, 1)
+        cls.__TICKS = new_ticks
 
     # 设置窗口标题
     @staticmethod

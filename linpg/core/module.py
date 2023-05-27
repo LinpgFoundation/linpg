@@ -222,7 +222,7 @@ class GameObject2d(Coordinate):
         return self.centerx, self.bottom
 
     # 是否被鼠标触碰
-    def is_hovered(self, off_set: Optional[tuple[int, int]] = None) -> bool:
+    def is_hovered(self, off_set: tuple[int, int] | None = None) -> bool:
         if off_set is None:
             return Controller.mouse.is_in_rect(self.x, self.y, self.get_width(), self.get_height())
         else:

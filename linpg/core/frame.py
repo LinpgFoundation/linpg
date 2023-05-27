@@ -13,7 +13,7 @@ class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
     def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         super().__init__(None, x, y, width, height, tag=tag)
         # 鼠标触碰bar时的相对坐标
-        self.__mouse_hovered_offset_pos: Optional[tuple[number, number]] = None
+        self.__mouse_hovered_offset_pos: tuple[number, number] | None = None
         # 放大方向
         self.__rescale_directions: dict[str, bool] = {"left": False, "right": False, "top": False, "bottom": False}
         # 是否重新放大窗口
@@ -85,7 +85,7 @@ class AbstractFrame(AdvancedAbstractImageSurface, metaclass=ABCMeta):
         self._if_update_needed = True
 
     # 角落是否被触碰
-    def __is_corner_hovered(self, side1: str, side2: Optional[str] = None) -> bool:
+    def __is_corner_hovered(self, side1: str, side2: str | None = None) -> bool:
         if side2 is None:
             return bool(self.__rescale_directions[side1])
         else:

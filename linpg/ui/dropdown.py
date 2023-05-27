@@ -3,7 +3,7 @@ from .container import *
 
 # 下拉选项菜单
 class DropDownList(GameObjectsDictContainer):
-    def __init__(self, bg_img: Optional[PoI], x: int_f, y: int_f, font_size: int, font_color: color_liked = "black", tag: str = "") -> None:
+    def __init__(self, bg_img: PoI | None, x: int_f, y: int_f, font_size: int, font_color: color_liked = "black", tag: str = "") -> None:
         # 方格高度
         self.__block_height: int = font_size * 3 // 2
         # 是否折叠选项

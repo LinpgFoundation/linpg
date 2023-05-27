@@ -11,7 +11,7 @@ class ButtonText(TextSurface):
         _italic: bool = False,
         alpha_when_not_hover: int = 255,
     ) -> None:
-        self.__text_surface_2: Optional[ImageSurface] = None
+        self.__text_surface_2: ImageSurface | None = None
         self.__alpha_when_not_hover: int = alpha_when_not_hover
         # 初始化文字
         super().__init__(text, 0, 0, size, _color, _bold, _italic)
@@ -102,12 +102,12 @@ class Button(AbstractButton):
         # 是否被触碰的flag
         self.__is_hovered: bool = False
         # 图标
-        self.__icon: Optional[ButtonComponent] = None
+        self.__icon: ButtonComponent | None = None
         # 文字
-        self.__text: Optional[ButtonText] = None
+        self.__text: ButtonText | None = None
         # 描述
         self.__description: str = ""
-        self.__description_surface: Optional[ImageSurface] = None
+        self.__description_surface: ImageSurface | None = None
         # 是否根据component自动改变宽度
         self.__resize_based_on_components: bool = False
         self.__scale_for_resizing_width: number = 1.5
@@ -158,12 +158,12 @@ class Button(AbstractButton):
                 self.set_size(0, 0)
 
     # 设置图标
-    def set_icon(self, _icon: Optional[ButtonComponent] = None) -> None:
+    def set_icon(self, _icon: ButtonComponent | None = None) -> None:
         self.__icon = _icon
         self.__check_if_resize_needed()
 
     # 获取图标
-    def get_icon(self) -> Optional[ButtonComponent]:
+    def get_icon(self) -> ButtonComponent | None:
         return self.__icon
 
     # 获取描述
@@ -180,11 +180,11 @@ class Button(AbstractButton):
         )
 
     # 获取文字
-    def get_text(self) -> Optional[ButtonText]:
+    def get_text(self) -> ButtonText | None:
         return self.__text
 
     # 设置文字
-    def set_text(self, text_surface: Optional[ButtonText] = None) -> None:
+    def set_text(self, text_surface: ButtonText | None = None) -> None:
         self.__text = text_surface
         self.__check_if_resize_needed()
 

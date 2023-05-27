@@ -8,11 +8,11 @@
 
 # :sparkles: About Linpg Engine / 关于Linpg引擎
 
-Linpg Engine is a game engine developed by Linpg Foundation, which aims to standardize the development of pygame games and make the codes easier to read, expand and maintain.
+Linpg Engine is a game engine developed by Linpg Foundation, which aims to standardize the development of Pygame games and make the codes easier to read, expand and maintain.
 
-Linpg Engine is developed with a modular concept. It implements many features which are commonly used in game development. Simultaneously, the Linpg Engine also maintains a high level of compatibility with pygame, making it easy for developers to migrate existing pygame projects to Linpg Engine or using the features which Linpg Engine provides on their own pygame projects.
+Linpg Engine is developed with a modular concept. It implements many features which are commonly used in game development. Simultaneously, the Linpg Engine also maintains a high level of compatibility with Pygame, making it easy for developers to migrate existing Pygame projects to Linpg Engine or use the features which Linpg Engine provides on their own Pygame projects.
 
-We always need your help to make Linpg the best it can be! No matter what your region, culture, belief, or age is, any contributors are welcome!
+We always need your help to make Linpg the best it can be! No matter who you are, any contributors are welcome!
 
 Linpg引擎是Linpg基金会基于pygame库自主研发的游戏引擎，目的是为了规范化pygame游戏的开发，使得游戏代码更加整洁，易读，易扩展，易维护。
 
@@ -40,17 +40,47 @@ Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游
 
 ##### ***感谢这些库的开发者，他（她）们让使用python开发游戏不再遥远。***
 
-\* these libraries will be installed by default as some common features cannot be enabled without these libraries
+\* All these libraries will be installed by default as some common features cannot be enabled without these libraries.
 
 
 
 # :computer:Installation / 安装
+
+### Recommend:
 
 ```
 pip install linpg
 ```
 
 We also highly suggest you download and use [https://github.com/LinpgFoundation/A-story-of-us](https://github.com/LinpgFoundation/A-story-of-us) as your starting point.
+
+### Building From Source:
+
+First, clone this repo:
+
+```
+git clone https://github.com/LinpgFoundation/linpg
+```
+
+(Optional) If you are interested in trying out the latest build, then you should switch to `dev` branch:
+
+```
+git checkout dev
+```
+
+If you have not install linpg-toolbox yet, please do so by using command:
+
+```
+pip install --upgrade linpgtoolbox
+```
+
+Run `builder.py`:
+
+```
+python builder.py
+```
+
+Enjoy!
 
 
 
@@ -165,6 +195,6 @@ https://github.com/LinpgFoundation/linpg/wiki
 
 # :memo: License / 版权说明
 
-Please check LICENSE. (We will use GPL-3.0 after reaching 1k star and open source)
+Please check LICENSE.
 
-版权信息请查看LICENSE文件。（软件达到一千star开源后将使用GPL-3.0）
+版权信息请查看LICENSE文件。

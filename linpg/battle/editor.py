@@ -60,7 +60,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
     # 处理关键数据
     def _process_data(self, _data: dict) -> None:
         # 确保地图初始化
-        _map_p: Optional[list] = _data.get("map")
+        _map_p: list | None = _data.get("map")
         if _map_p is None or len(_map_p) == 0:
             lookup_table: list[str] = ["snow:2", "snow:3", "snow:4", "snow:5", "snow:6", "snow:7"]
             tile_y: int = 50
@@ -115,7 +115,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 self.__envImgContainer.set(key, Images.resize(value, (self.get_map().tile_size / 3, None)))
             else:
                 for i, _ref in enumerate(value):
-                    self.__envImgContainer.set("{0}:{1}".format(key, i), Images.resize(_ref, (self.get_map().tile_size / 3, None)))
+                    self.__envImgContainer.set(f"{key}:{i}", Images.resize(_ref, (self.get_map().tile_size / 3, None)))
         self.__envImgContainer.set_item_per_line(4)
         self.__envImgContainer.set_scroll_bar_pos("right")
         self.__envImgContainer.set_visible(True)
@@ -131,14 +131,14 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 self.__decorationsImgContainer.set(key, Images.resize(value, (self.get_map().tile_size / 3, None)))
             else:
                 for i, _ref in enumerate(value):
-                    self.__decorationsImgContainer.set("{0}:{1}".format(key, i), Images.resize(_ref, (self.get_map().tile_size / 3, None)))
+                    self.__decorationsImgContainer.set(f"{key}:{i}", Images.resize(_ref, (self.get_map().tile_size / 3, None)))
         # 加载自带的装饰物
         for key, value in DecorationImagesModule.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.to_dict().items():
             if not isinstance(value, tuple):
                 self.__decorationsImgContainer.set(key, Images.resize(value, (self.get_map().tile_size / 3, None)))
             else:
                 for i, _ref in enumerate(value):
-                    self.__decorationsImgContainer.set("{0}:{1}".format(key, i), Images.resize(_ref, (self.get_map().tile_size / 3, None)))
+                    self.__decorationsImgContainer.set(f"{key}:{i}", Images.resize(_ref, (self.get_map().tile_size / 3, None)))
         # 设置容器参数
         self.__decorationsImgContainer.set_item_per_line(4)
         self.__decorationsImgContainer.set_scroll_bar_pos("right")
@@ -196,7 +196,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self.__buttons_container.get("remove_colum").set_left(self.__buttons_container.get("remove_row").get_right() + padding)
 
     # 初始化并加载新场景
-    def new(self, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
+    def new(self, chapterType: str, chapterId: int, projectName: str | None = None) -> None:
         self._initialize(chapterType, chapterId, projectName)
         self._process_data(Config.load_file(self.get_data_file_path()))
         self._init_ui()
@@ -225,7 +225,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             elif self._tile_is_hovering is not None:
                 if self._delete_mode is True:
                     # 查看当前位置是否有装饰物
-                    decoration: Optional[DecorationObject] = self.get_map().get_decoration(self._tile_is_hovering)
+                    decoration: DecorationObject | None = self.get_map().get_decoration(self._tile_is_hovering)
                     # 如果发现有冲突的装饰物
                     if decoration is not None:
                         self.get_map().remove_decoration(decoration)

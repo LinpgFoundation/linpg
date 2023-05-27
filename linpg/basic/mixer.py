@@ -10,13 +10,13 @@ class LINPG_RESERVED_CHANNELS:
     __MIXER_CHANNEL_NUM: Final[int] = max(int(Setting.get("NumberOfChannels")), 8) + 3
     # 背景音乐
     __BACKGROUND_MUSIC_CHANNEL_ID: Final[int] = __MIXER_CHANNEL_NUM - 3
-    BACKGROUND_MUSIC_CHANNEL: Optional[SoundChannel] = None
+    BACKGROUND_MUSIC_CHANNEL: SoundChannel | None = None
     # 音效
     __SOUND_EFFECTS_CHANNEL_ID: Final[int] = __MIXER_CHANNEL_NUM - 2
-    SOUND_EFFECTS_CHANNEL: Optional[SoundChannel] = None
+    SOUND_EFFECTS_CHANNEL: SoundChannel | None = None
     # 环境
     __ENVIRONMENTAL_SOUND_CHANNEL_ID: Final[int] = __MIXER_CHANNEL_NUM - 1
-    ENVIRONMENTAL_SOUND_CHANNEL: Optional[SoundChannel] = None
+    ENVIRONMENTAL_SOUND_CHANNEL: SoundChannel | None = None
 
     # 初始化对应频道
     @classmethod
@@ -50,7 +50,7 @@ class Sound(pygame.mixer.Sound):
             self.set_volume(self.__volume)
             self.__init = True
 
-    def play(self, loops: int = 0, max_time: int = 0, fade_ms: int = 0) -> Optional[SoundChannel]:  # type: ignore[override]
+    def play(self, loops: int = 0, max_time: int = 0, fade_ms: int = 0) -> SoundChannel | None:  # type: ignore[override]
         self.__try_init()
         if self.__init is True:
             return super().play(loops, max_time, fade_ms)
@@ -133,7 +133,7 @@ class Sounds:
 
     # 加载音效
     @staticmethod
-    def load(path: str, volume: Optional[float] = None) -> Sound:
+    def load(path: str, volume: float | None = None) -> Sound:
         soundTmp: Sound = Sound(path)
         if volume is not None:
             soundTmp.set_volume(volume)
@@ -141,7 +141,7 @@ class Sounds:
 
     # 从一个视频中加载音效
     @classmethod
-    def load_from_video(cls, path: str, volume: Optional[float] = None, cache_key: Optional[str] = None) -> Sound:
+    def load_from_video(cls, path: str, volume: float | None = None, cache_key: str | None = None) -> Sound:
         # 如果给定了cache_key，则先尝试从缓存中读取音乐文件
         if cache_key is not None and len(cache_key) > 0 and Cache.match(cache_key, path) is True:
             try:
@@ -186,7 +186,7 @@ class Sounds:
 
     # 寻找一个可用的频道
     @classmethod
-    def find_channel(cls, force: bool = False) -> Optional[SoundChannel]:
+    def find_channel(cls, force: bool = False) -> SoundChannel | None:
         return pygame.mixer.find_channel(force) if cls.get_init() is True else None
 
     # 获取频道的数量
@@ -200,7 +200,7 @@ class Sounds:
         if channel_id < cls.get_num_channels():
             return pygame.mixer.Channel(channel_id)
         else:
-            EXCEPTION.fatal('The channel_id "{0}" is out of bound of {1}'.format(channel_id, cls.get_num_channels()))
+            EXCEPTION.fatal(f'The channel_id "{channel_id}" is out of bound of {cls.get_num_channels()}')
 
 
 # 音乐管理

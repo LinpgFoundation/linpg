@@ -9,8 +9,8 @@ import pygame
 import pygame.gfxdraw
 
 # 加载颜色模块
-from PIL import Image as PILImage  # type: ignore
-from PIL import ImageColor as PILImageColor  # type: ignore
+from PIL import Image as PILImage
+from PIL import ImageColor as PILImageColor
 from PIL import ImageFilter as PILImageFilter
 
 from .coordinates import *
@@ -82,7 +82,7 @@ class Numbers:
         elif isinstance(percentage, float):
             return percentage
         else:
-            EXCEPTION.fatal('"{}" is not a valid percentage that can be converted'.format(percentage))
+            EXCEPTION.fatal(f'"{percentage}" is not a valid percentage that can be converted')
 
 
 # 颜色管理
@@ -137,7 +137,7 @@ class Colors:
             try:
                 return cls.__to_rgba_color(PILImageColor.getrgb(color))
             except ValueError:
-                EXCEPTION.fatal('The color "{}" is currently not available!'.format(color))
+                EXCEPTION.fatal(f'The color "{color}" is currently not available!')
         else:
             return cls.__to_rgba_color(color)
 
@@ -282,7 +282,7 @@ class Surfaces:
 
     # 检测图层是否是任何形式的null
     @classmethod
-    def is_not_null(cls, _surface: Optional[ImageSurface]) -> bool:
+    def is_not_null(cls, _surface: ImageSurface | None) -> bool:
         return _surface is not None and _surface is not cls.NULL
 
 
@@ -291,7 +291,7 @@ class Filters:
     # 毛玻璃效果
     @staticmethod
     def glassmorphism_effect(
-        _surface: ImageSurface, _rect: Optional[tuple[int, int, int, int] | tuple[tuple[int, int], tuple[int, int]]] = None, whiteness: int = 10
+        _surface: ImageSurface, _rect: tuple[int, int, int, int] | tuple[tuple[int, int], tuple[int, int]] | None = None, whiteness: int = 10
     ) -> ImageSurface:
         _processed_image: PILImage.Image = PILImage.fromarray(Surfaces.to_array(_surface if _rect is None else _surface.subsurface(_rect))).filter(
             PILImageFilter.GaussianBlur(radius=6)

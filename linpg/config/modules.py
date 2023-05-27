@@ -50,7 +50,7 @@ class Info:
     # 引擎次更新版本号
     __REVISION: Final[int] = 6
     # 引擎补丁版本
-    __PATCH: Final[int] = 0
+    __PATCH: Final[int] = 1
 
     # 确保linpg版本
     @classmethod
@@ -63,12 +63,12 @@ class Info:
             case "<=":
                 return cls.__VERSION <= version and cls.__REVISION <= revision and cls.__PATCH <= patch
             case _:
-                EXCEPTION.fatal('Action "{}" is not supported!'.format(action))
+                EXCEPTION.fatal(f'Action "{action}" is not supported!')
 
     # 获取当前版本号
     @classmethod
     def get_current_version(cls) -> str:
-        return "{0}.{1}.{2}".format(cls.__VERSION, cls.__REVISION, cls.__PATCH)
+        return f"{cls.__VERSION}.{cls.__REVISION}.{cls.__PATCH}"
 
     # 获取github项目地址
     @classmethod
@@ -106,23 +106,23 @@ class Files:
             else:
                 os.remove(path)
 
-    # 为一个文件生产md5值
+    # 为一个文件生成hash值
     @staticmethod
-    def generate_md5(path: str) -> str:
+    def hash(path: str) -> str:
         if os.path.exists(path):
             with open(path, "rb") as f:
-                return hashlib.md5(f.read()).hexdigest()
+                return hashlib.new(Specification.get_str("HashingAlgorithm"), f.read()).hexdigest()
         else:
-            EXCEPTION.fatal("Cannot generate md5 for a file that does not exist in path: {}".format(path))
+            EXCEPTION.fatal(f"Cannot generate {Specification.get_str('HashingAlgorithm')} for a file that does not exist in path: {path}")
 
 
 class Cache:
     # 缓存文件夹路径
     __CACHE_FOLDER: Final[str] = Specification.get_directory("cache")
     # 缓存文件清单路径
-    __CACHE_FILES_DATA_PATH: Final[str] = os.path.join(__CACHE_FOLDER, "files.{}".format(Config.get_file_type()))
+    __CACHE_FILES_DATA_PATH: Final[str] = os.path.join(__CACHE_FOLDER, f"files.{Config.get_file_type()}")
     # 如果缓存文件目录存在, 则加载数据， 否则初始化一个新的空字典
-    __CACHE_FILES_DATA: Final[dict] = Config.load_file(__CACHE_FILES_DATA_PATH) if os.path.exists(__CACHE_FILES_DATA_PATH) else {}
+    __CACHE_FILES_DATA: Final[dict[str, dict]] = Config.try_load_file_if_exists(__CACHE_FILES_DATA_PATH)
 
     # 获取缓存文件夹路径
     @classmethod
@@ -138,14 +138,14 @@ class Cache:
     def new(cls, _key: str, source_file_path: str, target_file_path: str) -> None:
         if _key not in cls.__CACHE_FILES_DATA:
             cls.__CACHE_FILES_DATA[_key] = {
-                "source": {"path": source_file_path, "md5": Files.generate_md5(source_file_path)},
-                "target": {"path": target_file_path, "md5": Files.generate_md5(target_file_path)},
+                "source": {"path": source_file_path, Specification.get_str("HashingAlgorithm"): Files.hash(source_file_path)},
+                "target": {"path": target_file_path, Specification.get_str("HashingAlgorithm"): Files.hash(target_file_path)},
                 "version": Info.get_current_version(),
             }
             # 保存缓存文件的相关数据
             Config.save(cls.__CACHE_FILES_DATA_PATH, cls.__CACHE_FILES_DATA)
         else:
-            EXCEPTION.fatal('The key named "{}" already exists. Please create a new unique one!'.format(_key))
+            EXCEPTION.fatal(f'The key named "{_key}" already exists. Please create a new unique one!')
 
     # 移除
     @classmethod
@@ -161,14 +161,15 @@ class Cache:
     # 对比数据
     @classmethod
     def match(cls, _key: str, source_file_path: str) -> bool:
-        if _key in cls.__CACHE_FILES_DATA:
+        cache_info: dict | None = cls.__CACHE_FILES_DATA.get(_key)
+        if cache_info is not None:
             if (
-                Info.get_current_version() == cls.__CACHE_FILES_DATA[_key]["version"]
+                Info.get_current_version() == cache_info["version"]
                 and os.path.exists(source_file_path)
-                and source_file_path == cls.__CACHE_FILES_DATA[_key]["source"]["path"]
-                and Files.generate_md5(source_file_path) == cls.__CACHE_FILES_DATA[_key]["source"]["md5"]
-                and os.path.exists(cls.__CACHE_FILES_DATA[_key]["target"]["path"])
-                and Files.generate_md5(cls.__CACHE_FILES_DATA[_key]["target"]["path"]) == cls.__CACHE_FILES_DATA[_key]["target"]["md5"]
+                and source_file_path == cache_info["source"]["path"]
+                and Files.hash(source_file_path) == cache_info["source"].get(Specification.get_str("HashingAlgorithm"))
+                and os.path.exists(cache_info["target"]["path"])
+                and Files.hash(cache_info["target"]["path"]) == cache_info["target"].get(Specification.get_str("HashingAlgorithm"))
             ):
                 return True
             else:

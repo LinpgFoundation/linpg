@@ -28,7 +28,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         # 压缩模式
         self.__compress_when_saving: bool = True
         # 存放并管理编辑器上方所有按钮的容器
-        self.__buttons_ui_container: Optional[GameObjectsDictContainer] = None
+        self.__buttons_ui_container: GameObjectsDictContainer | None = None
         # 背景音乐选择 DropDown ui
         self.__dialog_bgm_select: DropDownList = DropDownList(None, 0, 0, 1)
         # 背景图片编辑模块
@@ -41,9 +41,9 @@ class DialogEditor(AbstractVisualNovelSystem):
         # 未保存数据时警告的窗口
         self.__no_save_warning: GameObjectsDictContainer = UI.generate_container("leave_without_saving_warning")
         # 当前选择的背景的名称
-        self.__current_select_bg_name: Optional[str] = None
+        self.__current_select_bg_name: str | None = None
         # 当前选择的背景的复制品
-        self.__current_select_bg_copy: Optional[ImageSurface] = None
+        self.__current_select_bg_copy: ImageSurface | None = None
         # 用于选择小说脚本的key的下拉菜单
         self.__dialog_section_selection: DropDownList = DropDownList(None, 0, 0, 1)
         # 检测并初始化deselect选中的背景
@@ -57,7 +57,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         return self.__dialog_txt_system
 
     # 加载数据
-    def new(self, chapterType: str, chapterId: int, section: str, projectName: Optional[str] = None, dialogId: str = "head") -> None:
+    def new(self, chapterType: str, chapterId: int, section: str, projectName: str | None = None, dialogId: str = "head") -> None:
         # 加载容器
         container_width: int = Display.get_width() // 5
         self.__UIContainerRightImage = Images.load("<&ui>container.png", (container_width, Display.get_height()))
@@ -164,7 +164,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         return original_data
 
     # 更新背景选项栏
-    def _update_background_image(self, image_name: Optional[str]) -> None:
+    def _update_background_image(self, image_name: str | None) -> None:
         super()._update_background_image(image_name)
         if image_name is not None:
             if self.__current_select_bg_name is not None:
@@ -190,7 +190,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         # 加载内容数据
         self._content.clear()
         if os.path.exists(path := self.get_data_file_path()) and "dialogs" in (data_t := Config.load_file(path)):
-            _dialogs: Optional[dict] = data_t.get("dialogs")
+            _dialogs: dict | None = data_t.get("dialogs")
             if _dialogs is not None:
                 self._content.update(_dialogs)
             else:
@@ -229,7 +229,7 @@ class DialogEditor(AbstractVisualNovelSystem):
                     # 如果有，则尝试转换
                     while True:
                         index: int = 0
-                        old_key: Optional[str] = None
+                        old_key: str | None = None
                         key: str = ""
                         for key, value in self._content.get_section_content(section).items():
                             if value["next_dialog_id"] is not None and "target" in value["next_dialog_id"]:
@@ -261,9 +261,9 @@ class DialogEditor(AbstractVisualNovelSystem):
                 else:
                     for key in self._content.get_section_content(section):
                         if not isinstance(key, str):
-                            EXCEPTION.fatal("Key name has to be a string, not {}".format(key))
+                            EXCEPTION.fatal(f"Key name has to be a string, not {key}")
             else:
-                EXCEPTION.fatal("Part name has to be a string, not {}!".format(section))
+                EXCEPTION.fatal(f"Part name has to be a string, not {section}!")
         # 更新场景
         self._update_scene(self._content.get_id())
         # 如果有不同，应该立即保存
@@ -280,12 +280,14 @@ class DialogEditor(AbstractVisualNovelSystem):
             # 移除掉相似的内容
             for section in self._dialog_data_default:
                 for dialogId, defaultDialogData in self._dialog_data_default[section].items():
-                    if dialogId in data_need_save[section]:
+                    section_ref = data_need_save[section]
+                    if dialogId in section_ref:
+                        content_ref: dict = section_ref[dialogId]
                         for dataType in defaultDialogData:
-                            if data_need_save[section][dialogId][dataType] == defaultDialogData[dataType]:
-                                del data_need_save[section][dialogId][dataType]
-                        if len(data_need_save[section][dialogId]) == 0:
-                            del data_need_save[section][dialogId]
+                            if dataType in content_ref and content_ref[dataType] == defaultDialogData[dataType]:
+                                del content_ref[dataType]
+                        if len(content_ref) == 0:
+                            section_ref.pop(dialogId)
         return data_need_save
 
     # 检查是否有任何改动
@@ -353,7 +355,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         self.__update_ui()
 
     # 连接2个dialog node
-    def __make_connection(self, key1: Optional[str], key2: Optional[str], addNode: bool = False) -> None:
+    def __make_connection(self, key1: str | None, key2: str | None, addNode: bool = False) -> None:
         if key1 is not None:
             seniorNodePointer = self._content.get_dialog(_id=key1)["next_dialog_id"]
             if not addNode:
@@ -367,7 +369,7 @@ class DialogEditor(AbstractVisualNovelSystem):
                                 break
                     case _:
                         # 如果当前next_dialog_id的类型不支持的话，报错
-                        EXCEPTION.fatal("Cannot recognize next_dialog_id type: {}, please fix it".format(seniorNodePointer["type"]))
+                        EXCEPTION.fatal(f"Cannot recognize next_dialog_id type: {seniorNodePointer['type']}, please fix it")
                 # 修改下一个对白配置文件中的"last_dialog_id"的参数
                 if key2 is not None:
                     if self._content.get_dialog(_id=key2).get("last_dialog_id") is not None:
@@ -375,7 +377,7 @@ class DialogEditor(AbstractVisualNovelSystem):
                 else:
                     self._content.get_dialog(_id=key1)["next_dialog_id"] = None
         else:
-            EXCEPTION.warn('Fail to make a connection between "{0}" and "{1}".'.format(key1, key2))
+            EXCEPTION.warn(f'Fail to make a connection between "{key1}" and "{key2}".')
 
     # 获取上一个对话的ID
     def __get_last_id(self) -> str:

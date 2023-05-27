@@ -84,7 +84,7 @@ class TileMapImagesModule:
                     _imgTemp.add_darkness(cls.DARKNESS)
                     cls.__ENV_IMAGE_DICT_DARK[_id] = _imgTemp
         else:
-            EXCEPTION.fatal('Cannot find tile map image "{}"'.format(_id))
+            EXCEPTION.fatal(f'Cannot find tile map image "{_id}"')
 
     # 获取图片
     @classmethod
@@ -93,14 +93,14 @@ class TileMapImagesModule:
         _absId: list[str] = _id.split(":")
         # 尝试获取图片
         result: StaticImage | tuple[StaticImage, ...]
-        possible_result: Optional[StaticImage | tuple[StaticImage, ...]] = (
+        possible_result: StaticImage | tuple[StaticImage, ...] | None = (
             cls.__ENV_IMAGE_DICT_DARK.get(_absId[0]) if darkMode is True else cls.__ENV_IMAGE_DICT.get(_absId[0])
         )
         if possible_result is not None:
             result = possible_result
         else:
             if Debug.get_developer_mode():
-                EXCEPTION.inform("Cannot find tile image '{}', we will try to load it for you right now, but please by aware.".format(_id))
+                EXCEPTION.inform(f"Cannot find tile image '{_id}', we will try to load it for you right now, but please by aware.")
             cls.add_image(_absId[0])
             result = cls.__ENV_IMAGE_DICT_DARK[_absId[0]] if darkMode is True else cls.__ENV_IMAGE_DICT[_absId[0]]
         return result if not isinstance(result, tuple) else result[0 if len(_absId) <= 1 else int(_absId[1])]
@@ -137,9 +137,9 @@ class DecorationImagesModule:
     # 获取当前装饰物种类的数量
     @classmethod
     def count_variations(cls, _type: str) -> int:
-        _ref: Optional[StaticImage | tuple[StaticImage, ...]] = cls.__DECORATION_IMAGE_DICT.get(_type)
+        _ref: StaticImage | tuple[StaticImage, ...] | None = cls.__DECORATION_IMAGE_DICT.get(_type)
         if _ref is None:
-            EXCEPTION.fatal('Cannot find decoration image "{}"'.format(_type))
+            EXCEPTION.fatal(f'Cannot find decoration image "{_type}"')
         return len(_ref) if isinstance(_ref, tuple) else 1
 
     # 加载场景装饰物图片
@@ -148,7 +148,7 @@ class DecorationImagesModule:
         # 确保初始化
         cls.init()
         # 查看图片是否在自带或自定义的SPRITE SHEET中存在，不存在则为None
-        sheet_ref: Optional[SpriteImage] = (
+        sheet_ref: SpriteImage | None = (
             cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET
             if cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.contain(_type)
             else cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET
@@ -180,7 +180,7 @@ class DecorationImagesModule:
                     _imgTemp.add_darkness(TileMapImagesModule.DARKNESS)
                     cls.__DECORATION_IMAGE_DICT_DARK[_type] = _imgTemp
         else:
-            EXCEPTION.fatal('Cannot find decoration image "{}"'.format(_type))
+            EXCEPTION.fatal(f'Cannot find decoration image "{_type}"')
 
     # 获取图片
     @classmethod
@@ -189,14 +189,14 @@ class DecorationImagesModule:
         _absId: list[str] = _id.split(":")
         # 尝试获取图片
         result: StaticImage | tuple[StaticImage, ...]
-        possible_result: Optional[StaticImage | tuple[StaticImage, ...]] = (
+        possible_result: StaticImage | tuple[StaticImage, ...] | None = (
             cls.__DECORATION_IMAGE_DICT_DARK.get(_absId[0]) if darkMode is True else cls.__DECORATION_IMAGE_DICT.get(_absId[0])
         )
         if possible_result is not None:
             result = possible_result
         else:
             if Debug.get_developer_mode():
-                EXCEPTION.inform("Cannot find decoration image '{}', we will try to load it for you right now, but please by aware.".format(_id))
+                EXCEPTION.inform(f"Cannot find decoration image '{_id}', we will try to load it for you right now, but please by aware.")
             cls.add_image(_absId[0])
             result = cls.__DECORATION_IMAGE_DICT_DARK[_absId[0]] if darkMode is True else cls.__DECORATION_IMAGE_DICT[_absId[0]]
         return result if not isinstance(result, tuple) else result[0 if len(_absId) <= 1 else int(_absId[1])]
@@ -305,7 +305,7 @@ class EntitySpriteImageManager:
                 img_list: list[str] = glob(os.path.join(_action_folder_path, "*.png"))
                 if len(img_list) > 0:
                     img_list.sort(key=lambda f: int("".join(filter(str.isdigit, f))))
-                    _image: Optional[ImageSurface] = None
+                    _image: ImageSurface | None = None
                     # 加载所有图片
                     for _path in img_list:
                         # 加载单个图片
@@ -402,8 +402,8 @@ class Snow(Coordinate):
         self.speed: int = speed
 
     def move(self, speed_unit: int) -> None:
-        self.move_left(self.speed * speed_unit)
-        self.move_downward(self.speed * speed_unit)
+        self.move_left(self.speed * speed_unit * Display.get_delta_time() // 100)
+        self.move_downward(self.speed * speed_unit * Display.get_delta_time() // 100)
 
 
 # 天气系统
@@ -427,7 +427,7 @@ class WeatherSystem:
                 Snow(
                     imgId=Numbers.get_random_int(0, len(self.__img_tuple) - 1),
                     size=Numbers.get_random_int(5, 10),
-                    speed=Numbers.get_random_int(1, 4),
+                    speed=Numbers.get_random_int(1, 30),
                     x=Numbers.get_random_int(1, Display.get_width() * 3 // 2),
                     y=Numbers.get_random_int(1, Display.get_height()),
                 )

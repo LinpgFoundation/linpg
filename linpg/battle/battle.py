@@ -8,8 +8,8 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 用于判断是否移动屏幕的参数
         self.__mouse_move_temp_x: int = -1
         self.__mouse_move_temp_y: int = -1
-        self._screen_to_move_speed_x: Optional[int] = None
-        self._screen_to_move_speed_y: Optional[int] = None
+        self._screen_to_move_speed_x: int | None = None
+        self._screen_to_move_speed_y: int | None = None
         # 用于检测是否有方向键被按到的字典
         self.__moving_screen_in_direction_up: bool = False
         self.__moving_screen_in_direction_down: bool = False
@@ -18,13 +18,13 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 角色数据
         self._entities_data: dict[str, dict[str, Entity]] = {}
         # 地图数据
-        self.__map: Optional[AbstractTileMap] = None
+        self.__map: AbstractTileMap | None = None
         # 方格标准尺寸
         self._standard_tile_size: int = Display.get_width() // 10
         # 天气系统
         self._weather_system: WeatherSystem = WeatherSystem()
         # 当前鼠标位置上的tile块
-        self._tile_is_hovering: Optional[tuple[int, int]] = None
+        self._tile_is_hovering: tuple[int, int] | None = None
 
     # 渲染出所有的entity - 子类需实现
     @abstractmethod
@@ -38,7 +38,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
 
     # 初始化并加载新场景 - 子类需实现
     @abstractmethod
-    def new(self, chapterType: str, chapterId: int, projectName: Optional[str] = None) -> None:
+    def new(self, chapterType: str, chapterId: int, projectName: str | None = None) -> None:
         EXCEPTION.fatal("new()", 1)
 
     # 获取地图
@@ -66,9 +66,9 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
     # 获取地图文件所在的具体路径
     def get_data_file_path(self) -> str:
         return (
-            os.path.join("Data", self._chapter_type, "chapter{0}_map.{1}".format(self._chapter_id, Config.get_file_type()))
+            os.path.join("Data", self._chapter_type, f"chapter{self._chapter_id}_map.{Config.get_file_type()}")
             if self._project_name is None
-            else os.path.join("Data", self._chapter_type, self._project_name, "chapter{0}_map.{1}".format(self._chapter_id, Config.get_file_type()))
+            else os.path.join("Data", self._chapter_type, self._project_name, f"chapter{self._chapter_id}_map.{Config.get_file_type()}")
         )
 
     # 返回需要保存数据
@@ -93,9 +93,6 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
                 self.__moving_screen_in_direction_left = True
             case Keys.ARROW_RIGHT:
                 self.__moving_screen_in_direction_right = True
-            case _:
-                if event.unicode == "p":
-                    self.get_map().dev_mode()
 
     # 检测按键回弹的事件
     def _check_key_up(self, event: PG_Event) -> None:

@@ -129,17 +129,17 @@ class Console(SingleLineInputBox, Hidable, threading.Thread):
             case "getgv":
                 if command_blocks[1] == "*":
                     for key in GlobalVariables.keys():
-                        self._txt_output.append("{0}: {1}".format(key, GlobalVariables.try_get(key, _deepcopy=False)))
+                        self._txt_output.append(f"{key}: {GlobalVariables.try_get(key, _deepcopy=False)}")
                 else:
                     gv_keys: list = command_blocks[1 : len(command_blocks) - 1]
-                    self._txt_output.append("{0}: {1}".format(gv_keys, GlobalVariables.try_get(*gv_keys, _deepcopy=False)))
+                    self._txt_output.append(f"{gv_keys}: {GlobalVariables.try_get(*gv_keys, _deepcopy=False)}")
             case "getpv":
                 if command_blocks[1] == "*":
                     for key in PersistentVariables.keys():
-                        self._txt_output.append("{0}: {1}".format(key, PersistentVariables.try_get(key, _deepcopy=False)))
+                        self._txt_output.append(f"{key}: {PersistentVariables.try_get(key, _deepcopy=False)}")
                 else:
                     pv_keys: list = command_blocks[1 : len(command_blocks) - 1]
-                    self._txt_output.append("{0}: {1}".format(pv_keys, PersistentVariables.try_get(*pv_keys, _deepcopy=False)))
+                    self._txt_output.append(f"{pv_keys}: {PersistentVariables.try_get(*pv_keys, _deepcopy=False)}")
             case "dev":
                 if len(command_blocks) < 2:
                     self._txt_output.append("Unknown status for dev command.")
@@ -160,7 +160,7 @@ class Console(SingleLineInputBox, Hidable, threading.Thread):
                         case _:
                             self._txt_output.append("Unknown status for dev command.")
             case "linpg":
-                self._txt_output.append("Linpg Version: {}".format(Info.get_current_version()))
+                self._txt_output.append(f"Linpg Version: {Info.get_current_version()}")
             case "quit":
                 from sys import exit
 

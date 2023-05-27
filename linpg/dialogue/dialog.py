@@ -11,15 +11,15 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         # 加载对话框系统
         self.__dialog_txt_system: DialogBox = DialogBox(self._FONT_SIZE)
         # UI按钮
-        self.__buttons_container: Optional[GameObjectsDictContainer] = None
+        self.__buttons_container: GameObjectsDictContainer | None = None
         # 是否要显示历史对白页面
         self.__is_showing_history: bool = False
         self.__history_bg_surface: ImageSurface = Surfaces.colored(Display.get_size(), Colors.BLACK)
         self.__history_bg_surface.set_alpha(150)
-        self.__history_text_surface: Optional[ImageSurface] = None
+        self.__history_text_surface: ImageSurface | None = None
         self.__history_surface_local_y: int = 0
         # 展示历史界面-返回按钮
-        self.__history_back: Optional[Button] = None
+        self.__history_back: Button | None = None
         # 是否取消背景渲染
         self.__disable_background_image_rendering: bool = False
         # 初始化音量
@@ -82,7 +82,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         self.__dialog_options.update(_data.get("dialog_options", {}))
 
     # 新读取章节
-    def new(self, chapterType: str, chapterId: int, section: str, projectName: Optional[str] = None, dialogId: str = "head") -> None:
+    def new(self, chapterType: str, chapterId: int, section: str, projectName: str | None = None, dialogId: str = "head") -> None:
         super().new(chapterType, chapterId, section, projectName, dialogId)
         # 初始化重要ui组件
         if not self.__disable_background_image_rendering:
@@ -94,7 +94,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         if dialog_id in self._content.get_section_content():
             super()._update_scene(dialog_id)
         else:
-            EXCEPTION.fatal("The dialog id {} does not exist!".format(dialog_id))
+            EXCEPTION.fatal(f"The dialog id {dialog_id} does not exist!")
 
     # 更新音量
     def _update_sound_volume(self) -> None:
@@ -147,7 +147,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
                     self.stop()
                 # 非法type
                 case _:
-                    EXCEPTION.fatal('Current dialog "{}" has a valid next type.'.format(self._content.current.id))
+                    EXCEPTION.fatal(f'Current dialog "{self._content.current.id}" has a valid next type.')
 
     def __check_button_event(self, _surface: ImageSurface) -> bool:
         if self.__buttons_container is not None:
@@ -222,17 +222,22 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
     # 淡入或淡出
     def _fade(self, _surface: ImageSurface) -> None:
         if not self.__disable_background_image_rendering:
+            _alpha: int = 0
+            _alpha_max: Final[int] = 1275
             if self.__is_fading_out is True:
                 Media.fade_out(1000)
-                for i in range(0, 255, 5):
-                    self._black_bg.set_alpha(i)
+                while _alpha <= _alpha_max:
+                    self._black_bg.set_alpha(_alpha // 20)
                     self._black_bg.draw(_surface)
+                    _alpha += Display.get_delta_time()
                     Display.flip()
             else:
-                for i in range(255, 0, -5):
+                _alpha = _alpha_max
+                while _alpha >= 0:
                     self.display_background_image(_surface)
-                    self._black_bg.set_alpha(i)
+                    self._black_bg.set_alpha(_alpha // 5)
                     self._black_bg.draw(_surface)
+                    _alpha -= Display.get_delta_time()
                     Display.flip()
                 # 重设black_bg的alpha值以便下一次使用
                 self._black_bg.set_alpha(255)
@@ -296,7 +301,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
                 dialogIdTemp: str = "head"
                 local_y: int = self.__history_surface_local_y
                 while True:
-                    narratorTxt: Optional[str] = self._content.get_dialog(_id=dialogIdTemp).get("narrator")
+                    narratorTxt: str | None = self._content.get_dialog(_id=dialogIdTemp).get("narrator")
                     has_narrator: bool = narratorTxt is not None and len(narratorTxt) > 0
                     if has_narrator:
                         narratorTemp = self.__dialog_txt_system.FONT.render(narratorTxt + ":", Colors.WHITE)  # type: ignore

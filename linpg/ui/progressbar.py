@@ -70,9 +70,9 @@ class SimpleRectPointsBar(AbstractProgressBar):
     def set_color(
         self,
         front_color: color_liked,
-        back_color: Optional[color_liked] = None,
-        outline_color: Optional[color_liked] = None,
-        font_color: Optional[color_liked] = None,
+        back_color: color_liked | None = None,
+        outline_color: color_liked | None = None,
+        font_color: color_liked | None = None,
     ) -> None:
         self.__front_color = Colors.get(front_color)
         if back_color is not None:
@@ -101,19 +101,19 @@ class SimpleRectPointsBar(AbstractProgressBar):
             bar_rect.set_left(original_x - 1)
             bar_rect.draw_outline(_surface, self.__outline_color)
             # 渲染数值文字并画出
-            _text: ImageSurface = self.__FONT.render("{0} / {1}".format(self.__current_point, self.__max_point), self.__font_color)
+            _text: ImageSurface = self.__FONT.render(f"{self.__current_point} / {self.__max_point}", self.__font_color)
             _surface.blit(_text, (bar_rect.x + (bar_rect.width - _text.get_width()) // 2, bar_rect.y + (bar_rect.height - _text.get_height()) // 2))
 
 
 # 进度条Surface
 class ProgressBarSurface(AbstractProgressBar):
     def __init__(
-        self, imgOnTop: Optional[PoI], imgOnBottom: Optional[PoI], x: int_f, y: int_f, max_width: int, height: int, mode: Axis = Axis.HORIZONTAL, tag: str = ""
+        self, imgOnTop: PoI | None, imgOnBottom: PoI | None, x: int_f, y: int_f, max_width: int, height: int, mode: Axis = Axis.HORIZONTAL, tag: str = ""
     ) -> None:
         if imgOnTop is not None:
             imgOnTop = Images.quickly_load(imgOnTop)
         super().__init__(imgOnTop, x, y, max_width, height, tag)
-        self._img2: Optional[ImageSurface] = Images.quickly_load(imgOnBottom) if imgOnBottom is not None else None
+        self._img2: ImageSurface | None = Images.quickly_load(imgOnBottom) if imgOnBottom is not None else None
         # 模式
         self.axis_mode: Axis = mode
 
@@ -144,8 +144,8 @@ class ProgressBarSurface(AbstractProgressBar):
 class ProgressBarAdjuster(ProgressBarSurface):
     def __init__(
         self,
-        imgOnTop: Optional[PoI],
-        imgOnBottom: Optional[PoI],
+        imgOnTop: PoI | None,
+        imgOnBottom: PoI | None,
         indicator_img: PoI,
         x: int_f,
         y: int_f,
@@ -204,7 +204,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
 
 # 动态进度条Surface
 class DynamicProgressBarSurface(ProgressBarSurface):
-    def __init__(self, imgOnTop: Optional[PoI], imgOnBottom: Optional[PoI], x: int_f, y: int_f, max_width: int, height: int, mode: Axis = Axis.HORIZONTAL):
+    def __init__(self, imgOnTop: PoI | None, imgOnBottom: PoI | None, x: int_f, y: int_f, max_width: int, height: int, mode: Axis = Axis.HORIZONTAL):
         super().__init__(imgOnTop, imgOnBottom, x, y, max_width, height, mode)
         self._percentage_to_be: float = 0.0
         self.__percent_update_each_time: float = 0.0

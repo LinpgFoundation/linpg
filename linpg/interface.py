@@ -35,7 +35,7 @@ class Loader:
         elif isinstance(gif_path_or_img_list, Sequence):
             imgList = [StaticImage(surf, 0, 0, size[0], size[1]) for surf in gif_path_or_img_list]
         else:
-            EXCEPTION.fatal('Invalid input for "gif_path_or_img_list": {}'.format(gif_path_or_img_list))
+            EXCEPTION.fatal(f'Invalid input for "gif_path_or_img_list": {gif_path_or_img_list}')
         return AnimatedImage(tuple(imgList), _position[0], _position[1], size[0], size[1], updateGap)
 
     @staticmethod

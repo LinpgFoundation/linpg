@@ -5,7 +5,7 @@ from .generator import *
 class AbstractInternalMenu(Hidable, metaclass=ABCMeta):
     def __init__(self, menu_name: str) -> None:
         super().__init__(False)
-        self._CONTENT: Optional[GameObjectsDictContainer] = None
+        self._CONTENT: GameObjectsDictContainer | None = None
         self._initialized: bool = False
         self._menu_name: str = menu_name
 
@@ -27,7 +27,7 @@ class AbstractInternalMenu(Hidable, metaclass=ABCMeta):
 # 警告确认窗口
 class ConfirmationWarningWindow(AbstractInternalMenu):
     @property
-    def item_being_hovered(self) -> Optional[str]:
+    def item_being_hovered(self) -> str | None:
         return self._CONTENT.item_being_hovered if self._CONTENT is not None else None
 
 
@@ -235,7 +235,7 @@ class SaveOrLoadSelectedProgressMenu(Hidable):
     def get_selected_slot(self) -> int:
         return self.__slotId
 
-    def get_selected_save(self) -> Optional[Saves.Progress]:
+    def get_selected_save(self) -> Saves.Progress | None:
         return self.__saves.get(self.__slotId)
 
     # 渲染切换页面的两侧按钮
@@ -292,7 +292,7 @@ class SaveOrLoadSelectedProgressMenu(Hidable):
                 _rect: Rectangle = Rectangle(0, 0, rect_width, rect_height)
                 self.__process_page_switching(_surface)
                 # 渲染页码
-                pageIdText: ImageSurface = Font.render("- {} -".format(self.__page_id), Colors.GRAY, row_padding // 2)
+                pageIdText: ImageSurface = Font.render(f"- {self.__page_id} -", Colors.GRAY, row_padding // 2)
                 _surface.blit(
                     pageIdText,
                     ((_surface.get_width() - pageIdText.get_width()) // 2, _surface.get_height() - row_padding + (row_padding - pageIdText.get_height()) // 2),
@@ -303,12 +303,12 @@ class SaveOrLoadSelectedProgressMenu(Hidable):
                         _rect.set_pos(colum_padding + (colum_padding + rect_width) * _x, row_padding + (row_padding + rect_height) * _y)
                         _slotId: int = (self.__page_id - 1) * self.colum * self.colum + _y * self.colum + _x
                         _rect.draw_outline(_surface, Colors.GRAY, 0)
-                        _file: Optional[Saves.Progress] = self.__saves.get(_slotId)
+                        _file: Saves.Progress | None = self.__saves.get(_slotId)
                         if _file is not None:
                             _img_height: int = int(_rect.get_height() * 0.8)
                             _surface.blit(Images.smoothly_resize_and_crop_to_fit(_file.screenshot, (_rect.get_width(), _img_height)), _rect.get_pos())
                             _createdAt: ImageSurface = Font.render(
-                                "{0} - Chapter {1}".format(_file.createdAt, _file.data.get("chapter_id")), Colors.WHITE, (_rect.get_height() - _img_height) // 2
+                                f"{_file.createdAt} - Chapter {_file.data.get('chapter_id')}", Colors.WHITE, (_rect.get_height() - _img_height) // 2
                             )
                             _surface.blit(
                                 _createdAt,
@@ -333,7 +333,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
     def __init__(self) -> None:
         super().__init__("")
         # 暂停菜单
-        self.__pause_menu: Optional[PauseMenu] = None
+        self.__pause_menu: PauseMenu | None = None
         # 存档选择
         self.__select_progress_menu: SaveOrLoadSelectedProgressMenu = SaveOrLoadSelectedProgressMenu()
         # 是保存进程还是读取存档
@@ -417,7 +417,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
                             self.__select_progress_menu.set_visible(True)
                         # 读取存档
                         else:
-                            _save: Optional[Saves.Progress] = self.__select_progress_menu.get_selected_save()
+                            _save: Saves.Progress | None = self.__select_progress_menu.get_selected_save()
                             if _save is not None:
                                 self.__close_menus()
                                 self.load_progress(_save.data)

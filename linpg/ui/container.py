@@ -3,7 +3,7 @@ from .button import *
 
 # Container抽象
 class AbstractGameObjectsContainer(AbstractImageSurface, metaclass=ABCMeta):
-    def __init__(self, bg_img: Optional[PoI], x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
+    def __init__(self, bg_img: PoI | None, x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
         super().__init__(StaticImage(bg_img, 0, 0, width, height) if bg_img is not None else None, x, y, width, height, tag)
 
     # 获取物品container容器（子类需实现）
@@ -43,12 +43,12 @@ class AbstractGameObjectsContainer(AbstractImageSurface, metaclass=ABCMeta):
 
 # 使用Dict储存游戏对象的容器，类似html的div
 class GameObjectsDictContainer(AbstractGameObjectsContainer):
-    def __init__(self, bg_img: Optional[PoI], x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
+    def __init__(self, bg_img: PoI | None, x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
         super().__init__(bg_img, x, y, width, height, tag=tag)
         self.__items_container_dict: dict = {}
-        self._item_being_hovered: Optional[str] = None
+        self._item_being_hovered: str | None = None
 
-    def __setitem__(self, key: str, new_item: Optional[object]) -> None:
+    def __setitem__(self, key: str, new_item: object | None) -> None:
         self.__items_container_dict[key] = new_item
 
     def __getitem__(self, key: str) -> Any:
@@ -58,7 +58,7 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
         return len(self.__items_container_dict)
 
     @property
-    def item_being_hovered(self) -> Optional[str]:
+    def item_being_hovered(self) -> str | None:
         return self._item_being_hovered
 
     # 获取物品合集
@@ -70,7 +70,7 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
         return tuple(self.__items_container_dict.keys())
 
     # 新增一个物品
-    def set(self, key: str, new_item: Optional[object]) -> None:
+    def set(self, key: str, new_item: object | None) -> None:
         self.__items_container_dict[key] = new_item
 
     # 获取一个物品
@@ -116,7 +116,7 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
 
 # 使用List储存游戏对象的容器，类似html的div
 class GameObjectsListContainer(AbstractGameObjectsContainer):
-    def __init__(self, bg_img: Optional[PoI], x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
+    def __init__(self, bg_img: PoI | None, x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
         super().__init__(bg_img, x, y, width, height, tag=tag)
         self.__items_container_list: list = []
         self._item_being_hovered: int = -1
@@ -124,7 +124,7 @@ class GameObjectsListContainer(AbstractGameObjectsContainer):
     def __getitem__(self, index: int) -> Any:
         return self.__items_container_list[index]
 
-    def __setitem__(self, index: int, new_item: Optional[object]) -> None:
+    def __setitem__(self, index: int, new_item: object | None) -> None:
         self.__items_container_list[index] = new_item
 
     def __len__(self) -> int:
@@ -139,7 +139,7 @@ class GameObjectsListContainer(AbstractGameObjectsContainer):
         return self.__items_container_list
 
     # 新增一个物品
-    def append(self, new_item: Optional[object]) -> None:
+    def append(self, new_item: object | None) -> None:
         self.__items_container_list.append(new_item)
 
     # 交换2个key名下的图片

@@ -1,7 +1,7 @@
 # 尝试导入tcod库
 _TCOD_INITIALIZED: bool = False
 try:
-    import tcod  # type: ignore
+    import tcod
 
     _TCOD_INITIALIZED = True
 except ImportError:
@@ -12,9 +12,6 @@ from .entity import *
 
 # 地图模块
 class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
-    # 开发者使用的窗口
-    __debug_win: Optional[RenderedWindow] = None
-    __debug_win_unit: Final[int] = 10
     # 获取方块数据库
     __TILES_DATABASE: Final[dict] = DataBase.get("Tiles")
     # 获取场景装饰物数据库
@@ -34,13 +31,13 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         # 列
         self.__column: int = 0
         # 地图渲染用的图层
-        self.__map_surface: Optional[ImageSurface] = None
+        self.__map_surface: ImageSurface | None = None
         # 地图旧图层以渲染渐变效果
-        self.__map_surface_old: Optional[ImageSurface] = None
+        self.__map_surface_old: ImageSurface | None = None
         # 不要保存地图旧图层
         self.__don_save_old_map_surface_for_next_update: bool = False
         # 背景图片
-        self.__background_image: Optional[StaticImage] = None
+        self.__background_image: StaticImage | None = None
         # 使用一个hashmap以加速根据坐标寻找装饰物
         self.__decorations: dict[str, DecorationObject] = {}
         # 处于光处的区域
@@ -97,7 +94,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         for _decoration in _data["decoration"]:
             self.add_decoration(_decoration)
         # 背景图片路径
-        theBgiPath: Optional[str] = _data.get("background_image")
+        theBgiPath: str | None = _data.get("background_image")
         # 背景图片
         self.__background_image = (
             StaticImage(Images.quickly_load(Specification.get_directory("background_image", theBgiPath), False), 0, 0) if theBgiPath is not None else None
@@ -186,7 +183,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
     # 是否角色能通过该方块
     def is_passable(self, _x: int, _y: int) -> bool:
         if bool(self.__TILES_DATABASE[self.get_tile(_x, _y).split(":")[0]]["passable"]) is True:
-            _decoration: Optional[DecorationObject] = self.__decorations.get(self.__get_coordinate_format_key((_x, _y)))
+            _decoration: DecorationObject | None = self.__decorations.get(self.__get_coordinate_format_key((_x, _y)))
             return _decoration is None or bool(self.__DECORATION_DATABASE[_decoration.type]["passable"])
         return False
 
@@ -194,20 +191,8 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
     def get_local_pos_in_percentage(self) -> dict[str, str]:
         return {"local_x": str(round(self.local_x * 100 / self.get_width(), 5)) + "%", "local_y": str(round(self.local_y * 100 / self.get_height(), 5)) + "%"}
 
-    # 开发者模式
-    def dev_mode(self) -> None:
-        if self.__debug_win is None:
-            self.__debug_win = RenderedWindow(
-                self.__row * self.__debug_win_unit + self.__debug_win_unit * (self.__row + 1) // 4,
-                self.__column * self.__debug_win_unit + self.__debug_win_unit * (self.__row + 1) // 4,
-                "debug window",
-                True,
-            )
-        else:
-            self.__debug_win = None
-
     # 根据坐标寻找装饰物
-    def get_decoration(self, pos: object) -> Optional[DecorationObject]:
+    def get_decoration(self, pos: object) -> DecorationObject | None:
         return self.__decorations.get(self.__get_coordinate_format_key(Coordinates.convert(pos)))
 
     # 新增装饰物
@@ -314,22 +299,6 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
                         break
                 if self.calculate_position(0, y + 1)[1] >= _surface.get_height():
                     break
-        # 显示调试窗口
-        if self.__debug_win is not None and not self.__need_to_recheck_tile_on_surface:
-            self.__debug_win.clear()
-            self.__debug_win.fill(Colors.BLACK)
-            start_x: int
-            start_y: int
-            for y in range(len(self.__tile_on_surface)):
-                for x in range(len(self.__tile_on_surface[y])):
-                    start_x = int(x * self.__debug_win_unit * 1.25 + self.__debug_win_unit / 4)
-                    start_y = int(y * self.__debug_win_unit * 1.25 + self.__debug_win_unit / 4)
-                    if self.__tile_on_surface[y, x] == 0:
-                        self.__debug_win.draw_rect((start_x, start_y, self.__debug_win_unit, self.__debug_win_unit), Colors.WHITE)
-                    else:
-                        self.__debug_win.fill_rect((start_x, start_y, self.__debug_win_unit, self.__debug_win_unit), Colors.WHITE)
-            # 显示开发面板
-            self.__debug_win.present()
         # 画出背景
         if self.__background_image is not None:
             self.__background_image.draw(_surface)
@@ -339,7 +308,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             _surface.blit(self.__map_surface.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), (0, 0))
         if self.__map_surface_old is not None:
             _surface.blit(self.__map_surface_old.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), (0, 0))
-            _alpha: Optional[int] = self.__map_surface_old.get_alpha()
+            _alpha: int | None = self.__map_surface_old.get_alpha()
             if _alpha is None:
                 EXCEPTION.fatal("Invalid alpha detected while processing self.__map_surface_old.get_alpha()")
             _alpha -= 15
@@ -391,7 +360,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
 
     # 计算在地图中的方块
     @abstractmethod
-    def calculate_coordinate(self, on_screen_pos: Optional[tuple[int, int]] = None) -> Optional[tuple[int, int]]:
+    def calculate_coordinate(self, on_screen_pos: tuple[int, int] | None = None) -> tuple[int, int] | None:
         EXCEPTION.fatal("calculate_coordinate()", 1)
 
     # 计算在地图中的位置
@@ -427,7 +396,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         alliances: dict,
         enemies: dict,
         can_move_through_darkness: bool = False,
-        lenMax: Optional[int] = None,
+        lenMax: int | None = None,
         enemies_ignored: tuple = tuple(),
         ignore_alliances: bool = False,
     ) -> list[tuple[int, int]]:

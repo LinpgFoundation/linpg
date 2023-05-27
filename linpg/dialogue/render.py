@@ -91,7 +91,7 @@ class VisualNovelCharacterImageManager:
     __character_image: Final[dict[str, tuple[StaticImage, ...]]] = {}
     # 存放前一对话的参与角色名称
     __previous_characters: tuple[VisualNovelCharacterImageNameMetaData, ...] = tuple()
-    __last_round_image_alpha: int = 255
+    __last_round_image_alpha: int = 2550
     # 存放当前对话的参与角色名称
     __current_characters: tuple[VisualNovelCharacterImageNameMetaData, ...] = tuple()
     __this_round_image_alpha: int = 0
@@ -107,7 +107,7 @@ class VisualNovelCharacterImageManager:
     # 开发者模式
     dev_mode: bool = False
     # 被点击的角色
-    character_get_click: Optional[str] = None
+    character_get_click: str | None = None
 
     # 立绘边长
     @staticmethod
@@ -118,7 +118,7 @@ class VisualNovelCharacterImageManager:
     @classmethod
     def reset(cls) -> None:
         cls.__previous_characters = tuple()
-        cls.__last_round_image_alpha = 255
+        cls.__last_round_image_alpha = 2550
         cls.__current_characters = tuple()
         cls.__this_round_image_alpha = 0
         cls.__character_image.clear()
@@ -168,8 +168,8 @@ class VisualNovelCharacterImageManager:
     def __fade_in_and_out_characters(
         cls, name1: VisualNovelCharacterImageNameMetaData, name2: VisualNovelCharacterImageNameMetaData, x: int, _surface: ImageSurface
     ) -> None:
-        cls.__display_character(name1, x, cls.__last_round_image_alpha, _surface)
-        cls.__display_character(name2, x, cls.__this_round_image_alpha, _surface)
+        cls.__display_character(name1, x, cls.__last_round_image_alpha // 10, _surface)
+        cls.__display_character(name2, x, cls.__this_round_image_alpha // 10, _surface)
 
     # 渐入所有当前的角色
     @classmethod
@@ -178,7 +178,7 @@ class VisualNovelCharacterImageManager:
             cls.__display_character(
                 cls.__current_characters[i],
                 cls.__estimate_x(_surface.get_width(), len(cls.__current_characters), i) + cls.__x_offset_for_this_round,
-                cls.__this_round_image_alpha,
+                cls.__this_round_image_alpha // 10,
                 _surface,
             )
 
@@ -189,19 +189,19 @@ class VisualNovelCharacterImageManager:
             cls.__display_character(
                 cls.__previous_characters[i],
                 cls.__estimate_x(_surface.get_width(), len(cls.__previous_characters), i) + cls.__x_offset_for_last_round,
-                cls.__last_round_image_alpha,
+                cls.__last_round_image_alpha // 10,
                 _surface,
             )
 
     # 更新立绘
     @classmethod
-    def update(cls, characterNameList: Optional[Sequence[str]]) -> None:
+    def update(cls, characterNameList: Sequence[str] | None) -> None:
         cls.__previous_characters = cls.__current_characters
         cls.__current_characters = (
             tuple(VisualNovelCharacterImageNameMetaData(_name) for _name in characterNameList) if characterNameList is not None else tuple()
         )
-        cls.__last_round_image_alpha = 255
-        cls.__this_round_image_alpha = 5
+        cls.__last_round_image_alpha = 2550
+        cls.__this_round_image_alpha = 50
         cls.__x_correction_offset_index = 0
 
     # 将立绘画到屏幕上
@@ -209,13 +209,13 @@ class VisualNovelCharacterImageManager:
     def draw(cls, _surface: ImageSurface) -> None:
         # 更新alpha值，并根据alpha值计算offset
         if cls.__last_round_image_alpha > 0:
-            cls.__last_round_image_alpha -= 15
-            cls.__x_offset_for_last_round = int(cls.__GET_WIDTH() / 4 - cls.__GET_WIDTH() / 4 * cls.__last_round_image_alpha / 255)
+            cls.__last_round_image_alpha -= Display.get_delta_time() * 8
+            cls.__x_offset_for_last_round = int(cls.__GET_WIDTH() / 4 - cls.__GET_WIDTH() / 4 * cls.__last_round_image_alpha / 2550)
         else:
             cls.__x_offset_for_last_round = 0
-        if cls.__this_round_image_alpha < 255:
-            cls.__this_round_image_alpha += 25
-            cls.__x_offset_for_this_round = int(cls.__GET_WIDTH() / 4 * cls.__this_round_image_alpha / 255 - cls.__GET_WIDTH() / 4)
+        if cls.__this_round_image_alpha < 2550:
+            cls.__this_round_image_alpha += Display.get_delta_time() * 15
+            cls.__x_offset_for_this_round = int(cls.__GET_WIDTH() / 4 * cls.__this_round_image_alpha / 2550 - cls.__GET_WIDTH() / 4)
         else:
             cls.__x_offset_for_this_round = 0
         # 初始化被选择的角色名字
@@ -228,8 +228,8 @@ class VisualNovelCharacterImageManager:
                 if _characterName.equal(cls.__current_characters[i], True):
                     cls.__display_character(cls.__current_characters[i], npcImg_x, 255, _surface)
                 else:
-                    cls.__display_character(_characterName, npcImg_x, cls.__last_round_image_alpha, _surface)
-                    cls.__display_character(cls.__current_characters[i], npcImg_x, cls.__this_round_image_alpha, _surface)
+                    cls.__display_character(_characterName, npcImg_x, cls.__last_round_image_alpha // 10, _surface)
+                    cls.__display_character(cls.__current_characters[i], npcImg_x, cls.__this_round_image_alpha // 10, _surface)
         elif len(cls.__current_characters) == 0:
             cls.__fade_out_characters_last_round(_surface)
         elif len(cls.__previous_characters) == 0:
@@ -252,13 +252,13 @@ class VisualNovelCharacterImageManager:
                         _surface,
                     )
                     # 显示右边立绘
-                    cls.__display_character(cls.__current_characters[1], _surface.get_width() // 2, cls.__this_round_image_alpha, _surface)
+                    cls.__display_character(cls.__current_characters[1], _surface.get_width() // 2, cls.__this_round_image_alpha // 10, _surface)
                 # 如果之前的中间变成了现在的右边，则立绘应该先向右移动
                 elif cls.__previous_characters[0].equal(cls.__current_characters[1]):
                     if cls.__x_correction_offset_index < 100:
                         cls.__x_correction_offset_index += 10
                     # 显示左边立绘
-                    cls.__display_character(cls.__current_characters[0], 0, cls.__this_round_image_alpha, _surface)
+                    cls.__display_character(cls.__current_characters[0], 0, cls.__this_round_image_alpha // 10, _surface)
                     # 渐入右边立绘
                     cls.__fade_in_and_out_characters(
                         cls.__previous_characters[0],
@@ -269,7 +269,7 @@ class VisualNovelCharacterImageManager:
                     )
                 # 之前的中间和现在两边无任何关系，先隐藏之前的立绘，然后显示现在的立绘
                 elif cls.__last_round_image_alpha > 0:
-                    cls.__this_round_image_alpha -= 25
+                    cls.__this_round_image_alpha -= Display.get_delta_time() * 15
                     cls.__fade_out_characters_last_round(_surface)
                 else:
                     cls.__fade_in_characters_this_round(_surface)
@@ -289,9 +289,9 @@ class VisualNovelCharacterImageManager:
                         )
                     else:
                         # 显示左方立绘
-                        cls.__display_character(cls.__current_characters[0], current_x, cls.__this_round_image_alpha, _surface)
+                        cls.__display_character(cls.__current_characters[0], current_x, cls.__this_round_image_alpha // 10, _surface)
                     # 右边立绘消失
-                    cls.__display_character(cls.__previous_characters[1], _surface.get_width() // 2, cls.__last_round_image_alpha, _surface)
+                    cls.__display_character(cls.__previous_characters[1], _surface.get_width() // 2, cls.__last_round_image_alpha // 10, _surface)
                 # 如果之前的右边变成了现在的中间，则立绘应该先向左边移动
                 elif cls.__previous_characters[1].equal(cls.__current_characters[0]):
                     if cls.__x_correction_offset_index < 100:
@@ -306,16 +306,16 @@ class VisualNovelCharacterImageManager:
                         )
                     else:
                         # 显示右方立绘
-                        cls.__display_character(cls.__current_characters[0], current_x, cls.__this_round_image_alpha, _surface)
+                        cls.__display_character(cls.__current_characters[0], current_x, cls.__this_round_image_alpha // 10, _surface)
                     # 左边立绘消失
-                    cls.__display_character(cls.__previous_characters[0], 0, cls.__last_round_image_alpha, _surface)
+                    cls.__display_character(cls.__previous_characters[0], 0, cls.__last_round_image_alpha // 10, _surface)
                 elif cls.__last_round_image_alpha > 0:
-                    cls.__this_round_image_alpha -= 25
+                    cls.__this_round_image_alpha -= Display.get_delta_time() * 15
                     cls.__fade_out_characters_last_round(_surface)
                 else:
                     cls.__fade_in_characters_this_round(_surface)
             elif cls.__last_round_image_alpha > 0:
-                cls.__this_round_image_alpha -= 25
+                cls.__this_round_image_alpha -= Display.get_delta_time() * 15
                 cls.__fade_out_characters_last_round(_surface)
             else:
                 cls.__fade_in_characters_this_round(_surface)

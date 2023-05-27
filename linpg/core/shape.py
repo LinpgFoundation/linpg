@@ -44,7 +44,7 @@ class Square(GameObject2d):
                     # 重置宽度
                     self.set_width(self.get_width())
             else:
-                EXCEPTION.fatal("The minimum width has to be smaller than the maximum width, which in this case is {}.".format(self.__max_width))
+                EXCEPTION.fatal(f"The minimum width has to be smaller than the maximum width, which in this case is {self.__max_width}.")
         else:
             EXCEPTION.fatal("The minimum width has to be greater than 1.")
 
@@ -62,7 +62,7 @@ class Square(GameObject2d):
             if new_width > self.__min_width:
                 self.__max_width = new_width
             else:
-                EXCEPTION.fatal("The maximum width has to be greater than the minimum width, which in this case is {}.".format(self.__min_width))
+                EXCEPTION.fatal(f"The maximum width has to be greater than the minimum width, which in this case is {self.__min_width}.")
         else:
             self.__max_width = -1
         # 重置宽度
@@ -116,7 +116,7 @@ class Rectangle(Square):
                     # 重置高度
                     self.set_height(self.get_height())
             else:
-                EXCEPTION.fatal("The minimum height has to be smaller than the maximum height, which in this case is {}.".format(self.__max_height))
+                EXCEPTION.fatal(f"The minimum height has to be smaller than the maximum height, which in this case is {self.__max_height}.")
         else:
             EXCEPTION.fatal("The minimum height has to be greater than 1.")
 
@@ -134,7 +134,7 @@ class Rectangle(Square):
             if new_height > self.__min_height:
                 self.__max_height = new_height
             else:
-                EXCEPTION.fatal("The maximum height has to be greater than the minimum height, which in this case is {}.".format(self.__min_height))
+                EXCEPTION.fatal(f"The maximum height has to be greater than the minimum height, which in this case is {self.__min_height}.")
         else:
             self.__max_height = -1
         # 重置高度
@@ -161,7 +161,7 @@ RectLiked = Rectangle | pygame.Rect | tuple
 class Rectangles:
     # 是否2个Rectangle形状一样
     @staticmethod
-    def equal(rect1: Optional[Rectangle], rect2: Optional[Rectangle]) -> bool:
+    def equal(rect1: Rectangle | None, rect2: Rectangle | None) -> bool:
         if rect1 is not None and rect2 is not None:
             return rect1.x == rect2.x and rect1.y == rect2.y and rect1.width == rect2.width and rect1.height == rect2.height
         else:
@@ -186,7 +186,7 @@ class Rectangles:
                 case _:
                     EXCEPTION.fatal("Invalid length for forming a rect.")
         else:
-            EXCEPTION.fatal('The rect has to be RectLiked object, not "{}".'.format(type(rect)))
+            EXCEPTION.fatal(f'The rect has to be RectLiked object, not "{type(rect)}".')
 
 
 # 转换linpg.Rect至pygame.Rect
@@ -207,7 +207,7 @@ def convert_to_pygame_rect(rect: RectLiked) -> pygame.Rect:
             case _:
                 EXCEPTION.fatal("Invalid length for forming a rect.")
     else:
-        EXCEPTION.fatal('The rect has to be RectLiked object, not "{}".'.format(type(rect)))
+        EXCEPTION.fatal(f'The rect has to be RectLiked object, not "{type(rect)}".')
 
 
 # 检测pygame类2d模型是否被点击

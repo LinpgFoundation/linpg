@@ -19,7 +19,7 @@ class UiGenerator:
             try:
                 return int(Numbers.convert_percentage(value) * value_in_case_percentage)
             except Exception:
-                EXCEPTION.fatal('Cannot convert "{}" because it is not a valid percentage.'.format(value))
+                EXCEPTION.fatal(f'Cannot convert "{value}" because it is not a valid percentage.')
         # 如果是需要从lookup表里寻找的参数
         elif value.startswith("<!") and value.endswith(">"):
             the_value = custom_values[value.removeprefix("<!").removesuffix(">")]
@@ -29,19 +29,19 @@ class UiGenerator:
                 try:
                     return int(the_value)
                 except Exception:
-                    EXCEPTION.fatal('Cannot convert string "{}".'.format(value))
+                    EXCEPTION.fatal(f'Cannot convert string "{value}".')
         # 尝试将
         else:
             try:
                 return int(value)
             except Exception:
-                EXCEPTION.fatal('Cannot convert string "{}".'.format(value))
+                EXCEPTION.fatal(f'Cannot convert string "{value}".')
 
     # 检测尺寸是否合法
     @classmethod
     def __convert_number(cls, item: dict, key: str, value_in_case_percentage: int, custom_values: dict) -> int:
         if key not in item:
-            EXCEPTION.fatal('You have to set "{0}" for "{1}".'.format(key, item["name"]) if "name" in item else 'You have to set "{}".'.format(key))
+            EXCEPTION.fatal(f'You have to set "{key}" for "{item["name"]}".' if "name" in item else f'You have to set "{key}".')
         elif isinstance(item[key], float):
             return int(item[key])
         elif not isinstance(item[key], int):
@@ -52,9 +52,9 @@ class UiGenerator:
                     return int(item[key])
                 except Exception:
                     EXCEPTION.fatal(
-                        'The "{0}" for "{1}" needs to an integer instead of "{2}".'.format(key, item["name"], item[key])
+                        f'The "{key}" for "{item["name"]}" needs to an integer instead of "{item[key]}".'
                         if "name" in item
-                        else 'The "{0}" needs to an integer instead of "{1}".'.format(key, item[key])
+                        else f'The "{key}" needs to an integer instead of "{item[key]}".'
                     )
         else:
             return int(item[key])
@@ -73,7 +73,7 @@ class UiGenerator:
                 try:
                     return int(item[key])
                 except Exception:
-                    EXCEPTION.fatal("Valid value for {0}: {1}.".format(key, item[key]))
+                    EXCEPTION.fatal(f"Valid value for {key}: {item[key]}.")
         else:
             return int(item[key])
 
@@ -97,7 +97,7 @@ class UiGenerator:
                         final_text_list.append(Lang.get_text_by_keys(tuple(b.strip() for b in text[text_index + 1 : a].split(","))))
                         text_index = a
                     else:
-                        EXCEPTION.fatal("Cannot find close bracket for text: {}".format(text))
+                        EXCEPTION.fatal(f"Cannot find close bracket for text: {text}")
                 else:
                     final_text_list.append(text[text_index])
                 text_index += 1
@@ -141,7 +141,7 @@ class UiGenerator:
                 if item_r.tag != "":
                     container_t.set(item_r.tag, item_r)
                 else:
-                    container_t.set("item{}".format(container_t.item_num), item_r)
+                    container_t.set(f"item{container_t.item_num}", item_r)
         return container_t
 
     # 生成UI主模块
@@ -178,7 +178,7 @@ class UiGenerator:
                     elif _info[1] == "resize_when_hovered":
                         item_t = ResizeWhenHoveredTextSurface(data["src"], 0, 0, font_size, font_size * 3 / 2, data["color"], data["bold"], data["italic"])
                     else:
-                        EXCEPTION.fatal('Unrecognized text format "{}"'.format(_info[1]))
+                        EXCEPTION.fatal(f'Unrecognized text format "{_info[1]}"')
                     if (outline_thickness := data.get("outline_thickness", 0)) > 0:
                         item_t.set_outline_thickness(outline_thickness)
                     if (outline_color := data.get("outline_color")) is not None:
@@ -266,9 +266,9 @@ class UiGenerator:
     @classmethod
     def __get_data_in_dict(cls, data: str | dict) -> dict:
         if isinstance(data, str):
-            result: Optional[dict] = cls.__UI_TEMPLATES.get(data)
+            result: dict | None = cls.__UI_TEMPLATES.get(data)
             if result is None:
-                EXCEPTION.fatal('The ui called "{}" does not exist!'.format(data))
+                EXCEPTION.fatal(f'The ui called "{data}" does not exist!')
             return copy.deepcopy(result)
         else:
             return copy.deepcopy(data)
@@ -283,7 +283,7 @@ class UiGenerator:
     def generate_container(cls, data: str | dict, custom_values: dict = {}) -> GameObjectsDictContainer:
         data_dict: dict = cls.__get_data_in_dict(data)
         if data_dict["type"] != "container":
-            EXCEPTION.fatal('The target has to be a container, not "{}".'.format(data_dict["type"]))
+            EXCEPTION.fatal(f'The target has to be a container, not "{data_dict["type"]}".')
         return cls.__generate_container(data_dict, custom_values)
 
 

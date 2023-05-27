@@ -8,9 +8,9 @@
         "AntiAlias": true,
         "EnableOpenGL": false,
         "EnableVerticalSync": false,
-        "FPS": 60,
         "Language": "English",
         "LowMemoryMode": false,
+        "MaxFps": 300,
         "MonitorToDisplay": 0,
         "MouseIconWidth": 18,
         "MouseMoveSpeed": 30,
@@ -72,6 +72,9 @@
         "save": [
             "Save"
         ],
+        "screenshots": [
+            "screenshots"
+        ],
         "setting": [
             "Save"
         ],
@@ -91,6 +94,7 @@
         ]
     },
     "ExtraAssets": false,
+    "HashingAlgorithm": "sha3_256",
     "PySimpleGUITheme": "SystemDefault",
     "ThirdPartyLibraries": {
         "ffmpeg": "ffmpeg.exe"

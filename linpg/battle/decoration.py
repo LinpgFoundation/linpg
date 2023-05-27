@@ -68,7 +68,7 @@ class DecorationObject(GameObject2d):
         if key in self.__status:
             del self.__status[key]
         else:
-            EXCEPTION.fatal('Cannot remove status "{}" because it does not exist'.format(key))
+            EXCEPTION.fatal(f'Cannot remove status "{key}" because it does not exist')
 
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         abs_pos: Final[tuple[int, int]] = Coordinates.add(self.get_pos(), offSet)

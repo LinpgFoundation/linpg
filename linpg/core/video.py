@@ -67,7 +67,7 @@ class AbstractVideo(ABC):
 
     def set_frame_index(self, num: int) -> None:
         if num > self.get_frame_num():
-            EXCEPTION.fatal('Frame index "{0}" is out of range "{1}"'.format(num, self.get_frame_num()))
+            EXCEPTION.fatal(f'Frame index "{num}" is out of range "{self.get_frame_num()}"')
         elif num < 0:
             EXCEPTION.fatal("You cannot set negative frame index.")
         else:
@@ -128,13 +128,13 @@ class VideoSurface(AbstractVideo):
         with_audio: bool = True,
         play_range: tuple[int, int] = (0, -1),
         buffer_num: int = 10,
-        cache_key: Optional[str] = None,
+        cache_key: str | None = None,
     ) -> None:
         super().__init__(path, buffer_num, play_range)
         self.__loop: bool = loop
         self.__looped_times: int = 0
-        self.__audio: Optional[Sound] = Sounds.load_from_video(path, cache_key=cache_key) if with_audio is True else None
-        self.__audio_channel: Optional[SoundChannel] = None
+        self.__audio: Sound | None = Sounds.load_from_video(path, cache_key=cache_key) if with_audio is True else None
+        self.__audio_channel: SoundChannel | None = None
 
     # 返回一个复制
     def copy(self) -> "VideoSurface":

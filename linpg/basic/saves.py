@@ -1,4 +1,3 @@
-import threading
 from dataclasses import dataclass
 
 from .font import *
@@ -64,7 +63,7 @@ class Saves:
     @classmethod
     def get_latest_progresses(cls) -> Progress:
         progresses: dict[int, Saves.Progress] = cls.get_progresses()
-        latest: Optional[Saves.Progress] = None
+        latest: Saves.Progress | None = None
         for _progress in progresses.values():
             if latest is None or datetime.strptime(latest.createdAt, "%Y-%m-%d %H:%M %p") < datetime.strptime(_progress.createdAt, "%Y-%m-%d %H:%M %p"):
                 latest = _progress
@@ -94,11 +93,9 @@ class Saves:
         # 确保储存数据的文件夹存在
         os.makedirs(Specification.get_directory("save"), exist_ok=True)
         save_thread = threading.Thread(
-            target=cls.__save,
-            args=(Specification.get_directory("save", "save_{}.linpg.save".format(slotId)), _data, _screenshot, slotId),
+            target=cls.__save, args=(Specification.get_directory("save", f"save_{slotId}.linpg.save"), _data, _screenshot, slotId), daemon=True
         )
         # 多线程保存数据
-        save_thread.daemon = True
         save_thread.start()
         save_thread.join()
 

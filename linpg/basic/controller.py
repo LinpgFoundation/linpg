@@ -9,7 +9,7 @@ if not pygame.joystick.get_init():
 class Controller:
     # 手柄控制组件
     class __JoystickController:
-        __input: Optional[pygame.joystick.JoystickType] = None
+        __input: pygame.joystick.JoystickType | None = None
 
         # 手柄是否初始化
         @classmethod
@@ -64,7 +64,7 @@ class Controller:
         # 鼠标上次更新时被按下的详情
         __mouse_get_pressed_previously: tuple[bool, ...] = (False, False, False, False, False)
         # 鼠标图标
-        __icon_img: Optional[ImageSurface] = None
+        __icon_img: ImageSurface | None = None
 
         @classmethod
         def set_custom_icon(cls, path: str = "<&ui>mouse_icon.png") -> None:
@@ -168,11 +168,10 @@ class Controller:
     # 获取单个事件
     @classmethod
     def get_event(cls, event_type: str) -> bool:
-        _result: Optional[bool] = cls.__SPECIFIC_EVENTS.get(event_type)
-        if _result is not None:
-            return _result
-        else:
-            EXCEPTION.fatal('The event type "{}" is not supported!'.format(event_type))
+        _result: bool | None = cls.__SPECIFIC_EVENTS.get(event_type)
+        if _result is None:
+            EXCEPTION.fatal(f'The event type "{event_type}" is not supported!')
+        return _result
 
     # 完成这一帧的收尾工作
     @classmethod

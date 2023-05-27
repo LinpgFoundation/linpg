@@ -17,11 +17,11 @@ class Lang:
     def reload(cls) -> None:
         # 加载引擎内部的默认语言文件
         cls.__LANG_DATA.clear()
-        cls.__LANG_DATA.update(Config.load_file(os.path.join(os.path.dirname(__file__), "{}.json".format(Setting.get_language()))))
+        cls.__LANG_DATA.update(Config.load_file(os.path.join(os.path.dirname(__file__), f"{Setting.get_language()}.json")))
         # 加载游戏自定义的外部语言文件
         path_t: str
-        if os.path.exists(path_t := os.path.join(cls.__EX_LANG_FOLDER, "{0}.{1}".format(Setting.get_language(), Config.get_file_type()))) or os.path.exists(
-            path_t := os.path.join(cls.__EX_LANG_FOLDER, "{}.json".format(Setting.get_language()))
+        if os.path.exists(path_t := os.path.join(cls.__EX_LANG_FOLDER, f"{Setting.get_language()}.{Config.get_file_type()}")) or os.path.exists(
+            path_t := os.path.join(cls.__EX_LANG_FOLDER, f"{Setting.get_language()}.json")
         ):
             try:
                 cls.__LANG_DATA.update(Config.load_file(path_t))

@@ -52,5 +52,5 @@ where = ["src"]
 [tool.setuptools.package-data]
 "*" = ["*"]
 
-[options.entry_points."pyinstaller40"]
-hook-dirs = "linpg.__pyinstaller:get_hook_dirs"
+# [options.entry_points."pyinstaller40"]
+# hook-dirs = "linpg.__pyinstaller:get_hook_dirs"

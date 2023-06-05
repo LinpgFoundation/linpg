@@ -2,7 +2,7 @@
 
 ###### *"Just because c++ is the greatest language ever invented doesn't mean that writing games in c++ is easy and fun, and the same goes for pygame."*
 
-###### *"c++是有史以来最伟大的语言，但并不代表用c++写游戏是一件很轻松有趣的事情，pygame也是如此。"*
+###### *"c++是有史以来最伟大的语言，但这并不代表用c++写游戏是一件轻松而又有趣的事情，pygame也是如此。"*
 
 
 
@@ -26,7 +26,7 @@ Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游
 
 | Required / 必需安装 |
 | :---------- |
-| pygame      |
+| pygame-ce   |
 | numpy       |
 | PySimpleGUI |
 
@@ -36,11 +36,11 @@ Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游
 | opencv                   |
 | tcod                     |
 
-***Special shout out to the developers of these libraries. They make game development using python no longer unthinkable.***
-
-##### ***感谢这些库的开发者，他（她）们让使用python开发游戏不再遥远。***
-
 \* All these libraries will be installed by default as some common features cannot be enabled without these libraries.
+
+##### Special shout out to the developers of these libraries. They make game development using python no longer unthinkable.
+
+##### 感谢这些第三方库的开发者，他（她）们让使用python开发游戏不再遥远。
 
 
 
@@ -88,31 +88,15 @@ Enjoy!
 
 ### master:
 
-This branch holds the current stable version. 
+The current stable version. 
 
 该分支提供了当前的稳定版本
 
 ### dev:
 
-This branch holds the latest version that is available to the public. While this version may contain patches that fix identified problems, it may also have unknown or known new bugs that may cause harm to your system or projects. This version is typically recommended for experienced developers.
+The latest version that is available to the public. While this version may contain patches that fix identified problems, it may also have unknown or known new bugs that can cause harm to your system or projects. This version is typically recommended for experienced developers.
 
-目前可以运行的最新版本，可能在修复了部分现有的bug的同时，又带有新增的bug。 推荐开发人员使用
-
-### * in-process:
-
-**DON'T USE THIS BRANCH!** This branch contains a version that is currently unfinished.
-
-还未完成，无法运行的版本，请勿使用
-
-### * exp:
-
-**DON'T USE THIS BRANCH!**  This branch contains a version that is still in the experimental stage.
-
-实验版本，包含了部分仍在试验阶段的内容，请勿使用
-
-
-
-*: These branches may not be available to the public.
+目前可以运行的最新版本，相对稳定，但可能包含未被发现的问题或未完善的功能。 推荐有经验的开发人员使用。
 
 
 
@@ -124,11 +108,11 @@ This branch holds the latest version that is available to the public. While this
 
 - After you have finished your work, you should request to merge to the "dev" branch instead of the "master" branch.
 
-  所有pull request应该请求merge到"dev"分支中。如果"dev"不存在，则请求merge到"master"分支。
+  所有PR应该请求merge到"dev"分支中。如果"dev"不存在，则请求merge到"master"分支。
 
 - We are looking forward to seeing a pull request that contains a detailed explanation about any changes that were made.
 
-  所有pull request应该阐明所有关于改动的细节。
+  所有PR应该详细地阐明其做出的改动。
 
 
 
@@ -171,7 +155,7 @@ https://github.com/LinpgFoundation/linpg/wiki
 | Map Editor                                                  | 可用的地图编辑器                     | :white_check_mark: |
 | Dialogue Editor                                             | 可用的对话编辑器                     | :white_check_mark: |
 | Most functions work when correct input is accepted          | 大部分功能能在接受正确的输入后工作   | :hammer:         |
-| Visual novel system and combat system can maintain 60 fps   | 视觉小说系统和战斗系统保持60帧       | :white_check_mark: |
+| Visual novel system and combat system can maintain 60 fps   | 视觉小说系统和战斗系统达到144帧       | :white_check_mark: |
 | Video can be played at a stable 60 fps                      | 视频能稳定地以60帧播放               | :white_check_mark: |
 | Pygame native input box (English only)                      | 可用的pygame原生输入框（仅支持英文） | :white_check_mark: |
 
@@ -187,7 +171,6 @@ https://github.com/LinpgFoundation/linpg/wiki
 | More readable and standardized code                          | 更加易读规范化的代码                                     |      |
 | Most functions are able to report errors and take the most appropriate approach after accepting incorrect input | 大部分功能能在接受错误的输入后报错并采取最合适的方案运行 |      |
 | The combat system can have more varieties.                   | 战斗系统能有更多的玩法                                   |      |
-| Visual novel system and combat system can reach 144 fps      | 视觉小说系统和战斗系统达到144帧                          |      |
 | The input box will support Chinese, Japanese, and more       | 输入框支持中文，日文，以及更多                           |      |
 
 
@@ -195,6 +178,6 @@ https://github.com/LinpgFoundation/linpg/wiki
 
 # :memo: License / 版权说明
 
-Please check LICENSE.
+Please check **LICENSE**.
 
-版权信息请查看LICENSE文件。
+版权信息请查看**LICENSE**文件。

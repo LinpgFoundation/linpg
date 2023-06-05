@@ -82,6 +82,16 @@ class Console(SingleLineInputBox, Hidable, threading.Thread):
         self.__backward_id = 0
         self.set_text()
 
+    @staticmethod
+    def __boolean_conversion(_status: str) -> bool | None:
+        match _status.lower():
+            case "on" | "true" | "t":
+                return True
+            case "off" | "false" | "f":
+                return False
+            case _:
+                return None
+
     # 根据参数处理命令
     def _check_command(self, command_blocks: list[str]) -> None:
         match command_blocks[0]:
@@ -89,14 +99,14 @@ class Console(SingleLineInputBox, Hidable, threading.Thread):
                 if len(command_blocks) < 2:
                     self._txt_output.append("Unknown status for cheat command.")
                 else:
-                    match command_blocks[1]:
-                        case "on":
+                    match self.__boolean_conversion(command_blocks[1]):
+                        case True:
                             if Debug.get_cheat_mode() is True:
                                 self._txt_output.append("Cheat mode has already been activated!")
                             else:
                                 Debug.set_cheat_mode(True)
                                 self._txt_output.append("Cheat mode is activated.")
-                        case "off":
+                        case False:
                             if not Debug.get_cheat_mode():
                                 self._txt_output.append("Cheat mode has already been deactivated!")
                             else:
@@ -107,13 +117,10 @@ class Console(SingleLineInputBox, Hidable, threading.Thread):
             case "show":
                 if len(command_blocks) >= 3:
                     if command_blocks[1] == "fps":
-                        match command_blocks[2]:
-                            case "on":
-                                Debug.set_show_fps(True)
-                            case "off":
-                                Debug.set_show_fps(False)
-                            case _:
-                                self._txt_output.append("Unknown status for show command.")
+                        if (_status := self.__boolean_conversion(command_blocks[2])) is not None:
+                            Debug.set_show_fps(_status)
+                        else:
+                            self._txt_output.append("Unknown status for show command.")
                     else:
                         self._txt_output.append("Unknown status for show command.")
                 else:
@@ -144,14 +151,14 @@ class Console(SingleLineInputBox, Hidable, threading.Thread):
                 if len(command_blocks) < 2:
                     self._txt_output.append("Unknown status for dev command.")
                 else:
-                    match command_blocks[1]:
-                        case "on":
+                    match self.__boolean_conversion(command_blocks[1]):
+                        case True:
                             if Debug.get_developer_mode() is True:
                                 self._txt_output.append("Developer mode has been activated!")
                             else:
                                 Debug.set_developer_mode(True)
                                 self._txt_output.append("Developer mode is activated.")
-                        case "off":
+                        case False:
                             if not Debug.get_developer_mode():
                                 self._txt_output.append("Developer mode has been deactivated!")
                             else:

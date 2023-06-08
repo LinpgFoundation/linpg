@@ -1,13 +1,4 @@
-# 尝试导入tcod库
-_TCOD_INITIALIZED: bool = False
-try:
-    import tcod
-
-    _TCOD_INITIALIZED = True
-except ImportError:
-    pass
-
-from .entity import *
+from .astar import *
 
 
 # 地图模块
@@ -428,10 +419,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         # 如果目标坐标合法
         if 0 <= goal[1] < self.__row and 0 <= goal[0] < self.__column and map2d[goal[0], goal[1]] == 1:
             # 开始寻路
-            if _TCOD_INITIALIZED is True:
-                _path: list[tuple[int, int]] = tcod.path.AStar(map2d, 1.0).get_path(start[0], start[1], goal[0], goal[1])
-            else:
-                EXCEPTION.fatal("You need to install tcod to enable path finding feature!", 4)
+            _path: list[tuple[int, int]] = AStar.search(map2d, start, goal)
             # 预处理路径并返回
             return _path[:lenMax] if lenMax is not None and len(_path) > lenMax else _path
         # 返回空列表

@@ -34,7 +34,6 @@ Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游
 | ------------------------ |
 | pyyaml                   |
 | opencv                   |
-| tcod                     |
 
 \* All these libraries will be installed by default as some common features cannot be enabled without these libraries.
 

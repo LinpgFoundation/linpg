@@ -26,7 +26,6 @@ dependencies = [
     "pillow",
     "PySimpleGUI",
     "PyYAML",
-    "tcod",
 ]
 
 [project.urls]

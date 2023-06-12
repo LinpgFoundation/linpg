@@ -44,15 +44,18 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
 
     # 获取对话文件所在的具体路径
     def get_data_file_path(self) -> str:
-        return os.path.join(self.get_dialog_folder_location(), f"chapter{self._chapter_id}_dialogs_{Setting.get_language()}.{Config.get_file_type()}")
+        return self.get_dialog_file_location(Setting.get_language())
 
     # 获取对话文件的主语言
     def get_default_lang(self) -> str:
-        return str(
-            Config.load(os.path.join(self._dialog_folder_path, self._chapter_type, f"info.{Config.get_file_type()}"), "default_lang")
+        # 读取项目信息
+        _data: dict = Config.load_file(
+            os.path.join(self._dialog_folder_path, self._chapter_type, f"info.{Config.get_file_type()}")
             if self._project_name is None
-            else Config.load(os.path.join(self._dialog_folder_path, self._chapter_type, self._project_name, f"info.{Config.get_file_type()}"), "default_lang")
+            else os.path.join(self._dialog_folder_path, self._chapter_type, self._project_name, f"info.{Config.get_file_type()}")
         )
+        # 自3.7起使用default_language，出于兼容目的尝试读取default_lang（3.6前的key）
+        return _data.get("default_language", _data.get("default_lang", "English"))
 
     # 生产一个新的推荐id
     def generate_a_new_recommended_key(self, index: int = 1) -> str:
@@ -84,22 +87,14 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
 
     # 载入数据
     def _load_content(self) -> None:
-        # 读取目标对话文件的数据
-        if os.path.exists(self.get_data_file_path()):
-            # 获取目标对话数据
-            _data: dict = Config.load_file(self.get_data_file_path())
-            dialogData_t: dict = _data["dialogs"][self._content.get_section()]
-            # 如果该dialog文件是另一个语言dialog文件的子类
-            if _data.get("compiledAt") is None and (default_lang_of_dialog := self.get_default_lang()) != Setting.get_language():
-                self._content.set_section_content(
-                    dict(Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs", self._content.get_section()))
-                )
-                for key, values in dialogData_t.items():
-                    self._content.get_dialog(_id=key).update(values)
-            else:
-                self._content.set_section_content(dialogData_t)
-        else:
-            self._content.set_section_content(dict(Config.load(self.get_dialog_file_location(self.get_default_lang()), "dialogs", self._content.get_section())))
+        # 如果玩家所选择的语种有对应的翻译，则优先读取，否则使用开发者的默认语种
+        self._content.set_section_content(
+            Config.load(
+                self.get_data_file_path() if os.path.exists(self.get_data_file_path()) else self.get_dialog_file_location(self.get_default_lang()),
+                "dialogs",
+                self._content.get_section(),
+            )
+        )
         # 确认dialog数据合法
         if len(self._content.get_section_content()) == 0:
             EXCEPTION.fatal(f'The selected dialog dict "{self._content.get_section()}" has no content inside.')

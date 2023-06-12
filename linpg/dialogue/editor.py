@@ -15,18 +15,12 @@ class DialogEditor(AbstractVisualNovelSystem):
         )
         # 加载对话框系统
         self.__dialog_txt_system: EditableDialogBox = EditableDialogBox(self._FONT_SIZE)
-        # 存储视觉小说默认数据的参数
-        self._dialog_data_default: dict = {}
-        # 是否是父类
-        self._is_default_dialog: bool = True
         # 默认内容
         self.__please_enter_content: str = ""
         # 默认叙述者名
         self.__please_enter_name: str = ""
         # 是否尝试修复错位
         self.__if_try_to_fix_issues: bool = False
-        # 压缩模式
-        self.__compress_when_saving: bool = True
         # 存放并管理编辑器上方所有按钮的容器
         self.__buttons_ui_container: GameObjectsDictContainer | None = None
         # 背景音乐选择 DropDown ui
@@ -160,7 +154,7 @@ class DialogEditor(AbstractVisualNovelSystem):
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
         original_data: dict = Config.try_load_file_if_exists(self.get_data_file_path())
-        original_data["dialogs"] = self.__split_the_stuff_need_save()
+        original_data["dialogs"] = self.__get_the_stuff_need_save()
         return original_data
 
     # 更新背景选项栏
@@ -189,37 +183,12 @@ class DialogEditor(AbstractVisualNovelSystem):
         VisualNovelCharacterImageManager.dev_mode = True
         # 加载内容数据
         self._content.clear()
-        if os.path.exists(path := self.get_data_file_path()) and "dialogs" in (data_t := Config.load_file(path)):
-            _dialogs: dict | None = data_t.get("dialogs")
-            if _dialogs is not None:
-                self._content.update(_dialogs)
-            else:
-                EXCEPTION.warn("Cannot load dialogs due to invalid data type.")
-        # 如果不是默认主语言
-        if (default_lang_of_dialog := self.get_default_lang()) != Setting.get_language():
-            self._is_default_dialog = False
-            # 读取原始数据
-            self._dialog_data_default = dict(Config.load(self.get_dialog_file_location(default_lang_of_dialog), "dialogs"))
-            # 如果当前dialogs是空的，则完全使用默认语言的数据
-            if self._content.is_empty():
-                self._content.update(copy.deepcopy(self._dialog_data_default))
-            # 如果当前dialogs不为空的，则填入未被填入的数据
-            else:
-                dialog_data_t = copy.deepcopy(self._dialog_data_default)
-                for section, value in self._content.get().items():
-                    for node_id, Node in value.items():
-                        if node_id not in dialog_data_t[section]:
-                            dialog_data_t[section][node_id] = Node
-                        else:
-                            dialog_data_t[section][node_id].update(Node)
-                self._content.clear()
-                self._content.update(dialog_data_t)
-        # 如果是默认主语言，则不进行任何额外操作
+        if (_dialogs := Config.try_load_file_if_exists(self.get_data_file_path()).get("dialogs")) is not None:
+            self._content.update(_dialogs)
         else:
-            self._is_default_dialog = True
-            self._dialog_data_default.clear()
-        # 则尝试加载后仍然出现内容为空的情况
-        if self._content.is_empty():
+            # 则尝试加载后仍然出现内容为空的情况
+            EXCEPTION.inform("No valid dialog content found.")
+            # 则加载默认模板
             self._content.set_section("example_dialog")
             self._content.set_section_content({})
         # 检测是否有非str的key name
@@ -271,31 +240,15 @@ class DialogEditor(AbstractVisualNovelSystem):
             self._save()
 
     # 分离需要保存的数据
-    def __split_the_stuff_need_save(self) -> dict[str, dict[str, dict]]:
+    def __get_the_stuff_need_save(self) -> dict[str, dict[str, dict]]:
         self._content.current.narrator = self.__dialog_txt_system.get_narrator()
         self._content.current.contents = self.__dialog_txt_system.get_content()
         self._content.save_current_changes()
-        data_need_save: dict[str, dict[str, dict]] = copy.deepcopy(self._content.get())
-        if not self._is_default_dialog and self.__compress_when_saving is True:
-            # 移除掉相似的内容
-            for section in self._dialog_data_default:
-                for dialogId, defaultDialogData in self._dialog_data_default[section].items():
-                    section_ref = data_need_save[section]
-                    if dialogId in section_ref:
-                        content_ref: dict = section_ref[dialogId]
-                        for dataType in defaultDialogData:
-                            if dataType in content_ref and content_ref[dataType] == defaultDialogData[dataType]:
-                                del content_ref[dataType]
-                        if len(content_ref) == 0:
-                            section_ref.pop(dialogId)
-        return data_need_save
+        return self._content.get()
 
     # 检查是否有任何改动
     def __no_changes_were_made(self) -> bool:
-        return (
-            os.path.exists((dialog_file_location_t := self.get_data_file_path()))
-            and Config.load(dialog_file_location_t, "dialogs") == self.__split_the_stuff_need_save()
-        )
+        return Config.try_load_file_if_exists(self.get_data_file_path()).get("dialogs") == self.__get_the_stuff_need_save()
 
     # 更新UI
     def __update_ui(self) -> None:
@@ -320,8 +273,6 @@ class DialogEditor(AbstractVisualNovelSystem):
         # 确保当前版块有对话数据。如果当前版块为空，则加载默认模板
         if len(self._content.get_section_content()) <= 0:
             self._content.get_section_content()["head"] = {"contents": [self.__please_enter_content], "narrator": self.__please_enter_name}
-            self._is_default_dialog = True
-            self._dialog_data_default.clear()
         # 如果id存在，则加载对应数据
         if dialog_id in self._content.get_section_content():
             super()._update_scene(dialog_id)

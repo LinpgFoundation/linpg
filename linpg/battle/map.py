@@ -14,7 +14,9 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         # 本地坐标模块
         SurfaceWithLocalPos.__init__(self)
         # 地图数据
-        self.__MAP: numpy.ndarray = numpy.asarray([])
+        self.__MAP: numpy.ndarray = numpy.array([])
+        # 障碍数据
+        self.__BARRIER_MASK: numpy.ndarray = numpy.array([])
         # 地图 tile lookup table
         self.__tile_lookup_table: list[str] = []
         # 行
@@ -46,9 +48,10 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         return str(_coordinate[0]) + "_" + str(_coordinate[1])
 
     # 初始化地图数据
-    def __init_map(self, map_data: numpy.ndarray, tile_size: int_f) -> None:
+    def __init_map(self, map_data: numpy.ndarray, barrier_data: numpy.ndarray | None, tile_size: int_f) -> None:
         self.__MAP = map_data
         self.__row, self.__column = self.__MAP.shape
+        self.__BARRIER_MASK = barrier_data if barrier_data is not None else numpy.zeros(self.shape, dtype=numpy.byte)
         # 初始化追踪目前已经画出的方块的2d列表
         self.__tile_on_surface = numpy.zeros(self.__MAP.shape, dtype=numpy.byte)
         # 初始化地图渲染用的图层
@@ -61,7 +64,12 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
     def update(self, _data: dict, _block_size: int_f) -> None:
         # 初始化地图数据
         self.__tile_lookup_table = list(_data["map"]["lookup_table"])
-        self.__init_map(numpy.asarray(_data["map"]["array2d"], dtype=numpy.byte), _block_size)
+        barrier_data: list[list[int]] | None = _data["map"].get("barrier")
+        self.__init_map(
+            numpy.asarray(_data["map"]["array2d"], dtype=numpy.byte),
+            numpy.asarray(barrier_data, dtype=numpy.byte) if barrier_data is not None else None,
+            _block_size,
+        )
         # 暗度（仅黑夜场景有效）
         TileMapImagesModule.DARKNESS = 155 if bool(_data.get("at_night", False)) is True else 0
         # 设置本地坐标
@@ -115,6 +123,11 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
     def column(self) -> int:
         return self.__column
 
+    # 列
+    @property
+    def shape(self) -> tuple[int, int]:
+        return self.__column, self.__row
+
     # 新增轴
     def add_on_axis(self, index: int = -1, axis: int = 0) -> None:
         axis = Numbers.keep_int_in_range(axis, 0, 1)
@@ -122,6 +135,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             index = self.__row if axis == 0 else self.__column
         self.__init_map(
             numpy.insert(self.__MAP, index, numpy.random.randint(len(self.__tile_lookup_table), size=self.__row if axis == 1 else self.__column), axis),
+            numpy.insert(self.__BARRIER_MASK, index, numpy.zeros(self.__row if axis == 1 else self.__column), axis),
             TileMapImagesModule.TILE_SIZE,
         )
 
@@ -138,7 +152,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             for key in tuple(self.__decorations.keys()):
                 if self.__decorations[key].x == index:
                     self.__decorations.pop(key)
-        self.__init_map(numpy.delete(self.__MAP, index, axis), TileMapImagesModule.TILE_SIZE)
+        self.__init_map(numpy.delete(self.__MAP, index, axis), numpy.delete(self.__BARRIER_MASK, index, axis), TileMapImagesModule.TILE_SIZE)
 
     # 获取方块宽度
     @property
@@ -392,7 +406,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         ignore_alliances: bool = False,
     ) -> list[tuple[int, int]]:
         # 初始化寻路地图
-        map2d: numpy.ndarray = numpy.ones((self.__column, self.__row), dtype=numpy.byte)
+        map2d: numpy.ndarray = numpy.ones(self.shape, dtype=numpy.byte)
         # 如果角色无法移动至黑暗处
         if not can_move_through_darkness and TileMapImagesModule.DARKNESS > 0:
             map2d.fill(0)
@@ -407,15 +421,17 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             for value in alliances.values():
                 if round(value.x) == goal[0] and round(value.y) == goal[1]:
                     return []
+        # 将所有敌方角色的坐标点设置为障碍区块
+        for key, value in enemies.items():
+            if key not in enemies_ignored:
+                map2d[round(value.x), round(value.y)] = 0
         # 历遍地图，设置障碍区块
         for _x in range(self.__column):
             for _y in range(self.__row):
                 if not self.is_passable(_x, _y):
                     map2d[_x, _y] = 0
-        # 将所有敌方角色的坐标点设置为障碍区块
-        for key, value in enemies.items():
-            if key not in enemies_ignored:
-                map2d[round(value.x), round(value.y)] = 0
+        # subtract mask
+        numpy.subtract(map2d, self.__BARRIER_MASK)
         # 如果目标坐标合法
         if 0 <= goal[1] < self.__row and 0 <= goal[0] < self.__column and map2d[goal[0], goal[1]] == 1:
             # 开始寻路

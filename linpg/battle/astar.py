@@ -27,9 +27,9 @@ class AStar:
     # 终点
     __end_point: _AStarPoint = _AStarPoint(0, 0)
     # 开启表
-    __open_list: list[_AStarNode] = []
+    __open_list: deque[_AStarNode] = deque()
     # 关闭表
-    __close_list: list[_AStarNode] = []
+    __close_list: set[_AStarNode] = set()
 
     @classmethod
     def __update(cls, new_map2d: numpy.ndarray) -> None:
@@ -77,26 +77,23 @@ class AStar:
     def __searchNear(cls, minF: _AStarNode, offSetX: int, offSetY: int) -> None:
         minFNearByPoint: _AStarPoint = _AStarPoint(minF.point.x + offSetX, minF.point.y + offSetY)
         # 越界检测 / 如果是障碍，就忽略
-        if cls.__is_out_of_bound(minFNearByPoint) or cls.__map2d[minFNearByPoint.x, minFNearByPoint.y] == 0:
+        if cls.__is_out_of_bound(minFNearByPoint) or cls.__map2d[minFNearByPoint.x, minFNearByPoint.y] <= 0:
             return
         # 如果在关闭表中，就忽略
-        currentPoint = _AStarPoint(minFNearByPoint.x, minFNearByPoint.y)
+        currentPoint: _AStarPoint = _AStarPoint(minFNearByPoint.x, minFNearByPoint.y)
         if cls.__pointInCloseList(currentPoint):
             return
         # 设置单位花费
-        if offSetX == 0 or offSetY == 0:
-            step = 10
-        else:
-            step = 14
+        _step: int = 10 if offSetX == 0 or offSetY == 0 else 14
         # 如果不再openList中，就把它加入OpenList
         currentNode: _AStarNode | None = cls.__pointInOpenList(currentPoint)
         if currentNode is None:
-            currentNode = _AStarNode(currentPoint, cls.__end_point, minF.g + step)
+            currentNode = _AStarNode(currentPoint, cls.__end_point, minF.g + _step)
             currentNode.father = minF
             cls.__open_list.append(currentNode)
         # 如果在openList中，判断minF到当前点的G是否更小
-        elif minF.g + step < currentNode.g:  # 如果更小，就重新计算g值，并且改变father
-            currentNode.g = minF.g + step
+        elif minF.g + _step < currentNode.g:  # 如果更小，就重新计算g值，并且改变father
+            currentNode.g = minF.g + _step
             currentNode.father = minF
 
     # 开始寻路
@@ -105,7 +102,7 @@ class AStar:
         cls.__update(map2d)
         # 判断寻路终点是否是障碍
         cls.__end_point = _AStarPoint(end_pos[0], end_pos[1])
-        if cls.__is_out_of_bound(cls.__end_point) or cls.__map2d[cls.__end_point.x, cls.__end_point.y] == 0:  # 如果终点是障碍物
+        if cls.__is_out_of_bound(cls.__end_point) or cls.__map2d[cls.__end_point.x, cls.__end_point.y] <= 0:  # 如果终点是障碍物
             return []
         # 1.将起点放入开启列表
         startNode: _AStarNode = _AStarNode(_AStarPoint(start_pos[0], start_pos[1]), cls.__end_point)
@@ -113,9 +110,9 @@ class AStar:
         # 2.主循环逻辑
         while True:
             # 找到F值最小的点
-            minF = cls.__getMinNode()
+            minF: _AStarNode = cls.__getMinNode()
             # 把这个点加入closeList中，并且在openList中删除它
-            cls.__close_list.append(minF)
+            cls.__close_list.add(minF)
             cls.__open_list.remove(minF)
             # 判断这个节点的上下左右节点
             cls.__searchNear(minF, 0, -1)
@@ -133,7 +130,8 @@ class AStar:
                     else:
                         cls.__open_list.clear()
                         cls.__close_list.clear()
-                        return list(reversed(pathList))
+                        pathList.reverse()
+                        return pathList
             if len(cls.__open_list) == 0:
                 cls.__open_list.clear()
                 cls.__close_list.clear()

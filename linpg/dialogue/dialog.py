@@ -320,9 +320,9 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
                         )
                         local_y += self.__dialog_txt_system.FONT.size * 3 // 2
                     if dialogIdTemp != self._content.get_id():
-                        match str(self._content.get_dialog(_id=dialogIdTemp)["next_dialog_id"]["type"]):
+                        match str(self._content.get_dialog(_id=dialogIdTemp)["next"]["type"]):
                             case "default" | "changeScene":
-                                if (target_temp := self._content.get_dialog(_id=dialogIdTemp)["next_dialog_id"]["target"]) is not None:
+                                if (target_temp := self._content.get_dialog(_id=dialogIdTemp)["next"]["target"]) is not None:
                                     dialogIdTemp = str(target_temp)
                                 else:
                                     break
@@ -334,9 +334,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
                                 self.__history_text_surface.blit(
                                     self.__dialog_txt_system.FONT.render(
                                         str(
-                                            self._content.get_dialog(_id=dialogIdTemp)["next_dialog_id"]["target"][
-                                                int(self.__dialog_options[dialogIdTemp]["id"])
-                                            ]["text"]
+                                            self._content.get_dialog(_id=dialogIdTemp)["next"]["target"][int(self.__dialog_options[dialogIdTemp]["id"])]["text"]
                                         ),
                                         (0, 191, 255),
                                     ),

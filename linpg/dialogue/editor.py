@@ -201,16 +201,16 @@ class DialogEditor(AbstractVisualNovelSystem):
                         old_key: str | None = None
                         key: str = ""
                         for key, value in self._content.get_section_content(section).items():
-                            if value["next_dialog_id"] is not None and "target" in value["next_dialog_id"]:
-                                if isinstance(value["next_dialog_id"]["target"], list):
-                                    for index in range(len(value["next_dialog_id"]["target"])):
-                                        if not isinstance(value["next_dialog_id"]["target"][index]["id"], str):
-                                            old_key = copy.deepcopy(value["next_dialog_id"]["target"][index]["id"])
+                            if value["next"] is not None and "target" in value["next"]:
+                                if isinstance(value["next"]["target"], list):
+                                    for index in range(len(value["next"]["target"])):
+                                        if not isinstance(value["next"]["target"][index]["id"], str):
+                                            old_key = copy.deepcopy(value["next"]["target"][index]["id"])
                                             break
                                     if old_key is not None:
                                         break
-                                elif not isinstance(value["next_dialog_id"]["target"], str):
-                                    old_key = copy.deepcopy(value["next_dialog_id"]["target"])
+                                elif not isinstance(value["next"]["target"], str):
+                                    old_key = copy.deepcopy(value["next"]["target"])
                                     break
                         if old_key is not None:
                             new_key: str
@@ -218,10 +218,10 @@ class DialogEditor(AbstractVisualNovelSystem):
                                 new_key = self.generate_a_new_recommended_key(int(old_key))
                             except Exception:
                                 new_key = self.generate_a_new_recommended_key()
-                            if not isinstance(self._content.get_dialog(section, key)["next_dialog_id"]["target"], list):
-                                self._content.get_dialog(section, key)["next_dialog_id"]["target"] = new_key
+                            if not isinstance(self._content.get_dialog(section, key)["next"]["target"], list):
+                                self._content.get_dialog(section, key)["next"]["target"] = new_key
                             else:
-                                self._content.get_dialog(section, key)["next_dialog_id"]["target"][index]["id"] = new_key
+                                self._content.get_dialog(section, key)["next"]["target"][index]["id"] = new_key
                             self._content.get_dialog(section, new_key).clear()
                             self._content.get_dialog(section, new_key).update(self._content.get_dialog(section, old_key))
                             self._content.remove_dialog(section, old_key)
@@ -290,9 +290,9 @@ class DialogEditor(AbstractVisualNovelSystem):
             "background_music": self._content.current.background_music,
             "character_images": [],
             "contents": [self.__please_enter_content],
-            "last_dialog_id": self._content.get_id(),
+            "previous": self._content.get_id(),
             "narrator": self.__please_enter_name,
-            "next_dialog_id": None,
+            "next": None,
         }
         self._content.current.next["target"] = dialogId
         self._content.current.next["type"] = "default"
@@ -308,7 +308,7 @@ class DialogEditor(AbstractVisualNovelSystem):
     # 连接2个dialog node
     def __make_connection(self, key1: str | None, key2: str | None, addNode: bool = False) -> None:
         if key1 is not None:
-            seniorNodePointer = self._content.get_dialog(_id=key1)["next_dialog_id"]
+            seniorNodePointer = self._content.get_dialog(_id=key1)["next"]
             if not addNode:
                 match seniorNodePointer["type"]:
                     case "default" | "changeScene":
@@ -319,14 +319,14 @@ class DialogEditor(AbstractVisualNovelSystem):
                                 optionChoice["id"] = key2
                                 break
                     case _:
-                        # 如果当前next_dialog_id的类型不支持的话，报错
-                        EXCEPTION.fatal(f"Cannot recognize next_dialog_id type: {seniorNodePointer['type']}, please fix it")
-                # 修改下一个对白配置文件中的"last_dialog_id"的参数
+                        # 如果当前next的类型不支持的话，报错
+                        EXCEPTION.fatal(f"Cannot recognize next type: {seniorNodePointer['type']}, please fix it")
+                # 修改下一个对白配置文件中的"previous"的参数
                 if key2 is not None:
-                    if self._content.get_dialog(_id=key2).get("last_dialog_id") is not None:
-                        self._content.get_dialog(_id=key2)["last_dialog_id"] = key1
+                    if self._content.get_dialog(_id=key2).get("previous") is not None:
+                        self._content.get_dialog(_id=key2)["previous"] = key1
                 else:
-                    self._content.get_dialog(_id=key1)["next_dialog_id"] = None
+                    self._content.get_dialog(_id=key1)["next"] = None
         else:
             EXCEPTION.warn(f'Fail to make a connection between "{key1}" and "{key2}".')
 
@@ -338,13 +338,13 @@ class DialogEditor(AbstractVisualNovelSystem):
             return self._content.last.id
         else:
             for key, dialog_data in self._content.get_section_content().items():
-                if dialog_data["next_dialog_id"] is not None:
-                    match dialog_data["next_dialog_id"]["type"]:
+                if dialog_data["next"] is not None:
+                    match dialog_data["next"]["type"]:
                         case "default" | "changeScene":
-                            if dialog_data["next_dialog_id"]["target"] == self._content.get_id():
+                            if dialog_data["next"]["target"] == self._content.get_id():
                                 return str(key)
                         case "option":
-                            for optionChoice in dialog_data["next_dialog_id"]["target"]:
+                            for optionChoice in dialog_data["next"]["target"]:
                                 if optionChoice["id"] == self._content.get_id():
                                     return str(key)
             return "<NULL>"
@@ -437,10 +437,10 @@ class DialogEditor(AbstractVisualNovelSystem):
                                     if nextId != "<NULL>":
                                         self.__make_connection(lastId, nextId)
                                     else:
-                                        self._content.get_dialog(_id=lastId)["next_dialog_id"] = None
+                                        self._content.get_dialog(_id=lastId)["next"] = None
                                     self._update_scene(lastId)
                                 elif nextId != "<NULL>":
-                                    self._content.get_dialog(_id=nextId)["last_dialog_id"] = None
+                                    self._content.get_dialog(_id=nextId)["previous"] = None
                                     self._update_scene(nextId)
                                 else:
                                     EXCEPTION.inform("Cannot delete this dialog because there is no valid last and next id; you need to delete it manually.")

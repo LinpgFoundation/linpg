@@ -432,7 +432,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             if key not in enemies_ignored:
                 map2d[round(value.x), round(value.y)] = 0
         # subtract mask
-        numpy.subtract(map2d, self.__BARRIER_MASK)
+        map2d = numpy.subtract(map2d, self.__BARRIER_MASK)
         # 如果目标坐标合法
         if 0 <= goal[1] < self.__row and 0 <= goal[0] < self.__column and map2d[goal[0], goal[1]] == 1:
             # 开始寻路

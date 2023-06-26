@@ -8,7 +8,7 @@
 
 # :sparkles: About Linpg Engine / 关于Linpg引擎
 
-Linpg Engine is a game engine developed by Linpg Foundation, which aims to standardize the development of Pygame games and make the codes easier to read, expand and maintain.
+Linpg (Lin's python game) Engine is a game engine developed by Linpg Foundation, which aims to standardize the development of Pygame games and make the codes easier to read, expand and maintain.
 
 Linpg Engine is developed with a modular concept. It implements many features which are commonly used in game development. Simultaneously, the Linpg Engine also maintains a high level of compatibility with Pygame, making it easy for developers to migrate existing Pygame projects to Linpg Engine or use the features which Linpg Engine provides on their own Pygame projects.
 
@@ -19,6 +19,18 @@ Linpg引擎是Linpg基金会基于pygame库自主研发的游戏引擎，目的�
 Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游戏开发过程中常用到的功能。Linpg引擎一直保持着与pygame高度的兼容性，使得开发者可以很容易将现有的pygame项目迁移到Linpg引擎上，或者在自己的pygame项目中使用Linpg引擎提供的功能或者工具。
 
 世上无完人，我们需要你的帮助让Linpg引擎变得更好。欢迎任何能帮助我们改进Linpg引擎的开发者！
+
+
+
+# :crystal_ball:Some awesome games developed using Linpg
+
+![](https://github.com/LinpgFoundation/A-story-of-us/raw/master/Assets/image/screenshot/dialog.png)
+
+#### [A-story-of-us](https://github.com/LinpgFoundation/A-story-of-us), a visual novel game only contains around 100 lines of code. A great starting point for anyone who is interested in Linpg.
+
+![](https://github.com/TigeiaWorkshop/GFL-LastWish/raw/master/Assets/image/screenshot/battle.png)
+
+#### [GFL-Last](https://github.com/TigeiaWorkshop/GFL-LastWish ), a turn-based strategy game that demonstrates some advanced features and the unlimited potential of the Linpg engine.
 
 
 
@@ -51,7 +63,7 @@ Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游
 pip install linpg
 ```
 
-We also highly suggest you download and use [https://github.com/LinpgFoundation/A-story-of-us](https://github.com/LinpgFoundation/A-story-of-us) as your starting point.
+We also highly suggest you download and use [A-story-of-us](https://github.com/LinpgFoundation/A-story-of-us) as your starting point.
 
 ### Building From Source:
 
@@ -79,8 +91,7 @@ Run `builder.py`:
 python builder.py
 ```
 
-Enjoy!
-
+That's it, enjoy!
 
 
 # :world_map: Branches / 分支​

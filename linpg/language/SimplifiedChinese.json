@@ -1,8 +1,4 @@
 {
-    "Battle": {
-        "decoration": "装饰物",
-        "tile": "方块"
-    },
     "Dialog": {
         "auto": "自动",
         "choice": "选项",
@@ -10,7 +6,10 @@
     },
     "Editor": {
         "add": "新增对话",
+        "add_barrier": "添加屏障",
+        "auto_add_barriers": "自动添加屏障",
         "background": "背景图片",
+        "decoration": "装饰物",
         "delete": "删除当前对话",
         "example_project": "演示项目",
         "new_colum": "新增列",
@@ -23,7 +22,8 @@
         "previous": "上一个对话",
         "remove_colum": "删除列",
         "remove_npc": "移除该角色",
-        "remove_row": "删除行"
+        "remove_row": "删除行",
+        "tile": "方块"
     },
     "Global": {
         "back": "返回",

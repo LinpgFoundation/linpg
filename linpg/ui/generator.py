@@ -94,7 +94,7 @@ class UiGenerator:
                             break
                     if find_close_bracket is True:
                         find_close_bracket = False
-                        final_text_list.append(Lang.get_text_by_keys(tuple(b.strip() for b in text[text_index + 1 : a].split(","))))
+                        final_text_list.append(Lang.get_text_by_keys(tuple(b.strip() for b in text[text_index + 1 : a].split("."))))
                         text_index = a
                     else:
                         EXCEPTION.fatal(f"Cannot find close bracket for text: {text}")
@@ -106,7 +106,7 @@ class UiGenerator:
         elif text.startswith("<") and text.startswith(">"):
             _key: str = text[1 : len(text) - 1]
             if _key != "NULL":
-                return Specification.get_str(*(b.strip() for b in _key.split(",")))
+                return Specification.get_str(*(b.strip() for b in _key.split(".")))
         return text
 
     # 生成容器类

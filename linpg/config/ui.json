@@ -37,7 +37,7 @@
                 "src": "<NULL>",
                 "text": {
                     "color": "white",
-                    "src": "{Dialog,auto}"
+                    "src": "{Dialog.auto}"
                 },
                 "type": "button",
                 "width": "<!button_size>",
@@ -58,7 +58,7 @@
                 "src": "<NULL>",
                 "text": {
                     "color": "white",
-                    "src": "{Dialog,auto}"
+                    "src": "{Dialog.auto}"
                 },
                 "type": "button",
                 "visibility": false,
@@ -81,7 +81,7 @@
                 "src": "<NULL>",
                 "text": {
                     "color": "white",
-                    "src": "{Dialog,skip}"
+                    "src": "{Dialog.skip}"
                 },
                 "type": "button",
                 "width": "<!button_size>",
@@ -99,7 +99,7 @@
         "items": [
             {
                 "alpha_when_not_hover": 150,
-                "description": "{Global,mute}",
+                "description": "{Global.mute}",
                 "height": "<!button_size>",
                 "name": "mute",
                 "src": "<&ui>mute.png",
@@ -110,7 +110,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "description": "{Global,save}",
+                "description": "{Global.save}",
                 "height": "<!button_size>",
                 "name": "save",
                 "src": "<&ui>save.png",
@@ -121,7 +121,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "description": "{Global,reload_file}",
+                "description": "{Global.reload_file}",
                 "height": "<!button_size>",
                 "name": "reload",
                 "src": "<&ui>reload.png",
@@ -132,7 +132,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "description": "{Editor,add}",
+                "description": "{Editor.add}",
                 "height": "<!button_size>",
                 "name": "add",
                 "src": "<&ui>add.png",
@@ -143,7 +143,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "description": "{Editor,next}",
+                "description": "{Editor.next}",
                 "height": "<!button_size>",
                 "name": "next",
                 "src": "<&ui>next.png",
@@ -154,7 +154,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "description": "{Editor,previous}",
+                "description": "{Editor.previous}",
                 "height": "<!button_size>",
                 "name": "previous",
                 "src": "<&ui>previous.png",
@@ -165,7 +165,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "description": "{Editor,delete}",
+                "description": "{Editor.delete}",
                 "height": "<!button_size>",
                 "name": "delete",
                 "src": "<&ui>delete.png",
@@ -176,7 +176,7 @@
             },
             {
                 "alpha_when_not_hover": 150,
-                "description": "{Global,back_to_main_menu}",
+                "description": "{Global.back_to_main_menu}",
                 "height": "<!button_size>",
                 "name": "back",
                 "src": "<&ui>back.png",
@@ -197,7 +197,7 @@
             {
                 "color": "white",
                 "font_size": "15%",
-                "src": "{Global,warning}",
+                "src": "{Global.warning}",
                 "type": "text",
                 "x": "center",
                 "y": "10%"
@@ -205,7 +205,7 @@
             {
                 "color": "white",
                 "font_size": "15%",
-                "src": "{LeavingWithoutSavingWarning,about_to_exit}",
+                "src": "{LeavingWithoutSavingWarning.about_to_exit}",
                 "type": "text",
                 "x": "center",
                 "y": "30%"
@@ -213,7 +213,7 @@
             {
                 "color": "white",
                 "font_size": "15%",
-                "src": "{LeavingWithoutSavingWarning,progress_will_lost}",
+                "src": "{LeavingWithoutSavingWarning.progress_will_lost}",
                 "type": "text",
                 "x": "center",
                 "y": "50%"
@@ -225,7 +225,7 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Global,confirm}"
+                    "src": "{Global.confirm}"
                 },
                 "type": "button",
                 "width": "15%",
@@ -239,7 +239,7 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Global,cancel}"
+                    "src": "{Global.cancel}"
                 },
                 "type": "button",
                 "width": "15%",
@@ -259,7 +259,7 @@
             {
                 "color": "white",
                 "font_size": "15%",
-                "src": "{Global,warning}",
+                "src": "{Global.warning}",
                 "type": "text",
                 "x": "center",
                 "y": "10%"
@@ -267,7 +267,7 @@
             {
                 "color": "white",
                 "font_size": "15%",
-                "src": "{LeavingWithoutSavingWarning,about_to_leave}",
+                "src": "{LeavingWithoutSavingWarning.about_to_leave}",
                 "type": "text",
                 "x": "center",
                 "y": "30%"
@@ -275,7 +275,7 @@
             {
                 "color": "white",
                 "font_size": "15%",
-                "src": "{LeavingWithoutSavingWarning,progress_will_lost}",
+                "src": "{LeavingWithoutSavingWarning.progress_will_lost}",
                 "type": "text",
                 "x": "center",
                 "y": "50%"
@@ -287,7 +287,7 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Global,confirm}"
+                    "src": "{Global.confirm}"
                 },
                 "type": "button",
                 "width": "15%",
@@ -301,7 +301,7 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Global,cancel}"
+                    "src": "{Global.cancel}"
                 },
                 "type": "button",
                 "width": "15%",
@@ -321,7 +321,7 @@
             {
                 "color": "white",
                 "font_size": "10%",
-                "src": "{Global,warning}",
+                "src": "{Global.warning}",
                 "type": "text",
                 "x": "center",
                 "y": "10%"
@@ -329,7 +329,7 @@
             {
                 "color": "white",
                 "font_size": "10%",
-                "src": "{LeavingWithoutSavingWarning,leaving_without_saving_work1}",
+                "src": "{LeavingWithoutSavingWarning.leaving_without_saving_work1}",
                 "type": "text",
                 "x": "center",
                 "y": "25%"
@@ -337,7 +337,7 @@
             {
                 "color": "white",
                 "font_size": "10%",
-                "src": "{LeavingWithoutSavingWarning,leaving_without_saving_work2}",
+                "src": "{LeavingWithoutSavingWarning.leaving_without_saving_work2}",
                 "type": "text",
                 "x": "center",
                 "y": "40%"
@@ -350,7 +350,7 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Global,save}"
+                    "src": "{Global.save}"
                 },
                 "type": "button",
                 "width": 0,
@@ -365,7 +365,7 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Global,cancel}"
+                    "src": "{Global.cancel}"
                 },
                 "type": "button",
                 "width": 0,
@@ -380,7 +380,7 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Global,dont_save}"
+                    "src": "{Global.dont_save}"
                 },
                 "type": "button",
                 "width": 0,
@@ -406,7 +406,7 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Global,save}"
+                    "src": "{Global.save}"
                 },
                 "type": "button",
                 "width": 0,
@@ -421,7 +421,7 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Global,back}"
+                    "src": "{Global.back}"
                 },
                 "type": "button",
                 "width": 0,
@@ -436,7 +436,7 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Global,delete}"
+                    "src": "{Global.delete}"
                 },
                 "type": "button",
                 "width": 0,
@@ -451,7 +451,7 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Global,reload_file}"
+                    "src": "{Global.reload_file}"
                 },
                 "type": "button",
                 "width": 0,
@@ -466,12 +466,12 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Editor,new_row}"
+                    "src": "{Editor.new_row}"
                 },
                 "type": "button",
                 "width": 0,
                 "x": 0,
-                "y": "2%"
+                "y": "10%"
             },
             {
                 "alpha_when_not_hover": 100,
@@ -481,12 +481,12 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Editor,new_colum}"
+                    "src": "{Editor.new_colum}"
                 },
                 "type": "button",
                 "width": 0,
                 "x": 0,
-                "y": "2%"
+                "y": "10%"
             },
             {
                 "alpha_when_not_hover": 100,
@@ -496,12 +496,12 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Editor,remove_row}"
+                    "src": "{Editor.remove_row}"
                 },
                 "type": "button",
                 "width": 0,
                 "x": 0,
-                "y": "2%"
+                "y": "10%"
             },
             {
                 "alpha_when_not_hover": 100,
@@ -511,12 +511,42 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Editor,remove_colum}"
+                    "src": "{Editor.remove_colum}"
                 },
                 "type": "button",
                 "width": 0,
                 "x": 0,
-                "y": "2%"
+                "y": "10%"
+            },
+            {
+                "alpha_when_not_hover": 100,
+                "auto_resize": true,
+                "height": "5%",
+                "name": "auto_add_barriers",
+                "src": "<&ui>button.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Editor.auto_add_barriers}"
+                },
+                "type": "button",
+                "width": 0,
+                "x": 0,
+                "y": "18%"
+            },
+            {
+                "alpha_when_not_hover": 100,
+                "auto_resize": true,
+                "height": "5%",
+                "name": "add_barrier",
+                "src": "<&ui>button.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Editor.add_barrier}"
+                },
+                "type": "button",
+                "width": 0,
+                "x": 0,
+                "y": "18%"
             }
         ],
         "type": "container",
@@ -535,7 +565,7 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Battle,tile}"
+                    "src": "{Editor.tile}"
                 },
                 "type": "button",
                 "width": 0,
@@ -550,7 +580,7 @@
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Battle,decoration}"
+                    "src": "{Editor.decoration}"
                 },
                 "type": "button",
                 "width": 0,
@@ -569,7 +599,7 @@
             {
                 "color": "white",
                 "font_size": "7.5%",
-                "src": "{OptionMenu,setting}",
+                "src": "{OptionMenu.setting}",
                 "type": "text",
                 "x": "center",
                 "y": "5%"
@@ -577,7 +607,7 @@
             {
                 "color": "white",
                 "font_size": "5%",
-                "src": "{OptionMenu,global_volume}",
+                "src": "{OptionMenu.global_volume}",
                 "type": "text",
                 "x": "22.5%",
                 "y": "30%"
@@ -602,7 +632,7 @@
             {
                 "color": "white",
                 "font_size": "5%",
-                "src": "{OptionMenu,background_music}",
+                "src": "{OptionMenu.background_music}",
                 "type": "text",
                 "x": "22.5%",
                 "y": "45%"
@@ -627,7 +657,7 @@
             {
                 "color": "white",
                 "font_size": "5%",
-                "src": "{OptionMenu,sound_effects}",
+                "src": "{OptionMenu.sound_effects}",
                 "type": "text",
                 "x": "22.5%",
                 "y": "60%"
@@ -652,7 +682,7 @@
             {
                 "color": "white",
                 "font_size": "5%",
-                "src": "{OptionMenu,environmental_sound}",
+                "src": "{OptionMenu.environmental_sound}",
                 "type": "text",
                 "x": "22.5%",
                 "y": "75%"
@@ -677,7 +707,7 @@
             {
                 "color": "white",
                 "font_size": "5%",
-                "src": "{OptionMenu,language}",
+                "src": "{OptionMenu.language}",
                 "type": "text",
                 "x": "22.5%",
                 "y": "20%"
@@ -704,7 +734,7 @@
                 "font_size": "3%",
                 "name": "resume",
                 "outline_thickness": 2,
-                "src": "{Global,resume}",
+                "src": "{Global.resume}",
                 "type": "text&resize_when_hovered",
                 "x": "7.5%",
                 "y": "27.5%"
@@ -714,7 +744,7 @@
                 "font_size": "3%",
                 "name": "save",
                 "outline_thickness": 2,
-                "src": "{Global,save_current_progress}",
+                "src": "{Global.save_current_progress}",
                 "type": "text&resize_when_hovered",
                 "x": "7.5%",
                 "y": "35%"
@@ -724,7 +754,7 @@
                 "font_size": "3%",
                 "name": "load",
                 "outline_thickness": 2,
-                "src": "{Global,load_progress}",
+                "src": "{Global.load_progress}",
                 "type": "text&resize_when_hovered",
                 "x": "7.5%",
                 "y": "42.5%"
@@ -734,7 +764,7 @@
                 "font_size": "3%",
                 "name": "option_menu",
                 "outline_thickness": 2,
-                "src": "{OptionMenu,option_menu}",
+                "src": "{OptionMenu.option_menu}",
                 "type": "text&resize_when_hovered",
                 "x": "7.5%",
                 "y": "50%"
@@ -744,7 +774,7 @@
                 "font_size": "3%",
                 "name": "back_to_mainMenu",
                 "outline_thickness": 2,
-                "src": "{Global,back_to_main_menu}",
+                "src": "{Global.back_to_main_menu}",
                 "type": "text&resize_when_hovered",
                 "x": "7.5%",
                 "y": "57.5%"
@@ -754,7 +784,7 @@
                 "font_size": "3%",
                 "name": "exit_to_desktop",
                 "outline_thickness": 2,
-                "src": "{OptionMenu,exit_to_desktop}",
+                "src": "{OptionMenu.exit_to_desktop}",
                 "type": "text&resize_when_hovered",
                 "x": "7.5%",
                 "y": "65%"

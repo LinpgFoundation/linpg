@@ -1,8 +1,4 @@
 {
-    "Battle": {
-        "decoration": "Decoration",
-        "tile": "Tile"
-    },
     "Dialog": {
         "auto": "Auto",
         "choice": "Choice",
@@ -10,7 +6,10 @@
     },
     "Editor": {
         "add": "New dialog",
+        "add_barrier": "Add Barrier",
+        "auto_add_barriers": "Animatedly Add Barriers",
         "background": "Background Image",
+        "decoration": "Decoration",
         "delete": "Delete current dialog",
         "example_project": "Example Project",
         "new_colum": "New Colum",
@@ -23,7 +22,8 @@
         "previous": "Previous dialog",
         "remove_colum": "Remove Colum",
         "remove_npc": "Remove this npc",
-        "remove_row": "Remove Row"
+        "remove_row": "Remove Row",
+        "tile": "Tile"
     },
     "Global": {
         "back": "Back",

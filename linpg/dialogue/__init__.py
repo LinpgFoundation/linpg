@@ -15,7 +15,7 @@ def create_new_project(dir_path: str, config_type: str = "json") -> None:
         # 根据模块生成项目信息
         info_data: dict = {
             "author": "Put your name here",
-            "default_lang": Setting.get_language(),
+            "default_language": Setting.get_language(),
             "link": "https://whateve-you-want/maybe-your-github-link",
             "linpg_version": Info.get_current_version(),
             "title": {},

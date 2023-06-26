@@ -43,7 +43,7 @@ class DialogNavigationWindow(AbstractFrame):
         self.__nodes_map.clear()
         for key in dialogs_data:
             next_keys: list[str] = []
-            theNext: dict | None = dialogs_data[key].get("next_dialog_id")
+            theNext: dict | None = dialogs_data[key].get("next")
             if theNext is not None and len(theNext) > 0:
                 if theNext["type"] == "option":
                     for next_keys_options in theNext["target"]:

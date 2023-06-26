@@ -1,13 +1,4 @@
-# 尝试导入tcod库
-_TCOD_INITIALIZED: bool = False
-try:
-    import tcod
-
-    _TCOD_INITIALIZED = True
-except ImportError:
-    pass
-
-from .entity import *
+from .astar import *
 
 
 # 地图模块
@@ -23,7 +14,9 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         # 本地坐标模块
         SurfaceWithLocalPos.__init__(self)
         # 地图数据
-        self.__MAP: numpy.ndarray = numpy.asarray([])
+        self.__MAP: numpy.ndarray = numpy.array([])
+        # 障碍数据
+        self.__BARRIER_MASK: numpy.ndarray = numpy.array([])
         # 地图 tile lookup table
         self.__tile_lookup_table: list[str] = []
         # 行
@@ -55,9 +48,10 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         return str(_coordinate[0]) + "_" + str(_coordinate[1])
 
     # 初始化地图数据
-    def __init_map(self, map_data: numpy.ndarray, tile_size: int_f) -> None:
+    def __init_map(self, map_data: numpy.ndarray, barrier_data: numpy.ndarray | None, tile_size: int_f) -> None:
         self.__MAP = map_data
         self.__row, self.__column = self.__MAP.shape
+        self.__BARRIER_MASK = barrier_data if barrier_data is not None else numpy.zeros(self.shape, dtype=numpy.byte)
         # 初始化追踪目前已经画出的方块的2d列表
         self.__tile_on_surface = numpy.zeros(self.__MAP.shape, dtype=numpy.byte)
         # 初始化地图渲染用的图层
@@ -70,7 +64,12 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
     def update(self, _data: dict, _block_size: int_f) -> None:
         # 初始化地图数据
         self.__tile_lookup_table = list(_data["map"]["lookup_table"])
-        self.__init_map(numpy.asarray(_data["map"]["array2d"], dtype=numpy.byte), _block_size)
+        barrier_data: list[list[int]] | None = _data["map"].get("barrier")
+        self.__init_map(
+            numpy.asarray(_data["map"].get("data", _data["map"].get("array2d")), dtype=numpy.byte),
+            numpy.asarray(barrier_data, dtype=numpy.byte) if barrier_data is not None else None,
+            _block_size,
+        )
         # 暗度（仅黑夜场景有效）
         TileMapImagesModule.DARKNESS = 155 if bool(_data.get("at_night", False)) is True else 0
         # 设置本地坐标
@@ -124,6 +123,15 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
     def column(self) -> int:
         return self.__column
 
+    # 列
+    @property
+    def shape(self) -> tuple[int, int]:
+        return self.__column, self.__row
+
+    # 设置障碍mask
+    def set_barrier_mask(self, x: int, y: int, value: int) -> None:
+        self.__BARRIER_MASK[x, y] = value
+
     # 新增轴
     def add_on_axis(self, index: int = -1, axis: int = 0) -> None:
         axis = Numbers.keep_int_in_range(axis, 0, 1)
@@ -131,6 +139,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             index = self.__row if axis == 0 else self.__column
         self.__init_map(
             numpy.insert(self.__MAP, index, numpy.random.randint(len(self.__tile_lookup_table), size=self.__row if axis == 1 else self.__column), axis),
+            numpy.insert(self.__BARRIER_MASK, index, numpy.zeros(self.__row if axis == 1 else self.__column), axis),
             TileMapImagesModule.TILE_SIZE,
         )
 
@@ -147,7 +156,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             for key in tuple(self.__decorations.keys()):
                 if self.__decorations[key].x == index:
                     self.__decorations.pop(key)
-        self.__init_map(numpy.delete(self.__MAP, index, axis), TileMapImagesModule.TILE_SIZE)
+        self.__init_map(numpy.delete(self.__MAP, index, axis), numpy.delete(self.__BARRIER_MASK, index, axis), TileMapImagesModule.TILE_SIZE)
 
     # 获取方块宽度
     @property
@@ -174,18 +183,22 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         return {
             "decoration": [_item.to_dict() for _item in sorted(self.__decorations.values())],
             "map": {
-                "array2d": numpy.vectorize(lambda _num: sorted_lookup_table.index(self.__tile_lookup_table[_num]))(self.__MAP).tolist(),
+                "data": numpy.vectorize(lambda _num: sorted_lookup_table.index(self.__tile_lookup_table[_num]))(self.__MAP).tolist(),
                 "lookup_table": sorted_lookup_table,
                 "lit_area": [list(area_coordinate) for area_coordinate in self.__lit_area],
+                "barrier": self.__BARRIER_MASK.tolist(),
             },
         }
 
     # 是否角色能通过该方块
-    def is_passable(self, _x: int, _y: int) -> bool:
-        if bool(self.__TILES_DATABASE[self.get_tile(_x, _y).split(":")[0]]["passable"]) is True:
-            _decoration: DecorationObject | None = self.__decorations.get(self.__get_coordinate_format_key((_x, _y)))
-            return _decoration is None or bool(self.__DECORATION_DATABASE[_decoration.type]["passable"])
-        return False
+    def is_passable(self, _x: int, _y: int, supposed: bool = False) -> bool:
+        if not supposed:
+            return bool(self.__BARRIER_MASK[_x, _y] == 0)
+        else:
+            if bool(self.__TILES_DATABASE[self.get_tile(_x, _y).split(":")[0]]["passable"]) is True:
+                _decoration: DecorationObject | None = self.__decorations.get(self.__get_coordinate_format_key((_x, _y)))
+                return _decoration is None or bool(self.__DECORATION_DATABASE[_decoration.type]["passable"])
+            return False
 
     # 以百分比的形式获取本地坐标（一般用于存档数据）
     def get_local_pos_in_percentage(self) -> dict[str, str]:
@@ -276,14 +289,12 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
                 self.__tile_on_surface.fill(0)
                 self.__need_to_recheck_tile_on_surface = False
             # 画出地图
-            posTupleTemp: tuple
-            evn_img: StaticImage
             for y in range(self.__row):
                 for x in range(self.__column):
-                    posTupleTemp = self.calculate_position(x, y)
+                    posTupleTemp: tuple[int, int] = self.calculate_position(x, y)
                     if -self.tile_width <= posTupleTemp[0] < _surface.get_width() and -self.tile_width <= posTupleTemp[1] < _surface.get_height():
                         if self.__tile_on_surface[y, x] == 0:
-                            evn_img = TileMapImagesModule.get_image(self.get_tile(x, y), not self.is_coordinate_in_lit_area(x, y))
+                            evn_img: StaticImage = TileMapImagesModule.get_image(self.get_tile(x, y), not self.is_coordinate_in_lit_area(x, y))
                             evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
                             evn_img.set_local_offset_availability(False)
                             if self.__map_surface is not None:
@@ -401,7 +412,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         ignore_alliances: bool = False,
     ) -> list[tuple[int, int]]:
         # 初始化寻路地图
-        map2d: numpy.ndarray = numpy.ones((self.__column, self.__row), dtype=numpy.byte)
+        map2d: numpy.ndarray = numpy.ones(self.shape, dtype=numpy.byte)
         # 如果角色无法移动至黑暗处
         if not can_move_through_darkness and TileMapImagesModule.DARKNESS > 0:
             map2d.fill(0)
@@ -416,22 +427,16 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             for value in alliances.values():
                 if round(value.x) == goal[0] and round(value.y) == goal[1]:
                     return []
-        # 历遍地图，设置障碍区块
-        for _x in range(self.__column):
-            for _y in range(self.__row):
-                if not self.is_passable(_x, _y):
-                    map2d[_x, _y] = 0
         # 将所有敌方角色的坐标点设置为障碍区块
         for key, value in enemies.items():
             if key not in enemies_ignored:
                 map2d[round(value.x), round(value.y)] = 0
+        # subtract mask
+        map2d = numpy.subtract(map2d, self.__BARRIER_MASK)
         # 如果目标坐标合法
         if 0 <= goal[1] < self.__row and 0 <= goal[0] < self.__column and map2d[goal[0], goal[1]] == 1:
             # 开始寻路
-            if _TCOD_INITIALIZED is True:
-                _path: list[tuple[int, int]] = tcod.path.AStar(map2d, 1.0).get_path(start[0], start[1], goal[0], goal[1])
-            else:
-                EXCEPTION.fatal("You need to install tcod to enable path finding feature!", 4)
+            _path: list[tuple[int, int]] = AStar.search(map2d, start, goal)
             # 预处理路径并返回
             return _path[:lenMax] if lenMax is not None and len(_path) > lenMax else _path
         # 返回空列表

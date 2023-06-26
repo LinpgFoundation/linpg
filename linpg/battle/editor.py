@@ -28,6 +28,8 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self._delete_mode: bool = False
         # 是否有ui容器被鼠标触碰
         self._no_container_is_hovered: bool = False
+        # 是否展示barrier mask
+        self._show_barrier_mask: bool = False
 
     # 根据数据更新特定的角色 - 子类需实现
     @abstractmethod
@@ -40,6 +42,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         if event.key == Keys.ESCAPE:
             self.__object_to_put_down.clear()
             self._delete_mode = False
+            self._show_barrier_mask = False
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
@@ -190,10 +193,12 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self.__buttons_container.get("back").set_left(self.__buttons_container.get("save").get_right() + padding)
         self.__buttons_container.get("delete").set_left(self.__buttons_container.get("back").get_right() + padding)
         self.__buttons_container.get("reload").set_left(self.__buttons_container.get("delete").get_right() + padding)
-        self.__buttons_container.get("new_row").set_left(self.__buttons_container.get("reload").get_right() + padding)
+        self.__buttons_container.get("new_row").set_left(self.__buttons_container.get("save").get_left())
         self.__buttons_container.get("new_colum").set_left(self.__buttons_container.get("new_row").get_right() + padding)
         self.__buttons_container.get("remove_row").set_left(self.__buttons_container.get("new_colum").get_right() + padding)
         self.__buttons_container.get("remove_colum").set_left(self.__buttons_container.get("remove_row").get_right() + padding)
+        self.__buttons_container.get("auto_add_barriers").set_left(self.__buttons_container.get("save").get_left())
+        self.__buttons_container.get("add_barrier").set_left(self.__buttons_container.get("auto_add_barriers").get_right() + padding)
 
     # 初始化并加载新场景
     def new(self, chapterType: str, chapterId: int, projectName: str | None = None) -> None:
@@ -224,13 +229,17 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 self.__UIContainerButtonBottom.flip(False, True)
             elif self._tile_is_hovering is not None:
                 if self._delete_mode is True:
-                    # 查看当前位置是否有装饰物
-                    decoration: DecorationObject | None = self.get_map().get_decoration(self._tile_is_hovering)
-                    # 如果发现有冲突的装饰物
-                    if decoration is not None:
-                        self.get_map().remove_decoration(decoration)
+                    # 优先移除barrier mask
+                    if not self.get_map().is_passable(self._tile_is_hovering[0], self._tile_is_hovering[1]):
+                        self.get_map().set_barrier_mask(self._tile_is_hovering[0], self._tile_is_hovering[1], 0)
                     else:
-                        self.remove_entity_on_pos(self._tile_is_hovering)
+                        # 查看当前位置是否有装饰物
+                        decoration: DecorationObject | None = self.get_map().get_decoration(self._tile_is_hovering)
+                        # 如果发现有冲突的装饰物
+                        if decoration is not None:
+                            self.get_map().remove_decoration(decoration)
+                        else:
+                            self.remove_entity_on_pos(self._tile_is_hovering)
                 elif self.isAnyObjectSelected() is True and self._no_container_is_hovered is True:
                     match self.__object_to_put_down["type"]:
                         case "tile":
@@ -321,6 +330,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         # 画出上方按钮
         self.__buttons_container.draw(_surface)
         if Controller.get_event("confirm") and len(self.__object_to_put_down) <= 0 and not self._delete_mode:
+            show_barrier_mask: bool = False
             match self.__buttons_container.item_being_hovered:
                 case "save":
                     self._save()
@@ -352,6 +362,19 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                         for key in tuple(_value.keys()):
                             if _value[key].x == self.get_map().column:
                                 _value.pop(key)
+                case "auto_add_barriers":
+                    # 历遍地图，设置障碍区块
+                    for _x in range(self.get_map().column):
+                        for _y in range(self.get_map().row):
+                            if not self.get_map().is_passable(_x, _y, True):
+                                self.get_map().set_barrier_mask(_x, _y, 1)
+                case "add_barrier":
+                    show_barrier_mask = True
+                case _:
+                    show_barrier_mask = self._show_barrier_mask
+                    if self._show_barrier_mask is True and self._tile_is_hovering is not None:
+                        self.get_map().set_barrier_mask(self._tile_is_hovering[0], self._tile_is_hovering[1], 1)
+            self._show_barrier_mask = show_barrier_mask
 
         # 跟随鼠标显示即将被放下的物品
         if self.isAnyObjectSelected() is True:

@@ -17,9 +17,9 @@ class DialogContent:
         # 讲述人
         self.narrator: str = _data.get("narrator", "")
         # 上一个
-        self.last: str | None = _data.get("last_dialog_id")
+        self.previous: str | None = _data.get("previous", _data.get("last_dialog_id"))
         # 下一个
-        _next: dict | None = _data.get("next_dialog_id")
+        _next: dict | None = _data.get("next", _data.get("next_dialog_id"))
         self.next: dict = _next if _next is not None else {}
         # 注释
         self.notes: list[str] = []
@@ -44,9 +44,9 @@ class DialogContent:
             "background_music": self.background_music,
             "character_images": self.character_images,
             "contents": self.contents,
-            "last_dialog_id": self.last,
+            "previous": self.previous,
             "narrator": self.narrator,
-            "next_dialog_id": self.next,
+            "next": self.next,
         }
         if len(self.notes) > 0:
             _result["notes"] = self.notes
@@ -91,8 +91,8 @@ class DialogContentManager:
     @property
     def last(self) -> DialogContent | None:
         # 如果指针不存在，则更新接口
-        if self.__last is None and self.current.last is not None:
-            self.__last = DialogContent(self.__dialog_data[self.__section][self.current.last], self.current.last)
+        if self.__last is None and self.current.previous is not None:
+            self.__last = DialogContent(self.__dialog_data[self.__section][self.current.previous], self.current.previous)
         return self.__last
 
     # 保存对当前对话的接口的修改

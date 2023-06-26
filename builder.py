@@ -28,7 +28,6 @@ Builder.compile(
             "numpy",
             "pygame",
             "pygame.gfxdraw",
-            "tcod",
             "tkinter",
         ],
     },

@@ -17,7 +17,7 @@ class _ScriptProcessor:
         self.__id: int = -1
         self.__lang: str = ""
         self.__section: str | None = None
-        self.__last_dialog_id: str | None = None
+        self.__previous: str | None = None
         self.__lines: list[str] = []
         self.__branch_labels: dict[str, str] = {}
         self.__dialog_associate_key: dict[str, str] = {}
@@ -156,38 +156,38 @@ class _ScriptProcessor:
                     self.__lang = self.__extract_string(_currentLine, "[lang]")
                 # 部分
                 elif _currentLine.startswith("[section]"):
-                    if self.__last_dialog_id is not None:
-                        self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = None
+                    if self.__previous is not None:
+                        self.__output[self.__section][self.__previous]["next"] = None
                     self.__section = self.__extract_string(_currentLine, "[section]")
                     self.__output[self.__section] = {}
                     self.__output[self.__section]["head"] = {}
                     self.__current_data = DialogContent({}, "head")
-                    self.__last_dialog_id = None
+                    self.__previous = None
                 # 结束符
                 elif _currentLine.startswith("[end]"):
-                    self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = None
+                    self.__output[self.__section][self.__previous]["next"] = None
                     break
                 # 转换场景
                 elif _currentLine.startswith("[scene]"):
-                    self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"]["type"] = "changeScene"
+                    self.__output[self.__section][self.__previous]["next"]["type"] = "changeScene"
                     self.__current_data.background_image = self.__extract_parameter(_currentLine, "[scene]")
                     self.__blocked = True
                 # 终端
                 elif _currentLine.startswith("[block]"):
-                    if self.__last_dialog_id is not None:
-                        self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = None
+                    if self.__previous is not None:
+                        self.__output[self.__section][self.__previous]["next"] = None
                     self.__current_data = DialogContent({}, "id_needed")
-                    self.__last_dialog_id = None
+                    self.__previous = None
                 # 选项
                 elif _currentLine.startswith("[opt]"):
                     # 确认在接下来的一行有branch的label
                     if not self.__lines[self.__line_index + 1].startswith("[br]"):
                         self.__terminated(f"For option on line {self.__line_index + 1}, a branch label is not found on the following line")
-                    # 如果next_dialog_id没被初始化，则初始化
-                    if self.__output[self.__section][self.__last_dialog_id].get("next_dialog_id") is None:
-                        self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"] = {}
+                    # 如果next没被初始化，则初始化
+                    if self.__output[self.__section][self.__previous].get("next") is None:
+                        self.__output[self.__section][self.__previous]["next"] = {}
                     # 获取对应的下一个对话字典的指针
-                    dialog_next: dict = self.__output[self.__section][self.__last_dialog_id]["next_dialog_id"]
+                    dialog_next: dict = self.__output[self.__section][self.__previous]["next"]
                     if dialog_next.get("type") != "option":
                         dialog_next["type"] = "option"
                         dialog_next["target"] = []
@@ -227,37 +227,37 @@ class _ScriptProcessor:
                     elif self.__section not in self.__output:
                         self.__output[self.__section] = {}
                     # 如果上个dialog存在（不一定非得能返回）
-                    if self.__last_dialog_id is not None:
+                    if self.__previous is not None:
                         if not self.__blocked:
-                            self.__current_data.last = self.__last_dialog_id
+                            self.__current_data.previous = self.__previous
                         else:
-                            self.__current_data.last = None
+                            self.__current_data.previous = None
                             self.__blocked = False
                         # 生成数据
-                        last_ref: dict | None = self.__output[self.__section].get(self.__last_dialog_id)
+                        last_ref: dict | None = self.__output[self.__section].get(self.__previous)
                         if last_ref is not None:
-                            if last_ref.get("next_dialog_id") is not None:
-                                last_ref["next_dialog_id"]["target"] = self.__dialog_associate_key[str(self.__line_index)]
-                                if "type" not in last_ref["next_dialog_id"]:
-                                    last_ref["next_dialog_id"]["type"] = "default"
+                            if last_ref.get("next") is not None:
+                                last_ref["next"]["target"] = self.__dialog_associate_key[str(self.__line_index)]
+                                if "type" not in last_ref["next"]:
+                                    last_ref["next"]["type"] = "default"
                             else:
-                                last_ref["next_dialog_id"] = {
+                                last_ref["next"] = {
                                     "target": self.__dialog_associate_key[str(self.__line_index)],
                                     "type": "default",
                                 }
                         else:
-                            self.__terminated(f"KeyError: {self.__last_dialog_id}")
+                            self.__terminated(f"KeyError: {self.__previous}")
                     else:
-                        self.__current_data.last = None
+                        self.__current_data.previous = None
                     # 添加注释
                     if len(self.__accumulated_comments) > 0:
                         self.__current_data.notes = self.__accumulated_comments
                         self.__accumulated_comments = []
                     # 更新key
-                    self.__last_dialog_id = self.__dialog_associate_key[str(self.__line_index)]
+                    self.__previous = self.__dialog_associate_key[str(self.__line_index)]
                     # 更新缓存参数
                     self.__line_index += len(self.__current_data.contents)
-                    self.__output[self.__section][self.__last_dialog_id] = copy.deepcopy(self.__current_data.to_dict())
+                    self.__output[self.__section][self.__previous] = copy.deepcopy(self.__current_data.to_dict())
                     # 移除注释
                     self.__current_data.notes.clear()
                 else:

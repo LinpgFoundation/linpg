@@ -55,12 +55,8 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
             self._need_update = True
 
     # 返回一个复制品
-    def copy(self) -> "StaticImage":
-        return StaticImage(self.get_image_copy(), self.x, self.y, self.get_width(), self.get_height())
-
-    # 返回一个浅复制品
-    def light_copy(self) -> "StaticImage":
-        return StaticImage(self._get_image_reference(), self.x, self.y, self.get_width(), self.get_height())
+    def copy(self, deep_copy: bool = True) -> "StaticImage":
+        return StaticImage(self.get_image_copy() if deep_copy else self._get_image_reference(), self.x, self.y, self.get_width(), self.get_height())
 
     @staticmethod
     def new_place_holder() -> "StaticImage":
@@ -129,24 +125,9 @@ class MovableStaticImage(StaticImage):
         self.__is_moving_toward_target: bool = False
 
     # 返回一个复制
-    def copy(self) -> "MovableStaticImage":
+    def copy(self, deep_copy: bool = True) -> "MovableStaticImage":
         return MovableStaticImage(
-            self.get_image_copy(),
-            self.x,
-            self.y,
-            self.__target_x,
-            self.__target_y,
-            self.__move_speed_x,
-            self.__move_speed_y,
-            self.get_width(),
-            self.get_height(),
-            self.tag,
-        )
-
-    # 返回一个浅复制品
-    def light_copy(self) -> "MovableStaticImage":
-        return MovableStaticImage(
-            self._get_image_reference(),
+            self.get_image_copy() if deep_copy else self._get_image_reference(),
             self.x,
             self.y,
             self.__target_x,
@@ -240,24 +221,30 @@ class MovableStaticImage(StaticImage):
 
 # gif图片管理
 class AnimatedImage(AdvancedAbstractImageSurface):
-    def __init__(self, imgList: tuple, x: int_f, y: int_f, width: int_f, height: int_f, updateGap: int_f, tag: str = "") -> None:
+    def __init__(self, imgList: tuple, x: int_f, y: int_f, width: int_f, height: int_f, fps: int_f, tag: str = "") -> None:
         super().__init__(imgList, x, y, width, height, tag)
-        self.imgId: int = 0
-        self.updateGap: int = max(int(updateGap), 0)
-        self.countDown: int = 0
+        self.__imgId: int = 0
+        self.__fps: int = max(int(fps), 0)
+        self.__countDown: int = 0
+
+    # get frame per second of
+    def get_fps(self) -> int:
+        return self.__fps
+
+    # set frame per second of
+    def set_fps(self, value: int_f) -> None:
+        self.__fps = max(int(value), 0)
 
     # 返回一个复制
-    def copy(self) -> "AnimatedImage":
-        return AnimatedImage(self.get_image_copy(), self.x, self.y, self.get_width(), self.get_height(), self.updateGap)
-
-    # 返回一个浅复制品
-    def light_copy(self) -> "AnimatedImage":
-        return AnimatedImage(self._get_image_reference(), self.x, self.y, self.get_width(), self.get_height(), self.updateGap)
+    def copy(self, deep_copy: bool = True) -> "AnimatedImage":
+        return AnimatedImage(
+            self.get_image_copy() if deep_copy else self._get_image_reference(), self.x, self.y, self.get_width(), self.get_height(), self.__fps, self.tag
+        )
 
     # 当前图片
     @property
     def current_image(self) -> StaticImage:
-        return self._get_image_reference()[self.imgId]  # type: ignore
+        return self._get_image_reference()[self.__imgId]  # type: ignore
 
     # 展示
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
@@ -265,10 +252,10 @@ class AnimatedImage(AdvancedAbstractImageSurface):
             self.current_image.set_size(self.get_width(), self.get_height())
             self.current_image.set_alpha(self._alpha)
             self.current_image.display(_surface, Coordinates.add(self.pos, offSet))
-            if self.countDown >= self.updateGap:
-                self.countDown = 0
-                self.imgId += 1
-                if self.imgId >= len(self._get_image_reference()):
-                    self.imgId = 0
+            if self.__countDown >= self.__fps * 1000:
+                self.__countDown = 0
+                self.__imgId += 1
+                if self.__imgId >= len(self._get_image_reference()):
+                    self.__imgId = 0
             else:
-                self.countDown += 1
+                self.__countDown += Display.get_delta_time()

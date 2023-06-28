@@ -117,14 +117,17 @@ class ProgressBarSurface(AbstractProgressBar):
         # 模式
         self.axis_mode: Axis = mode
 
-    # 克隆
-    def copy(self) -> "ProgressBarSurface":
+    # 返回一个复制
+    def copy(self, deep_copy: bool = True) -> "ProgressBarSurface":
         return ProgressBarSurface(
-            self.get_image_copy(), self._img2.copy() if self._img2 is not None else None, self.x, self.y, self.get_width(), self.get_height(), self.axis_mode
+            self.get_image_copy() if deep_copy else self._get_image_reference(),
+            self._img2 if not deep_copy or self._img2 is None else self._img2.copy(),
+            self.x,
+            self.y,
+            self.get_width(),
+            self.get_height(),
+            self.axis_mode,
         )
-
-    def light_copy(self) -> "ProgressBarSurface":
-        return ProgressBarSurface(self._get_image_reference(), self._img2, self.x, self.y, self.get_width(), self.get_height(), self.axis_mode)
 
     # 展示
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
@@ -231,13 +234,17 @@ class DynamicProgressBarSurface(ProgressBarSurface):
         self._percentage_to_be = round(Numbers.keep_number_in_range(value, 0, 1) * self.accuracy, 5)
         self.__percent_update_each_time = round((self._percentage_to_be - self.__real_current_percentage) / self.__total_update_intervals, 5)
 
-    def copy(self) -> "DynamicProgressBarSurface":
+    # 返回一个复制
+    def copy(self, deep_copy: bool = True) -> "DynamicProgressBarSurface":
         return DynamicProgressBarSurface(
-            self.get_image_copy(), self._img2.copy() if self._img2 is not None else None, self.x, self.y, self.get_width(), self.get_height(), self.axis_mode
+            self.get_image_copy() if deep_copy else self._get_image_reference(),
+            self._img2 if not deep_copy or self._img2 is None else self._img2.copy(),
+            self.x,
+            self.y,
+            self.get_width(),
+            self.get_height(),
+            self.axis_mode,
         )
-
-    def light_copy(self) -> "DynamicProgressBarSurface":
-        return DynamicProgressBarSurface(self._get_image_reference(), self._img2, self.x, self.y, self.get_width(), self.get_height(), self.axis_mode)
 
     # 获取上方图片（子类可根据需求修改）
     def _get_img_on_top(self) -> ImageSurface:

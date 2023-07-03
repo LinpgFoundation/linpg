@@ -400,7 +400,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
             # 用于存档的截图
             _screenshot: ImageSurface = _surface.copy()
             # 用于背景的毛玻璃效果图
-            _background: ImageSurface = Filters.glassmorphism_effect(_screenshot)
+            _background: ImageSurface = Filters.gaussian_blur(_screenshot)
             # 启用菜单
             self.__pause_menu.set_visible(True)
             # 主循环

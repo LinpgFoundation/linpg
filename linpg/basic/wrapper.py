@@ -28,6 +28,28 @@ PoI = str | pygame.Surface
 PG_Event = pygame.event.Event
 
 
+# 图像库数据
+class GraphicLibrary:
+    PYGAME: Final[int] = 0
+    PYGAME_CE: Final[int] = 1
+    PYGLET: Final[int] = 2
+
+    # 是否正在使用pygame_ce
+    __IS_CE: Final[bool] = getattr(pygame, "IS_CE", False) is not False
+
+    @classmethod
+    def is_using_pygame(cls) -> bool:
+        return not cls.__IS_CE
+
+    @classmethod
+    def is_using_pygame_ce(cls) -> bool:
+        return cls.__IS_CE
+
+    @classmethod
+    def get_name(cls) -> str:
+        return "Pygame-ce" if cls.__IS_CE else "Pygame"
+
+
 # 指向pygame事件的指针
 class Events(enum.IntEnum):
     # 鼠标
@@ -288,24 +310,33 @@ class Surfaces:
 
 # 滤镜效果
 class Filters:
-    # 毛玻璃效果
+    # blur a surface using gaussian blur 毛玻璃效果
     @staticmethod
-    def glassmorphism_effect(
-        _surface: ImageSurface, _rect: tuple[int, int, int, int] | tuple[tuple[int, int], tuple[int, int]] | None = None, whiteness: int = 10
-    ) -> ImageSurface:
-        _processed_image: PILImage.Image = PILImage.fromarray(Surfaces.to_array(_surface if _rect is None else _surface.subsurface(_rect))).filter(
-            PILImageFilter.GaussianBlur(radius=6)
-        )
-        _surface = Surfaces.from_array(numpy.asarray(_processed_image.convert("RGBA"))).convert_alpha()
-        _surface.fill((whiteness, whiteness, whiteness), special_flags=pygame.BLEND_RGB_ADD)
-        return _surface
+    def gaussian_blur(_surface: ImageSurface, radius: int = 10, repeat_edge_pixels: bool = True, dest_surface: ImageSurface | None = None) -> ImageSurface:
+        # if is using pygame-ce
+        if GraphicLibrary.is_using_pygame_ce():
+            return pygame.transform.gaussian_blur(
+                _surface, radius, repeat_edge_pixels, dest_surface if dest_surface is not None else Surfaces.new(_surface.get_size())
+            )
+        # if is using pygame not ce, then use pillow GaussianBlur instead
+        new_surf: ImageSurface = Surfaces.from_array(
+            numpy.asarray(PILImage.fromarray(Surfaces.to_array(_surface)).filter(PILImageFilter.GaussianBlur(radius)).convert("RGBA"))
+        ).convert_alpha()
+        if dest_surface is not None:
+            return pygame.transform.smoothscale(new_surf, dest_surface.get_size(), dest_surface)
+        return new_surf
 
-    # 直接将毛玻璃效果应用到surface上
-    @staticmethod
-    def apply_glassmorphism_effect_to(_surface: ImageSurface, whiteness: int = 10) -> None:
-        _processed_image: PILImage.Image = PILImage.fromarray(Surfaces.to_array(_surface)).filter(PILImageFilter.GaussianBlur(radius=6))
-        _surface.blit(Surfaces.from_array(numpy.asarray(_processed_image.convert("RGBA"))).convert_alpha(), (0, 0))
-        _surface.fill((whiteness, whiteness, whiteness), special_flags=pygame.BLEND_RGB_ADD)
+    # blur a surface using box blur
+    @classmethod
+    def box_blur(cls, _surface: ImageSurface, radius: int = 10, repeat_edge_pixels: bool = True, dest_surface: ImageSurface | None = None) -> ImageSurface:
+        # if is using pygame-ce
+        if GraphicLibrary.is_using_pygame_ce():
+            return pygame.transform.box_blur(
+                _surface, radius, repeat_edge_pixels, dest_surface if dest_surface is not None else Surfaces.new(_surface.get_size())
+            )
+        # box blur is not supported for other graphic
+        EXCEPTION.warn('The "box_blur" filter is only supported when using pygame-ce, gaussian_blur will be used.')
+        return cls.gaussian_blur(_surface, radius, repeat_edge_pixels, dest_surface)
 
     # 增加图层暗度
     @staticmethod

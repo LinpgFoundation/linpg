@@ -13,6 +13,5 @@ if clean_up is True:
     Lang.organize()
     # 整理内部设置配置文件
     Config.organize_internal()
-
-print(f'linpg {Info.get_current_version()} ({f"Pygame {pygame.version.ver}"}, Python {EXCEPTION.get_python_version()})')
+print(f'linpg {Info.get_current_version()} ({f"{GraphicLibrary.get_name()} {pygame.version.ver}"}, Python {EXCEPTION.get_python_version()})')
 print(f"Hello from the linpg community. {Info.get_repository_url()}")

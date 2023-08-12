@@ -189,7 +189,7 @@ class DialogEditor(AbstractVisualNovelSystem):
             # 则尝试加载后仍然出现内容为空的情况
             EXCEPTION.inform("No valid dialog content found.")
             # 则加载默认模板
-            self._content.set_section("example_dialog")
+            self._content.set_section("dialog_example")
             self._content.set_section_content({})
         # 检测是否有非str的key name
         for section in self._content.get():
@@ -311,7 +311,7 @@ class DialogEditor(AbstractVisualNovelSystem):
             seniorNodePointer = self._content.get_dialog(_id=key1)["next"]
             if not addNode:
                 match seniorNodePointer["type"]:
-                    case "default" | "changeScene":
+                    case "default" | "scene":
                         seniorNodePointer["target"] = key2
                     case "option":
                         for optionChoice in seniorNodePointer["target"]:
@@ -340,7 +340,7 @@ class DialogEditor(AbstractVisualNovelSystem):
             for key, dialog_data in self._content.get_section_content().items():
                 if dialog_data["next"] is not None:
                     match dialog_data["next"]["type"]:
-                        case "default" | "changeScene":
+                        case "default" | "scene":
                             if dialog_data["next"]["target"] == self._content.get_id():
                                 return str(key)
                         case "option":

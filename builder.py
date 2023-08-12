@@ -28,6 +28,7 @@ Builder.compile(
             "numpy",
             "pygame",
             "pygame.gfxdraw",
+            "pyvns",
             "tkinter",
         ],
     },
@@ -49,5 +50,5 @@ match input("Do you want to package and upload the latest build (Y/n):"):
     case "Y":
         Builder.upload_package("cp311")
     case "N":
-        Builder.delete_file_if_exist("src")
+        Builder.remove("src")
 """

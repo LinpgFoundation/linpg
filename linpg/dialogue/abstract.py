@@ -1,4 +1,4 @@
-from .script import *
+from .render import *
 
 
 # 视觉小说系统接口

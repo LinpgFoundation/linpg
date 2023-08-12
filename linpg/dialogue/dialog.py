@@ -130,7 +130,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
                 case "option":
                     pass
                 # 如果是切换场景
-                case "changeScene":
+                case "scene":
                     self._fade(_surface)
                     # 更新场景
                     self._update_scene(str(self._content.current.next["target"]))
@@ -321,7 +321,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
                         local_y += self.__dialog_txt_system.FONT.size * 3 // 2
                     if dialogIdTemp != self._content.get_id():
                         match str(self._content.get_dialog(_id=dialogIdTemp)["next"]["type"]):
-                            case "default" | "changeScene":
+                            case "default" | "scene":
                                 if (target_temp := self._content.get_dialog(_id=dialogIdTemp)["next"]["target"]) is not None:
                                     dialogIdTemp = str(target_temp)
                                 else:

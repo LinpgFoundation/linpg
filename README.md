@@ -39,6 +39,7 @@ Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游
 | Required / 必需安装 |
 | :---------- |
 | pygame-ce   |
+| pyvns       |
 | numpy       |
 | PySimpleGUI |
 

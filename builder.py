@@ -8,7 +8,7 @@ if os.path.exists("__init__.py"):
     os.rename("__init__.py", TEMP_INIT_NAME)
 
 # 额外需要打包的文件
-additional_files: tuple[str, ...] = ("README.md", "LICENSE", "CODE_OF_CONDUCT.md", "doc")
+additional_files: tuple[str, ...] = ("README.md", "LICENSE", "CODE_OF_CONDUCT.md")
 
 # 开始编译源代码
 Builder.compile(

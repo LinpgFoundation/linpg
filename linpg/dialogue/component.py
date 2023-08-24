@@ -385,6 +385,7 @@ class DialogBox(AbstractDialogBox):
                 else:
                     self.reset()
 
+
 # update naming database
 pyvns.Naming.get_database().clear()
 pyvns.Naming.get_database().update(DataBase.get("Npc"))

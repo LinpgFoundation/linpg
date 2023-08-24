@@ -27,6 +27,7 @@ dependencies = [
     "pillow",
     "PySimpleGUI",
     "PyYAML",
+    "av",
 ]
 
 [project.urls]

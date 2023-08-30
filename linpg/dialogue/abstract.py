@@ -5,7 +5,7 @@ from .render import *
 class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
-        self._content: DialogContentManager = DialogContentManager()
+        self._content: pyvns.ContentManager = pyvns.ContentManager()
         # 黑色Void帘幕
         self._black_bg = StaticImage(Surfaces.colored(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height())
         # 对话文件路径
@@ -169,14 +169,13 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
 
     def _get_dialog_options_container_ready(self) -> None:
         self._dialog_options_container.clear()
-        _next_targets: str | list | None = self._content.current.next.get("target")
-        if isinstance(_next_targets, list):
-            optionBox_y_base: int = Display.get_height() * 3 // 16 - len(_next_targets) * self._FONT_SIZE
-            for i in range(len(_next_targets)):
+        if isinstance(self._content.current.next.target, list):
+            optionBox_y_base: int = Display.get_height() * 3 // 16 - len(self._content.current.next.target) * self._FONT_SIZE
+            for i in range(len(self._content.current.next.target)):
                 optionButton: Button = Button.load("<&ui>option.png", (0, 0), (0, 0))
                 optionButton.set_hover_img(Images.quickly_load("<&ui>option_selected.png"))
                 optionButton.set_auto_resize(True)
-                optionButton.set_text(ButtonComponent.text(str(_next_targets[i]["text"]), self._FONT_SIZE, Colors.WHITE))
+                optionButton.set_text(ButtonComponent.text(str(self._content.current.next.target[i]["text"]), self._FONT_SIZE, Colors.WHITE))
                 optionButton.set_pos((Display.get_width() - optionButton.get_width()) / 2, (i + 1) * 4 * self._FONT_SIZE + optionBox_y_base)
                 self._dialog_options_container.append(optionButton)
             self._dialog_options_container.set_visible(True)

@@ -243,7 +243,7 @@ class DialogEditor(AbstractVisualNovelSystem):
     def __get_the_stuff_need_save(self) -> dict[str, dict[str, dict]]:
         self._content.current.narrator = self.__dialog_txt_system.get_narrator()
         self._content.current.contents = self.__dialog_txt_system.get_content()
-        self._content.save_current_changes()
+        self._content.save()
         return self._content.get()
 
     # 检查是否有任何改动
@@ -294,9 +294,9 @@ class DialogEditor(AbstractVisualNovelSystem):
             "narrator": self.__please_enter_name,
             "next": None,
         }
-        self._content.current.next["target"] = dialogId
-        self._content.current.next["type"] = "default"
-        self._content.save_current_changes()
+        self._content.current.next.target = dialogId
+        self._content.current.next.type = "default"
+        self._content.save()
         _lastId: str = self.__get_last_id()
         if _lastId != "<NULL>":
             self._content.get_dialog(_id=dialogId)["narrator"] = self._content.get_dialog(_id=_lastId)["narrator"]
@@ -352,10 +352,10 @@ class DialogEditor(AbstractVisualNovelSystem):
     # 获取下一个对话的ID
     def __try_get_next_id(self, _surface: ImageSurface) -> str:
         if self._content.current.has_next() is True:
-            if not self._content.current.has_multiple_next():
-                return str(self._content.current.next["target"])
-            elif self._content.current.next.get("type") == "option":
-                if len(self._content.current.next["target"]) > 1:
+            if isinstance(self._content.current.next.target, str):
+                return self._content.current.next.target
+            elif self._content.current.next.type == "option":
+                if len(self._content.current.next.target) > 1:
                     self._get_dialog_options_container_ready()
                     screenshot = _surface.copy()
                     while True:
@@ -365,14 +365,14 @@ class DialogEditor(AbstractVisualNovelSystem):
                         # 等待玩家选择一个选项
                         if Controller.get_event("confirm") and self._dialog_options_container.item_being_hovered >= 0:
                             # 获取下一个对话的id
-                            return str(self._content.current.next["target"][self._dialog_options_container.item_being_hovered]["id"])
+                            return str(self._content.current.next.target[self._dialog_options_container.item_being_hovered]["id"])
                         elif Controller.get_event("back"):
                             self._dialog_options_container.clear()
                             self._dialog_options_container.set_visible(False)
                             break
                         Display.flip()
-                elif len(self._content.current.next["target"]) == 1:
-                    return str(self._content.current.next["target"][0]["id"])
+                elif len(self._content.current.next.target) == 1:
+                    return str(self._content.current.next.target[0]["id"])
         return "<NULL>"
 
     def draw(self, _surface: ImageSurface) -> None:
@@ -381,7 +381,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         if self.__dialog_txt_system.any_changed_was_made():
             self._content.current.narrator = self.__dialog_txt_system.get_narrator()
             self._content.current.contents = self.__dialog_txt_system.get_content()
-            self._content.save_current_changes()
+            self._content.save()
         # 确保按钮初始化
         if self.__buttons_ui_container is None:
             EXCEPTION.fatal("The ui has not been correctly initialized.")
@@ -396,7 +396,7 @@ class DialogEditor(AbstractVisualNovelSystem):
             self._content.current.background_music = (
                 None if isCurrentBgmSelectedNull else str(self.__dialog_bgm_select.get(self.__dialog_bgm_select.get_selected_item()))
             )
-            self._content.save_current_changes()
+            self._content.save()
             self._update_scene(self._content.get_id())
         # 展示出当前可供编辑的dialog部分
         self.__dialog_section_selection.draw(_surface)
@@ -471,7 +471,7 @@ class DialogEditor(AbstractVisualNovelSystem):
             # 移除角色立绘
             elif Controller.get_event("delete") and VisualNovelCharacterImageManager.character_get_click is not None:
                 self._content.current.character_images.remove(VisualNovelCharacterImageManager.character_get_click)
-                self._content.save_current_changes()
+                self._content.save()
                 self._update_scene(self._content.get_id())
         # 显示移除角色的提示
         if VisualNovelCharacterImageManager.character_get_click is not None:
@@ -502,11 +502,11 @@ class DialogEditor(AbstractVisualNovelSystem):
                 if self.__UIContainerRight_bg.is_visible():
                     if (imgName := self.__UIContainerRight_bg.item_being_hovered) is not None:
                         self._content.current.background_image = imgName if imgName != "current_select" else None
-                        self._content.save_current_changes()
+                        self._content.save()
                         self._update_background_image(self._content.current.background_image)
                 elif self.__UIContainerRight_npc.is_visible() and self.__UIContainerRight_npc.item_being_hovered is not None:
                     self._content.current.character_images.append(self.__UIContainerRight_npc.item_being_hovered)
-                    self._content.save_current_changes()
+                    self._content.save()
                     VisualNovelCharacterImageManager.update(self._content.current.character_images)
 
         # 展示dialog navigation窗口

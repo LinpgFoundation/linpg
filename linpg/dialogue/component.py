@@ -391,18 +391,6 @@ pyvns.Naming.get_database().clear()
 pyvns.Naming.get_database().update(DataBase.get("Npc"))
 
 
-# 视觉小说数据操作接口
-class DialogContent(pyvns.Content):
-    def __init__(self, _data: dict, _id: str) -> None:
-        super().__init__(_data, _id)
-
-
-# 视觉小说数据管理模块
-class DialogContentManager(pyvns.ContentManager):
-    def __init__(self) -> None:
-        super().__init__()
-
-
 # 视觉小说脚本编译器
 class ScriptCompiler(pyvns.Compiler):
     # 从有效的视觉小说文件路径中读取信息
@@ -414,16 +402,7 @@ class ScriptCompiler(pyvns.Compiler):
         # 返回 id, 语言
         return int(_path[7 : _path.index("_")]), _path[_path.rfind("_") + 1 : _path.rfind(".")]
 
-    # 保存至(重写父类)
+    # 保存（重写父类）
     @staticmethod
-    def _save_output(_processor: pyvns.Processor, out_folder: str) -> None:
-        Config.save(
-            os.path.join(out_folder, f"chapter{_processor.get_id()}_dialogs_{_processor.get_language()}.{Config.get_file_type()}"),
-            {"dialogs": _processor.get_output(), "compiledAt": int(time.time())},
-        )
-
-
-# 角色立绘名称预处理模块
-class VisualNovelCharacterImageNameMetaData(pyvns.Naming):
-    def __init__(self, _name: str) -> None:
-        super().__init__(_name)
+    def _save(_data: dict[str, Any], _dir: str) -> None:
+        Config.save(os.path.join(_dir, f"chapter{_data['id']}_dialogs_{_data['language']}.{Config.get_file_type()}"), _data)

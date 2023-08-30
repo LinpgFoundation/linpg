@@ -4,7 +4,7 @@ import subprocess
 
 class FFmpeg:
     @staticmethod
-    def execute(*cmds: str):
+    def execute(*cmds: str) -> None:
         subprocess.check_call(
             [os.path.join(os.path.dirname(__file__), "ffmpeg.exe") if os.name == "nt" else "ffmpeg", *cmds], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
         )

@@ -122,10 +122,10 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
             self.__has_reached_the_end = True
             self.stop()
         else:
-            match self._content.current.next.get("type"):
+            match self._content.current.next.type:
                 # 默认转到下一个对话
                 case "default":
-                    self._update_scene(self._content.current.next["target"])
+                    self._update_scene(self._content.current.next.target)
                 # 如果是多选项，则不用处理
                 case "option":
                     pass
@@ -133,7 +133,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
                 case "scene":
                     self._fade(_surface)
                     # 更新场景
-                    self._update_scene(str(self._content.current.next["target"]))
+                    self._update_scene(str(self._content.current.next.target))
                     self.__dialog_txt_system.reset()
                     self.__is_fading_out = False
                     self._fade(_surface)
@@ -198,7 +198,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         BLACK_CURTAIN: ImageSurface = Surfaces.colored(_surface.get_size(), Colors.BLACK)
         BLACK_CURTAIN.set_alpha(0)
         # 创建视频文件
-        VIDEO: VideoPlayer = VideoPlayer(Specification.get_directory("movie", self._content.current.next["target"]))
+        VIDEO: VideoPlayer = VideoPlayer(Specification.get_directory("movie", self._content.current.next.target))
         VIDEO.pre_init()
         # 播放主循环
         while is_playing is True and VIDEO.is_playing() is True:
@@ -284,7 +284,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         if (
             self.__dialog_txt_system.is_all_played()
             and self.__dialog_txt_system.is_visible()
-            and self._content.current.next.get("type") == "option"
+            and self._content.current.next.type == "option"
             and self._dialog_options_container.is_hidden()
         ):
             self._get_dialog_options_container_ready()

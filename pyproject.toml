@@ -33,6 +33,9 @@ dependencies = [
 "Homepage" = "https://github.com/LinpgFoundation/linpg"
 "Bug Tracker" = "https://github.com/LinpgFoundation/linpg/issues"
 
+[project.entry-points.pyinstaller40]
+hook-dirs = "linpg.__pyinstaller:get_hook_dirs"
+
 [tool.mypy]
 python_version = "3.11"
 # disallow_any_generics = true

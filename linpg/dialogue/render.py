@@ -14,10 +14,10 @@ class VisualNovelCharacterImageManager:
     # 用于存放立绘的字典
     __character_image: Final[dict[str, tuple[StaticImage, ...]]] = {}
     # 存放前一对话的参与角色名称
-    __previous_characters: tuple[VisualNovelCharacterImageNameMetaData, ...] = tuple()
+    __previous_characters: tuple[pyvns.Naming, ...] = tuple()
     __last_round_image_alpha: int = 2550
     # 存放当前对话的参与角色名称
-    __current_characters: tuple[VisualNovelCharacterImageNameMetaData, ...] = tuple()
+    __current_characters: tuple[pyvns.Naming, ...] = tuple()
     __this_round_image_alpha: int = 0
     # 滤镜
     FILTERS: Final[dict[str, AbstractVisualNovelCharacterImageFilterEffect]] = {}
@@ -49,7 +49,7 @@ class VisualNovelCharacterImageManager:
 
     # 画出角色
     @classmethod
-    def __display_character(cls, _name_data: VisualNovelCharacterImageNameMetaData, x: int, alpha: int, _surface: ImageSurface) -> None:
+    def __display_character(cls, _name_data: pyvns.Naming, x: int, alpha: int, _surface: ImageSurface) -> None:
         if alpha > 0:
             # 确保角色存在
             if _name_data.name not in cls.__character_image:
@@ -59,21 +59,29 @@ class VisualNovelCharacterImageManager:
                 cls.__character_image[_name_data.name] = (imgTemp, imgTemp.copy())
                 # 生成深色图片
                 cls.__character_image[_name_data.name][1].add_darkness(cls.DARKNESS)
+            # 是否角色沉默
+            isNpcSilent: bool = "silent" in _name_data.tags
             # 获取npc立绘的指针
-            img: StaticImage = cls.__character_image[_name_data.name][1 if _name_data.has_tag("silent") else 0]
+            img: StaticImage = cls.__character_image[_name_data.name][1 if isNpcSilent else 0]
             img.set_size(cls.__GET_WIDTH(), cls.__GET_WIDTH())
             img.set_alpha(alpha)
             img.set_pos(x, Display.get_height() - cls.__GET_WIDTH())
-            if len(_name_data.tags) > 0:
+            # 获取tag长度
+            _tags_len = len(_name_data.tags)
+            # 不需要渲染silent标签
+            if isNpcSilent is True:
+                _tags_len -= 1
+            if _tags_len > 0:
                 for _tag in _name_data.tags:
-                    cls.FILTERS[_tag].render(img, _surface, _name_data.has_tag("silent"))
+                    if _tag != "silent":
+                        cls.FILTERS[_tag].render(img, _surface, isNpcSilent)
             else:
                 img.set_crop_rect(None)
                 img.draw(_surface)
             # 如果是开发模式
             if cls.dev_mode is True and img.is_hovered():
                 img.draw_outline(_surface)
-                cls.character_get_click = _name_data.get_raw_name()
+                cls.character_get_click = _name_data.get_full_name()
 
     # 根据参数计算立绘的x坐标
     @staticmethod
@@ -89,9 +97,7 @@ class VisualNovelCharacterImageManager:
 
     # 渐入name1角色的同时淡出name2角色
     @classmethod
-    def __fade_in_and_out_characters(
-        cls, name1: VisualNovelCharacterImageNameMetaData, name2: VisualNovelCharacterImageNameMetaData, x: int, _surface: ImageSurface
-    ) -> None:
+    def __fade_in_and_out_characters(cls, name1: pyvns.Naming, name2: pyvns.Naming, x: int, _surface: ImageSurface) -> None:
         cls.__display_character(name1, x, cls.__last_round_image_alpha // 10, _surface)
         cls.__display_character(name2, x, cls.__this_round_image_alpha // 10, _surface)
 
@@ -121,9 +127,7 @@ class VisualNovelCharacterImageManager:
     @classmethod
     def update(cls, characterNameList: Sequence[str] | None) -> None:
         cls.__previous_characters = cls.__current_characters
-        cls.__current_characters = (
-            tuple(VisualNovelCharacterImageNameMetaData(_name) for _name in characterNameList) if characterNameList is not None else tuple()
-        )
+        cls.__current_characters = tuple(pyvns.Naming(_name) for _name in characterNameList) if characterNameList is not None else tuple()
         cls.__last_round_image_alpha = 2550
         cls.__this_round_image_alpha = 50
         cls.__x_correction_offset_index = 0

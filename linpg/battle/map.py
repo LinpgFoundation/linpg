@@ -316,9 +316,9 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         else:
             _surface.fill(Colors.BLACK)
         if self.__map_surface is not None:
-            _surface.blit(self.__map_surface.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), (0, 0))
+            _surface.blit(self.__map_surface.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), ORIGIN)
         if self.__map_surface_old is not None:
-            _surface.blit(self.__map_surface_old.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), (0, 0))
+            _surface.blit(self.__map_surface_old.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), ORIGIN)
             _alpha: int | None = self.__map_surface_old.get_alpha()
             if _alpha is None:
                 EXCEPTION.fatal("Invalid alpha detected while processing self.__map_surface_old.get_alpha()")

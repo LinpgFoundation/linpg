@@ -5,9 +5,15 @@ import subprocess
 class FFmpeg:
     @staticmethod
     def execute(*cmds: str) -> None:
-        subprocess.check_call(
-            [os.path.join(os.path.dirname(__file__), "ffmpeg.exe") if os.name == "nt" else "ffmpeg", *cmds], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT
-        )
+        if os.name == "nt":
+            subprocess.check_call([os.path.join(os.path.dirname(__file__), "ffmpeg.exe"), *cmds], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        else:
+            try:
+                subprocess.check_call(["ffmpeg", *cmds], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+            except Exception:
+                from ..exception import EXCEPTION
+
+                EXCEPTION.fatal("FFmpeg is necessary and have to be installed if you are currently running non-windows system such as linux!")
 
     @classmethod
     def convert(cls, input_path: str, output_path: str, nv: bool = False) -> None:

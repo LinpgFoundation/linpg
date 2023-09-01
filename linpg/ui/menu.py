@@ -406,7 +406,7 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
             # 主循环
             while self.__pause_menu.is_visible():
                 Display.flip()
-                _surface.blit(_background, (0, 0))
+                _surface.blit(_background, ORIGIN)
                 # 存档选择系统
                 if self.__select_progress_menu.is_visible():
                     self.__select_progress_menu.draw(_surface)

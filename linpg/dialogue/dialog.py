@@ -216,7 +216,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
                 else:
                     is_playing = False
                     VIDEO.stop()
-                _surface.blit(BLACK_CURTAIN, (0, 0))
+                _surface.blit(BLACK_CURTAIN, ORIGIN)
             Display.flip()
 
     # 淡入或淡出
@@ -349,8 +349,8 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
                                 break
                     else:
                         break
-            _surface.blit(self.__history_bg_surface, (0, 0))
-            _surface.blit(self.__history_text_surface, (0, 0))
+            _surface.blit(self.__history_bg_surface, ORIGIN)
+            _surface.blit(self.__history_text_surface, ORIGIN)
             if self.__history_back is not None:
                 self.__history_back.draw(_surface)
                 self.__history_back.is_hovered()

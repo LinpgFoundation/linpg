@@ -90,7 +90,7 @@ class TileMapImagesModule:
 
     # 获取图片
     @classmethod
-    def get_image(cls, _id: str, darkMode: bool) -> StaticImage:
+    def get_image(cls, _id: str, darkMode: bool = False) -> StaticImage:
         # 获取参数
         _absId: list[str] = _id.split(":")
         # 尝试获取图片
@@ -186,7 +186,7 @@ class DecorationImagesModule:
 
     # 获取图片
     @classmethod
-    def get_image(cls, _id: str, darkMode: bool) -> StaticImage:
+    def get_image(cls, _id: str, darkMode: bool = False) -> StaticImage:
         # 获取参数
         _absId: list[str] = _id.split(":")
         # 尝试获取图片

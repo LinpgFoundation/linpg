@@ -51,6 +51,7 @@ class GraphicLibrary:
 
 
 # 指向pygame事件的指针
+@enum.verify(enum.UNIQUE)
 class Events(enum.IntEnum):
     # 鼠标
     MOUSE_BUTTON_DOWN = pygame.MOUSEBUTTONDOWN
@@ -64,12 +65,14 @@ class Events(enum.IntEnum):
 
 
 # 表示方向的enum
+@enum.verify(enum.UNIQUE)
 class Axis(enum.IntEnum):
     VERTICAL = enum.auto()
     HORIZONTAL = enum.auto()
 
 
 # 表示位置
+@enum.verify(enum.UNIQUE)
 class Locations(enum.IntEnum):
     BEGINNING = enum.auto()
     END = enum.auto()

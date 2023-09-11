@@ -199,5 +199,3 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
             for dataDict in value.values():
                 charactersPos.append((round(dataDict.x), round(dataDict.y)))
                 charactersPos.append((round(dataDict.x) + 1, round(dataDict.y) + 1))
-        # 展示场景装饰物
-        self.get_map().display_decoration(_surface, tuple(charactersPos))

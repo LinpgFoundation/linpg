@@ -81,7 +81,7 @@ class VisualNovelCharacterImageManager:
             # 如果是开发模式
             if cls.dev_mode is True and img.is_hovered():
                 img.draw_outline(_surface)
-                cls.character_get_click = _name_data.get_full_name()
+                cls.character_get_click = str(_name_data)
 
     # 根据参数计算立绘的x坐标
     @staticmethod

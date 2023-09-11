@@ -48,7 +48,8 @@ for i in range(2):
 """
 match input("Do you want to package and upload the latest build (Y/n):"):
     case "Y":
-        Builder.upload_package("cp311")
+        Builder.build()
+        Builder.upload()
     case "N":
         Builder.remove("src")
 """

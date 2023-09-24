@@ -193,9 +193,3 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         self._tile_is_hovering = self.get_map().calculate_coordinate()
         # 展示角色动画
         self._display_entities(_surface)
-        # 检测角色所占据的装饰物（即需要透明化，方便玩家看到角色）
-        charactersPos: list = []
-        for value in self._entities_data.values():
-            for dataDict in value.values():
-                charactersPos.append((round(dataDict.x), round(dataDict.y)))
-                charactersPos.append((round(dataDict.x) + 1, round(dataDict.y) + 1))

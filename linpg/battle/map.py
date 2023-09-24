@@ -1,4 +1,3 @@
-from typing import Iterable
 from .astar import *
 
 
@@ -7,7 +6,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
     # 获取方块数据库
     __TILES_DATABASE: Final[dict] = DataBase.get("Tiles")
     # 获取场景装饰物数据库
-    __DECORATION_DATABASE: Final[dict] = DataBase.get("Decorations")
+    _DECORATION_DATABASE: Final[dict] = DataBase.get("Decorations")
 
     def __init__(self) -> None:
         # Rectangle模块
@@ -174,7 +173,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         return TileMapImagesModule.TILE_SIZE
 
     # 以字典的形式获取地图的数据
-    def to_dict(self) -> dict[str, Iterable]:
+    def to_dict(self) -> dict[str, Any]:
         # 重新生成最优 lookup table
         unique_elem_table: tuple = numpy.unique(self.__MAP, return_counts=True)
         lookup_table: dict[str, int] = {self.__tile_lookup_table[unique_elem_table[0][i]]: unique_elem_table[1][i] for i in range(len(unique_elem_table[0]))}
@@ -196,7 +195,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         else:
             if bool(self.__TILES_DATABASE[self.get_tile(_x, _y).split(":")[0]]["passable"]) is True:
                 _decoration: DecorationObject | None = self.__decorations.get(self.__get_coordinate_format_key((_x, _y)))
-                return _decoration is None or bool(self.__DECORATION_DATABASE[_decoration.type]["passable"])
+                return _decoration is None or bool(self._DECORATION_DATABASE[_decoration.type]["passable"])
             return False
 
     # 以百分比的形式获取本地坐标（一般用于存档数据）

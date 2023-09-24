@@ -292,7 +292,7 @@ class SaveOrLoadSelectedProgressMenu(Hidable):
                 _rect: Rectangle = Rectangle(0, 0, rect_width, rect_height)
                 self.__process_page_switching(_surface)
                 # 渲染页码
-                pageIdText: ImageSurface = Font.render(f"- {self.__page_id} -", Colors.GRAY, row_padding // 2)
+                pageIdText: ImageSurface = Font.render(f"- {self.__page_id} -", Colors.WHITE, row_padding // 2)
                 _surface.blit(
                     pageIdText,
                     ((_surface.get_width() - pageIdText.get_width()) // 2, _surface.get_height() - row_padding + (row_padding - pageIdText.get_height()) // 2),

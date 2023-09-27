@@ -1,8 +1,6 @@
 import io
 import zipfile
 
-from PIL import ImageSequence as PILImageSequence
-
 from .wrapper import *
 
 # 尝试导入linpgassets
@@ -97,11 +95,6 @@ class Images:
             img.set_alpha(alpha)
         # 如果没有给size,则直接返回Surface
         return img if len(size) == 0 else cls.smoothly_resize(img, size) if Setting.get_antialias() else cls.resize(img, size)
-
-    # 动态图片加载模块
-    @staticmethod
-    def load_animated(path: str) -> list:
-        return [Surfaces.from_array(numpy.asarray(frame.convert("RGBA"))).convert_alpha() for frame in PILImageSequence.Iterator(PILImage.open(path))]
 
     # 重新编辑尺寸
     @staticmethod

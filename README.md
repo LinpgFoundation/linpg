@@ -8,6 +8,8 @@
 
 # :sparkles: About Linpg Engine / 关于Linpg引擎
 
+![PyPI](https://img.shields.io/pypi/pyversions/linpg?style=for-the-badge&logo=pypi) ![PyPI](https://img.shields.io/pypi/v/linpg?style=for-the-badge&logo=pypi) ![PyPI](https://img.shields.io/pypi/dm/linpg?style=for-the-badge&logo=pypi)
+
 Linpg (Lin's python game) Engine is a game engine developed by Linpg Foundation, which aims to standardize the development of Pygame games and make the codes easier to read, expand and maintain.
 
 Linpg Engine is developed with a modular concept. It implements many features which are commonly used in game development. Simultaneously, the Linpg Engine also maintains a high level of compatibility with Pygame, making it easy for developers to migrate existing Pygame projects to Linpg Engine or use the features which Linpg Engine provides on their own Pygame projects.
@@ -39,6 +41,7 @@ Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游
 | Required / 必需安装 |
 | :---------- |
 | pygame-ce   |
+| pyvns       |
 | numpy       |
 | PySimpleGUI |
 

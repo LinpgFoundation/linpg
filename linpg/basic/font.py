@@ -158,7 +158,7 @@ class ArtisticFont:
     ) -> ImageSurface:
         font_surface: ImageSurface = Font.render(txt, color, size, ifBold, ifItalic)
         des_surface: ImageSurface = Surfaces.colored((font_surface.get_width() + padding * 2, font_surface.get_height() + padding * 2), background_color)
-        Draw.rect(des_surface, Colors.get(color if outline_color is None else outline_color), ((0, 0), des_surface.get_size()), thickness)
+        Draw.rect(des_surface, Colors.get(color if outline_color is None else outline_color), (ORIGIN, des_surface.get_size()), thickness)
         des_surface.blit(font_surface, (padding, padding))
         return des_surface
 

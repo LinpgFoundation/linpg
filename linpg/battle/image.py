@@ -1,3 +1,5 @@
+from PIL import ImageSequence as PILImageSequence
+
 from ..dialogue import *
 
 
@@ -88,7 +90,7 @@ class TileMapImagesModule:
 
     # 获取图片
     @classmethod
-    def get_image(cls, _id: str, darkMode: bool) -> StaticImage:
+    def get_image(cls, _id: str, darkMode: bool = False) -> StaticImage:
         # 获取参数
         _absId: list[str] = _id.split(":")
         # 尝试获取图片
@@ -184,7 +186,7 @@ class DecorationImagesModule:
 
     # 获取图片
     @classmethod
-    def get_image(cls, _id: str, darkMode: bool) -> StaticImage:
+    def get_image(cls, _id: str, darkMode: bool = False) -> StaticImage:
         # 获取参数
         _absId: list[str] = _id.split(":")
         # 尝试获取图片
@@ -381,7 +383,10 @@ class EntitySpriteImageManager:
             return {"imgId": 0, "alpha": 255}
         # 加载图片
         cls.__CHARACTERS_IMAGES[characterType][action] = _EntityImagesCollection(
-            tuple(StaticImage(surf, 0, 0) for surf in Images.load_animated(os.path.join(cls.SPRITES_PATH, faction, characterType, action + ".webp"))),
+            tuple(
+                StaticImage(Surfaces.from_array(numpy.asarray(frame.convert("RGBA"))).convert_alpha(), 0, 0)
+                for frame in PILImageSequence.Iterator(PILImage.open(os.path.join(cls.SPRITES_PATH, faction, characterType, action + ".webp")))
+            ),
             action_meta_data["subrect"][2:],
             action_meta_data["subrect"][:2],
             action_meta_data["size"],
@@ -395,11 +400,11 @@ class EntitySpriteImageManager:
 
 # 雪花片
 class Snow(Coordinate):
-    def __init__(self, imgId: int, size: int, speed: int, x: int, y: int):
-        super().__init__(x, y)
-        self.imgId: int = imgId
-        self.size: int = size
-        self.speed: int = speed
+    def __init__(self, _id: int, _size: int, _speed: int, _x: int, _y: int):
+        super().__init__(_x, _y)
+        self.id: Final[int] = _id
+        self.size: Final[int] = _size
+        self.speed: Final[int] = _speed
 
     def move(self, speed_unit: int) -> None:
         self.move_left(self.speed * speed_unit * Display.get_delta_time() // 100)
@@ -425,11 +430,11 @@ class WeatherSystem:
         self.__items = tuple(
             [
                 Snow(
-                    imgId=Numbers.get_random_int(0, len(self.__img_tuple) - 1),
-                    size=Numbers.get_random_int(5, 10),
-                    speed=Numbers.get_random_int(1, 30),
-                    x=Numbers.get_random_int(1, Display.get_width() * 3 // 2),
-                    y=Numbers.get_random_int(1, Display.get_height()),
+                    Numbers.get_random_int(0, len(self.__img_tuple) - 1),
+                    Numbers.get_random_int(5, 10),
+                    Numbers.get_random_int(1, 30),
+                    Numbers.get_random_int(1, Display.get_width() * 3 // 2),
+                    Numbers.get_random_int(1, Display.get_height()),
                 )
                 for _ in range(entityNum)
             ]
@@ -446,7 +451,7 @@ class WeatherSystem:
         self.__speed_unit = int(perBlockWidth / 15)
         for item in self.__items:
             if 0 <= item.x < _surface.get_width() and 0 <= item.y < _surface.get_height():
-                _surface.blit(Images.resize(self.__img_tuple[item.imgId], (perBlockWidth / item.size, perBlockWidth / item.size)), item.pos)
+                _surface.blit(Images.resize(self.__img_tuple[item.id], (perBlockWidth / item.size, perBlockWidth / item.size)), item.pos)
             item.move(self.__speed_unit)
             if item.x <= 0 or item.y >= _surface.get_height():
                 item.set_top(Numbers.get_random_int(-50, 0))

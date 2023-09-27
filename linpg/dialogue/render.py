@@ -1,82 +1,6 @@
 from .component import *
 
 
-# 角色立绘名称预处理模块
-class VisualNovelCharacterImageNameMetaData:
-    # 立绘配置信息数据库
-    __CHARACTER_IMAGE_DATABASE: Final[dict] = DataBase.get("Npc")
-    # 是否立绘配置信息数据库
-    __IS_CHARACTER_IMAGE_DATABASE_ENABLED: bool = len(__CHARACTER_IMAGE_DATABASE) > 0
-
-    def __init__(self, _name: str) -> None:
-        _name_data: list[str] = _name.split("&")
-        self.__name: str = _name_data[0]
-        self.__tags: set[str] = set(_name_data[1:])
-        self.__silent: bool = False
-        if "silent" in self.__tags:
-            self.__silent = True
-            self.__tags.remove("silent")
-
-    @property
-    def name(self) -> str:
-        return self.__name
-
-    @property
-    def tags(self) -> set[str]:
-        return self.__tags
-
-    # 根据文件名判断是否是同一角色名下的图片
-    def equal(self, otherNameData: "VisualNovelCharacterImageNameMetaData", must_be_the_same: bool = False) -> bool:
-        if self.__name == otherNameData.name:
-            return True
-        elif self.__IS_CHARACTER_IMAGE_DATABASE_ENABLED and not must_be_the_same:
-            for key in self.__CHARACTER_IMAGE_DATABASE:
-                if self.__name in self.__CHARACTER_IMAGE_DATABASE[key]:
-                    return otherNameData.name in self.__CHARACTER_IMAGE_DATABASE[key]
-                elif otherNameData.name in self.__CHARACTER_IMAGE_DATABASE[key]:
-                    return self.__name in self.__CHARACTER_IMAGE_DATABASE[key]
-        return False
-
-    # 是否有tag
-    def has_tag(self, _tag: str) -> bool:
-        if _tag == "silent":
-            return self.__silent
-        else:
-            return _tag in self.__tags
-
-    # 移除tag
-    def remove_tag(self, _tag: str) -> None:
-        if _tag == "silent":
-            self.__silent = False
-        else:
-            new_tags: list[str] = []
-            for original_tag in self.__tags:
-                if original_tag != _tag:
-                    new_tags.append(original_tag)
-            self.__tags = set(new_tags)
-
-    # 增加tag
-    def add_tag(self, _tag: str) -> None:
-        if _tag == "silent":
-            self.__silent = True
-        else:
-            new_tags: list[str] = []
-            for original_tag in self.__tags:
-                if original_tag != _tag:
-                    new_tags.append(original_tag)
-            new_tags.append(_tag)
-            self.__tags = set(new_tags)
-
-    # 获取tag和名称结合后的数据名称
-    def get_raw_name(self) -> str:
-        raw_name: str = self.__name
-        if self.__silent is True:
-            raw_name += "&silent"
-        for tag in self.__tags:
-            raw_name += "&" + tag
-        return raw_name
-
-
 # 角色立绘滤镜
 class AbstractVisualNovelCharacterImageFilterEffect(ABC):
     # 将滤镜应用到立绘上并渲染到屏幕上
@@ -90,10 +14,10 @@ class VisualNovelCharacterImageManager:
     # 用于存放立绘的字典
     __character_image: Final[dict[str, tuple[StaticImage, ...]]] = {}
     # 存放前一对话的参与角色名称
-    __previous_characters: tuple[VisualNovelCharacterImageNameMetaData, ...] = tuple()
+    __previous_characters: tuple[pyvns.Naming, ...] = tuple()
     __last_round_image_alpha: int = 2550
     # 存放当前对话的参与角色名称
-    __current_characters: tuple[VisualNovelCharacterImageNameMetaData, ...] = tuple()
+    __current_characters: tuple[pyvns.Naming, ...] = tuple()
     __this_round_image_alpha: int = 0
     # 滤镜
     FILTERS: Final[dict[str, AbstractVisualNovelCharacterImageFilterEffect]] = {}
@@ -125,7 +49,7 @@ class VisualNovelCharacterImageManager:
 
     # 画出角色
     @classmethod
-    def __display_character(cls, _name_data: VisualNovelCharacterImageNameMetaData, x: int, alpha: int, _surface: ImageSurface) -> None:
+    def __display_character(cls, _name_data: pyvns.Naming, x: int, alpha: int, _surface: ImageSurface) -> None:
         if alpha > 0:
             # 确保角色存在
             if _name_data.name not in cls.__character_image:
@@ -135,21 +59,29 @@ class VisualNovelCharacterImageManager:
                 cls.__character_image[_name_data.name] = (imgTemp, imgTemp.copy())
                 # 生成深色图片
                 cls.__character_image[_name_data.name][1].add_darkness(cls.DARKNESS)
+            # 是否角色沉默
+            isNpcSilent: bool = "silent" in _name_data.tags
             # 获取npc立绘的指针
-            img: StaticImage = cls.__character_image[_name_data.name][1 if _name_data.has_tag("silent") else 0]
+            img: StaticImage = cls.__character_image[_name_data.name][1 if isNpcSilent else 0]
             img.set_size(cls.__GET_WIDTH(), cls.__GET_WIDTH())
             img.set_alpha(alpha)
             img.set_pos(x, Display.get_height() - cls.__GET_WIDTH())
-            if len(_name_data.tags) > 0:
+            # 获取tag长度
+            _tags_len = len(_name_data.tags)
+            # 不需要渲染silent标签
+            if isNpcSilent is True:
+                _tags_len -= 1
+            if _tags_len > 0:
                 for _tag in _name_data.tags:
-                    cls.FILTERS[_tag].render(img, _surface, _name_data.has_tag("silent"))
+                    if _tag != "silent":
+                        cls.FILTERS[_tag].render(img, _surface, isNpcSilent)
             else:
                 img.set_crop_rect(None)
                 img.draw(_surface)
             # 如果是开发模式
             if cls.dev_mode is True and img.is_hovered():
                 img.draw_outline(_surface)
-                cls.character_get_click = _name_data.get_raw_name()
+                cls.character_get_click = str(_name_data)
 
     # 根据参数计算立绘的x坐标
     @staticmethod
@@ -165,9 +97,7 @@ class VisualNovelCharacterImageManager:
 
     # 渐入name1角色的同时淡出name2角色
     @classmethod
-    def __fade_in_and_out_characters(
-        cls, name1: VisualNovelCharacterImageNameMetaData, name2: VisualNovelCharacterImageNameMetaData, x: int, _surface: ImageSurface
-    ) -> None:
+    def __fade_in_and_out_characters(cls, name1: pyvns.Naming, name2: pyvns.Naming, x: int, _surface: ImageSurface) -> None:
         cls.__display_character(name1, x, cls.__last_round_image_alpha // 10, _surface)
         cls.__display_character(name2, x, cls.__this_round_image_alpha // 10, _surface)
 
@@ -197,9 +127,7 @@ class VisualNovelCharacterImageManager:
     @classmethod
     def update(cls, characterNameList: Sequence[str] | None) -> None:
         cls.__previous_characters = cls.__current_characters
-        cls.__current_characters = (
-            tuple(VisualNovelCharacterImageNameMetaData(_name) for _name in characterNameList) if characterNameList is not None else tuple()
-        )
+        cls.__current_characters = tuple(pyvns.Naming(_name) for _name in characterNameList) if characterNameList is not None else tuple()
         cls.__last_round_image_alpha = 2550
         cls.__this_round_image_alpha = 50
         cls.__x_correction_offset_index = 0

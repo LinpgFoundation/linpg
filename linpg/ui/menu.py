@@ -292,7 +292,7 @@ class SaveOrLoadSelectedProgressMenu(Hidable):
                 _rect: Rectangle = Rectangle(0, 0, rect_width, rect_height)
                 self.__process_page_switching(_surface)
                 # 渲染页码
-                pageIdText: ImageSurface = Font.render(f"- {self.__page_id} -", Colors.GRAY, row_padding // 2)
+                pageIdText: ImageSurface = Font.render(f"- {self.__page_id} -", Colors.WHITE, row_padding // 2)
                 _surface.blit(
                     pageIdText,
                     ((_surface.get_width() - pageIdText.get_width()) // 2, _surface.get_height() - row_padding + (row_padding - pageIdText.get_height()) // 2),
@@ -400,13 +400,13 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
             # 用于存档的截图
             _screenshot: ImageSurface = _surface.copy()
             # 用于背景的毛玻璃效果图
-            _background: ImageSurface = Filters.glassmorphism_effect(_screenshot)
+            _background: ImageSurface = Filters.gaussian_blur(_screenshot)
             # 启用菜单
             self.__pause_menu.set_visible(True)
             # 主循环
             while self.__pause_menu.is_visible():
                 Display.flip()
-                _surface.blit(_background, (0, 0))
+                _surface.blit(_background, ORIGIN)
                 # 存档选择系统
                 if self.__select_progress_menu.is_visible():
                     self.__select_progress_menu.draw(_surface)

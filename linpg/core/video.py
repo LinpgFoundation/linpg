@@ -8,7 +8,7 @@ class AbstractVideo(ABC):
         # 确保路径存在且模块已经正常初始化
         Videos.validation(self._path)
         """视频流"""
-        self.__video_stream: cv2.VideoCapture = None
+        self.__video_stream: cv2.VideoCapture | None = None
         self._frame_rate: int = 0
         self._frame_buffer_num: int = buffer_num
         """参数"""
@@ -109,10 +109,10 @@ class AbstractVideo(ABC):
             self._init()
         if not self.__stopped:
             if self.__frame_index_to_set >= 0:
-                self.__video_stream.set(cv2.CAP_PROP_POS_FRAMES, self.__frame_index_to_set)
+                self.__video_stream.set(cv2.CAP_PROP_POS_FRAMES, self.__frame_index_to_set)  # type: ignore
                 self.__frame_index_to_set = -1
             # 处理当前Frame
-            if (current_frame := self.__video_stream.read()[1]) is not None:
+            if (current_frame := self.__video_stream.read()[1]) is not None:  # type: ignore
                 current_frame = cv2.cvtColor(current_frame, cv2.COLOR_BGR2RGB)
                 if current_frame.shape[0] != _surface.get_width() or current_frame.shape[1] != _surface.get_height():
                     current_frame = cv2.resize(current_frame, _surface.get_size())

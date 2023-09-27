@@ -6,7 +6,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
     # 获取方块数据库
     __TILES_DATABASE: Final[dict] = DataBase.get("Tiles")
     # 获取场景装饰物数据库
-    __DECORATION_DATABASE: Final[dict] = DataBase.get("Decorations")
+    _DECORATION_DATABASE: Final[dict] = DataBase.get("Decorations")
 
     def __init__(self) -> None:
         # Rectangle模块
@@ -33,8 +33,6 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         self.__background_image: StaticImage | None = None
         # 使用一个hashmap以加速根据坐标寻找装饰物
         self.__decorations: dict[str, DecorationObject] = {}
-        # 处于光处的区域
-        self.__lit_area: tuple[tuple[int, int], ...] = tuple()
         # 追踪是否需要更新的参数
         self.__need_update_surface: bool = True
         # 追踪目前已经画出的方块
@@ -59,6 +57,11 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         self.__map_surface_old = None
         # 更新地图渲染图层的尺寸
         self.set_tile_size(tile_size)
+
+    # 标记地图需要完全更新
+    def _refresh(self) -> None:
+        self.__need_update_surface = True
+        self.__need_to_recheck_tile_on_surface = True
 
     # 更新数据
     def update(self, _data: dict, _block_size: int_f) -> None:
@@ -103,10 +106,6 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             TileMapImagesModule.add_image(fileName)
         for decoration in self.__decorations.values():
             decoration.ensure_image_cached()
-        # 处于光处的区域
-        self.__lit_area = (
-            tuple() if TileMapImagesModule.DARKNESS > 0 else tuple(Coordinates.convert(area_coordinate) for area_coordinate in _data["map"].get("lit_area", []))
-        )
 
     # 装饰物
     @property
@@ -174,7 +173,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         return TileMapImagesModule.TILE_SIZE
 
     # 以字典的形式获取地图的数据
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         # 重新生成最优 lookup table
         unique_elem_table: tuple = numpy.unique(self.__MAP, return_counts=True)
         lookup_table: dict[str, int] = {self.__tile_lookup_table[unique_elem_table[0][i]]: unique_elem_table[1][i] for i in range(len(unique_elem_table[0]))}
@@ -185,7 +184,6 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             "map": {
                 "data": numpy.vectorize(lambda _num: sorted_lookup_table.index(self.__tile_lookup_table[_num]))(self.__MAP).tolist(),
                 "lookup_table": sorted_lookup_table,
-                "lit_area": [list(area_coordinate) for area_coordinate in self.__lit_area],
                 "barrier": self.__BARRIER_MASK.tolist(),
             },
         }
@@ -197,7 +195,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         else:
             if bool(self.__TILES_DATABASE[self.get_tile(_x, _y).split(":")[0]]["passable"]) is True:
                 _decoration: DecorationObject | None = self.__decorations.get(self.__get_coordinate_format_key((_x, _y)))
-                return _decoration is None or bool(self.__DECORATION_DATABASE[_decoration.type]["passable"])
+                return _decoration is None or bool(self._DECORATION_DATABASE[_decoration.type]["passable"])
             return False
 
     # 以百分比的形式获取本地坐标（一般用于存档数据）
@@ -241,8 +239,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         self.add_local_x((old_width - self.get_width()) / 2)
         self.add_local_y((old_height - self.get_height()) / 2)
         # 打上需要更新的标签
-        self.__need_update_surface = True
-        self.__need_to_recheck_tile_on_surface = True
+        self._refresh()
 
     # 设置local坐标
     def set_local_x(self, value: int_f) -> None:
@@ -257,8 +254,12 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         if self.local_y != old_local_y:
             self.__need_update_surface = True
 
+    # 获取title image, 子类可重写
+    def _get_tile_image(self, x: int, y: int) -> StaticImage:
+        return TileMapImagesModule.get_image(self.get_tile(x, y))
+
     # 把地图画到屏幕上
-    def render(self, _surface: ImageSurface, screen_to_move_x: int = 0, screen_to_move_y: int = 0) -> tuple:
+    def render(self, _surface: ImageSurface, screen_to_move_x: int = 0, screen_to_move_y: int = 0) -> tuple[int, int]:
         # 检测屏幕是不是移到了不移到的地方
         _min_local_x: int = _surface.get_width() - self.get_width()
         if self.local_x < _min_local_x:
@@ -294,7 +295,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
                     posTupleTemp: tuple[int, int] = self.calculate_position(x, y)
                     if -self.tile_width <= posTupleTemp[0] < _surface.get_width() and -self.tile_width <= posTupleTemp[1] < _surface.get_height():
                         if self.__tile_on_surface[y, x] == 0:
-                            evn_img: StaticImage = TileMapImagesModule.get_image(self.get_tile(x, y), not self.is_coordinate_in_lit_area(x, y))
+                            evn_img: StaticImage = self._get_tile_image(x, y)
                             evn_img.set_pos(posTupleTemp[0] - self.local_x, posTupleTemp[1] - self.local_y)
                             evn_img.set_local_offset_availability(False)
                             if self.__map_surface is not None:
@@ -316,9 +317,9 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         else:
             _surface.fill(Colors.BLACK)
         if self.__map_surface is not None:
-            _surface.blit(self.__map_surface.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), (0, 0))
+            _surface.blit(self.__map_surface.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), ORIGIN)
         if self.__map_surface_old is not None:
-            _surface.blit(self.__map_surface_old.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), (0, 0))
+            _surface.blit(self.__map_surface_old.subsurface(-self.local_x, -self.local_y, _surface.get_width(), _surface.get_height()), ORIGIN)
             _alpha: int | None = self.__map_surface_old.get_alpha()
             if _alpha is None:
                 EXCEPTION.fatal("Invalid alpha detected while processing self.__map_surface_old.get_alpha()")
@@ -329,29 +330,6 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
                 self.__map_surface_old = None
         # 返回offset
         return screen_to_move_x, screen_to_move_y
-
-    # 把装饰物画到屏幕上
-    def display_decoration(self, _surface: ImageSurface, occupied_coordinates: tuple) -> None:
-        # 计算需要画出的范围
-        screen_min: int = -self.tile_width
-        # 历遍装饰物列表里的物品
-        for _item in self.__decorations.values():
-            # 在地图的坐标
-            thePosInMap: tuple[int, int] = self.calculate_position(_item.x, _item.y)
-            if screen_min <= thePosInMap[0] < _surface.get_width() and screen_min <= thePosInMap[1] < _surface.get_height():
-                # 透明度
-                _item.set_alpha(
-                    100
-                    if (
-                        self.__DECORATION_DATABASE[_item.type].get("hidable", False) is True
-                        and _item.get_pos() in occupied_coordinates
-                        and self.is_coordinate_in_lit_area(_item.x, _item.y)
-                    )
-                    else 255
-                )
-                # 画出
-                _item.set_dark_mode(not self.is_coordinate_in_lit_area(_item.x, _item.y))
-                _item.blit(_surface, thePosInMap)
 
     # 获取方块
     def get_tile(self, _x: int, _y: int) -> str:
@@ -366,8 +344,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             self.__tile_lookup_table.append(name)
             self.__MAP[_y, _x] = len(self.__tile_lookup_table) - 1
         # 需更新
-        self.__need_update_surface = True
-        self.__need_to_recheck_tile_on_surface = True
+        self._refresh()
 
     # 计算在地图中的方块
     @abstractmethod
@@ -379,58 +356,11 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
     def calculate_position(self, x: int_f, y: int_f) -> tuple[int, int]:
         EXCEPTION.fatal("calculate_position()", 1)
 
-    # 获取可视光亮区域（子类可按需重写）
-    def _get_lit_area(self, alliances_data: dict) -> set[tuple[int, int]]:
-        lightArea: set[tuple[int, int]] = set()
-        for _alliance in alliances_data.values():
-            for _area in _alliance.get_effective_range_coordinates(self):
-                for _pos in _area:
-                    lightArea.add(_pos)
-            lightArea.add((round(_alliance.x), round(_alliance.y)))
-        return lightArea
-
-    # 刷新可视光亮区域
-    def refresh_lit_area(self, alliances_data: dict) -> None:
-        self.__lit_area = tuple(self._get_lit_area(alliances_data))
-        self.__need_update_surface = True
-        self.__need_to_recheck_tile_on_surface = True
-
-    # 查看坐标是否在光亮范围内
-    def is_coordinate_in_lit_area(self, x: int_f, y: int_f) -> bool:
-        return True if TileMapImagesModule.DARKNESS <= 0 else (round(x), round(y)) in self.__lit_area
-
     # 寻找2点之间的最短路径
-    def find_path(
-        self,
-        start: tuple[int, int],
-        goal: tuple[int, int],
-        alliances: dict,
-        enemies: dict,
-        can_move_through_darkness: bool = False,
-        lenMax: int | None = None,
-        enemies_ignored: tuple = tuple(),
-        ignore_alliances: bool = False,
-    ) -> list[tuple[int, int]]:
+    def find_path(self, start: tuple[int, int], goal: tuple[int, int], lenMax: int | None = None, map2d: numpy.ndarray | None = None) -> list[tuple[int, int]]:
         # 初始化寻路地图
-        map2d: numpy.ndarray = numpy.ones(self.shape, dtype=numpy.byte)
-        # 如果角色无法移动至黑暗处
-        if not can_move_through_darkness and TileMapImagesModule.DARKNESS > 0:
-            map2d.fill(0)
-            for _pos in self.__lit_area:
-                map2d[_pos[0], _pos[1]] = 1
-        # 如果不忽略友方角色，则将所有友方角色的坐标点设置为障碍区块
-        if not ignore_alliances:
-            for value in alliances.values():
-                map2d[round(value.x), round(value.y)] = 0
-        # 如果忽略友方角色，则确保终点没有友方角色
-        else:
-            for value in alliances.values():
-                if round(value.x) == goal[0] and round(value.y) == goal[1]:
-                    return []
-        # 将所有敌方角色的坐标点设置为障碍区块
-        for key, value in enemies.items():
-            if key not in enemies_ignored:
-                map2d[round(value.x), round(value.y)] = 0
+        if map2d is None:
+            map2d = numpy.ones(self.shape, dtype=numpy.byte)
         # subtract mask
         map2d = numpy.subtract(map2d, self.__BARRIER_MASK)
         # 如果目标坐标合法

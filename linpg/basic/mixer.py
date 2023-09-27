@@ -214,7 +214,7 @@ class Music:
     @staticmethod
     def load_from_video(path: str) -> str:
         Music.unload()
-        path_of_music: str = Videos.split_audio(path, "mp3")
+        path_of_music: str = Videos.split_audio(path)
         Music.load(path_of_music)
         return path_of_music
 

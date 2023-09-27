@@ -26,17 +26,25 @@ class Loader:
 
     # gif图片
     @staticmethod
-    def gif(gif_path_or_img_list: str | Sequence, _position: tuple[int, int], size: tuple[int, int], updateGap: int = 1) -> AnimatedImage:
-        imgList: list = []
+    def gif(gif_path_or_img_list: str | Sequence[PoI], _position: tuple[int, int], size: tuple[int, int], fps: int | None = None) -> AnimatedImage:
+        imgList: tuple
         # 如果是gif文件
         if isinstance(gif_path_or_img_list, str):
-            imgList = [StaticImage(surf, 0, 0, size[0], size[1]) for surf in Images.load_animated(gif_path_or_img_list)]
+            _animated_image = PILImage.open(gif_path_or_img_list)
+            imgList = tuple(
+                StaticImage(Surfaces.from_array(numpy.asarray(frame.convert("RGBA"))).convert_alpha(), 0, 0, size[0], size[1])
+                for frame in PILImageSequence.Iterator(PILImage.open(gif_path_or_img_list))
+            )
+            if fps is None:
+                fps = _animated_image.info["duration"] // len(imgList)
         # 如果是一个列表的文件路径
         elif isinstance(gif_path_or_img_list, Sequence):
-            imgList = [StaticImage(surf, 0, 0, size[0], size[1]) for surf in gif_path_or_img_list]
+            imgList = tuple(StaticImage(surf, 0, 0, size[0], size[1]) for surf in gif_path_or_img_list)
+            if fps is None:
+                fps = 1
         else:
             EXCEPTION.fatal(f'Invalid input for "gif_path_or_img_list": {gif_path_or_img_list}')
-        return AnimatedImage(tuple(imgList), _position[0], _position[1], size[0], size[1], updateGap)
+        return AnimatedImage(imgList, _position[0], _position[1], size[0], size[1], fps)
 
     @staticmethod
     def button(path: str, _position: tuple[int, int], size: tuple[int, int], alpha_when_not_hover: int = 255) -> Button:

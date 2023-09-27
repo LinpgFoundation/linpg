@@ -173,6 +173,11 @@ class Controller:
             EXCEPTION.fatal(f'The event type "{event_type}" is not supported!')
         return _result
 
+    # 获取单个事件
+    @classmethod
+    def set_event(cls, event_type: str, value: bool) -> None:
+        cls.__SPECIFIC_EVENTS[event_type] = value
+
     # 完成这一帧的收尾工作
     @classmethod
     def finish_up(cls) -> None:

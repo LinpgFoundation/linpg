@@ -122,18 +122,18 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
             self.__has_reached_the_end = True
             self.stop()
         else:
-            match self._content.current.next.get("type"):
+            match self._content.current.next.type:
                 # 默认转到下一个对话
                 case "default":
-                    self._update_scene(self._content.current.next["target"])
+                    self._update_scene(self._content.current.next.target)
                 # 如果是多选项，则不用处理
                 case "option":
                     pass
                 # 如果是切换场景
-                case "changeScene":
+                case "scene":
                     self._fade(_surface)
                     # 更新场景
-                    self._update_scene(str(self._content.current.next["target"]))
+                    self._update_scene(str(self._content.current.next.target))
                     self.__dialog_txt_system.reset()
                     self.__is_fading_out = False
                     self._fade(_surface)
@@ -198,7 +198,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         BLACK_CURTAIN: ImageSurface = Surfaces.colored(_surface.get_size(), Colors.BLACK)
         BLACK_CURTAIN.set_alpha(0)
         # 创建视频文件
-        VIDEO: VideoPlayer = VideoPlayer(Specification.get_directory("movie", self._content.current.next["target"]))
+        VIDEO: VideoPlayer = VideoPlayer(Specification.get_directory("movie", self._content.current.next.target))
         VIDEO.pre_init()
         # 播放主循环
         while is_playing is True and VIDEO.is_playing() is True:
@@ -216,7 +216,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
                 else:
                     is_playing = False
                     VIDEO.stop()
-                _surface.blit(BLACK_CURTAIN, (0, 0))
+                _surface.blit(BLACK_CURTAIN, ORIGIN)
             Display.flip()
 
     # 淡入或淡出
@@ -284,7 +284,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         if (
             self.__dialog_txt_system.is_all_played()
             and self.__dialog_txt_system.is_visible()
-            and self._content.current.next.get("type") == "option"
+            and self._content.current.next.type == "option"
             and self._dialog_options_container.is_hidden()
         ):
             self._get_dialog_options_container_ready()
@@ -321,7 +321,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
                         local_y += self.__dialog_txt_system.FONT.size * 3 // 2
                     if dialogIdTemp != self._content.get_id():
                         match str(self._content.get_dialog(_id=dialogIdTemp)["next"]["type"]):
-                            case "default" | "changeScene":
+                            case "default" | "scene":
                                 if (target_temp := self._content.get_dialog(_id=dialogIdTemp)["next"]["target"]) is not None:
                                     dialogIdTemp = str(target_temp)
                                 else:
@@ -349,8 +349,8 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
                                 break
                     else:
                         break
-            _surface.blit(self.__history_bg_surface, (0, 0))
-            _surface.blit(self.__history_text_surface, (0, 0))
+            _surface.blit(self.__history_bg_surface, ORIGIN)
+            _surface.blit(self.__history_text_surface, ORIGIN)
             if self.__history_back is not None:
                 self.__history_back.draw(_surface)
                 self.__history_back.is_hovered()

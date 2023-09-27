@@ -8,7 +8,7 @@ if os.path.exists("__init__.py"):
     os.rename("__init__.py", TEMP_INIT_NAME)
 
 # 额外需要打包的文件
-additional_files: tuple[str, ...] = ("README.md", "LICENSE", "CODE_OF_CONDUCT.md", "doc")
+additional_files: tuple[str, ...] = ("README.md", "LICENSE", "CODE_OF_CONDUCT.md")
 
 # 开始编译源代码
 Builder.compile(
@@ -28,6 +28,7 @@ Builder.compile(
             "numpy",
             "pygame",
             "pygame.gfxdraw",
+            "pyvns",
             "tkinter",
         ],
     },
@@ -47,7 +48,8 @@ for i in range(2):
 """
 match input("Do you want to package and upload the latest build (Y/n):"):
     case "Y":
-        Builder.upload_package("cp310")
+        Builder.build()
+        Builder.upload()
     case "N":
-        Builder.delete_file_if_exist("src")
+        Builder.remove("src")
 """

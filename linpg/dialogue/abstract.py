@@ -57,15 +57,6 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
         # 自3.7起使用default_language，出于兼容目的尝试读取default_lang（3.6前的key）
         return _data.get("default_language", _data.get("default_lang", "English"))
 
-    # 生产一个新的推荐id
-    def generate_a_new_recommended_key(self, index: int = 1) -> str:
-        while True:
-            newId: str = ("id_0" if index <= 9 else "id_") + str(index)
-            if newId in self._content.get_section_content():
-                index += 1
-            else:
-                return newId
-
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
         return self.get_data_of_parent_game_system() | {"dialog_id": self._content.get_id(), "section": self._content.get_section(), "type": "dialog"}

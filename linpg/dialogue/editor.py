@@ -215,9 +215,9 @@ class DialogEditor(AbstractVisualNovelSystem):
                         if old_key is not None:
                             new_key: str
                             try:
-                                new_key = self.generate_a_new_recommended_key(int(old_key))
+                                new_key = self.__generate_a_new_recommended_key(int(old_key[1:]))
                             except Exception:
-                                new_key = self.generate_a_new_recommended_key()
+                                new_key = self.__generate_a_new_recommended_key()
                             if not isinstance(self._content.get_dialog(section, key)["next"]["target"], list):
                                 self._content.get_dialog(section, key)["next"]["target"] = new_key
                             else:
@@ -349,6 +349,15 @@ class DialogEditor(AbstractVisualNovelSystem):
                                     return str(key)
             return "<NULL>"
 
+    # 生产一个新的推荐id
+    def __generate_a_new_recommended_key(self, index: int = 1) -> str:
+        while True:
+            newId: str = f"~0{index}" if index <= 9 else f"~{index}"
+            if newId in self._content.get_section_content():
+                index += 1
+            else:
+                return newId
+
     # 获取下一个对话的ID
     def __try_get_next_id(self, _surface: ImageSurface) -> str:
         if self._content.current.has_next() is True:
@@ -454,7 +463,7 @@ class DialogEditor(AbstractVisualNovelSystem):
                                 EXCEPTION.inform("There is no next dialog id.")
                         # 新增
                         case "add":
-                            self.__add_dialog(self.generate_a_new_recommended_key())
+                            self.__add_dialog(self.__generate_a_new_recommended_key())
                         # 保存进度
                         case "save":
                             self._save()

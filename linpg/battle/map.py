@@ -143,15 +143,17 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         )
 
     # 移除轴
-    def remove_on_axis(self, index: int = -1, axis: int = 0) -> None:
+    def remove_on_axis(self, index: int, axis: int = 0) -> None:
         axis = Numbers.keep_int_in_range(axis, 0, 1)
-        if index < 0:
-            index = self.__row - 1 if axis == 0 else self.__column - 1
         if axis == 0:
+            if index < 0 or index >= self.row:
+                EXCEPTION.fatal(f"Index {index} is out of bound!")
             for key in tuple(self.__decorations.keys()):
                 if self.__decorations[key].y == index:
                     self.__decorations.pop(key)
         else:
+            if index < 0 or index >= self.column:
+                EXCEPTION.fatal(f"Index {index} is out of bound!")
             for key in tuple(self.__decorations.keys()):
                 if self.__decorations[key].x == index:
                     self.__decorations.pop(key)

@@ -105,7 +105,7 @@ class AbstractVideo(ABC):
 
     # 把画面画到surface上
     def draw(self, _surface: ImageSurface) -> None:
-        if self.__started is False:
+        if not self.__started:
             self._init()
         if not self.__stopped:
             if self.__frame_index_to_set >= 0:

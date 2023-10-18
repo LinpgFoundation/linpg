@@ -32,7 +32,7 @@ Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游
 
 ![](https://github.com/TigeiaWorkshop/GFL-LastWish/raw/master/Assets/image/screenshot/battle.png)
 
-#### [GFL-Last](https://github.com/TigeiaWorkshop/GFL-LastWish ), a turn-based strategy game that demonstrates some advanced features and the unlimited potential of the Linpg engine.
+#### [GFL-Last Wish](https://github.com/TigeiaWorkshop/GFL-LastWish ), a turn-based strategy game that demonstrates some advanced features and the unlimited potential of the Linpg engine.
 
 
 

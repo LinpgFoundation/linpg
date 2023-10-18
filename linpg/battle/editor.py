@@ -3,6 +3,14 @@ from .battle import *
 
 # 地图编辑器系统
 class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
+    # 删除模式
+    @enum.verify(enum.UNIQUE)
+    class _Delete(enum.IntEnum):
+        DISABLE = enum.auto()
+        BLOCK = enum.auto()
+        ROW = enum.auto()
+        COLUMN = enum.auto()
+
     def __init__(self) -> None:
         # 初始化父类
         super().__init__()
@@ -25,7 +33,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self._select_rect: Rectangle = Rectangle(0, 0, 0, 0)
         self._select_pos: tuple = tuple()
         # 是否是delete模式
-        self._delete_mode: bool = False
+        self._delete_mode: AbstractMapEditor._Delete = self._Delete.DISABLE
         # 是否有ui容器被鼠标触碰
         self._no_container_is_hovered: bool = False
         # 是否展示barrier mask
@@ -41,7 +49,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         super()._check_key_down(event)
         if event.key == Keys.ESCAPE:
             self.__object_to_put_down.clear()
-            self._delete_mode = False
+            self._delete_mode = self._Delete.DISABLE
             self._show_barrier_mask = False
 
     # 返回需要保存数据
@@ -49,7 +57,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         return Config.load_file(self.get_data_file_path()) | super()._get_data_need_to_save()
 
     # 是否有物品被选中
-    def isAnyObjectSelected(self) -> bool:
+    def is_any_object_selected(self) -> bool:
         return len(self.__object_to_put_down) > 0
 
     # 移除在给定坐标上的角色
@@ -227,8 +235,8 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             elif self.__UIContainerButtonBottom.is_hovered():
                 self.__UIContainerButtonBottom.switch()
                 self.__UIContainerButtonBottom.flip(False, True)
-            elif self._tile_is_hovering is not None:
-                if self._delete_mode is True:
+            elif self._tile_is_hovering is not None and self.__buttons_container.item_being_hovered is None:
+                if self._delete_mode is self._Delete.BLOCK:
                     # 优先移除barrier mask
                     if not self.get_map().is_passable(self._tile_is_hovering[0], self._tile_is_hovering[1]):
                         self.get_map().set_barrier_mask(self._tile_is_hovering[0], self._tile_is_hovering[1], 0)
@@ -240,7 +248,21 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                             self.get_map().remove_decoration(decoration)
                         else:
                             self.remove_entity_on_pos(self._tile_is_hovering)
-                elif self.isAnyObjectSelected() is True and self._no_container_is_hovered is True:
+                # 移除行
+                elif self._delete_mode is self._Delete.ROW:
+                    self.get_map().remove_on_axis(self._tile_is_hovering[1])
+                    for _value in self._entities_data.values():
+                        for key in tuple(_value.keys()):
+                            if _value[key].y == self._tile_is_hovering[1]:
+                                _value.pop(key)
+                # 移除列
+                elif self._delete_mode is self._Delete.COLUMN:
+                    self.get_map().remove_on_axis(self._tile_is_hovering[0], 1)
+                    for _value in self._entities_data.values():
+                        for key in tuple(_value.keys()):
+                            if _value[key].x == self._tile_is_hovering[0]:
+                                _value.pop(key)
+                elif self.is_any_object_selected() is True and self._no_container_is_hovered is True:
                     match self.__object_to_put_down["type"]:
                         case "tile":
                             self.get_map().set_tile(*self._tile_is_hovering, self.__object_to_put_down["id"])
@@ -329,8 +351,10 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
 
         # 画出上方按钮
         self.__buttons_container.draw(_surface)
-        if Controller.get_event("confirm") and len(self.__object_to_put_down) <= 0 and not self._delete_mode:
+        if Controller.get_event("confirm") and len(self.__object_to_put_down) <= 0:
             show_barrier_mask: bool = False
+            if self.__buttons_container.item_being_hovered is not None:
+                self._delete_mode = self._Delete.DISABLE
             match self.__buttons_container.item_being_hovered:
                 case "save":
                     self._save()
@@ -341,7 +365,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                         self.__no_save_warning.set_visible(True)
                 case "delete":
                     self.__object_to_put_down.clear()
-                    self._delete_mode = True
+                    self._delete_mode = self._Delete.BLOCK
                 case "reload":
                     tempLocal_x, tempLocal_y = self.get_map().get_local_pos()
                     self._process_data(Config.load(self.get_data_file_path()))
@@ -351,17 +375,9 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 case "new_colum":
                     self.get_map().add_on_axis(axis=1)
                 case "remove_row":
-                    self.get_map().remove_on_axis()
-                    for _value in self._entities_data.values():
-                        for key in tuple(_value.keys()):
-                            if _value[key].y == self.get_map().row:
-                                _value.pop(key)
+                    self._delete_mode = self._Delete.ROW
                 case "remove_colum":
-                    self.get_map().remove_on_axis(axis=1)
-                    for _value in self._entities_data.values():
-                        for key in tuple(_value.keys()):
-                            if _value[key].x == self.get_map().column:
-                                _value.pop(key)
+                    self._delete_mode = self._Delete.COLUMN
                 case "auto_add_barriers":
                     # 历遍地图，设置障碍区块
                     for _x in range(self.get_map().column):
@@ -377,7 +393,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             self._show_barrier_mask = show_barrier_mask
 
         # 跟随鼠标显示即将被放下的物品
-        if self.isAnyObjectSelected() is True:
+        if self.is_any_object_selected() is True:
             match self.__object_to_put_down["type"]:
                 case "tile":
                     _surface.blit(self.__envImgContainer.get(str(self.__object_to_put_down["id"])), Controller.mouse.get_pos())

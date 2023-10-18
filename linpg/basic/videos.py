@@ -68,7 +68,7 @@ class Videos:
         # 生成output路径
         output_path: str = os.path.join(Cache.get_directory(), output_file_name)
         # windows默认使用FFmpeg模块，或pyav没有安装
-        if os.name == "nt" or _AV_INITIALIZED is False:
+        if os.name == "nt" or not _AV_INITIALIZED:
             FFmpeg.convert(path, output_path, True)
         else:
             with av.open(path, "r") as inp:

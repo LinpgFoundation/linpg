@@ -3,13 +3,17 @@ from .battle import *
 
 # 地图编辑器系统
 class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
-    # 删除模式
+    # 修改模式
     @enum.verify(enum.UNIQUE)
-    class _Delete(enum.IntEnum):
+    class _MODIFY(enum.IntEnum):
         DISABLE = enum.auto()
-        BLOCK = enum.auto()
-        ROW = enum.auto()
-        COLUMN = enum.auto()
+        DELETE_BLOCK = enum.auto()
+        DELETE_ROW = enum.auto()
+        DELETE_COLUMN = enum.auto()
+        ADD_ROW_BEFORE = enum.auto()
+        ADD_ROW_AFTER = enum.auto()
+        ADD_COLUMN_ABOVE = enum.auto()
+        ADD_COLUMN_BELOW = enum.auto()
 
     def __init__(self) -> None:
         # 初始化父类
@@ -32,8 +36,8 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         # 选中框
         self._select_rect: Rectangle = Rectangle(0, 0, 0, 0)
         self._select_pos: tuple = tuple()
-        # 是否是delete模式
-        self._delete_mode: AbstractMapEditor._Delete = self._Delete.DISABLE
+        # 是否是修改模式
+        self._modify_mode: AbstractMapEditor._MODIFY = self._MODIFY.DISABLE
         # 是否有ui容器被鼠标触碰
         self._no_container_is_hovered: bool = False
         # 是否展示barrier mask
@@ -49,7 +53,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         super()._check_key_down(event)
         if event.key == Keys.ESCAPE:
             self.__object_to_put_down.clear()
-            self._delete_mode = self._Delete.DISABLE
+            self._modify_mode = self._MODIFY.DISABLE
             self._show_barrier_mask = False
 
     # 返回需要保存数据
@@ -236,57 +240,59 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 self.__UIContainerButtonBottom.switch()
                 self.__UIContainerButtonBottom.flip(False, True)
             elif self._tile_is_hovering is not None and self.__buttons_container.item_being_hovered is None:
-                if self._delete_mode is self._Delete.BLOCK:
-                    # 优先移除barrier mask
-                    if not self.get_map().is_passable(self._tile_is_hovering[0], self._tile_is_hovering[1]):
-                        self.get_map().set_barrier_mask(self._tile_is_hovering[0], self._tile_is_hovering[1], 0)
-                    else:
-                        # 查看当前位置是否有装饰物
-                        decoration: DecorationObject | None = self.get_map().get_decoration(self._tile_is_hovering)
-                        # 如果发现有冲突的装饰物
-                        if decoration is not None:
-                            self.get_map().remove_decoration(decoration)
+                match self._modify_mode:
+                    case self._MODIFY.DELETE_BLOCK:
+                        # 优先移除barrier mask
+                        if not self.get_map().is_passable(self._tile_is_hovering[0], self._tile_is_hovering[1]):
+                            self.get_map().set_barrier_mask(self._tile_is_hovering[0], self._tile_is_hovering[1], 0)
                         else:
-                            self.remove_entity_on_pos(self._tile_is_hovering)
-                # 移除行
-                elif self._delete_mode is self._Delete.ROW:
-                    self.get_map().remove_on_axis(self._tile_is_hovering[1])
-                    for _value in self._entities_data.values():
-                        for key in tuple(_value.keys()):
-                            if _value[key].y == self._tile_is_hovering[1]:
-                                _value.pop(key)
-                # 移除列
-                elif self._delete_mode is self._Delete.COLUMN:
-                    self.get_map().remove_on_axis(self._tile_is_hovering[0], 1)
-                    for _value in self._entities_data.values():
-                        for key in tuple(_value.keys()):
-                            if _value[key].x == self._tile_is_hovering[0]:
-                                _value.pop(key)
-                elif self.is_any_object_selected() is True and self._no_container_is_hovered is True:
-                    match self.__object_to_put_down["type"]:
-                        case "tile":
-                            self.get_map().set_tile(*self._tile_is_hovering, self.__object_to_put_down["id"])
-                        case "decoration":
                             # 查看当前位置是否有装饰物
-                            decoration = self.get_map().get_decoration(self._tile_is_hovering)
+                            decoration: DecorationObject | None = self.get_map().get_decoration(self._tile_is_hovering)
                             # 如果发现有冲突的装饰物
                             if decoration is not None:
                                 self.get_map().remove_decoration(decoration)
-                            self.get_map().add_decoration(
-                                {"id": self.__object_to_put_down["id"], "x": self._tile_is_hovering[0], "y": self._tile_is_hovering[1]},
-                            )
-                        case "entity":
-                            # 移除坐标冲突的角色
-                            self.remove_entity_on_pos(self._tile_is_hovering)
-                            # 生成需要更新的数据
-                            _new_data: dict = copy.deepcopy(Entity.get_entity_data(self.__object_to_put_down["id"]))
-                            _new_data.update({"x": self._tile_is_hovering[0], "y": self._tile_is_hovering[1], "type": self.__object_to_put_down["id"]})
-                            the_id: int = 0
-                            nameTemp: str = self.__object_to_put_down["id"] + "_" + str(the_id)
-                            while nameTemp in self._entities_data[_new_data["faction"]]:
-                                the_id += 1
-                                nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
-                            self.update_entity(_new_data["faction"], nameTemp, _new_data)
+                            else:
+                                self.remove_entity_on_pos(self._tile_is_hovering)
+                    # 移除行
+                    case self._MODIFY.DELETE_ROW:
+                        self.get_map().remove_on_axis(self._tile_is_hovering[1])
+                        for _value in self._entities_data.values():
+                            for key in tuple(_value.keys()):
+                                if _value[key].y == self._tile_is_hovering[1]:
+                                    _value.pop(key)
+                    # 移除列
+                    case self._MODIFY.DELETE_COLUMN:
+                        self.get_map().remove_on_axis(self._tile_is_hovering[0], 1)
+                        for _value in self._entities_data.values():
+                            for key in tuple(_value.keys()):
+                                if _value[key].x == self._tile_is_hovering[0]:
+                                    _value.pop(key)
+                    case _:
+                        if self.is_any_object_selected() is True and self._no_container_is_hovered is True:
+                            match self.__object_to_put_down["type"]:
+                                case "tile":
+                                    self.get_map().set_tile(*self._tile_is_hovering, self.__object_to_put_down["id"])
+                                case "decoration":
+                                    # 查看当前位置是否有装饰物
+                                    decoration = self.get_map().get_decoration(self._tile_is_hovering)
+                                    # 如果发现有冲突的装饰物
+                                    if decoration is not None:
+                                        self.get_map().remove_decoration(decoration)
+                                    self.get_map().add_decoration(
+                                        {"id": self.__object_to_put_down["id"], "x": self._tile_is_hovering[0], "y": self._tile_is_hovering[1]},
+                                    )
+                                case "entity":
+                                    # 移除坐标冲突的角色
+                                    self.remove_entity_on_pos(self._tile_is_hovering)
+                                    # 生成需要更新的数据
+                                    _new_data: dict = copy.deepcopy(Entity.get_entity_data(self.__object_to_put_down["id"]))
+                                    _new_data.update({"x": self._tile_is_hovering[0], "y": self._tile_is_hovering[1], "type": self.__object_to_put_down["id"]})
+                                    the_id: int = 0
+                                    nameTemp: str = self.__object_to_put_down["id"] + "_" + str(the_id)
+                                    while nameTemp in self._entities_data[_new_data["faction"]]:
+                                        the_id += 1
+                                        nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
+                                    self.update_entity(_new_data["faction"], nameTemp, _new_data)
 
         # 画出地图
         self._display_map(_surface)
@@ -354,7 +360,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         if Controller.get_event("confirm") and len(self.__object_to_put_down) <= 0:
             show_barrier_mask: bool = False
             if self.__buttons_container.item_being_hovered is not None:
-                self._delete_mode = self._Delete.DISABLE
+                self._modify_mode = self._MODIFY.DISABLE
             match self.__buttons_container.item_being_hovered:
                 case "save":
                     self._save()
@@ -365,7 +371,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                         self.__no_save_warning.set_visible(True)
                 case "delete":
                     self.__object_to_put_down.clear()
-                    self._delete_mode = self._Delete.BLOCK
+                    self._modify_mode = self._MODIFY.DELETE_BLOCK
                 case "reload":
                     tempLocal_x, tempLocal_y = self.get_map().get_local_pos()
                     self._process_data(Config.load(self.get_data_file_path()))
@@ -375,9 +381,9 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 case "new_colum":
                     self.get_map().add_on_axis(axis=1)
                 case "remove_row":
-                    self._delete_mode = self._Delete.ROW
+                    self._modify_mode = self._MODIFY.DELETE_ROW
                 case "remove_colum":
-                    self._delete_mode = self._Delete.COLUMN
+                    self._modify_mode = self._MODIFY.DELETE_COLUMN
                 case "auto_add_barriers":
                     # 历遍地图，设置障碍区块
                     for _x in range(self.get_map().column):

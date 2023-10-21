@@ -55,7 +55,7 @@ class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
             else os.path.join(self._dialog_folder_path, self._chapter_type, self._project_name, f"info.{Config.get_file_type()}")
         )
         # 自3.7起使用default_language，出于兼容目的尝试读取default_lang（3.6前的key）
-        return _data.get("default_language", _data.get("default_lang", "English"))
+        return str(_data.get("default_language", _data.get("default_lang", "English")))
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:

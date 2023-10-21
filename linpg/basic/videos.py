@@ -5,7 +5,7 @@ from ..lib import FFmpeg
 # 尝试导入opencv
 _OPENCV_INITIALIZED: bool = False
 try:
-    import cv2  # type: ignore
+    import cv2
 
     _OPENCV_INITIALIZED = True
 except ImportError:

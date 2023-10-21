@@ -462,11 +462,11 @@
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
                 "height": "5%",
-                "name": "new_row",
+                "name": "add_colum_after",
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Editor.new_row}"
+                    "src": "{Editor.add_colum_after}"
                 },
                 "type": "button",
                 "width": 0,
@@ -477,11 +477,41 @@
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
                 "height": "5%",
-                "name": "new_colum",
+                "name": "add_colum_before",
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Editor.new_colum}"
+                    "src": "{Editor.add_colum_before}"
+                },
+                "type": "button",
+                "width": 0,
+                "x": 0,
+                "y": "10%"
+            },
+            {
+                "alpha_when_not_hover": 100,
+                "auto_resize": true,
+                "height": "5%",
+                "name": "add_row_above",
+                "src": "<&ui>button.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Editor.add_row_above}"
+                },
+                "type": "button",
+                "width": 0,
+                "x": 0,
+                "y": "10%"
+            },
+            {
+                "alpha_when_not_hover": 100,
+                "auto_resize": true,
+                "height": "5%",
+                "name": "add_row_below",
+                "src": "<&ui>button.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Editor.add_row_below}"
                 },
                 "type": "button",
                 "width": 0,

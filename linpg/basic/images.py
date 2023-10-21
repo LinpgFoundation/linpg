@@ -7,7 +7,7 @@ from .wrapper import *
 _LINPGASSETS_INITIALIZED: bool = False
 if bool(Specification.get("ExtraAssets")) is True:
     try:
-        import linpgassets  # type: ignore
+        import linpgassets
 
         _LINPGASSETS_INITIALIZED = True
         # 初始化linpgassets的数据库

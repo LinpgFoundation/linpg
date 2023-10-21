@@ -10,10 +10,10 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         DELETE_BLOCK = enum.auto()
         DELETE_ROW = enum.auto()
         DELETE_COLUMN = enum.auto()
-        ADD_ROW_BEFORE = enum.auto()
-        ADD_ROW_AFTER = enum.auto()
-        ADD_COLUMN_ABOVE = enum.auto()
-        ADD_COLUMN_BELOW = enum.auto()
+        ADD_ROW_ABOVE = enum.auto()
+        ADD_ROW_BELOW = enum.auto()
+        ADD_COLUMN_BEFORE = enum.auto()
+        ADD_COLUMN_AFTER = enum.auto()
 
     def __init__(self) -> None:
         # 初始化父类
@@ -202,13 +202,18 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             self.__bottom_container_buttons.append(newButton)
         self.__object_to_put_down.clear()
         # 设置按钮位置
+        # ----- 第一行 -----
         self.__buttons_container.get("back").set_left(self.__buttons_container.get("save").get_right() + padding)
         self.__buttons_container.get("delete").set_left(self.__buttons_container.get("back").get_right() + padding)
         self.__buttons_container.get("reload").set_left(self.__buttons_container.get("delete").get_right() + padding)
-        self.__buttons_container.get("new_row").set_left(self.__buttons_container.get("save").get_left())
-        self.__buttons_container.get("new_colum").set_left(self.__buttons_container.get("new_row").get_right() + padding)
-        self.__buttons_container.get("remove_row").set_left(self.__buttons_container.get("new_colum").get_right() + padding)
+        # ----- 第二行 -----
+        self.__buttons_container.get("add_row_above").set_left(self.__buttons_container.get("save").get_left())
+        self.__buttons_container.get("add_row_below").set_left(self.__buttons_container.get("add_row_above").get_right() + padding)
+        self.__buttons_container.get("add_colum_before").set_left(self.__buttons_container.get("add_row_below").get_right() + padding)
+        self.__buttons_container.get("add_colum_after").set_left(self.__buttons_container.get("add_colum_before").get_right() + padding)
+        self.__buttons_container.get("remove_row").set_left(self.__buttons_container.get("add_colum_after").get_right() + padding)
         self.__buttons_container.get("remove_colum").set_left(self.__buttons_container.get("remove_row").get_right() + padding)
+        # ----- 第三行 -----
         self.__buttons_container.get("auto_add_barriers").set_left(self.__buttons_container.get("save").get_left())
         self.__buttons_container.get("add_barrier").set_left(self.__buttons_container.get("auto_add_barriers").get_right() + padding)
 
@@ -267,6 +272,14 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                             for key in tuple(_value.keys()):
                                 if _value[key].x == self._tile_is_hovering[0]:
                                     _value.pop(key)
+                    case self._MODIFY.ADD_ROW_ABOVE:
+                        self.get_map().add_on_axis(self._tile_is_hovering[1])
+                    case self._MODIFY.ADD_ROW_BELOW:
+                        self.get_map().add_on_axis(self._tile_is_hovering[1] + 1)
+                    case self._MODIFY.ADD_COLUMN_BEFORE:
+                        self.get_map().add_on_axis(self._tile_is_hovering[0], 1)
+                    case self._MODIFY.ADD_COLUMN_AFTER:
+                        self.get_map().add_on_axis(self._tile_is_hovering[0] + 1, 1)
                     case _:
                         if self.is_any_object_selected() is True and self._no_container_is_hovered is True:
                             match self.__object_to_put_down["type"]:
@@ -376,10 +389,14 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                     tempLocal_x, tempLocal_y = self.get_map().get_local_pos()
                     self._process_data(Config.load(self.get_data_file_path()))
                     self.get_map().set_local_pos(tempLocal_x, tempLocal_y)
-                case "new_row":
-                    self.get_map().add_on_axis()
-                case "new_colum":
-                    self.get_map().add_on_axis(axis=1)
+                case "add_colum_before":
+                    self._modify_mode = self._MODIFY.ADD_COLUMN_BEFORE
+                case "add_colum_after":
+                    self._modify_mode = self._MODIFY.ADD_COLUMN_AFTER
+                case "add_row_above":
+                    self._modify_mode = self._MODIFY.ADD_ROW_ABOVE
+                case "add_row_below":
+                    self._modify_mode = self._MODIFY.ADD_ROW_BELOW
                 case "remove_row":
                     self._modify_mode = self._MODIFY.DELETE_ROW
                 case "remove_colum":

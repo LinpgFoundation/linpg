@@ -135,9 +135,9 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
     def add_on_axis(self, index: int, axis: int = 0) -> None:
         axis = Numbers.keep_int_in_range(axis, 0, 1)
         if axis == 0:
-            if index < 0 or index >= self.row:
+            if index < 0 or index > self.row:
                 EXCEPTION.fatal(f"Index {index} is out of bound at row!")
-        elif index < 0 or index >= self.column:
+        elif index < 0 or index > self.column:
             EXCEPTION.fatal(f"Index {index} is out of bound at column!")
         self.__init_map(
             numpy.insert(self.__MAP, index, numpy.random.randint(len(self.__tile_lookup_table), size=self.__row if axis == 1 else self.__column), axis),

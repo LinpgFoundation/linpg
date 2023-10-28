@@ -492,8 +492,6 @@ class DialogEditor(AbstractVisualNovelSystem):
             _surface.blit(self.__UIContainerRightImage, (self.__UIContainerRightButton.right, 0))
             self.__UIContainerRight_bg.display(_surface, (self.__UIContainerRightButton.right, 0))
             self.__UIContainerRight_npc.display(_surface, (self.__UIContainerRightButton.right, 0))
-            # self.__UIContainerRight_bg.draw_outline(_surface,(self.__UIContainerRightButton.right,0))
-            # self.__UIContainerRight_npc.draw_outline(_surface,(self.__UIContainerRightButton.right,0))
             # 检测按钮
             if self.__button_select_background.is_hovered((self.__UIContainerRightButton.right, 0)) and confirm_event_tag is True:
                 self.__UIContainerRight_bg.set_visible(True)

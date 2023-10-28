@@ -69,8 +69,8 @@ class Square(GameObject2d):
         self.set_width(self.get_width())
 
     # 画出轮廓
-    def draw_outline(self, _surface: ImageSurface, color: color_liked = "red", thickness: int = 2, offSet: tuple[int, int] = ORIGIN) -> None:
-        Draw.rect(_surface, Colors.get(color), (Coordinates.add(self.pos, offSet), self.size), thickness)
+    def draw_outline(self, _surface: ImageSurface, color: color_liked = "red", thickness: int = 2, radius: int = -1, offSet: tuple[int, int] = ORIGIN) -> None:
+        Draw.rect(_surface, Colors.get(color), (Coordinates.add(self.pos, offSet), self.size), thickness, radius)
 
     # 画出轮廓 - 实现父类的要求
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:

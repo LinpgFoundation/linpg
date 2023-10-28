@@ -64,6 +64,10 @@ class AbstractImageSurface(Rectangle, Hidable, metaclass=ABCMeta):
     def rotate(self, angle: int) -> None:
         self.__img = Images.rotate(self.__img, angle)
 
+    # 不为null
+    def is_not_null(self) -> bool:
+        return Surfaces.is_not_null(self.__img)
+
 
 # 有本地坐标的Surface (警告，子类必须实现get_left()和get_top()方法)
 class SurfaceWithLocalPos:

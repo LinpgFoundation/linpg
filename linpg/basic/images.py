@@ -11,7 +11,7 @@ if bool(Specification.get("ExtraAssets")) is True:
 
         _LINPGASSETS_INITIALIZED = True
         # 初始化linpgassets的数据库
-        DataBase.update(Config.load_file(linpgassets.get_database_path()))
+        DataBase.update(linpgassets.get_database())
     except Exception:
         _LINPGASSETS_INITIALIZED = False
 
@@ -54,16 +54,19 @@ class Images:
             return path
         elif isinstance(path, str):
             if path != "<NULL>":
+                canBeNull: bool = False
+                if path.endswith("?"):
+                    canBeNull = True
+                    path = path.rstrip("?")
                 _imageR: ImageSurface | None = None
                 # 如果正在加载不属于linpgassets的图片
                 if not path.startswith("<"):
                     try:
                         _imageR = pygame.image.load(path)
                     except Exception:
-                        if Debug.get_developer_mode() is True:
+                        if Debug.get_developer_mode() is True and not canBeNull:
                             EXCEPTION.fatal(f"Cannot load image from path: {path}")
-                        else:
-                            _imageR = None
+                        _imageR = None
                 # 如果需要加载属于linpgassets的图片
                 elif os.path.exists(_path := cls.generate_path_according_to_prefix(path)):
                     if not _path.endswith(".zip"):
@@ -72,14 +75,14 @@ class Images:
                         _zipFile: zipfile.ZipFile = zipfile.ZipFile(_path)
                         _imageR = cls.fromBytesIO(io.BytesIO(_zipFile.read(path[path.index(">") + 1 :], pwd=_KEY)))
                         _zipFile.close()
-                    elif Debug.get_developer_mode() is True:
+                    elif Debug.get_developer_mode() is True and not canBeNull:
                         EXCEPTION.fatal(f"Cannot find essential image with path: {_path}")
                 # 根据参数处理并返回加载好的图片
                 if _imageR is not None:
                     return _imageR.convert_alpha() if convert_alpha is True else _imageR.convert()
                 # 如果图片加载出错
                 else:
-                    return Surfaces.texture_is_missing((192, 108))
+                    return Surfaces.NULL if canBeNull else Surfaces.texture_is_missing((192, 108))
             else:
                 return Surfaces.NULL
         else:
@@ -90,6 +93,9 @@ class Images:
     def load(cls, path: PoI, size: tuple = tuple(), alpha: int = 255, convert_alpha: bool = True) -> ImageSurface:
         # 加载图片
         img: ImageSurface = cls.quickly_load(path, convert_alpha)
+        # 如果是null，则直接返回
+        if not Surfaces.is_not_null(img):
+            return img
         # 根据参数编辑图片
         if alpha < 255:
             img.set_alpha(alpha)
@@ -99,6 +105,9 @@ class Images:
     # 重新编辑尺寸
     @staticmethod
     def resize(img: ImageSurface, size: tuple) -> ImageSurface:
+        # 如果是null，则直接返回
+        if not Surfaces.is_not_null(img):
+            return img
         # 编辑图片
         if size[1] is not None and size[1] >= 0 and size[0] is None:
             return pygame.transform.scale(img, (round(size[1] / img.get_height() * img.get_width()), round(size[1])))
@@ -111,6 +120,9 @@ class Images:
     # 精准地缩放尺寸
     @staticmethod
     def smoothly_resize(img: ImageSurface, size: tuple) -> ImageSurface:
+        # 如果是null，则直接返回
+        if not Surfaces.is_not_null(img):
+            return img
         # 编辑图片
         if size[1] is not None and size[1] >= 0 and size[0] is None:
             return pygame.transform.smoothscale(img, (round(size[1] / img.get_height() * img.get_width()), round(size[1])))
@@ -123,6 +135,10 @@ class Images:
     # 精准地缩放尺寸
     @classmethod
     def smoothly_resize_and_crop_to_fit(cls, img: ImageSurface, size: tuple[int, int]) -> ImageSurface:
+        # 如果是null，则直接返回
+        if not Surfaces.is_not_null(img):
+            return img
+        # 根据尺寸计算长宽
         if img.get_height() / img.get_width() > 1:
             img = cls.smoothly_resize(img, (None, size[1]))
             return img.subsurface(((img.get_width() - size[0]) // 2, 0), size)
@@ -133,21 +149,25 @@ class Images:
     # 翻转图片
     @staticmethod
     def flip(img: ImageSurface, horizontal: bool, vertical: bool) -> ImageSurface:
-        return pygame.transform.flip(img, horizontal, vertical)
+        return pygame.transform.flip(img, horizontal, vertical) if Surfaces.is_not_null(img) else img
 
     # 旋转图片
     @staticmethod
     def rotate(img: ImageSurface, angle: int) -> ImageSurface:
-        return pygame.transform.rotate(img, angle)
+        return pygame.transform.rotate(img, angle) if Surfaces.is_not_null(img) else img
 
     # 移除掉图片周围的透明像素
     @classmethod
     def crop_bounding(cls, img: ImageSurface) -> ImageSurface:
-        return img.subsurface(img.get_bounding_rect())
+        return img.subsurface(img.get_bounding_rect()) if Surfaces.is_not_null(img) else img
 
     # 保存图片
     @staticmethod
     def save(_surface: ImageSurface, path: str) -> None:
+        # 如果是null，则报警
+        if not Surfaces.is_not_null(_surface):
+            EXCEPTION.fatal("You cannot save a null surface!")
+        # 保存
         pygame.image.save(_surface, path)
 
     # 将BytesIO转换为图片

@@ -27,18 +27,22 @@ class AbstractGameObjectsContainer(AbstractImageSurface, metaclass=ABCMeta):
     # 设置宽度
     def set_width(self, value: int_f) -> None:
         super().set_width(value)
-        if self._get_image_reference() is not None:
+        if self.is_background_init():
             self._get_image_reference().set_width(value)
 
     # 设置高度
     def set_height(self, value: int_f) -> None:
         super().set_height(value)
-        if self._get_image_reference() is not None:
+        if self.is_background_init():
             self._get_image_reference().set_height(value)
 
     # 更新背景（非专业人员勿碰）
     def update_background(self, newImg: Any) -> None:
         self._set_image(newImg)
+
+    # has background been init
+    def is_background_init(self) -> bool:
+        return self._get_image_reference() is not None and self._get_image_reference().is_not_null()
 
 
 # 使用Dict储存游戏对象的容器，类似html的div
@@ -101,7 +105,7 @@ class GameObjectsDictContainer(AbstractGameObjectsContainer):
         if self.is_visible():
             current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出背景
-            if self._get_image_reference() is not None:
+            if self.is_background_init():
                 self._get_image_reference().display(_surface, current_abs_pos)
             # 画出物品
             for key_of_game_object, game_object_t in self.__items_container_dict.items():
@@ -158,7 +162,7 @@ class GameObjectsListContainer(AbstractGameObjectsContainer):
         if self.is_visible():
             current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
             # 画出背景
-            if self._get_image_reference() is not None:
+            if self.is_background_init():
                 self._get_image_reference().display(_surface, current_abs_pos)
             # 画出物品
             for i, _item in enumerate(self.__items_container_list):

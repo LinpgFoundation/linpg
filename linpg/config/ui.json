@@ -401,7 +401,7 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
+                "height": "4%",
                 "name": "save",
                 "src": "<&ui>button.png",
                 "text": {
@@ -416,7 +416,7 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
+                "height": "4%",
                 "name": "back",
                 "src": "<&ui>button.png",
                 "text": {
@@ -431,12 +431,12 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
-                "name": "delete",
+                "height": "4%",
+                "name": "delete_entity",
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Global.delete}"
+                    "src": "{Editor.delete_entity}"
                 },
                 "type": "button",
                 "width": 0,
@@ -446,7 +446,7 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
+                "height": "4%",
                 "name": "reload",
                 "src": "<&ui>button.png",
                 "text": {
@@ -461,7 +461,7 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
+                "height": "4%",
                 "name": "add_colum_after",
                 "src": "<&ui>button.png",
                 "text": {
@@ -476,7 +476,7 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
+                "height": "4%",
                 "name": "add_colum_before",
                 "src": "<&ui>button.png",
                 "text": {
@@ -491,7 +491,7 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
+                "height": "4%",
                 "name": "add_row_above",
                 "src": "<&ui>button.png",
                 "text": {
@@ -506,7 +506,7 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
+                "height": "4%",
                 "name": "add_row_below",
                 "src": "<&ui>button.png",
                 "text": {
@@ -521,12 +521,12 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
-                "name": "remove_row",
+                "height": "4%",
+                "name": "delete_row",
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Editor.remove_row}"
+                    "src": "{Editor.delete_row}"
                 },
                 "type": "button",
                 "width": 0,
@@ -536,12 +536,12 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
-                "name": "remove_colum",
+                "height": "4%",
+                "name": "delete_colum",
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Editor.remove_colum}"
+                    "src": "{Editor.delete_colum}"
                 },
                 "type": "button",
                 "width": 0,
@@ -551,7 +551,7 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
+                "height": "4%",
                 "name": "auto_add_barriers",
                 "src": "<&ui>button.png",
                 "text": {
@@ -566,7 +566,7 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
+                "height": "4%",
                 "name": "add_barrier",
                 "src": "<&ui>button.png",
                 "text": {
@@ -750,7 +750,7 @@
                 "y": "19%"
             }
         ],
-        "src": "<&ui>container.png",
+        "src": "<&ui>option_background.png?",
         "type": "container",
         "width": "50%",
         "x": "center",

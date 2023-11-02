@@ -7,7 +7,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
     @enum.verify(enum.UNIQUE)
     class _MODIFY(enum.IntEnum):
         DISABLE = enum.auto()
-        DELETE_BLOCK = enum.auto()
+        DELETE_ENTITY = enum.auto()
         DELETE_ROW = enum.auto()
         DELETE_COLUMN = enum.auto()
         ADD_ROW_ABOVE = enum.auto()
@@ -65,7 +65,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         return len(self.__object_to_put_down) > 0
 
     # 移除在给定坐标上的角色
-    def remove_entity_on_pos(self, target_pos: tuple[int, int]) -> None:
+    def delete_entity_on_pos(self, target_pos: tuple[int, int]) -> None:
         for faction in self._entities_data.keys():
             for key in self._entities_data[faction].keys():
                 if Coordinates.is_same(self._entities_data[faction][key], target_pos):
@@ -204,15 +204,15 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         # 设置按钮位置
         # ----- 第一行 -----
         self.__buttons_container.get("back").set_left(self.__buttons_container.get("save").get_right() + padding)
-        self.__buttons_container.get("delete").set_left(self.__buttons_container.get("back").get_right() + padding)
-        self.__buttons_container.get("reload").set_left(self.__buttons_container.get("delete").get_right() + padding)
+        self.__buttons_container.get("delete_entity").set_left(self.__buttons_container.get("back").get_right() + padding)
+        self.__buttons_container.get("reload").set_left(self.__buttons_container.get("delete_entity").get_right() + padding)
         # ----- 第二行 -----
         self.__buttons_container.get("add_row_above").set_left(self.__buttons_container.get("save").get_left())
         self.__buttons_container.get("add_row_below").set_left(self.__buttons_container.get("add_row_above").get_right() + padding)
         self.__buttons_container.get("add_colum_before").set_left(self.__buttons_container.get("add_row_below").get_right() + padding)
         self.__buttons_container.get("add_colum_after").set_left(self.__buttons_container.get("add_colum_before").get_right() + padding)
-        self.__buttons_container.get("remove_row").set_left(self.__buttons_container.get("add_colum_after").get_right() + padding)
-        self.__buttons_container.get("remove_colum").set_left(self.__buttons_container.get("remove_row").get_right() + padding)
+        self.__buttons_container.get("delete_row").set_left(self.__buttons_container.get("add_colum_after").get_right() + padding)
+        self.__buttons_container.get("delete_colum").set_left(self.__buttons_container.get("delete_row").get_right() + padding)
         # ----- 第三行 -----
         self.__buttons_container.get("auto_add_barriers").set_left(self.__buttons_container.get("save").get_left())
         self.__buttons_container.get("add_barrier").set_left(self.__buttons_container.get("auto_add_barriers").get_right() + padding)
@@ -246,7 +246,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 self.__UIContainerButtonBottom.flip(False, True)
             elif self._tile_is_hovering is not None and self.__buttons_container.item_being_hovered is None:
                 match self._modify_mode:
-                    case self._MODIFY.DELETE_BLOCK:
+                    case self._MODIFY.DELETE_ENTITY:
                         # 优先移除barrier mask
                         if not self.get_map().is_passable(self._tile_is_hovering[0], self._tile_is_hovering[1]):
                             self.get_map().set_barrier_mask(self._tile_is_hovering[0], self._tile_is_hovering[1], 0)
@@ -257,7 +257,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                             if decoration is not None:
                                 self.get_map().remove_decoration(decoration)
                             else:
-                                self.remove_entity_on_pos(self._tile_is_hovering)
+                                self.delete_entity_on_pos(self._tile_is_hovering)
                     # 移除行
                     case self._MODIFY.DELETE_ROW:
                         self.get_map().remove_on_axis(self._tile_is_hovering[1])
@@ -296,7 +296,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                                     )
                                 case "entity":
                                     # 移除坐标冲突的角色
-                                    self.remove_entity_on_pos(self._tile_is_hovering)
+                                    self.delete_entity_on_pos(self._tile_is_hovering)
                                     # 生成需要更新的数据
                                     _new_data: dict = copy.deepcopy(Entity.get_entity_data(self.__object_to_put_down["id"]))
                                     _new_data.update({"x": self._tile_is_hovering[0], "y": self._tile_is_hovering[1], "type": self.__object_to_put_down["id"]})
@@ -382,9 +382,9 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                         self.stop()
                     else:
                         self.__no_save_warning.set_visible(True)
-                case "delete":
+                case "delete_entity":
                     self.__object_to_put_down.clear()
-                    self._modify_mode = self._MODIFY.DELETE_BLOCK
+                    self._modify_mode = self._MODIFY.DELETE_ENTITY
                 case "reload":
                     tempLocal_x, tempLocal_y = self.get_map().get_local_pos()
                     self._process_data(Config.load(self.get_data_file_path()))
@@ -397,9 +397,9 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                     self._modify_mode = self._MODIFY.ADD_ROW_ABOVE
                 case "add_row_below":
                     self._modify_mode = self._MODIFY.ADD_ROW_BELOW
-                case "remove_row":
+                case "delete_row":
                     self._modify_mode = self._MODIFY.DELETE_ROW
-                case "remove_colum":
+                case "delete_colum":
                     self._modify_mode = self._MODIFY.DELETE_COLUMN
                 case "auto_add_barriers":
                     # 历遍地图，设置障碍区块

@@ -15,6 +15,10 @@
         "background": "Background Image",
         "decoration": "Decoration",
         "delete": "Delete current dialog",
+        "delete_colum": "Delete Colum",
+        "delete_entity": "Delete Entity",
+        "delete_npc": "Delete npc",
+        "delete_row": "Delete Row",
         "example_project": "Example Project",
         "next": "Next dialog",
         "no_bgm": "No background music",
@@ -22,9 +26,6 @@
         "please_enter_content": "Content",
         "please_enter_name": "Name",
         "previous": "Previous dialog",
-        "remove_colum": "Remove Colum",
-        "remove_npc": "Remove this npc",
-        "remove_row": "Remove Row",
         "tile": "Tile"
     },
     "Global": {

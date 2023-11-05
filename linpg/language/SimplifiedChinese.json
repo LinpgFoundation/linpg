@@ -26,7 +26,9 @@
         "please_enter_content": "对话内容",
         "please_enter_name": "角色名",
         "previous": "上一个对话",
-        "tile": "方块"
+        "redo": "重做",
+        "tile": "方块",
+        "undo": "撤消"
     },
     "Global": {
         "back": "返回",

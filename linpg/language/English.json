@@ -26,7 +26,9 @@
         "please_enter_content": "Content",
         "please_enter_name": "Name",
         "previous": "Previous dialog",
-        "tile": "Tile"
+        "redo": "Redo",
+        "tile": "Tile",
+        "undo": "Undo"
     },
     "Global": {
         "back": "Back",

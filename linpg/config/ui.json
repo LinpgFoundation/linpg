@@ -447,6 +447,36 @@
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
                 "height": "4%",
+                "name": "undo",
+                "src": "<&ui>button.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Editor.undo}"
+                },
+                "type": "button",
+                "width": 0,
+                "x": 0,
+                "y": "2%"
+            },
+            {
+                "alpha_when_not_hover": 100,
+                "auto_resize": true,
+                "height": "4%",
+                "name": "redo",
+                "src": "<&ui>button.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Editor.redo}"
+                },
+                "type": "button",
+                "width": 0,
+                "x": 0,
+                "y": "2%"
+            },
+            {
+                "alpha_when_not_hover": 100,
+                "auto_resize": true,
+                "height": "4%",
                 "name": "reload",
                 "src": "<&ui>button.png",
                 "text": {

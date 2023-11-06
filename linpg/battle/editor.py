@@ -42,6 +42,10 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self._no_container_is_hovered: bool = False
         # 是否展示barrier mask
         self._show_barrier_mask: bool = False
+        # 关卡历史
+        self.__level_data_history: list[dict] = []
+        # 代表当前关卡历史的index
+        self.__current_level_data_index: int = -1
 
     # 根据数据更新特定的角色 - 子类需实现
     @abstractmethod
@@ -87,6 +91,25 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         _data["_mode"] = "dev"
         # 开始处理数据
         super()._process_data(_data)
+
+    # 加载地图
+    def __load_level(self, data: dict) -> None:
+        tempLocal_x, tempLocal_y = self.get_map().get_local_pos()
+        self._process_data(data)
+        self.get_map().set_local_pos(tempLocal_x, tempLocal_y)
+
+    # 重置地图历史
+    def __reset_level_history(self) -> None:
+        # 重置历史
+        self.__level_data_history.clear()
+        self.__current_level_data_index = -1
+        self.__append_level_history()
+
+    # 新增历史
+    def __append_level_history(self) -> None:
+        self.__level_data_history = self.__level_data_history[: self.__current_level_data_index + 1]
+        self.__level_data_history.append(self._get_data_need_to_save())
+        self.__current_level_data_index += 1
 
     # 初始化UI
     def _init_ui(self) -> None:
@@ -205,7 +228,9 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         # ----- 第一行 -----
         self.__buttons_container.get("back").set_left(self.__buttons_container.get("save").get_right() + padding)
         self.__buttons_container.get("delete_entity").set_left(self.__buttons_container.get("back").get_right() + padding)
-        self.__buttons_container.get("reload").set_left(self.__buttons_container.get("delete_entity").get_right() + padding)
+        self.__buttons_container.get("undo").set_left(self.__buttons_container.get("delete_entity").get_right() + padding)
+        self.__buttons_container.get("redo").set_left(self.__buttons_container.get("undo").get_right() + padding)
+        self.__buttons_container.get("reload").set_left(self.__buttons_container.get("redo").get_right() + padding)
         # ----- 第二行 -----
         self.__buttons_container.get("add_row_above").set_left(self.__buttons_container.get("save").get_left())
         self.__buttons_container.get("add_row_below").set_left(self.__buttons_container.get("add_row_above").get_right() + padding)
@@ -222,6 +247,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self._initialize(chapterType, chapterId, projectName)
         self._process_data(Config.load_file(self.get_data_file_path()))
         self._init_ui()
+        self.__reset_level_history()
 
     # 重写load_progress - 功能上应和new一直，并忽略其他数据
     def load_progress(self, _data: dict) -> None:
@@ -245,6 +271,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 self.__UIContainerButtonBottom.switch()
                 self.__UIContainerButtonBottom.flip(False, True)
             elif self._tile_is_hovering is not None and self.__buttons_container.item_being_hovered is None:
+                whether_add_history: bool = True
                 match self._modify_mode:
                     case self._MODIFY.DELETE_ENTITY:
                         # 优先移除barrier mask
@@ -280,7 +307,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                         self.get_map().add_on_axis(self._tile_is_hovering[0], 1)
                     case self._MODIFY.ADD_COLUMN_AFTER:
                         self.get_map().add_on_axis(self._tile_is_hovering[0] + 1, 1)
-                    case _:
+                    case self._MODIFY.DISABLE:
                         if self.is_any_object_selected() is True and self._no_container_is_hovered is True:
                             match self.__object_to_put_down["type"]:
                                 case "tile":
@@ -306,7 +333,13 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                                         the_id += 1
                                         nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
                                     self.update_entity(_new_data["faction"], nameTemp, _new_data)
-
+                        else:
+                            whether_add_history = False
+                    case _:
+                        EXCEPTION.fatal(f"Unknown modify mode {self._modify_mode}")
+                # 保存修改后的历史
+                if whether_add_history is True:
+                    self.__append_level_history()
         # 画出地图
         self._display_map(_surface)
 
@@ -386,9 +419,16 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                     self.__object_to_put_down.clear()
                     self._modify_mode = self._MODIFY.DELETE_ENTITY
                 case "reload":
-                    tempLocal_x, tempLocal_y = self.get_map().get_local_pos()
-                    self._process_data(Config.load(self.get_data_file_path()))
-                    self.get_map().set_local_pos(tempLocal_x, tempLocal_y)
+                    self.__load_level(Config.load_file(self.get_data_file_path()))
+                    self.__reset_level_history()
+                case "undo":
+                    if self.__current_level_data_index > 0:
+                        self.__current_level_data_index -= 1
+                        self.__load_level(self.__level_data_history[self.__current_level_data_index])
+                case "redo":
+                    if self.__current_level_data_index < len(self.__level_data_history) - 1:
+                        self.__current_level_data_index += 1
+                        self.__load_level(self.__level_data_history[self.__current_level_data_index])
                 case "add_colum_before":
                     self._modify_mode = self._MODIFY.ADD_COLUMN_BEFORE
                 case "add_colum_after":
@@ -407,12 +447,14 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                         for _y in range(self.get_map().row):
                             if not self.get_map().is_passable(_x, _y, True):
                                 self.get_map().set_barrier_mask(_x, _y, 1)
+                    self.__append_level_history()
                 case "add_barrier":
                     show_barrier_mask = True
                 case _:
                     show_barrier_mask = self._show_barrier_mask
                     if self._show_barrier_mask is True and self._tile_is_hovering is not None:
                         self.get_map().set_barrier_mask(self._tile_is_hovering[0], self._tile_is_hovering[1], 1)
+                        self.__append_level_history()
             self._show_barrier_mask = show_barrier_mask
 
         # 跟随鼠标显示即将被放下的物品

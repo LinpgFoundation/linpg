@@ -316,7 +316,7 @@ class EntitySpriteImageManager:
                         if len(crop_rect) <= 0:
                             crop_rect = [_image.get_width(), _image.get_height(), 0, 0]
                         # 获取图片的bounding，并和现有的bounding进行比较
-                        _bounding: PG_Rect = _image.get_bounding_rect()
+                        _bounding: RectObject = _image.get_bounding_rect()
                         if _bounding.x < crop_rect[0]:
                             crop_rect[0] = _bounding.x
                         if _bounding.y < crop_rect[1]:

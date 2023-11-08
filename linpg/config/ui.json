@@ -654,7 +654,7 @@
         "y": 0
     },
     "option_menu": {
-        "height": "75%",
+        "height": "80%",
         "items": [
             {
                 "color": "white",
@@ -778,6 +778,21 @@
                 "type": "drop_down_single_choice_list",
                 "x": "45%",
                 "y": "19%"
+            },
+            {
+                "alpha_when_not_hover": 200,
+                "auto_resize": true,
+                "height": "5%",
+                "name": "confirm",
+                "src": "<&ui>button.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Global.confirm}"
+                },
+                "type": "button",
+                "width": 0,
+                "x": "center",
+                "y": "90%"
             }
         ],
         "src": "<&ui>option_background.png?",

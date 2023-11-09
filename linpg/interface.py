@@ -88,3 +88,9 @@ load = _Loader
 numbers = Numbers
 saves = Saves
 db = DataBase
+
+
+# 兼容 -- 将于3.8移除
+AbstractVisualNovelSystem = AbstractVisualNovelPlayer
+VisualNovelSystem = VisualNovelPlayer
+DialogEditor = VisualNovelEditor

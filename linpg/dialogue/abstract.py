@@ -2,7 +2,7 @@ from .render import *
 
 
 # 视觉小说系统接口
-class AbstractVisualNovelSystem(AbstractGameSystem, metaclass=ABCMeta):
+class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
         self._content: pyvns.ContentManager = pyvns.ContentManager()

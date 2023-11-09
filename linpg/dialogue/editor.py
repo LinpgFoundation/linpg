@@ -2,7 +2,7 @@ from .dialog import *
 
 
 # 对话制作器
-class DialogEditor(AbstractVisualNovelSystem):
+class VisualNovelEditor(AbstractVisualNovelPlayer):
     # deselect选中的背景
     __BACKGROUND_DESELECT_IMAGE: Final[StaticImage] = StaticImage.new_place_holder()
     __IS_BACKGROUND_DESELECT_IMAGE_INIT: bool = False
@@ -177,6 +177,11 @@ class DialogEditor(AbstractVisualNovelSystem):
             self.__current_select_bg_name = None
             self.__current_select_bg_copy = None
 
+    # 加载默认模板
+    def _load_template(self) -> None:
+        self._content.set_section("dialog_example")
+        self._content.set_section_content({})
+
     # 读取章节信息
     def _load_content(self) -> None:
         # 将npc立绘系统设置为开发者模式
@@ -189,8 +194,7 @@ class DialogEditor(AbstractVisualNovelSystem):
             # 则尝试加载后仍然出现内容为空的情况
             EXCEPTION.inform("No valid dialog content found.")
             # 则加载默认模板
-            self._content.set_section("dialog_example")
-            self._content.set_section_content({})
+            self._load_template()
         # 检测是否有非str的key name
         for section in self._content.get():
             if isinstance(section, str):

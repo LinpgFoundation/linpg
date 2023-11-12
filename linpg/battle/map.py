@@ -351,6 +351,32 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         # 需更新
         self._refresh()
 
+    # 更新方块
+    def replace_tiles(self, from_tile: str, to_tile: str) -> None:
+        # the tile id for 'from tile' in the lookup table
+        from_tile_index: int = -1
+        # the tile id for 'to tile' in the lookup table
+        to_tile_index: int = -1
+        # if 'from tile' exists in the lookup table
+        try:
+            from_tile_index = self.__tile_lookup_table.index(from_tile)
+        # if 'from tile' does not exist in the lookup table
+        except ValueError:
+            # then nothing to replace
+            return
+        # if 'to tile' already exists in the lookup table
+        try:
+            # get 'to tile' id
+            to_tile_index = self.__tile_lookup_table.index(to_tile)
+            # replace
+            self.__MAP[self.__MAP == from_tile_index] = to_tile_index
+        # if 'to tile' does not exist in the lookup table
+        except ValueError:
+            # replace the tile name in lookup table
+            self.__tile_lookup_table[from_tile_index] = to_tile
+        # refresh and we are done
+        self._refresh()
+
     # 计算在地图中的方块
     @abstractmethod
     def calculate_coordinate(self, on_screen_pos: tuple[int, int] | None = None) -> tuple[int, int] | None:

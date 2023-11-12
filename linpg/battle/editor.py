@@ -260,8 +260,11 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
         self._no_container_is_hovered = not self.__UIContainerRight.is_hovered(UIContainerRight_offset_pos) and not self.__UIContainerBottom.is_hovered(
             UIContainerBottom_offset_pos
         )
-        # 如果鼠标与任何Container进行了互动
-        if Controller.get_event("confirm") and len(self._select_pos) <= 0:
+        # 确保无选中
+        if len(self._select_pos) > 0:
+            pass
+        # 如果鼠标confirm
+        elif Controller.get_event("confirm"):
             # 显示或隐藏右侧的容器
             if self.__UIContainerButtonRight.is_hovered():
                 self.__UIContainerButtonRight.switch()
@@ -339,6 +342,18 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                         EXCEPTION.fatal(f"Unknown modify mode {self._modify_mode}")
                 # 保存修改后的历史
                 if whether_add_history is True:
+                    self.__append_level_history()
+        # 如果鼠标右键
+        elif (
+            Controller.get_event("hard_confirm")
+            and self.is_any_object_selected() is True
+            and self._no_container_is_hovered is True
+            and self._tile_is_hovering is not None
+            and self.__buttons_container.item_being_hovered is None
+        ):
+            match self.__object_to_put_down["type"]:
+                case "tile":
+                    self.get_map().replace_tiles(self.get_map().get_tile(*self._tile_is_hovering), self.__object_to_put_down["id"])
                     self.__append_level_history()
         # 画出地图
         self._display_map(_surface)

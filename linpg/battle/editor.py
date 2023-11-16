@@ -68,14 +68,6 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
     def is_any_object_selected(self) -> bool:
         return len(self.__object_to_put_down) > 0
 
-    # 移除在给定坐标上的角色
-    def delete_entity_on_pos(self, target_pos: tuple[int, int]) -> None:
-        for faction in self._entities_data.keys():
-            for key in self._entities_data[faction].keys():
-                if Coordinates.is_same(self._entities_data[faction][key], target_pos):
-                    self._entities_data[faction].pop(key)
-                    break
-
     # 处理关键数据
     def _process_data(self, _data: dict) -> None:
         # 确保地图初始化
@@ -253,6 +245,50 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
     def load_progress(self, _data: dict) -> None:
         self.new(_data["chapter_type"], _data["chapter_id"], _data.get("project_name"))
 
+    # 设置装饰物
+    def set_decoration(self, _item: str | None, _pos: tuple[int, int]) -> None:
+        # 查看当前位置是否有装饰物
+        decoration: DecorationObject | None = self.get_map().get_decoration(self._tile_is_hovering)
+        # 如果发现有冲突的装饰物
+        if decoration is not None:
+            # 则移除
+            self.get_map().remove_decoration(decoration)
+        # if _item is None, then it means remove only
+        if _item is None:
+            return
+        self.get_map().add_decoration({"id": _item, "x": _pos[0], "y": _pos[1]})
+
+    # 删除实体
+    def delete_entity(self, _filter: Callable[[Entity], bool]) -> bool:
+        delete_one: bool = False
+        for _value in self._entities_data.values():
+            for key in tuple(_value.keys()):
+                if _filter(_value[key]):
+                    _value.pop(key)
+                    delete_one = True
+        return delete_one
+
+    # 设置实体
+    def set_entity(self, _item: str | None, _pos: tuple[int, int]) -> None:
+        # 尝试移除坐标冲突的实体
+        self.delete_entity(lambda e: Coordinates.is_same(e, _pos))
+        # if _item is None, then it means remove only
+        if _item is None:
+            return
+        # 生成需要更新的数据
+        _new_data: dict = copy.deepcopy(Entity.get_entity_data(_item))
+        _new_data.update({"x": _pos[0], "y": _pos[1], "type": _item})
+        the_id: int = 0
+        nameTemp: str = f"{_item}_{the_id}"
+        while nameTemp in self._entities_data[_new_data["faction"]]:
+            the_id += 1
+            nameTemp = f"{_item}_{the_id}"
+        self.update_entity(_new_data["faction"], nameTemp, _new_data)
+
+    # 设置区块
+    def set_tile(self, _item: str, _pos: tuple[int, int]) -> None:
+        self.get_map().set_tile(*_pos, _item)
+
     # 将地图制作器的界面画到屏幕上
     def draw(self, _surface: ImageSurface) -> None:
         UIContainerRight_offset_pos: tuple[int, int] = (self.__UIContainerButtonRight.right, 0)
@@ -281,27 +317,21 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                         if not self.get_map().is_passable(self._tile_is_hovering[0], self._tile_is_hovering[1]):
                             self.get_map().set_barrier_mask(self._tile_is_hovering[0], self._tile_is_hovering[1], 0)
                         else:
-                            # 查看当前位置是否有装饰物
-                            decoration: DecorationObject | None = self.get_map().get_decoration(self._tile_is_hovering)
                             # 如果发现有冲突的装饰物
-                            if decoration is not None:
-                                self.get_map().remove_decoration(decoration)
+                            if self.get_map().get_decoration(self._tile_is_hovering) is not None:
+                                self.set_decoration(None, self._tile_is_hovering)
                             else:
-                                self.delete_entity_on_pos(self._tile_is_hovering)
+                                self.set_entity(None, self._tile_is_hovering)
                     # 移除行
                     case self._MODIFY.DELETE_ROW:
                         self.get_map().remove_on_axis(self._tile_is_hovering[1])
-                        for _value in self._entities_data.values():
-                            for key in tuple(_value.keys()):
-                                if _value[key].y == self._tile_is_hovering[1]:
-                                    _value.pop(key)
+                        row_y: int = self._tile_is_hovering[1]
+                        self.delete_entity(lambda e: round(e.y) == row_y)
                     # 移除列
                     case self._MODIFY.DELETE_COLUMN:
                         self.get_map().remove_on_axis(self._tile_is_hovering[0], 1)
-                        for _value in self._entities_data.values():
-                            for key in tuple(_value.keys()):
-                                if _value[key].x == self._tile_is_hovering[0]:
-                                    _value.pop(key)
+                        column_x: int = self._tile_is_hovering[0]
+                        self.delete_entity(lambda e: round(e.x) == column_x)
                     case self._MODIFY.ADD_ROW_ABOVE:
                         self.get_map().add_on_axis(self._tile_is_hovering[1])
                     case self._MODIFY.ADD_ROW_BELOW:
@@ -314,28 +344,11 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                         if self.is_any_object_selected() is True and self._no_container_is_hovered is True:
                             match self.__object_to_put_down["type"]:
                                 case "tile":
-                                    self.get_map().set_tile(*self._tile_is_hovering, self.__object_to_put_down["id"])
+                                    self.set_tile(self.__object_to_put_down["id"], self._tile_is_hovering)
                                 case "decoration":
-                                    # 查看当前位置是否有装饰物
-                                    decoration = self.get_map().get_decoration(self._tile_is_hovering)
-                                    # 如果发现有冲突的装饰物
-                                    if decoration is not None:
-                                        self.get_map().remove_decoration(decoration)
-                                    self.get_map().add_decoration(
-                                        {"id": self.__object_to_put_down["id"], "x": self._tile_is_hovering[0], "y": self._tile_is_hovering[1]},
-                                    )
+                                    self.set_decoration(self.__object_to_put_down["id"], self._tile_is_hovering)
                                 case "entity":
-                                    # 移除坐标冲突的角色
-                                    self.delete_entity_on_pos(self._tile_is_hovering)
-                                    # 生成需要更新的数据
-                                    _new_data: dict = copy.deepcopy(Entity.get_entity_data(self.__object_to_put_down["id"]))
-                                    _new_data.update({"x": self._tile_is_hovering[0], "y": self._tile_is_hovering[1], "type": self.__object_to_put_down["id"]})
-                                    the_id: int = 0
-                                    nameTemp: str = self.__object_to_put_down["id"] + "_" + str(the_id)
-                                    while nameTemp in self._entities_data[_new_data["faction"]]:
-                                        the_id += 1
-                                        nameTemp = self.__object_to_put_down["id"] + "_" + str(the_id)
-                                    self.update_entity(_new_data["faction"], nameTemp, _new_data)
+                                    self.set_entity(self.__object_to_put_down["id"], self._tile_is_hovering)
                         else:
                             whether_add_history = False
                     case _:

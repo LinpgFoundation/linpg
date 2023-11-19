@@ -155,6 +155,7 @@ class Controller:
         # 鼠标滚轮
         "scroll_up": False,
         "scroll_down": False,
+        # 之前
         "previous": False,
         # 删除
         "delete": False,

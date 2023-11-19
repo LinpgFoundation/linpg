@@ -52,14 +52,6 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
     def update_entity(self, faction: str, key: str, data: dict) -> None:
         EXCEPTION.fatal("update_entity()", 1)
 
-    # 修改父类的 _check_key_down 方法
-    def _check_key_down(self, event: PG_Event) -> None:
-        super()._check_key_down(event)
-        if event.key == Keys.ESCAPE:
-            self.__object_to_put_down.clear()
-            self._modify_mode = self._MODIFY.DISABLE
-            self._show_barrier_mask = False
-
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
         return Config.load_file(self.get_data_file_path()) | super()._get_data_need_to_save()
@@ -368,6 +360,12 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 case "tile":
                     self.get_map().replace_tiles(self.get_map().get_tile(*self._tile_is_hovering), self.__object_to_put_down["id"])
                     self.__append_level_history()
+        # 取消选中
+        elif Controller.get_event("back") or (self._no_container_is_hovered is True and Controller.get_event("scroll_up")):
+            self.__object_to_put_down.clear()
+            self._modify_mode = self._MODIFY.DISABLE
+            self._show_barrier_mask = False
+
         # 画出地图
         self._display_map(_surface)
 

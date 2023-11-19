@@ -212,12 +212,10 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         return self.__decorations.get(self.__get_coordinate_format_key(Coordinates.convert(pos)))
 
     # 新增装饰物
-    def _add_decoration(self, _item: DecorationObject) -> None:
+    def add_decoration(self, _item: dict | DecorationObject) -> None:
+        if isinstance(_item, dict):
+            _item = DecorationObject.from_dict(_item)
         self.__decorations[self.__get_coordinate_format_key(_item.get_pos())] = _item
-
-    # 新增装饰物
-    def add_decoration(self, _data: dict) -> None:
-        self._add_decoration(DecorationObject.from_dict(_data))
 
     # 移除装饰物
     def remove_decoration(self, decoration: DecorationObject) -> None:

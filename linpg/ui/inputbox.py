@@ -1,5 +1,14 @@
 import time
 
+_SPEECH_RECOGNITION_ENABLED: bool = False
+
+try:
+    import speech_recognition as sr  # type: ignore
+
+    _SPEECH_RECOGNITION_ENABLED = True
+except ImportError:
+    _SPEECH_RECOGNITION_ENABLED = False
+
 from .scrollbar import *
 
 
@@ -52,10 +61,10 @@ class SingleLineInputBox(AbstractInputBox):
         self._holder_index = len(self._text)
         self._reset_inputbox_width()
 
-    def _add_chars(self, chars: str) -> None:
-        if len(chars) > 0:
-            self._text = self._text[: self._holder_index] + chars + self._text[self._holder_index :]
-            self._holder_index += len(chars)
+    def _add_text(self, _content: str) -> None:
+        if len(_content) > 0:
+            self._text = self._text[: self._holder_index] + _content + self._text[self._holder_index :]
+            self._holder_index += len(_content)
             self._reset_inputbox_width()
         elif Debug.get_developer_mode():
             EXCEPTION.inform("The value of event.unicode is empty!")
@@ -116,7 +125,7 @@ class SingleLineInputBox(AbstractInputBox):
                 if (event.unicode == "v" and Keys.get_pressed("v") and Keys.get_pressed(Keys.LEFT_CTRL)) or (
                     event.key == Keys.LEFT_CTRL and Keys.get_pressed("v") and Keys.get_pressed(Keys.LEFT_CTRL)
                 ):
-                    self._add_chars(Keys.get_clipboard())
+                    self._add_text(Keys.get_clipboard())
                     return True
         return False
 
@@ -141,7 +150,7 @@ class SingleLineInputBox(AbstractInputBox):
                             self._active = False
                             self.need_save = True
                         else:
-                            self._add_chars(event.unicode)
+                            self._add_text(event.unicode)
                 case Events.MOUSE_BUTTON_DOWN:
                     if event.button == 1:
                         if self._active is True:
@@ -165,7 +174,16 @@ class MultipleLinesInputBox(AbstractInputBox):
         super().__init__(x, y, font_size, txt_color, default_width)
         self._text: list[str] = [""]
         self.__lineId: int = 0
-        self.__show_PySimpleGUI_input_box: Button = Button.load("<&ui>back.png", ORIGIN, (self._FONT.size, self._FONT.size))
+        # show PySimpleGUI input box button
+        self.__show_PySimpleGUI_input_box: Button = Button.load("<&ui>button.png", ORIGIN, (self._FONT.size, self._FONT.size), 150)
+        self.__show_PySimpleGUI_input_box.set_text(ButtonComponent.text(Lang.get_text("Editor", "external_inputbox"), font_size // 3))
+        self.__show_PySimpleGUI_input_box.set_auto_resize(True)
+        # start dictate button
+        self.__start_dictating: Button | None = None
+        if _SPEECH_RECOGNITION_ENABLED:
+            self.__start_dictating = Button.load("<&ui>button.png", ORIGIN, (self._FONT.size, self._FONT.size), 150)
+            self.__start_dictating.set_text(ButtonComponent.text(Lang.get_text("Editor", "dictate"), font_size // 3))
+            self.__start_dictating.set_auto_resize(True)
         self.__PySimpleGUIWindow: PySimpleGUI.Window | None = None
 
     def get_text(self) -> list:
@@ -212,18 +230,18 @@ class MultipleLinesInputBox(AbstractInputBox):
         self._reset_inputbox_width()
         self._reset_inputbox_height()
 
-    def _add_chars(self, chars: str) -> None:
-        if len(chars) > 0:
-            if "\n" not in chars:
-                self._text[self.__lineId] = self._text[self.__lineId][: self._holder_index] + chars + self._text[self.__lineId][self._holder_index :]
-                self._holder_index += len(chars)
+    def _add_text(self, _content: str) -> None:
+        if len(_content) > 0:
+            if "\n" not in _content:
+                self._text[self.__lineId] = self._text[self.__lineId][: self._holder_index] + _content + self._text[self.__lineId][self._holder_index :]
+                self._holder_index += len(_content)
                 self._reset_inputbox_width()
             else:
                 theStringAfterHolderIndex = self._text[self.__lineId][self._holder_index :]
                 self._text[self.__lineId] = self._text[self.__lineId][: self._holder_index]
-                for i in range(len(chars) - 1):
-                    if chars[i] != "\n":
-                        self._text[self.__lineId] += chars[i]
+                for i in range(len(_content) - 1):
+                    if _content[i] != "\n":
+                        self._text[self.__lineId] += _content[i]
                         self._holder_index += 1
                     else:
                         self.__lineId += 1
@@ -335,14 +353,17 @@ class MultipleLinesInputBox(AbstractInputBox):
                                     and Keys.get_pressed("v")
                                     and Keys.get_pressed(Keys.LEFT_CTRL)
                                 ):
-                                    self._add_chars(Keys.get_clipboard())
+                                    self._add_text(Keys.get_clipboard())
                                 else:
-                                    self._add_chars(event.unicode)
+                                    self._add_text(event.unicode)
                     case Events.MOUSE_BUTTON_DOWN:
                         if event.button == 1:
                             if self.is_hovered(offSet):
                                 self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
-                            else:
+                            # make sure the mouse if outside the box and not press buttons
+                            elif not self.__show_PySimpleGUI_input_box.is_hovered() and (
+                                self.__start_dictating is None or not self.__start_dictating.is_hovered()
+                            ):
                                 self._active = False
                                 self.need_save = True
             elif event.type == Events.MOUSE_BUTTON_DOWN and event.button == 1 and self.is_hovered(offSet):
@@ -370,7 +391,7 @@ class MultipleLinesInputBox(AbstractInputBox):
                 )
             # 展示基于PySimpleGUI的外部输入框
             self.__show_PySimpleGUI_input_box.set_right(self._input_box.right)
-            self.__show_PySimpleGUI_input_box.set_bottom(self._input_box.bottom)
+            self.__show_PySimpleGUI_input_box.set_top(self._input_box.bottom)
             self.__show_PySimpleGUI_input_box.draw(_surface)
             if self.__PySimpleGUIWindow is not None:
                 external_input_event, external_input_values = self.__PySimpleGUIWindow.read()
@@ -381,10 +402,10 @@ class MultipleLinesInputBox(AbstractInputBox):
                     in_text: str | None = external_input_values.get("CONTENT")
                     if in_text is not None:
                         self._remove_char(Locations.EVERYWHERE)
-                        self._add_chars(in_text)
+                        self._add_text(in_text)
             elif self.__show_PySimpleGUI_input_box.is_hovered() and Controller.get_event("confirm"):
                 self.__PySimpleGUIWindow = PySimpleGUI.Window(
-                    "external input",
+                    Lang.get_text("Editor", "external_inputbox"),
                     [
                         [
                             PySimpleGUI.Multiline(
@@ -399,3 +420,28 @@ class MultipleLinesInputBox(AbstractInputBox):
                     auto_size_buttons=True,
                     auto_size_text=True,
                 )
+            # voice to text
+            if self.__start_dictating is not None:
+                self.__start_dictating.set_right(self.__show_PySimpleGUI_input_box.left)
+                self.__start_dictating.set_top(self._input_box.bottom)
+                self.__start_dictating.draw(_surface)
+                if self.__start_dictating.is_hovered() and Controller.get_event("confirm"):
+                    # Initialize recognizer
+                    recognizer = sr.Recognizer()
+                    # Initialize audio
+                    _audio: sr.AudioData | None = None
+                    # Capture audio
+                    try:
+                        with sr.Microphone() as source:
+                            _audio = recognizer.listen(source)
+                    except OSError:
+                        EXCEPTION.warn("No speaker detected!")
+                    # try process audio
+                    if _audio is not None:
+                        # Recognize speech using Google Web Speech API
+                        try:
+                            self._add_text(recognizer.recognize_google(_audio))
+                        except sr.UnknownValueError:
+                            EXCEPTION.fatal("Google Web Speech API could not understand the audio")
+                        except sr.RequestError as e:
+                            EXCEPTION.fatal(f"Could not request results from Google Web Speech API; {e}")

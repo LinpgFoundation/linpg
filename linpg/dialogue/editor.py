@@ -137,7 +137,7 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
         for file_name in os.listdir(Specification.get_directory("music")):
             self.__dialog_bgm_select.set(file_name, file_name)
         # 移除按钮
-        self.__delete_npc_button = ArtisticFont.render_description_box(CONFIG["delete_npc"], Colors.BLACK, self._FONT_SIZE, self._FONT_SIZE // 5, Colors.WHITE)
+        self.__delete_npc_prompt = ArtisticFont.render_description_box(CONFIG["delete_npc"], Colors.BLACK, self._FONT_SIZE, self._FONT_SIZE // 5, Colors.WHITE)
         # 初始化用于选择小说脚本的key的下拉菜单
         self.__dialog_section_selection.clear()
         self.__dialog_section_selection.set_pos(button_width * 11, button_y + font_size)
@@ -482,13 +482,13 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
                         case _:
                             confirm_event_tag = True
             # 移除角色立绘
-            elif Controller.get_event("delete") and VisualNovelCharacterImageManager.character_get_click is not None:
+            elif (Controller.get_event("delete") or Controller.get_event("hard_confirm")) and VisualNovelCharacterImageManager.character_get_click is not None:
                 self._content.current.character_images.remove(VisualNovelCharacterImageManager.character_get_click)
                 self._content.save()
                 self._update_scene(self._content.get_id())
         # 显示移除角色的提示
         if VisualNovelCharacterImageManager.character_get_click is not None:
-            _surface.blit(self.__delete_npc_button, Controller.mouse.get_pos())
+            _surface.blit(self.__delete_npc_prompt, Controller.mouse.get_pos())
         # 画上右侧菜单的按钮
         self.__UIContainerRightButton.draw(_surface)
         # 画上右侧菜单

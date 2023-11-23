@@ -300,7 +300,7 @@ class SaveOrLoadSelectedProgressMenu(Hidable):
     def draw(self, _surface: ImageSurface) -> None:
         self.__slotId = -1
         if self.is_visible() is True:
-            if Controller.get_event("back"):
+            if Controller.get_event("back") or Controller.get_event("hard_confirm"):
                 self.set_visible(False)
             else:
                 rect_width: int = _surface.get_width() // (self.colum + 1)

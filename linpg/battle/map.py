@@ -49,7 +49,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
     def __init_map(self, map_data: numpy.ndarray, barrier_data: numpy.ndarray | None, tile_size: int_f) -> None:
         self.__MAP = map_data
         self.__row, self.__column = self.__MAP.shape
-        self.__BARRIER_MASK = barrier_data if barrier_data is not None else numpy.zeros(self.shape, dtype=numpy.byte)
+        self.__BARRIER_MASK = barrier_data if barrier_data is not None else numpy.zeros(self.__MAP.shape, dtype=numpy.byte)
         # 初始化追踪目前已经画出的方块的2d列表
         self.__tile_on_surface = numpy.zeros(self.__MAP.shape, dtype=numpy.byte)
         # 初始化地图渲染用的图层
@@ -129,7 +129,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
 
     # 设置障碍mask
     def set_barrier_mask(self, x: int, y: int, value: int) -> None:
-        self.__BARRIER_MASK[x, y] = value
+        self.__BARRIER_MASK[y, x] = value
 
     # 新增轴
     def add_on_axis(self, index: int, axis: int = 0) -> None:
@@ -196,7 +196,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
     # 是否角色能通过该方块
     def is_passable(self, _x: int, _y: int, supposed: bool = False) -> bool:
         if not supposed:
-            return bool(self.__BARRIER_MASK[_x, _y] == 0)
+            return bool(self.__BARRIER_MASK[_y, _x] == 0)
         else:
             if bool(self.__TILES_DATABASE[self.get_tile(_x, _y).split(":")[0]]["passable"]) is True:
                 _decoration: DecorationObject | None = self.__decorations.get(self.__get_coordinate_format_key((_x, _y)))
@@ -391,7 +391,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         if map2d is None:
             map2d = numpy.ones(self.shape, dtype=numpy.byte)
         # subtract mask
-        map2d = numpy.subtract(map2d, self.__BARRIER_MASK)
+        map2d = numpy.subtract(map2d, self.__BARRIER_MASK.transpose())
         # 如果目标坐标合法
         if 0 <= goal[1] < self.__row and 0 <= goal[0] < self.__column and map2d[goal[0], goal[1]] == 1:
             # 开始寻路

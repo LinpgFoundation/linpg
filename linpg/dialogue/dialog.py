@@ -275,7 +275,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
         if Controller.get_event("previous") and self._content.last is not None:
             self._update_scene(self._content.last.id)
         # 暂停菜单
-        if Controller.get_event("back") and self._is_pause_menu_enabled():
+        if (Controller.get_event("back") or Controller.get_event("hard_confirm")) and self._is_pause_menu_enabled():
             if self.__is_showing_history is True:
                 self.__is_showing_history = False
             else:

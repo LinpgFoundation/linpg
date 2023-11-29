@@ -2,7 +2,7 @@ from .dialog import *
 
 
 # 对话制作器
-class DialogEditor(AbstractVisualNovelSystem):
+class VisualNovelEditor(AbstractVisualNovelPlayer):
     # deselect选中的背景
     __BACKGROUND_DESELECT_IMAGE: Final[StaticImage] = StaticImage.new_place_holder()
     __IS_BACKGROUND_DESELECT_IMAGE_INIT: bool = False
@@ -137,7 +137,7 @@ class DialogEditor(AbstractVisualNovelSystem):
         for file_name in os.listdir(Specification.get_directory("music")):
             self.__dialog_bgm_select.set(file_name, file_name)
         # 移除按钮
-        self.__remove_npc_button = ArtisticFont.render_description_box(CONFIG["remove_npc"], Colors.BLACK, self._FONT_SIZE, self._FONT_SIZE // 5, Colors.WHITE)
+        self.__delete_npc_prompt = ArtisticFont.render_description_box(CONFIG["delete_npc"], Colors.BLACK, self._FONT_SIZE, self._FONT_SIZE // 5, Colors.WHITE)
         # 初始化用于选择小说脚本的key的下拉菜单
         self.__dialog_section_selection.clear()
         self.__dialog_section_selection.set_pos(button_width * 11, button_y + font_size)
@@ -177,6 +177,11 @@ class DialogEditor(AbstractVisualNovelSystem):
             self.__current_select_bg_name = None
             self.__current_select_bg_copy = None
 
+    # 加载默认模板
+    def _load_template(self) -> None:
+        self._content.set_section("dialog_example")
+        self._content.set_section_content({})
+
     # 读取章节信息
     def _load_content(self) -> None:
         # 将npc立绘系统设置为开发者模式
@@ -189,8 +194,7 @@ class DialogEditor(AbstractVisualNovelSystem):
             # 则尝试加载后仍然出现内容为空的情况
             EXCEPTION.inform("No valid dialog content found.")
             # 则加载默认模板
-            self._content.set_section("dialog_example")
-            self._content.set_section_content({})
+            self._load_template()
         # 检测是否有非str的key name
         for section in self._content.get():
             if isinstance(section, str):
@@ -215,9 +219,9 @@ class DialogEditor(AbstractVisualNovelSystem):
                         if old_key is not None:
                             new_key: str
                             try:
-                                new_key = self.generate_a_new_recommended_key(int(old_key))
+                                new_key = self.__generate_a_new_recommended_key(int(old_key[1:]))
                             except Exception:
-                                new_key = self.generate_a_new_recommended_key()
+                                new_key = self.__generate_a_new_recommended_key()
                             if not isinstance(self._content.get_dialog(section, key)["next"]["target"], list):
                                 self._content.get_dialog(section, key)["next"]["target"] = new_key
                             else:
@@ -349,6 +353,15 @@ class DialogEditor(AbstractVisualNovelSystem):
                                     return str(key)
             return "<NULL>"
 
+    # 生产一个新的推荐id
+    def __generate_a_new_recommended_key(self, index: int = 1) -> str:
+        while True:
+            newId: str = f"~0{index}" if index <= 9 else f"~{index}"
+            if newId in self._content.get_section_content():
+                index += 1
+            else:
+                return newId
+
     # 获取下一个对话的ID
     def __try_get_next_id(self, _surface: ImageSurface) -> str:
         if self._content.current.has_next() is True:
@@ -454,7 +467,7 @@ class DialogEditor(AbstractVisualNovelSystem):
                                 EXCEPTION.inform("There is no next dialog id.")
                         # 新增
                         case "add":
-                            self.__add_dialog(self.generate_a_new_recommended_key())
+                            self.__add_dialog(self.__generate_a_new_recommended_key())
                         # 保存进度
                         case "save":
                             self._save()
@@ -469,13 +482,13 @@ class DialogEditor(AbstractVisualNovelSystem):
                         case _:
                             confirm_event_tag = True
             # 移除角色立绘
-            elif Controller.get_event("delete") and VisualNovelCharacterImageManager.character_get_click is not None:
+            elif (Controller.get_event("delete") or Controller.get_event("hard_confirm")) and VisualNovelCharacterImageManager.character_get_click is not None:
                 self._content.current.character_images.remove(VisualNovelCharacterImageManager.character_get_click)
                 self._content.save()
                 self._update_scene(self._content.get_id())
         # 显示移除角色的提示
         if VisualNovelCharacterImageManager.character_get_click is not None:
-            _surface.blit(self.__remove_npc_button, Controller.mouse.get_pos())
+            _surface.blit(self.__delete_npc_prompt, Controller.mouse.get_pos())
         # 画上右侧菜单的按钮
         self.__UIContainerRightButton.draw(_surface)
         # 画上右侧菜单
@@ -483,8 +496,6 @@ class DialogEditor(AbstractVisualNovelSystem):
             _surface.blit(self.__UIContainerRightImage, (self.__UIContainerRightButton.right, 0))
             self.__UIContainerRight_bg.display(_surface, (self.__UIContainerRightButton.right, 0))
             self.__UIContainerRight_npc.display(_surface, (self.__UIContainerRightButton.right, 0))
-            # self.__UIContainerRight_bg.draw_outline(_surface,(self.__UIContainerRightButton.right,0))
-            # self.__UIContainerRight_npc.draw_outline(_surface,(self.__UIContainerRightButton.right,0))
             # 检测按钮
             if self.__button_select_background.is_hovered((self.__UIContainerRightButton.right, 0)) and confirm_event_tag is True:
                 self.__UIContainerRight_bg.set_visible(True)

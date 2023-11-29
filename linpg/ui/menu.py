@@ -82,6 +82,20 @@ class OptionMenu(AbstractInternalMenu):
             self._CONTENT.get("background_music_sound_volume").set_percentage(Setting.get("Sound", "background_music") / 100)
             self._CONTENT.get("effects_sound_volume").set_percentage(Setting.get("Sound", "effects") / 100)
             self._CONTENT.get("environment_sound_volume").set_percentage(Setting.get("Sound", "environment") / 100)
+            # 如果背景没有被初始化或自定义，则渲染默认背景风格
+            if not self._CONTENT.is_background_init():
+                _surface.blit(Filters.box_blur(_surface.subsurface(self._CONTENT.get_rect()), 30), self._CONTENT.get_pos())
+                # 外圈
+                Draw.rect(_surface, Colors.WHITE, self._CONTENT.get_rect(), _surface.get_height() // 300, 20)
+                # 内圈
+                _padding: int = _surface.get_height() // 100
+                Draw.rect(
+                    _surface,
+                    Colors.WHITE,
+                    Rectangles.apply(self._CONTENT.get_rect(), (_padding, _padding, _padding * -2, _padding * -2)).get_rect(),
+                    _surface.get_height() // 300,
+                    20,
+                )
             # 画出
             super().draw(_surface)
             # 如果需要更新语言
@@ -121,6 +135,10 @@ class OptionMenu(AbstractInternalMenu):
                         if item_percentage_t != int(Setting.get("Sound", "environment")):
                             Setting.set("Sound", "environment", value=item_percentage_t)
                             self.need_update["volume"] = True
+                    # 返回
+                    case "confirm":
+                        if Controller.get_event("confirm") is True:
+                            self.set_visible(False)
                 # 保存新的参数
                 if self.need_update.get("volume") is True:
                     Setting.save()
@@ -282,7 +300,7 @@ class SaveOrLoadSelectedProgressMenu(Hidable):
     def draw(self, _surface: ImageSurface) -> None:
         self.__slotId = -1
         if self.is_visible() is True:
-            if Controller.get_event("back"):
+            if Controller.get_event("back") or Controller.get_event("hard_confirm"):
                 self.set_visible(False)
             else:
                 rect_width: int = _surface.get_width() // (self.colum + 1)

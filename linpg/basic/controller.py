@@ -148,11 +148,14 @@ class Controller:
     __SPECIFIC_EVENTS: Final[dict[str, bool]] = {
         # 是否有确认事件
         "confirm": False,
+        # 是否有强确认事件
+        "hard_confirm": False,
         # 是否有返回事件
         "back": False,
         # 鼠标滚轮
         "scroll_up": False,
         "scroll_down": False,
+        # 之前
         "previous": False,
         # 删除
         "delete": False,
@@ -215,6 +218,8 @@ class Controller:
                     match event.button:
                         case 1:
                             cls.__SPECIFIC_EVENTS["confirm"] = True
+                        case 2:
+                            cls.__SPECIFIC_EVENTS["hard_confirm"] = True
                         case 3:
                             cls.__SPECIFIC_EVENTS["previous"] = True
                         case 4:

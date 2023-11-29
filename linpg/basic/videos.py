@@ -1,20 +1,24 @@
-# 尝试导入opencv和pyav
-_OPENCV_INITIALIZED: bool = False
-_AV_INITIALIZED: bool = False
+from .display import *
 
+from ..lib import FFmpeg
+
+# 尝试导入opencv
+_OPENCV_INITIALIZED: bool = False
 try:
-    import cv2  # type: ignore
-    from ..lib import FFmpeg
+    import cv2
 
     _OPENCV_INITIALIZED = True
+except ImportError:
+    pass
 
+# 尝试导入可选的pyav
+_AV_INITIALIZED: bool = False
+try:
     import av  # type: ignore
 
     _AV_INITIALIZED = True
 except ImportError:
     pass
-
-from .display import *
 
 
 # 视频转换系统
@@ -24,7 +28,7 @@ class Videos:
     def validation(_path: str) -> None:
         # 如果opencv没有成功地导入
         if not _OPENCV_INITIALIZED:
-            EXCEPTION.fatal("You cannot use any video module unless you install opencv and python-ffmpeg!", 4)
+            EXCEPTION.fatal("You cannot use any video module unless you install opencv!", 4)
         # 确保路径存在
         elif not os.path.exists(_path):
             EXCEPTION.fatal(f'Cannot find file on path: "{_path}"')
@@ -64,7 +68,7 @@ class Videos:
         # 生成output路径
         output_path: str = os.path.join(Cache.get_directory(), output_file_name)
         # windows默认使用FFmpeg模块，或pyav没有安装
-        if _AV_INITIALIZED is False or os.name == "nt":
+        if os.name == "nt" or not _AV_INITIALIZED:
             FFmpeg.convert(path, output_path, True)
         else:
             with av.open(path, "r") as inp:

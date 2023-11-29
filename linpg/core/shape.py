@@ -69,8 +69,8 @@ class Square(GameObject2d):
         self.set_width(self.get_width())
 
     # 画出轮廓
-    def draw_outline(self, _surface: ImageSurface, color: color_liked = "red", thickness: int = 2, offSet: tuple[int, int] = ORIGIN) -> None:
-        Draw.rect(_surface, Colors.get(color), (Coordinates.add(self.pos, offSet), self.size), thickness)
+    def draw_outline(self, _surface: ImageSurface, color: color_liked = "red", thickness: int = 2, radius: int = -1, offSet: tuple[int, int] = ORIGIN) -> None:
+        Draw.rect(_surface, Colors.get(color), (Coordinates.add(self.pos, offSet), self.size), thickness, radius)
 
     # 画出轮廓 - 实现父类的要求
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
@@ -153,23 +153,41 @@ class Rectangle(Square):
         return Rectangle(self.x, self.y, self.get_width(), self.__height)
 
 
-PG_Rect = pygame.Rect
 RectLiked = Rectangle | pygame.Rect | tuple
+RectObject = Rectangle | pygame.Rect
 
 
 # Rectangle方法管理
 class Rectangles:
-    # 是否2个Rectangle形状一样
+    # 转换tuple至Rectangle
     @staticmethod
-    def equal(rect1: Rectangle | None, rect2: Rectangle | None) -> bool:
+    def from_tuple(tuple_rect: tuple) -> Rectangle:
+        match len(tuple_rect):
+            case 2:
+                return Rectangle(tuple_rect[0][0], tuple_rect[0][1], tuple_rect[1][0], tuple_rect[1][1])
+            case 4:
+                return Rectangle(tuple_rect[0], tuple_rect[1], tuple_rect[2], tuple_rect[3])
+        EXCEPTION.fatal("Invalid length for forming a rect.")
+
+    # 将tuple转换至RectObject以方便操作
+    @classmethod
+    def __comply(cls, rect: RectLiked) -> RectObject:
+        if isinstance(rect, tuple):
+            return cls.from_tuple(rect)
+        return rect
+
+    # 是否2个Rectangle形状一样
+    @classmethod
+    def equal(cls, rect1: RectLiked | None, rect2: RectLiked | None) -> bool:
         if rect1 is not None and rect2 is not None:
+            rect1 = cls.__comply(rect1)
+            rect2 = cls.__comply(rect2)
             return rect1.x == rect2.x and rect1.y == rect2.y and rect1.width == rect2.width and rect1.height == rect2.height
-        else:
-            return rect1 == rect2
+        return rect1 == rect2
 
     # 转换pygame的rect类至linpg引擎的rect类
-    @staticmethod
-    def create(rect: RectLiked) -> Rectangle:
+    @classmethod
+    def create(cls, rect: RectLiked) -> Rectangle:
         # 如果是Rect类，则没必要转换
         if isinstance(rect, Rectangle):
             return rect
@@ -178,15 +196,17 @@ class Rectangles:
             return Rectangle(rect.x, rect.y, rect.width, rect.height)
         # 如果是tuple类，则需要创建
         elif isinstance(rect, tuple):
-            match len(rect):
-                case 2:
-                    return Rectangle(rect[0][0], rect[0][1], rect[1][0], rect[1][1])
-                case 4:
-                    return Rectangle(rect[0], rect[1], rect[2], rect[3])
-                case _:
-                    EXCEPTION.fatal("Invalid length for forming a rect.")
-        else:
-            EXCEPTION.fatal(f'The rect has to be RectLiked object, not "{type(rect)}".')
+            return cls.from_tuple(rect)
+        EXCEPTION.fatal(f'The rect has to be RectLiked object, not "{type(rect)}".')
+
+    # 相加2个rect
+    @classmethod
+    def apply(cls, source_rect: RectLiked, apply_rect: RectLiked) -> Rectangle:
+        source_rect = cls.__comply(source_rect)
+        apply_rect = cls.__comply(apply_rect)
+        return Rectangle(
+            source_rect.x + apply_rect.x, source_rect.y + apply_rect.y, source_rect.width + apply_rect.width, source_rect.height + apply_rect.height
+        )
 
 
 # 转换linpg.Rect至pygame.Rect

@@ -205,12 +205,16 @@ class Draw:
     # 根据给与的rect画出轮廓
     @staticmethod
     def rect(
-        _surface: ImageSurface, color: tuple[int, int, int, int], rect: tuple[int, int, int, int] | tuple[tuple[int, int], tuple[int, int]], thickness: int = 0
+        _surface: ImageSurface,
+        color: tuple[int, int, int, int],
+        rect: tuple[int, int, int, int] | tuple[tuple[int, int], tuple[int, int]],
+        thickness: int = 0,
+        radius: int = -1,
     ) -> None:
-        if thickness <= 0:
+        if thickness <= 0 and radius <= 0:
             pygame.gfxdraw.box(_surface, rect, color)
         else:
-            pygame.draw.rect(_surface, color, rect, thickness)
+            pygame.draw.rect(_surface, color, rect, thickness, radius)
 
     # 根据给与的中心点画出一个圆
     @staticmethod
@@ -338,7 +342,8 @@ class Filters:
                 _surface, radius, repeat_edge_pixels, dest_surface if dest_surface is not None else Surfaces.new(_surface.get_size())
             )
         # box blur is not supported for other graphic
-        EXCEPTION.warn('The "box_blur" filter is only supported when using pygame-ce, gaussian_blur will be used.')
+        if Debug.get_developer_mode():
+            EXCEPTION.warn('The "box_blur" filter is only supported when using pygame-ce, gaussian_blur will be used.')
         return cls.gaussian_blur(_surface, radius, repeat_edge_pixels, dest_surface)
 
     # 增加图层暗度

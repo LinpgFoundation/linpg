@@ -128,7 +128,7 @@ class Button(AbstractButton):
 
     # 自动缩放
     def set_auto_resize(self, value: bool) -> None:
-        if self.__resize_based_on_components is False and value is True:
+        if not self.__resize_based_on_components and value is True:
             self.__resize_based_on_components = True
             self.__check_if_resize_needed()
         else:

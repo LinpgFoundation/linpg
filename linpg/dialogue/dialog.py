@@ -2,11 +2,11 @@ from .abstract import *
 
 
 # 视觉小说系统模块
-class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem):
+class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem):
     __CHOICE_TEXT: str = str(Lang.get_texts("Dialog", "choice"))
 
     def __init__(self) -> None:
-        AbstractVisualNovelSystem.__init__(self)
+        AbstractVisualNovelPlayer.__init__(self)
         PauseMenuModuleForGameSystem.__init__(self)
         # 加载对话框系统
         self.__dialog_txt_system: DialogBox = DialogBox(self._FONT_SIZE)
@@ -275,7 +275,7 @@ class VisualNovelSystem(AbstractVisualNovelSystem, PauseMenuModuleForGameSystem)
         if Controller.get_event("previous") and self._content.last is not None:
             self._update_scene(self._content.last.id)
         # 暂停菜单
-        if Controller.get_event("back") and self._is_pause_menu_enabled():
+        if (Controller.get_event("back") or Controller.get_event("hard_confirm")) and self._is_pause_menu_enabled():
             if self.__is_showing_history is True:
                 self.__is_showing_history = False
             else:

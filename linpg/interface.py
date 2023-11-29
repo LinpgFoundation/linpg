@@ -1,7 +1,7 @@
 from .battle import *
 
 
-class Loader:
+class _Loader:
     # 原始图片
     @staticmethod
     def img(path: str, size: tuple = tuple(), alpha: int = 255, ifConvertAlpha: bool = True) -> ImageSurface:
@@ -84,6 +84,13 @@ position = Positions
 coordinates = Coordinates
 surfaces = Surfaces
 debug = Debug
-load = Loader
+load = _Loader
 numbers = Numbers
 saves = Saves
+db = DataBase
+
+
+# 兼容 -- 将于3.8移除
+AbstractVisualNovelSystem = AbstractVisualNovelPlayer
+VisualNovelSystem = VisualNovelPlayer
+DialogEditor = VisualNovelEditor

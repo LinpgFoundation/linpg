@@ -148,8 +148,12 @@ class AbstractDialogBox(Hidable, metaclass=ABCMeta):
 class EditableDialogBox(AbstractDialogBox):
     def __init__(self, fontSize: int):
         super().__init__()
-        self.__contents: MultipleLinesInputBox = MultipleLinesInputBox(Display.get_width() * 2 / 10, Display.get_height() * 73 // 100, fontSize, Colors.WHITE)
-        self.__narrator: SingleLineInputBox = SingleLineInputBox(Display.get_width() * 2 / 10, self._dialogue_box_max_y + fontSize, fontSize, Colors.WHITE)
+        self.__contents: MultipleLinesInputBox = MultipleLinesInputBox(
+            Display.get_width() * 2 / 10, Display.get_height() * 73 // 100, fontSize, Colors.WHITE, fontSize * 8
+        )
+        self.__narrator: SingleLineInputBox = SingleLineInputBox(
+            Display.get_width() * 2 / 10, self._dialogue_box_max_y + fontSize, fontSize, Colors.WHITE, fontSize * 4
+        )
         # 设置对话框高度和坐标
         self._dialogue_box.set_top(self._dialogue_box_max_y)
         self._dialogue_box.set_height(self._dialogue_box_max_height)

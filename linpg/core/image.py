@@ -252,7 +252,7 @@ class AnimatedImage(AdvancedAbstractImageSurface):
             self.current_image.set_size(self.get_width(), self.get_height())
             self.current_image.set_alpha(self._alpha)
             self.current_image.display(_surface, Coordinates.add(self.pos, offSet))
-            if self.__countDown >= self.__fps * 1000:
+            if self.__countDown >= 1000 // self.__fps:
                 self.__countDown = 0
                 self.__imgId += 1
                 if self.__imgId >= len(self._get_image_reference()):

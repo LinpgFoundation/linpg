@@ -401,7 +401,7 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
+                "height": "4%",
                 "name": "save",
                 "src": "<&ui>button.png",
                 "text": {
@@ -416,7 +416,7 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
+                "height": "4%",
                 "name": "back",
                 "src": "<&ui>button.png",
                 "text": {
@@ -431,12 +431,12 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
-                "name": "delete",
+                "height": "4%",
+                "name": "delete_entity",
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Global.delete}"
+                    "src": "{Editor.delete_entity}"
                 },
                 "type": "button",
                 "width": 0,
@@ -446,7 +446,37 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
+                "height": "4%",
+                "name": "undo",
+                "src": "<&ui>button.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Editor.undo}"
+                },
+                "type": "button",
+                "width": 0,
+                "x": 0,
+                "y": "2%"
+            },
+            {
+                "alpha_when_not_hover": 100,
+                "auto_resize": true,
+                "height": "4%",
+                "name": "redo",
+                "src": "<&ui>button.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Editor.redo}"
+                },
+                "type": "button",
+                "width": 0,
+                "x": 0,
+                "y": "2%"
+            },
+            {
+                "alpha_when_not_hover": 100,
+                "auto_resize": true,
+                "height": "4%",
                 "name": "reload",
                 "src": "<&ui>button.png",
                 "text": {
@@ -461,12 +491,12 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
-                "name": "new_row",
+                "height": "4%",
+                "name": "add_colum_after",
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Editor.new_row}"
+                    "src": "{Editor.add_colum_after}"
                 },
                 "type": "button",
                 "width": 0,
@@ -476,12 +506,12 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
-                "name": "new_colum",
+                "height": "4%",
+                "name": "add_colum_before",
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Editor.new_colum}"
+                    "src": "{Editor.add_colum_before}"
                 },
                 "type": "button",
                 "width": 0,
@@ -491,12 +521,12 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
-                "name": "remove_row",
+                "height": "4%",
+                "name": "add_row_above",
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Editor.remove_row}"
+                    "src": "{Editor.add_row_above}"
                 },
                 "type": "button",
                 "width": 0,
@@ -506,12 +536,12 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
-                "name": "remove_colum",
+                "height": "4%",
+                "name": "add_row_below",
                 "src": "<&ui>button.png",
                 "text": {
                     "color": "black",
-                    "src": "{Editor.remove_colum}"
+                    "src": "{Editor.add_row_below}"
                 },
                 "type": "button",
                 "width": 0,
@@ -521,7 +551,37 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
+                "height": "4%",
+                "name": "delete_row",
+                "src": "<&ui>button.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Editor.delete_row}"
+                },
+                "type": "button",
+                "width": 0,
+                "x": 0,
+                "y": "10%"
+            },
+            {
+                "alpha_when_not_hover": 100,
+                "auto_resize": true,
+                "height": "4%",
+                "name": "delete_colum",
+                "src": "<&ui>button.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Editor.delete_colum}"
+                },
+                "type": "button",
+                "width": 0,
+                "x": 0,
+                "y": "10%"
+            },
+            {
+                "alpha_when_not_hover": 100,
+                "auto_resize": true,
+                "height": "4%",
                 "name": "auto_add_barriers",
                 "src": "<&ui>button.png",
                 "text": {
@@ -536,7 +596,7 @@
             {
                 "alpha_when_not_hover": 100,
                 "auto_resize": true,
-                "height": "5%",
+                "height": "4%",
                 "name": "add_barrier",
                 "src": "<&ui>button.png",
                 "text": {
@@ -594,7 +654,7 @@
         "y": 0
     },
     "option_menu": {
-        "height": "75%",
+        "height": "80%",
         "items": [
             {
                 "color": "white",
@@ -718,9 +778,24 @@
                 "type": "drop_down_single_choice_list",
                 "x": "45%",
                 "y": "19%"
+            },
+            {
+                "alpha_when_not_hover": 200,
+                "auto_resize": true,
+                "height": "5%",
+                "name": "confirm",
+                "src": "<&ui>button.png",
+                "text": {
+                    "color": "black",
+                    "src": "{Global.confirm}"
+                },
+                "type": "button",
+                "width": 0,
+                "x": "center",
+                "y": "90%"
             }
         ],
-        "src": "<&ui>container.png",
+        "src": "<&ui>option_background.png?",
         "type": "container",
         "width": "50%",
         "x": "center",

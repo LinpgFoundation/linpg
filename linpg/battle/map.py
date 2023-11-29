@@ -49,7 +49,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
     def __init_map(self, map_data: numpy.ndarray, barrier_data: numpy.ndarray | None, tile_size: int_f) -> None:
         self.__MAP = map_data
         self.__row, self.__column = self.__MAP.shape
-        self.__BARRIER_MASK = barrier_data if barrier_data is not None else numpy.zeros(self.shape, dtype=numpy.byte)
+        self.__BARRIER_MASK = barrier_data if barrier_data is not None else numpy.zeros(self.__MAP.shape, dtype=numpy.byte)
         # 初始化追踪目前已经画出的方块的2d列表
         self.__tile_on_surface = numpy.zeros(self.__MAP.shape, dtype=numpy.byte)
         # 初始化地图渲染用的图层
@@ -73,8 +73,6 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             numpy.asarray(barrier_data, dtype=numpy.byte) if barrier_data is not None else None,
             _block_size,
         )
-        # 暗度（仅黑夜场景有效）
-        TileMapImagesModule.DARKNESS = 155 if bool(_data.get("at_night", False)) is True else 0
         # 设置本地坐标
         _local_x = _data.get("local_x")
         if _local_x is None:
@@ -129,13 +127,16 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
 
     # 设置障碍mask
     def set_barrier_mask(self, x: int, y: int, value: int) -> None:
-        self.__BARRIER_MASK[x, y] = value
+        self.__BARRIER_MASK[y, x] = value
 
     # 新增轴
-    def add_on_axis(self, index: int = -1, axis: int = 0) -> None:
+    def add_on_axis(self, index: int, axis: int = 0) -> None:
         axis = Numbers.keep_int_in_range(axis, 0, 1)
-        if index < 0:
-            index = self.__row if axis == 0 else self.__column
+        if axis == 0:
+            if index < 0 or index > self.row:
+                EXCEPTION.fatal(f"Index {index} is out of bound at row!")
+        elif index < 0 or index > self.column:
+            EXCEPTION.fatal(f"Index {index} is out of bound at column!")
         self.__init_map(
             numpy.insert(self.__MAP, index, numpy.random.randint(len(self.__tile_lookup_table), size=self.__row if axis == 1 else self.__column), axis),
             numpy.insert(self.__BARRIER_MASK, index, numpy.zeros(self.__row if axis == 1 else self.__column), axis),
@@ -143,15 +144,17 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         )
 
     # 移除轴
-    def remove_on_axis(self, index: int = -1, axis: int = 0) -> None:
+    def remove_on_axis(self, index: int, axis: int = 0) -> None:
         axis = Numbers.keep_int_in_range(axis, 0, 1)
-        if index < 0:
-            index = self.__row - 1 if axis == 0 else self.__column - 1
         if axis == 0:
+            if index < 0 or index >= self.row:
+                EXCEPTION.fatal(f"Index {index} is out of bound at row!")
             for key in tuple(self.__decorations.keys()):
                 if self.__decorations[key].y == index:
                     self.__decorations.pop(key)
         else:
+            if index < 0 or index >= self.column:
+                EXCEPTION.fatal(f"Index {index} is out of bound at column!")
             for key in tuple(self.__decorations.keys()):
                 if self.__decorations[key].x == index:
                     self.__decorations.pop(key)
@@ -191,7 +194,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
     # 是否角色能通过该方块
     def is_passable(self, _x: int, _y: int, supposed: bool = False) -> bool:
         if not supposed:
-            return bool(self.__BARRIER_MASK[_x, _y] == 0)
+            return bool(self.__BARRIER_MASK[_y, _x] == 0)
         else:
             if bool(self.__TILES_DATABASE[self.get_tile(_x, _y).split(":")[0]]["passable"]) is True:
                 _decoration: DecorationObject | None = self.__decorations.get(self.__get_coordinate_format_key((_x, _y)))
@@ -207,12 +210,10 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         return self.__decorations.get(self.__get_coordinate_format_key(Coordinates.convert(pos)))
 
     # 新增装饰物
-    def _add_decoration(self, _item: DecorationObject) -> None:
+    def add_decoration(self, _item: dict | DecorationObject) -> None:
+        if isinstance(_item, dict):
+            _item = DecorationObject.from_dict(_item)
         self.__decorations[self.__get_coordinate_format_key(_item.get_pos())] = _item
-
-    # 新增装饰物
-    def add_decoration(self, _data: dict) -> None:
-        self._add_decoration(DecorationObject.from_dict(_data))
 
     # 移除装饰物
     def remove_decoration(self, decoration: DecorationObject) -> None:
@@ -346,6 +347,32 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         # 需更新
         self._refresh()
 
+    # 更新方块
+    def replace_tiles(self, from_tile: str, to_tile: str) -> None:
+        # the tile id for 'from tile' in the lookup table
+        from_tile_index: int = -1
+        # the tile id for 'to tile' in the lookup table
+        to_tile_index: int = -1
+        # if 'from tile' exists in the lookup table
+        try:
+            from_tile_index = self.__tile_lookup_table.index(from_tile)
+        # if 'from tile' does not exist in the lookup table
+        except ValueError:
+            # then nothing to replace
+            return
+        # if 'to tile' already exists in the lookup table
+        try:
+            # get 'to tile' id
+            to_tile_index = self.__tile_lookup_table.index(to_tile)
+            # replace
+            self.__MAP[self.__MAP == from_tile_index] = to_tile_index
+        # if 'to tile' does not exist in the lookup table
+        except ValueError:
+            # replace the tile name in lookup table
+            self.__tile_lookup_table[from_tile_index] = to_tile
+        # refresh and we are done
+        self._refresh()
+
     # 计算在地图中的方块
     @abstractmethod
     def calculate_coordinate(self, on_screen_pos: tuple[int, int] | None = None) -> tuple[int, int] | None:
@@ -362,7 +389,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         if map2d is None:
             map2d = numpy.ones(self.shape, dtype=numpy.byte)
         # subtract mask
-        map2d = numpy.subtract(map2d, self.__BARRIER_MASK)
+        map2d = numpy.subtract(map2d, self.__BARRIER_MASK.transpose())
         # 如果目标坐标合法
         if 0 <= goal[1] < self.__row and 0 <= goal[0] < self.__column and map2d[goal[0], goal[1]] == 1:
             # 开始寻路

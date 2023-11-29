@@ -180,7 +180,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         self.__show_PySimpleGUI_input_box.set_auto_resize(True)
         # start dictate button
         self.__start_dictating: Button | None = None
-        if _SPEECH_RECOGNITION_ENABLED:
+        if _SPEECH_RECOGNITION_ENABLED and len(sr.Microphone.list_working_microphones()) > 0:
             self.__start_dictating = Button.load("<&ui>button.png", ORIGIN, (self._FONT.size, self._FONT.size), 150)
             self.__start_dictating.set_text(ButtonComponent.text(Lang.get_text("Editor", "dictate"), font_size // 3))
             self.__start_dictating.set_auto_resize(True)

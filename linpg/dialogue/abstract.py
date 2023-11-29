@@ -88,7 +88,8 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
         )
         # 确认dialog数据合法
         if len(self._content.get_section_content()) == 0:
-            EXCEPTION.fatal(f'The selected dialog dict "{self._content.get_section()}" has no content inside.')
+            self._content.get_section_content()["head"] = {}
+            EXCEPTION.warn(f'The selected dialog dict "{self._content.get_section()}" has no content inside.')
         elif "head" not in self._content.get_section_content():
             EXCEPTION.fatal(f'You need to set up a "head" for the selected dialog "{self._content.get_section()}".')
         # 将数据载入刚初始化的模块中

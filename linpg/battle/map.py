@@ -73,8 +73,6 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             numpy.asarray(barrier_data, dtype=numpy.byte) if barrier_data is not None else None,
             _block_size,
         )
-        # 暗度（仅黑夜场景有效）
-        TileMapImagesModule.DARKNESS = 155 if bool(_data.get("at_night", False)) is True else 0
         # 设置本地坐标
         _local_x = _data.get("local_x")
         if _local_x is None:

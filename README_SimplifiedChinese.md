@@ -1,3 +1,5 @@
+#### [English](https://github.com/LinpgFoundation/linpg/blob/master/README.md) | 简体中文 | [繁體中文](https://github.com/LinpgFoundation/linpg/blob/master/README_TraditionalChinese.md)
+
 # :speech_balloon: 前言
 
 ###### *"c++是有史以来最伟大的语言，但这并不代表用c++写游戏是一件轻松而又有趣的事情，pygame也是如此。"*

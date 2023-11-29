@@ -1,3 +1,5 @@
+#### English | [简体中文](https://github.com/LinpgFoundation/linpg/blob/master/README_SimplifiedChinese.md) | [繁體中文](https://github.com/LinpgFoundation/linpg/blob/master/README_TraditionalChinese.md)
+
 # :speech_balloon: Preamble
 
 ###### *"Just because c++ is the greatest language ever invented doesn't mean that writing games in c++ is easy and fun, and the same goes for pygame."*

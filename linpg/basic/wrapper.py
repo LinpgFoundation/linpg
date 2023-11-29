@@ -32,7 +32,6 @@ PG_Event = pygame.event.Event
 class GraphicLibrary:
     PYGAME: Final[int] = 0
     PYGAME_CE: Final[int] = 1
-    PYGLET: Final[int] = 2
 
     # 是否正在使用pygame_ce
     __IS_CE: Final[bool] = getattr(pygame, "IS_CE", False) is not False

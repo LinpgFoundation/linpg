@@ -1,5 +1,6 @@
 from .display import *
 
+
 # bool timer use for tick checking
 class BoolTickTimer:
     def __init__(self, time_ms: int, default_status: bool = True) -> None:

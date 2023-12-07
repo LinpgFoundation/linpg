@@ -25,6 +25,8 @@ class AbstractInputBox(GameObject2d, metaclass=ABCMeta):
         self._active: bool = False
         self._holder: ImageSurface = self._FONT.render("|", self._text_color)
         self._holder_index: int = 0
+        # display holder
+        self._display_holder_timer: BoolTickTimer = BoolTickTimer(500)
         self.need_save: bool = False
 
     def get_width(self) -> int:
@@ -135,7 +137,8 @@ class SingleLineInputBox(AbstractInputBox):
             font_t = self._FONT.render(self._text, self._text_color)
             _surface.blit(font_t, (self.x + self._padding, self.y + (self._input_box.height - font_t.get_height()) // 2))
         if with_holder is True:
-            if int(time.time() % 2) == 0 or len(Controller.get_events()) > 0:
+            self._display_holder_timer.tick()
+            if self._display_holder_timer.get_status():
                 _surface.blit(self._holder, (self.x + self._padding + self._FONT.estimate_text_width(self._text[: self._holder_index]), self.y + self._padding))
 
     # 画出内容
@@ -180,6 +183,8 @@ class MultipleLinesInputBox(AbstractInputBox):
         self.__show_PySimpleGUI_input_box.set_auto_resize(True)
         # start dictate button
         self.__start_dictating: Button | None = None
+        # wether user is using dictation
+        self.__is_dictating: bool = False
         if _SPEECH_RECOGNITION_ENABLED and len(sr.Microphone.list_working_microphones()) > 0:
             self.__start_dictating = Button.load("<&ui>button.png", ORIGIN, (self._FONT.size, self._FONT.size), 150)
             self.__start_dictating.set_text(ButtonComponent.text(Lang.get_text("Editor", "dictate"), font_size // 3))
@@ -304,71 +309,95 @@ class MultipleLinesInputBox(AbstractInputBox):
         else:
             self._holder_index = i - 1
 
+    # 听写
+    def __dictate(self) -> None:
+        # Initialize recognizer
+        recognizer = sr.Recognizer()
+        # Initialize audio
+        _audio: sr.AudioData | None = None
+        # Capture audio
+        try:
+            with sr.Microphone() as source:
+                _audio = recognizer.listen(source)
+        except OSError:
+            EXCEPTION.warn("No speaker detected!")
+        # try process audio
+        if _audio is not None:
+            # Recognize speech using Speech API
+            try:
+                self._add_text(recognizer.recognize_google(_audio, language=Lang.get_current_language_tag()))
+            except sr.UnknownValueError:
+                EXCEPTION.inform("Speech API could not understand the audio")
+            except sr.RequestError as e:
+                EXCEPTION.inform(f"Could not request results from Speech API; {e}")
+        self.__is_dictating = False
+
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
-        for event in Controller.get_events():
-            if self._active:
-                match event.type:
-                    case Events.KEY_DOWN:
-                        match event.key:
-                            case Keys.BACKSPACE:
-                                self._remove_char(Locations.BEGINNING)
-                            case Keys.DELETE:
-                                self._remove_char(Locations.END)
-                            case Keys.ARROW_LEFT:
-                                if self._holder_index > 0:
-                                    self._holder_index -= 1
-                            case Keys.ARROW_RIGHT:
-                                if self._holder_index < len(self._text[self.__lineId]):
-                                    self._holder_index += 1
-                            case Keys.ARROW_UP:
-                                if self.__lineId > 0:
-                                    self.__lineId -= 1
-                                    if self._holder_index > len(self._text[self.__lineId]) - 1:
-                                        self._holder_index = len(self._text[self.__lineId]) - 1
-                            case Keys.ARROW_DOWN:
-                                if self.__lineId < len(self._text) - 1:
+        if not self.__is_dictating:
+            for event in Controller.get_events():
+                if self._active:
+                    match event.type:
+                        case Events.KEY_DOWN:
+                            match event.key:
+                                case Keys.BACKSPACE:
+                                    self._remove_char(Locations.BEGINNING)
+                                case Keys.DELETE:
+                                    self._remove_char(Locations.END)
+                                case Keys.ARROW_LEFT:
+                                    if self._holder_index > 0:
+                                        self._holder_index -= 1
+                                case Keys.ARROW_RIGHT:
+                                    if self._holder_index < len(self._text[self.__lineId]):
+                                        self._holder_index += 1
+                                case Keys.ARROW_UP:
+                                    if self.__lineId > 0:
+                                        self.__lineId -= 1
+                                        if self._holder_index > len(self._text[self.__lineId]) - 1:
+                                            self._holder_index = len(self._text[self.__lineId]) - 1
+                                case Keys.ARROW_DOWN:
+                                    if self.__lineId < len(self._text) - 1:
+                                        self.__lineId += 1
+                                        if self._holder_index > len(self._text[self.__lineId]) - 1:
+                                            self._holder_index = len(self._text[self.__lineId]) - 1
+                                # ESC，关闭
+                                case Keys.ESCAPE:
+                                    self._active = False
+                                    self.need_save = True
+                                case Keys.RETURN:
+                                    # 如果“|”位于最后
+                                    if self._holder_index == len(self._text[self.__lineId]):
+                                        self._text.insert(self.__lineId + 1, "")
+                                    else:
+                                        self._text.insert(self.__lineId + 1, self._text[self.__lineId][self._holder_index :])
+                                        self._text[self.__lineId] = self._text[self.__lineId][: self._holder_index]
                                     self.__lineId += 1
-                                    if self._holder_index > len(self._text[self.__lineId]) - 1:
-                                        self._holder_index = len(self._text[self.__lineId]) - 1
-                            # ESC，关闭
-                            case Keys.ESCAPE:
-                                self._active = False
-                                self.need_save = True
-                            case Keys.RETURN:
-                                # 如果“|”位于最后
-                                if self._holder_index == len(self._text[self.__lineId]):
-                                    self._text.insert(self.__lineId + 1, "")
-                                else:
-                                    self._text.insert(self.__lineId + 1, self._text[self.__lineId][self._holder_index :])
-                                    self._text[self.__lineId] = self._text[self.__lineId][: self._holder_index]
-                                self.__lineId += 1
-                                self._holder_index = 0
-                                self._reset_inputbox_size()
-                            case _:
-                                if (
-                                    event.unicode == "v"
-                                    and Keys.get_pressed("v")
-                                    and Keys.get_pressed(Keys.LEFT_CTRL)
-                                    or event.key == Keys.LEFT_CTRL
-                                    and Keys.get_pressed("v")
-                                    and Keys.get_pressed(Keys.LEFT_CTRL)
+                                    self._holder_index = 0
+                                    self._reset_inputbox_size()
+                                case _:
+                                    if (
+                                        event.unicode == "v"
+                                        and Keys.get_pressed("v")
+                                        and Keys.get_pressed(Keys.LEFT_CTRL)
+                                        or event.key == Keys.LEFT_CTRL
+                                        and Keys.get_pressed("v")
+                                        and Keys.get_pressed(Keys.LEFT_CTRL)
+                                    ):
+                                        self._add_text(Keys.get_clipboard())
+                                    else:
+                                        self._add_text(event.unicode)
+                        case Events.MOUSE_BUTTON_DOWN:
+                            if event.button == 1:
+                                if self.is_hovered(offSet):
+                                    self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
+                                # make sure the mouse if outside the box and not press buttons
+                                elif not self.__show_PySimpleGUI_input_box.is_hovered() and (
+                                    self.__start_dictating is None or not self.__start_dictating.is_hovered()
                                 ):
-                                    self._add_text(Keys.get_clipboard())
-                                else:
-                                    self._add_text(event.unicode)
-                    case Events.MOUSE_BUTTON_DOWN:
-                        if event.button == 1:
-                            if self.is_hovered(offSet):
-                                self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
-                            # make sure the mouse if outside the box and not press buttons
-                            elif not self.__show_PySimpleGUI_input_box.is_hovered() and (
-                                self.__start_dictating is None or not self.__start_dictating.is_hovered()
-                            ):
-                                self._active = False
-                                self.need_save = True
-            elif event.type == Events.MOUSE_BUTTON_DOWN and event.button == 1 and self.is_hovered(offSet):
-                self._active = True
-                self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
+                                    self._active = False
+                                    self.need_save = True
+                elif event.type == Events.MOUSE_BUTTON_DOWN and event.button == 1 and self.is_hovered(offSet):
+                    self._active = True
+                    self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
         # 计算绝对坐标
         abs_pos: Final[tuple[int, int]] = Coordinates.add(self.get_pos(), offSet)
         # 如果有内容
@@ -380,68 +409,57 @@ class MultipleLinesInputBox(AbstractInputBox):
         if self._active:
             # 画出输入框
             Draw.rect(_surface, self._color, self._input_box.get_rect(), 2)
-            # 画出 “|” 符号
-            if int(time.time() % 2) == 0 or len(Controller.get_events()) > 0:
-                _surface.blit(
-                    self._holder,
-                    (
-                        abs_pos[0] + self._FONT.size // 10 + self._FONT.estimate_text_width(self._text[self.__lineId][: self._holder_index]),
-                        abs_pos[1] + self.__lineId * self._default_height,
-                    ),
-                )
-            # 展示基于PySimpleGUI的外部输入框
-            self.__show_PySimpleGUI_input_box.set_right(self._input_box.right)
-            self.__show_PySimpleGUI_input_box.set_top(self._input_box.bottom)
-            self.__show_PySimpleGUI_input_box.draw(_surface)
-            if self.__PySimpleGUIWindow is not None:
-                external_input_event, external_input_values = self.__PySimpleGUIWindow.read()
-                if external_input_event == PySimpleGUI.WIN_CLOSED:
-                    self.__PySimpleGUIWindow.close()
-                    self.__PySimpleGUIWindow = None
-                else:
-                    in_text: str | None = external_input_values.get("CONTENT")
-                    if in_text is not None:
-                        self._remove_char(Locations.EVERYWHERE)
-                        self._add_text(in_text)
-            elif self.__show_PySimpleGUI_input_box.is_hovered() and Controller.get_event("confirm"):
-                self.__PySimpleGUIWindow = PySimpleGUI.Window(
-                    Lang.get_text("Editor", "external_inputbox"),
-                    [
+            if self.__is_dictating:
+                Draw.rect(_surface, (0, 0, 0, 150), self._input_box.get_rect())
+                Draw.circle(_surface, Colors.RED, self._input_box.center, self._FONT.size // 4)
+            # make sure disable button when is dictating
+            else:
+                # 画出 “|” 符号
+                self._display_holder_timer.tick()
+                if self._display_holder_timer.get_status():
+                    _surface.blit(
+                        self._holder,
+                        (
+                            abs_pos[0] + self._FONT.size // 10 + self._FONT.estimate_text_width(self._text[self.__lineId][: self._holder_index]),
+                            abs_pos[1] + self.__lineId * self._default_height,
+                        ),
+                    )
+                # 展示基于PySimpleGUI的外部输入框
+                self.__show_PySimpleGUI_input_box.set_right(self._input_box.right)
+                self.__show_PySimpleGUI_input_box.set_top(self._input_box.bottom)
+                self.__show_PySimpleGUI_input_box.draw(_surface)
+                if self.__PySimpleGUIWindow is not None:
+                    external_input_event, external_input_values = self.__PySimpleGUIWindow.read()
+                    if external_input_event == PySimpleGUI.WIN_CLOSED:
+                        self.__PySimpleGUIWindow.close()
+                        self.__PySimpleGUIWindow = None
+                    else:
+                        in_text: str | None = external_input_values.get("CONTENT")
+                        if in_text is not None:
+                            self._remove_char(Locations.EVERYWHERE)
+                            self._add_text(in_text)
+                elif self.__show_PySimpleGUI_input_box.is_hovered() and Controller.get_event("confirm"):
+                    self.__PySimpleGUIWindow = PySimpleGUI.Window(
+                        Lang.get_text("Editor", "external_inputbox"),
                         [
-                            PySimpleGUI.Multiline(
-                                default_text=self.get_raw_text(), key="CONTENT", expand_x=True, expand_y=True, auto_size_text=True, enable_events=True
-                            )
+                            [
+                                PySimpleGUI.Multiline(
+                                    default_text=self.get_raw_text(), key="CONTENT", expand_x=True, expand_y=True, auto_size_text=True, enable_events=True
+                                )
+                            ],
+                            [PySimpleGUI.CloseButton(Lang.get_text("Global", "confirm"))],
                         ],
-                        [PySimpleGUI.CloseButton(Lang.get_text("Global", "confirm"))],
-                    ],
-                    size=(Display.get_width() // 5, Display.get_height() // 5),
-                    keep_on_top=True,
-                    resizable=True,
-                    auto_size_buttons=True,
-                    auto_size_text=True,
-                )
-            # voice to text
-            if self.__start_dictating is not None:
-                self.__start_dictating.set_right(self.__show_PySimpleGUI_input_box.left)
-                self.__start_dictating.set_top(self._input_box.bottom)
-                self.__start_dictating.draw(_surface)
-                if self.__start_dictating.is_hovered() and Controller.get_event("confirm"):
-                    # Initialize recognizer
-                    recognizer = sr.Recognizer()
-                    # Initialize audio
-                    _audio: sr.AudioData | None = None
-                    # Capture audio
-                    try:
-                        with sr.Microphone() as source:
-                            _audio = recognizer.listen(source)
-                    except OSError:
-                        EXCEPTION.warn("No speaker detected!")
-                    # try process audio
-                    if _audio is not None:
-                        # Recognize speech using Google Web Speech API
-                        try:
-                            self._add_text(recognizer.recognize_google(_audio))
-                        except sr.UnknownValueError:
-                            EXCEPTION.fatal("Google Web Speech API could not understand the audio")
-                        except sr.RequestError as e:
-                            EXCEPTION.fatal(f"Could not request results from Google Web Speech API; {e}")
+                        size=(Display.get_width() // 5, Display.get_height() // 5),
+                        keep_on_top=True,
+                        resizable=True,
+                        auto_size_buttons=True,
+                        auto_size_text=True,
+                    )
+                # voice to text
+                if self.__start_dictating is not None:
+                    self.__start_dictating.set_right(self.__show_PySimpleGUI_input_box.left)
+                    self.__start_dictating.set_top(self._input_box.bottom)
+                    self.__start_dictating.draw(_surface)
+                    if self.__start_dictating.is_hovered() and Controller.get_event("confirm"):
+                        self.__is_dictating = True
+                        threading.Thread(target=self.__dictate).start()

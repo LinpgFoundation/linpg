@@ -71,13 +71,13 @@ pip install linpg
 git clone https://github.com/LinpgFoundation/linpg
 ```
 
-(可选）如果有兴趣试用最新版本，则应切换到 `dev` 分支：
+(可选）如果有兴趣试用开发版本，可以尝试`dev` 分支：
 
 ```
 git checkout dev
 ```
 
-如果尚未安装 linpg-toolbox，请使用命令进行安装：
+如果尚未安装 linpg-toolbox，请使用该命令进行安装：
 
 ```
 pip install --upgrade linpgtoolbox
@@ -89,18 +89,18 @@ pip install --upgrade linpgtoolbox
 python builder.py
 ```
 
-就这样，好好享受吧！
+然后。。。没有然后了。
 
 
 # :world_map: 分支​
 
 ### master:
 
-该分支提供了当前的稳定版本
+当前最新的稳定版本
 
 ### dev:
 
-目前可以运行的最新版本，相对稳定，但可能包含未被发现的问题或未完善的功能。 推荐有经验的开发人员使用。
+目前可以运行的最新版本，相对稳定，但可能包含未被发现的问题或未完善的功能。 仅推荐有经验的开发人员使用。
 
 
 
@@ -108,7 +108,7 @@ python builder.py
 
 - 你应该fork "dev"分支作为作为你的起始点。如果"dev"分支不存在，则fork "master"分支。
 
-- 所有PR应该请求merge到"dev"分支中。如果"dev"不存在，则请求merge到"master"分支。
+- 所有PR应该请求合并到"dev"分支中。如果"dev"不存在，则应请求合并到"master"分支。
 
 - 所有PR应该详细地阐明其做出的改动。
 

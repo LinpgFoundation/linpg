@@ -26,6 +26,12 @@ class Images:
     # flag查询表
     __FLAG_LOOKUP_TABLE: Final[dict[str, str]] = {"env": "environment", "ui": "user_interface"}
 
+    # 加载
+    @staticmethod
+    def __load(_file: str | io.BytesIO) -> ImageSurface:
+        # return UniversalImageSurface(pygame.image.load(_file), _file if isinstance(_file, str) else "")
+        return pygame.image.load(_file)
+
     # 根据flag
     @classmethod
     def generate_path_according_to_prefix(cls, path: str) -> str:
@@ -62,7 +68,7 @@ class Images:
                 # 如果正在加载不属于linpgassets的图片
                 if not path.startswith("<"):
                     try:
-                        _imageR = pygame.image.load(path)
+                        _imageR = cls.__load(path)
                     except Exception:
                         if Debug.get_developer_mode() is True and not canBeNull:
                             EXCEPTION.fatal(f"Cannot load image from path: {path}")
@@ -70,7 +76,7 @@ class Images:
                 # 如果需要加载属于linpgassets的图片
                 elif os.path.exists(_path := cls.generate_path_according_to_prefix(path)):
                     if not _path.endswith(".zip"):
-                        _imageR = pygame.image.load(_path)
+                        _imageR = cls.__load(_path)
                     elif "linpgassets" in _path:
                         _zipFile: zipfile.ZipFile = zipfile.ZipFile(_path)
                         _imageR = cls.fromBytesIO(io.BytesIO(_zipFile.read(path[path.index(">") + 1 :], pwd=_KEY)))
@@ -171,6 +177,6 @@ class Images:
         pygame.image.save(_surface, path)
 
     # 将BytesIO转换为图片
-    @staticmethod
-    def fromBytesIO(_bytes: io.BytesIO) -> ImageSurface:
-        return pygame.image.load(_bytes)
+    @classmethod
+    def fromBytesIO(cls, _bytes: io.BytesIO) -> ImageSurface:
+        return cls.__load(_bytes)

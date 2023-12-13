@@ -23,9 +23,26 @@ pygame.init()
 color_liked = Sequence[int] | str
 # 图形类
 ImageSurface = pygame.Surface
+# path or pygame.Surface
 PoI = str | pygame.Surface
 # 事件 type alias
 PG_Event = pygame.event.Event
+
+
+# 图形类
+class UniversalImageSurface:
+    def __init__(self, obj: pygame.Surface, file_path: str = "") -> None:
+        self._wrapped_obj: pygame.Surface = obj
+        self.__path: Final[str] = file_path
+
+    def __getattr__(self, attr: str) -> Any:
+        if attr in self.__dict__:
+            return getattr(self, attr)
+        return getattr(self._wrapped_obj, attr)
+
+    @property
+    def path(self) -> str:
+        return self.__path
 
 
 # 图像库数据

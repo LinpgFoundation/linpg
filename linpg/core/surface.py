@@ -16,6 +16,11 @@ class AbstractImageSurface(Rectangle, Hidable, metaclass=ABCMeta):
             self.set_height(self.get_width() * self.__img.get_height() // self.__img.get_width())
         self.tag = tag
 
+    # 路径
+    @property
+    def path(self) -> str:
+        return self.__img.path if isinstance(self.__img, UniversalImageSurface) else ""
+
     """透明度"""
 
     @property

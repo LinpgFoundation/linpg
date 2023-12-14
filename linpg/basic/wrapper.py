@@ -240,6 +240,14 @@ class Draw:
         else:
             pygame.draw.circle(_surface, color, center_pos, radius, thickness)
 
+    # 根据给与的中心点画出一个椭圆
+    @staticmethod
+    def ellipse(_surface: ImageSurface, color: tuple[int, int, int, int], center_pos: tuple[int, int], radius: tuple[int, int], thickness: int = 0) -> None:
+        if thickness <= 0:
+            pygame.gfxdraw.filled_ellipse(_surface, center_pos[0], center_pos[1], radius[0], radius[1], color)
+        else:
+            pygame.draw.ellipse(_surface, color, ((center_pos[0] - radius[0], center_pos[1] - radius[1]), (radius[0] * 2, radius[1] * 2)), thickness)
+
     # 画一条抗锯齿线
     @staticmethod
     def aaline(_surface: ImageSurface, color: tuple[int, int, int, int], start_pos: tuple[int, int], end_pos: tuple[int, int], blend: int = 1) -> None:

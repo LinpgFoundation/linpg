@@ -324,7 +324,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             _alpha: int | None = self.__map_surface_old.get_alpha()
             if _alpha is None:
                 EXCEPTION.fatal("Invalid alpha detected while processing self.__map_surface_old.get_alpha()")
-            _alpha -= 15
+            _alpha -= Display.get_delta_time() * 3
             if _alpha > 0:
                 self.__map_surface_old.set_alpha(_alpha)
             else:

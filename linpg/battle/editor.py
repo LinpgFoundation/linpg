@@ -260,6 +260,14 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                     delete_one = True
         return delete_one
 
+    # move the entity
+    def move_entity(self, _filter: Callable[[Entity], bool], x: int, y: int) -> None:
+        for vl in self._entities_data.values():
+            for e in vl.values():
+                if _filter(e):
+                    e.set_x(round(e.x) + x)
+                    e.set_y(round(e.y) + y)
+
     # 设置实体
     def set_entity(self, _item: str | None, _pos: tuple[int, int]) -> None:
         # 尝试移除坐标冲突的实体
@@ -317,21 +325,25 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                     # 移除行
                     case self._MODIFY.DELETE_ROW:
                         self.get_map().remove_on_axis(self._tile_is_hovering[1])
-                        row_y: int = self._tile_is_hovering[1]
-                        self.delete_entity(lambda e: round(e.y) == row_y)
+                        self.delete_entity(lambda e: round(e.y) == self._tile_is_hovering[1])
+                        self.move_entity(lambda e: round(e.y) > self._tile_is_hovering[1], 0, -1)
                     # 移除列
                     case self._MODIFY.DELETE_COLUMN:
                         self.get_map().remove_on_axis(self._tile_is_hovering[0], 1)
-                        column_x: int = self._tile_is_hovering[0]
-                        self.delete_entity(lambda e: round(e.x) == column_x)
+                        self.delete_entity(lambda e: round(e.x) == self._tile_is_hovering[0])
+                        self.move_entity(lambda e: round(e.x) > self._tile_is_hovering[0], -1, 0)
                     case self._MODIFY.ADD_ROW_ABOVE:
                         self.get_map().add_on_axis(self._tile_is_hovering[1])
+                        self.move_entity(lambda e: round(e.y) >= self._tile_is_hovering[1], 0, 1)
                     case self._MODIFY.ADD_ROW_BELOW:
                         self.get_map().add_on_axis(self._tile_is_hovering[1] + 1)
+                        self.move_entity(lambda e: round(e.y) >= self._tile_is_hovering[1] + 1, 0, 1)
                     case self._MODIFY.ADD_COLUMN_BEFORE:
                         self.get_map().add_on_axis(self._tile_is_hovering[0], 1)
+                        self.move_entity(lambda e: round(e.x) >= self._tile_is_hovering[0], 1, 0)
                     case self._MODIFY.ADD_COLUMN_AFTER:
                         self.get_map().add_on_axis(self._tile_is_hovering[0] + 1, 1)
+                        self.move_entity(lambda e: round(e.x) >= self._tile_is_hovering[0] + 1, 1, 0)
                     case self._MODIFY.DISABLE:
                         if self.is_any_object_selected() is True and self._no_container_is_hovered is True:
                             match self.__object_to_put_down["type"]:

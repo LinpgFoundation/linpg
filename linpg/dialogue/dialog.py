@@ -308,7 +308,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
                         self.__history_text_surface.blit(
                             narratorTemp, (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() // 10 + local_y)
                         )
-                    for i, _text in enumerate(self._content.get_dialog(_id=dialogIdTemp)["contents"]):
+                    for i, _text in enumerate(self._content.get_dialog(_id=dialogIdTemp).get("contents", [])):
                         if has_narrator:
                             if i == 0:
                                 _text = '[ "' + _text

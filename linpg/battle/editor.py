@@ -289,6 +289,18 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
     def set_tile(self, _item: str, _pos: tuple[int, int]) -> None:
         self.get_map().set_tile(*_pos, _item)
 
+    # 删除指定坐标上的实体
+    def delete_entity_on_tile(self, _pos: tuple[int, int]) -> None:
+        # 优先移除barrier mask
+        if not self.get_map().is_passable(_pos[0], _pos[1]):
+            self.get_map().set_barrier_mask(_pos[0], _pos[1], 0)
+        else:
+            # 如果发现有冲突的装饰物
+            if self.get_map().get_decoration(_pos) is not None:
+                self.set_decoration(None, _pos)
+            else:
+                self.set_entity(None, _pos)
+
     # 将地图制作器的界面画到屏幕上
     def draw(self, _surface: ImageSurface) -> None:
         UIContainerRight_offset_pos: tuple[int, int] = (self.__UIContainerButtonRight.right, 0)
@@ -313,15 +325,7 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 whether_add_history: bool = True
                 match self._modify_mode:
                     case self._MODIFY.DELETE_ENTITY:
-                        # 优先移除barrier mask
-                        if not self.get_map().is_passable(self._tile_is_hovering[0], self._tile_is_hovering[1]):
-                            self.get_map().set_barrier_mask(self._tile_is_hovering[0], self._tile_is_hovering[1], 0)
-                        else:
-                            # 如果发现有冲突的装饰物
-                            if self.get_map().get_decoration(self._tile_is_hovering) is not None:
-                                self.set_decoration(None, self._tile_is_hovering)
-                            else:
-                                self.set_entity(None, self._tile_is_hovering)
+                        self.delete_entity_on_tile(self._tile_is_hovering)
                     # 移除行
                     case self._MODIFY.DELETE_ROW:
                         self.get_map().remove_on_axis(self._tile_is_hovering[1])
@@ -377,6 +381,9 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             self.__object_to_put_down.clear()
             self._modify_mode = self._MODIFY.DISABLE
             self._show_barrier_mask = False
+        # 直接用del按键
+        elif Controller.get_event("delete") and self._tile_is_hovering is not None:
+            self.delete_entity_on_tile(self._tile_is_hovering)
 
         # 画出地图
         self._display_map(_surface)

@@ -4,13 +4,15 @@ from ..config import *
 # 本地化语言管理模块
 class Lang:
     # 语言配置文件
-    __LANG_DATA: Final[dict] = {}
+    __LANG_DATA: Final[dict[str, Any]] = {}
     # 可选的语言
-    __LANG_AVAILABLE: Final[list] = []
+    __LANG_AVAILABLE: tuple[str, ...] = ()
     # 语言储存路径
     __LANG_PATH_PATTERN: Final[str] = os.path.join(os.path.dirname(__file__), "*.json")
     # 储存额外语言数据的文件夹
     __EX_LANG_FOLDER: Final[str] = "Lang"
+    # 语言tga
+    __LANG_TAGS: Final[dict[str, str]] = {"English": "en-US", "SimplifiedChinese": "zh-CN", "TraditionalChinese": "zh-TW"}
 
     # 重新加载语言文件
     @classmethod
@@ -27,18 +29,17 @@ class Lang:
                 cls.__LANG_DATA.update(Config.load_file(path_t))
             except Exception:
                 EXCEPTION.inform("Linpg cannot load additional language file.")
-        # 获取当前所有完整的可用语言的列表
-        cls.__LANG_AVAILABLE.clear()
         # 如果有开发者自带的语言文件
-        if os.path.exists("Lang"):
-            for lang_file in glob(os.path.join(cls.__LANG_PATH_PATTERN)):
-                if os.path.exists(os.path.join(cls.__EX_LANG_FOLDER, os.path.basename(lang_file).replace(".json", ".yaml"))) or os.path.exists(
-                    os.path.join(cls.__EX_LANG_FOLDER, os.path.basename(lang_file))
-                ):
-                    cls.__LANG_AVAILABLE.append(Config.load(lang_file, "Language"))
-        else:
-            for lang_file in glob(os.path.join(cls.__LANG_PATH_PATTERN)):
-                cls.__LANG_AVAILABLE.append(Config.load(lang_file, "Language"))
+        cls.__LANG_AVAILABLE = (
+            tuple(
+                Config.load(lang_file, "Language")
+                for lang_file in glob(os.path.join(cls.__LANG_PATH_PATTERN))
+                if os.path.exists(os.path.join(cls.__EX_LANG_FOLDER, os.path.basename(lang_file).replace(".json", ".yaml")))
+                or os.path.exists(os.path.join(cls.__EX_LANG_FOLDER, os.path.basename(lang_file)))
+            )
+            if os.path.exists("Lang")
+            else tuple(Config.load(lang_file, "Language") for lang_file in glob(os.path.join(cls.__LANG_PATH_PATTERN)))
+        )
 
     # 整理语言文件
     @classmethod
@@ -50,6 +51,11 @@ class Lang:
     @classmethod
     def get_current_language(cls) -> str:
         return str(cls.__LANG_DATA["Language"])
+
+    # 获取当前的语言
+    @classmethod
+    def get_current_language_tag(cls) -> str:
+        return cls.__LANG_TAGS[Setting.get_language()]
 
     # 获取语言的名称id
     @classmethod

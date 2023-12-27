@@ -12,3 +12,4 @@ src/
 test.py
 virtualenv/
 linpg/lib/ffmpeg.exe
+test/

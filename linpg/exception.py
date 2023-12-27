@@ -55,14 +55,14 @@ class EXCEPTION:
     # 告知不严重但建议查看的问题
     @staticmethod
     def inform(info: str) -> None:
-        print(f"LinpgEngine wants to inform you: {info}")
+        print(f"Linpg Engine wants to inform you: {info}")
 
     # 警告开发者非严重错误
     @classmethod
     def warn(cls, info: str) -> None:
         cls.__log(f"Warning Message From Linpg: {info}")
         # 打印出警告
-        print(f"LinpgEngine-Warning: {info}")
+        print(f"Linpg Engine Internal Warning: {info}")
 
     # 严重错误
     @classmethod

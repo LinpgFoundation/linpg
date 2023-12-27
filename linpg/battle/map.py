@@ -135,8 +135,17 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
         if axis == 0:
             if index < 0 or index > self.row:
                 EXCEPTION.fatal(f"Index {index} is out of bound at row!")
-        elif index < 0 or index > self.column:
-            EXCEPTION.fatal(f"Index {index} is out of bound at column!")
+            # move entity if it is effected
+            for e in self.__decorations.values():
+                if e.y >= index:
+                    e.move_downward(1)
+        else:
+            if index < 0 or index > self.column:
+                EXCEPTION.fatal(f"Index {index} is out of bound at column!")
+            # move entity if it is effected
+            for e in self.__decorations.values():
+                if e.x >= index:
+                    e.move_right(1)
         self.__init_map(
             numpy.insert(self.__MAP, index, numpy.random.randint(len(self.__tile_lookup_table), size=self.__row if axis == 1 else self.__column), axis),
             numpy.insert(self.__BARRIER_MASK, index, numpy.zeros(self.__row if axis == 1 else self.__column), axis),
@@ -150,14 +159,22 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             if index < 0 or index >= self.row:
                 EXCEPTION.fatal(f"Index {index} is out of bound at row!")
             for key in tuple(self.__decorations.keys()):
+                # remove entity if it is on the deleted row
                 if self.__decorations[key].y == index:
                     self.__decorations.pop(key)
+                # move entity if it is effected
+                elif self.__decorations[key].y > index:
+                    self.__decorations[key].move_upward(1)
         else:
             if index < 0 or index >= self.column:
                 EXCEPTION.fatal(f"Index {index} is out of bound at column!")
             for key in tuple(self.__decorations.keys()):
+                # remove entity if it is on the deleted column
                 if self.__decorations[key].x == index:
                     self.__decorations.pop(key)
+                # move entity if it is effected
+                elif self.__decorations[key].x > index:
+                    self.__decorations[key].move_left(1)
         self.__init_map(numpy.delete(self.__MAP, index, axis), numpy.delete(self.__BARRIER_MASK, index, axis), TileMapImagesModule.TILE_SIZE)
 
     # 获取方块宽度
@@ -324,7 +341,7 @@ class AbstractTileMap(Rectangle, SurfaceWithLocalPos):
             _alpha: int | None = self.__map_surface_old.get_alpha()
             if _alpha is None:
                 EXCEPTION.fatal("Invalid alpha detected while processing self.__map_surface_old.get_alpha()")
-            _alpha -= 15
+            _alpha = max(0, _alpha - Display.get_delta_time())
             if _alpha > 0:
                 self.__map_surface_old.set_alpha(_alpha)
             else:

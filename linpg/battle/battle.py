@@ -73,7 +73,7 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
-        _data: dict = {"entities": {}}
+        _data: dict = {"entities": {}, "linpg": Info.get_current_version()}
         for faction, entitiesDict in self._entities_data.items():
             _data["entities"][faction] = {}
             for key in entitiesDict:

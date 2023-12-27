@@ -212,7 +212,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
             if is_skip is True:
                 temp_alpha = BLACK_CURTAIN.get_alpha()
                 if temp_alpha is not None and temp_alpha < 255:
-                    BLACK_CURTAIN.set_alpha(temp_alpha + 5)
+                    BLACK_CURTAIN.set_alpha(temp_alpha + Display.get_delta_time())
                 else:
                     is_playing = False
                     VIDEO.stop()
@@ -237,7 +237,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
                     self.display_background_image(_surface)
                     self._black_bg.set_alpha(_alpha // 5)
                     self._black_bg.draw(_surface)
-                    _alpha -= Display.get_delta_time()
+                    _alpha -= Display.get_delta_time() * 2
                     Display.flip()
                 # 重设black_bg的alpha值以便下一次使用
                 self._black_bg.set_alpha(255)
@@ -308,7 +308,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
                         self.__history_text_surface.blit(
                             narratorTemp, (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() // 10 + local_y)
                         )
-                    for i, _text in enumerate(self._content.get_dialog(_id=dialogIdTemp)["contents"]):
+                    for i, _text in enumerate(self._content.get_dialog(_id=dialogIdTemp).get("contents", [])):
                         if has_narrator:
                             if i == 0:
                                 _text = '[ "' + _text

@@ -1,4 +1,4 @@
-from .display import *
+from .timer import *
 
 from ..lib import FFmpeg
 

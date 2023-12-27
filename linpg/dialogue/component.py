@@ -346,35 +346,37 @@ class DialogBox(AbstractDialogBox):
                     # 对话框已播放的内容
                     for i in range(self.__displayed_lines):
                         _surface.blit(self.FONT.render(self.__contents[i], Colors.WHITE), (x, y + self.FONT.size * 3 * i // 2))
-                    # 对话框正在播放的内容
-                    _surface.blit(
-                        self.FONT.render(self.__contents[self.__displayed_lines][: self.__text_index], Colors.WHITE),
-                        (x, y + self.FONT.size * 3 * self.__displayed_lines // 2),
-                    )
-                    # 如果当前行的字符还没有完全播出
-                    if self.__text_index < len(self.__contents[self.__displayed_lines]):
-                        # 播放文字音效
-                        if (
-                            LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL is not None
-                            and not LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL.get_busy()
-                            and self.__textPlayingSound is not None
-                        ):
-                            LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL.play(self.__textPlayingSound)
-                        if self.__next_text_index_count < self.__next_text_index_count_required:
-                            self.__next_text_index_count += Display.get_delta_time()
-                        else:
-                            self.__text_index += 1
+                    # make sure self.__contents is not empty
+                    if self.__displayed_lines < len(self.__contents):
+                        # 对话框正在播放的内容
+                        _surface.blit(
+                            self.FONT.render(self.__contents[self.__displayed_lines][: self.__text_index], Colors.WHITE),
+                            (x, y + self.FONT.size * 3 * self.__displayed_lines // 2),
+                        )
+                        # 如果当前行的字符还没有完全播出
+                        if self.__text_index < len(self.__contents[self.__displayed_lines]):
+                            # 播放文字音效
+                            if (
+                                LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL is not None
+                                and not LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL.get_busy()
+                                and self.__textPlayingSound is not None
+                            ):
+                                LINPG_RESERVED_CHANNELS.SOUND_EFFECTS_CHANNEL.play(self.__textPlayingSound)
+                            if self.__next_text_index_count < self.__next_text_index_count_required:
+                                self.__next_text_index_count += Display.get_delta_time()
+                            else:
+                                self.__text_index += 1
+                                self.__next_text_index_count = 0
+                        # 当前行的所有字都播出后，播出下一行
+                        elif self.__displayed_lines < len(self.__contents) - 1:
+                            self.__text_index = 0
                             self.__next_text_index_count = 0
-                    # 当前行的所有字都播出后，播出下一行
-                    elif self.__displayed_lines < len(self.__contents) - 1:
-                        self.__text_index = 0
-                        self.__next_text_index_count = 0
-                        self.__displayed_lines += 1
-                    # 当所有行都播出后
-                    else:
-                        self.stop_playing_text_sound()
-                        if self.__auto_mode is True and self.__read_time < self.__total_letters * 100:
-                            self.__read_time += Display.get_delta_time() * self.__READING_SPEED
+                            self.__displayed_lines += 1
+                        # 当所有行都播出后
+                        else:
+                            self.stop_playing_text_sound()
+                            if self.__auto_mode is True and self.__read_time < self.__total_letters * 100:
+                                self.__read_time += Display.get_delta_time() * self.__READING_SPEED
                     # 画出翻页指示动态图标
                     _width: int = self.FONT.size * 2 // 3
                     self.__next_page_indicator_icon.draw_to(_surface, self._dialogue_box.right - _width * 4, self._dialogue_box.bottom - _width * 3, _width)

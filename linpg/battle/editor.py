@@ -260,6 +260,14 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                     delete_one = True
         return delete_one
 
+    # move the entity
+    def move_entity(self, _filter: Callable[[Entity], bool], x: int, y: int) -> None:
+        for vl in self._entities_data.values():
+            for e in vl.values():
+                if _filter(e):
+                    e.set_x(round(e.x) + x)
+                    e.set_y(round(e.y) + y)
+
     # 设置实体
     def set_entity(self, _item: str | None, _pos: tuple[int, int]) -> None:
         # 尝试移除坐标冲突的实体
@@ -280,6 +288,18 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
     # 设置区块
     def set_tile(self, _item: str, _pos: tuple[int, int]) -> None:
         self.get_map().set_tile(*_pos, _item)
+
+    # 删除指定坐标上的实体
+    def delete_entity_on_tile(self, _pos: tuple[int, int]) -> None:
+        # 优先移除barrier mask
+        if not self.get_map().is_passable(_pos[0], _pos[1]):
+            self.get_map().set_barrier_mask(_pos[0], _pos[1], 0)
+        else:
+            # 如果发现有冲突的装饰物
+            if self.get_map().get_decoration(_pos) is not None:
+                self.set_decoration(None, _pos)
+            else:
+                self.set_entity(None, _pos)
 
     # 将地图制作器的界面画到屏幕上
     def draw(self, _surface: ImageSurface) -> None:
@@ -305,33 +325,29 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
                 whether_add_history: bool = True
                 match self._modify_mode:
                     case self._MODIFY.DELETE_ENTITY:
-                        # 优先移除barrier mask
-                        if not self.get_map().is_passable(self._tile_is_hovering[0], self._tile_is_hovering[1]):
-                            self.get_map().set_barrier_mask(self._tile_is_hovering[0], self._tile_is_hovering[1], 0)
-                        else:
-                            # 如果发现有冲突的装饰物
-                            if self.get_map().get_decoration(self._tile_is_hovering) is not None:
-                                self.set_decoration(None, self._tile_is_hovering)
-                            else:
-                                self.set_entity(None, self._tile_is_hovering)
+                        self.delete_entity_on_tile(self._tile_is_hovering)
                     # 移除行
                     case self._MODIFY.DELETE_ROW:
                         self.get_map().remove_on_axis(self._tile_is_hovering[1])
-                        row_y: int = self._tile_is_hovering[1]
-                        self.delete_entity(lambda e: round(e.y) == row_y)
+                        self.delete_entity(lambda e: round(e.y) == self._tile_is_hovering[1])
+                        self.move_entity(lambda e: round(e.y) > self._tile_is_hovering[1], 0, -1)
                     # 移除列
                     case self._MODIFY.DELETE_COLUMN:
                         self.get_map().remove_on_axis(self._tile_is_hovering[0], 1)
-                        column_x: int = self._tile_is_hovering[0]
-                        self.delete_entity(lambda e: round(e.x) == column_x)
+                        self.delete_entity(lambda e: round(e.x) == self._tile_is_hovering[0])
+                        self.move_entity(lambda e: round(e.x) > self._tile_is_hovering[0], -1, 0)
                     case self._MODIFY.ADD_ROW_ABOVE:
                         self.get_map().add_on_axis(self._tile_is_hovering[1])
+                        self.move_entity(lambda e: round(e.y) >= self._tile_is_hovering[1], 0, 1)
                     case self._MODIFY.ADD_ROW_BELOW:
                         self.get_map().add_on_axis(self._tile_is_hovering[1] + 1)
+                        self.move_entity(lambda e: round(e.y) >= self._tile_is_hovering[1] + 1, 0, 1)
                     case self._MODIFY.ADD_COLUMN_BEFORE:
                         self.get_map().add_on_axis(self._tile_is_hovering[0], 1)
+                        self.move_entity(lambda e: round(e.x) >= self._tile_is_hovering[0], 1, 0)
                     case self._MODIFY.ADD_COLUMN_AFTER:
                         self.get_map().add_on_axis(self._tile_is_hovering[0] + 1, 1)
+                        self.move_entity(lambda e: round(e.x) >= self._tile_is_hovering[0] + 1, 1, 0)
                     case self._MODIFY.DISABLE:
                         if self.is_any_object_selected() is True and self._no_container_is_hovered is True:
                             match self.__object_to_put_down["type"]:
@@ -365,6 +381,9 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             self.__object_to_put_down.clear()
             self._modify_mode = self._MODIFY.DISABLE
             self._show_barrier_mask = False
+        # 直接用del按键
+        elif Controller.get_event("delete") and self._tile_is_hovering is not None:
+            self.delete_entity_on_tile(self._tile_is_hovering)
 
         # 画出地图
         self._display_map(_surface)

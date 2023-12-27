@@ -59,7 +59,12 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
-        return self.get_data_of_parent_game_system() | {"dialog_id": self._content.get_id(), "section": self._content.get_section(), "type": "dialog"}
+        return self.get_data_of_parent_game_system() | {
+            "dialog_id": self._content.get_id(),
+            "section": self._content.get_section(),
+            "type": "dialog",
+            "linpg": Info.get_current_version(),
+        }
 
     # 读取存档
     def load_progress(self, _data: dict) -> None:

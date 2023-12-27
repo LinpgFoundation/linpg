@@ -23,16 +23,32 @@ pygame.init()
 color_liked = Sequence[int] | str
 # 图形类
 ImageSurface = pygame.Surface
+# path or pygame.Surface
 PoI = str | pygame.Surface
 # 事件 type alias
 PG_Event = pygame.event.Event
+
+
+# 图形类
+class UniversalImageSurface:
+    def __init__(self, obj: pygame.Surface, file_path: str = "") -> None:
+        self._wrapped_obj: pygame.Surface = obj
+        self.__path: Final[str] = file_path
+
+    def __getattr__(self, attr: str) -> Any:
+        if attr in self.__dict__:
+            return getattr(self, attr)
+        return getattr(self._wrapped_obj, attr)
+
+    @property
+    def path(self) -> str:
+        return self.__path
 
 
 # 图像库数据
 class GraphicLibrary:
     PYGAME: Final[int] = 0
     PYGAME_CE: Final[int] = 1
-    PYGLET: Final[int] = 2
 
     # 是否正在使用pygame_ce
     __IS_CE: Final[bool] = getattr(pygame, "IS_CE", False) is not False
@@ -223,6 +239,14 @@ class Draw:
             pygame.gfxdraw.filled_circle(_surface, center_pos[0], center_pos[1], radius, color)
         else:
             pygame.draw.circle(_surface, color, center_pos, radius, thickness)
+
+    # 根据给与的中心点画出一个椭圆
+    @staticmethod
+    def ellipse(_surface: ImageSurface, color: tuple[int, int, int, int], center_pos: tuple[int, int], radius: tuple[int, int], thickness: int = 0) -> None:
+        if thickness <= 0:
+            pygame.gfxdraw.filled_ellipse(_surface, center_pos[0], center_pos[1], radius[0], radius[1], color)
+        else:
+            pygame.draw.ellipse(_surface, color, ((center_pos[0] - radius[0], center_pos[1] - radius[1]), (radius[0] * 2, radius[1] * 2)), thickness)
 
     # 画一条抗锯齿线
     @staticmethod

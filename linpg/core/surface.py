@@ -16,6 +16,15 @@ class AbstractImageSurface(Rectangle, Hidable, metaclass=ABCMeta):
             self.set_height(self.get_width() * self.__img.get_height() // self.__img.get_width())
         self.tag = tag
 
+    # 路径
+    @property
+    def path(self) -> str:
+        return self.__img.path if isinstance(self.__img, UniversalImageSurface) else ""
+
+    # 获取图片非透明部分的rect
+    def get_bounding_rect(self) -> Rectangle:
+        return Rectangles.create(self.__img.get_bounding_rect()) if isinstance(self.__img, ImageSurface) else Rectangle(0, 0, 0, 0)
+
     """透明度"""
 
     @property
@@ -192,7 +201,7 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
     def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = "") -> None:
         super().__init__(img, x, y, width, height, tag=tag)
         self._processed_img: ImageSurface | None = None
-        self._need_update: bool = True if self.get_width() >= 0 and self.get_height() >= 0 else False
+        self._need_update: bool = True
         self.__is_local_offset_enable: bool = True
 
     # 处理图片（子类必须实现）

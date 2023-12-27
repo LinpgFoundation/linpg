@@ -450,9 +450,11 @@ class Entity(Position):
                         self.set_action()
             # 如果是正序播放
             if not self._if_play_action_in_reversing:
-                # 如果角色图片还没播放完，则增加id by 1
+                # 如果角色图片还没播放完，则增加id
                 if self.__imgId_dict[self.__current_action]["imgId"] < self.get_imgNum(self.__current_action) - 1:
-                    self.__imgId_dict[self.__current_action]["imgId"] += Display.get_delta_time() / 20
+                    self.__imgId_dict[self.__current_action]["imgId"] = min(
+                        self.__imgId_dict[self.__current_action]["imgId"] + Display.get_delta_time() / 20, self.get_imgNum(self.__current_action) - 1
+                    )
                 # 如果角色图片播放完需要重新播
                 elif self.__if_action_loop is True:
                     self.__imgId_dict[self.__current_action]["imgId"] = 0

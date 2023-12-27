@@ -93,8 +93,10 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
                 self._processed_img = imgTmp.subsurface(self.__bounding_rect.get_rect())
             else:
                 self._processed_img = imgTmp
+                self.__bounding_rect = Rectangles.create(self._processed_img.get_bounding_rect())
         else:
             self._processed_img = imgTmp
+            self.__bounding_rect = Rectangles.create(self._processed_img.get_bounding_rect())
         if self._alpha < 255:
             self._processed_img.set_alpha(self._alpha)
         self._need_update = False
@@ -221,7 +223,7 @@ class MovableStaticImage(StaticImage):
 
 # gif图片管理
 class AnimatedImage(AdvancedAbstractImageSurface):
-    def __init__(self, imgList: tuple, x: int_f, y: int_f, width: int_f, height: int_f, fps: int_f, tag: str = "") -> None:
+    def __init__(self, imgList: tuple[StaticImage, ...], x: int_f, y: int_f, width: int_f, height: int_f, fps: int_f, tag: str = "") -> None:
         super().__init__(imgList, x, y, width, height, tag)
         self.__imgId: int = 0
         self.__fps: int = max(int(fps), 0)
@@ -242,15 +244,22 @@ class AnimatedImage(AdvancedAbstractImageSurface):
         )
 
     # 当前图片
+    def _get_image_reference(self) -> tuple[StaticImage, ...]:
+        return super()._get_image_reference()  # type: ignore
+
     @property
     def current_image(self) -> StaticImage:
-        return self._get_image_reference()[self.__imgId]  # type: ignore
+        self._get_image_reference()[self.__imgId].set_size(self.get_width(), self.get_height())
+        self._get_image_reference()[self.__imgId].set_alpha(self._alpha)
+        return self._get_image_reference()[self.__imgId]
+
+    # 获取图片非透明部分的rect
+    def get_bounding_rect(self) -> Rectangle:
+        return self.current_image.get_bounding_rect()
 
     # 展示
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
-            self.current_image.set_size(self.get_width(), self.get_height())
-            self.current_image.set_alpha(self._alpha)
             self.current_image.display(_surface, Coordinates.add(self.pos, offSet))
             if self.__countDown >= 1000 // self.__fps:
                 self.__countDown = 0

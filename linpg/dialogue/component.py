@@ -393,8 +393,7 @@ class DialogBox(AbstractDialogBox):
 
 
 # update naming database
-pyvns.Naming.get_database().clear()
-pyvns.Naming.get_database().update(DataBase.get("Npc"))
+pyvns.Naming.update_database(DataBase.get("Npc"))
 
 
 # 视觉小说脚本编译器

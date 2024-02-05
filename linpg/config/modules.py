@@ -46,7 +46,7 @@ class Debug:
 # 版本信息管理模块
 class Info:
     # 引擎主版本号
-    __VERSION: Final[int] = 3
+    __VERSION: Final[int] = 4
     # 引擎次更新版本号
     __REVISION: Final[int] = 7
     # 引擎补丁版本

@@ -85,11 +85,9 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
     def _load_content(self) -> None:
         # 如果玩家所选择的语种有对应的翻译，则优先读取，否则使用开发者的默认语种
         self._content.set_section_content(
-            Config.load(
-                self.get_data_file_path() if os.path.exists(self.get_data_file_path()) else self.get_dialog_file_location(self.get_default_lang()),
-                "dialogs",
-                self._content.get_section(),
-            )
+            Config.load_file(self.get_data_file_path() if os.path.exists(self.get_data_file_path()) else self.get_dialog_file_location(self.get_default_lang()))
+            .get("dialogs", {})
+            .get(self._content.get_section(), {})
         )
         # 确认dialog数据合法
         if len(self._content.get_section_content()) == 0:

@@ -128,7 +128,6 @@ class Numbers:
 
 # 颜色管理
 class Colors:
-
     """常用颜色"""
 
     # 白色

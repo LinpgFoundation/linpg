@@ -5,7 +5,7 @@ from .render import *
 class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
     def __init__(self) -> None:
         super().__init__()
-        self._content: pyvns.ContentManager = pyvns.ContentManager()
+        self._content: DialoguesManager = DialoguesManager()
         # 黑色Void帘幕
         self._black_bg = StaticImage(Surfaces.colored(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height())
         # 对话文件路径
@@ -84,16 +84,16 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
     # 载入数据
     def _load_content(self) -> None:
         # 如果玩家所选择的语种有对应的翻译，则优先读取，否则使用开发者的默认语种
-        self._content.set_section_content(
+        self._content.set_current_section_dialogues(
             Config.load_file(self.get_data_file_path() if os.path.exists(self.get_data_file_path()) else self.get_dialog_file_location(self.get_default_lang()))
             .get("dialogs", {})
             .get(self._content.get_section(), {})
         )
         # 确认dialog数据合法
-        if len(self._content.get_section_content()) == 0:
-            self._content.get_section_content()["head"] = {}
+        if len(self._content.get_current_section_dialogues()) == 0:
+            self._content.set_dialogue(self._content.get_section(), "head", {})
             EXCEPTION.warn(f'The selected dialog dict "{self._content.get_section()}" has no content inside.')
-        elif "head" not in self._content.get_section_content():
+        elif "head" not in self._content.get_current_section_dialogues():
             EXCEPTION.fatal(f'You need to set up a "head" for the selected dialog "{self._content.get_section()}".')
         # 将数据载入刚初始化的模块中
         self._update_scene(self._content.get_id())
@@ -130,7 +130,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
         # 更新对话框
         self._get_dialog_box().update(self._content.current.narrator, self._content.current.contents)
         # 更新背景音乐
-        if self._content.current.background_music is not None:
+        if len(self._content.current.background_music) > 0:
             self.set_bgm(Specification.get_directory("music", self._content.current.background_music))
         else:
             self.unload_bgm()
@@ -164,13 +164,13 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
 
     def _get_dialog_options_container_ready(self) -> None:
         self._dialog_options_container.clear()
-        if isinstance(self._content.current.next.target, list):
-            optionBox_y_base: int = Display.get_height() * 3 // 16 - len(self._content.current.next.target) * self._FONT_SIZE
-            for i in range(len(self._content.current.next.target)):
+        if self._content.current.next.has_multi_targets():
+            optionBox_y_base: int = Display.get_height() * 3 // 16 - len(self._content.current.next.get_targets()) * self._FONT_SIZE
+            for i, _target in enumerate(self._content.current.next.get_targets()):
                 optionButton: Button = Button.load("<&ui>option.png", (0, 0), (0, 0))
                 optionButton.set_hover_img(Images.quickly_load("<&ui>option_selected.png"))
                 optionButton.set_auto_resize(True)
-                optionButton.set_text(ButtonComponent.text(str(self._content.current.next.target[i]["text"]), self._FONT_SIZE, Colors.WHITE))
+                optionButton.set_text(ButtonComponent.text(str(_target["text"]), self._FONT_SIZE, Colors.WHITE))
                 optionButton.set_pos((Display.get_width() - optionButton.get_width()) / 2, (i + 1) * 4 * self._FONT_SIZE + optionBox_y_base)
                 self._dialog_options_container.append(optionButton)
             self._dialog_options_container.set_visible(True)

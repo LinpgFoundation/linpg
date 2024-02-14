@@ -95,7 +95,7 @@ class DialogNavigationWindow(AbstractFrame):
 
             for child_key in key_node.next_keys:
                 self.__draw_node(_surface, child_key)
-                Draw.aaline(_surface, Colors.BLACK, key_node.right_center, self.__nodes_map[child_key].left_center, 3)
+                Draw.line(_surface, Colors.BLACK, key_node.right_center, self.__nodes_map[child_key].left_center, 3)
 
     def _update(self) -> None:
         if "head" in self.__nodes_map:
@@ -398,6 +398,22 @@ pyvns.Naming.update_database(DataBase.get("Npc"))
 
 # 视觉小说脚本编译器
 class ScriptCompiler(pyvns.Compiler):
+
+    # compile
+    @classmethod
+    def compile(cls, path: str, out_dir: str | None = None) -> None:
+        if not os.path.isdir(path) and path.endswith(".vns"):
+            _data: dict[str, Any] = cls.load(path)
+            Config.save(
+                os.path.join(
+                    out_dir if out_dir is not None else os.path.dirname(path), f"chapter{_data['id']}_dialogs_{_data['language']}.{Config.get_file_type()}"
+                ),
+                _data,
+            )
+        else:
+            for _file in glob(os.path.join(path, "*")):
+                cls.compile(_file, out_dir)
+
     # 从有效的视觉小说文件路径中读取信息
     @staticmethod
     def extract_info_from_path(_path: str) -> tuple[int, str]:
@@ -407,7 +423,23 @@ class ScriptCompiler(pyvns.Compiler):
         # 返回 id, 语言
         return int(_path[7 : _path.index("_")]), _path[_path.rfind("_") + 1 : _path.rfind(".")]
 
-    # 保存（重写父类）
-    @staticmethod
-    def _save(_data: dict[str, Any], _dir: str) -> None:
-        Config.save(os.path.join(_dir, f"chapter{_data['id']}_dialogs_{_data['language']}.{Config.get_file_type()}"), _data)
+
+class DialoguesManager(pyvns.DialoguesManager):
+    # 指向上一个对话数据的指针
+    @property
+    def previous(self) -> pyvns.Dialogue | None:
+        return self.get_previous()
+
+    # 指向当前对话数据的指针
+    @property
+    def current(self) -> pyvns.Dialogue:
+        return self.get_current()
+
+    # 指向之前对话数据的指针
+    @property
+    def last(self) -> pyvns.Dialogue | None:
+        return self.get_last()
+
+    @property
+    def section(self) -> str:
+        return self.get_section()

@@ -22,12 +22,12 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "pygame-ce",
-    "pyvns",
+    "pygame-ce>=2.4.0",
+    "pyvns>=2.1",
     "numpy",
     "opencv-python",
     "pillow",
-    "PySimpleGUI",
+    "PySimpleGUI==4.60.5",
     "PyYAML",
 ]
 

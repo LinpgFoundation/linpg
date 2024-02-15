@@ -164,4 +164,6 @@ python builder.py
 
 # :memo: 版权说明
 
-版权信息请查看**LICENSE**文件。
+Linpg 采用 **GNU Lesser General Public License, version 2.1** 许可。
+
+版权信息请查看**[LICENSE](https://github.com/LinpgFoundation/linpg/blob/master/LICENSE)**文件。

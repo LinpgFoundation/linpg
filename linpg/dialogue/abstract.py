@@ -11,7 +11,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
         # 对话文件路径
         self._dialog_folder_path: str = "Data"
         # 背景图片
-        self.__background_image_name: str | None = None
+        self.__background_image_name: str = ""
         self.__background_image_surface: StaticImage | VideoSurface = self._black_bg.copy()
         # 是否静音
         self._is_muted: bool = False
@@ -99,7 +99,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
         self._update_scene(self._content.get_id())
 
     # 更新背景图片
-    def _update_background_image(self, image_name: str | None) -> None:
+    def _update_background_image(self, image_name: str) -> None:
         if self.__background_image_name != image_name:
             # 更新背景的名称
             self.__background_image_name = image_name
@@ -107,7 +107,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
             if isinstance(self.__background_image_surface, VideoSurface):
                 self.__background_image_surface.stop()
             # 更新背景的图片数据
-            if self.__background_image_name is not None:
+            if len(self.__background_image_name) > 0:
                 # 尝试加载图片式的背景
                 if os.path.exists((img_path := Specification.get_directory("background_image", self.__background_image_name))):
                     self.__background_image_surface = StaticImage(img_path, 0, 0)

@@ -33,7 +33,7 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
         # 未保存数据时警告的窗口
         self.__no_save_warning: GameObjectsDictContainer = UI.generate_container("leave_without_saving_warning")
         # 当前选择的背景的名称
-        self.__current_select_bg_name: str | None = None
+        self.__current_select_bg_name: str = ""
         # 当前选择的背景的复制品
         self.__current_select_bg_copy: ImageSurface | None = None
         # 用于选择小说脚本的key的下拉菜单
@@ -72,7 +72,7 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
             for imgPath in glob(Specification.get_directory("movie", "*")):
                 self.__UIContainerRight_bg.set(os.path.basename(imgPath), Images.resize(Videos.get_thumbnail(imgPath), (container_width * 4 // 5, None)))
         self.__UIContainerRight_bg.distance_between_item = Display.get_height() // 50
-        self.__current_select_bg_name = None
+        self.__current_select_bg_name = ""
         self.__current_select_bg_copy = None
         # 重置npc立绘编辑模块
         self.__UIContainerRight_npc.clear()
@@ -131,7 +131,7 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
         self.__dialog_bgm_select.clear()
         self.__dialog_bgm_select.set_pos(button_width * 11, button_y + font_size * 3)
         self.__dialog_bgm_select.update_font_size(font_size)
-        self.__dialog_bgm_select.set("null", Lang.get_text("Editor", "no_bgm"))
+        self.__dialog_bgm_select.set("", Lang.get_text("Editor", "no_bgm"))
         for file_name in os.listdir(Specification.get_directory("music")):
             self.__dialog_bgm_select.set(file_name, file_name)
         # 移除按钮
@@ -156,10 +156,10 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
         return original_data
 
     # 更新背景选项栏
-    def _update_background_image(self, image_name: str | None) -> None:
+    def _update_background_image(self, image_name: str) -> None:
         super()._update_background_image(image_name)
-        if image_name is not None:
-            if self.__current_select_bg_name is not None:
+        if len(image_name) > 0:
+            if len(self.__current_select_bg_name) > 0:
                 self.__UIContainerRight_bg.set("current_select", self.__current_select_bg_copy)
                 self.__UIContainerRight_bg.swap("current_select", self.__current_select_bg_name)
             self.__UIContainerRight_bg.swap("current_select", image_name)
@@ -169,10 +169,10 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
             self.__BACKGROUND_DESELECT_IMAGE.set_size(current_select_bg.get_width(), current_select_bg.get_height())
             self.__BACKGROUND_DESELECT_IMAGE.draw(current_select_bg)
         else:
-            if self.__current_select_bg_name is not None:
+            if len(self.__current_select_bg_name) > 0:
                 self.__UIContainerRight_bg.set(self.__current_select_bg_name, self.__current_select_bg_copy)
             self.__UIContainerRight_bg.set("current_select", None)
-            self.__current_select_bg_name = None
+            self.__current_select_bg_name = ""
             self.__current_select_bg_copy = None
 
     # 加载默认模板
@@ -213,7 +213,7 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
     # 更新UI
     def __update_ui(self) -> None:
         # 更新背景音乐选项菜单
-        self.__dialog_bgm_select.set_selected_item(self._content.current.background_music if self._content.current.background_music is not None else "null")
+        self.__dialog_bgm_select.set_selected_item(self._content.current.background_music)
         # 更新按钮
         if self.__buttons_ui_container is not None:
             if self._content.current.has_next() is True:
@@ -248,21 +248,18 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
         # update current dialogue id
         self._content.current.set_next("default", dialogId)
         self._content.save()
-        # dialog data template
-        dialogData: dict[str, str | list[str] | dict[str, str | list[dict[str, str]]]] = {
-            "background_image": self._content.current.background_image,
-            "background_music": self._content.current.background_music,
-            "contents": [self.__please_enter_content],
-            "previous": self._content.get_id(),
-            "narrator": self.__please_enter_name,
-        }
-        # if last is not none, using its narrator and character_images
-        _lastId: str = self.__get_last_id()
-        if len(_lastId) > 0:
-            dialogData["narrator"] = self._content.get_dialogue(self._content.section, _lastId)["narrator"]
-            dialogData["character_images"] = self._content.get_dialogue(self._content.section, _lastId)["character_images"]
-        # add data to dialogue
-        self._content.set_dialogue(self._content.get_section(), dialogId, dialogData)
+        # add new dialogue data to dialogue
+        self._content.set_dialogue(
+            self._content.get_section(),
+            dialogId,
+            self._content.current.to_map()
+            | {
+                "contents": [self.__please_enter_content],
+                "previous": self._content.get_id(),
+                "narrator": self._content.current.narrator if len(self._content.current.narrator) > 0 else self.__please_enter_name,
+                "next": {},
+            },
+        )
         # 更新数据
         super()._update_scene(dialogId)
         self.__update_ui()
@@ -363,13 +360,8 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
         self.__buttons_ui_container.draw(_surface)
         # 展示出当前可供使用的背景音乐
         self.__dialog_bgm_select.draw(_surface)
-        isCurrentBgmSelectedNull: bool = self.__dialog_bgm_select.get_selected_item() == "null"
-        if self._content.current.background_music != self.__dialog_bgm_select.get_selected_item() and not (
-            len(self._content.current.background_music) > 0 and isCurrentBgmSelectedNull is True
-        ):
-            self._content.current.background_music = (
-                "" if isCurrentBgmSelectedNull else str(self.__dialog_bgm_select.get(self.__dialog_bgm_select.get_selected_item()))
-            )
+        if self._content.current.background_music != self.__dialog_bgm_select.get_selected_item():
+            self._content.current.background_music = self.__dialog_bgm_select.get_selected_item()
             self._content.save()
             self._update_scene(self._content.get_id())
         # 展示出当前可供编辑的dialog部分
@@ -452,7 +444,9 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
                             confirm_event_tag = True
             # 移除角色立绘
             elif (Controller.get_event("delete") or Controller.get_event("hard_confirm")) and VisualNovelCharacterImageManager.character_get_click is not None:
-                self._content.current.character_images.remove(VisualNovelCharacterImageManager.character_get_click)
+                character_images = self._content.current.character_images
+                character_images.remove(VisualNovelCharacterImageManager.character_get_click)
+                self._content.current.character_images = character_images
                 self._content.save()
                 self._update_scene(self._content.get_id())
         # 显示移除角色的提示
@@ -485,7 +479,9 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
                         self._content.save()
                         self._update_background_image(self._content.current.background_image)
                 elif self.__UIContainerRight_npc.is_visible() and self.__UIContainerRight_npc.item_being_hovered is not None:
-                    self._content.current.character_images.append(self.__UIContainerRight_npc.item_being_hovered)
+                    character_images = self._content.current.character_images
+                    character_images.append(self.__UIContainerRight_npc.item_being_hovered)
+                    self._content.current.character_images = character_images
                     self._content.save()
                     VisualNovelCharacterImageManager.update(self._content.current.character_images)
 

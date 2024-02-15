@@ -41,17 +41,17 @@ class DialogNavigationWindow(AbstractFrame):
         self._if_update_needed = True
 
     # 重新添加全部的key
-    def read_all(self, dialogs_data: dict) -> None:
+    def read_all(self, dialogs_data: dict[str, dict[str, str | list[str] | dict[str, str | list[dict[str, str]]]]]) -> None:
         self.__nodes_map.clear()
         for key in dialogs_data:
             next_keys: list[str] = []
-            theNext: dict | None = dialogs_data[key].get("next")
-            if theNext is not None and len(theNext) > 0:
-                if theNext["type"] == "option":
-                    for next_keys_options in theNext["target"]:
+            theNext = pyvns.Dialogue(dialogs_data[key], key).next
+            if not theNext.is_null():
+                if theNext.has_multi_targets():
+                    for next_keys_options in theNext.get_targets():
                         next_keys.append(next_keys_options["id"])
-                elif isinstance(the_next_key := theNext["target"], (str, int)):
-                    next_keys.append(str(the_next_key))
+                else:
+                    next_keys.append(theNext.get_target())
             self.add_node(key, next_keys)
 
     # 更新选中的key
@@ -425,6 +425,11 @@ class ScriptCompiler(pyvns.Compiler):
 
 
 class DialoguesManager(pyvns.DialoguesManager):
+
+    # 兼容目的，将于3.9移除
+    def update(self, data: dict[str, dict[str, dict[str, str | list[str] | dict[str, str | list[dict[str, str]]]]]]) -> None:
+        self.set_data(data)
+
     # 指向上一个对话数据的指针
     @property
     def previous(self) -> pyvns.Dialogue | None:

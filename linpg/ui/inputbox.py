@@ -1,5 +1,3 @@
-import time
-
 _SPEECH_RECOGNITION_ENABLED: bool = False
 
 try:
@@ -177,10 +175,6 @@ class MultipleLinesInputBox(AbstractInputBox):
         super().__init__(x, y, font_size, txt_color, default_width)
         self._text: list[str] = [""]
         self.__lineId: int = 0
-        # show PySimpleGUI input box button
-        self.__show_PySimpleGUI_input_box: Button = Button.load("<&ui>button.png", ORIGIN, (self._FONT.size, self._FONT.size), 150)
-        self.__show_PySimpleGUI_input_box.set_text(ButtonComponent.text(Lang.get_text("Editor", "external_inputbox"), font_size // 3))
-        self.__show_PySimpleGUI_input_box.set_auto_resize(True)
         # start dictate button
         self.__start_dictating: Button | None = None
         # wether user is using dictation
@@ -189,7 +183,6 @@ class MultipleLinesInputBox(AbstractInputBox):
             self.__start_dictating = Button.load("<&ui>button.png", ORIGIN, (self._FONT.size, self._FONT.size), 150)
             self.__start_dictating.set_text(ButtonComponent.text(Lang.get_text("Editor", "dictate"), font_size // 3))
             self.__start_dictating.set_auto_resize(True)
-        self.__PySimpleGUIWindow: PySimpleGUI.Window | None = None
 
     def get_text(self) -> list:
         self.need_save = False
@@ -389,12 +382,6 @@ class MultipleLinesInputBox(AbstractInputBox):
                             if event.button == 1:
                                 if self.is_hovered(offSet):
                                     self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
-                                # make sure the mouse if outside the box and not press buttons
-                                elif not self.__show_PySimpleGUI_input_box.is_hovered() and (
-                                    self.__start_dictating is None or not self.__start_dictating.is_hovered()
-                                ):
-                                    self._active = False
-                                    self.need_save = True
                 elif event.type == Events.MOUSE_BUTTON_DOWN and event.button == 1 and self.is_hovered(offSet):
                     self._active = True
                     self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
@@ -424,40 +411,9 @@ class MultipleLinesInputBox(AbstractInputBox):
                             abs_pos[1] + self.__lineId * self._default_height,
                         ),
                     )
-                # 展示基于PySimpleGUI的外部输入框
-                self.__show_PySimpleGUI_input_box.set_right(self._input_box.right)
-                self.__show_PySimpleGUI_input_box.set_top(self._input_box.bottom)
-                self.__show_PySimpleGUI_input_box.draw(_surface)
-                if self.__PySimpleGUIWindow is not None:
-                    external_input_event, external_input_values = self.__PySimpleGUIWindow.read()
-                    if external_input_event == PySimpleGUI.WIN_CLOSED:
-                        self.__PySimpleGUIWindow.close()
-                        self.__PySimpleGUIWindow = None
-                    else:
-                        in_text: str | None = external_input_values.get("CONTENT")
-                        if in_text is not None:
-                            self._remove_char(Locations.EVERYWHERE)
-                            self._add_text(in_text)
-                elif self.__show_PySimpleGUI_input_box.is_hovered() and Controller.get_event("confirm"):
-                    self.__PySimpleGUIWindow = PySimpleGUI.Window(
-                        Lang.get_text("Editor", "external_inputbox"),
-                        [
-                            [
-                                PySimpleGUI.Multiline(
-                                    default_text=self.get_raw_text(), key="CONTENT", expand_x=True, expand_y=True, auto_size_text=True, enable_events=True
-                                )
-                            ],
-                            [PySimpleGUI.CloseButton(Lang.get_text("Global", "confirm"))],
-                        ],
-                        size=(Display.get_width() // 5, Display.get_height() // 5),
-                        keep_on_top=True,
-                        resizable=True,
-                        auto_size_buttons=True,
-                        auto_size_text=True,
-                    )
                 # voice to text
                 if self.__start_dictating is not None:
-                    self.__start_dictating.set_right(self.__show_PySimpleGUI_input_box.left)
+                    self.__start_dictating.set_right(self._input_box.right)
                     self.__start_dictating.set_top(self._input_box.bottom)
                     self.__start_dictating.draw(_surface)
                     if self.__start_dictating.is_hovered() and Controller.get_event("confirm"):

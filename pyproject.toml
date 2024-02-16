@@ -27,7 +27,6 @@ dependencies = [
     "numpy",
     "opencv-python",
     "pillow",
-    "PySimpleGUI==4.60.5",
     "PyYAML",
 ]
 

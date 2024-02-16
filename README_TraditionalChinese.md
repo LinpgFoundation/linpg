@@ -39,7 +39,6 @@ Linpg引擎的開發使用了模塊化的理念，並在底層實現了很多遊
 | pygame-ce   |
 | pyvns       |
 | numpy       |
-| PySimpleGUI |
 
 | 建議安裝*          |
 | ------------------ |

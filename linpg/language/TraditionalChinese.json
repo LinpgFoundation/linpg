@@ -21,7 +21,6 @@
         "delete_row": "刪除行",
         "dictate": "語音輸入",
         "example_project": "演示項目",
-        "external_inputbox": "外置输入框",
         "next": "下一個對話",
         "no_bgm": "無背景音樂",
         "npc": "立繪",
@@ -41,7 +40,6 @@
         "dont_save": "不要保存",
         "load_progress": "加載進度",
         "mute": "靜音",
-        "no": "否",
         "no_translation": "暫無翻譯",
         "progress_has_been_saved": "進度已保存",
         "reload_file": "重新加載文件",
@@ -49,8 +47,7 @@
         "save": "保存",
         "save_current_progress": "保存當前進度",
         "tip": "提示",
-        "warning": "警告",
-        "yes": "是"
+        "warning": "警告"
     },
     "Language": "繁體中文",
     "LeavingWithoutSavingWarning": {
@@ -61,11 +58,7 @@
         "leaving_without_saving_work2": "請問你想要保存你的修改嗎?",
         "progress_will_lost": "任何未被保存的進度將會被棄置"
     },
-    "LinpgVersionIncorrect": {
-        "continue_button": "繼續，我知道我在做什麽",
-        "exit_button": "不，我想退出",
-        "message": "該構建的推薦Linpg引擎版本為{0}. 然而，檢測到的Linpg版本為{1}.\n使用不兼容的Linpg版本可能導致遊戲崩潰或者存檔損壞, 即使你使用的是比推薦版本更新的Linpg構建.\n你確定要繼續運行遊戲嗎?"
-    },
+    "LinpgVersionIncorrectMessage": "該構建的推薦Linpg引擎版本為{0}. 然而, 檢測到的Linpg版本為{1}. 使用不兼容的Linpg版本可能導致遊戲崩潰或者存檔損壞, 即使你使用的是比推薦版本更新的Linpg構建. 你確定要繼續運行遊戲嗎?",
     "Numbers": [
         "零",
         "一",

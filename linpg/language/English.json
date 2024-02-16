@@ -21,7 +21,6 @@
         "delete_row": "Delete Row",
         "dictate": "Dictate",
         "example_project": "Example Project",
-        "external_inputbox": "External Inputbox",
         "next": "Next dialog",
         "no_bgm": "No background music",
         "npc": "Npc",
@@ -41,7 +40,6 @@
         "dont_save": "Don't Save",
         "load_progress": "Load progress",
         "mute": "Mute",
-        "no": "No",
         "no_translation": "Translation Needed",
         "progress_has_been_saved": "The progress has been saved.",
         "reload_file": "Reload the file",
@@ -49,8 +47,7 @@
         "save": "Save",
         "save_current_progress": "Save Current Progress",
         "tip": "Tip",
-        "warning": "Warning",
-        "yes": "Yes"
+        "warning": "Warning"
     },
     "Language": "English",
     "LeavingWithoutSavingWarning": {
@@ -61,11 +58,7 @@
         "leaving_without_saving_work2": "Do you ant to save your changes?",
         "progress_will_lost": "Any unsaved progress will be discarded"
     },
-    "LinpgVersionIncorrect": {
-        "continue_button": "Continue, I know what I am doing",
-        "exit_button": "No, I want to exit",
-        "message": "The recommended version of Linpg for this building is {0}. However, Linpg\n{1} is detected. Using an incompatible version of Linpg may result in crashing\nand file damage, even when using a newer version of Linpg than the recommended\none. Do you want to continue?"
-    },
+    "LinpgVersionIncorrectMessage": "The recommended version of Linpg for this building is {0}. However, Linpg {1} is detected. Using an incompatible version of Linpg may result in crashing and file damage, even when using a newer version of Linpg than the recommended one. Do you want to continue?",
     "Numbers": [
         "Zero",
         "One",

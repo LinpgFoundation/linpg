@@ -39,7 +39,6 @@ We always need your help to make Linpg the best it can be! No matter who you are
 | pygame-ce   |
 | pyvns       |
 | numpy       |
-| PySimpleGUI |
 
 | Recommended*       |
 | ------------------ |

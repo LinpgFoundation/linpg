@@ -164,6 +164,6 @@ The latest version that is available to the public. While this version may conta
 
 # :memo: License
 
-Linpg is licensed under **GNU Lesser General Public License, version 2.1**.
+Linpg is licensed under **LGPL(GNU Lesser General Public License)-2.1-or-later**.
 
 See **[LICENSE](https://github.com/LinpgFoundation/linpg/blob/master/LICENSE)**.

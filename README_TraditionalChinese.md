@@ -163,6 +163,6 @@ python builder.py
 
 # :memo: 版權說明
 
-Linpg 採用 **GNU Lesser General Public License, version 2.1** 許可。
+Linpg 採用 **LGPL(GNU Lesser General Public License)-2.1-or-later** 許可。
 
 版權信息請查看**[LICENSE](https://github.com/LinpgFoundation/linpg/blob/master/LICENSE)**文件。

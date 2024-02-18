@@ -156,7 +156,7 @@ class SpriteImage:
             # 列数
             columns: int = math.ceil(math.sqrt(_count))
             # 行数
-            rows: int = math.ceil(_count / columns)
+            rows: int = _count // columns if _count % columns == 0 else _count // columns + 1  # math.ceil(_count / columns)
             # 为最终sprite图获取内存空间
             sprite_surface = Surfaces.transparent((columns * max_block_size[0], rows * max_block_size[1]))
             # 当前图片index

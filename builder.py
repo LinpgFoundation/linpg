@@ -29,6 +29,7 @@ Builder.compile(
             "pygame.gfxdraw",
             "pyvns",
             "tkinter",
+            "tkinter.messagebox",
         ],
     },
 )

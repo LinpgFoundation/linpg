@@ -113,15 +113,15 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
         self.__button_select_background.set_left(padding)
         self.__button_select_npc.set_left(self.__button_select_background.get_right() + padding)
         # 页面右上方的一排按钮
-        custom_values: dict = {
+        custom_values: dict[str, int] = {
             "button_size": button_width,
             "button_y": button_y,
-            "mute_button_x": int(button_width * 8.5),
-            "save_button_x": int(button_width * 7.25),
-            "reload_button_x": int(button_width * 6),
-            "add_and_next_button_x": int(button_width * 4.75),
-            "previous_button_x": int(button_width * 3.5),
-            "delete_button_x": int(button_width * 2.25),
+            "mute_button_x": button_width * 85 // 10,
+            "save_button_x": button_width * 725 // 100,
+            "reload_button_x": button_width * 6,
+            "add_and_next_button_x": button_width * 475 // 100,
+            "previous_button_x": button_width * 35 // 10,
+            "delete_button_x": button_width * 225 // 100,
             "back_button_x": button_width,
         }
         self.__buttons_ui_container = UI.generate_container("dialog_editor_buttons", custom_values)

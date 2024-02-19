@@ -304,7 +304,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
                     dialogContent: pyvns.Dialogue = pyvns.Dialogue(self._content.get_dialogue(self._content.section, dialogIdTemp), dialogIdTemp)
                     has_narrator: bool = len(dialogContent.narrator) > 0
                     if has_narrator:
-                        narratorTemp = self.__dialog_txt_system.FONT.render(narratorTxt + ":", Colors.WHITE)  # type: ignore
+                        narratorTemp: ImageSurface = self.__dialog_txt_system.FONT.render(dialogContent.narrator + ":", Colors.WHITE)
                         self.__history_text_surface.blit(
                             narratorTemp, (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() // 10 + local_y)
                         )

@@ -10,48 +10,33 @@ class SpriteImage:
         # 加载Sprite图
         self.__SHEET: ImageSurface = Images.quickly_load(self.__PATH)
         # 加载Sprite图的数据
-        self.__DICTIONARY: dict = {}
+        self.__RECT_DICTIONARY: dict[str, list[int] | list[list[int]]] = {}
         if not self.__PATH.startswith("<"):
-            self.__DICTIONARY.update(Config.load_file(self.__PATH + ".linpg.meta"))
+            self.__RECT_DICTIONARY.update(Config.load_file(self.__PATH + ".linpg.meta"))
         elif self.__PATH != "<NULL>":
-            self.__DICTIONARY.update(Config.load_file(Images.generate_path_according_to_prefix(self.__PATH).removesuffix(".zip") + ".linpg.meta"))
+            self.__RECT_DICTIONARY.update(Config.load_file(Images.generate_path_according_to_prefix(self.__PATH).removesuffix(".zip") + ".linpg.meta"))
 
-    # 获取一个图片
-    def get(self, key: str) -> ImageSurface | tuple[ImageSurface, ...]:
-        return (
-            self.__SHEET.subsurface(self.__DICTIONARY[key])
-            if not isinstance(self.__DICTIONARY[key][0], list)
-            else tuple(self.__SHEET.subsurface(_data) for _data in self.__DICTIONARY[key])
-        )
+    # get the image / images based on given name
+    def get(self, name: str) -> ImageSurface | tuple[ImageSurface, ...]:
+        _rect: list[int] | list[list[int]] = self.__RECT_DICTIONARY[name]
+        return self.__SHEET.subsurface(_rect) if not isinstance(_rect[0], list) else tuple(self.__SHEET.subsurface(_data) for _data in _rect)  # type: ignore
 
-    # 是否存在key
-    def contain(self, key: str) -> bool:
-        return key in self.__DICTIONARY
+    # if given name exists in the sprite
+    def contain(self, name: str) -> bool:
+        return name in self.__RECT_DICTIONARY
 
-    # 将所有图片以dict的形式返回
+    # return all the images in the form of dict
     def to_dict(self) -> dict[str, ImageSurface | tuple[ImageSurface, ...]]:
         # 将所有Sprite图上的图片以subsurface的形式append进字典中
         result: dict[str, ImageSurface | tuple[ImageSurface, ...]] = {}
-        for key in self.__DICTIONARY:
+        for key in self.__RECT_DICTIONARY:
             result[key] = self.get(key)
         # 将结果以字典的形式返回
         return result
 
-    # 将所有图片以tuple的形式返回
-    def to_tuple(self) -> tuple:
-        return tuple(self.to_dict().values())
-
-    # 返回一个复制品
+    # return a copy
     def copy(self) -> "SpriteImage":
         return SpriteImage(self.__PATH)
-
-    # 获取Sprite图（这是很危险的操作，强烈不建议在引擎外使用）
-    def get_SHEET(self) -> ImageSurface:
-        return self.__SHEET
-
-    # 设置Sprite图（这是很危险的操作，强烈不建议在引擎外使用）
-    def set_SHEET(self, SHEET: ImageSurface) -> None:
-        self.__SHEET = SHEET
 
     # 拆分一个未知格式的像素图，字典key为动作名称，value分别为xStart, yStart, width, height, frameCount
     @staticmethod

@@ -24,12 +24,12 @@ Builder.compile(
             "PIL.Image",
             "PIL.ImageColor",
             "PIL.ImageFilter",
-            "PySimpleGUI",
             "numpy",
             "pygame",
             "pygame.gfxdraw",
             "pyvns",
             "tkinter",
+            "tkinter.messagebox",
         ],
     },
 )

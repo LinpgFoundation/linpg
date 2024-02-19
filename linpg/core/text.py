@@ -1,7 +1,8 @@
 from .surface import *
 
 
-class AbstractTextSurface(GameObject2d, Hidable, metaclass=ABCMeta):
+# 文字类
+class TextSurface(GameObject2d, Hidable):
     def __init__(self, text: str, x: int_f, y: int_f, size: int_f, _color: color_liked = Colors.BLACK, _bold: bool = False, _italic: bool = False) -> None:
         GameObject2d.__init__(self, x, y)
         Hidable.__init__(self)
@@ -11,24 +12,17 @@ class AbstractTextSurface(GameObject2d, Hidable, metaclass=ABCMeta):
         self.__bold: bool = _bold
         self.__italic: bool = _italic
         self.__alpha: int = 255
-
-    @abstractmethod
-    def _update_text_surface(self) -> None:
-        EXCEPTION.fatal("_update_text_surface()", 1)
+        self.__text_surface: ImageSurface | None = None
+        self.__outline_thickness: int = 0
+        self.__outline_color: tuple[int, int, int, int] = Colors.BLACK
+        # 更新文字图层（需作为初始化的最后一步）
+        self._update_text_surface()
 
     def get_text(self) -> str:
         return self.__text
 
-    def set_text(self, value: str) -> None:
-        self.__text = value
-        self._update_text_surface()
-
     def get_font_size(self) -> int:
         return self.__size
-
-    def set_font_size(self, value: int) -> None:
-        self.__size = value
-        self._update_text_surface()
 
     def get_color(self) -> tuple[int, int, int, int]:
         return self.__color
@@ -40,34 +34,11 @@ class AbstractTextSurface(GameObject2d, Hidable, metaclass=ABCMeta):
     def get_bold(self) -> bool:
         return self.__bold
 
-    def set_bold(self, value: bool) -> None:
-        self.__bold = value
-        self._update_text_surface()
-
     def get_italic(self) -> bool:
         return self.__italic
 
-    def set_italic(self, value: bool) -> None:
-        self.__italic = value
-        self._update_text_surface()
-
     def get_alpha(self) -> int:
         return self.__alpha
-
-    # 设置透明度
-    def set_alpha(self, value: int) -> None:
-        self.__alpha = value
-
-
-# 高级文字类
-class TextSurface(AbstractTextSurface):
-    def __init__(self, text: str, x: int_f, y: int_f, size: int_f, _color: color_liked = Colors.BLACK, _bold: bool = False, _italic: bool = False) -> None:
-        super().__init__(text, x, y, size, _color, _bold, _italic)
-        self.__text_surface: ImageSurface | None = None
-        self.__outline_thickness: int = 0
-        self.__outline_color: tuple[int, int, int, int] = Colors.BLACK
-        # 更新文字图层（需作为初始化的最后一步）
-        self._update_text_surface()
 
     def _update_text_surface(self) -> None:
         if len(self.get_text()) == 0:
@@ -101,24 +72,28 @@ class TextSurface(AbstractTextSurface):
 
     def set_text(self, value: str) -> None:
         if value != self.get_text():
-            super().set_text(value)
+            self.__text = value
+            self._update_text_surface()
             if self.__text_surface is not None and self.get_alpha() != 255:
                 self.__text_surface.set_alpha(self.get_alpha())
 
     def set_font_size(self, value: int) -> None:
         if value != self.__size:
-            super().set_font_size(value)
+            self.__size = value
+            self._update_text_surface()
 
     def set_bold(self, value: bool) -> None:
         if self.get_bold() != value:
-            super().set_bold(value)
+            self.__bold = value
+            self._update_text_surface()
 
     def set_italic(self, value: bool) -> None:
         if self.get_italic() != value:
-            super().set_italic(value)
+            self.__italic = value
+            self._update_text_surface()
 
     def set_alpha(self, value: int) -> None:
-        super().set_alpha(value)
+        self.__alpha = value
         if self.__text_surface is not None:
             self.__text_surface.set_alpha(self.get_alpha())
 

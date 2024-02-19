@@ -52,27 +52,29 @@ class VisualNovelCharacterImageManager:
     def __display_character(cls, _name_data: pyvns.Naming, x: int, alpha: int, _surface: ImageSurface) -> None:
         if alpha > 0:
             # 确保角色存在
-            if _name_data.name not in cls.__character_image:
+            if _name_data.get_name() not in cls.__character_image:
                 # 如果不能存在，则加载角色
-                imgTemp: StaticImage = StaticImage(Specification.get_directory("character_image", _name_data.name), 0, 0, cls.__GET_WIDTH(), cls.__GET_WIDTH())
+                imgTemp: StaticImage = StaticImage(
+                    Specification.get_directory("character_image", _name_data.get_name()), 0, 0, cls.__GET_WIDTH(), cls.__GET_WIDTH()
+                )
                 # 以tuple的形式保存立绘，index 0 是正常图片， index 1 是深色图片
-                cls.__character_image[_name_data.name] = (imgTemp, imgTemp.copy())
+                cls.__character_image[_name_data.get_name()] = (imgTemp, imgTemp.copy())
                 # 生成深色图片
-                cls.__character_image[_name_data.name][1].add_darkness(cls.DARKNESS)
+                cls.__character_image[_name_data.get_name()][1].add_darkness(cls.DARKNESS)
             # 是否角色沉默
-            isNpcSilent: bool = "silent" in _name_data.tags
+            isNpcSilent: bool = _name_data.contains_tag("silent")
             # 获取npc立绘的指针
-            img: StaticImage = cls.__character_image[_name_data.name][1 if isNpcSilent else 0]
+            img: StaticImage = cls.__character_image[_name_data.get_name()][1 if isNpcSilent else 0]
             img.set_size(cls.__GET_WIDTH(), cls.__GET_WIDTH())
             img.set_alpha(alpha)
             img.set_pos(x, Display.get_height() - cls.__GET_WIDTH())
             # 获取tag长度
-            _tags_len = len(_name_data.tags)
+            _tags_len = len(_name_data.get_tags())
             # 不需要渲染silent标签
             if isNpcSilent is True:
                 _tags_len -= 1
             if _tags_len > 0:
-                for _tag in _name_data.tags:
+                for _tag in _name_data.get_tags():
                     if _tag != "silent":
                         cls.FILTERS[_tag].render(img, _surface, isNpcSilent)
             else:
@@ -81,7 +83,7 @@ class VisualNovelCharacterImageManager:
             # 如果是开发模式
             if cls.dev_mode is True and img.is_hovered():
                 img.draw_outline(_surface)
-                cls.character_get_click = str(_name_data)
+                cls.character_get_click = _name_data.to_string()
 
     # 根据参数计算立绘的x坐标
     @staticmethod

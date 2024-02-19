@@ -39,7 +39,6 @@ Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游
 | pygame-ce   |
 | pyvns       |
 | numpy       |
-| PySimpleGUI |
 
 | 建议安装*          |
 | ------------------ |
@@ -164,4 +163,6 @@ python builder.py
 
 # :memo: 版权说明
 
-版权信息请查看**LICENSE**文件。
+Linpg 采用 **LGPL(GNU Lesser General Public License)-2.1-or-later** 许可。
+
+版权信息请查看**[LICENSE](https://github.com/LinpgFoundation/linpg/blob/master/LICENSE)**文件。

@@ -153,9 +153,7 @@ class DecorationImagesModule:
         sheet_ref: SpriteImage | None = (
             cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET
             if cls.DEFAULT_DECORATION_IMAGE_SPRITE_SHEET.contain(_type)
-            else cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET
-            if cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.contain(_type)
-            else None
+            else cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET if cls.CUSTOM_DECORATION_IMAGE_SPRITE_SHEET.contain(_type) else None
         )
         # 如果图片存在，则reference不为None
         if sheet_ref is not None:

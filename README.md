@@ -39,7 +39,6 @@ We always need your help to make Linpg the best it can be! No matter who you are
 | pygame-ce   |
 | pyvns       |
 | numpy       |
-| PySimpleGUI |
 
 | Recommended*       |
 | ------------------ |
@@ -165,4 +164,6 @@ The latest version that is available to the public. While this version may conta
 
 # :memo: License
 
-Please check **LICENSE**.
+Linpg is licensed under **LGPL(GNU Lesser General Public License)-2.1-or-later**.
+
+See **[LICENSE](https://github.com/LinpgFoundation/linpg/blob/master/LICENSE)**.

@@ -91,7 +91,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
     # 更新场景
     def _update_scene(self, dialog_id: str) -> None:
         # 如果dialog Id存在
-        if dialog_id in self._content.get_section_content():
+        if self._content.contains_dialogue(self._content.section, dialog_id):
             super()._update_scene(dialog_id)
         else:
             EXCEPTION.fatal(f"The dialog id {dialog_id} does not exist!")
@@ -122,10 +122,10 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
             self.__has_reached_the_end = True
             self.stop()
         else:
-            match self._content.current.next.type:
+            match self._content.current.next.get_type():
                 # 默认转到下一个对话
                 case "default":
-                    self._update_scene(self._content.current.next.target)
+                    self._update_scene(self._content.current.next.get_target())
                 # 如果是多选项，则不用处理
                 case "option":
                     pass
@@ -133,7 +133,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
                 case "scene":
                     self._fade(_surface)
                     # 更新场景
-                    self._update_scene(str(self._content.current.next.target))
+                    self._update_scene(str(self._content.current.next.get_target()))
                     self.__dialog_txt_system.reset()
                     self.__is_fading_out = False
                     self._fade(_surface)
@@ -198,7 +198,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
         BLACK_CURTAIN: ImageSurface = Surfaces.colored(_surface.get_size(), Colors.BLACK)
         BLACK_CURTAIN.set_alpha(0)
         # 创建视频文件
-        VIDEO: VideoPlayer = VideoPlayer(Specification.get_directory("movie", self._content.current.next.target))
+        VIDEO: VideoPlayer = VideoPlayer(Specification.get_directory("movie", self._content.current.next.get_target()))
         VIDEO.pre_init()
         # 播放主循环
         while is_playing is True and VIDEO.is_playing() is True:
@@ -265,7 +265,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
             # 如果玩家需要并做出了选择
             elif self._dialog_options_container.item_being_hovered >= 0:
                 # 获取下一个对话的id
-                _option: dict = self._content.current.next["target"][self._dialog_options_container.item_being_hovered]
+                _option: dict = self._content.current.next.get_targets()[self._dialog_options_container.item_being_hovered]
                 # 记录玩家选项
                 self.__dialog_options[self._content.get_id()] = {"id": self._dialog_options_container.item_being_hovered, "target": _option["id"]}
                 # 更新场景
@@ -284,7 +284,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
         if (
             self.__dialog_txt_system.is_all_played()
             and self.__dialog_txt_system.is_visible()
-            and self._content.current.next.type == "option"
+            and self._content.current.next.get_type() == "option"
             and self._dialog_options_container.is_hidden()
         ):
             self._get_dialog_options_container_ready()
@@ -301,29 +301,29 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
                 dialogIdTemp: str = "head"
                 local_y: int = self.__history_surface_local_y
                 while True:
-                    narratorTxt: str | None = self._content.get_dialog(_id=dialogIdTemp).get("narrator")
-                    has_narrator: bool = narratorTxt is not None and len(narratorTxt) > 0
+                    dialogContent: pyvns.Dialogue = pyvns.Dialogue(self._content.get_dialogue(self._content.section, dialogIdTemp), dialogIdTemp)
+                    has_narrator: bool = len(dialogContent.narrator) > 0
                     if has_narrator:
-                        narratorTemp = self.__dialog_txt_system.FONT.render(narratorTxt + ":", Colors.WHITE)  # type: ignore
+                        narratorTemp: ImageSurface = self.__dialog_txt_system.FONT.render(dialogContent.narrator + ":", Colors.WHITE)
                         self.__history_text_surface.blit(
                             narratorTemp, (Display.get_width() * 0.14 - narratorTemp.get_width(), Display.get_height() // 10 + local_y)
                         )
-                    for i, _text in enumerate(self._content.get_dialog(_id=dialogIdTemp).get("contents", [])):
+                    for i, _text in enumerate(dialogContent.contents):
                         if has_narrator:
                             if i == 0:
                                 _text = '[ "' + _text
                             # 这里不用elif，以免当对话行数为一的情况
-                            if i == len(self._content.get_dialog(_id=dialogIdTemp)["contents"]) - 1:
+                            if i == len(dialogContent.contents) - 1:
                                 _text += '" ]'
                         self.__history_text_surface.blit(
                             self.__dialog_txt_system.FONT.render(_text, Colors.WHITE), (Display.get_width() * 0.15, Display.get_height() // 10 + local_y)
                         )
                         local_y += self.__dialog_txt_system.FONT.size * 3 // 2
                     if dialogIdTemp != self._content.get_id():
-                        match str(self._content.get_dialog(_id=dialogIdTemp)["next"]["type"]):
+                        match dialogContent.next.get_type():
                             case "default" | "scene":
-                                if (target_temp := self._content.get_dialog(_id=dialogIdTemp)["next"]["target"]) is not None:
-                                    dialogIdTemp = str(target_temp)
+                                if dialogContent.has_next():
+                                    dialogIdTemp = dialogContent.next.get_target()
                                 else:
                                     break
                             case "option":
@@ -333,9 +333,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
                                 )
                                 self.__history_text_surface.blit(
                                     self.__dialog_txt_system.FONT.render(
-                                        str(
-                                            self._content.get_dialog(_id=dialogIdTemp)["next"]["target"][int(self.__dialog_options[dialogIdTemp]["id"])]["text"]
-                                        ),
+                                        str(dialogContent.next.get_targets()[int(self.__dialog_options[dialogIdTemp]["id"])]["text"]),
                                         (0, 191, 255),
                                     ),
                                     (Display.get_width() * 0.15, Display.get_height() // 10 + local_y),

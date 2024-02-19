@@ -128,7 +128,6 @@ class Numbers:
 
 # 颜色管理
 class Colors:
-
     """常用颜色"""
 
     # 白色
@@ -250,13 +249,13 @@ class Draw:
 
     # 画一条抗锯齿线
     @staticmethod
-    def aaline(_surface: ImageSurface, color: tuple[int, int, int, int], start_pos: tuple[int, int], end_pos: tuple[int, int], blend: int = 1) -> None:
+    def aaline(_surface: ImageSurface, color: tuple[int, int, int, int], start_pos: tuple[int, int], end_pos: tuple[int, int]) -> None:
         if start_pos[0] == end_pos[0]:
             pygame.gfxdraw.vline(_surface, start_pos[0], start_pos[1], end_pos[1], color)
         elif start_pos[1] == end_pos[1]:
             pygame.gfxdraw.hline(_surface, start_pos[0], end_pos[0], end_pos[1], color)
         else:
-            pygame.draw.aaline(_surface, color, start_pos, end_pos, blend)
+            pygame.draw.aaline(_surface, color, start_pos, end_pos)
 
     # 画一条线
     @staticmethod

@@ -39,7 +39,6 @@ Linpg引擎的開發使用了模塊化的理念，並在底層實現了很多遊
 | pygame-ce   |
 | pyvns       |
 | numpy       |
-| PySimpleGUI |
 
 | 建議安裝*          |
 | ------------------ |
@@ -164,4 +163,6 @@ python builder.py
 
 # :memo: 版權說明
 
-版權信息請查看**LICENSE**文件。
+Linpg 採用 **LGPL(GNU Lesser General Public License)-2.1-or-later** 許可。
+
+版權信息請查看**[LICENSE](https://github.com/LinpgFoundation/linpg/blob/master/LICENSE)**文件。

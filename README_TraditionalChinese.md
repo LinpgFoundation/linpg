@@ -26,9 +26,9 @@ Linpg引擎的開發使用了模塊化的理念，並在底層實現了很多遊
 
 #### [A-story-of-us](https://github.com/LinpgFoundation/A-story-of-us), 一款僅包含約 100 行代碼的視覺小說遊戲。對於任何對 Linpg 感興趣的人來說，這都是一個很好的起點。
 
-![](https://github.com/TigeiaWorkshop/GFL-LastWish/raw/master/Assets/image/screenshot/battle.png)
+![](https://github.com/LinpgFoundation/GFL-LastWish/raw/master/Assets/image/screenshot/battle.png)
 
-#### [GFL-Last Wish](https://github.com/TigeiaWorkshop/GFL-LastWish ), 一款回合製戰略遊戲，展示了 Linpg 引擎的一些先進功能和無限潛力。
+#### [GFL-Last Wish](https://github.com/LinpgFoundation/GFL-LastWish ), 一款回合製戰略遊戲，展示了 Linpg 引擎的一些先進功能和無限潛力。
 
 
 

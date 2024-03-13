@@ -26,9 +26,9 @@ Linpg引擎的开发使用了模块化的理念，并在底层实现了很多游
 
 #### [A-story-of-us](https://github.com/LinpgFoundation/A-story-of-us), 一款仅包含约 100 行代码的视觉小说游戏。对于任何对 Linpg 感兴趣的人来说，这都是一个很好的起点。
 
-![](https://github.com/TigeiaWorkshop/GFL-LastWish/raw/master/Assets/image/screenshot/battle.png)
+![](https://github.com/LinpgFoundation/GFL-LastWish/raw/master/Assets/image/screenshot/battle.png)
 
-#### [GFL-Last Wish](https://github.com/TigeiaWorkshop/GFL-LastWish ), 一款回合制战略游戏，展示了 Linpg 引擎的一些先进功能和无限潜力。
+#### [GFL-Last Wish](https://github.com/LinpgFoundation/GFL-LastWish ), 一款回合制战略游戏，展示了 Linpg 引擎的一些先进功能和无限潜力。
 
 
 

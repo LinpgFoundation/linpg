@@ -26,9 +26,9 @@ We always need your help to make Linpg the best it can be! No matter who you are
 
 #### [A-story-of-us](https://github.com/LinpgFoundation/A-story-of-us), a visual novel game only contains around 100 lines of code. A great starting point for anyone who is interested in Linpg.
 
-![](https://github.com/TigeiaWorkshop/GFL-LastWish/raw/master/Assets/image/screenshot/battle.png)
+![](https://github.com/LinpgFoundation/GFL-LastWish/raw/master/Assets/image/screenshot/battle.png)
 
-#### [GFL-Last Wish](https://github.com/TigeiaWorkshop/GFL-LastWish ), a turn-based strategy game that demonstrates some advanced features and the unlimited potential of the Linpg engine.
+#### [GFL-Last Wish](https://github.com/LinpgFoundation/GFL-LastWish ), a turn-based strategy game that demonstrates some advanced features and the unlimited potential of the Linpg engine.
 
 
 

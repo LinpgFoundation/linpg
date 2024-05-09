@@ -41,17 +41,16 @@ class DialogNavigationWindow(AbstractFrame):
         self._if_update_needed = True
 
     # 重新添加全部的key
-    def read_all(self, dialogs_data: dict[str, dict[str, str | list[str] | dict[str, str | list[dict[str, str]]]]]) -> None:
+    def read_all(self, dialogs_data: dict[str, pyvns.Dialogue]) -> None:
         self.__nodes_map.clear()
-        for key in dialogs_data:
+        for key, theDialog in dialogs_data.items():
             next_keys: list[str] = []
-            theNext = pyvns.Dialogue(dialogs_data[key], key).next
-            if not theNext.is_null():
-                if theNext.has_multi_targets():
-                    for next_keys_options in theNext.get_targets():
+            if not theDialog.next.is_null():
+                if theDialog.next.has_multi_targets():
+                    for next_keys_options in theDialog.next.get_targets():
                         next_keys.append(next_keys_options["id"])
                 else:
-                    next_keys.append(theNext.get_target())
+                    next_keys.append(theDialog.next.get_target())
             self.add_node(key, next_keys)
 
     # 更新选中的key
@@ -425,10 +424,6 @@ class ScriptCompiler(pyvns.Compiler):
 
 
 class DialoguesManager(pyvns.DialoguesManager):
-
-    # 兼容目的，将于3.9移除
-    def update(self, data: dict[str, dict[str, dict[str, str | list[str] | dict[str, str | list[dict[str, str]]]]]]) -> None:
-        self.set_data(data)
 
     # 指向上一个对话数据的指针
     @property

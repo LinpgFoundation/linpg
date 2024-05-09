@@ -60,7 +60,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
         return self.get_data_of_parent_game_system() | {
-            "dialog_id": self._content.get_id(),
+            "dialog_id": self._content.get_current_dialogue_id(),
             "section": self._content.get_section(),
             "type": "dialog",
             "linpg": Info.get_current_version(),
@@ -74,10 +74,10 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
     def new(self, chapterType: str, chapterId: int, section: str, projectName: str | None = None, dialogId: str = "head") -> None:
         # 初始化关键参数
         self._initialize(chapterType, chapterId, projectName)
-        # 对白id
-        self._content.set_id(dialogId)
         # 播放的部分
         self._content.set_section(section)
+        # 对白id
+        self._content.set_current_dialogue_id(dialogId)
         # 根据已有参数载入数据
         self._load_content()
 
@@ -96,7 +96,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
         elif "head" not in self._content.get_current_section_dialogues():
             EXCEPTION.fatal(f'You need to set up a "head" for the selected dialog "{self._content.get_section()}".')
         # 将数据载入刚初始化的模块中
-        self._update_scene(self._content.get_id())
+        self._update_scene(self._content.get_current_dialogue_id())
 
     # 更新背景图片
     def _update_background_image(self, image_name: str) -> None:
@@ -123,7 +123,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
     # 更新场景
     def _update_scene(self, dialog_id: str) -> None:
         # 更新dialogId
-        self._content.set_id(dialog_id)
+        self._content.set_current_dialogue_id(dialog_id)
         # 更新立绘和背景
         VisualNovelCharacterImageManager.update(self._content.current.character_images)
         self._update_background_image(self._content.current.background_image)

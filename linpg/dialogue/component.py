@@ -435,11 +435,6 @@ class DialoguesManager(pyvns.DialoguesManager):
     def current(self) -> pyvns.Dialogue:
         return self.get_current()
 
-    # 指向之前对话数据的指针
-    @property
-    def last(self) -> pyvns.Dialogue | None:
-        return self.get_last()
-
     @property
     def section(self) -> str:
         return self.get_section()

@@ -23,7 +23,7 @@ classifiers = [
 ]
 dependencies = [
     "pygame-ce>=2.4.0",
-    "pyvns>=2.1",
+    "pyvns>=2.2",
     "numpy",
     "opencv-python",
     "pillow",

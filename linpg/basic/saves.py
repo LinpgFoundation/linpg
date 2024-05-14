@@ -111,3 +111,40 @@ class Saves:
         zipFile.close()
         # 返回数据
         return cls.Progress(_data, _screenshot, str(_info["createdAt"]), int(_info["slotId"]))
+
+
+# achievements management system
+class Achievements:
+
+    __NAME: Final[str] = "__achievements__"
+    __DATABASE: Final[dict[str, dict[str, bool | int]]] = Specification.get_dict_ref("Achievements")
+
+    # lock a achievement
+    @classmethod
+    def lock(cls, achievement: str) -> None:
+        if PersistentVariables.contains(cls.__NAME):
+            PersistentVariables.set(cls.__NAME, achievement, value=False)
+
+    # unlock a achievement
+    @classmethod
+    def unlock(cls, achievement: str) -> None:
+        if not PersistentVariables.contains(cls.__NAME):
+            PersistentVariables.set(cls.__NAME, value={})
+        PersistentVariables.set(cls.__NAME, achievement, value=True)
+
+    # is achievement hidden to player
+    @classmethod
+    def is_hidden(cls, achievement: str) -> bool:
+        return bool(cls.__DATABASE[achievement].get("hidden", False))
+
+    # whether a achievement has been achieved
+    @classmethod
+    def has_achieved(cls, achievement: str) -> bool:
+        if not PersistentVariables.contains(cls.__NAME):
+            return False
+        result: bool | None = PersistentVariables.try_get_bool(cls.__NAME, achievement)
+        return result if result is not None else False
+
+    @classmethod
+    def get_list(cls) -> list[str]:
+        return sorted(cls.__DATABASE, key=lambda x: cls.__DATABASE[x]["id"])

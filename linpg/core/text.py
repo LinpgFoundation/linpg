@@ -27,7 +27,7 @@ class TextSurface(GameObject2d, Hidable):
     def get_color(self) -> tuple[int, int, int, int]:
         return self.__color
 
-    def set_color(self, _color: str) -> None:
+    def set_color(self, _color: color_liked) -> None:
         self.__color = Colors.get(_color)
         self._update_text_surface()
 
@@ -127,7 +127,7 @@ class ResizeWhenHoveredTextSurface(TextSurface):
         self.__text_when_hovered.set_center(self.centerx, self.centery)
         self.__is_hovered: bool = False
 
-    def set_color(self, _color: str) -> None:
+    def set_color(self, _color: color_liked) -> None:
         super().set_color(_color)
         self.__text_when_hovered.set_color(_color)
 

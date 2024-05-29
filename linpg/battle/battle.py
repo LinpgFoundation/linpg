@@ -21,8 +21,6 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
         self.__map: AbstractTileMap | None = None
         # 方格标准尺寸
         self._standard_tile_size: int = Display.get_width() // 10
-        # 天气系统
-        self._weather_system: WeatherSystem = WeatherSystem()
         # 当前鼠标位置上的tile块
         self._tile_is_hovering: tuple[int, int] | None = None
 

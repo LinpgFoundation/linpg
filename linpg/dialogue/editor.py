@@ -147,7 +147,11 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
         original_data: dict = Config.try_load_file_if_exists(self.get_data_file_path())
-        original_data["dialogs"] = self.__get_the_stuff_need_save()
+        # remove "dialogs" as "dialogs" keyword is deprecated
+        if "dialogs" in original_data:
+            original_data.pop("dialogs")
+        # save data
+        original_data["dialogues"] = self.__get_the_stuff_need_save()
         return original_data
 
     # 更新背景选项栏
@@ -186,8 +190,11 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
         VisualNovelCharacterImageManager.dev_mode = True
         # 加载内容数据
         self._content.clear()
-        if (_dialogs := Config.try_load_file_if_exists(self.get_data_file_path()).get("dialogs")) is not None:
-            self._content.update(_dialogs)
+        dialogs_data: dict = Config.try_load_file_if_exists(self.get_data_file_path())
+        if "dialogues" in dialogs_data:
+            self._content.update(dialogs_data["dialogues"])
+        elif "dialogs" in dialogs_data:
+            self._content.update(dialogs_data["dialogs"])
         else:
             # 则尝试加载后仍然出现内容为空的情况
             EXCEPTION.inform("No valid dialog content found.")
@@ -338,7 +345,7 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
                         # 退出
                         case "back":
                             # if no change were made
-                            if Config.try_load_file_if_exists(self.get_data_file_path()).get("dialogs") == self.__get_the_stuff_need_save() is True:
+                            if Config.try_load_file_if_exists(self.get_data_file_path()).get("dialogues") == self.__get_the_stuff_need_save() is True:
                                 self.stop()
                             else:
                                 self.__no_save_warning.set_visible(True)
@@ -381,7 +388,9 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
             # 移除角色立绘
             elif (Controller.get_event("delete") or Controller.get_event("hard_confirm")) and VisualNovelCharacterImageManager.character_get_click is not None:
                 character_images = self._content.current.character_images
-                character_images.remove(VisualNovelCharacterImageManager.character_get_click)
+                # adding check to avoid removing during fade out stage
+                if VisualNovelCharacterImageManager.character_get_click in character_images:
+                    character_images.remove(VisualNovelCharacterImageManager.character_get_click)
                 self._content.current.character_images = character_images
                 self._update_scene(self._content.get_current_dialogue_id())
         # 显示移除角色的提示

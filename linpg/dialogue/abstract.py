@@ -86,11 +86,11 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
     # 载入数据
     def _load_content(self) -> None:
         # 如果玩家所选择的语种有对应的翻译，则优先读取，否则使用开发者的默认语种
-        self._content.update(
-            Config.load_file(
-                self.get_data_file_path() if os.path.exists(self.get_data_file_path()) else self.get_dialog_file_location(self.get_default_lang())
-            ).get("dialogs", {})
+        content_data: dict = Config.load_file(
+            self.get_data_file_path() if os.path.exists(self.get_data_file_path()) else self.get_dialog_file_location(self.get_default_lang())
         )
+        # try fetch "dialogs" for backward compatibility
+        self._content.update(content_data.get("dialogues", content_data.get("dialogs")))
 
     # 更新背景图片
     def _update_background_image(self, image_name: str) -> None:

@@ -383,8 +383,15 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             self._modify_mode = self._MODIFY.DISABLE
             self._show_barrier_mask = False
         # 直接用del按键
-        elif Controller.get_event("delete") and self._tile_is_hovering is not None:
-            self.delete_entity_on_tile(self._tile_is_hovering)
+        elif Controller.get_event("delete"):
+            any_deleted: bool = False
+            for theEntities in self._entities_data.values():
+                for e in tuple(theEntities.keys()):
+                    if theEntities[e].get_selected():
+                        theEntities.pop(e)
+                        any_deleted = True
+            if not any_deleted and self._tile_is_hovering is not None:
+                self.delete_entity_on_tile(self._tile_is_hovering)
 
         # 画出地图
         self._display_map(_surface)

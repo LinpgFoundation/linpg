@@ -15,10 +15,6 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
         )
         # 加载对话框系统
         self.__dialog_txt_system: EditableDialogBox = EditableDialogBox(self._FONT_SIZE)
-        # 默认内容
-        self.__please_enter_content: str = ""
-        # 默认叙述者名
-        self.__please_enter_name: str = ""
         # 存放并管理编辑器上方所有按钮的容器
         self.__buttons_ui_container: GameObjectsDictContainer | None = None
         # 背景音乐选择 DropDown ui
@@ -99,15 +95,14 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
         )
         self.__UIContainerRightButton.rotate(90)
         # UI按钮
-        CONFIG = Lang.get_texts("Editor")
         button_y: int = Display.get_height() * 3 // 100
         font_size: int = button_width // 3
         # 重置控制容器转换的按钮
         self.__button_select_background.set_pos(0, button_y * 3 // 2)
-        self.__button_select_background.set_text(ButtonComponent.text(str(CONFIG["background"]), font_size * 2 / 3, alpha_when_not_hover=150))
+        self.__button_select_background.set_text(ButtonComponent.text(Lang.get_text("Editor", "background"), font_size * 2 / 3, alpha_when_not_hover=150))
         self.__button_select_background.set_auto_resize(True)
         self.__button_select_npc.set_pos(0, button_y * 3 // 2)
-        self.__button_select_npc.set_text(ButtonComponent.text(str(CONFIG["npc"]), font_size * 2 // 3, alpha_when_not_hover=150))
+        self.__button_select_npc.set_text(ButtonComponent.text(Lang.get_text("Editor", "npc"), font_size * 2 // 3, alpha_when_not_hover=150))
         self.__button_select_npc.set_auto_resize(True)
         padding: int = (container_width - self.__button_select_background.get_width() - self.__button_select_npc.get_width()) // 3
         self.__button_select_background.set_left(padding)
@@ -125,8 +120,6 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
             "back_button_x": button_width,
         }
         self.__buttons_ui_container = UI.generate_container("dialog_editor_buttons", custom_values)
-        self.__please_enter_content = str(CONFIG["please_enter_content"])
-        self.__please_enter_name = str(CONFIG["please_enter_name"])
         # 更新可选择的背景音乐
         self.__dialog_bgm_select.clear()
         self.__dialog_bgm_select.set_pos(button_width * 11, button_y + font_size * 3)
@@ -135,7 +128,9 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
         for file_name in os.listdir(Specification.get_directory("music")):
             self.__dialog_bgm_select.set(file_name, file_name)
         # 移除按钮
-        self.__delete_npc_prompt = ArtisticFont.render_description_box(CONFIG["delete_npc"], Colors.BLACK, self._FONT_SIZE, self._FONT_SIZE // 5, Colors.WHITE)
+        self.__delete_npc_prompt = ArtisticFont.render_description_box(
+            Lang.get_text("Editor", "delete_npc"), Colors.BLACK, self._FONT_SIZE, self._FONT_SIZE // 5, Colors.WHITE
+        )
         # 初始化用于选择小说脚本的key的下拉菜单
         self.__dialog_section_selection.clear()
         self.__dialog_section_selection.set_pos(button_width * 11, button_y + font_size)
@@ -152,7 +147,11 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
         original_data: dict = Config.try_load_file_if_exists(self.get_data_file_path())
-        original_data["dialogs"] = self.__get_the_stuff_need_save()
+        # remove "dialogs" as "dialogs" keyword is deprecated
+        if "dialogs" in original_data:
+            original_data.pop("dialogs")
+        # save data
+        original_data["dialogues"] = self.__get_the_stuff_need_save()
         return original_data
 
     # 更新背景选项栏
@@ -178,7 +177,12 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
     # 加载默认模板
     def _load_template(self) -> None:
         self._content.set_section("dialog_example")
-        self._content.set_current_section_dialogues({})
+        self._content.set_current_section_dialogues({"head": self._get_template()})
+
+    # get template
+    @staticmethod
+    def _get_template() -> pyvns.dialogue_data_t:
+        return {"contents": [Lang.get_text("Editor", "please_enter_content")], "narrator": Lang.get_text("Editor", "please_enter_name")}
 
     # 读取章节信息
     def _load_content(self) -> None:
@@ -186,29 +190,24 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
         VisualNovelCharacterImageManager.dev_mode = True
         # 加载内容数据
         self._content.clear()
-        if (_dialogs := Config.try_load_file_if_exists(self.get_data_file_path()).get("dialogs")) is not None:
-            self._content.set_data(_dialogs)
+        dialogs_data: dict = Config.try_load_file_if_exists(self.get_data_file_path())
+        if "dialogues" in dialogs_data:
+            self._content.update(dialogs_data["dialogues"])
+        elif "dialogs" in dialogs_data:
+            self._content.update(dialogs_data["dialogs"])
         else:
             # 则尝试加载后仍然出现内容为空的情况
             EXCEPTION.inform("No valid dialog content found.")
             # 则加载默认模板
             self._load_template()
         # 更新场景
-        self._update_scene(self._content.get_id())
-        # 如果有不同，应该立即保存
-        if not self.__no_changes_were_made():
-            self._save()
+        self._update_scene(self._content.get_current_dialogue_id())
 
     # 分离需要保存的数据
     def __get_the_stuff_need_save(self) -> dict[str, dict[str, dict]]:
         self._content.current.narrator = self.__dialog_txt_system.get_narrator()
         self._content.current.contents = self.__dialog_txt_system.get_content()
-        self._content.save()
-        return self._content.get_data()
-
-    # 检查是否有任何改动
-    def __no_changes_were_made(self) -> bool:
-        return Config.try_load_file_if_exists(self.get_data_file_path()).get("dialogs") == self.__get_the_stuff_need_save()
+        return self._content.to_dict()
 
     # 更新UI
     def __update_ui(self) -> None:
@@ -226,13 +225,13 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
             EXCEPTION.fatal("The ui has not been correctly initialized.")
         # 更新dialog navigation窗口
         self.__dialog_navigation_window.read_all(self._content.get_current_section_dialogues())
-        self.__dialog_navigation_window.update_selected(self._content.get_id())
+        self.__dialog_navigation_window.update_selected(self._content.get_current_dialogue_id())
 
     # 更新场景
     def _update_scene(self, dialog_id: str) -> None:
         # 确保当前版块有对话数据。如果当前版块为空，则加载默认模板
         if len(self._content.get_current_section_dialogues()) <= 0:
-            self._content.set_current_section_dialogues({"head": {"contents": [self.__please_enter_content], "narrator": self.__please_enter_name}})
+            self._content.set_current_section_dialogues(self._get_template())
         # 如果id存在，则加载对应数据
         if dialog_id in self._content.get_current_section_dialogues():
             super()._update_scene(dialog_id)
@@ -247,68 +246,33 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
     def __add_dialog(self, dialogId: str) -> None:
         # update current dialogue id
         self._content.current.set_next("default", dialogId)
-        self._content.save()
         # add new dialogue data to dialogue
-        self._content.set_dialogue(
-            self._content.get_section(),
-            dialogId,
-            self._content.current.to_map()
-            | {
-                "contents": [self.__please_enter_content],
-                "previous": self._content.get_id(),
-                "narrator": self._content.current.narrator if len(self._content.current.narrator) > 0 else self.__please_enter_name,
-                "next": {},
-            },
-        )
+        new_dialogue: pyvns.dialogue_data_t = self._content.current.to_dict() | self._get_template()
+        new_dialogue["previous"] = self._content.get_current_dialogue_id()
+        new_dialogue.pop("next")
+        if len(self._content.current.narrator) > 0:
+            new_dialogue["narrator"] = self._content.current.narrator
+        self._content.set_dialogue(self._content.get_section(), dialogId, new_dialogue)
         # 更新数据
         super()._update_scene(dialogId)
         self.__update_ui()
 
-    # 连接2个dialog node
-    def __make_connection(self, key1: str, key2: str) -> None:
-        # using wrapper
-        seniorNode: pyvns.Dialogue = pyvns.Dialogue(self._content.get_dialogue(self._content.section, key1), key1)
-        # match next type
-        match seniorNode.next.get_type():
-            case "default" | "scene":
-                seniorNode.set_next(seniorNode.next.get_type(), key2)
-            case "option":
-                targets: list[dict[str, str]] = seniorNode.next.get_targets()
-                for optionChoice in targets:
-                    if optionChoice["id"] == self._content.get_id():
-                        optionChoice["id"] = key2
-                        break
-                seniorNode.set_next(seniorNode.next.get_type(), targets)
-            case _:
-                # 如果当前next的类型不支持的话，报错
-                EXCEPTION.fatal(f"Cannot recognize next type: {seniorNode.next.get_type()}, please fix it")
-        # assign data back
-        self._content.set_dialogue(self._content.section, key1, seniorNode.to_map())
-        del seniorNode
-        # 修改下一个对白配置文件中的"previous"的参数
-        key2_dialogue: dict[str, str | list[str] | dict[str, str | list[dict[str, str]]]] = self._content.get_dialogue(self._content.section, key2)
-        if len(key2_dialogue.get("previous", "")) > 0:
-            key2_dialogue["previous"] = key1
-        self._content.set_dialogue(self._content.section, key2, key2_dialogue)
-
     # 获取上一个对话的ID
     def __get_last_id(self) -> str:
-        if self._content.get_id() == "head":
+        if self._content.get_current_dialogue_id() == "head":
             return ""
-        elif self._content.last is not None:
-            return self._content.last.id
+        elif len(self._content.get_current().previous) > 0:
+            return self._content.get_current().previous
         else:
-            for key, dialog_data in self._content.get_current_section_dialogues().items():
-                dialog_t = pyvns.Dialogue(dialog_data, key)
-                if dialog_t.has_next():
-                    match dialog_t.next.get_type():
-                        case "default" | "scene":
-                            if dialog_t.next.get_target() == self._content.get_id():
+            for key, dialog_tmp in self._content.get_current_section_dialogues().items():
+                if dialog_tmp.has_next():
+                    if dialog_tmp.next.has_single_target():
+                        if dialog_tmp.next.get_target() == self._content.get_current_dialogue_id():
+                            return str(key)
+                    else:
+                        for optionChoice in dialog_tmp.next.get_targets():
+                            if optionChoice["id"] == self._content.get_current_dialogue_id():
                                 return str(key)
-                        case "option":
-                            for optionChoice in dialog_t.next.get_targets():
-                                if optionChoice["id"] == self._content.get_id():
-                                    return str(key)
             return ""
 
     # 生产一个新的推荐id
@@ -352,7 +316,6 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
         if self.__dialog_txt_system.any_changed_was_made():
             self._content.current.narrator = self.__dialog_txt_system.get_narrator()
             self._content.current.contents = self.__dialog_txt_system.get_content()
-            self._content.save()
         # 确保按钮初始化
         if self.__buttons_ui_container is None:
             EXCEPTION.fatal("The ui has not been correctly initialized.")
@@ -362,14 +325,13 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
         self.__dialog_bgm_select.draw(_surface)
         if self._content.current.background_music != self.__dialog_bgm_select.get_selected_item():
             self._content.current.background_music = self.__dialog_bgm_select.get_selected_item()
-            self._content.save()
-            self._update_scene(self._content.get_id())
+            self._update_scene(self._content.get_current_dialogue_id())
         # 展示出当前可供编辑的dialog部分
         self.__dialog_section_selection.draw(_surface)
         # 切换当前正在浏览编辑的dialog部分
         if self.__dialog_section_selection.get_selected_item() != self._content.get_section():
             self._content.set_section(self.__dialog_section_selection.get_selected_item())
-            self._update_scene(self._content.get_id() if self._content.get_id() in self._content.get_current_section_dialogues() else "head")
+            self._update_scene("head")
         # 处理输入事件
         confirm_event_tag: bool = False
         lastId: str
@@ -382,7 +344,8 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
                     match self.__buttons_ui_container.item_being_hovered:
                         # 退出
                         case "back":
-                            if self.__no_changes_were_made() is True:
+                            # if no change were made
+                            if Config.try_load_file_if_exists(self.get_data_file_path()).get("dialogues") == self.__get_the_stuff_need_save() is True:
                                 self.stop()
                             else:
                                 self.__no_save_warning.set_visible(True)
@@ -395,31 +358,11 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
                                 self._update_scene(lastId)
                         # 删除当前对话
                         case "delete":
-                            if self._content.get_id() != "head":
-                                lastId = self.__get_last_id()
-                                nextId: str = self.__try_get_next_id(_surface)
+                            if self._content.get_current_dialogue_id() != "head" or (
+                                self._content.current.has_next() and self._content.current.next.has_single_target()
+                            ):
                                 self._content.remove_current_dialogue()
-                                if len(lastId) > 0:
-                                    if len(nextId) > 0:
-                                        self.__make_connection(lastId, nextId)
-                                    else:
-                                        lastIdContent: dict[str, str | list[str] | dict[str, str | list[dict[str, str]]]] = self._content.get_dialogue(
-                                            self._content.section, lastId
-                                        )
-                                        lastIdContent.pop("next")
-                                        self._content.set_dialogue(self._content.section, lastId, lastIdContent)
-                                    self._update_scene(lastId)
-                                elif len(nextId) > 0:
-                                    nextIdContent: dict[str, str | list[str] | dict[str, str | list[dict[str, str]]]] = self._content.get_dialogue(
-                                        self._content.section, nextId
-                                    )
-                                    nextIdContent.pop("previous")
-                                    self._content.set_dialogue(self._content.section, nextId, nextIdContent)
-                                    self._update_scene(nextId)
-                                else:
-                                    EXCEPTION.inform("Cannot delete this dialog because there is no valid last and next id; you need to delete it manually.")
-                            else:
-                                EXCEPTION.inform("Cannot delete head; you need to delete it manually.")
+                                self._update_scene(self._content.get_current_dialogue_id())
                         # 下一对话
                         case "next":
                             if len(nextId := self.__try_get_next_id(_surface)) >= 0:
@@ -434,7 +377,7 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
                             self._save()
                         # 重新加载进度
                         case "reload":
-                            self._load_content()
+                            self.update_language()
                         # 停止播放背景音乐
                         case "mute":
                             self._is_muted = not self._is_muted
@@ -445,10 +388,11 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
             # 移除角色立绘
             elif (Controller.get_event("delete") or Controller.get_event("hard_confirm")) and VisualNovelCharacterImageManager.character_get_click is not None:
                 character_images = self._content.current.character_images
-                character_images.remove(VisualNovelCharacterImageManager.character_get_click)
+                # adding check to avoid removing during fade out stage
+                if VisualNovelCharacterImageManager.character_get_click in character_images:
+                    character_images.remove(VisualNovelCharacterImageManager.character_get_click)
                 self._content.current.character_images = character_images
-                self._content.save()
-                self._update_scene(self._content.get_id())
+                self._update_scene(self._content.get_current_dialogue_id())
         # 显示移除角色的提示
         if VisualNovelCharacterImageManager.character_get_click is not None:
             _surface.blit(self.__delete_npc_prompt, Controller.mouse.get_pos())
@@ -476,19 +420,17 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
                 if self.__UIContainerRight_bg.is_visible():
                     if (imgName := self.__UIContainerRight_bg.item_being_hovered) is not None:
                         self._content.current.background_image = imgName if imgName != "current_select" else ""
-                        self._content.save()
                         self._update_background_image(self._content.current.background_image)
                 elif self.__UIContainerRight_npc.is_visible() and self.__UIContainerRight_npc.item_being_hovered is not None:
                     character_images = self._content.current.character_images
                     character_images.append(self.__UIContainerRight_npc.item_being_hovered)
                     self._content.current.character_images = character_images
-                    self._content.save()
                     VisualNovelCharacterImageManager.update(self._content.current.character_images)
 
         # 展示dialog navigation窗口
         self.__dialog_navigation_window.present_on(_surface)
         # 如果dialog navigation窗口和当前选中的key不一致，则以dialog navigation窗口为基准进行更新
-        if self.__dialog_navigation_window.get_selected_key() != self._content.get_id():
+        if self.__dialog_navigation_window.get_selected_key() != self._content.get_current_dialogue_id():
             self._update_scene(self.__dialog_navigation_window.get_selected_key())
 
         # 未保存离开时的警告

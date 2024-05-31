@@ -44,11 +44,11 @@ class Images:
                     if os.path.exists(real_path := Specification.get_directory(flag_key, file_name)):
                         return real_path
                     elif _LINPGASSETS_INITIALIZED is True:
-                        return os.path.join(linpgassets.get_image_location(), flag_key, file_name + ".zip")
+                        return os.path.join(linpgassets.IMAGE_PATH, flag_key, file_name + ".zip")
                     else:
                         return ""
                 case "!":
-                    return os.path.join(linpgassets.get_image_location(), flag_key, file_name + ".zip") if _LINPGASSETS_INITIALIZED is True else ""
+                    return os.path.join(linpgassets.IMAGE_PATH, flag_key, file_name + ".zip") if _LINPGASSETS_INITIALIZED is True else ""
                 case "@":
                     return Specification.get_directory(flag_key, file_name)
         EXCEPTION.fatal(f'Invalid tag: "{path}"')

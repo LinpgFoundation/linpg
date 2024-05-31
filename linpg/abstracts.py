@@ -10,6 +10,11 @@ from .exception import EXCEPTION
 class TypeSafeGetter:
     __RETURN_NONE_FOR_KEY_ERROR: Final[str] = "<!RETURN_NONE_FOR_KEY_ERROR>"
 
+    # if data contains key
+    @classmethod
+    def contains(cls, key: Any) -> bool:
+        return key in cls._get_data()
+
     # 根据keys查找值，最后返回一个复制的对象
     @classmethod
     def get_by_keys(cls, _dict: dict, _keys: Sequence, _default: Any | None = None, _deepcopy: bool = True) -> Any:

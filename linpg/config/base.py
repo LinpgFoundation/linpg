@@ -17,12 +17,12 @@ except Exception:
 # 配置文件管理模块
 class Config:
     # 支持的配置文件后缀
-    __EXTENSIONS_SUPPORTED: Final[tuple[str, ...]] = (".yml", ".yaml", ".json")
+    __EXTENSIONS_SUPPORTED: Final[tuple[str, ...]] = (".json", ".yml", ".yaml")
 
     # 获取默认配置文件类型
     @staticmethod
     def get_file_type() -> str:
-        return str(Specification.get("ConfigFileType"))
+        return Specification.get_str("ConfigFileType")
 
     # 加载配置文件
     @staticmethod

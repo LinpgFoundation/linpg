@@ -179,6 +179,10 @@ class Entity(Position):
         another_entity.injury(damage)
         return damage
 
+    # 获取选中状态
+    def get_selected(self) -> bool:
+        return self.__is_selected
+
     # 设置选中状态
     def set_selected(self, value: bool) -> None:
         self.__is_selected = value

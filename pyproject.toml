@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "linpg"
-version = "3.8.0"
+version = "3.8.1"
 authors = [
     {name = "Linpg Foundation", email = "yudong9912@gmail.com"},
 ]
@@ -23,11 +23,12 @@ classifiers = [
 ]
 dependencies = [
     "pygame-ce>=2.4.0",
-    "pyvns>=2.1",
+    "pyvns>=2.2",
     "numpy",
     "opencv-python",
     "pillow",
     "PyYAML",
+    "av>=12.1.0",
 ]
 
 [project.urls]

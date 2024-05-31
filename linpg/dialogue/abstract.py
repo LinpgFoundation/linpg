@@ -60,7 +60,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
         return self.get_data_of_parent_game_system() | {
-            "dialog_id": self._content.get_id(),
+            "dialog_id": self._content.get_current_dialogue_id(),
             "section": self._content.get_section(),
             "type": "dialog",
             "linpg": Info.get_current_version(),
@@ -74,29 +74,23 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
     def new(self, chapterType: str, chapterId: int, section: str, projectName: str | None = None, dialogId: str = "head") -> None:
         # 初始化关键参数
         self._initialize(chapterType, chapterId, projectName)
-        # 对白id
-        self._content.set_id(dialogId)
-        # 播放的部分
-        self._content.set_section(section)
-        # 根据已有参数载入数据
+        # load the dialogue content data
         self._load_content()
+        # select the section
+        self._content.set_section(section)
+        # select the base on given dialogue id
+        self._content.set_current_dialogue_id(dialogId)
+        # 将数据载入刚初始化的模块中
+        self._update_scene(self._content.get_current_dialogue_id())
 
     # 载入数据
     def _load_content(self) -> None:
         # 如果玩家所选择的语种有对应的翻译，则优先读取，否则使用开发者的默认语种
-        self._content.set_current_section_dialogues(
-            Config.load_file(self.get_data_file_path() if os.path.exists(self.get_data_file_path()) else self.get_dialog_file_location(self.get_default_lang()))
-            .get("dialogs", {})
-            .get(self._content.get_section(), {})
+        content_data: dict = Config.load_file(
+            self.get_data_file_path() if os.path.exists(self.get_data_file_path()) else self.get_dialog_file_location(self.get_default_lang())
         )
-        # 确认dialog数据合法
-        if len(self._content.get_current_section_dialogues()) == 0:
-            self._content.set_dialogue(self._content.get_section(), "head", {})
-            EXCEPTION.warn(f'The selected dialog dict "{self._content.get_section()}" has no content inside.')
-        elif "head" not in self._content.get_current_section_dialogues():
-            EXCEPTION.fatal(f'You need to set up a "head" for the selected dialog "{self._content.get_section()}".')
-        # 将数据载入刚初始化的模块中
-        self._update_scene(self._content.get_id())
+        # try fetch "dialogs" for backward compatibility
+        self._content.update(content_data.get("dialogues", content_data.get("dialogs")))
 
     # 更新背景图片
     def _update_background_image(self, image_name: str) -> None:
@@ -123,7 +117,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
     # 更新场景
     def _update_scene(self, dialog_id: str) -> None:
         # 更新dialogId
-        self._content.set_id(dialog_id)
+        self._content.set_current_dialogue_id(dialog_id)
         # 更新立绘和背景
         VisualNovelCharacterImageManager.update(self._content.current.character_images)
         self._update_background_image(self._content.current.background_image)
@@ -141,7 +135,19 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
     # 更新语言
     def update_language(self) -> None:
         super().update_language()
+        # 保存原来的数据
+        currentSect: str = self._content.get_section()
+        currentId: str = self._content.get_current_dialogue_id()
+        # reload data
         self._load_content()
+        # select the section
+        if self._content.contains_section(currentSect):
+            self._content.set_section(currentSect)
+            # select the base on given dialogue id
+            if self._content.contains_dialogue(currentSect, currentId):
+                self._content.set_current_dialogue_id(currentId)
+        # update the scene
+        self._update_scene(self._content.get_current_dialogue_id())
 
     # 停止播放
     def stop(self) -> None:

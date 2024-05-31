@@ -1,6 +1,7 @@
 from .timer import *
 
-from ..lib import FFmpeg
+# 导入pyav
+import av
 
 # 尝试导入opencv
 _OPENCV_INITIALIZED: bool = False
@@ -8,15 +9,6 @@ try:
     import cv2
 
     _OPENCV_INITIALIZED = True
-except ImportError:
-    pass
-
-# 尝试导入可选的pyav
-_AV_INITIALIZED: bool = False
-try:
-    import av  # type: ignore
-
-    _AV_INITIALIZED = True
 except ImportError:
     pass
 
@@ -67,18 +59,15 @@ class Videos:
             index += 1
         # 生成output路径
         output_path: str = os.path.join(Cache.get_directory(), output_file_name)
-        # windows默认使用FFmpeg模块，或pyav没有安装
-        if os.name == "nt" or not _AV_INITIALIZED:
-            FFmpeg.convert(path, output_path, True)
-        else:
-            with av.open(path, "r") as inp:
-                with av.open(output_path, "w", audio_format) as out:
-                    out_stream = out.add_stream(codecs)
-                    for frame in inp.decode(audio=0):
-                        frame.pts = None
-                        for packets in out_stream.encode(frame):
-                            out.mux(packets)
-                    for packets in out_stream.encode(None):
+        # 使用pyav导出音频
+        with av.open(path, "r") as inp:
+            with av.open(output_path, "w", audio_format) as out:
+                out_stream = out.add_stream(codecs)
+                for frame in inp.decode(audio=0):
+                    frame.pts = None
+                    for packets in out_stream.encode(frame):
                         out.mux(packets)
+                for packets in out_stream.encode(None):
+                    out.mux(packets)
         # 返回output路径
         return output_path

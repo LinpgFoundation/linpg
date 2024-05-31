@@ -21,6 +21,7 @@ Builder.compile(
         "enable_multiprocessing": True,
         "compiler_directives": {"emit_code_comments": False},
         "hidden_imports": [
+            "av",
             "PIL.Image",
             "PIL.ImageColor",
             "PIL.ImageFilter",

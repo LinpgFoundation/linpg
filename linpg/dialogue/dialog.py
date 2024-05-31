@@ -267,17 +267,21 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
                 # 获取下一个对话的id
                 _option: dict = self._content.current.next.get_targets()[self._dialog_options_container.item_being_hovered]
                 # 记录玩家选项
-                self.__dialog_options[self._content.get_id()] = {"id": self._dialog_options_container.item_being_hovered, "target": _option["id"]}
+                self.__dialog_options[self._content.get_current_dialogue_id()] = {
+                    "id": self._dialog_options_container.item_being_hovered,
+                    "target": _option["id"],
+                }
                 # 更新场景
                 self._update_scene(_option["id"])
             else:
                 self.__go_to_next(_surface)
-        if Controller.get_event("previous") and self._content.last is not None:
-            self._update_scene(self._content.last.id)
+        if Controller.get_event("previous") and self._content.previous is not None:
+            self._update_scene(self._content.previous.id)
         # 暂停菜单
         if (Controller.get_event("back") or Controller.get_event("hard_confirm")) and self._is_pause_menu_enabled():
             if self.__is_showing_history is True:
                 self.__is_showing_history = False
+                self.__history_text_surface = None
             else:
                 self._show_pause_menu(_surface)
 
@@ -301,7 +305,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
                 dialogIdTemp: str = "head"
                 local_y: int = self.__history_surface_local_y
                 while True:
-                    dialogContent: pyvns.Dialogue = pyvns.Dialogue(self._content.get_dialogue(self._content.section, dialogIdTemp), dialogIdTemp)
+                    dialogContent: pyvns.Dialogue = self._content.get_dialogue(self._content.section, dialogIdTemp)
                     has_narrator: bool = len(dialogContent.narrator) > 0
                     if has_narrator:
                         narratorTemp: ImageSurface = self.__dialog_txt_system.FONT.render(dialogContent.narrator + ":", Colors.WHITE)
@@ -319,7 +323,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
                             self.__dialog_txt_system.FONT.render(_text, Colors.WHITE), (Display.get_width() * 0.15, Display.get_height() // 10 + local_y)
                         )
                         local_y += self.__dialog_txt_system.FONT.size * 3 // 2
-                    if dialogIdTemp != self._content.get_id():
+                    if dialogIdTemp != self._content.get_current_dialogue_id():
                         match dialogContent.next.get_type():
                             case "default" | "scene":
                                 if dialogContent.has_next():

@@ -1,0 +1,79 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [
+    "setuptools>=64",
+    "wheel"
+]
+
+[project]
+authors = [
+    {email = "yudong9912@gmail.com", name = "Linpg Foundation"}
+]
+classifiers = [
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython"
+]
+dependencies = [
+    "numpy",
+    "pillow",
+    "pygame-ce>=2.5.2",
+    "pyvns>=2.3"
+]
+description = "A game engine based on pygame, which aims to make game development easier."
+name = "linpg"
+readme = "README.md"
+requires-python = ">=3.12"
+version = "4.0.0a0"
+
+[project.entry-points.pyinstaller40]
+hook-dirs = "linpg.__pyinstaller:get_hook_dirs"
+
+[project.urls]
+"Bug Tracker" = "https://github.com/LinpgFoundation/linpg/issues"
+"Homepage" = "https://github.com/LinpgFoundation/linpg"
+
+[tool.black]
+line-length = 128
+target-version = ['py313']
+
+[tool.linpgtoolbox]
+hidden_imports = [
+    "PIL.Image",
+    "PIL.ImageColor",
+    "PIL.ImageFilter",
+    "numpy",
+    "pygame",
+    "pygame.gfxdraw",
+    "pyvns"
+]
+includes = [
+    "CODE_OF_CONDUCT.md",
+    "LICENSE",
+    "README.md"
+]
+
+[tool.linpgtoolbox.options]
+include_pyinstaller = true
+smart_auto_module_combine = "by_folder"
+
+[tool.mypy]
+disallow_untyped_calls = true
+# disallow_any_generics = true
+disallow_untyped_defs = true
+python_version = "3.13"
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+
+[tool.setuptools.package-data]
+"*" = ["*"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.tomlsort]
+all = true
+in_place = true
+spaces_indent_inline_array = 4

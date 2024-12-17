@@ -82,10 +82,10 @@ git checkout dev
 pip install --upgrade linpgtoolbox
 ```
 
-運行 `builder.py`：
+使用 linpg-toolbox 安裝引擎：
 
 ```
-python builder.py
+linpgtb -i .
 ```
 
 然後。。。沒有然後了。
@@ -139,7 +139,7 @@ python builder.py
 | 更加完善復雜的戰鬥系統               | :white_check_mark: |
 | 可用的地圖編輯器                     | :white_check_mark: |
 | 可用的對話編輯器                     | :white_check_mark: |
-| 大部分功能能在接受正確的輸入後工作   | :hammer:         |
+| 大部分功能能在接受正確的輸入後工作   | :white_check_mark: |
 | 視覺小說系統和戰鬥系統達到144幀       | :white_check_mark: |
 | 視頻能穩定地以60幀播放               | :white_check_mark: |
 | 可用的pygame原生輸入框（僅支持英文） | :white_check_mark: |

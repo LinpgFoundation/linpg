@@ -55,12 +55,14 @@ hidden_imports = [
     "tkinter",
     "tkinter.messagebox"
 ]
-include_pyinstaller = true
 includes = [
     "CODE_OF_CONDUCT.md",
     "LICENSE",
     "README.md"
 ]
+
+[tool.linpgtoolbox.options]
+include_pyinstaller = true
 smart_auto_module_combine = "by_folder"
 
 [tool.mypy]

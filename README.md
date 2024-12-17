@@ -40,14 +40,6 @@ We always need your help to make Linpg the best it can be! No matter who you are
 | pyvns       |
 | numpy       |
 
-| Recommended*       |
-| ------------------ |
-| pyyaml             |
-| opencv             |
-| speech_recognition |
-
-\* All these libraries will be installed by default as some common features cannot be enabled without these libraries.
-
 ##### Special shout out to the developers of these libraries. They make game development using python no longer unthinkable.
 
 

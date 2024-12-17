@@ -341,50 +341,49 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
                     self.__UIContainerRightButton.switch()
                     self.__UIContainerRightButton.flip()
                 else:
-                    match self.__buttons_ui_container.item_being_hovered:
-                        # 退出
-                        case "back":
-                            # if no change were made
-                            if Config.try_load_file_if_exists(self.get_data_file_path()).get("dialogues") == self.__get_the_stuff_need_save() is True:
-                                self.stop()
-                            else:
-                                self.__no_save_warning.set_visible(True)
-                        # 前一对话
-                        case "previous":
-                            lastId = self.__get_last_id()
-                            if len(lastId) == 0:
-                                EXCEPTION.inform("There is no last dialog id.")
-                            else:
-                                self._update_scene(lastId)
-                        # 删除当前对话
-                        case "delete":
-                            if self._content.get_current_dialogue_id() != "head" or (
-                                self._content.current.has_next() and self._content.current.next.has_single_target()
-                            ):
-                                self._content.remove_current_dialogue()
-                                self._update_scene(self._content.get_current_dialogue_id())
-                        # 下一对话
-                        case "next":
-                            if len(nextId := self.__try_get_next_id(_surface)) >= 0:
-                                self._update_scene(str(nextId))
-                            else:
-                                EXCEPTION.inform("There is no next dialog id.")
-                        # 新增
-                        case "add":
-                            self.__add_dialog(self.__generate_a_new_recommended_key())
-                        # 保存进度
-                        case "save":
-                            self._save()
-                        # 重新加载进度
-                        case "reload":
-                            self.update_language()
-                        # 停止播放背景音乐
-                        case "mute":
-                            self._is_muted = not self._is_muted
-                            if self._is_muted is True:
-                                self.stop_bgm()
-                        case _:
-                            confirm_event_tag = True
+                    # 退出
+                    if self.__buttons_ui_container.item_being_hovered == "back":
+                        # if no change were made
+                        if Config.try_load_file_if_exists(self.get_data_file_path()).get("dialogues") == self.__get_the_stuff_need_save() is True:
+                            self.stop()
+                        else:
+                            self.__no_save_warning.set_visible(True)
+                    # 前一对话
+                    elif self.__buttons_ui_container.item_being_hovered == "previous":
+                        lastId = self.__get_last_id()
+                        if len(lastId) == 0:
+                            EXCEPTION.inform("There is no last dialog id.")
+                        else:
+                            self._update_scene(lastId)
+                    # 删除当前对话
+                    elif self.__buttons_ui_container.item_being_hovered == "delete":
+                        if self._content.get_current_dialogue_id() != "head" or (
+                            self._content.current.has_next() and self._content.current.next.has_single_target()
+                        ):
+                            self._content.remove_current_dialogue()
+                            self._update_scene(self._content.get_current_dialogue_id())
+                    # 下一对话
+                    elif self.__buttons_ui_container.item_being_hovered == "next":
+                        if len(nextId := self.__try_get_next_id(_surface)) >= 0:
+                            self._update_scene(str(nextId))
+                        else:
+                            EXCEPTION.inform("There is no next dialog id.")
+                    # 新增
+                    elif self.__buttons_ui_container.item_being_hovered == "add":
+                        self.__add_dialog(self.__generate_a_new_recommended_key())
+                    # 保存进度
+                    elif self.__buttons_ui_container.item_being_hovered == "save":
+                        self._save()
+                    # 重新加载进度
+                    elif self.__buttons_ui_container.item_being_hovered == "reload":
+                        self.update_language()
+                    # 停止播放背景音乐
+                    elif self.__buttons_ui_container.item_being_hovered == "mute":
+                        self._is_muted = not self._is_muted
+                        if self._is_muted is True:
+                            self.stop_bgm()
+                    else:
+                        confirm_event_tag = True
             # 移除角色立绘
             elif (Controller.get_event("delete") or Controller.get_event("hard_confirm")) and VisualNovelCharacterImageManager.character_get_click is not None:
                 character_images = self._content.current.character_images
@@ -436,14 +435,13 @@ class VisualNovelEditor(AbstractVisualNovelPlayer):
         # 未保存离开时的警告
         self.__no_save_warning.draw(_surface)
         if Controller.get_event("confirm"):
-            match self.__no_save_warning.item_being_hovered:
-                # 保存并离开
-                case "save":
-                    self._save()
-                    self.stop()
-                # 取消
-                case "cancel":
-                    self.__no_save_warning.set_visible(False)
-                # 不保存并离开
-                case "dont_save":
-                    self.stop()
+            # 保存并离开
+            if self.__no_save_warning.item_being_hovered == "save":
+                self._save()
+                self.stop()
+            # 取消
+            elif self.__no_save_warning.item_being_hovered == "cancel":
+                self.__no_save_warning.set_visible(False)
+            # 不保存并离开
+            elif self.__no_save_warning.item_being_hovered == "dont_save":
+                self.stop()

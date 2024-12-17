@@ -39,18 +39,17 @@ class Images:
         file_name: str = path[flag_end_index + 1 :]
         flag_key: str | None = cls.__FLAG_LOOKUP_TABLE.get(path[2:flag_end_index])
         if flag_key is not None:
-            match path[1]:
-                case "&":
-                    if os.path.exists(real_path := Specification.get_directory(flag_key, file_name)):
-                        return real_path
-                    elif _LINPGASSETS_INITIALIZED is True:
-                        return os.path.join(linpgassets.IMAGE_PATH, flag_key, file_name + ".zip")
-                    else:
-                        return ""
-                case "!":
-                    return os.path.join(linpgassets.IMAGE_PATH, flag_key, file_name + ".zip") if _LINPGASSETS_INITIALIZED is True else ""
-                case "@":
-                    return Specification.get_directory(flag_key, file_name)
+            if path[1] == "&":
+                if os.path.exists(real_path := Specification.get_directory(flag_key, file_name)):
+                    return real_path
+                elif _LINPGASSETS_INITIALIZED is True:
+                    return os.path.join(linpgassets.IMAGE_PATH, flag_key, file_name + ".zip")
+                else:
+                    return ""
+            elif path[1] == "!":
+                return os.path.join(linpgassets.IMAGE_PATH, flag_key, file_name + ".zip") if _LINPGASSETS_INITIALIZED is True else ""
+            elif path[1] == "@":
+                return Specification.get_directory(flag_key, file_name)
         EXCEPTION.fatal(f'Invalid tag: "{path}"')
 
     # 识快速加载图片

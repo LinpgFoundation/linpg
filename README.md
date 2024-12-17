@@ -82,10 +82,10 @@ If you have not install linpg-toolbox yet, please do so by using command:
 pip install --upgrade linpgtoolbox
 ```
 
-Run `builder.py`:
+Install using  linpgtoolbox:
 
 ```
-python builder.py
+linpgtb -i .
 ```
 
 That's it, enjoy!
@@ -140,7 +140,7 @@ The latest version that is available to the public. While this version may conta
 | Better and more complex combat system                       | :white_check_mark: |
 | Map Editor                                                  | :white_check_mark: |
 | Dialogue Editor                                             | :white_check_mark: |
-| Most functions work when correct input is accepted          | :hammer:         |
+| Most functions work when correct input is accepted          | :white_check_mark: |
 | Visual novel system and combat system can maintain 60 fps   | :white_check_mark: |
 | Video can be played at a stable 60 fps                      | :white_check_mark: |
 | Pygame native input box (English only)                      | :white_check_mark: |

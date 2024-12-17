@@ -1,58 +1,86 @@
 [build-system]
+build-backend = "setuptools.build_meta"
 requires = [
     "setuptools>=64",
     "wheel"
 ]
-build-backend = "setuptools.build_meta"
 
 [project]
-name = "linpg"
-version = "3.8.1"
 authors = [
-    {name = "Linpg Foundation", email = "yudong9912@gmail.com"},
+    {email = "yudong9912@gmail.com", name = "Linpg Foundation"}
 ]
-description = "A game engine based on pygame, which aims to make game development easier."
-readme = "README.md"
-requires-python = ">=3.10"
 classifiers = [
-    "Programming Language :: Python :: 3.10",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: Implementation :: CPython",
-    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython"
 ]
 dependencies = [
-    "pygame-ce>=2.4.0",
-    "pyvns>=2.2",
+    "PyYAML",
+    "av>=12.1.0",
     "numpy",
     "opencv-python",
     "pillow",
-    "PyYAML",
-    "av>=12.1.0",
+    "pygame-ce>=2.4.0",
+    "pyvns>=2.2"
 ]
-
-[project.urls]
-"Homepage" = "https://github.com/LinpgFoundation/linpg"
-"Bug Tracker" = "https://github.com/LinpgFoundation/linpg/issues"
+description = "A game engine based on pygame, which aims to make game development easier."
+name = "linpg"
+readme = "README.md"
+requires-python = ">=3.11"
+version = "3.8.2"
 
 [project.entry-points.pyinstaller40]
 hook-dirs = "linpg.__pyinstaller:get_hook_dirs"
 
-[tool.mypy]
-python_version = "3.12"
-# disallow_any_generics = true
-disallow_untyped_defs = true
-disallow_untyped_calls = true
-warn_return_any = true
-warn_redundant_casts = true
-warn_unreachable = true
+[project.urls]
+"Bug Tracker" = "https://github.com/LinpgFoundation/linpg/issues"
+"Homepage" = "https://github.com/LinpgFoundation/linpg"
 
 [tool.black]
 line-length = 160
-target-version = ['py312']
+target-version = ['py313']
+
+[tool.linpgtoolbox]
+hidden_imports = [
+    "PIL.Image",
+    "PIL.ImageColor",
+    "PIL.ImageFilter",
+    "av",
+    "numpy",
+    "pygame",
+    "pygame.gfxdraw",
+    "pyvns",
+    "tkinter",
+    "tkinter.messagebox"
+]
+includes = [
+    "CODE_OF_CONDUCT.md",
+    "LICENSE",
+    "README.md"
+]
+
+[tool.linpgtoolbox.options]
+include_pyinstaller = true
+smart_auto_module_combine = "by_folder"
+
+[tool.mypy]
+disallow_untyped_calls = true
+# disallow_any_generics = true
+disallow_untyped_defs = true
+python_version = "3.13"
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+
+[tool.setuptools.package-data]
+"*" = ["*"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.setuptools.package-data]
-"*" = ["*"]
+[tool.tomlsort]
+all = true
+in_place = true
+spaces_indent_inline_array = 4

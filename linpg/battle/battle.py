@@ -82,27 +82,25 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
 
     # 检测按下按键的事件
     def _check_key_down(self, event: PG_Event) -> None:
-        match event.key:
-            case Keys.ARROW_UP:
-                self.__moving_screen_in_direction_up = True
-            case Keys.ARROW_DOWN:
-                self.__moving_screen_in_direction_down = True
-            case Keys.ARROW_LEFT:
-                self.__moving_screen_in_direction_left = True
-            case Keys.ARROW_RIGHT:
-                self.__moving_screen_in_direction_right = True
+        if event.key == Keys.ARROW_UP:
+            self.__moving_screen_in_direction_up = True
+        elif event.key == Keys.ARROW_DOWN:
+            self.__moving_screen_in_direction_down = True
+        elif event.key == Keys.ARROW_LEFT:
+            self.__moving_screen_in_direction_left = True
+        elif event.key == Keys.ARROW_RIGHT:
+            self.__moving_screen_in_direction_right = True
 
     # 检测按键回弹的事件
     def _check_key_up(self, event: PG_Event) -> None:
-        match event.key:
-            case Keys.ARROW_UP:
-                self.__moving_screen_in_direction_up = False
-            case Keys.ARROW_DOWN:
-                self.__moving_screen_in_direction_down = False
-            case Keys.ARROW_LEFT:
-                self.__moving_screen_in_direction_left = False
-            case Keys.ARROW_RIGHT:
-                self.__moving_screen_in_direction_right = False
+        if event.key == Keys.ARROW_UP:
+            self.__moving_screen_in_direction_up = False
+        elif event.key == Keys.ARROW_DOWN:
+            self.__moving_screen_in_direction_down = False
+        elif event.key == Keys.ARROW_LEFT:
+            self.__moving_screen_in_direction_left = False
+        elif event.key == Keys.ARROW_RIGHT:
+            self.__moving_screen_in_direction_right = False
 
     # 检测手柄事件
     def _check_joystick_events(self) -> None:
@@ -115,11 +113,10 @@ class AbstractBattleSystem(AbstractGameSystem, metaclass=ABCMeta):
     def _display_map(self, _surface: ImageSurface) -> None:
         # 处理鼠标事件
         for event in Controller.get_events():
-            match event.type:
-                case Events.KEY_DOWN:
-                    self._check_key_down(event)
-                case Events.KEY_UP:
-                    self._check_key_up(event)
+            if event.type == Events.KEY_DOWN:
+                self._check_key_down(event)
+            elif event.type == Events.KEY_UP:
+                self._check_key_up(event)
         # 处理手柄事件
         if Controller.joystick.get_init():
             self._check_joystick_events()

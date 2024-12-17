@@ -28,11 +28,10 @@ class Setting(TypeSafeGetter, TypeSafeSetter):
             import locale
 
             # 默认语言为英文， 但如果用户系统环境语言是中文
-            match locale.getdefaultlocale()[0]:
-                case "zh_CN":
-                    cls.__SETTING_DATA["Language"] = "SimplifiedChinese"
-                case "zh_TW" | "zh_HK":
-                    cls.__SETTING_DATA["Language"] = "TraditionalChinese"
+            if locale.getdefaultlocale()[0] == "zh_CN":
+                cls.__SETTING_DATA["Language"] = "SimplifiedChinese"
+            elif locale.getdefaultlocale()[0] in ("zh_TW", "zh_HK"):
+                cls.__SETTING_DATA["Language"] = "TraditionalChinese"
 
     # 保存设置数据
     @classmethod

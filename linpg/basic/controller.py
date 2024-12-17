@@ -213,32 +213,29 @@ class Controller:
         for key in cls.__SPECIFIC_EVENTS:
             cls.__SPECIFIC_EVENTS[key] = False
         for event in cls.__INPUT_EVENTS:
-            match event.type:
-                case Events.MOUSE_BUTTON_DOWN:
-                    match event.button:
-                        case 1:
-                            cls.__SPECIFIC_EVENTS["confirm"] = True
-                        case 2:
-                            cls.__SPECIFIC_EVENTS["hard_confirm"] = True
-                        case 3:
-                            cls.__SPECIFIC_EVENTS["previous"] = True
-                        case 4:
-                            cls.__SPECIFIC_EVENTS["scroll_up"] = True
-                        case 5:
-                            cls.__SPECIFIC_EVENTS["scroll_down"] = True
-                case Events.JOYSTICK_BUTTON_DOWN:
-                    if cls.joystick.get_button(0) is True:
-                        cls.__SPECIFIC_EVENTS["confirm"] = True
-                    elif cls.joystick.get_button(1) is True:
-                        cls.__SPECIFIC_EVENTS["previous"] = True
-                case Events.KEY_DOWN:
-                    match event.key:
-                        case Keys.ESCAPE:
-                            cls.__SPECIFIC_EVENTS["back"] = True
-                        case Keys.F3:
-                            cls.NEED_TO_TAKE_SCREENSHOT = True
-                        case Keys.DELETE:
-                            cls.__SPECIFIC_EVENTS["delete"] = True
+            if event.type == Events.MOUSE_BUTTON_DOWN:
+                if event.button == 1:
+                    cls.__SPECIFIC_EVENTS["confirm"] = True
+                elif event.button == 2:
+                    cls.__SPECIFIC_EVENTS["hard_confirm"] = True
+                elif event.button == 3:
+                    cls.__SPECIFIC_EVENTS["previous"] = True
+                elif event.button == 4:
+                    cls.__SPECIFIC_EVENTS["scroll_up"] = True
+                elif event.button == 5:
+                    cls.__SPECIFIC_EVENTS["scroll_down"] = True
+            elif event.type == Events.JOYSTICK_BUTTON_DOWN:
+                if cls.joystick.get_button(0) is True:
+                    cls.__SPECIFIC_EVENTS["confirm"] = True
+                elif cls.joystick.get_button(1) is True:
+                    cls.__SPECIFIC_EVENTS["previous"] = True
+            elif event.type == Events.KEY_DOWN:
+                if event.key == Keys.ESCAPE:
+                    cls.__SPECIFIC_EVENTS["back"] = True
+                elif event.key == Keys.F3:
+                    cls.NEED_TO_TAKE_SCREENSHOT = True
+                elif event.key == Keys.DELETE:
+                    cls.__SPECIFIC_EVENTS["delete"] = True
 
 
 # 控制器输入组件初始化

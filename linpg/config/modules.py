@@ -55,15 +55,14 @@ class Info:
     # 确保linpg版本
     @classmethod
     def ensure_linpg_version(cls, action: str, revision: int, patch: int, version: int = 3) -> bool:
-        match action:
-            case "==":
-                return cls.__VERSION == version and cls.__REVISION == revision and cls.__PATCH == patch
-            case ">=":
-                return cls.__VERSION >= version and cls.__REVISION >= revision and cls.__PATCH >= patch
-            case "<=":
-                return cls.__VERSION <= version and cls.__REVISION <= revision and cls.__PATCH <= patch
-            case _:
-                EXCEPTION.fatal(f'Action "{action}" is not supported!')
+        if action == "==":
+            return cls.__VERSION == version and cls.__REVISION == revision and cls.__PATCH == patch
+        elif action == ">=":
+            return cls.__VERSION >= version and cls.__REVISION >= revision and cls.__PATCH >= patch
+        elif action == "<=":
+            return cls.__VERSION <= version and cls.__REVISION <= revision and cls.__PATCH <= patch
+        else:
+            EXCEPTION.fatal(f'Action "{action}" is not supported!')
 
     # 获取当前版本号
     @classmethod

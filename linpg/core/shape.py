@@ -162,11 +162,10 @@ class Rectangles:
     # 转换tuple至Rectangle
     @staticmethod
     def from_tuple(tuple_rect: tuple) -> Rectangle:
-        match len(tuple_rect):
-            case 2:
-                return Rectangle(tuple_rect[0][0], tuple_rect[0][1], tuple_rect[1][0], tuple_rect[1][1])
-            case 4:
-                return Rectangle(tuple_rect[0], tuple_rect[1], tuple_rect[2], tuple_rect[3])
+        if len(tuple_rect) == 2:
+            return Rectangle(tuple_rect[0][0], tuple_rect[0][1], tuple_rect[1][0], tuple_rect[1][1])
+        elif len(tuple_rect) == 4:
+            return Rectangle(tuple_rect[0], tuple_rect[1], tuple_rect[2], tuple_rect[3])
         EXCEPTION.fatal("Invalid length for forming a rect.")
 
     # 将tuple转换至RectObject以方便操作
@@ -219,13 +218,12 @@ def convert_to_pygame_rect(rect: RectLiked) -> pygame.Rect:
         return pygame.Rect(rect.left, rect.top, rect.width, rect.height)
     # 如果是tuple类，则需要创建
     elif isinstance(rect, tuple):
-        match len(rect):
-            case 2:
-                return pygame.Rect(rect[0], rect[1])
-            case 4:
-                return pygame.Rect(rect[0], rect[1], rect[2], rect[3])
-            case _:
-                EXCEPTION.fatal("Invalid length for forming a rect.")
+        if len(rect) == 2:
+            return pygame.Rect(rect[0], rect[1])
+        elif len(rect) == 4:
+            return pygame.Rect(rect[0], rect[1], rect[2], rect[3])
+        else:
+            EXCEPTION.fatal("Invalid length for forming a rect.")
     else:
         EXCEPTION.fatal(f'The rect has to be RectLiked object, not "{type(rect)}".')
 

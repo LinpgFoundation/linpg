@@ -69,14 +69,13 @@ class EXCEPTION:
     def fatal(cls, info: str, error_type_id: int = 0) -> NoReturn:
         cls.__log(f"Error Message From Linpg: {info}")
         # 打印出错误，并停止进程
-        match error_type_id:
-            case 1:
-                raise cls.FunctionIsNotImplemented(f'A parent class requires you to implement "{info}" function before you can use it')
-            case 2:
-                raise cls.FileNotExists(info)
-            case 3:
-                raise cls.ToolIsMissing(info)
-            case 4:
-                raise cls.SitePackageNotExists(info)
-            case _:
-                raise cls.Error(info)
+        if error_type_id == 1:
+            raise cls.FunctionIsNotImplemented(f'A parent class requires you to implement "{info}" function before you can use it')
+        elif error_type_id == 2:
+            raise cls.FileNotExists(info)
+        elif error_type_id == 3:
+            raise cls.ToolIsMissing(info)
+        elif error_type_id == 4:
+            raise cls.SitePackageNotExists(info)
+        else:
+            raise cls.Error(info)

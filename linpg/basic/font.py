@@ -39,16 +39,15 @@ class FontGenerator:
             EXCEPTION.fatal("Font size must be greater than 0!")
         self.__size = int(size)
         # 根据类型处理
-        match Setting.get_font_type():
-            case "default":
-                self.__FONT = pygame.font.SysFont(Setting.get_font(), self.__size)
-            case "custom":
-                font_path: str = Specification.get_directory("font", f"{Setting.get_font()}.ttf")
-                if not os.path.exists(font_path):
-                    EXCEPTION.fatal(f"Cannot find the {Setting.get_font()}.ttf file!")
-                self.__FONT = pygame.font.Font(font_path, self.__size)
-            case _:
-                EXCEPTION.fatal("FontType option in setting file is incorrect!")
+        if Setting.get_font_type() == "default":
+            self.__FONT = pygame.font.SysFont(Setting.get_font(), self.__size)
+        elif Setting.get_font_type() == "custom":
+            font_path: str = Specification.get_directory("font", f"{Setting.get_font()}.ttf")
+            if not os.path.exists(font_path):
+                EXCEPTION.fatal(f"Cannot find the {Setting.get_font()}.ttf file!")
+            self.__FONT = pygame.font.Font(font_path, self.__size)
+        else:
+            EXCEPTION.fatal("FontType option in setting file is incorrect!")
         self.__FONT.bold = ifBold
         self.__FONT.italic = ifItalic
 

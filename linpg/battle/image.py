@@ -357,16 +357,15 @@ class EntitySpriteImageManager:
     def load(cls, faction: str, characterType: str, mode: str) -> dict:
         sprite_image_meta_data: dict = Config.load_file(os.path.join(cls.SPRITES_PATH, faction, characterType, characterType + ".linpg.meta"))
         imgId_dict: dict = {}
-        match mode:
-            # 默认模式下，加载所有动作
-            case "default":
-                for key in sprite_image_meta_data:
-                    imgId_dict[key] = cls.__load_action(faction, characterType, key, sprite_image_meta_data[key])
-            # 在开发模式下仅加载idle动作
-            case "dev":
-                imgId_dict["wait"] = cls.__load_action(faction, characterType, "wait", sprite_image_meta_data["wait"])
-            case _:
-                EXCEPTION.fatal("Mode is not supported")
+        # 默认模式下，加载所有动作
+        if mode == "default":
+            for key in sprite_image_meta_data:
+                imgId_dict[key] = cls.__load_action(faction, characterType, key, sprite_image_meta_data[key])
+        # 在开发模式下仅加载idle动作
+        elif mode == "dev":
+            imgId_dict["wait"] = cls.__load_action(faction, characterType, "wait", sprite_image_meta_data["wait"])
+        else:
+            EXCEPTION.fatal("Mode is not supported")
         return imgId_dict
 
     # 动图制作模块：接受一个友方角色名和动作,当前的方块标准长和高，返回对应角色动作list或者因为没图片而返回None

@@ -324,44 +324,42 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             elif self._tile_is_hovering is not None and self.__buttons_container.item_being_hovered is None:
                 whether_add_history: bool = True
                 _tile_is_hovering: tuple[int, int] = self._tile_is_hovering
-                match self._modify_mode:
-                    case self._MODIFY.DELETE_ENTITY:
-                        self.delete_entity_on_tile(_tile_is_hovering)
-                    # 移除行
-                    case self._MODIFY.DELETE_ROW:
-                        self.get_map().remove_on_axis(_tile_is_hovering[1])
-                        self.delete_entity(lambda e: round(e.y) == _tile_is_hovering[1])
-                        self.move_entity(lambda e: round(e.y) > _tile_is_hovering[1], 0, -1)
-                    # 移除列
-                    case self._MODIFY.DELETE_COLUMN:
-                        self.get_map().remove_on_axis(_tile_is_hovering[0], 1)
-                        self.delete_entity(lambda e: round(e.x) == _tile_is_hovering[0])
-                        self.move_entity(lambda e: round(e.x) > _tile_is_hovering[0], -1, 0)
-                    case self._MODIFY.ADD_ROW_ABOVE:
-                        self.get_map().add_on_axis(_tile_is_hovering[1])
-                        self.move_entity(lambda e: round(e.y) >= _tile_is_hovering[1], 0, 1)
-                    case self._MODIFY.ADD_ROW_BELOW:
-                        self.get_map().add_on_axis(_tile_is_hovering[1] + 1)
-                        self.move_entity(lambda e: round(e.y) >= _tile_is_hovering[1] + 1, 0, 1)
-                    case self._MODIFY.ADD_COLUMN_BEFORE:
-                        self.get_map().add_on_axis(_tile_is_hovering[0], 1)
-                        self.move_entity(lambda e: round(e.x) >= _tile_is_hovering[0], 1, 0)
-                    case self._MODIFY.ADD_COLUMN_AFTER:
-                        self.get_map().add_on_axis(_tile_is_hovering[0] + 1, 1)
-                        self.move_entity(lambda e: round(e.x) >= _tile_is_hovering[0] + 1, 1, 0)
-                    case self._MODIFY.DISABLE:
-                        if self.is_any_object_selected() is True and self._no_container_is_hovered is True:
-                            match self.__object_to_put_down["type"]:
-                                case "tile":
-                                    self.set_tile(self.__object_to_put_down["id"], self._tile_is_hovering)
-                                case "decoration":
-                                    self.set_decoration(self.__object_to_put_down["id"], self._tile_is_hovering)
-                                case "entity":
-                                    self.set_entity(self.__object_to_put_down["id"], self._tile_is_hovering)
-                        else:
-                            whether_add_history = False
-                    case _:
-                        EXCEPTION.fatal(f"Unknown modify mode {self._modify_mode}")
+                if self._modify_mode == self._MODIFY.DELETE_ENTITY:
+                    self.delete_entity_on_tile(_tile_is_hovering)
+                # 移除行
+                elif self._modify_mode == self._MODIFY.DELETE_ROW:
+                    self.get_map().remove_on_axis(_tile_is_hovering[1])
+                    self.delete_entity(lambda e: round(e.y) == _tile_is_hovering[1])
+                    self.move_entity(lambda e: round(e.y) > _tile_is_hovering[1], 0, -1)
+                # 移除列
+                elif self._modify_mode == self._MODIFY.DELETE_COLUMN:
+                    self.get_map().remove_on_axis(_tile_is_hovering[0], 1)
+                    self.delete_entity(lambda e: round(e.x) == _tile_is_hovering[0])
+                    self.move_entity(lambda e: round(e.x) > _tile_is_hovering[0], -1, 0)
+                elif self._modify_mode == self._MODIFY.ADD_ROW_ABOVE:
+                    self.get_map().add_on_axis(_tile_is_hovering[1])
+                    self.move_entity(lambda e: round(e.y) >= _tile_is_hovering[1], 0, 1)
+                elif self._modify_mode == self._MODIFY.ADD_ROW_BELOW:
+                    self.get_map().add_on_axis(_tile_is_hovering[1] + 1)
+                    self.move_entity(lambda e: round(e.y) >= _tile_is_hovering[1] + 1, 0, 1)
+                elif self._modify_mode == self._MODIFY.ADD_COLUMN_BEFORE:
+                    self.get_map().add_on_axis(_tile_is_hovering[0], 1)
+                    self.move_entity(lambda e: round(e.x) >= _tile_is_hovering[0], 1, 0)
+                elif self._modify_mode == self._MODIFY.ADD_COLUMN_AFTER:
+                    self.get_map().add_on_axis(_tile_is_hovering[0] + 1, 1)
+                    self.move_entity(lambda e: round(e.x) >= _tile_is_hovering[0] + 1, 1, 0)
+                elif self._modify_mode == self._MODIFY.DISABLE:
+                    if self.is_any_object_selected() is True and self._no_container_is_hovered is True:
+                        if self.__object_to_put_down["type"] == "tile":
+                            self.set_tile(self.__object_to_put_down["id"], self._tile_is_hovering)
+                        elif self.__object_to_put_down["type"] == "decoration":
+                            self.set_decoration(self.__object_to_put_down["id"], self._tile_is_hovering)
+                        elif self.__object_to_put_down["type"] == "entity":
+                            self.set_entity(self.__object_to_put_down["id"], self._tile_is_hovering)
+                    else:
+                        whether_add_history = False
+                else:
+                    EXCEPTION.fatal(f"Unknown modify mode {self._modify_mode}")
                 # 保存修改后的历史
                 if whether_add_history is True:
                     self.__append_level_history()
@@ -373,10 +371,9 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             and self._tile_is_hovering is not None
             and self.__buttons_container.item_being_hovered is None
         ):
-            match self.__object_to_put_down["type"]:
-                case "tile":
-                    self.get_map().replace_tiles(self.get_map().get_tile(*self._tile_is_hovering), self.__object_to_put_down["id"])
-                    self.__append_level_history()
+            if self.__object_to_put_down["type"] == "tile":
+                self.get_map().replace_tiles(self.get_map().get_tile(*self._tile_is_hovering), self.__object_to_put_down["id"])
+                self.__append_level_history()
         # 取消选中
         elif Controller.get_event("back") or (self._no_container_is_hovered is True and Controller.get_event("scroll_up")):
             self.__object_to_put_down.clear()
@@ -404,18 +401,17 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             self.__decorationsImgContainer.display(_surface, UIContainerRight_offset_pos)
             self.__right_container_buttons.display(_surface, UIContainerRight_offset_pos)
             if Controller.get_event("confirm") is True:
-                match self.__right_container_buttons.item_being_hovered:
-                    case "select_tile":
-                        self.__envImgContainer.set_visible(True)
-                        self.__decorationsImgContainer.set_visible(False)
-                    case "select_decoration":
-                        self.__envImgContainer.set_visible(False)
-                        self.__decorationsImgContainer.set_visible(True)
-                    case _:
-                        if self.__envImgContainer.is_visible() and self.__envImgContainer.item_being_hovered is not None:
-                            self.__object_to_put_down = {"type": "tile", "id": self.__envImgContainer.item_being_hovered}
-                        elif self.__decorationsImgContainer.is_visible() and self.__decorationsImgContainer.item_being_hovered is not None:
-                            self.__object_to_put_down = {"type": "decoration", "id": self.__decorationsImgContainer.item_being_hovered}
+                if self.__right_container_buttons.item_being_hovered == "select_tile":
+                    self.__envImgContainer.set_visible(True)
+                    self.__decorationsImgContainer.set_visible(False)
+                elif self.__right_container_buttons.item_being_hovered == "select_decoration":
+                    self.__envImgContainer.set_visible(False)
+                    self.__decorationsImgContainer.set_visible(True)
+                else:
+                    if self.__envImgContainer.is_visible() and self.__envImgContainer.item_being_hovered is not None:
+                        self.__object_to_put_down = {"type": "tile", "id": self.__envImgContainer.item_being_hovered}
+                    elif self.__decorationsImgContainer.is_visible() and self.__decorationsImgContainer.item_being_hovered is not None:
+                        self.__object_to_put_down = {"type": "decoration", "id": self.__decorationsImgContainer.item_being_hovered}
 
         # 画出下方容器的UI
         self.__UIContainerButtonBottom.draw(_surface)
@@ -460,80 +456,77 @@ class AbstractMapEditor(AbstractBattleSystem, metaclass=ABCMeta):
             show_barrier_mask: bool = False
             if self.__buttons_container.item_being_hovered is not None:
                 self._modify_mode = self._MODIFY.DISABLE
-            match self.__buttons_container.item_being_hovered:
-                case "save":
-                    self._save()
-                case "back":
-                    if Config.load(self.get_data_file_path()) == self._get_data_need_to_save():
-                        self.stop()
-                    else:
-                        self.__no_save_warning.set_visible(True)
-                case "delete_entity":
-                    self.__object_to_put_down.clear()
-                    self._modify_mode = self._MODIFY.DELETE_ENTITY
-                case "reload":
-                    self.__load_level(Config.load_file(self.get_data_file_path()))
-                    self.__reset_level_history()
-                case "undo":
-                    if self.__current_level_data_index > 0:
-                        self.__current_level_data_index -= 1
-                        self.__load_level(self.__level_data_history[self.__current_level_data_index])
-                case "redo":
-                    if self.__current_level_data_index < len(self.__level_data_history) - 1:
-                        self.__current_level_data_index += 1
-                        self.__load_level(self.__level_data_history[self.__current_level_data_index])
-                case "add_colum_before":
-                    self._modify_mode = self._MODIFY.ADD_COLUMN_BEFORE
-                case "add_colum_after":
-                    self._modify_mode = self._MODIFY.ADD_COLUMN_AFTER
-                case "add_row_above":
-                    self._modify_mode = self._MODIFY.ADD_ROW_ABOVE
-                case "add_row_below":
-                    self._modify_mode = self._MODIFY.ADD_ROW_BELOW
-                case "delete_row":
-                    self._modify_mode = self._MODIFY.DELETE_ROW
-                case "delete_colum":
-                    self._modify_mode = self._MODIFY.DELETE_COLUMN
-                case "auto_add_barriers":
-                    # 历遍地图，设置障碍区块
-                    for _x in range(self.get_map().column):
-                        for _y in range(self.get_map().row):
-                            if not self.get_map().is_passable(_x, _y, True):
-                                self.get_map().set_barrier_mask(_x, _y, 1)
+            if self.__buttons_container.item_being_hovered == "save":
+                self._save()
+            elif self.__buttons_container.item_being_hovered == "back":
+                if Config.load(self.get_data_file_path()) == self._get_data_need_to_save():
+                    self.stop()
+                else:
+                    self.__no_save_warning.set_visible(True)
+            elif self.__buttons_container.item_being_hovered == "delete_entity":
+                self.__object_to_put_down.clear()
+                self._modify_mode = self._MODIFY.DELETE_ENTITY
+            elif self.__buttons_container.item_being_hovered == "reload":
+                self.__load_level(Config.load_file(self.get_data_file_path()))
+                self.__reset_level_history()
+            elif self.__buttons_container.item_being_hovered == "undo":
+                if self.__current_level_data_index > 0:
+                    self.__current_level_data_index -= 1
+                    self.__load_level(self.__level_data_history[self.__current_level_data_index])
+            elif self.__buttons_container.item_being_hovered == "redo":
+                if self.__current_level_data_index < len(self.__level_data_history) - 1:
+                    self.__current_level_data_index += 1
+                    self.__load_level(self.__level_data_history[self.__current_level_data_index])
+            elif self.__buttons_container.item_being_hovered == "add_colum_before":
+                self._modify_mode = self._MODIFY.ADD_COLUMN_BEFORE
+            elif self.__buttons_container.item_being_hovered == "add_colum_after":
+                self._modify_mode = self._MODIFY.ADD_COLUMN_AFTER
+            elif self.__buttons_container.item_being_hovered == "add_row_above":
+                self._modify_mode = self._MODIFY.ADD_ROW_ABOVE
+            elif self.__buttons_container.item_being_hovered == "add_row_below":
+                self._modify_mode = self._MODIFY.ADD_ROW_BELOW
+            elif self.__buttons_container.item_being_hovered == "delete_row":
+                self._modify_mode = self._MODIFY.DELETE_ROW
+            elif self.__buttons_container.item_being_hovered == "delete_colum":
+                self._modify_mode = self._MODIFY.DELETE_COLUMN
+            elif self.__buttons_container.item_being_hovered == "auto_add_barriers":
+                # 历遍地图，设置障碍区块
+                for _x in range(self.get_map().column):
+                    for _y in range(self.get_map().row):
+                        if not self.get_map().is_passable(_x, _y, True):
+                            self.get_map().set_barrier_mask(_x, _y, 1)
+                self.__append_level_history()
+            elif self.__buttons_container.item_being_hovered == "add_barrier":
+                show_barrier_mask = True
+            else:
+                show_barrier_mask = self._show_barrier_mask
+                if self._show_barrier_mask is True and self._tile_is_hovering is not None:
+                    self.get_map().set_barrier_mask(self._tile_is_hovering[0], self._tile_is_hovering[1], 1)
                     self.__append_level_history()
-                case "add_barrier":
-                    show_barrier_mask = True
-                case _:
-                    show_barrier_mask = self._show_barrier_mask
-                    if self._show_barrier_mask is True and self._tile_is_hovering is not None:
-                        self.get_map().set_barrier_mask(self._tile_is_hovering[0], self._tile_is_hovering[1], 1)
-                        self.__append_level_history()
             self._show_barrier_mask = show_barrier_mask
 
         # 跟随鼠标显示即将被放下的物品
         if self.is_any_object_selected() is True:
-            match self.__object_to_put_down["type"]:
-                case "tile":
-                    _surface.blit(self.__envImgContainer.get(str(self.__object_to_put_down["id"])), Controller.mouse.get_pos())
-                case "decoration":
-                    _surface.blit(self.__decorationsImgContainer.get(str(self.__object_to_put_down["id"])), Controller.mouse.get_pos())
-                case "entity":
-                    _surface.blit(
-                        self.__entitiesImagesContainers[int(self.__object_to_put_down["container_id"])].get(self.__object_to_put_down["id"]),
-                        Controller.mouse.get_pos(),
-                    )
+            if self.__object_to_put_down["type"] == "tile":
+                _surface.blit(self.__envImgContainer.get(str(self.__object_to_put_down["id"])), Controller.mouse.get_pos())
+            elif self.__object_to_put_down["type"] == "decoration":
+                _surface.blit(self.__decorationsImgContainer.get(str(self.__object_to_put_down["id"])), Controller.mouse.get_pos())
+            elif self.__object_to_put_down["type"] == "entity":
+                _surface.blit(
+                    self.__entitiesImagesContainers[int(self.__object_to_put_down["container_id"])].get(self.__object_to_put_down["id"]),
+                    Controller.mouse.get_pos(),
+                )
 
         # 未保存离开时的警告
         self.__no_save_warning.draw(_surface)
         if Controller.get_event("confirm"):
-            match self.__no_save_warning.item_being_hovered:
-                # 保存并离开
-                case "save":
-                    self._save()
-                    self.stop()
-                # 取消
-                case "cancel":
-                    self.__no_save_warning.set_visible(False)
-                # 不保存并离开
-                case "dont_save":
-                    self.stop()
+            # 保存并离开
+            if self.__no_save_warning.item_being_hovered == "save":
+                self._save()
+                self.stop()
+            # 取消
+            elif self.__no_save_warning.item_being_hovered == "cancel":
+                self.__no_save_warning.set_visible(False)
+            # 不保存并离开
+            elif self.__no_save_warning.item_being_hovered == "dont_save":
+                self.stop()

@@ -1,7 +1,11 @@
-from typing import Final
+import os
+from typing import Any, Final
 
-from ..abstracts.getter import TypeSafeGetter
-from ..abstracts.setter import TypeSafeSetter
+from .configurations import Configurations
+from .files import Files
+from .getter import TypeSafeGetter
+from .setter import TypeSafeSetter
+from .specifications import Specifications
 
 
 # 全局数据
@@ -63,3 +67,31 @@ class Debug:
     @classmethod
     def set_show_fps(cls, value: bool) -> None:
         cls.__SHOW_FPS = value
+
+
+# 持久数据管理IO
+class PersistentVariables(TypeSafeGetter, TypeSafeSetter):
+    __DATA: Final[dict[str, Any]] = {}
+    __PATH: Final[str] = Specifications.get_directory("save", "persistent.json")
+
+    @classmethod
+    def _get_data(cls) -> dict:
+        return cls.__DATA
+
+    @classmethod
+    def set(cls, *_key: str, value: Any, assumeKeyExists: bool = False) -> None:
+        super().set(*_key, value=value, assumeKeyExists=assumeKeyExists)
+        cls.save()
+
+    @classmethod
+    def reload(cls) -> None:
+        cls.__DATA.clear()
+        if os.path.exists(cls.__PATH):
+            cls.__DATA.update(Configurations.load_file(cls.__PATH))
+
+    @classmethod
+    def save(cls) -> None:
+        if len(cls.__DATA) > 0:
+            Configurations.save(cls.__PATH, cls.__DATA)
+        else:
+            Files.delete(cls.__PATH)

@@ -1,8 +1,8 @@
 import os
 from typing import Final
 
-from ..abstracts.getter import TypeSafeGetter
 from ..exception import Exceptions
+from .getter import TypeSafeGetter
 
 
 # 使用引擎的开发者可以自定义的参数

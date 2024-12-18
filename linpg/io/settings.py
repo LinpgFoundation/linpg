@@ -1,9 +1,9 @@
 import os
 from typing import Final
 
-from ..abstracts.getter import TypeSafeGetter
-from ..abstracts.setter import TypeSafeSetter
 from .configurations import Configurations
+from .getter import TypeSafeGetter
+from .setter import TypeSafeSetter
 from .specifications import Specifications
 
 
@@ -76,7 +76,3 @@ class Settings(TypeSafeGetter, TypeSafeSetter):
     @classmethod
     def get_low_memory_mode(cls) -> bool:
         return bool(cls.__SETTING_DATA["LowMemoryMode"])
-
-
-# 初始化
-Settings.reload()

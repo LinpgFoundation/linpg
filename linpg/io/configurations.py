@@ -2,8 +2,8 @@ import json
 import os
 from typing import Any
 
-from ..abstracts.getter import TypeSafeGetter
 from ..exception import Exceptions
+from .getter import TypeSafeGetter
 
 
 # 配置文件管理模块

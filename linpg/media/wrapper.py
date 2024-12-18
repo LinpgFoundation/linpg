@@ -16,7 +16,7 @@ from PIL import ImageColor as PILImageColor
 from PIL import ImageFilter as PILImageFilter
 
 from ..exception import Exceptions
-from ..io.variables import Debug
+from ..basic.variables import Debug
 
 """linpg自带属性"""
 # 颜色类

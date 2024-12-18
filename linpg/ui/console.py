@@ -1,5 +1,4 @@
-from ..io.specifications import Version
-from ..io.variables import GlobalVariables, PersistentVariables
+from ..basic.variables import GlobalVariables, PersistentVariables
 from .inputbox import *
 
 

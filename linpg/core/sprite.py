@@ -1,6 +1,6 @@
 import math
 
-from ..io.files import Files
+from ..basic.files import Files
 from .image import *
 
 

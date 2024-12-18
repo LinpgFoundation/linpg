@@ -2,7 +2,7 @@ import os
 import threading
 from datetime import datetime
 
-from ..io.specifications import Specifications
+from ..basic.specifications import Specifications
 from .controller import *
 
 

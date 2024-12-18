@@ -1,7 +1,7 @@
 from abc import ABC, ABCMeta, abstractmethod
 
-from ..io.configurations import Configurations
-from ..io.languages import Languages
+from ..basic.configurations import Configurations
+from ..basic.languages import Languages
 from .coordinates import *
 
 

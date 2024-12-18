@@ -1,6 +1,6 @@
 import io
 
-from ..io.settings import Settings
+from ..basic.settings import Settings
 from .wrapper import *
 
 

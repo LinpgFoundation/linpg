@@ -56,7 +56,6 @@ includes = [
 
 [tool.linpgtoolbox.options]
 include_pyinstaller = true
-smart_auto_module_combine = "by_folder"
 
 [tool.mypy]
 disallow_untyped_calls = true

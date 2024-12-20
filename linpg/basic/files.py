@@ -7,7 +7,8 @@ from typing import Callable, Final
 
 from ..exception import Exceptions
 from .configurations import Configurations
-from .specifications import Specifications, Version
+from .specifications import Specifications
+from .version import Version
 
 # the algorithm that will be used for hashing
 _HASHING_ALGORITHM: Final[str] = "sha3_256"

@@ -13,18 +13,28 @@ class Settings(TypeSafeGetter, TypeSafeSetter):
     __SETTING_DATA: Final[dict] = {}
     # 当前配置文件保存路径的参数
     __SETTING_FILE_NAME: Final[str] = Specifications.get_directory("setting", "setting.json")
+    # flag for avoiding redundant init
+    __is_init: bool = False
 
     @classmethod
     def _get_data(cls) -> dict:
         return cls.__SETTING_DATA
+
+    # init setting module
+    @classmethod
+    def init(cls) -> None:
+        if cls.__is_init:
+            return
+        cls.__is_init = True
+        cls.reload()
 
     # 重新加载设置数据
     @classmethod
     def reload(cls) -> None:
         # 加载内部默认的设置配置文件
         cls.__SETTING_DATA.clear()
-        cls.__SETTING_DATA.update(dict(Specifications.get("DefaultSetting")))
-        cls.__SETTING_DATA["Font"] = Specifications.get("DefaultFont")
+        cls.__SETTING_DATA.update(Specifications.get_dict("DefaultSetting"))
+        cls.__SETTING_DATA["Font"] = Specifications.get_dict("DefaultFont")
         # 如果自定义的设置配置文件存在，则加载
         if os.path.exists(cls.__SETTING_FILE_NAME):
             cls.__SETTING_DATA.update(Configurations.load_file(cls.__SETTING_FILE_NAME))
@@ -76,3 +86,7 @@ class Settings(TypeSafeGetter, TypeSafeSetter):
     @classmethod
     def get_low_memory_mode(cls) -> bool:
         return bool(cls.__SETTING_DATA["LowMemoryMode"])
+
+
+# init setting module
+Settings.init()

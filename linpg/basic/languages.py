@@ -6,6 +6,7 @@ from ..exception import Exceptions
 from .configurations import Configurations
 from .getter import TypeSafeGetter
 from .settings import Settings
+from .specifications import Specifications
 
 
 # 本地化语言管理模块
@@ -17,9 +18,7 @@ class Languages:
     # 语言储存路径
     __LANG_PATH_PATTERN: Final[str] = os.path.join(os.path.dirname(__file__), "*.json")
     # 储存额外语言数据的文件夹
-    __EX_LANG_FOLDER: Final[str] = "Lang"
-    # 语言tga
-    __LANG_TAGS: Final[dict[str, str]] = {"English": "en-US", "SimplifiedChinese": "zh-CN", "TraditionalChinese": "zh-TW"}
+    __EX_LANG_FOLDER: Final[str] = Specifications.get_directory("languages")
 
     # 重新加载语言文件
     @classmethod
@@ -43,8 +42,7 @@ class Languages:
             tuple(
                 Configurations.load(lang_file, "Language")
                 for lang_file in glob(os.path.join(cls.__LANG_PATH_PATTERN))
-                if os.path.exists(os.path.join(cls.__EX_LANG_FOLDER, os.path.basename(lang_file).replace(".json", ".yaml")))
-                or os.path.exists(os.path.join(cls.__EX_LANG_FOLDER, os.path.basename(lang_file)))
+                if os.path.exists(os.path.join(cls.__EX_LANG_FOLDER, os.path.basename(lang_file)))
             )
             if os.path.exists("Lang")
             else tuple(Configurations.load(lang_file, "Language") for lang_file in glob(os.path.join(cls.__LANG_PATH_PATTERN)))
@@ -54,11 +52,6 @@ class Languages:
     @classmethod
     def get_current_language(cls) -> str:
         return str(cls.__LANG_DATA["Language"])
-
-    # 获取当前的语言
-    @classmethod
-    def get_current_language_tag(cls) -> str:
-        return cls.__LANG_TAGS[Settings.get_language()]
 
     # 获取语言的名称id
     @classmethod
@@ -70,8 +63,8 @@ class Languages:
 
     # 获取可用语言
     @classmethod
-    def get_available_languages(cls) -> tuple:
-        return tuple(cls.__LANG_AVAILABLE)
+    def get_available_languages(cls) -> tuple[str, ...]:
+        return cls.__LANG_AVAILABLE
 
     # 根据key(s)获取对应的语言
     @classmethod

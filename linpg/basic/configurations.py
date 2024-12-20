@@ -21,12 +21,12 @@ class Configurations:
 
     # 加载配置文件
     @classmethod
-    def load_file(cls, path: str) -> dict:
+    def load_file(cls, path: str) -> dict[str, Any]:
         return cls.__load_file(path)
 
     # 尝试加载可能不存在的配置文件，如果不存在则返回一个空字典
     @classmethod
-    def try_load_file(cls, path: str, _default: dict = {}) -> dict:
+    def try_load_file(cls, path: str, _default: dict = {}) -> dict[str, Any]:
         return cls.__load_file(path) if os.path.exists(path) else _default
 
     # 加载配置文件，并根据key（s）返回对应的数据

@@ -78,7 +78,7 @@ class Cache:
             cls.__CACHE_FILES_DATA[_key] = {
                 "source": {"path": source_file_path, _HASHING_ALGORITHM: Files.hash(source_file_path)},
                 "target": {"path": target_file_path, _HASHING_ALGORITHM: Files.hash(target_file_path)},
-                "version": Version.get_current_version(),
+                "version": Version.get_full(),
             }
             # 保存缓存文件的相关数据
             Configurations.save(cls.__CACHE_FILES_DATA_PATH, cls.__CACHE_FILES_DATA)
@@ -102,7 +102,7 @@ class Cache:
         cache_info: dict | None = cls.__CACHE_FILES_DATA.get(_key)
         if cache_info is not None:
             if (
-                Version.get_current_version() == cache_info["version"]
+                Version.get_full() == cache_info["version"]
                 and os.path.exists(source_file_path)
                 and source_file_path == cache_info["source"]["path"]
                 and Files.hash(source_file_path) == cache_info["source"].get(_HASHING_ALGORITHM)

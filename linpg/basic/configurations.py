@@ -8,9 +8,10 @@ from .getter import TypeSafeGetter
 
 # 配置文件管理模块
 class Configurations:
+
     # 加载配置文件
-    @staticmethod
-    def __load_file(path: str) -> dict:
+    @classmethod
+    def load_file(cls, path: str) -> dict[str, Any]:
         # 如果路径不存在
         if not os.path.exists(path):
             Exceptions.fatal(f"Cannot find file on path: {path}")
@@ -19,20 +20,15 @@ class Configurations:
             with open(path, "r", encoding="utf-8") as f:
                 return dict(json.load(f))
 
-    # 加载配置文件
-    @classmethod
-    def load_file(cls, path: str) -> dict[str, Any]:
-        return cls.__load_file(path)
-
     # 尝试加载可能不存在的配置文件，如果不存在则返回一个空字典
     @classmethod
     def try_load_file(cls, path: str, _default: dict = {}) -> dict[str, Any]:
-        return cls.__load_file(path) if os.path.exists(path) else _default
+        return cls.load_file(path) if os.path.exists(path) else _default
 
     # 加载配置文件，并根据key（s）返回对应的数据
     @classmethod
     def load(cls, path: str, *key: str) -> Any:
-        return TypeSafeGetter.get_by_keys(cls.__load_file(path), key)
+        return TypeSafeGetter.get_by_keys(cls.load_file(path), key)
 
     # 配置文件保存
     @staticmethod

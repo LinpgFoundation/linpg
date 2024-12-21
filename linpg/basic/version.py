@@ -14,7 +14,7 @@ class Version:
 
     # 确保linpg版本
     @classmethod
-    def ensure_linpg_version(cls, action: str, revision: int, patch: int, version: int = 3) -> bool:
+    def validate(cls, action: str, revision: int, patch: int, version: int = 4) -> bool:
         match action:
             case "==":
                 return cls.__VERSION == version and cls.__REVISION == revision and cls.__PATCH == patch
@@ -27,10 +27,5 @@ class Version:
 
     # 获取当前版本号
     @classmethod
-    def get_current_version(cls) -> str:
+    def get_full(cls) -> str:
         return f"{cls.__VERSION}.{cls.__REVISION}.{cls.__PATCH}"
-
-    # 获取github项目地址
-    @classmethod
-    def get_repository_url(cls) -> str:
-        return "https://github.com/LinpgFoundation/linpg"

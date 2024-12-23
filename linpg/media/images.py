@@ -1,7 +1,7 @@
 import io
 
 from ..basic.settings import Settings
-from .wrapper import *
+from .surfaces import *
 
 
 # 源图形处理

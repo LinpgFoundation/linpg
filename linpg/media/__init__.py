@@ -1,6 +1,6 @@
 """
 结构:
-wrapper -> images -> controller -> display -> mixer -> font
+wrapper -> surfaces -> images -> controller -> display -> mixer -> font
 """
 
 from .font import *

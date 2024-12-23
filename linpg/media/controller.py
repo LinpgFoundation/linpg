@@ -7,6 +7,13 @@ class Controller:
     class __JoystickController:
         __input: pygame.joystick.JoystickType | None = None
 
+        # enable joystick
+        @classmethod
+        def init(cls) -> None:
+            # 如果pygame的手柄组件没有初始化，则初始化
+            if not pygame.joystick.get_init():
+                pygame.joystick.init()
+
         # 手柄是否初始化
         @classmethod
         def get_init(cls) -> bool:
@@ -29,11 +36,13 @@ class Controller:
         # 更新设备
         @classmethod
         def update(cls) -> None:
+            # do not continue checking if the controller is disabled
+            if not pygame.joystick.get_init():
+                return
             # 有新的手柄连接了
             if cls.__input is None:
                 if pygame.joystick.get_count() > 0:
                     cls.__input = pygame.joystick.Joystick(0)
-                    cls.__input.init()
                     Exceptions.inform("A joystick is detected and initialized successfully.")
             # 当目前有手柄在连接
             else:
@@ -54,8 +63,6 @@ class Controller:
         # 之前的鼠标坐标
         __last_x: int = 0
         __last_y: int = 0
-        # 鼠标移动速度（使用手柄时）
-        __moving_speed: int = max(int(Settings.get("MouseMoveSpeed")), 1)
         # 鼠标上次更新时被按下的详情
         __mouse_get_pressed_previously: tuple[bool, ...] = (False, False, False, False, False)
         # 鼠标图标
@@ -63,12 +70,8 @@ class Controller:
 
         @classmethod
         def set_custom_icon(cls, path: str) -> None:
-            cls.__icon_img = Images.load(path, (int(Settings.get("MouseIconWidth")), int(Settings.get("MouseIconWidth") * 1.3)))
-
-        # 灵敏度
-        @classmethod
-        def get_moving_speed(cls) -> int:
-            return cls.__moving_speed
+            _size: int = Settings.get_int("MouseIconSize")
+            cls.__icon_img = Images.load(path, (_size, _size))
 
         # 鼠标坐标
         @classmethod
@@ -191,21 +194,25 @@ class Controller:
         cls.mouse.update()
         # 根据手柄情况调整鼠标位置（如果手柄启动）
         if cls.joystick.is_active():
+            # get controller sensitivity
+            _sensitivity: int = max(Settings.get_int("ControllerSensitivity"), 1)
+            # get joystick button status
             x_axis_value: float = cls.joystick.get_axis(0)
             is_x_need_update: bool = not 0.5 > x_axis_value > -0.5
             y_axis_value: float = cls.joystick.get_axis(1)
             is_y_need_update: bool = not 0.5 > y_axis_value > -0.5
+            # move cursor
             if is_x_need_update is True and is_y_need_update is True:
                 cls.mouse.set_pos(
                     (
-                        int(cls.mouse.x + cls.mouse.get_moving_speed() * x_axis_value),
-                        int(cls.mouse.y + cls.mouse.get_moving_speed() * y_axis_value),
+                        int(cls.mouse.x + _sensitivity * x_axis_value),
+                        int(cls.mouse.y + _sensitivity * y_axis_value),
                     )
                 )
             elif is_x_need_update is True:
-                cls.mouse.set_pos((int(cls.mouse.x + cls.mouse.get_moving_speed() * x_axis_value), cls.mouse.y))
+                cls.mouse.set_pos((int(cls.mouse.x + _sensitivity * x_axis_value), cls.mouse.y))
             elif is_y_need_update is True:
-                cls.mouse.set_pos((cls.mouse.x, int(cls.mouse.y + cls.mouse.get_moving_speed() * y_axis_value)))
+                cls.mouse.set_pos((cls.mouse.x, int(cls.mouse.y + _sensitivity * y_axis_value)))
         # 更新综合输入事件
         cls.__INPUT_EVENTS = tuple(pygame.event.get())
         # 重设用于判断常见事件的参数
@@ -238,7 +245,3 @@ class Controller:
                             cls.NEED_TO_TAKE_SCREENSHOT = True
                         case Keys.DELETE:
                             cls.__SPECIFIC_EVENTS["delete"] = True
-
-
-# 控制器输入组件初始化
-Controller.update()

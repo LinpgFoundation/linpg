@@ -11,16 +11,16 @@ class Display:
     # 帧率控制器
     __CLOCK: Final[pygame.time.Clock] = pygame.time.Clock()
     # 帧率
-    __MAX_FPS: int = min(max(int(Settings.get("MaxFps")), 30), 1000)
+    __MAX_FPS: int = min(max(Settings.get_int("MaxFps"), 30), 999)
     # 窗口比例
-    __SCALE: int = Numbers.keep_int_in_range(int(Settings.get("Resolution", "scale")), 0, 100)
+    __SCALE: int = Numbers.keep_int_in_range(Settings.get_int("Resolution", "scale"), 0, 100)
     # 主要的窗口
     __SCREEN_WINDOW: ImageSurface = Surfaces.NULL
     # 窗口尺寸
-    __STANDARD_WIDTH: int = max(int(Settings.get("Resolution", "width")), 1) * __SCALE // 100
-    __STANDARD_HEIGHT: int = max(int(Settings.get("Resolution", "height")), 1) * __SCALE // 100
+    __STANDARD_WIDTH: int = max(Settings.get_int("Resolution", "width"), 1) * __SCALE // 100
+    __STANDARD_HEIGHT: int = max(Settings.get_int("Resolution", "height"), 1) * __SCALE // 100
     # 信息渲染使用的文字模块
-    __FONT: Final[pygame.font.Font] = pygame.font.SysFont("arial", __STANDARD_HEIGHT // 40)
+    __FONT: pygame.font.Font | None = None
     # 时间增量
     __TICKS: int = 0
     __DELTA_TIME: int = 1
@@ -54,6 +54,8 @@ class Display:
         Controller.finish_up()
         # 展示帧率信息
         if Debug.get_show_fps():
+            if cls.__FONT is None:
+                cls.__FONT = pygame.font.SysFont("arial", cls.__STANDARD_HEIGHT // 40)
             _text: ImageSurface = cls.__FONT.render(
                 f"fps: {round(cls.get_current_fps(), 2)} delta time (ms): {cls.__DELTA_TIME}",
                 Settings.get_antialias(),
@@ -105,9 +107,10 @@ class Display:
     # 初始化屏幕
     @classmethod
     def init(cls, flags: int = 0) -> ImageSurface:
-        monitorId: int = int(Settings.get("MonitorToDisplay"))
+        monitorId: int = Settings.get_int("MonitorToDisplay")
         # 如果是全屏模式
         if cls.__SCALE >= 100:
+            # get the flags
             if flags <= 0:
                 flags = pygame.FULLSCREEN | pygame.SCALED
             if Settings.get("EnableOpenGL") is True:

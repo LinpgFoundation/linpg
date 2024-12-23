@@ -66,6 +66,16 @@ class TypeSafeGetter(ABC):
     def get_int(cls, *_key: Any) -> int:
         return int(cls.get(*_key))
 
+    # 以int的形式获取特定的数据，but rounded
+    @classmethod
+    def get_round_int(cls, *_key: Any) -> int:
+        return int(round(cls.get(*_key)))
+
+    # 以float的形式获取特定的数据，but rounded
+    @classmethod
+    def get_round_float(cls, *_key: Any, digits: int = 2) -> float:
+        return float(round(cls.get(*_key), digits))
+
     # 尝试以int的形式获取特定的数据
     @classmethod
     def try_get_int(cls, *_key: Any) -> int | None:

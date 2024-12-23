@@ -1,4 +1,5 @@
 from glob import glob
+from typing import Any
 
 from .display import *
 
@@ -112,7 +113,7 @@ class Sounds:
 
     # 从一个文件夹中加载音效
     @classmethod
-    def load_from_directory(cls, folder_path: str) -> tuple[Sound, ...]:
+    def load_dir(cls, folder_path: str) -> tuple[Sound, ...]:
         if not os.path.isdir(folder_path):
             Exceptions.fatal("The path is not a valid directory!")
         return tuple(cls.load(_path) for _path in glob(os.path.join(folder_path, "*")))
@@ -132,7 +133,7 @@ class Sounds:
     # 是否有任何音乐在播放
     @classmethod
     def get_busy(cls) -> bool:
-        return pygame.mixer.get_busy() if cls.get_init() is True else True
+        return not cls.get_init() or pygame.mixer.get_busy()
 
     # 暂停正在播放的音乐
     @classmethod
@@ -191,7 +192,7 @@ class Music:
 
     # 重新开始播放背景音乐
     @classmethod
-    def restart(cls) -> None:
+    def rewind(cls) -> None:
         if cls.get_init() is True:
             pygame.mixer.music.rewind()
 
@@ -250,7 +251,7 @@ class Music:
     # 是否忙碌
     @classmethod
     def get_busy(cls) -> bool:
-        return pygame.mixer.music.get_busy() if cls.get_init() is True else True
+        return not cls.get_init() or pygame.mixer.music.get_busy()
 
 
 # 音量管理
@@ -259,12 +260,12 @@ class Volume:
 
     @classmethod
     def get_global_value(cls) -> int:
-        return Numbers.keep_int_in_range(round(Settings.get("Sound", "global_value")), 0, cls.__sound_unit)
+        return Numbers.keep_int_in_range(Settings.get_round_int("Sound", "global_value"), 0, cls.__sound_unit)
 
     @classmethod
     def get_background_music(cls) -> int:
         return round(
-            Numbers.keep_number_in_range(round(Settings.get("Sound", "background_music"), 2), 0, cls.__sound_unit)
+            Numbers.keep_number_in_range(Settings.get_round_float("Sound", "background_music"), 0, cls.__sound_unit)
             * cls.get_global_value()
             / cls.__sound_unit
         )
@@ -272,7 +273,7 @@ class Volume:
     @classmethod
     def get_effects(cls) -> int:
         return round(
-            Numbers.keep_number_in_range(round(Settings.get("Sound", "effects"), 2), 0, cls.__sound_unit)
+            Numbers.keep_number_in_range(Settings.get_round_float("Sound", "effects"), 0, cls.__sound_unit)
             * cls.get_global_value()
             / cls.__sound_unit
         )
@@ -280,7 +281,7 @@ class Volume:
     @classmethod
     def get_environment(cls) -> int:
         return round(
-            Numbers.keep_number_in_range(round(Settings.get("Sound", "environment"), 2), 0, cls.__sound_unit)
+            Numbers.keep_number_in_range(Settings.get_round_float("Sound", "environment"), 0, cls.__sound_unit)
             * cls.get_global_value()
             / cls.__sound_unit
         )
@@ -321,7 +322,7 @@ class Media:
 # linpg引擎保留的频道
 class LINPG_RESERVED_CHANNELS:
     # 根据设置参数改变声道数量
-    __MIXER_CHANNEL_NUM: Final[int] = max(int(Settings.get("NumberOfChannels")), 8) + 3
+    __MIXER_CHANNEL_NUM: Final[int] = max(Settings.get_int("NumberOfChannels"), 8) + 3
     # 背景音乐
     __BACKGROUND_MUSIC_CHANNEL_ID: Final[int] = __MIXER_CHANNEL_NUM - 3
     BACKGROUND_MUSIC_CHANNEL: SoundChannel | None = None
@@ -343,7 +344,3 @@ class LINPG_RESERVED_CHANNELS:
         else:
             Exceptions.inform("Mixer has not been initialized correctly!")
             print("One possible cause could be no output device, anyway, please double check your output device(s)!")
-
-
-# 初始化引擎保留频道
-LINPG_RESERVED_CHANNELS.init()

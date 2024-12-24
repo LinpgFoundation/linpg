@@ -4,7 +4,7 @@ from .container import *
 # 下拉选项菜单
 class DropDownList(GameObjectsDictContainer):
     def __init__(
-        self, bg_img: PoI | None, x: int_f, y: int_f, font_size: int, font_color: color_liked = "black", tag: str = ""
+        self, bg_img: PoI | None, x: int_f, y: int_f, font_size: int, font_color: color_liked = Colors.BLACK, tag: str = ""
     ) -> None:
         # 方格高度
         self.__block_height: int = font_size * 3 // 2
@@ -16,7 +16,7 @@ class DropDownList(GameObjectsDictContainer):
         # 字体颜色
         self.__font_color: tuple[int, int, int, int] = Colors.get(font_color)
         # 字体
-        self.__FONT = Font.create(font_size)
+        self.__FONT = Fonts.create(font_size)
         # 边缘粗细
         self.outline_thickness: int = 1
 
@@ -75,58 +75,59 @@ class DropDownList(GameObjectsDictContainer):
 
     # 把物品画到surface上
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
-        if self.is_visible():
-            current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
-            # 画出背景
-            if Surfaces.is_not_null(self._get_image_reference()):
-                self._get_image_reference().display(_surface, current_abs_pos)
-            else:
-                Draw.rect(_surface, Colors.WHITE, (current_abs_pos, self.size))
-            # 列出当前选中的选项
-            current_pos: tuple[int, int] = current_abs_pos
-            font_surface: ImageSurface = self.__FONT.render(self.get_selected_item(), self.__font_color)
-            _surface.blit(
-                font_surface,
-                Coordinates.add(current_pos, (self.__FONT.size * 3, (self.__block_height - font_surface.get_height()) // 2)),
-            )
-            rect_of_outline = Rectangle(current_pos[0], current_pos[1], self.width, self.__block_height)
-            Draw.rect(_surface, self.__font_color, rect_of_outline.get_rect(), self.outline_thickness)
-            font_surface = Images.flip(self.__FONT.render("^", self.__font_color), False, True)
-            _surface.blit(
-                font_surface,
-                Coordinates.add(
-                    current_pos,
-                    (self.width - font_surface.get_width() * 3 // 2, (self.__block_height - font_surface.get_height()) // 2),
-                ),
-            )
-            if Controller.get_event("confirm"):
-                if rect_of_outline.is_hovered():
-                    self.__fold_choice = not self.__fold_choice
-                elif not self.__fold_choice and not Controller.mouse.is_in_rect(
-                    current_abs_pos[0], current_abs_pos[1], self.get_width(), self.get_height()
-                ):
-                    self.__fold_choice = True
-            # 列出选择
-            if not self.__fold_choice:
-                index: int = 1
-                for key_of_game_object, game_object_t in self._get_container().items():
-                    current_pos = Coordinates.add(current_abs_pos, (0, index * self.__block_height))
-                    font_surface = self.__FONT.render(game_object_t, self.__font_color)
-                    _surface.blit(
-                        font_surface,
-                        Coordinates.add(
-                            current_pos, (self.__FONT.size * 3, (self.__block_height - font_surface.get_height()) // 2)
-                        ),
-                    )
-                    rect_of_outline = Rectangle(current_pos[0], current_pos[1], self.width, self.__block_height)
-                    Draw.rect(_surface, self.__font_color, rect_of_outline.get_rect(), self.outline_thickness)
-                    if rect_of_outline.is_hovered() and Controller.get_event("confirm"):
-                        self.__chosen_item_key = key_of_game_object
-                    Draw.circle(
-                        _surface,
-                        self.__font_color,
-                        Coordinates.add(current_pos, (self.__FONT.size * 2, self.__block_height / 2)),
-                        self.__block_height * 3 // 20,
-                        self.outline_thickness if key_of_game_object != self.__chosen_item_key else 0,
-                    )
-                    index += 1
+        if self.is_hidden():
+            return
+        current_abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
+        # 画出背景
+        if Surfaces.is_not_null(self._get_image_reference()):
+            self._get_image_reference().display(_surface, current_abs_pos)
+        else:
+            Draw.rect(_surface, Colors.WHITE, (current_abs_pos, self.size))
+        # 列出当前选中的选项
+        current_pos: tuple[int, int] = current_abs_pos
+        font_surface: ImageSurface = self.__FONT.render(self.get_selected_item(), self.__font_color)
+        _surface.blit(
+            font_surface,
+            Coordinates.add(current_pos, (self.__FONT.size * 3, (self.__block_height - font_surface.get_height()) // 2)),
+        )
+        rect_of_outline = Rectangle(current_pos[0], current_pos[1], self.width, self.__block_height)
+        Draw.rect(_surface, self.__font_color, rect_of_outline.get_rect(), self.outline_thickness)
+        font_surface = Images.flip(self.__FONT.render("^", self.__font_color), False, True)
+        _surface.blit(
+            font_surface,
+            Coordinates.add(
+                current_pos,
+                (self.width - font_surface.get_width() * 3 // 2, (self.__block_height - font_surface.get_height()) // 2),
+            ),
+        )
+        if Controller.get_event("confirm"):
+            if rect_of_outline.is_hovered():
+                self.__fold_choice = not self.__fold_choice
+            elif not self.__fold_choice and not Controller.mouse.is_in_rect(
+                current_abs_pos[0], current_abs_pos[1], self.get_width(), self.get_height()
+            ):
+                self.__fold_choice = True
+        # 列出选择
+        if not self.__fold_choice:
+            index: int = 1
+            for key_of_game_object, game_object_t in self._get_container().items():
+                current_pos = Coordinates.add(current_abs_pos, (0, index * self.__block_height))
+                font_surface = self.__FONT.render(game_object_t, self.__font_color)
+                _surface.blit(
+                    font_surface,
+                    Coordinates.add(
+                        current_pos, (self.__FONT.size * 3, (self.__block_height - font_surface.get_height()) // 2)
+                    ),
+                )
+                rect_of_outline = Rectangle(current_pos[0], current_pos[1], self.width, self.__block_height)
+                Draw.rect(_surface, self.__font_color, rect_of_outline.get_rect(), self.outline_thickness)
+                if rect_of_outline.is_hovered() and Controller.get_event("confirm"):
+                    self.__chosen_item_key = key_of_game_object
+                Draw.circle(
+                    _surface,
+                    self.__font_color,
+                    Coordinates.add(current_pos, (self.__FONT.size * 2, self.__block_height / 2)),
+                    self.__block_height * 3 // 20,
+                    self.outline_thickness if key_of_game_object != self.__chosen_item_key else 0,
+                )
+                index += 1

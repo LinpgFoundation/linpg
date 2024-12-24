@@ -6,15 +6,13 @@ class AbstractGameObjectsContainer(AbstractImageSurface, metaclass=ABCMeta):
     def __init__(self, bg_img: PoI | None, x: int_f, y: int_f, width: int, height: int, tag: str = "") -> None:
         super().__init__(StaticImage(bg_img, 0, 0, width, height) if bg_img is not None else None, x, y, width, height, tag)
 
+    def __len__(self) -> int:
+        return len(self._get_container())
+
     # 获取物品container容器（子类需实现）
     @abstractmethod
     def _get_container(self) -> dict | list:
         Exceptions.fatal("_get_container()", 1)
-
-    # 物品数量
-    @property
-    def item_num(self) -> int:
-        return len(self._get_container())
 
     # 清空物品栏
     def clear(self) -> None:
@@ -22,7 +20,7 @@ class AbstractGameObjectsContainer(AbstractImageSurface, metaclass=ABCMeta):
 
     # 是否为空
     def is_empty(self) -> bool:
-        return self.item_num <= 0
+        return self.__len__() <= 0
 
     # 设置宽度
     def set_width(self, value: int_f) -> None:

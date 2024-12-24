@@ -36,7 +36,7 @@ class ProgressBar(AbstractProgressBar):
 
 # 简单的分数百分比条的实现
 class SimpleRectPointsBar(AbstractProgressBar):
-    __FONT: FontGenerator = FontGenerator()
+    __FONT: Font = Font()
 
     def __init__(
         self,
@@ -89,7 +89,7 @@ class SimpleRectPointsBar(AbstractProgressBar):
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
         if self.is_visible():
             # 更新文字模块
-            self.__FONT.check_for_update(int(self.get_height() * 0.6))
+            self.__FONT.update(int(self.get_height() * 0.6))
             # 根据当前值计算条长度
             _width: int = int(self.get_width() * self.__current_point / self.__max_point)
             # 原先的绝对x
@@ -182,65 +182,66 @@ class ProgressBarAdjuster(ProgressBarSurface):
 
     # 展示
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
-        if self.is_visible():
-            super().display(_surface, offSet)
-            abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
-            x: int
-            y: int
-            if self.axis_mode is Axis.HORIZONTAL:
-                x, y = Coordinates.add(
-                    (
-                        int(self.get_width() * self.percentage - self.__indicator.width / 2),
-                        (self.get_height() - self.__indicator.height) // 2,
-                    ),
+        if self.is_hidden():
+            return
+        super().display(_surface, offSet)
+        abs_pos: tuple[int, int] = Coordinates.add(self.pos, offSet)
+        x: int
+        y: int
+        if self.axis_mode is Axis.HORIZONTAL:
+            x, y = Coordinates.add(
+                (
+                    int(self.get_width() * self.percentage - self.__indicator.width / 2),
+                    (self.get_height() - self.__indicator.height) // 2,
+                ),
+                abs_pos,
+            )
+            self.__indicator.set_pos(x, y)
+            self.__indicator.draw(_surface)
+            value_font = Fonts.render(str(round(self.percentage * 100)), Colors.WHITE, self.get_height())
+            _surface.blit(
+                value_font,
+                Coordinates.add(
                     abs_pos,
-                )
-                self.__indicator.set_pos(x, y)
-                self.__indicator.draw(_surface)
-                value_font = Font.render(str(round(self.percentage * 100)), Colors.WHITE, self.get_height())
-                _surface.blit(
-                    value_font,
-                    Coordinates.add(
-                        abs_pos,
-                        (
-                            self.get_width() + self.__indicator.width * 7 // 10,
-                            (self.get_height() - value_font.get_height()) / 2,
-                        ),
-                    ),
-                )
-            else:
-                x, y = Coordinates.add(
                     (
-                        (self.get_width() - self.__indicator.width) // 2,
-                        int(self.get_height() * self.percentage - self.__indicator.height / 2),
+                        self.get_width() + self.__indicator.width * 7 // 10,
+                        (self.get_height() - value_font.get_height()) / 2,
                     ),
-                    abs_pos,
-                )
+                ),
+            )
+        else:
+            x, y = Coordinates.add(
+                (
+                    (self.get_width() - self.__indicator.width) // 2,
+                    int(self.get_height() * self.percentage - self.__indicator.height / 2),
+                ),
+                abs_pos,
+            )
 
-                self.__indicator.set_pos(x, y)
-                self.__indicator.draw(_surface)
-                value_font = Font.render(str(round(self.percentage * 100)), Colors.WHITE, self.get_width())
-                _surface.blit(
-                    value_font,
-                    Coordinates.add(
-                        abs_pos,
-                        (
-                            (self.get_width() - value_font.get_width()) / 2,
-                            self.get_height() + self.__indicator.height * 7 // 10,
-                        ),
+            self.__indicator.set_pos(x, y)
+            self.__indicator.draw(_surface)
+            value_font = Fonts.render(str(round(self.percentage * 100)), Colors.WHITE, self.get_width())
+            _surface.blit(
+                value_font,
+                Coordinates.add(
+                    abs_pos,
+                    (
+                        (self.get_width() - value_font.get_width()) / 2,
+                        self.get_height() + self.__indicator.height * 7 // 10,
                     ),
+                ),
+            )
+        if self.is_hovered(offSet):
+            if Controller.mouse.get_pressed(0):
+                self.set_percentage(
+                    (Controller.mouse.x - offSet[0] - self.x) / self.get_width()
+                    if self.axis_mode is Axis.HORIZONTAL
+                    else (Controller.mouse.y - offSet[1] - self.y) / self.get_height()
                 )
-            if self.is_hovered(offSet):
-                if Controller.mouse.get_pressed(0):
-                    self.set_percentage(
-                        (Controller.mouse.x - offSet[0] - self.x) / self.get_width()
-                        if self.axis_mode is Axis.HORIZONTAL
-                        else (Controller.mouse.y - offSet[1] - self.y) / self.get_height()
-                    )
-                elif Controller.get_event("scroll_down"):
-                    self.set_percentage(min(round(self.percentage + 0.01, 2), 1.0))
-                elif Controller.get_event("scroll_up"):
-                    self.set_percentage(max(round(self.percentage - 0.01, 2), 0.0))
+            elif Controller.get_event("scroll_down"):
+                self.set_percentage(min(round(self.percentage + 0.01, 2), 1.0))
+            elif Controller.get_event("scroll_up"):
+                self.set_percentage(max(round(self.percentage - 0.01, 2), 0.0))
 
 
 # 动态进度条Surface

@@ -1,3 +1,4 @@
+from ..basic.enums import Axis
 from .dropdown import *
 
 
@@ -112,7 +113,7 @@ class AbstractScrollBarsSurface(SurfaceWithLocalPos, metaclass=ABCMeta):
             else None
         )
 
-    def display_scrollbar(self, _surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
+    def _display_scrollbar(self, _surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
         # 获取滚轮条
         right_scroll_bar_rect: Rectangle | None = self._get_right_scroll_bar_rect(off_set[0], off_set[1])
         right_scroll_button_rect: Rectangle | None = self._get_right_scroll_button_rect(off_set[0], off_set[1])
@@ -182,39 +183,39 @@ class AbstractSurfaceWithScrollBar(AbstractScrollBarsSurface, metaclass=ABCMeta)
 
     # 滚动条位置
     @property
-    def scroll_bar_pos(self) -> str:
+    def scroll_bar_pos(self) -> Directions:
         return self.get_scroll_bar_pos()
 
-    def get_scroll_bar_pos(self) -> str:
+    def get_scroll_bar_pos(self) -> Directions:
         if self.axis_mode is Axis.VERTICAL:
-            return "right" if not self.__scroll_bar_pos else "left"
+            return Directions.RIGHT if not self.__scroll_bar_pos else Directions.LEFT
         else:
-            return "bottom" if not self.__scroll_bar_pos else "top"
+            return Directions.BOTTOM if not self.__scroll_bar_pos else Directions.TOP
 
-    def set_scroll_bar_pos(self, pos: str) -> None:
+    def set_scroll_bar_pos(self, pos: Directions) -> None:
         match pos:
-            case "left":
+            case Directions.LEFT:
                 if self.axis_mode is Axis.VERTICAL:
                     self.__scroll_bar_pos = True
                 else:
                     Exceptions.fatal("You cannot put the scroll bar on the left during horizontal mode!")
-            case "right":
+            case Directions.RIGHT:
                 if self.axis_mode is Axis.VERTICAL:
                     self.__scroll_bar_pos = False
                 else:
                     Exceptions.fatal("You cannot put the scroll bar on the right during horizontal mode!")
-            case "top":
+            case Directions.TOP:
                 if self.axis_mode is Axis.HORIZONTAL:
                     self.__scroll_bar_pos = True
                 else:
                     Exceptions.fatal("You cannot put the scroll bar on the top during vertical mode!")
-            case "bottom":
+            case Directions.BOTTOM:
                 if self.axis_mode is Axis.HORIZONTAL:
                     self.__scroll_bar_pos = False
                 else:
                     Exceptions.fatal("You cannot put the scroll bar on the bottom during vertical mode!")
             case _:
-                Exceptions.fatal(f'Scroll bar position "{pos}" is not supported! Try sth like "right" or "bottom" instead.')
+                Exceptions.fatal(f'Scroll bar position "{pos}" is not supported!')
 
     # 获取滚动条按钮的Rect
     def _get_scroll_button_rect(self, off_set_x: number, off_set_y: number) -> Rectangle | None:
@@ -258,7 +259,7 @@ class AbstractSurfaceWithScrollBar(AbstractScrollBarsSurface, metaclass=ABCMeta)
                 )
         return None
 
-    def display_scrollbar(self, _surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
+    def _display_scrollbar(self, _surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
         # 获取滚轮条
         scroll_bar_rect: Rectangle | None = self._get_scroll_bar_rect(off_set[0], off_set[1])
         scroll_button_rect: Rectangle | None = self._get_scroll_button_rect(off_set[0], off_set[1])
@@ -365,103 +366,105 @@ class SurfaceContainerWithScrollBar(GameObjectsDictContainer, AbstractSurfaceWit
     # 把素材画到屏幕上
     def display(self, _surface: ImageSurface, off_set: tuple[int, int] = ORIGIN) -> None:
         self._item_being_hovered = None
-        if self.is_visible():
-            # 如果有背景图片，则画出
-            if Surfaces.is_not_null(self._get_image_reference()):
-                _surface.blit(self._get_image_reference(), Coordinates.add(self.pos, off_set))
-            # 计算出基础坐标
-            current_x: int = self.abs_x + off_set[0]
-            current_y: int = self.abs_y + off_set[1]
+        if self.is_hidden():
+            return
+        # 如果有背景图片，则画出
+        if Surfaces.is_not_null(self._get_image_reference()):
+            _surface.blit(self._get_image_reference(), Coordinates.add(self.pos, off_set))
+        # 计算出基础坐标
+        current_x: int = self.abs_x + off_set[0]
+        current_y: int = self.abs_y + off_set[1]
+        if self.axis_mode is Axis.VERTICAL:
+            current_x += self.padding
+        else:
+            current_y += self.padding
+        # 定义部分用到的变量
+        abs_local_y: int
+        crop_height: int
+        new_height: int
+        abs_local_x: int
+        crop_width: int
+        new_width: int
+        item_has_been_dawn_on_this_line: int = 0
+        # 画出物品栏里的图片
+        for key, item in self._get_container().items():
+            if item is None:
+                continue
             if self.axis_mode is Axis.VERTICAL:
-                current_x += self.padding
+                abs_local_y = current_y - self.y
+                if 0 <= abs_local_y < self.get_height():
+                    new_height = self.get_height() - abs_local_y
+                    if new_height > item.get_height():
+                        new_height = item.get_height()
+                    new_width = item.get_width()
+                    if new_width > self.get_width():
+                        new_width = self.get_width()
+                    subsurface_rect = Rectangle(0, 0, new_width, new_height)
+                    _surface.blit(item.subsurface(subsurface_rect.get_rect()), (current_x, current_y))
+                    if subsurface_rect.is_hovered((current_x, current_y)):
+                        self._item_being_hovered = str(key)
+                elif -(item.get_height()) <= abs_local_y < 0:
+                    crop_height = -abs_local_y
+                    new_height = item.get_height() - crop_height
+                    if new_height > self.get_height():
+                        new_height = self.get_height()
+                    new_width = item.get_width()
+                    if new_width > self.get_width():
+                        new_width = self.get_width()
+                    subsurface_rect = Rectangle(0, crop_height, new_width, new_height)
+                    _surface.blit(item.subsurface(subsurface_rect.get_rect()), (current_x, current_y + crop_height))
+                    if subsurface_rect.is_hovered((current_x, current_y)):
+                        self._item_being_hovered = str(key)
+                # 换行
+                if item_has_been_dawn_on_this_line >= self.__item_per_line - 1:
+                    current_y += self.distance_between_item + item.get_height()
+                    current_x = self.abs_x + off_set[0] + self.padding
+                    item_has_been_dawn_on_this_line = 0
+                else:
+                    current_x += self.distance_between_item + item.get_width()
+                    item_has_been_dawn_on_this_line += 1
             else:
-                current_y += self.padding
-            # 定义部分用到的变量
-            abs_local_y: int
-            crop_height: int
-            new_height: int
-            abs_local_x: int
-            crop_width: int
-            new_width: int
-            item_has_been_dawn_on_this_line: int = 0
-            # 画出物品栏里的图片
-            for key, item in self._get_container().items():
-                if item is not None:
-                    if self.axis_mode is Axis.VERTICAL:
-                        abs_local_y = current_y - self.y
-                        if 0 <= abs_local_y < self.get_height():
-                            new_height = self.get_height() - abs_local_y
-                            if new_height > item.get_height():
-                                new_height = item.get_height()
-                            new_width = item.get_width()
-                            if new_width > self.get_width():
-                                new_width = self.get_width()
-                            subsurface_rect = Rectangle(0, 0, new_width, new_height)
-                            _surface.blit(get_img_subsurface(item, subsurface_rect), (current_x, current_y))
-                            if subsurface_rect.is_hovered((current_x, current_y)):
-                                self._item_being_hovered = str(key)
-                        elif -(item.get_height()) <= abs_local_y < 0:
-                            crop_height = -abs_local_y
-                            new_height = item.get_height() - crop_height
-                            if new_height > self.get_height():
-                                new_height = self.get_height()
-                            new_width = item.get_width()
-                            if new_width > self.get_width():
-                                new_width = self.get_width()
-                            subsurface_rect = Rectangle(0, crop_height, new_width, new_height)
-                            _surface.blit(get_img_subsurface(item, subsurface_rect), (current_x, current_y + crop_height))
-                            if subsurface_rect.is_hovered((current_x, current_y)):
-                                self._item_being_hovered = str(key)
-                        # 换行
-                        if item_has_been_dawn_on_this_line >= self.__item_per_line - 1:
-                            current_y += self.distance_between_item + item.get_height()
-                            current_x = self.abs_x + off_set[0] + self.padding
-                            item_has_been_dawn_on_this_line = 0
-                        else:
-                            current_x += self.distance_between_item + item.get_width()
-                            item_has_been_dawn_on_this_line += 1
-                    else:
-                        abs_local_x = current_x - self.x
-                        if 0 <= abs_local_x < self.get_width():
-                            new_width = self.get_width() - abs_local_x
-                            if new_width > item.get_width():
-                                new_width = item.get_width()
-                            new_height = item.get_height()
-                            if new_height > self.get_height():
-                                new_height = self.get_height()
-                            subsurface_rect = Rectangle(0, 0, new_width, new_height)
-                            _surface.blit(get_img_subsurface(item, subsurface_rect), (current_x, current_y))
-                            if subsurface_rect.is_hovered((current_x, current_y)):
-                                self._item_being_hovered = str(key)
-                        elif -(item.get_width()) <= abs_local_x < 0:
-                            crop_width = -abs_local_x
-                            new_width = item.get_width() - crop_width
-                            if new_width > self.get_width():
-                                new_width = self.get_width()
-                            new_height = item.get_height()
-                            if new_height > self.get_height():
-                                new_height = self.get_height()
-                            subsurface_rect = Rectangle(crop_width, 0, new_width, new_height)
-                            _surface.blit(get_img_subsurface(item, subsurface_rect), (current_x + crop_width, current_y))
-                            if subsurface_rect.is_hovered((current_x, current_y)):
-                                self._item_being_hovered = str(key)
-                        # 换行
-                        if item_has_been_dawn_on_this_line >= self.__item_per_line - 1:
-                            current_x += self.distance_between_item + item.get_width()
-                            current_y = self.abs_y + off_set[1] + self.padding
-                            item_has_been_dawn_on_this_line = 0
-                        else:
-                            current_y += self.distance_between_item + item.get_height()
-                            item_has_been_dawn_on_this_line += 1
-            # 处理总长宽
-            if self.axis_mode is Axis.VERTICAL:
-                self.__surface_height = current_y - self.abs_y - off_set[1]
-                if item_has_been_dawn_on_this_line > 0:
-                    self.__surface_height += item.get_height()
-                self.__surface_width = self.get_width()
-            else:
-                self.__surface_width = current_x - self.abs_x - off_set[0]
-                if item_has_been_dawn_on_this_line > 0:
-                    self.__surface_width += item.get_width()
-                self.__surface_height = self.get_height()
-            self.display_scrollbar(_surface, off_set)
+                abs_local_x = current_x - self.x
+                if 0 <= abs_local_x < self.get_width():
+                    new_width = self.get_width() - abs_local_x
+                    if new_width > item.get_width():
+                        new_width = item.get_width()
+                    new_height = item.get_height()
+                    if new_height > self.get_height():
+                        new_height = self.get_height()
+                    subsurface_rect = Rectangle(0, 0, new_width, new_height)
+                    _surface.blit(item.subsurface(subsurface_rect.get_rect())(current_x, current_y))
+                    if subsurface_rect.is_hovered((current_x, current_y)):
+                        self._item_being_hovered = str(key)
+                elif -(item.get_width()) <= abs_local_x < 0:
+                    crop_width = -abs_local_x
+                    new_width = item.get_width() - crop_width
+                    if new_width > self.get_width():
+                        new_width = self.get_width()
+                    new_height = item.get_height()
+                    if new_height > self.get_height():
+                        new_height = self.get_height()
+                    subsurface_rect = Rectangle(crop_width, 0, new_width, new_height)
+                    _surface.blit(item.subsurface(subsurface_rect.get_rect()), (current_x + crop_width, current_y))
+                    if subsurface_rect.is_hovered((current_x, current_y)):
+                        self._item_being_hovered = str(key)
+                # 换行
+                if item_has_been_dawn_on_this_line >= self.__item_per_line - 1:
+                    current_x += self.distance_between_item + item.get_width()
+                    current_y = self.abs_y + off_set[1] + self.padding
+                    item_has_been_dawn_on_this_line = 0
+                else:
+                    current_y += self.distance_between_item + item.get_height()
+                    item_has_been_dawn_on_this_line += 1
+        # 处理总长宽
+        if self.axis_mode is Axis.VERTICAL:
+            self.__surface_height = current_y - self.abs_y - off_set[1]
+            if item_has_been_dawn_on_this_line > 0:
+                self.__surface_height += item.get_height()
+            self.__surface_width = self.get_width()
+        else:
+            self.__surface_width = current_x - self.abs_x - off_set[0]
+            if item_has_been_dawn_on_this_line > 0:
+                self.__surface_width += item.get_width()
+            self.__surface_height = self.get_height()
+        self._display_scrollbar(_surface, off_set)

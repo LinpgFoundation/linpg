@@ -80,12 +80,12 @@ class Draw:
     # 画多边形
     @staticmethod
     def polygon(
-        _surface: ImageSurface, _color: tuple[int, int, int, int], _points: tuple[tuple[int, int], ...], thickness: int = 0
+        _surface: ImageSurface, color: tuple[int, int, int, int], points: tuple[tuple[int, int], ...], thickness: int = 0
     ) -> None:
         if thickness <= 0:
-            pygame.gfxdraw.filled_polygon(_surface, _points, _color)
+            pygame.gfxdraw.filled_polygon(_surface, points, color)
         else:
-            pygame.draw.polygon(_surface, _color, _points, thickness)
+            pygame.draw.polygon(_surface, color, points, thickness)
 
 
 class Surfaces:

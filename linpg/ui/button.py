@@ -6,15 +6,15 @@ class ButtonText(TextSurface):
         self,
         text: str,
         size: int_f,
-        _color: color_liked = Colors.BLACK,
-        _bold: bool = False,
-        _italic: bool = False,
+        color: color_liked = Colors.BLACK,
+        bold: bool = False,
+        italic: bool = False,
         alpha_when_not_hover: int = 255,
     ) -> None:
         self.__text_surface_2: ImageSurface | None = None
         self.__alpha_when_not_hover: int = alpha_when_not_hover
         # 初始化文字
-        super().__init__(text, 0, 0, size, _color, _bold, _italic)
+        super().__init__(text, 0, 0, size, color, bold, italic)
         # 是否被触碰的flag
         self.__is_hovered: bool = False
 
@@ -87,12 +87,12 @@ class ButtonComponent(AbstractButton):
     def text(
         text: str,
         size: int_f,
-        _color: color_liked = Colors.BLACK,
-        _bold: bool = False,
-        _italic: bool = False,
+        color: color_liked = Colors.BLACK,
+        bold: bool = False,
+        italic: bool = False,
         alpha_when_not_hover: int = 255,
     ) -> ButtonText:
-        return ButtonText(text, size, _color, _bold, _italic, alpha_when_not_hover)
+        return ButtonText(text, size, color, bold, italic, alpha_when_not_hover)
 
 
 # 按钮的简单实现
@@ -120,10 +120,9 @@ class Button(AbstractButton):
             fading_button: Button = Button(
                 Images.load(path, alpha=alpha_when_not_hover), position[0], position[1], size[0], size[1]
             )
-            if path != "<NULL>":
-                img2 = fading_button.get_image_copy()
-                img2.set_alpha(255)
-                fading_button.set_hover_img(img2)
+            img2 = fading_button.get_image_copy()
+            img2.set_alpha(255)
+            fading_button.set_hover_img(img2)
             return fading_button
         else:
             return Button(Images.quickly_load(path), position[0], position[1], size[0], size[1])
@@ -182,7 +181,7 @@ class Button(AbstractButton):
     def set_description(self, value: str = "") -> None:
         self.__description = value
         self.__description_surface = (
-            ArtisticFont.render_description_box(
+            ArtisticFonts.render_description_box(
                 self.__description, Colors.BLACK, self.get_height() * 2 // 5, self.get_height() // 5, Colors.WHITE
             )
             if len(self.__description) > 0

@@ -1,12 +1,4 @@
-_SPEECH_RECOGNITION_ENABLED: bool = False
-
-try:
-    import speech_recognition as sr  # type: ignore
-
-    _SPEECH_RECOGNITION_ENABLED = True
-except ImportError:
-    _SPEECH_RECOGNITION_ENABLED = False
-
+from ..basic.enums import Locations
 from .scrollbar import *
 
 
@@ -36,7 +28,7 @@ class BoolTickTimer:
 class AbstractInputBox(GameObject2d, metaclass=ABCMeta):
     def __init__(self, x: int_f, y: int_f, font_size: int, txt_color: color_liked, default_width: int) -> None:
         super().__init__(x, y)
-        self._FONT: FontGenerator = Font.create(font_size)
+        self._FONT: Font = Fonts.create(font_size)
         self._default_width: int = default_width
         self._default_height: int = self._FONT.size * 3 // 2
         self._input_box: Rectangle = Rectangle(x, y, default_width, self._default_height)
@@ -129,7 +121,7 @@ class SingleLineInputBox(AbstractInputBox):
         else:
             self._input_box.set_width(self._default_width)
 
-    def _check_key_down(self, event: PG_Event) -> bool:
+    def _check_key_down(self, event: Event) -> bool:
         match event.key:
             case Keys.BACKSPACE:
                 self._remove_char(Locations.BEGINNING)
@@ -205,14 +197,6 @@ class MultipleLinesInputBox(AbstractInputBox):
         super().__init__(x, y, font_size, txt_color, default_width)
         self._text: list[str] = [""]
         self.__lineId: int = 0
-        # start dictate button
-        self.__start_dictating: Button | None = None
-        # wether user is using dictation
-        self.__is_dictating: bool = False
-        if _SPEECH_RECOGNITION_ENABLED and len(sr.Microphone.list_working_microphones()) > 0:
-            self.__start_dictating = Button.load("<&ui>button.png", ORIGIN, (self._FONT.size, self._FONT.size), 150)
-            self.__start_dictating.set_text(ButtonComponent.text(Languages.get_text("Editor", "dictate"), font_size // 3))
-            self.__start_dictating.set_auto_resize(True)
 
     def get_text(self) -> list:
         self.need_save = False
@@ -338,89 +322,65 @@ class MultipleLinesInputBox(AbstractInputBox):
         else:
             self._holder_index = i - 1
 
-    # 听写
-    def __dictate(self) -> None:
-        # Initialize recognizer
-        recognizer = sr.Recognizer()
-        # Initialize audio
-        _audio: sr.AudioData | None = None
-        # Capture audio
-        try:
-            with sr.Microphone() as source:
-                _audio = recognizer.listen(source)
-        except OSError:
-            Exceptions.warn("No speaker detected!")
-        # try process audio
-        if _audio is not None:
-            # Recognize speech using Speech API
-            try:
-                self._add_text(recognizer.recognize_google(_audio, language=Languages.get_current_language_tag()))
-            except sr.UnknownValueError:
-                Exceptions.inform("Speech API could not understand the audio")
-            except sr.RequestError as e:
-                Exceptions.inform(f"Could not request results from Speech API; {e}")
-        self.__is_dictating = False
-
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
-        if not self.__is_dictating:
-            for event in Controller.get_events():
-                if self._active:
-                    match event.type:
-                        case Events.KEY_DOWN:
-                            match event.key:
-                                case Keys.BACKSPACE:
-                                    self._remove_char(Locations.BEGINNING)
-                                case Keys.DELETE:
-                                    self._remove_char(Locations.END)
-                                case Keys.ARROW_LEFT:
-                                    if self._holder_index > 0:
-                                        self._holder_index -= 1
-                                case Keys.ARROW_RIGHT:
-                                    if self._holder_index < len(self._text[self.__lineId]):
-                                        self._holder_index += 1
-                                case Keys.ARROW_UP:
-                                    if self.__lineId > 0:
-                                        self.__lineId -= 1
-                                        if self._holder_index > len(self._text[self.__lineId]) - 1:
-                                            self._holder_index = len(self._text[self.__lineId]) - 1
-                                case Keys.ARROW_DOWN:
-                                    if self.__lineId < len(self._text) - 1:
-                                        self.__lineId += 1
-                                        if self._holder_index > len(self._text[self.__lineId]) - 1:
-                                            self._holder_index = len(self._text[self.__lineId]) - 1
-                                # ESC，关闭
-                                case Keys.ESCAPE:
-                                    self._active = False
-                                    self.need_save = True
-                                case Keys.RETURN:
-                                    # 如果“|”位于最后
-                                    if self._holder_index == len(self._text[self.__lineId]):
-                                        self._text.insert(self.__lineId + 1, "")
-                                    else:
-                                        self._text.insert(self.__lineId + 1, self._text[self.__lineId][self._holder_index :])
-                                        self._text[self.__lineId] = self._text[self.__lineId][: self._holder_index]
+        for event in Controller.get_events():
+            if self._active:
+                match event.type:
+                    case Events.KEY_DOWN:
+                        match event.key:
+                            case Keys.BACKSPACE:
+                                self._remove_char(Locations.BEGINNING)
+                            case Keys.DELETE:
+                                self._remove_char(Locations.END)
+                            case Keys.ARROW_LEFT:
+                                if self._holder_index > 0:
+                                    self._holder_index -= 1
+                            case Keys.ARROW_RIGHT:
+                                if self._holder_index < len(self._text[self.__lineId]):
+                                    self._holder_index += 1
+                            case Keys.ARROW_UP:
+                                if self.__lineId > 0:
+                                    self.__lineId -= 1
+                                    if self._holder_index > len(self._text[self.__lineId]) - 1:
+                                        self._holder_index = len(self._text[self.__lineId]) - 1
+                            case Keys.ARROW_DOWN:
+                                if self.__lineId < len(self._text) - 1:
                                     self.__lineId += 1
-                                    self._holder_index = 0
-                                    self._reset_inputbox_size()
-                                case _:
-                                    if (
-                                        event.unicode == "v"
-                                        and Keys.get_pressed("v")
-                                        and Keys.get_pressed(Keys.LEFT_CTRL)
-                                        or event.key == Keys.LEFT_CTRL
-                                        and Keys.get_pressed("v")
-                                        and Keys.get_pressed(Keys.LEFT_CTRL)
-                                    ):
-                                        self._add_text(Keys.get_clipboard())
-                                    else:
-                                        self._add_text(event.unicode)
-                        case Events.MOUSE_BUTTON_DOWN:
-                            if event.button == 1:
-                                if self.is_hovered(offSet):
-                                    self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
-                elif event.type == Events.MOUSE_BUTTON_DOWN and event.button == 1 and self.is_hovered(offSet):
-                    self._active = True
-                    self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
+                                    if self._holder_index > len(self._text[self.__lineId]) - 1:
+                                        self._holder_index = len(self._text[self.__lineId]) - 1
+                            # ESC，关闭
+                            case Keys.ESCAPE:
+                                self._active = False
+                                self.need_save = True
+                            case Keys.RETURN:
+                                # 如果“|”位于最后
+                                if self._holder_index == len(self._text[self.__lineId]):
+                                    self._text.insert(self.__lineId + 1, "")
+                                else:
+                                    self._text.insert(self.__lineId + 1, self._text[self.__lineId][self._holder_index :])
+                                    self._text[self.__lineId] = self._text[self.__lineId][: self._holder_index]
+                                self.__lineId += 1
+                                self._holder_index = 0
+                                self._reset_inputbox_size()
+                            case _:
+                                if (
+                                    event.unicode == "v"
+                                    and Keys.get_pressed("v")
+                                    and Keys.get_pressed(Keys.LEFT_CTRL)
+                                    or event.key == Keys.LEFT_CTRL
+                                    and Keys.get_pressed("v")
+                                    and Keys.get_pressed(Keys.LEFT_CTRL)
+                                ):
+                                    self._add_text(Keys.get_clipboard())
+                                else:
+                                    self._add_text(event.unicode)
+                    case Events.MOUSE_BUTTON_DOWN:
+                        if event.button == 1:
+                            if self.is_hovered(offSet):
+                                self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
+            elif event.type == Events.MOUSE_BUTTON_DOWN and event.button == 1 and self.is_hovered(offSet):
+                self._active = True
+                self._reset_holder_index(Controller.mouse.x, Controller.mouse.y)
         # 计算绝对坐标
         abs_pos: Final[tuple[int, int]] = Coordinates.add(self.get_pos(), offSet)
         # 如果有内容
@@ -435,28 +395,15 @@ class MultipleLinesInputBox(AbstractInputBox):
         if self._active:
             # 画出输入框
             Draw.rect(_surface, self._color, self._input_box.get_rect(), 2)
-            if self.__is_dictating:
-                Draw.rect(_surface, (0, 0, 0, 150), self._input_box.get_rect())
-                Draw.circle(_surface, Colors.RED, self._input_box.center, self._FONT.size // 4)
-            # make sure disable button when is dictating
-            else:
-                # 画出 “|” 符号
-                self._display_holder_timer.tick()
-                if self._display_holder_timer.get_status():
-                    _surface.blit(
-                        self._holder,
-                        (
-                            abs_pos[0]
-                            + self._FONT.size // 10
-                            + self._FONT.estimate_text_width(self._text[self.__lineId][: self._holder_index]),
-                            abs_pos[1] + self.__lineId * self._default_height,
-                        ),
-                    )
-                # voice to text
-                if self.__start_dictating is not None:
-                    self.__start_dictating.set_right(self._input_box.right)
-                    self.__start_dictating.set_top(self._input_box.bottom)
-                    self.__start_dictating.draw(_surface)
-                    if self.__start_dictating.is_hovered() and Controller.get_event("confirm"):
-                        self.__is_dictating = True
-                        threading.Thread(target=self.__dictate).start()
+            # 画出 “|” 符号
+            self._display_holder_timer.tick()
+            if self._display_holder_timer.get_status():
+                _surface.blit(
+                    self._holder,
+                    (
+                        abs_pos[0]
+                        + self._FONT.size // 10
+                        + self._FONT.estimate_text_width(self._text[self.__lineId][: self._holder_index]),
+                        abs_pos[1] + self.__lineId * self._default_height,
+                    ),
+                )

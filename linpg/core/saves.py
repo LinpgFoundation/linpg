@@ -1,6 +1,7 @@
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from zipfile import ZipFile
+
 from .sprite import *
 
 

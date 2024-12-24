@@ -58,22 +58,6 @@ class Events(enum.IntEnum):
     KEY_UP = pygame.KEYUP
 
 
-# 表示方向的enum
-@enum.verify(enum.UNIQUE)
-class Axis(enum.IntEnum):
-    VERTICAL = enum.auto()
-    HORIZONTAL = enum.auto()
-
-
-# 表示位置
-@enum.verify(enum.UNIQUE)
-class Locations(enum.IntEnum):
-    BEGINNING = enum.auto()
-    END = enum.auto()
-    MIDDLE = enum.auto()
-    EVERYWHERE = enum.auto()
-
-
 # 与数字有关的常用方法
 class Numbers:
     # 随机数

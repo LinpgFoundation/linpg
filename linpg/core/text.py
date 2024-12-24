@@ -9,17 +9,17 @@ class TextSurface(GameObject2d, Hidable):
         x: int_f,
         y: int_f,
         size: int_f,
-        _color: color_liked = Colors.BLACK,
-        _bold: bool = False,
-        _italic: bool = False,
+        color: color_liked = Colors.BLACK,
+        bold: bool = False,
+        italic: bool = False,
     ) -> None:
         GameObject2d.__init__(self, x, y)
         Hidable.__init__(self)
         self.__text: str = text
         self.__size: int = int(size)
-        self.__color: tuple[int, int, int, int] = Colors.get(_color)
-        self.__bold: bool = _bold
-        self.__italic: bool = _italic
+        self.__color: tuple[int, int, int, int] = Colors.get(color)
+        self.__bold: bool = bold
+        self.__italic: bool = italic
         self.__alpha: int = 255
         self.__text_surface: ImageSurface | None = None
         self.__outline_thickness: int = 0
@@ -36,8 +36,8 @@ class TextSurface(GameObject2d, Hidable):
     def get_color(self) -> tuple[int, int, int, int]:
         return self.__color
 
-    def set_color(self, _color: color_liked) -> None:
-        self.__color = Colors.get(_color)
+    def set_color(self, color: color_liked) -> None:
+        self.__color = Colors.get(color)
         self._update_text_surface()
 
     def get_bold(self) -> bool:
@@ -54,9 +54,9 @@ class TextSurface(GameObject2d, Hidable):
             self.__text_surface = None
         else:
             self.__text_surface = (
-                Font.render(self.get_text(), self.get_color(), self.get_font_size(), self.get_bold(), self.get_italic())
+                Fonts.render(self.get_text(), self.get_color(), self.get_font_size(), self.get_bold(), self.get_italic())
                 if self.__outline_thickness <= 0
-                else ArtisticFont.render_with_outline(
+                else ArtisticFonts.render_with_outline(
                     self.get_text(),
                     self.get_color(),
                     self.get_font_size(),
@@ -76,8 +76,8 @@ class TextSurface(GameObject2d, Hidable):
         self._update_text_surface()
 
     # 设置轮廓颜色
-    def set_outline_color(self, _color: color_liked) -> None:
-        self.__outline_color = Colors.get(_color)
+    def set_outline_color(self, color: color_liked) -> None:
+        self.__outline_color = Colors.get(color)
         self._update_text_surface()
 
     # 关闭轮廓渲染
@@ -135,18 +135,18 @@ class ResizeWhenHoveredTextSurface(TextSurface):
         y: int_f,
         original_size: int_f,
         size_when_hovered: int_f,
-        _color: color_liked = Colors.BLACK,
-        _bold: bool = False,
-        _italic: bool = False,
+        color: color_liked = Colors.BLACK,
+        bold: bool = False,
+        italic: bool = False,
     ) -> None:
-        super().__init__(text, x, y, original_size, _color, _bold, _italic)
-        self.__text_when_hovered = TextSurface(text, 0, 0, size_when_hovered, _color, _bold, _italic)
+        super().__init__(text, x, y, original_size, color, bold, italic)
+        self.__text_when_hovered = TextSurface(text, 0, 0, size_when_hovered, color, bold, italic)
         self.__text_when_hovered.set_center(self.centerx, self.centery)
         self.__is_hovered: bool = False
 
-    def set_color(self, _color: color_liked) -> None:
-        super().set_color(_color)
-        self.__text_when_hovered.set_color(_color)
+    def set_color(self, color: color_liked) -> None:
+        super().set_color(color)
+        self.__text_when_hovered.set_color(color)
 
     def set_left(self, value: int_f) -> None:
         super().set_left(value)
@@ -182,9 +182,9 @@ class ResizeWhenHoveredTextSurface(TextSurface):
         self.__text_when_hovered.set_outline_thickness(_thickness)
 
     # 设置轮廓颜色
-    def set_outline_color(self, _color: color_liked) -> None:
-        super().set_outline_color(_color)
-        self.__text_when_hovered.set_outline_color(_color)
+    def set_outline_color(self, color: color_liked) -> None:
+        super().set_outline_color(color)
+        self.__text_when_hovered.set_outline_color(color)
 
     # 关闭轮廓渲染
     def disable_outline(self) -> None:

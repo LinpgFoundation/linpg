@@ -17,27 +17,24 @@ class Images:
         if isinstance(path, ImageSurface):
             return path
         elif isinstance(path, str):
-            if path != "<NULL>":
-                canBeNull: bool = False
-                if path.endswith("?"):
-                    canBeNull = True
-                    path = path.rstrip("?")
-                # 尝试加载图片
-                _imageR: ImageSurface | None = None
-                try:
-                    _imageR = cls.__load(path)
-                except Exception:
-                    if Debug.get_developer_mode() is True and not canBeNull:
-                        Exceptions.fatal(f"Cannot load image from path: {path}")
-                    _imageR = None
-                # 根据参数处理并返回加载好的图片
-                if _imageR is not None:
-                    return _imageR.convert_alpha() if convert_alpha is True else _imageR.convert()
-                # 如果图片加载出错
-                else:
-                    return Surfaces.NULL if canBeNull else Surfaces.texture_is_missing((192, 108))
+            canBeNull: bool = False
+            if path.endswith("?"):
+                canBeNull = True
+                path = path.rstrip("?")
+            # 尝试加载图片
+            _imageR: ImageSurface | None = None
+            try:
+                _imageR = cls.__load(path)
+            except Exception:
+                if Debug.get_developer_mode() is True and not canBeNull:
+                    Exceptions.fatal(f"Cannot load image from path: {path}")
+                _imageR = None
+            # 根据参数处理并返回加载好的图片
+            if _imageR is not None:
+                return _imageR.convert_alpha() if convert_alpha is True else _imageR.convert()
+            # 如果图片加载出错
             else:
-                return Surfaces.NULL
+                return Surfaces.NULL if canBeNull else Surfaces.texture_is_missing((192, 108))
         else:
             Exceptions.fatal(f"The path '{path}' has to be a string or at least a ImageSurface!")
 

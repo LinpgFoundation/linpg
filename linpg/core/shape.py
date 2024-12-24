@@ -1,4 +1,136 @@
-from .module import *
+from .system import *
+
+
+# 2d游戏对象接口
+class GameObject2d(Coordinate):
+    def __init__(self, x: int_f, y: int_f):
+        super().__init__(x, y)
+        self.tag: str = ""
+
+    # 宽
+    @property
+    def width(self) -> int:
+        return self.get_width()
+
+    @abstractmethod
+    def get_width(self) -> int:
+        Exceptions.fatal("get_width()", 1)
+
+    # 高
+    @property
+    def height(self) -> int:
+        return self.get_height()
+
+    @abstractmethod
+    def get_height(self) -> int:
+        Exceptions.fatal("get_height()", 1)
+
+    # 尺寸
+    @property
+    def size(self) -> tuple[int, int]:
+        return self.get_width(), self.get_height()
+
+    def get_size(self) -> tuple[int, int]:
+        return self.get_width(), self.get_height()
+
+    # 右侧位置
+    @property
+    def right(self) -> int:
+        return self.x + self.get_width()
+
+    def get_right(self) -> int:
+        return self.x + self.get_width()
+
+    def set_right(self, value: int_f) -> None:
+        self.set_left(value - self.get_width())
+
+    # 底部位置
+    @property
+    def bottom(self) -> int:
+        return self.y + self.get_height()
+
+    def get_bottom(self) -> int:
+        return self.y + self.get_height()
+
+    def set_bottom(self, value: int_f) -> None:
+        self.set_top(value - self.get_height())
+
+    # 中心位置
+    @property
+    def centerx(self) -> int:
+        return self.x + self.get_width() // 2
+
+    def get_centerx(self) -> int:
+        return self.x + self.get_width() // 2
+
+    def set_centerx(self, centerx: int_f) -> None:
+        self.set_left(centerx - self.get_width() / 2)
+
+    @property
+    def centery(self) -> int:
+        return self.y + self.get_height() // 2
+
+    def get_centery(self) -> int:
+        return self.y + self.get_height() // 2
+
+    def set_centery(self, centery: int_f) -> None:
+        self.set_top(centery - self.get_height() / 2)
+
+    @property
+    def center(self) -> tuple[int, int]:
+        return self.centerx, self.centery
+
+    def get_center(self) -> tuple[int, int]:
+        return self.centerx, self.centery
+
+    def set_center(self, centerx: int_f, centery: int_f) -> None:
+        self.set_centerx(centerx)
+        self.set_centery(centery)
+
+    @property
+    def left_center(self) -> tuple[int, int]:
+        return self.x, self.centery
+
+    @property
+    def right_center(self) -> tuple[int, int]:
+        return self.right, self.centery
+
+    @property
+    def top_center(self) -> tuple[int, int]:
+        return self.centerx, self.y
+
+    @property
+    def bottom_center(self) -> tuple[int, int]:
+        return self.centerx, self.bottom
+
+    # 是否被鼠标触碰
+    def is_hovered(self, off_set: tuple[int, int] | None = None) -> bool:
+        if off_set is None:
+            return Controller.mouse.is_in_rect(self.x, self.y, self.get_width(), self.get_height())
+        else:
+            return Controller.mouse.is_in_rect(self.x + off_set[0], self.y + off_set[1], self.get_width(), self.get_height())
+
+    # 检测自身是否覆盖了另一个2d游戏对象
+    def is_overlapping_with(self, _rect: "GameObject2d") -> bool:
+        return max(self.left, _rect.left) < min(self.right, _rect.right) and max(self.top, _rect.top) < min(
+            self.bottom, _rect.bottom
+        )
+
+    # 将图片直接画到surface上
+    def draw(self, _surface: ImageSurface) -> None:
+        self.display(_surface)
+
+    # 根据offSet将图片展示到surface的对应位置上 - 子类必须实现
+    @abstractmethod
+    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
+        Exceptions.fatal("display()", 1)
+
+    # 忽略现有坐标，将图片画到surface的指定位置上
+    def render(self, _surface: ImageSurface, pos: tuple[int, int]) -> None:
+        old_pos = self.get_pos()
+        self.move_to(pos)
+        self.draw(_surface)
+        self.move_to(old_pos)
 
 
 # 正方形类
@@ -168,8 +300,8 @@ class Rectangle(Square):
         return Rectangle(self.x, self.y, self.get_width(), self.__height)
 
 
-RectLiked = Rectangle | pygame.Rect | tuple
 RectObject = Rectangle | pygame.Rect
+RectLiked = RectObject | tuple
 
 
 # Rectangle方法管理
@@ -216,7 +348,7 @@ class Rectangles:
 
     # 相加2个rect
     @classmethod
-    def apply(cls, source_rect: RectLiked, apply_rect: RectLiked) -> Rectangle:
+    def add(cls, source_rect: RectLiked, apply_rect: RectLiked) -> Rectangle:
         source_rect = cls.__comply(source_rect)
         apply_rect = cls.__comply(apply_rect)
         return Rectangle(
@@ -225,34 +357,3 @@ class Rectangles:
             source_rect.width + apply_rect.width,
             source_rect.height + apply_rect.height,
         )
-
-
-# 转换linpg.Rect至pygame.Rect
-def convert_to_pygame_rect(rect: RectLiked) -> pygame.Rect:
-    # 如果是pygame.Rect类，则没必要转换
-    if isinstance(rect, pygame.Rect):
-        return rect
-    # 确认是linpg.Rect类再转换
-    elif isinstance(rect, Rectangle):
-        return pygame.Rect(rect.left, rect.top, rect.width, rect.height)
-    # 如果是tuple类，则需要创建
-    elif isinstance(rect, tuple):
-        match len(rect):
-            case 2:
-                return pygame.Rect(rect[0], rect[1])
-            case 4:
-                return pygame.Rect(rect[0], rect[1], rect[2], rect[3])
-            case _:
-                Exceptions.fatal("Invalid length for forming a rect.")
-    else:
-        Exceptions.fatal(f'The rect has to be RectLiked object, not "{type(rect)}".')
-
-
-# 检测pygame类2d模型是否被点击
-def is_hovering(imgObject: ImageSurface, objectPos: tuple[int, int] = ORIGIN) -> bool:
-    return Controller.mouse.is_in_rect(objectPos[0], objectPos[1], imgObject.get_width(), imgObject.get_height())
-
-
-# 获取图片的subsurface
-def get_img_subsurface(img: ImageSurface, rect: RectLiked) -> ImageSurface:
-    return img.subsurface(rect if isinstance(rect, pygame.Rect) else convert_to_pygame_rect(rect))

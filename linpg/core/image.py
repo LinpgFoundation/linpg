@@ -64,10 +64,6 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
             self.get_height(),
         )
 
-    @staticmethod
-    def new_place_holder() -> "StaticImage":
-        return StaticImage("<NULL>", 0, 0)
-
     # 获取切割后的图片的rect
     def get_bounding_rect(self) -> Rectangle:
         # 如果图片需要更新，则先更新
@@ -277,12 +273,13 @@ class AnimatedImage(AdvancedAbstractImageSurface):
 
     # 展示
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
-        if self.is_visible():
-            self.current_image.display(_surface, Coordinates.add(self.pos, offSet))
-            if self.__countDown >= 1000 // self.__fps:
-                self.__countDown = 0
-                self.__imgId += 1
-                if self.__imgId >= len(self._get_image_reference()):
-                    self.__imgId = 0
-            else:
-                self.__countDown += Display.get_delta_time()
+        if self.is_hidden():
+            return
+        self.current_image.display(_surface, Coordinates.add(self.pos, offSet))
+        if self.__countDown >= 1000 // self.__fps:
+            self.__countDown = 0
+            self.__imgId += 1
+            if self.__imgId >= len(self._get_image_reference()):
+                self.__imgId = 0
+        else:
+            self.__countDown += Display.get_delta_time()

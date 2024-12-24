@@ -21,7 +21,11 @@ class AbstractImageSurface(Rectangle, Hidable, metaclass=ABCMeta):
     def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str) -> None:
         Rectangle.__init__(self, x, y, width, height)
         Hidable.__init__(self)
+        self.tag = tag
         self.__img: Any = img
+        # if image is None, no need to set size now
+        if self.__img is None or self.__img is Surfaces.NULL:
+            return
         # 确保长宽均已输入且为正整数
         if self.get_width() < 0 and self.get_height() < 0:
             self.set_size(self.__img.get_width(), self.__img.get_height())
@@ -29,12 +33,6 @@ class AbstractImageSurface(Rectangle, Hidable, metaclass=ABCMeta):
             self.set_width(self.get_height() * self.__img.get_width() // self.__img.get_height())
         elif self.get_width() >= 0 > self.get_height():
             self.set_height(self.get_width() * self.__img.get_height() // self.__img.get_width())
-        self.tag = tag
-
-    # 路径
-    @property
-    def path(self) -> str:
-        return self.__img.path if isinstance(self.__img, UniversalImageSurface) else ""
 
     # 获取图片非透明部分的rect
     def get_bounding_rect(self) -> Rectangle:
@@ -271,8 +269,7 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
                 _x += off_set[0]
                 _y += off_set[1]
             return Controller.mouse.is_in_rect(_x, _y, self._processed_img.get_width(), self._processed_img.get_height())
-        else:
-            return False
+        return False
 
     # 加暗度
     def add_darkness(self, value: int) -> None:
@@ -310,12 +307,13 @@ class AdvancedAbstractCachingImageSurface(AdvancedAbstractImageSurface):
 
     # 展示
     def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
-        if self.is_visible():
-            # 如果图片需要更新，则先更新
-            if self._need_update is True:
-                self._update_img()
-            # 将已经处理好的图片画在给定的图层上
-            if self._processed_img is not None:
-                _surface.blit(self._processed_img, Coordinates.add(self.abs_pos, offSet))
-            else:
-                Exceptions.fatal("The image has not been correctly processed.")
+        if self.is_hidden():
+            return
+        # 如果图片需要更新，则先更新
+        if self._need_update is True:
+            self._update_img()
+        # 将已经处理好的图片画在给定的图层上
+        if self._processed_img is not None:
+            _surface.blit(self._processed_img, Coordinates.add(self.abs_pos, offSet))
+        else:
+            Exceptions.fatal("The image has not been correctly processed.")

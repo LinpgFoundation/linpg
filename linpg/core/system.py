@@ -96,10 +96,6 @@ class SystemWithBackgroundMusic(AbstractSystem):
     def draw(self, _surface: ImageSurface) -> None:
         Exceptions.fatal("draw()", 1)
 
-    # 直接画到屏幕上
-    def draw_on_screen(self) -> None:
-        self.draw(Display.get_window())
-
 
 # 游戏模块接口
 class AbstractGameSystem(SystemWithBackgroundMusic, metaclass=ABCMeta):
@@ -113,7 +109,7 @@ class AbstractGameSystem(SystemWithBackgroundMusic, metaclass=ABCMeta):
         self.__initialized: bool = False
 
     # 是否初始化
-    def is_initialized(self) -> bool:
+    def get_init(self) -> bool:
         return self.__initialized
 
     # 初始化关键参数

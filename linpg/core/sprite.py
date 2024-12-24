@@ -5,14 +5,14 @@ from .image import *
 
 
 class SpriteImage:
-    def __init__(self, img_path: str) -> None:
+    def __init__(self, path: str) -> None:
         # 路径
-        self.__PATH: str = img_path
+        self.__PATH: str = path
         # 加载Sprite图
         self.__SHEET: ImageSurface = Images.quickly_load(self.__PATH)
         # 加载Sprite图的数据
         self.__RECT_DICTIONARY: dict[str, list[int] | list[list[int]]] = {}
-        self.__RECT_DICTIONARY.update(Configurations.load_file(self.__PATH + ".linpg.meta"))
+        self.__RECT_DICTIONARY.update(Configurations.load_file("{self.__PATH}.linpg.meta.json"))
 
     # get the image / images based on given name
     def get(self, name: str) -> ImageSurface | tuple[ImageSurface, ...]:
@@ -244,4 +244,4 @@ class SpriteImage:
         target_file_name: str = f"{img_folder_path}.{resultFileType}"
         Images.save(sprite_surface, target_file_name)
         # 保存sprite图数据
-        Configurations.save(target_file_name + ".linpg.meta", _out)
+        Configurations.save(f"{target_file_name}.linpg.meta.json", _out)

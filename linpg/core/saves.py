@@ -2,7 +2,8 @@ import json
 from dataclasses import dataclass
 from zipfile import ZipFile
 
-from .sprite import *
+from ..basic.files import Files
+from .image import *
 
 
 # 存档系统

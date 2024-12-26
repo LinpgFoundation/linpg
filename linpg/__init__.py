@@ -1,4 +1,4 @@
-from .dialogue import *
+from .level import *
 
 
 def init() -> None:
@@ -8,6 +8,9 @@ def init() -> None:
     Controller.update()
     LINPG_RESERVED_CHANNELS.init()
 
+
+config = Configurations
+display = Display
 
 # print linpg information
 print(

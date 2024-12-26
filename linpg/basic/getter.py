@@ -8,7 +8,7 @@ from ..exception import Exceptions
 
 
 class TypeSafeGetter(ABC):
-    __RETURN_NONE_FOR_KEY_ERROR: Final[str] = "<!RETURN_NONE_FOR_KEY_ERROR>"
+    __RETURN_NONE_FOR_KEY_ERROR: Final[str] = "<RETURN_NONE_FOR_KEY_ERROR>"
 
     # if data contains key
     @classmethod

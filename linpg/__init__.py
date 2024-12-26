@@ -1,14 +1,18 @@
-"""
-def init():
-    # 初始化pygame
+from .dialogue import *
+
+
+def init() -> None:
     pygame.init()
-    # 初始化
-    Settings.reload()
-    # 如果pygame的手柄组件没有初始化，则初始化
-    if not pygame.joystick.get_init():
-        pygame.joystick.init()
-    # 初始化
     Languages.reload()
-    # 初始化持久数据库
-    PersistentVariables.reload()
-"""
+    Variables.Persistent.reload()
+    Controller.update()
+    LINPG_RESERVED_CHANNELS.init()
+
+
+# print linpg information
+print(
+    f'linpg {Version.get_full()} ({f"{GraphicLibrary.get_name()} {pygame.version.ver}"}, Python {Exceptions.get_python_version()})'
+)
+# only show prompt when using pygame
+if GraphicLibrary.is_using_pygame():
+    print("Hello from the linpg community. https://github.com/LinpgFoundation/linpg")

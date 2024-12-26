@@ -18,11 +18,11 @@ def create_new_project(dir_path: str) -> None:
             "author": "Put your name here",
             "default_language": Settings.get_language(),
             "link": "https://whateve-you-want/maybe-your-github-link",
-            "linpg_version": Version.get_current_version(),
+            "linpg_version": Version.get_full(),
             "title": {},
             "version": "0.0",
         }
-        info_data["title"][Settings.get_language()] = Languages.get_text("Editor", "example_project")
+        # info_data["title"][Settings.get_language()] = Languages.get_text("Editor", "example_project")
         Configurations.save(os.path.join(dir_path, f"info.json"), info_data)
     else:
         Exceptions.fatal(f'Target path "{dir_path}" cannot be a file path!')

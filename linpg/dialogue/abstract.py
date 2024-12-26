@@ -18,7 +18,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
         # 是否静音
         self._is_muted: bool = False
         # 选项菜单
-        self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer("<NULL>", 0, 0, 0, 0)
+        self._dialog_options_container: GameObjectsListContainer = GameObjectsListContainer(Surfaces.NULL, 0, 0, 0, 0)
         self._dialog_options_container.set_visible(False)
         # 更新背景音乐音量
         self.set_bgm_volume(Volume.get_background_music() / 100)
@@ -65,7 +65,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
             "dialog_id": self._content.get_current_dialogue_id(),
             "section": self._content.get_section(),
             "type": "dialog",
-            "linpg": Version.get_current_version(),
+            "linpg": Version.get_full(),
         }
 
     # 读取存档
@@ -178,8 +178,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
                 Display.get_height() * 3 // 16 - len(self._content.current.next.get_targets()) * self._FONT_SIZE
             )
             for i, _target in enumerate(self._content.current.next.get_targets()):
-                optionButton: Button = Button.load("<&ui>option.png", (0, 0), (0, 0))
-                optionButton.set_hover_img(Images.quickly_load("<&ui>option_selected.png"))
+                optionButton: Button = Button.load("<ui>option", (0, 0), (0, 0), 150)
                 optionButton.set_auto_resize(True)
                 optionButton.set_text(ButtonComponent.text(str(_target["text"]), self._FONT_SIZE, Colors.WHITE))
                 optionButton.set_pos(

@@ -7,7 +7,7 @@ from ..ui import *
 class DialogNode(Button):
     def __init__(self, key_name: str, font_size: int, next_keys: list[str], tag: str = ""):
         self.__key_name: str = key_name
-        button_surface = ArtisticFont.render_description_box(
+        button_surface = ArtisticFonts.render_description_box(
             self.__key_name, Colors.BLACK, font_size, font_size // 2, Colors.WHITE
         )
         super().__init__(button_surface, 0, 0, width=button_surface.get_width(), height=button_surface.get_height(), tag=tag)
@@ -27,7 +27,7 @@ class DialogNode(Button):
 
 
 # 对话key向导窗口
-class DialogNavigationWindow(AbstractFrame):
+class DialogNavigationWindow(AbstractWindow):
     def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, tag: str = ""):
         super().__init__(x, y, width, height, tag=tag)
         self.__nodes_map: dict[str, DialogNode] = {}
@@ -136,7 +136,7 @@ class AbstractDialogBox(Hidable, metaclass=ABCMeta):
         self._dialogue_box_max_y: int = Display.get_height() * 65 // 100
         # 对胡框图片
         self._dialogue_box: StaticImage = StaticImage(
-            "<&ui>dialoguebox.png", Display.get_width() * 13 // 100, 0, Display.get_width() * 74 // 100
+            "<ui>textarea", Display.get_width() * 13 // 100, 0, Display.get_width() * 74 // 100
         )
 
     # 画出（子类需实现）
@@ -232,7 +232,7 @@ class DialogBox(AbstractDialogBox):
 
     def __init__(self, fontSize: int):
         super().__init__()
-        self.FONT: FontGenerator = Font.create(fontSize)
+        self.FONT: Font = Fonts.create(fontSize)
         self.__contents: list = []
         self.__narrator: str = ""
         self.__text_index: int = 0
@@ -242,7 +242,7 @@ class DialogBox(AbstractDialogBox):
         self.__textPlayingSound: Sound | None = None
         if os.path.exists(_path := Specifications.get_directory("sound", "ui", "dialog_words_playing.ogg")):
             self.__textPlayingSound = Sounds.load(_path)
-        self.__READING_SPEED: int = max(int(Settings.get("ReadingSpeed")), 1)
+        self.__READING_SPEED: int = max(Settings.get_int("ReadingSpeed"), 1)
         # 翻页指示动态图标
         self.__next_page_indicator_icon = self.__NextPageIndicatorIcon()
         # 自动播放时参考的总阅读时间

@@ -1,15 +1,34 @@
 import io
+import os
+
+import bsicons
 
 from ..basic.settings import Settings
+from ..basic.specifications import Specifications
 from .surfaces import *
 
 
 # 源图形处理
 class Images:
+    # flag查询表
+    __FLAG_LOOKUP_TABLE: Final[dict[str, str]] = {"ui": "user_interface"}
+
     # 加载
     @staticmethod
     def __load(_file: str | io.BytesIO) -> ImageSurface:
         return pygame.image.load(_file)
+
+    # get path path according to flag
+    @classmethod
+    def __get_path(cls, path: str) -> str:
+        flag_end_index: int = path.index(">")
+        file_name: str = path[flag_end_index + 1 :]
+        flag_key: str | None = cls.__FLAG_LOOKUP_TABLE.get(path[1:flag_end_index])
+        if flag_key is None:
+            Exceptions.fatal(f'Invalid tag: "{path}"')
+        # if a replacement exists, then return replacement path, else using default icons instead
+        path_r: str = Specifications.get_directory(flag_key, file_name)
+        return path_r if os.path.exists(path_r) else bsicons.get_icon_path(file_name)
 
     # 识快速加载图片
     @classmethod
@@ -21,14 +40,20 @@ class Images:
             if path.endswith("?"):
                 canBeNull = True
                 path = path.rstrip("?")
-            # 尝试加载图片
             _imageR: ImageSurface | None = None
-            try:
-                _imageR = cls.__load(path)
-            except Exception:
-                if Debug.get_developer_mode() is True and not canBeNull:
-                    Exceptions.fatal(f"Cannot load image from path: {path}")
-                _imageR = None
+            # try to load image from path
+            if not path.startswith("<"):
+                try:
+                    _imageR = cls.__load(path)
+                except Exception:
+                    if Debug.get_developer_mode() is True and not canBeNull:
+                        Exceptions.fatal(f"Cannot load image from path: {path}")
+            else:
+                try:
+                    _imageR = cls.__load(cls.__get_path(path))
+                except Exception:
+                    if Debug.get_developer_mode() is True and not canBeNull:
+                        Exceptions.fatal(f"Cannot load image: {path}")
             # 根据参数处理并返回加载好的图片
             if _imageR is not None:
                 return _imageR.convert_alpha() if convert_alpha is True else _imageR.convert()

@@ -3,8 +3,6 @@ from .abstract import *
 
 # 视觉小说系统模块
 class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem):
-    __CHOICE_TEXT: str = str(Languages.get_texts("Dialog", "choice"))
-
     def __init__(self) -> None:
         AbstractVisualNovelPlayer.__init__(self)
         PauseMenuModuleForGameSystem.__init__(self)
@@ -42,7 +40,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
     def enable_basic_features(self) -> None:
         self.__disable_background_image_rendering = False
         self.__history_back = Button.load(
-            "<&ui>back.png",
+            "<ui>backspace",
             Coordinates.convert((Display.get_width() * 0.04, Display.get_height() * 0.04)),
             Coordinates.convert((Display.get_width() * 0.03, Display.get_height() * 0.04)),
             150,
@@ -104,7 +102,6 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
     # 更新语言
     def update_language(self) -> None:
         super().update_language()
-        self.__CHOICE_TEXT = str(Languages.get_texts("Dialog", "choice"))
         self._initialize_pause_menu()
 
     def continue_scene(self, dialog_id: str) -> None:
@@ -293,7 +290,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
                                 else:
                                     break
                             case "option":
-                                narratorTemp = self.__dialog_txt_system.FONT.render(self.__CHOICE_TEXT + ":", (0, 191, 255))
+                                narratorTemp = self.__dialog_txt_system.FONT.render("->", (0, 191, 255))
                                 self.__history_text_surface.blit(
                                     narratorTemp,
                                     (

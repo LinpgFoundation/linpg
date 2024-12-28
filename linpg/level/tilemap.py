@@ -11,11 +11,12 @@ class _TileSet:
         self.source: Final[str] = tile_source if self.is_system else os.path.join(dirname, tile_source)
 
 
-class TileMap:
+class TileMap(SurfaceWithLocalPos):
 
     __SHEETS: dict[str, SpriteImage] = {}
 
-    def __init__(self, _path: str) -> None:
+    def __init__(self, _path: str, tw: int, th: int) -> None:
+        super().__init__()
         _data: dict = Configurations.load_file(_path)
         self.__PATH: str = _path
         self.__row = 0
@@ -39,13 +40,30 @@ class TileMap:
                     self.__process_chunk(c, i)
             else:
                 self.__process_chunk(_layer, i)
+        # the default tile width
+        self.__tile_width: int = tw
+        # the default tile height, using default tile width by default
+        self.__tile_height: int = th
+        # scale value in percentage
+        self.scale: int = 100
+
+        self.__left: int = 0
+        self.__top: int = 0
+
+    # 获取x坐标（子类需实现）
+    def get_left(self) -> int:
+        return self.__left
+
+    # 获取y坐标（子类需实现）
+    def get_top(self) -> int:
+        return self.__top
 
     def __process_chunk(self, _chunk: dict, index: int) -> None:
         chunk_width = int(_chunk["width"])
         for i in range(len(_chunk["data"])):
             x = _chunk["x"] - self.__minX + i % chunk_width
             y = _chunk["y"] - self.__minY + math.floor(i / chunk_width)
-            self.__MAP[y][x][index] = _chunk["data"][i]
+            self.__MAP[y, x][index] = _chunk["data"][i]
 
     def __draw_tile(self, surface: ImageSurface, _id: int, x: int, y: int) -> None:
         for tile_set in self.__tile_sets:
@@ -58,16 +76,19 @@ class TileMap:
             if tile_source not in self.__SHEETS:
                 self.__SHEETS[tile_source] = SpriteImage(tile_source)
             _ref: SpriteImage = self.__SHEETS[tile_source]
-            surface.blit(_ref.get(absId), (x * _ref.tile_width, y * _ref.tile_height))
+            _ref.set_size(self.scale * self.__tile_width // 100, self.scale * self.__tile_height // 100)
+            self.__left = x * _ref.tile_width
+            self.__top = y * _ref.tile_height
+            surface.blit(_ref.get(absId), self.get_abs_pos())
             break
 
-    def display(self, surface: ImageSurface) -> None:
+    def print(self, surface: ImageSurface) -> None:
         xStart = 0
         yStart = 0
         xEndExclude = self.__column
         yEndExclude = self.__row
         for y in range(yStart, yEndExclude):
             for x in range(xStart, xEndExclude):
-                currentTile = self.__MAP[y][x]
+                currentTile = self.__MAP[y, x]
                 for l in currentTile:
                     self.__draw_tile(surface, l, x, y)

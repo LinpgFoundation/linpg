@@ -205,7 +205,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
                     abs_pos,
                     (
                         self.get_width() + self.__indicator.width * 7 // 10,
-                        (self.get_height() - value_font.get_height()) / 2,
+                        (self.get_height() - value_font.get_height()) // 2,
                     ),
                 ),
             )
@@ -226,7 +226,7 @@ class ProgressBarAdjuster(ProgressBarSurface):
                 Coordinates.add(
                     abs_pos,
                     (
-                        (self.get_width() - value_font.get_width()) / 2,
+                        (self.get_width() - value_font.get_width()) // 2,
                         self.get_height() + self.__indicator.height * 7 // 10,
                     ),
                 ),

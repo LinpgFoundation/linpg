@@ -187,20 +187,20 @@ class Coordinates:
 
     # 相加2个坐标
     @staticmethod
-    def add(*positions: tuple[number, number]) -> tuple[int, int]:
-        x: number = 0
-        y: number = 0
+    def add(*positions: tuple[int, int]) -> tuple[int, int]:
+        x: int = 0
+        y: int = 0
         for pos in positions:
             x += pos[0]
             y += pos[1]
-        return int(x), int(y)
+        return x, y
 
     # 相减2个坐标
     @staticmethod
-    def subtract(position: tuple[number, number], *positions: tuple[number, number]) -> tuple[int, int]:
-        x: number = position[0]
-        y: number = position[1]
+    def subtract(position: tuple[int, int], *positions: tuple[int, int]) -> tuple[int, int]:
+        x: int = position[0]
+        y: int = position[1]
         for pos in positions:
             x -= pos[0]
             y -= pos[1]
-        return int(x), int(y)
+        return x, y

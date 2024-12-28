@@ -126,7 +126,7 @@ class DropDownList(GameObjectsDictContainer):
                 Draw.circle(
                     _surface,
                     self.__font_color,
-                    Coordinates.add(current_pos, (self.__FONT.size * 2, self.__block_height / 2)),
+                    Coordinates.add(current_pos, (self.__FONT.size * 2, self.__block_height // 2)),
                     self.__block_height * 3 // 20,
                     self.outline_thickness if key_of_game_object != self.__chosen_item_key else 0,
                 )

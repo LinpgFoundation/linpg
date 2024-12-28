@@ -3,7 +3,7 @@ from .text import *
 
 # 用于静态图片的surface
 class StaticImage(AdvancedAbstractCachingImageSurface):
-    def __init__(self, img: PoI, x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = ""):
+    def __init__(self, img: PoI, x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = "") -> None:
         super().__init__(Images.quickly_load(img), x, y, width, height, tag)
         self.__is_flipped_horizontally: bool = False
         self.__is_flipped_vertically: bool = False

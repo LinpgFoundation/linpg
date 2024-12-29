@@ -1,3 +1,4 @@
+from ..basic.enums import Directions
 from ..media import *
 
 # 原点
@@ -204,3 +205,53 @@ class Coordinates:
             x -= pos[0]
             y -= pos[1]
         return x, y
+
+
+class DynamicMovementController:
+    def __init__(self, v_speed: int = 10, h_speed: int = 10, v_speed_deduction: int = 1, h_speed_deduction: int = 1):
+        # speed for moving
+        self.__current_vertical_speed: int = 0
+        self.__current_horizontal_speed: int = 0
+        # whether to move to a certain direction
+        self.__moving_screen_in_directions: list[bool] = [False, False, False, False]
+        # the movement speed
+        self.__vertical_speed: int = v_speed
+        self.__horizontal_speed: int = h_speed
+        # the movement speed reduction pre frame
+        self.__vertical_speed_deduction: int = v_speed_deduction
+        self.__horizontal_speed_deduction: int = h_speed_deduction
+
+    @property
+    def current_vertical_speed(self) -> int:
+        return self.__current_vertical_speed
+
+    @property
+    def current_horizontal_speed(self) -> int:
+        return self.__current_horizontal_speed
+
+    def move(self, direction: Directions, v: bool) -> None:
+        self.__moving_screen_in_directions[direction] = v
+
+    def is_moving(self) -> bool:
+        return self.__current_vertical_speed != 0 or self.__current_horizontal_speed != 0
+
+    # move according to speed
+    def tick(self) -> None:
+        # move current speed closer to 0
+        if self.__current_horizontal_speed > 0:
+            self.__current_horizontal_speed -= self.__horizontal_speed_deduction
+        elif self.__current_horizontal_speed < 0:
+            self.__current_horizontal_speed += self.__horizontal_speed_deduction
+        if self.__current_vertical_speed > 0:
+            self.__current_vertical_speed -= self.__vertical_speed_deduction
+        elif self.__current_vertical_speed < 0:
+            self.__current_vertical_speed += self.__vertical_speed_deduction
+        # restore speed if continue to move
+        if self.__moving_screen_in_directions[Directions.UP]:
+            self.__current_vertical_speed = self.__vertical_speed
+        if self.__moving_screen_in_directions[Directions.DOWN]:
+            self.__current_vertical_speed = -self.__vertical_speed
+        if self.__moving_screen_in_directions[Directions.LEFT]:
+            self.__current_horizontal_speed = self.__horizontal_speed
+        if self.__moving_screen_in_directions[Directions.RIGHT]:
+            self.__current_horizontal_speed = -self.__horizontal_speed

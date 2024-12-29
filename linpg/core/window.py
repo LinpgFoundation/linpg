@@ -1,6 +1,5 @@
 from tkinter import messagebox
 
-from ..basic.enums import Directions
 from .saves import *
 
 

@@ -14,8 +14,8 @@ class Version:
 
     # 确保linpg版本
     @classmethod
-    def validate(cls, action: str, revision: int, patch: int, version: int = 4) -> bool:
-        match action:
+    def validate(cls, operator: str, revision: int, patch: int, version: int = 4) -> bool:
+        match operator:
             case "==":
                 return cls.__VERSION == version and cls.__REVISION == revision and cls.__PATCH == patch
             case ">=":
@@ -23,7 +23,7 @@ class Version:
             case "<=":
                 return cls.__VERSION <= version and cls.__REVISION <= revision and cls.__PATCH <= patch
             case _:
-                Exceptions.fatal(f'Action "{action}" is not supported!')
+                Exceptions.fatal(f'Action "{operator}" is not supported!')
 
     # 获取当前版本号
     @classmethod

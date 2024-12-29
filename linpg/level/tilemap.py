@@ -1,6 +1,7 @@
 import math
+from collections import deque
 
-from .sprite import *
+from .entity import *
 
 
 class _TileSet:
@@ -44,19 +45,31 @@ class TileMap(SurfaceWithLocalPos):
         self.__tile_width: int = tw
         # the default tile height, using default tile width by default
         self.__tile_height: int = th
+        # the current tile width
+        self.__current_tile_width: int = self.__tile_width
+        # the current tile height
+        self.__current_tile_height: int = self.__tile_height
         # scale value in percentage
         self.scale: int = 100
-
+        # using as temp coordinates for calculating abs coordinates
         self.__left: int = 0
         self.__top: int = 0
+        # entities list
+        self.__entities: deque[Entity] = deque()
 
-    # 获取x坐标（子类需实现）
     def get_left(self) -> int:
         return self.__left
 
-    # 获取y坐标（子类需实现）
     def get_top(self) -> int:
         return self.__top
+
+    @property
+    def tile_width(self) -> int:
+        return self.__tile_width
+
+    @property
+    def tile_height(self) -> int:
+        return self.__tile_height
 
     def __process_chunk(self, _chunk: dict, index: int) -> None:
         chunk_width = int(_chunk["width"])
@@ -64,6 +77,17 @@ class TileMap(SurfaceWithLocalPos):
             x = _chunk["x"] - self.__minX + i % chunk_width
             y = _chunk["y"] - self.__minY + math.floor(i / chunk_width)
             self.__MAP[y, x][index] = _chunk["data"][i]
+
+    def __draw_sprit(self, surface: ImageSurface, sprit_sheet: SpriteImage, x: number, y: number, index: int) -> None:
+        sprit_sheet.set_size(self.__current_tile_width, self.__current_tile_height)
+        self.__left = int(x * self.__current_tile_width)
+        self.__top = int(y * self.__current_tile_height)
+        surface.blit(sprit_sheet.get(index), self.get_abs_pos())
+
+    def __get_sheet(self, p: str) -> SpriteImage:
+        if p not in self.__SHEETS:
+            self.__SHEETS[p] = SpriteImage(p)
+        return self.__SHEETS[p]
 
     def __draw_tile(self, surface: ImageSurface, _id: int, x: int, y: int) -> None:
         for tile_set in self.__tile_sets:
@@ -73,22 +97,24 @@ class TileMap(SurfaceWithLocalPos):
             tile_source: str = tile_set.source
             if tile_source.startswith(":"):
                 break
-            if tile_source not in self.__SHEETS:
-                self.__SHEETS[tile_source] = SpriteImage(tile_source)
-            _ref: SpriteImage = self.__SHEETS[tile_source]
-            _ref.set_size(self.scale * self.__tile_width // 100, self.scale * self.__tile_height // 100)
-            self.__left = x * _ref.tile_width
-            self.__top = y * _ref.tile_height
-            surface.blit(_ref.get(absId), self.get_abs_pos())
+            self.__draw_sprit(surface, self.__get_sheet(tile_source), x, y, absId)
             break
+
+    def add_entity(self, e: Entity) -> None:
+        self.__entities.append(e)
 
     def print(self, surface: ImageSurface) -> None:
         xStart = 0
         yStart = 0
         xEndExclude = self.__column
         yEndExclude = self.__row
+        self.__current_tile_width = self.scale * self.__tile_width // 100
+        self.__current_tile_height = self.scale * self.__tile_height // 100
         for y in range(yStart, yEndExclude):
             for x in range(xStart, xEndExclude):
                 currentTile = self.__MAP[y, x]
                 for l in currentTile:
                     self.__draw_tile(surface, l, x, y)
+        for e in self.__entities:
+            _sheet: SpriteImage = self.__get_sheet(e.src)
+            self.__draw_sprit(surface, _sheet, e.x, e.y, e.get_current_frame_id(_sheet))

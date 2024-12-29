@@ -84,8 +84,8 @@ class AbstractWindow(AdvancedAbstractImageSurface, metaclass=ABCMeta):
                 # 查看鼠标是否触碰窗口的边缘
                 self.__rescale_directions[Directions.LEFT] = abs_x < self._get_outline_thickness() * 2
                 self.__rescale_directions[Directions.RIGHT] = -self._get_outline_thickness() * 2 < abs_x - self.width
-                self.__rescale_directions[Directions.TOP] = abs_y < self._get_outline_thickness() * 2
-                self.__rescale_directions[Directions.BOTTOM] = -self._get_outline_thickness() * 2 < abs_y - self.height
+                self.__rescale_directions[Directions.UP] = abs_y < self._get_outline_thickness() * 2
+                self.__rescale_directions[Directions.DOWN] = -self._get_outline_thickness() * 2 < abs_y - self.height
             else:
                 for key in self.__rescale_directions:
                     self.__rescale_directions[key] = False
@@ -123,20 +123,20 @@ class AbstractWindow(AdvancedAbstractImageSurface, metaclass=ABCMeta):
                         self.__rescale_directions[Directions.RIGHT] = False
                         self.__rescale_directions[Directions.LEFT] = True
                 # 向上放大
-                if self.__rescale_directions[Directions.TOP] is True:
+                if self.__rescale_directions[Directions.UP] is True:
                     if Controller.mouse.y < self.bottom - self._get_bar_height():
                         self.set_height(self.bottom - Controller.mouse.y)
                         self.set_top(Controller.mouse.y)
                     else:
-                        self.__rescale_directions[Directions.TOP] = False
-                        self.__rescale_directions[Directions.BOTTOM] = True
+                        self.__rescale_directions[Directions.UP] = False
+                        self.__rescale_directions[Directions.DOWN] = True
                 # 向下放大
-                if self.__rescale_directions[Directions.BOTTOM] is True:
+                if self.__rescale_directions[Directions.DOWN] is True:
                     if Controller.mouse.y > self.top:
                         self.set_height(Controller.mouse.y - self.top)
                     else:
-                        self.__rescale_directions[Directions.BOTTOM] = False
-                        self.__rescale_directions[Directions.TOP] = True
+                        self.__rescale_directions[Directions.DOWN] = False
+                        self.__rescale_directions[Directions.UP] = True
         else:
             for key in self.__rescale_directions:
                 self.__rescale_directions[key] = False
@@ -187,15 +187,15 @@ class AbstractWindow(AdvancedAbstractImageSurface, metaclass=ABCMeta):
         # 画出放大icon
         if True in self.__rescale_directions:
             # 如果鼠标触碰了边框，则旋转放大icon至对应角度
-            if self.__is_corner_hovered(Directions.TOP, Directions.RIGHT) or self.__is_corner_hovered(
-                Directions.BOTTOM, Directions.LEFT
+            if self.__is_corner_hovered(Directions.UP, Directions.RIGHT) or self.__is_corner_hovered(
+                Directions.DOWN, Directions.LEFT
             ):
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_SIZENESW)
-            elif self.__is_corner_hovered(Directions.TOP, Directions.LEFT) or self.__is_corner_hovered(
-                Directions.BOTTOM, Directions.RIGHT
+            elif self.__is_corner_hovered(Directions.UP, Directions.LEFT) or self.__is_corner_hovered(
+                Directions.DOWN, Directions.RIGHT
             ):
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_SIZENWSE)
-            elif self.__is_corner_hovered(Directions.TOP) or self.__is_corner_hovered(Directions.BOTTOM):
+            elif self.__is_corner_hovered(Directions.UP) or self.__is_corner_hovered(Directions.DOWN):
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_SIZENS)
             else:
                 pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_SIZEWE)

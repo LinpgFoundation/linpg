@@ -190,7 +190,7 @@ class AbstractSurfaceWithScrollBar(AbstractScrollBarsSurface, metaclass=ABCMeta)
         if self.axis_mode is Axis.VERTICAL:
             return Directions.RIGHT if not self.__scroll_bar_pos else Directions.LEFT
         else:
-            return Directions.BOTTOM if not self.__scroll_bar_pos else Directions.TOP
+            return Directions.DOWN if not self.__scroll_bar_pos else Directions.UP
 
     def set_scroll_bar_pos(self, pos: Directions) -> None:
         match pos:
@@ -204,12 +204,12 @@ class AbstractSurfaceWithScrollBar(AbstractScrollBarsSurface, metaclass=ABCMeta)
                     self.__scroll_bar_pos = False
                 else:
                     Exceptions.fatal("You cannot put the scroll bar on the right during horizontal mode!")
-            case Directions.TOP:
+            case Directions.UP:
                 if self.axis_mode is Axis.HORIZONTAL:
                     self.__scroll_bar_pos = True
                 else:
                     Exceptions.fatal("You cannot put the scroll bar on the top during vertical mode!")
-            case Directions.BOTTOM:
+            case Directions.DOWN:
                 if self.axis_mode is Axis.HORIZONTAL:
                     self.__scroll_bar_pos = False
                 else:

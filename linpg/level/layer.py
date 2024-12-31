@@ -11,7 +11,7 @@ class Chunk(Rectangle):
     def __init__(self, data: dict[str, Any], tile_sets: tuple[TileSet, ...]) -> None:
         super().__init__(data["x"], data["y"], data["width"], data["height"])
         self.__data: numpy.ndarray = numpy.array(data["data"], dtype=numpy.uint).reshape(self.height, self.width)
-        self.__surface: ImageSurface | None = None
+        self.__surface: StaticImage | None = None
         self.__tile_sets: tuple[TileSet, ...] = tile_sets
         self.__tile_size: tuple[int, int] = (0, 0)
 
@@ -44,12 +44,14 @@ class Chunk(Rectangle):
     def render(self, surface: ImageSurface, pos: tuple[int, int]) -> None:
         # if surface is None, then a new one needs to be generated
         if self.__surface is None:
-            self.__surface = Surfaces.transparent(Coordinates.multiply(self.__tile_size, self.size))
+            new_surface = Surfaces.transparent(Coordinates.multiply(self.__tile_size, self.size))
             # Iterate through the non-zero elements
             for y, x in numpy.argwhere(self.__data):
-                self.__draw_tile(self.__surface, x, y)
+                self.__draw_tile(new_surface, int(x), int(y))
+            self.__surface = StaticImage(new_surface, 0, 0, enable_cropping=True)
         # render the chuck image
-        surface.blit(self.__surface, Coordinates.add(Coordinates.multiply(self.pos, self.__tile_size), pos))
+        self.__surface.set_pos(pos[0], pos[1])
+        self.__surface.display(surface, Coordinates.multiply(self.pos, self.__tile_size))
 
 
 class Layer(Hidable):

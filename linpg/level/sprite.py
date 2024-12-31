@@ -43,7 +43,7 @@ class SpriteTileAnimator:
         self.__frame_time_ms += Display.get_delta_time()
         the_duration: int = animation.frames[self.__frame_index].duration
         if self.__frame_time_ms > the_duration:
-            self.__frame_time_ms -= the_duration
+            self.__frame_time_ms = min(self.__frame_time_ms - the_duration, the_duration)
             self.__frame_index += 1
             if self.__frame_index >= len(animation.frames):
                 self.__frame_index = animation.start_index
@@ -53,7 +53,9 @@ class SpriteTileAnimator:
 
 
 class SpriteImage:
-    IS_PIXEL: bool = True
+
+    # is sprit image pixelated
+    IS_PIXELATED: bool = False
 
     def __init__(self, metadata_path: str) -> None:
         # path of meta metadata
@@ -61,10 +63,12 @@ class SpriteImage:
         # metadata
         self.__METADATA: Final[dict[str, Any]] = Configurations.load_file(self.__METADATA_PATH)
         # load tile sheet
-        self.__SHEET_ORIGINAL: Final[ImageSurface] = Images.quickly_load(
-            os.path.join(os.path.dirname(self.__METADATA_PATH), str(self.__METADATA["image"]))
+        self.__SHEET: Final[StaticImage] = StaticImage(
+            os.path.join(os.path.dirname(self.__METADATA_PATH), str(self.__METADATA["image"])),
+            0,
+            0,
+            is_pixelated=self.IS_PIXELATED,
         )
-        self.__sheet: ImageSurface = self.__SHEET_ORIGINAL
         # get tile count
         self.__tile_count: Final[int] = int(self.__METADATA["tilecount"])
         # get columns
@@ -89,13 +93,7 @@ class SpriteImage:
             return
         self.__tile_width = w
         self.__tile_height = h
-        self.__sheet = (
-            Images.resize(self.__SHEET_ORIGINAL, (self.__tile_width * self.__COLUMN, self.__tile_height * self.__ROW))
-            if self.IS_PIXEL
-            else Images.smoothly_resize(
-                self.__SHEET_ORIGINAL, (self.__tile_width * self.__COLUMN, self.__tile_height * self.__ROW)
-            )
-        )
+        self.__SHEET.set_size(self.__tile_width * self.__COLUMN, self.__tile_height * self.__ROW)
 
     @property
     def tile_width(self) -> int:
@@ -106,7 +104,7 @@ class SpriteImage:
         return self.__tile_height
 
     def get(self, index: int) -> ImageSurface:
-        return self.__sheet.subsurface(
+        return self.__SHEET.get_buffer().subsurface(
             index % self.__COLUMN * self.__tile_width,
             index // self.__COLUMN * self.__tile_height,
             self.__tile_width,

@@ -43,10 +43,13 @@ hidden_imports = [
     "PIL.Image",
     "PIL.ImageColor",
     "PIL.ImageFilter",
+    "bsicons",
     "numpy",
     "pygame",
     "pygame.gfxdraw",
-    "pyvns"
+    "pyvns",
+    "tkinter",
+    "tkinter.messagebox"
 ]
 includes = [
     "CODE_OF_CONDUCT.md",

@@ -3,13 +3,24 @@ from .text import *
 
 # 用于静态图片的surface
 class StaticImage(AdvancedAbstractCachingImageSurface):
-    def __init__(self, img: PoI, x: int_f, y: int_f, width: int_f = -1, height: int_f = -1, tag: str = "") -> None:
+    def __init__(
+        self,
+        img: PoI,
+        x: int_f,
+        y: int_f,
+        width: int_f = -1,
+        height: int_f = -1,
+        enable_cropping: bool = False,
+        is_pixelated: bool = False,
+        tag: str = "",
+    ) -> None:
         super().__init__(Images.quickly_load(img), x, y, width, height, tag)
         self.__is_flipped_horizontally: bool = False
         self.__is_flipped_vertically: bool = False
         self.__crop_rect: Rectangle | None = None
         self.__bounding_rect: Rectangle = Rectangle(0, 0, 0, 0)
-        self.__no_cropping_needed: bool = False
+        self.__enable_cropping: bool = enable_cropping
+        self.__is_pixelated: bool = is_pixelated
 
     # 截图的范围
     @property
@@ -18,9 +29,6 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
 
     def get_crop_rect(self) -> Rectangle | None:
         return self.__crop_rect
-
-    def disable_cropping(self) -> None:
-        self.__no_cropping_needed = True
 
     def set_crop_rect(self, rect: Rectangle | None) -> None:
         if not Rectangles.equal(self.__crop_rect, rect):
@@ -62,6 +70,9 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
             self.y,
             self.get_width(),
             self.get_height(),
+            self.__enable_cropping,
+            self.__is_pixelated,
+            self.tag,
         )
 
     # 获取切割后的图片的rect
@@ -71,18 +82,24 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
             self._update_img()
         return self.__bounding_rect
 
+    def get_buffer(self) -> ImageSurface:
+        # 如果图片需要更新，则先更新
+        if self._need_update is True:
+            self._update_img()
+        return self._processed_img  # type: ignore
+
     # 更新图片
     def _update_img(self) -> None:
         # 改变尺寸
         imgTmp = (
             Images.smoothly_resize(self._get_image_reference(), self.size)
-            if Settings.get_antialias()
+            if not self.__is_pixelated and Settings.get_antialias()
             else Images.resize(self._get_image_reference(), self.size)
         )
         # 翻转图片
         if self.__is_flipped_horizontally is True or self.__is_flipped_vertically is True:
             imgTmp = Images.flip(imgTmp, self.__is_flipped_horizontally, self.__is_flipped_vertically)
-        if not self.__no_cropping_needed:
+        if self.__enable_cropping:
             # 获取切割rect
             rect: Rectangle = Rectangles.create(imgTmp.get_bounding_rect())
             if self.width != rect.width or self.height != rect.height or self.__crop_rect is not None:
@@ -106,125 +123,6 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
         if self._alpha < 255:
             self._processed_img.set_alpha(self._alpha)
         self._need_update = False
-
-
-# 需要移动的动态图片
-class MovableStaticImage(StaticImage):
-    def __init__(
-        self,
-        img: PoI,
-        default_x: int_f,
-        default_y: int_f,
-        target_x: int_f,
-        target_y: int_f,
-        move_speed_x: int_f,
-        move_speed_y: int_f,
-        width: int_f = -1,
-        height: int_f = -1,
-        tag: str = "",
-    ):
-        super().__init__(img, default_x, default_y, width, height, tag)
-        self.__default_x: int = self.x
-        self.__default_y: int = self.y
-        self.__target_x: int = int(target_x)
-        self.__target_y: int = int(target_y)
-        self.__move_speed_x: int = int(move_speed_x)
-        self.__move_speed_y: int = int(move_speed_y)
-        self.__is_moving_toward_target: bool = False
-
-    # 返回一个复制
-    def copy(self, deep_copy: bool = True) -> "MovableStaticImage":
-        return MovableStaticImage(
-            self.get_image_copy() if deep_copy else self._get_image_reference(),
-            self.x,
-            self.y,
-            self.__target_x,
-            self.__target_y,
-            self.__move_speed_x,
-            self.__move_speed_y,
-            self.get_width(),
-            self.get_height(),
-            self.tag,
-        )
-
-    # 设置目标坐标
-    def set_target(self, target_x: int_f, target_y: int_f, move_speed_x: int_f, move_speed_y: int_f) -> None:
-        self.__target_x = int(target_x)
-        self.__target_y = int(target_y)
-        self.__move_speed_x = int(move_speed_x)
-        self.__move_speed_y = int(move_speed_y)
-
-    # 控制
-    def switch(self) -> None:
-        self.__is_moving_toward_target = not self.__is_moving_toward_target
-
-    def move_toward(self) -> None:
-        self.__is_moving_toward_target = True
-
-    def move_back(self) -> None:
-        self.__is_moving_toward_target = False
-
-    # 重置坐标
-    def reset_position(self) -> None:
-        self.set_pos(self.__default_x, self.__default_y)
-
-    # 移动状态
-    def is_moving_toward_target(self) -> bool:
-        return self.__is_moving_toward_target
-
-    def has_reached_target(self) -> bool:
-        return (
-            self.x == self.__target_x and self.y == self.__target_y
-            if self.__is_moving_toward_target is True
-            else self.x == self.__default_x and self.y == self.__default_y
-        )
-
-    # 画出
-    def display(self, _surface: ImageSurface, offSet: tuple[int, int] = ORIGIN) -> None:
-        if self.is_visible():
-            super().display(_surface, offSet)
-            if self.__is_moving_toward_target is True:
-                if self.__default_x < self.__target_x:
-                    if self.x < self.__target_x:
-                        self.move_right(self.__move_speed_x)
-                    if self.x > self.__target_x:
-                        self.set_left(self.__target_x)
-                elif self.__default_x > self.__target_x:
-                    if self.x > self.__target_x:
-                        self.move_left(self.__move_speed_x)
-                    if self.x < self.__target_x:
-                        self.set_left(self.__target_x)
-                if self.__default_y < self.__target_y:
-                    if self.y < self.__target_y:
-                        self.move_downward(self.__move_speed_y)
-                    if self.y > self.__target_y:
-                        self.set_top(self.__target_y)
-                elif self.__default_y > self.__target_y:
-                    if self.y > self.__target_y:
-                        self.move_upward(self.__move_speed_y)
-                    if self.y < self.__target_y:
-                        self.set_top(self.__target_y)
-            else:
-                if self.__default_x < self.__target_x:
-                    if self.x > self.__default_x:
-                        self.move_left(self.__move_speed_x)
-                    if self.x < self.__default_x:
-                        self.set_left(self.__default_x)
-                elif self.__default_x > self.__target_x:
-                    if self.x < self.__default_x:
-                        self.move_right(self.__move_speed_x)
-                    if self.x > self.__default_x:
-                        self.set_left(self.__default_x)
-                if self.__default_y < self.__target_y:
-                    if self.y > self.__default_y:
-                        self.move_upward(self.__move_speed_y)
-                    if self.y < self.__default_y:
-                        self.set_top(self.__default_y)
-                elif self.__default_y > self.__target_y:
-                    if self.y < self.__default_y:
-                        self.move_downward(self.__move_speed_y)
-                    if self.y > self.__default_y:
-                        self.set_top(self.__default_y)
 
 
 # gif图片管理

@@ -129,6 +129,10 @@ class DialogNavigationWindow(AbstractWindow):
 
 # 对话框模块基础框架
 class AbstractDialogBox(Hidable, metaclass=ABCMeta):
+
+    # is dialogue box pixelated
+    IS_PIXELATED: bool = False
+
     def __init__(self) -> None:
         super().__init__()
         # 对胡框数据
@@ -136,7 +140,7 @@ class AbstractDialogBox(Hidable, metaclass=ABCMeta):
         self._dialogue_box_max_y: int = Display.get_height() * 65 // 100
         # 对胡框图片
         self._dialogue_box: StaticImage = StaticImage(
-            "<ui>textarea", Display.get_width() * 13 // 100, 0, Display.get_width() * 74 // 100
+            "<ui>textarea", Display.get_width() * 13 // 100, 0, Display.get_width() * 74 // 100, True, self.IS_PIXELATED
         )
 
     # 画出（子类需实现）

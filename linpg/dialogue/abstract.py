@@ -3,12 +3,21 @@ from .render import *
 
 # 视觉小说系统接口
 class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
+
+    # is background image pixelated
+    IS_PIXELATED: bool = False
+
     def __init__(self) -> None:
         super().__init__()
         self._content: DialoguesManager = DialoguesManager()
         # 黑色Void帘幕
         self._black_bg = StaticImage(
-            Surfaces.colored(Display.get_size(), Colors.BLACK), 0, 0, Display.get_width(), Display.get_height()
+            Surfaces.colored(Display.get_size(), Colors.BLACK),
+            0,
+            0,
+            Display.get_width(),
+            Display.get_height(),
+            is_pixelated=True,
         )
         # 对话文件路径
         self._dialog_folder_path: str = "Data"
@@ -113,8 +122,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
             if len(self.__background_image_name) > 0:
                 # 尝试加载图片式的背景
                 if os.path.exists((img_path := Specifications.get_directory("background_image", self.__background_image_name))):
-                    self.__background_image_surface = StaticImage(img_path, 0, 0)
-                    self.__background_image_surface.disable_cropping()
+                    self.__background_image_surface = StaticImage(img_path, 0, 0, is_pixelated=self.IS_PIXELATED)
                 else:
                     Exceptions.fatal(f"Cannot find a background image or video file called '{self.__background_image_name}'.")
             else:

@@ -55,10 +55,10 @@ class TileMap(Coordinate):
         self.__entities.append(e)
 
     # the local so given x, y will be in the middle of the screen
-    def set_focus(self, surface: ImageSurface, x: int, y: int) -> None:
+    def set_focus(self, surface: ImageSurface, x: number, y: number) -> None:
         self.set_pos(
-            (-x - 1) * self.scale * self.__tile_width // 100 + surface.width // 2,
-            (-y - 1) * self.scale * self.__tile_height // 100 + surface.height // 2,
+            round((-x - 1) * self.scale * self.__tile_width / 100 + surface.width / 2),
+            round((-y - 1) * self.scale * self.__tile_height / 100 + surface.height / 2),
         )
 
     # print map to surface

@@ -32,6 +32,8 @@ class VisualNovelCharacterImageManager:
     dev_mode: bool = False
     # 被点击的角色
     character_get_click: str | None = None
+    # is character image pixelated
+    IS_PIXELATED = False
 
     # 立绘边长
     @staticmethod
@@ -60,6 +62,8 @@ class VisualNovelCharacterImageManager:
                     0,
                     cls.__GET_WIDTH(),
                     cls.__GET_WIDTH(),
+                    True,
+                    cls.IS_PIXELATED,
                 )
                 # 以tuple的形式保存立绘，index 0 是正常图片， index 1 是深色图片
                 cls.__character_image[_name_data.get_name()] = (imgTemp, imgTemp.copy())

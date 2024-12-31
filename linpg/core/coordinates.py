@@ -1,3 +1,6 @@
+from functools import reduce
+from operator import add, mul, sub
+
 from ..basic.enums import Directions
 from ..media import *
 
@@ -71,22 +74,17 @@ class Positions:
     # 相加2个坐标
     @staticmethod
     def add(*positions: tuple[number, number]) -> tuple[number, number]:
-        x: number = 0
-        y: number = 0
-        for pos in positions:
-            x += pos[0]
-            y += pos[1]
-        return x, y
+        return tuple(reduce(add, elements) for elements in zip(*positions))
 
     # 相减2个坐标
     @staticmethod
-    def subtract(position: tuple[number, number], *positions: tuple[number, number]) -> tuple[number, number]:
-        x: number = position[0]
-        y: number = position[1]
-        for pos in positions:
-            x -= pos[0]
-            y -= pos[1]
-        return x, y
+    def subtract(*positions: tuple[number, number]) -> tuple[number, number]:
+        return tuple(reduce(sub, elements) for elements in zip(*positions))
+
+    # multiply two coordinates
+    @staticmethod
+    def multiply(*positions: tuple[number, number]) -> tuple[number, number]:
+        return tuple(reduce(mul, elements) for elements in zip(*positions))
 
 
 # 坐标类
@@ -188,23 +186,18 @@ class Coordinates:
 
     # 相加2个坐标
     @staticmethod
-    def add(*positions: tuple[int, int]) -> tuple[int, int]:
-        x: int = 0
-        y: int = 0
-        for pos in positions:
-            x += pos[0]
-            y += pos[1]
-        return x, y
+    def add(*coordinates: tuple[int, int]) -> tuple[int, int]:
+        return tuple(reduce(add, c) for c in zip(*coordinates))
 
     # 相减2个坐标
     @staticmethod
-    def subtract(position: tuple[int, int], *positions: tuple[int, int]) -> tuple[int, int]:
-        x: int = position[0]
-        y: int = position[1]
-        for pos in positions:
-            x -= pos[0]
-            y -= pos[1]
-        return x, y
+    def subtract(*coordinates: tuple[int, int]) -> tuple[int, int]:
+        return tuple(reduce(sub, c) for c in zip(*coordinates))
+
+    # multiply two coordinates
+    @staticmethod
+    def multiply(*coordinates: tuple[int, int]) -> tuple[int, int]:
+        return tuple(reduce(mul, c) for c in zip(*coordinates))
 
 
 class DynamicMovementController:

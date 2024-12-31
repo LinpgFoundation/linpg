@@ -1,8 +1,7 @@
 from ..dialogue import *
 
 
-@dataclass(frozen=True)
-class SpriteTileAnimationFrame:
+class SpriteTileAnimationFrame(NamedTuple):
     duration: int
     tile_id: int
 

@@ -59,15 +59,16 @@ class Level:
                 self.__prev_mouse_hover_y = Controller.mouse.y
             elif self.__prev_mouse_hover_x != Controller.mouse.x or self.__prev_mouse_hover_y != Controller.mouse.y:
                 if self.__prev_mouse_hover_x != Controller.mouse.x:
-                    self.__map.add_local_x(self.__prev_mouse_hover_x - Controller.mouse.x)
+                    self.__map.move_left(self.__prev_mouse_hover_x - Controller.mouse.x)
                 if self.__prev_mouse_hover_y != Controller.mouse.y:
-                    self.__map.add_local_y(self.__prev_mouse_hover_y - Controller.mouse.y)
+                    self.__map.move_upward(self.__prev_mouse_hover_y - Controller.mouse.y)
                 self.__prev_mouse_hover_x = Controller.mouse.x
                 self.__prev_mouse_hover_y = Controller.mouse.y
         else:
             self.__prev_mouse_hover_x = None
             self.__prev_mouse_hover_y = None
         # update map location
-        self.__map.add_local_pos(self.__movement.current_horizontal_speed, self.__movement.current_vertical_speed)
+        self.__map.move_right(self.__movement.current_horizontal_speed)
+        self.__map.move_downward(self.__movement.current_vertical_speed)
         # render map
         self.__map.print(surface)

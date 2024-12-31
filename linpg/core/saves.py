@@ -1,5 +1,5 @@
 import json
-from dataclasses import dataclass
+from typing import NamedTuple
 from zipfile import ZipFile
 
 from ..basic.files import Files
@@ -9,8 +9,7 @@ from .image import *
 # 存档系统
 class Saves:
     # 存档数据
-    @dataclass
-    class Progress:
+    class Progress(NamedTuple):
         data: dict
         screenshot: ImageSurface
         createdAt: str

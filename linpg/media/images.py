@@ -92,6 +92,22 @@ class Images:
             return pygame.transform.scale(img, (round(size[0]), round(size[1])))
         Exceptions.fatal("Both width and height must be positive integer!")
 
+    # resize to new resolution, using scalar(s)
+    @staticmethod
+    def scale_by(img: ImageSurface, factor: float) -> ImageSurface:
+        # 如果是null，则直接返回
+        if not Surfaces.is_not_null(img):
+            return img
+        return pygame.transform.scale_by(img, factor)
+
+    # resize to new resolution, using scalar(s)
+    @staticmethod
+    def smoothscale_by(img: ImageSurface, factor: float) -> ImageSurface:
+        # 如果是null，则直接返回
+        if not Surfaces.is_not_null(img):
+            return img
+        return pygame.transform.smoothscale_by(img, factor)
+
     # 精准地缩放尺寸
     @staticmethod
     def smoothly_resize(img: ImageSurface, size: tuple) -> ImageSurface:

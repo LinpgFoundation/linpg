@@ -17,6 +17,8 @@ ImageSurface = pygame.Surface
 PoI = str | pygame.Surface
 # 事件 type alias
 Event = pygame.event.Event
+# Lib Rect
+Rect = pygame.Rect
 # int_f指参数推荐输入int, 但一开始接受时可以为float，但最后会转换为int
 int_f = int | float
 # number，即数字，建议int但接受float
@@ -42,6 +44,18 @@ class GraphicLibrary:
     @classmethod
     def get_name(cls) -> str:
         return "Pygame-ce" if cls.__IS_CE else "Pygame"
+
+    @staticmethod
+    def get_version() -> str:
+        return pygame.version.ver
+
+    @classmethod
+    def get_full(cls) -> str:
+        return f"{cls.get_name()} {cls.get_version()}"
+
+    @staticmethod
+    def init() -> None:
+        pygame.init()
 
 
 # 指向pygame事件的指针
@@ -176,3 +190,11 @@ class Keys:
     @classmethod
     def get_clipboard(cls) -> str:
         return cls.__root.clipboard_get()
+
+
+class Cursor(enum.IntEnum):
+    SYSTEM_CURSOR_SIZENESW = pygame.SYSTEM_CURSOR_SIZENESW
+    SYSTEM_CURSOR_SIZENWSE = pygame.SYSTEM_CURSOR_SIZENWSE
+    SYSTEM_CURSOR_SIZENS = pygame.SYSTEM_CURSOR_SIZENS
+    SYSTEM_CURSOR_SIZEWE = pygame.SYSTEM_CURSOR_SIZEWE
+    SYSTEM_CURSOR_ARROW = pygame.SYSTEM_CURSOR_ARROW

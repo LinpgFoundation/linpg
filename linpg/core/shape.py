@@ -300,7 +300,7 @@ class Rectangle(Square):
         return Rectangle(self.x, self.y, self.get_width(), self.__height)
 
 
-RectObject = Rectangle | pygame.Rect
+RectObject = Rectangle | Rect
 RectLiked = RectObject | tuple
 
 
@@ -332,14 +332,14 @@ class Rectangles:
             return rect1.x == rect2.x and rect1.y == rect2.y and rect1.width == rect2.width and rect1.height == rect2.height
         return rect1 == rect2
 
-    # 转换pygame的rect类至linpg引擎的rect类
+    # 转换2d库的Rect类至linpg引擎的rect类
     @classmethod
     def create(cls, rect: RectLiked) -> Rectangle:
         # 如果是Rect类，则没必要转换
         if isinstance(rect, Rectangle):
             return rect
-        # 如果是pygame.Rect类则需转换
-        elif isinstance(rect, pygame.Rect):
+        # 如果是2d库的Rect类则需转换
+        elif isinstance(rect, Rect):
             return Rectangle(rect.x, rect.y, rect.width, rect.height)
         # 如果是tuple类，则需要创建
         elif isinstance(rect, tuple):

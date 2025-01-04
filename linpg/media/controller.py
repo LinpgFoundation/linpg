@@ -137,6 +137,11 @@ class Controller:
             if cls.__icon_img is not None:
                 _surface.blit(cls.__icon_img, (cls.x, cls.y))
 
+        # set the mouse cursor to a new cursor
+        @staticmethod
+        def set_cursor(cursor: Cursor) -> None:
+            pygame.mouse.set_cursor(cursor)
+
     # 手柄模块
     joystick = __JoystickController
     # 鼠标模块

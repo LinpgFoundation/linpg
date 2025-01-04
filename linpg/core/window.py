@@ -189,17 +189,17 @@ class AbstractWindow(AdvancedAbstractImageSurface, metaclass=ABCMeta):
             if self.__is_corner_hovered(Directions.UP, Directions.RIGHT) or self.__is_corner_hovered(
                 Directions.DOWN, Directions.LEFT
             ):
-                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_SIZENESW)
+                Controller.mouse.set_cursor(Cursor.SYSTEM_CURSOR_SIZENESW)
             elif self.__is_corner_hovered(Directions.UP, Directions.LEFT) or self.__is_corner_hovered(
                 Directions.DOWN, Directions.RIGHT
             ):
-                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_SIZENWSE)
+                Controller.mouse.set_cursor(Cursor.SYSTEM_CURSOR_SIZENWSE)
             elif self.__is_corner_hovered(Directions.UP) or self.__is_corner_hovered(Directions.DOWN):
-                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_SIZENS)
+                Controller.mouse.set_cursor(Cursor.SYSTEM_CURSOR_SIZENS)
             else:
-                pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_SIZEWE)
+                Controller.mouse.set_cursor(Cursor.SYSTEM_CURSOR_SIZEWE)
         else:
-            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+            Controller.mouse.set_cursor(Cursor.SYSTEM_CURSOR_ARROW)
 
 
 # 确认窗口

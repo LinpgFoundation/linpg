@@ -54,7 +54,7 @@ class Display:
         # 展示帧率信息
         if Debug.get_show_fps():
             if cls.__FONT is None:
-                cls.__FONT = pygame.font.SysFont("arial", cls.__STANDARD_HEIGHT // 40)
+                cls.__FONT = pygame.font.SysFont(None, cls.__STANDARD_HEIGHT // 40)
             _text: ImageSurface = cls.__FONT.render(
                 f"fps: {round(cls.get_current_fps(), 2)} delta time (ms): {cls.__DELTA_TIME}",
                 Settings.get_antialias(),
@@ -105,7 +105,7 @@ class Display:
 
     # 初始化屏幕
     @classmethod
-    def init(cls, flags: int = 0) -> ImageSurface:
+    def init(cls, flags: int = 0) -> None:
         monitorId: int = Settings.get_int("MonitorToDisplay")
         # 如果是全屏模式
         if cls.__SCALE >= 100:
@@ -128,7 +128,6 @@ class Display:
         )
         cls.__SCREEN_WINDOW.set_alpha(None)
         cls.__SCREEN_WINDOW.fill(Colors.BLACK)
-        return cls.__SCREEN_WINDOW
 
     # 获取屏幕
     @classmethod

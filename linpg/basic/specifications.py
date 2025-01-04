@@ -8,7 +8,7 @@ from .getter import TypeSafeGetter
 class Specifications(TypeSafeGetter):
     # init specification with default parameters
     __SPECIFICATIONS: Final[dict[str, dict]] = {
-        "DefaultFont": {"font": "Arial", "type": "default"},
+        "DefaultFont": {"font": "opensans", "type": "default"},
         "DefaultSetting": {
             "AntiAlias": True,
             "EnableOpenGL": False,

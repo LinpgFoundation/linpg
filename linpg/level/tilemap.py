@@ -32,6 +32,10 @@ class TileMap(Coordinate):
     def layers(self) -> tuple[Layer, ...]:
         return self.__layers
 
+    @property
+    def entities(self) -> deque[Entity]:
+        return self.__entities
+
     # set the id of the layer that represents entities layer
     def set_entities_layer(self, layer_id: int) -> None:
         self.__entities_layer_id = layer_id

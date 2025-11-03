@@ -39,18 +39,13 @@ class Languages:
     def __get_files(cls) -> list[str]:
         return glob(os.path.join(cls.__get_dir(), "*.json"))
 
-    # 获取当前的语言
-    @classmethod
-    def get_current_language(cls) -> str:
-        return str(cls.__LANG_DATA["Language"])
-
     # 获取语言的名称id
     @classmethod
     def get_language_id(cls, lang_name: str) -> str:
         for lang_file in cls.__get_files():
             if Configurations.load(lang_file, "Language") == lang_name:
                 return os.path.basename(lang_file).removesuffix(".json")
-        return ""
+        return "en_US"
 
     # 获取可用语言
     @classmethod

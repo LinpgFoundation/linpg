@@ -15,6 +15,7 @@ colors = Colors
 coordinates = Coordinates
 controller = Controller
 images = Images
+fonts = Fonts
 
 # print linpg information
 print(f'linpg {Version.get_full()} ({f"{GraphicLibrary.get_full()}"}, Python {Exceptions.get_python_version()})')

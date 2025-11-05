@@ -31,7 +31,7 @@ class Font:
         return self.__size
 
     # 更新文字模块
-    def update(self, size: int, bold: bool = False, italic: bool = False) -> None:
+    def update(self, size: int, bold: bool = False, italic: bool = False, underline: bool = False) -> None:
         if size <= 0:
             Exceptions.fatal("Font size must be greater than 0!")
         if self.__FONT is None or size != self.__size:
@@ -49,6 +49,7 @@ class Font:
                     Exceptions.fatal("FontType option in setting file is incorrect!")
         self.__FONT.set_bold(bold)
         self.__FONT.set_italic(italic)
+        self.__FONT.set_underline(underline)
 
     # 估计文字的宽度
     def estimate_text_width(self, text: str | int) -> int:
@@ -57,6 +58,10 @@ class Font:
     # 估计文字的高度
     def estimate_text_height(self, text: str | int) -> int:
         return self.__FONT.size(str(text))[1] if self.__FONT is not None else 0
+
+    # 估计文字的大小
+    def estimate_text_size(self, text: str | int) -> tuple[int, int]:
+        return self.__FONT.size(str(text)) if self.__FONT is not None else (0, 0)
 
     # 渲染文字
     def render(self, txt: str | int, color: color_liked, background_color: color_liked | None = None) -> ImageSurface:
@@ -79,11 +84,11 @@ class Fonts:
 
     # 设置全局文字
     @classmethod
-    def set_global_font(cls, key: str, size: int, bold: bool = False, italic: bool = False) -> None:
+    def set_global_font(cls, key: str, size: int, bold: bool = False, italic: bool = False, underline: bool = False) -> None:
         if isinstance(size, int) and size > 0:
             if key not in cls.__LINPG_GLOBAL_FONTS:
                 cls.__LINPG_GLOBAL_FONTS[key] = Font()
-            cls.__LINPG_GLOBAL_FONTS[key].update(size, bold, italic)
+            cls.__LINPG_GLOBAL_FONTS[key].update(size, bold, italic, underline)
         else:
             Exceptions.fatal(f"Font size must be positive integer not {size}!")
 
@@ -112,9 +117,9 @@ class Fonts:
 
     # 创建字体
     @staticmethod
-    def create(size: int, bold: bool = False, italic: bool = False) -> Font:
+    def create(size: int, bold: bool = False, italic: bool = False, underline: bool = False) -> Font:
         new_font_t = Font()
-        new_font_t.update(size, bold, italic)
+        new_font_t.update(size, bold, italic, underline)
         return new_font_t
 
     # 接受文字，颜色，文字大小，样式等信息，返回制作完的文字
@@ -126,9 +131,10 @@ class Fonts:
         size: int,
         bold: bool = False,
         italic: bool = False,
+        underline: bool = False,
         background_color: color_liked | None = None,
     ) -> ImageSurface:
-        cls.__LINPG_LAST_FONT.update(size, bold, italic)
+        cls.__LINPG_LAST_FONT.update(size, bold, italic, underline)
         return cls.__LINPG_LAST_FONT.render(txt, color, background_color)
 
 

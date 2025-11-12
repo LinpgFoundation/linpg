@@ -150,7 +150,7 @@ class UiGenerator:
                 if item_r.tag != "":
                     container_t.set(item_r.tag, item_r)
                 else:
-                    container_t.set(f"item{container_t.item_num}", item_r)
+                    container_t.set(f"item{len(container_t)}", item_r)
         return container_t
 
     # 生成UI主模块
@@ -237,28 +237,11 @@ class UiGenerator:
                         item_t.set_description(cls.__load_text(data["description"]))
                     if "name" not in data:
                         Exceptions.fatal("You have to set a name for button type.")
-                elif data["type"] == "progress_bar_adjuster":
-                    # 确认按钮存在
-                    if "indicator" not in data:
-                        Exceptions.fatal("You need to set a indicator for progress_bar_adjuster!")
-                    # 设置模式
-                    if "mode" not in data:
-                        data["mode"] = Axis.HORIZONTAL
-                    # 生成ProgressBarAdjuster
-                    item_t = ProgressBarAdjuster(
-                        data["src"][0],
-                        data["src"][1],
-                        data["indicator"]["src"],
-                        0,
-                        0,
-                        object_width,
-                        object_height,
-                        cls.__convert_number(data["indicator"], "width", object_width, custom_values),
-                        cls.__convert_number(data["indicator"], "height", object_height, custom_values),
-                        data["mode"],
+                elif data["type"] == "slider":
+                    # 生成slider
+                    item_t = Slider(
+                        0, 0, object_width, object_height, data.get("mode", Axis.HORIZONTAL), data.get("color", Colors.WHITE)
                     )
-                    if "name" not in data:
-                        Exceptions.fatal("You have to set a name for button type.")
                 elif data["type"] == "image":
                     item_t = StaticImage(data["src"], 0, 0, object_width, object_height)
                 else:

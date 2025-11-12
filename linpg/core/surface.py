@@ -16,12 +16,18 @@ class Hidable(ABC):
         return self.__hidden
 
 
-# 图形接口
-class AbstractImageSurface(Rectangle, Hidable, metaclass=ABCMeta):
-    def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str) -> None:
+# 图层接口
+class AbstractSurface(Rectangle, Hidable, metaclass=ABCMeta):
+    def __init__(self, x: int_f, y: int_f, width: int_f, height: int_f, tag: str) -> None:
         Rectangle.__init__(self, x, y, width, height)
         Hidable.__init__(self)
         self.tag = tag
+
+
+# 图形接口
+class AbstractImageSurface(AbstractSurface, metaclass=ABCMeta):
+    def __init__(self, img: Any, x: int_f, y: int_f, width: int_f, height: int_f, tag: str) -> None:
+        super().__init__(x, y, width, height, tag)
         self.__img: Any = img
         # if image is None, no need to set size now
         if self.__img is None or self.__img is Surfaces.NULL:

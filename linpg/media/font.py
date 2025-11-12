@@ -64,8 +64,8 @@ class Font:
         return self.__FONT.size(str(text)) if self.__FONT is not None else (0, 0)
 
     # 渲染文字
-    def render(self, txt: str | int, color: color_liked, background_color: color_liked | None = None) -> ImageSurface:
-        if not isinstance(txt, (str, int)):
+    def render(self, txt: str | int | float, color: color_liked, background_color: color_liked | None = None) -> ImageSurface:
+        if not isinstance(txt, (str, int, float)):
             Exceptions.fatal(f"The text must be a str or int, not {txt}")
         return self.__font.render(
             str(txt),
@@ -126,7 +126,7 @@ class Fonts:
     @classmethod
     def render(
         cls,
-        txt: str | int,
+        txt: str | int | float,
         color: color_liked,
         size: int,
         bold: bool = False,

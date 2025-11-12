@@ -42,18 +42,18 @@ class Images:
                 path = path.rstrip("?")
             _imageR: ImageSurface | None = None
             # try to load image from path
-            if not path.startswith("<"):
-                try:
-                    _imageR = cls.__load(path)
-                except Exception:
-                    if Debug.get_developer_mode() is True and not canBeNull:
-                        Exceptions.fatal(f"Cannot load image from path: {path}")
-            else:
+            if path.startswith("<"):
                 try:
                     _imageR = cls.__load(cls.__get_path(path))
                 except Exception:
                     if Debug.get_developer_mode() is True and not canBeNull:
                         Exceptions.fatal(f"Cannot load image: {path}")
+            else:
+                try:
+                    _imageR = cls.__load(path)
+                except Exception:
+                    if Debug.get_developer_mode() is True and not canBeNull:
+                        Exceptions.fatal(f"Cannot load image from path: {path}")
             # 根据参数处理并返回加载好的图片
             if _imageR is not None:
                 return _imageR.convert_alpha() if convert_alpha is True else _imageR.convert()

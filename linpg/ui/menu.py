@@ -134,10 +134,6 @@ class OptionMenu(AbstractInternalMenu):
                     if item_percentage_t != int(Settings.get("Sound", "environment")):
                         Settings.set("Sound", "environment", value=item_percentage_t)
                         self.need_update["volume"] = True
-                # 返回
-                elif self._CONTENT.item_being_hovered == "confirm":
-                    if Controller.get_event("confirm") is True:
-                        self.set_visible(False)
                 # 保存新的参数
                 if self.need_update.get("volume") is True:
                     Settings.save()

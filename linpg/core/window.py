@@ -1,4 +1,5 @@
 from tkinter import messagebox
+from typing import Literal
 
 from .saves import *
 
@@ -204,13 +205,13 @@ class AbstractWindow(AdvancedAbstractImageSurface, metaclass=ABCMeta):
 
 # 确认窗口
 class ConfirmationWindow:
-    def __init__(self, title: str, message: str, icon: str = "question") -> None:
+    def __init__(self, title: str, message: str, icon: Literal["error", "info", "question", "warning"] = "question") -> None:
         self.__title: str = title
         self.__message: str = message
-        self.__icon: str = icon
+        self.__icon: Literal["error", "info", "question", "warning"] = icon
 
     @staticmethod
-    def ask(title: str, message: str, icon: str = "question") -> bool:
+    def ask(title: str, message: str, icon: Literal["error", "info", "question", "warning"] = "question") -> bool:
         return messagebox.askyesno(title, message, icon=icon)
 
     def set_title(self, title: str) -> None:
@@ -219,7 +220,7 @@ class ConfirmationWindow:
     def set_message(self, message: str) -> None:
         self.__message = message
 
-    def set_icon(self, icon: str) -> None:
+    def set_icon(self, icon: Literal["error", "info", "question", "warning"]) -> None:
         self.__icon = icon
 
     def show(self) -> bool:

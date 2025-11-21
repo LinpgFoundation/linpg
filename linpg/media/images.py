@@ -1,8 +1,6 @@
 import io
 import os
 
-import bsicons
-
 from ..basic.settings import Settings
 from ..basic.specifications import Specifications
 from .surfaces import *
@@ -26,9 +24,8 @@ class Images:
         flag_key: str | None = cls.__FLAG_LOOKUP_TABLE.get(path[1:flag_end_index])
         if flag_key is None:
             Exceptions.fatal(f'Invalid tag: "{path}"')
-        # if a replacement exists, then return replacement path, else using default icons instead
-        path_r: str = Specifications.get_directory(flag_key, file_name)
-        return path_r if os.path.exists(path_r) else bsicons.get_icon_path(file_name)
+        # return replacement path
+        return Specifications.get_directory(flag_key, file_name)
 
     # 识快速加载图片
     @classmethod

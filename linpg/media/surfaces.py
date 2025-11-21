@@ -115,9 +115,9 @@ class Surfaces:
 
     # 获取一个带颜色的Surface
     @staticmethod
-    def colored(size: tuple[int, int], color: color_liked) -> ImageSurface:
+    def colored(size: tuple[int, int], color: color_liked, thickness: int = 0, radius: int = -1) -> ImageSurface:
         surface_t: ImageSurface = pygame.Surface(size).convert()
-        surface_t.fill(Colors.get(color))
+        Draw.rect(surface_t, Colors.get(color), (0, 0, size[0], size[1]), thickness, radius)
         return surface_t
 
     # 根据array生成Surface

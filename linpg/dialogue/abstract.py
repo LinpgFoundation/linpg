@@ -110,8 +110,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
             if os.path.exists(self.get_data_file_path())
             else self.get_dialog_file_location(self.get_default_lang())
         )
-        # try fetch "dialogs" for backward compatibility
-        self._content.update(content_data.get("dialogues", content_data.get("dialogs")))
+        self._content.update(content_data["dialogues"])
 
     # 更新背景图片
     def _update_background_image(self, image_name: str) -> None:

@@ -1,6 +1,6 @@
 """
 结构:
-component -> render -> abstract -> dialogue
+dialogbox -> component -> render -> abstract -> dialogue
 """
 
 from .dialogue import *

@@ -13,6 +13,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython"
 ]
 dependencies = [
@@ -36,7 +37,7 @@ hook-dirs = "linpg.__pyinstaller:get_hook_dirs"
 
 [tool.black]
 line-length = 128
-target-version = ['py313']
+target-version = ['py314']
 
 [tool.linpgtoolbox]
 hidden_imports = [

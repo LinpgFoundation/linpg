@@ -4,9 +4,6 @@ from ..ui import *
 # 对话框模块基础框架
 class AbstractDialogBox(Hidable, metaclass=ABCMeta):
 
-    # is dialogue box pixelated
-    IS_PIXELATED: bool = False
-
     # padding scale in percentage of surface size
     PADDING_TOP: int = 2
     PADDING_LEFT: int = 2
@@ -17,20 +14,14 @@ class AbstractDialogBox(Hidable, metaclass=ABCMeta):
     MARGIN_RIGHT: int = 5
     MARGIN_LEFT: int = 5
 
-    def __init__(self) -> None:
-        super().__init__()
-        # 对胡框图片
-        self._dialogue_box: StaticImage = StaticImage(
-            Surfaces.colored((100, 100), Colors.GRAY),
-            0,
-            0,
-            enable_cropping=True,
-            is_pixelated=self.IS_PIXELATED,
-        )
+    IMAGE: StaticImage | None = None
 
-    # 画出对话框图片
-    def _draw_dialogue_box(self, _surface: ImageSurface) -> None:
-        self._dialogue_box.draw(_surface)
+    # get dialog box image
+    def _get_image(self) -> StaticImage:
+        # ensure image is initialized
+        if self.IMAGE is None:
+            self.IMAGE = StaticImage(Surfaces.colored((100, 100), Colors.GRAY), 0, 0)
+        return self.IMAGE
 
     # 画出
     def draw(self, _surface: ImageSurface) -> None:
@@ -40,7 +31,7 @@ class AbstractDialogBox(Hidable, metaclass=ABCMeta):
 
     # 画出内容（子类可重写）
     def _draw(self, _surface: ImageSurface) -> None:
-        self._draw_dialogue_box(_surface)
+        self._get_image().draw(_surface)
 
     # 更新内容（子类需实现）
     @abstractmethod
@@ -115,8 +106,8 @@ class DialogBox(AbstractDialogBox):
         # 是否处于自动播放模式
         self.__auto_mode: bool = False
         # 设置对话框高度和坐标
-        self._dialogue_box.set_top(-1)
-        self._dialogue_box.set_height(0)
+        self._get_image().set_top(-1)
+        self._get_image().set_height(0)
 
     # 是否所有内容均已展出
     def is_all_played(self) -> bool:
@@ -192,16 +183,16 @@ class DialogBox(AbstractDialogBox):
         # 画出对话框
         margin_top: int = _surface.height * self.MARGIN_TOP // 100
         margin_left: int = _surface.width * self.MARGIN_LEFT // 100
-        self._dialogue_box.set_size(
+        self._get_image().set_size(
             _surface.width - margin_left - _surface.width * self.MARGIN_RIGHT // 100,
             _surface.height - margin_top - _surface.height * self.MARGIN_BOTTOM // 100,
         )
-        self._dialogue_box.set_left(margin_left)
-        self._dialogue_box.set_top(margin_top)
+        self._get_image().set_left(margin_left)
+        self._get_image().set_top(margin_top)
         super()._draw(_surface)
         # 将文字画到屏幕上
-        x: int = self._dialogue_box.left + _surface.width * self.PADDING_LEFT // 100
-        y: int = self._dialogue_box.top + _surface.height * self.PADDING_TOP // 100
+        x: int = self._get_image().left + _surface.width * self.PADDING_LEFT // 100
+        y: int = self._get_image().top + _surface.height * self.PADDING_TOP // 100
         # 写上当前讲话人的名字
         if len(self.__narrator) > 0:
             _surface.blit(self.FONT.render(self.__narrator, Colors.WHITE), (x, y))
@@ -245,5 +236,5 @@ class DialogBox(AbstractDialogBox):
             # 画出翻页指示动态图标
             _width: int = self.FONT.size * 2 // 3
             self.__next_page_indicator_icon.draw_to(
-                _surface, self._dialogue_box.right - _width * 4, self._dialogue_box.bottom - _width * 3, _width
+                _surface, self._get_image().right - _width * 4, self._get_image().bottom - _width * 3, _width
             )

@@ -65,8 +65,6 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
         super()._load_content()
         # 将npc立绘系统设置为普通模式
         VisualNovelCharacterImageManager.dev_mode = False
-        # 重置对话框
-        self.__dialog_txt_system.reset()
         # 重置播放完成的flag
         self.__has_reached_the_end = False
 
@@ -128,7 +126,6 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
                     self._fade(_surface)
                     # 更新场景
                     self._update_scene(str(self._content.current.next.get_target()))
-                    self.__dialog_txt_system.reset()
                     self.__is_fading_out = False
                     self._fade(_surface)
                 # 如果是需要播放过程动画
@@ -203,6 +200,8 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
             super().display_background_image(_surface)
 
     def draw(self, _surface: ImageSurface) -> None:
+        if self.is_hidden():
+            return
         super().draw(_surface)
         # 按钮
         if self.__buttons_container is not None and not self.__is_showing_history:

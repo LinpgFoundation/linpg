@@ -1,6 +1,6 @@
 """
 结构:
-button -> container -> dropdown -> scrollbar -> inputbox -> console -> progressbar -> generator -> menu
+button -> container -> dropdown -> scrollbar -> inputbox -> console -> progressbar -> generator -> menu - > animation
 """
 
-from .menu import *
+from .animation import *

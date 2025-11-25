@@ -198,7 +198,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         self._text: list[str] = [""]
         self.__lineId: int = 0
 
-    def get_text(self) -> list:
+    def get_text(self) -> list[str]:
         self.need_save = False
         return [] if (len(self._text) == 0 or self._text == [""]) else self._text
 
@@ -209,7 +209,7 @@ class MultipleLinesInputBox(AbstractInputBox):
         text.removesuffix("\n")
         return text
 
-    def set_text(self, new_txt: list = []) -> None:
+    def set_text(self, new_txt: list[str] = []) -> None:
         if len(new_txt) > 0:
             self._text = new_txt
         else:

@@ -16,17 +16,6 @@ class Images:
     def __load(_file: str | io.BytesIO) -> ImageSurface:
         return pygame.image.load(_file)
 
-    # get path path according to flag
-    @classmethod
-    def __get_path(cls, path: str) -> str:
-        flag_end_index: int = path.index(">")
-        file_name: str = path[flag_end_index + 1 :]
-        flag_key: str | None = cls.__FLAG_LOOKUP_TABLE.get(path[1:flag_end_index])
-        if flag_key is None:
-            Exceptions.fatal(f'Invalid tag: "{path}"')
-        # return replacement path
-        return Specifications.get_directory(flag_key, file_name)
-
     # 识快速加载图片
     @classmethod
     def quickly_load(cls, path: PoI, convert_alpha: bool = True) -> ImageSurface:
@@ -40,8 +29,21 @@ class Images:
             _imageR: ImageSurface | None = None
             # try to load image from path
             if path.startswith("<"):
+                # get path path according to flag
                 try:
-                    _imageR = cls.__load(cls.__get_path(path))
+                    # extract flag and file name 提取标志和文件名
+                    flag_end_index: int = path.index(">")
+                    file_name: str = path[flag_end_index + 1 :]
+                    file_tag: str = path[1:flag_end_index]
+                    # special case for transparent image 透明图片的特殊情况
+                    if file_tag == "transparent":
+                        return Surfaces.transparent((192, 108))
+                    # load image according to flag 根据标志加载图片
+                    flag_key: str | None = cls.__FLAG_LOOKUP_TABLE.get(file_tag)
+                    if flag_key is None:
+                        Exceptions.fatal(f'Invalid tag: "{path}"')
+                    # load image 加载图片
+                    _imageR = cls.__load(Specifications.get_directory(flag_key, file_name))
                 except Exception:
                     if Debug.get_developer_mode() is True and not canBeNull:
                         Exceptions.fatal(f"Cannot load image: {path}")

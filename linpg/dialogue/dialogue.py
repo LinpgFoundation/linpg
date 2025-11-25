@@ -24,8 +24,6 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
         self._update_sound_volume()
         # 玩家做出的选项
         self.__dialog_options: Final[dict] = {}
-        # 是否正在淡出的flag
-        self.__is_fading_out: bool = True
         # 是否已经完成最后一个Node
         self.__has_reached_the_end: bool = False
 
@@ -108,9 +106,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
 
     # 前往下一个对话
     def __go_to_next(self, _surface: ImageSurface) -> None:
-        self.__is_fading_out = True
         if not self._content.current.has_next():
-            self._fade(_surface)
             self.__has_reached_the_end = True
             self.stop()
         else:
@@ -123,14 +119,10 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
                     pass
                 # 如果是切换场景
                 case "scene":
-                    self._fade(_surface)
                     # 更新场景
                     self._update_scene(str(self._content.current.next.get_target()))
-                    self.__is_fading_out = False
-                    self._fade(_surface)
                 # 如果是需要播放过程动画
                 case "cutscene":
-                    self._fade(_surface)
                     self.stop()
                     # self.play_cutscene(_surface)
                 # break被视为立刻退出，没有淡出动画
@@ -152,8 +144,6 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
                         self.__dialog_txt_system.set_visible(False)
                     # 如果接来下没有文档了或者玩家按到了跳过按钮, 则准备淡出并停止播放
                     case "skip":
-                        self.__is_fading_out = True
-                        self._fade(_surface)
                         self.__has_reached_the_end = True
                         self.stop()
                     case "is_auto":
@@ -170,29 +160,6 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
                         return False
             return True
         return False
-
-    # 淡入或淡出
-    def _fade(self, _surface: ImageSurface) -> None:
-        if not self.__disable_background_image_rendering:
-            _alpha: int = 0
-            _alpha_max: Final[int] = 1275
-            if self.__is_fading_out is True:
-                Media.fade_out(1000)
-                while _alpha <= _alpha_max:
-                    self._black_bg.set_alpha(_alpha // 20)
-                    self._black_bg.draw(_surface)
-                    _alpha += Display.get_delta_time()
-                    Display.flip()
-            else:
-                _alpha = _alpha_max
-                while _alpha >= 0:
-                    self.display_background_image(_surface)
-                    self._black_bg.set_alpha(_alpha // 5)
-                    self._black_bg.draw(_surface)
-                    _alpha -= Display.get_delta_time() * 2
-                    Display.flip()
-                # 重设black_bg的alpha值以便下一次使用
-                self._black_bg.set_alpha(255)
 
     # 重写父类的display_background_image方法使其在背景被disable后不会继续渲染背景图片
     def display_background_image(self, _surface: ImageSurface) -> None:

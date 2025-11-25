@@ -371,10 +371,6 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
     def load_progress(self, _data: dict) -> None:
         Exceptions.fatal("load_progress()", 1)
 
-    # 淡入或淡出（建议子类重写）
-    def _fade(self, _surface: ImageSurface) -> None:
-        Media.unload()
-
     # 停止播放（子类需实现）
     @abstractmethod
     def stop(self) -> None:
@@ -469,7 +465,6 @@ class PauseMenuModuleForGameSystem(AbstractInternalMenu):
                         self.OPTION_MENU.set_visible(True)
                     elif self.__pause_menu.get_button_clicked() == "back_to_mainMenu":
                         self.__close_menus()
-                        self._fade(_surface)
                         self.stop()
             # 继续播放背景音乐
             Media.unpause()

@@ -64,10 +64,7 @@ class SpriteImage:
         self.__METADATA: Final[dict[str, Any]] = Configurations.load_file(self.__METADATA_PATH)
         # load tile sheet
         self.__SHEET: Final[StaticImage] = StaticImage(
-            os.path.join(os.path.dirname(self.__METADATA_PATH), str(self.__METADATA["image"])),
-            0,
-            0,
-            is_pixelated=self.IS_PIXELATED,
+            os.path.join(os.path.dirname(self.__METADATA_PATH), str(self.__METADATA["image"])), is_pixelated=self.IS_PIXELATED
         )
         # get tile count
         self.__tile_count: Final[int] = int(self.__METADATA["tilecount"])

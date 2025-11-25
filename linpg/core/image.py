@@ -6,8 +6,8 @@ class StaticImage(AdvancedAbstractCachingImageSurface):
     def __init__(
         self,
         img: PoI,
-        x: int_f,
-        y: int_f,
+        x: int_f = 0,
+        y: int_f = 0,
         width: int_f = -1,
         height: int_f = -1,
         enable_cropping: bool = False,

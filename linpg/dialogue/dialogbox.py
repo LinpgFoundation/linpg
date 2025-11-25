@@ -20,7 +20,7 @@ class AbstractDialogBox(Hidable, metaclass=ABCMeta):
     def _get_image(self) -> StaticImage:
         # ensure image is initialized
         if self.IMAGE is None:
-            self.IMAGE = StaticImage(Surfaces.colored((100, 100), Colors.GRAY), 0, 0)
+            self.IMAGE = StaticImage(Surfaces.colored((100, 100), Colors.GRAY))
         return self.IMAGE
 
     # 画出

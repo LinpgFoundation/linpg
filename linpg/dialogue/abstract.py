@@ -122,12 +122,12 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
                 # 尝试加载图片式的背景
                 if self.__background_image_name.startswith("<"):
                     self.__background_image_surface = StaticImage(
-                        self.__background_image_name, 0, 0, enable_cropping=True, is_pixelated=self.IS_PIXELATED
+                        self.__background_image_name, enable_cropping=True, is_pixelated=self.IS_PIXELATED
                     )
                 elif os.path.exists(
                     (img_path := Specifications.get_directory("background_image", self.__background_image_name))
                 ):
-                    self.__background_image_surface = StaticImage(img_path, 0, 0, is_pixelated=self.IS_PIXELATED)
+                    self.__background_image_surface = StaticImage(img_path, is_pixelated=self.IS_PIXELATED)
                 else:
                     Exceptions.fatal(
                         f"Cannot find a background image or video file called '{self.__background_image_name}'.", 2

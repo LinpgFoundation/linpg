@@ -48,7 +48,7 @@ class Chunk(Rectangle):
             # Iterate through the non-zero elements
             for y, x in numpy.argwhere(self.__data):
                 self.__draw_tile(new_surface, int(x), int(y))
-            self.__surface = StaticImage(new_surface, 0, 0, enable_cropping=True, is_pixelated=SpriteImage.IS_PIXELATED)
+            self.__surface = StaticImage(new_surface, enable_cropping=True, is_pixelated=SpriteImage.IS_PIXELATED)
         # render the chuck image
         self.__surface.set_pos(pos[0], pos[1])
         self.__surface.display(surface, Coordinates.multiply(self.pos, self.__tile_size))

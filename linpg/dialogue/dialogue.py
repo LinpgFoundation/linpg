@@ -62,7 +62,7 @@ class VisualNovelPlayer(AbstractVisualNovelPlayer, PauseMenuModuleForGameSystem)
     def _load_content(self) -> None:
         super()._load_content()
         # 将npc立绘系统设置为普通模式
-        VisualNovelCharacterImageManager.dev_mode = False
+        self._character_image_manager.set_dev_mode(False)
         # 重置播放完成的flag
         self.__has_reached_the_end = False
 

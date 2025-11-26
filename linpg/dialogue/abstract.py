@@ -33,8 +33,8 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
         self.set_bgm_volume(Volume.get_background_music() / 100)
         # 文字大小
         self._FONT_SIZE: int = Display.get_width() * 3 // 200
-        # 初始化滤镜系统
-        VisualNovelCharacterImageManager.reset()
+        # 初始化立绘系统
+        self._character_image_manager: VisualNovelCharacterImageManager = VisualNovelCharacterImageManager()
 
     # 获取对话框模块（子类需实现）
     @abstractmethod
@@ -140,7 +140,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
         # 更新dialogId
         self._content.set_current_dialogue_id(dialog_id)
         # 更新立绘和背景
-        VisualNovelCharacterImageManager.update(self._content.current.character_images)
+        self._character_image_manager.update(self._content.current.character_images)
         self._update_background_image(self._content.current.background_image)
         # 更新对话框
         self._get_dialog_box().update(self._content.current.narrator, self._content.current.contents)
@@ -173,7 +173,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
     # 停止播放
     def stop(self) -> None:
         # 释放立绘渲染系统占用的内存
-        VisualNovelCharacterImageManager.reset()
+        self._character_image_manager.reset()
         # 设置停止播放
         super().stop()
 
@@ -209,7 +209,7 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
             Exceptions.fatal("The dialog has not been initialized!")
         # 展示背景图片和npc立绘
         self.display_background_image(_surface)
-        VisualNovelCharacterImageManager.draw(_surface)
+        self._character_image_manager.draw(_surface)
         self._get_dialog_box().draw(_surface)
         # 如果不处于静音状态
         if not self._is_muted:

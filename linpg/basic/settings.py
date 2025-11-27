@@ -43,7 +43,8 @@ class Settings(TypeSafeGetter, TypeSafeSetter):
             # 导入local,查看默认语言
             import locale
 
-            cls.__SETTING_DATA["Language"] = locale.getdefaultlocale()[0]
+            current_locale: str | None = locale.getdefaultlocale()[0]
+            cls.__SETTING_DATA["Language"] = current_locale if current_locale is not None and current_locale != "C" else "en_US"
 
     # 保存设置数据
     @classmethod

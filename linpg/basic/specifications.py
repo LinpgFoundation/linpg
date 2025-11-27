@@ -8,12 +8,12 @@ from .getter import TypeSafeGetter
 class Specifications(TypeSafeGetter):
     # init specification with default parameters
     __SPECIFICATIONS: Final[dict[str, dict]] = {
-        "DefaultFont": {"font": "opensans", "type": "default"},
+        "DefaultFont": {"font": "sans", "type": "default"},
         "DefaultSetting": {
             "AntiAlias": True,
             "EnableOpenGL": False,
             "EnableVerticalSync": False,
-            "Language": "English",
+            "Language": "en_US",
             "LowMemoryMode": False,
             "MaxFps": 999,
             "MonitorToDisplay": 0,

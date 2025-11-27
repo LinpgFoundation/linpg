@@ -59,14 +59,13 @@ class AbstractVisualNovelPlayer(AbstractGameSystem, metaclass=ABCMeta):
 
     # 获取对话文件的主语言
     def get_default_lang(self) -> str:
-        # 读取项目信息
-        _data: dict = Configurations.load_file(
-            os.path.join(self._dialog_folder_path, self._chapter_type, "info.json")
-            if self._project_name is None
-            else os.path.join(self._dialog_folder_path, self._chapter_type, self._project_name, "info.json")
+        return str(
+            Configurations.try_load_file(
+                os.path.join(self._dialog_folder_path, self._chapter_type, "info.json")
+                if self._project_name is None
+                else os.path.join(self._dialog_folder_path, self._chapter_type, self._project_name, "info.json")
+            ).get("default_language", "en_US")
         )
-        # 自3.7起使用default_language，出于兼容目的尝试读取default_lang（3.6前的key）
-        return str(_data.get("default_language", _data.get("default_lang", "English")))
 
     # 返回需要保存数据
     def _get_data_need_to_save(self) -> dict:
